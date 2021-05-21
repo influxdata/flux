@@ -24,7 +24,7 @@ alert = (check, id=(r) => "${r._check_id}", details=(r) => "", message=(r) => "T
         (tables=<-) => tables
             |> set(key: "_topic", value: topic)
             |> experimental.group(mode: "extend", columns: ["_topic"])
-    else
+else
         (tables=<-) => tables
 
     return tables
@@ -72,7 +72,7 @@ deadman = (check, measurement, threshold=0, id=(r) => "${r._check_id}", message=
                 |> drop(columns: ["unknown"])
                 // need empty table
                 |> limit(n: 0)
-        else
+else
             tables
 
     return _tables

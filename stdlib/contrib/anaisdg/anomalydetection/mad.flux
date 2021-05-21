@@ -29,7 +29,7 @@ mad = (table=<-, threshold=3.0) => {
             fn: (r) => ({r with
                 level: if r._value >= threshold then
                     "anomaly"
-                else
+else
                     "normal",
             }),
         )

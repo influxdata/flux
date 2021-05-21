@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   82,
 				},
 				File:   "influxdb.flux",
-				Source: "package influxdb\n\n\nimport \"influxdata/influxdb\"\nimport \"influxdata/influxdb/v1\"\n\n// _mask will hide the given columns from downstream\n// transformations. It will not perform any copies and\n// it will not regroup. This should only be used when\n// the user knows it can't cause a key conflict.\nbuiltin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record\n\n// from will retrieve data from a bucket between the start and stop time.\n// This version of from is the equivalent of doing from |> range\n// as a single call.\nfrom = (bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\n    else if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\n    else if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\n    else if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}\n\n// _from allows us to reference the from function from\n// within the select call which has a function parameter\n// with the same name.\n_from = from\n\n// select will select data from an influxdb instance within\n// the range between `start` and `stop` from the bucket specified by\n// the `from` parameter. It will select the specific measurement\n// and it will only include fields that are included in the list of\n// `fields`.\n//\n// In order to filter by tags, the `where` function can be used to further\n// limit the amount of data selected.\nselect = (from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(\n        bucket,\n        start,\n        stop,\n        org,\n        host,\n        token,\n    )\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n    nfields = length(arr: fields)\n    fn = if nfields == 0 then\n        (r) => true\n    else if nfields == 1 then\n        (r) => r._field == fields[0]\n    else if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\n    else if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
+				Source: "package influxdb\n\n\nimport \"influxdata/influxdb\"\nimport \"influxdata/influxdb/v1\"\n\n// _mask will hide the given columns from downstream\n// transformations. It will not perform any copies and\n// it will not regroup. This should only be used when\n// the user knows it can't cause a key conflict.\nbuiltin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record\n\n// from will retrieve data from a bucket between the start and stop time.\n// This version of from is the equivalent of doing from |> range\n// as a single call.\nfrom = (bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\nelse if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\nelse if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\nelse if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}\n\n// _from allows us to reference the from function from\n// within the select call which has a function parameter\n// with the same name.\n_from = from\n\n// select will select data from an influxdb instance within\n// the range between `start` and `stop` from the bucket specified by\n// the `from` parameter. It will select the specific measurement\n// and it will only include fields that are included in the list of\n// `fields`.\n//\n// In order to filter by tags, the `where` function can be used to further\n// limit the amount of data selected.\nselect = (from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(\n        bucket,\n        start,\n        stop,\n        org,\n        host,\n        token,\n    )\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n    nfields = length(arr: fields)\n    fn = if nfields == 0 then\n        (r) => true\nelse if nfields == 1 then\n        (r) => r._field == fields[0]\nelse if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\nelse if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -468,7 +468,7 @@ var pkgAST = &ast.Package{
 						Line:   35,
 					},
 					File:   "influxdb.flux",
-					Source: "from = (bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\n    else if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\n    else if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\n    else if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}",
+					Source: "from = (bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\nelse if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\nelse if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\nelse if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -505,7 +505,7 @@ var pkgAST = &ast.Package{
 							Line:   35,
 						},
 						File:   "influxdb.flux",
-						Source: "(bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\n    else if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\n    else if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\n    else if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}",
+						Source: "(bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\nelse if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\nelse if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\nelse if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}",
 						Start: ast.Position{
 							Column: 8,
 							Line:   16,
@@ -522,7 +522,7 @@ var pkgAST = &ast.Package{
 								Line:   35,
 							},
 							File:   "influxdb.flux",
-							Source: "{\n    source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\n    else if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\n    else if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\n    else if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}",
+							Source: "{\n    source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\nelse if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\nelse if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\nelse if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}",
 							Start: ast.Position{
 								Column: 66,
 								Line:   16,
@@ -539,7 +539,7 @@ var pkgAST = &ast.Package{
 									Line:   32,
 								},
 								File:   "influxdb.flux",
-								Source: "source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\n    else if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\n    else if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\n    else if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)",
+								Source: "source = if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\nelse if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\nelse if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\nelse if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)",
 								Start: ast.Position{
 									Column: 5,
 									Line:   17,
@@ -720,9 +720,9 @@ var pkgAST = &ast.Package{
 																Line:   32,
 															},
 															File:   "influxdb.flux",
-															Source: "if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)",
+															Source: "if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)",
 															Start: ast.Position{
-																Column: 10,
+																Column: 6,
 																Line:   29,
 															},
 														},
@@ -911,13 +911,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 24,
+																	Column: 20,
 																	Line:   29,
 																},
 																File:   "influxdb.flux",
 																Source: "token != \"\"",
 																Start: ast.Position{
-																	Column: 13,
+																	Column: 9,
 																	Line:   29,
 																},
 															},
@@ -928,13 +928,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 18,
+																		Column: 14,
 																		Line:   29,
 																	},
 																	File:   "influxdb.flux",
 																	Source: "token",
 																	Start: ast.Position{
-																		Column: 13,
+																		Column: 9,
 																		Line:   29,
 																	},
 																},
@@ -948,13 +948,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 24,
+																		Column: 20,
 																		Line:   29,
 																	},
 																	File:   "influxdb.flux",
 																	Source: "\"\"",
 																	Start: ast.Position{
-																		Column: 22,
+																		Column: 18,
 																		Line:   29,
 																	},
 																},
@@ -975,9 +975,9 @@ var pkgAST = &ast.Package{
 															Line:   32,
 														},
 														File:   "influxdb.flux",
-														Source: "if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)",
+														Source: "if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)",
 														Start: ast.Position{
-															Column: 10,
+															Column: 6,
 															Line:   27,
 														},
 													},
@@ -1166,13 +1166,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 23,
+																Column: 19,
 																Line:   27,
 															},
 															File:   "influxdb.flux",
 															Source: "host != \"\"",
 															Start: ast.Position{
-																Column: 13,
+																Column: 9,
 																Line:   27,
 															},
 														},
@@ -1183,13 +1183,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 17,
+																	Column: 13,
 																	Line:   27,
 																},
 																File:   "influxdb.flux",
 																Source: "host",
 																Start: ast.Position{
-																	Column: 13,
+																	Column: 9,
 																	Line:   27,
 																},
 															},
@@ -1203,13 +1203,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 23,
+																	Column: 19,
 																	Line:   27,
 																},
 																File:   "influxdb.flux",
 																Source: "\"\"",
 																Start: ast.Position{
-																	Column: 21,
+																	Column: 17,
 																	Line:   27,
 																},
 															},
@@ -1230,9 +1230,9 @@ var pkgAST = &ast.Package{
 														Line:   32,
 													},
 													File:   "influxdb.flux",
-													Source: "if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)",
+													Source: "if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)",
 													Start: ast.Position{
-														Column: 10,
+														Column: 6,
 														Line:   25,
 													},
 												},
@@ -1421,13 +1421,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 22,
+															Column: 18,
 															Line:   25,
 														},
 														File:   "influxdb.flux",
 														Source: "org != \"\"",
 														Start: ast.Position{
-															Column: 13,
+															Column: 9,
 															Line:   25,
 														},
 													},
@@ -1438,13 +1438,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 16,
+																Column: 12,
 																Line:   25,
 															},
 															File:   "influxdb.flux",
 															Source: "org",
 															Start: ast.Position{
-																Column: 13,
+																Column: 9,
 																Line:   25,
 															},
 														},
@@ -1458,13 +1458,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 22,
+																Column: 18,
 																Line:   25,
 															},
 															File:   "influxdb.flux",
 															Source: "\"\"",
 															Start: ast.Position{
-																Column: 20,
+																Column: 16,
 																Line:   25,
 															},
 														},
@@ -1485,9 +1485,9 @@ var pkgAST = &ast.Package{
 													Line:   32,
 												},
 												File:   "influxdb.flux",
-												Source: "if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)",
+												Source: "if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)",
 												Start: ast.Position{
-													Column: 10,
+													Column: 6,
 													Line:   23,
 												},
 											},
@@ -1715,13 +1715,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 39,
+														Column: 35,
 														Line:   23,
 													},
 													File:   "influxdb.flux",
 													Source: "host != \"\" and token != \"\"",
 													Start: ast.Position{
-														Column: 13,
+														Column: 9,
 														Line:   23,
 													},
 												},
@@ -1732,13 +1732,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 23,
+															Column: 19,
 															Line:   23,
 														},
 														File:   "influxdb.flux",
 														Source: "host != \"\"",
 														Start: ast.Position{
-															Column: 13,
+															Column: 9,
 															Line:   23,
 														},
 													},
@@ -1749,13 +1749,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 17,
+																Column: 13,
 																Line:   23,
 															},
 															File:   "influxdb.flux",
 															Source: "host",
 															Start: ast.Position{
-																Column: 13,
+																Column: 9,
 																Line:   23,
 															},
 														},
@@ -1769,13 +1769,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 23,
+																Column: 19,
 																Line:   23,
 															},
 															File:   "influxdb.flux",
 															Source: "\"\"",
 															Start: ast.Position{
-																Column: 21,
+																Column: 17,
 																Line:   23,
 															},
 														},
@@ -1790,13 +1790,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
+															Column: 35,
 															Line:   23,
 														},
 														File:   "influxdb.flux",
 														Source: "token != \"\"",
 														Start: ast.Position{
-															Column: 28,
+															Column: 24,
 															Line:   23,
 														},
 													},
@@ -1807,13 +1807,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 33,
+																Column: 29,
 																Line:   23,
 															},
 															File:   "influxdb.flux",
 															Source: "token",
 															Start: ast.Position{
-																Column: 28,
+																Column: 24,
 																Line:   23,
 															},
 														},
@@ -1827,13 +1827,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 39,
+																Column: 35,
 																Line:   23,
 															},
 															File:   "influxdb.flux",
 															Source: "\"\"",
 															Start: ast.Position{
-																Column: 37,
+																Column: 33,
 																Line:   23,
 															},
 														},
@@ -1855,9 +1855,9 @@ var pkgAST = &ast.Package{
 												Line:   32,
 											},
 											File:   "influxdb.flux",
-											Source: "if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\n    else if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)",
+											Source: "if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\nelse if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)",
 											Start: ast.Position{
-												Column: 10,
+												Column: 6,
 												Line:   21,
 											},
 										},
@@ -2085,13 +2085,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 33,
 													Line:   21,
 												},
 												File:   "influxdb.flux",
 												Source: "org != \"\" and host != \"\"",
 												Start: ast.Position{
-													Column: 13,
+													Column: 9,
 													Line:   21,
 												},
 											},
@@ -2102,13 +2102,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
+														Column: 18,
 														Line:   21,
 													},
 													File:   "influxdb.flux",
 													Source: "org != \"\"",
 													Start: ast.Position{
-														Column: 13,
+														Column: 9,
 														Line:   21,
 													},
 												},
@@ -2119,13 +2119,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 16,
+															Column: 12,
 															Line:   21,
 														},
 														File:   "influxdb.flux",
 														Source: "org",
 														Start: ast.Position{
-															Column: 13,
+															Column: 9,
 															Line:   21,
 														},
 													},
@@ -2139,13 +2139,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 22,
+															Column: 18,
 															Line:   21,
 														},
 														File:   "influxdb.flux",
 														Source: "\"\"",
 														Start: ast.Position{
-															Column: 20,
+															Column: 16,
 															Line:   21,
 														},
 													},
@@ -2160,13 +2160,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 37,
+														Column: 33,
 														Line:   21,
 													},
 													File:   "influxdb.flux",
 													Source: "host != \"\"",
 													Start: ast.Position{
-														Column: 27,
+														Column: 23,
 														Line:   21,
 													},
 												},
@@ -2177,13 +2177,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 31,
+															Column: 27,
 															Line:   21,
 														},
 														File:   "influxdb.flux",
 														Source: "host",
 														Start: ast.Position{
-															Column: 27,
+															Column: 23,
 															Line:   21,
 														},
 													},
@@ -2197,13 +2197,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 37,
+															Column: 33,
 															Line:   21,
 														},
 														File:   "influxdb.flux",
 														Source: "\"\"",
 														Start: ast.Position{
-															Column: 35,
+															Column: 31,
 															Line:   21,
 														},
 													},
@@ -2225,9 +2225,9 @@ var pkgAST = &ast.Package{
 											Line:   32,
 										},
 										File:   "influxdb.flux",
-										Source: "if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\n    else if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\n    else if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)",
+										Source: "if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\nelse if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\nelse if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)",
 										Start: ast.Position{
-											Column: 10,
+											Column: 6,
 											Line:   19,
 										},
 									},
@@ -2455,13 +2455,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 38,
+												Column: 34,
 												Line:   19,
 											},
 											File:   "influxdb.flux",
 											Source: "org != \"\" and token != \"\"",
 											Start: ast.Position{
-												Column: 13,
+												Column: 9,
 												Line:   19,
 											},
 										},
@@ -2472,13 +2472,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 22,
+													Column: 18,
 													Line:   19,
 												},
 												File:   "influxdb.flux",
 												Source: "org != \"\"",
 												Start: ast.Position{
-													Column: 13,
+													Column: 9,
 													Line:   19,
 												},
 											},
@@ -2489,13 +2489,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 16,
+														Column: 12,
 														Line:   19,
 													},
 													File:   "influxdb.flux",
 													Source: "org",
 													Start: ast.Position{
-														Column: 13,
+														Column: 9,
 														Line:   19,
 													},
 												},
@@ -2509,13 +2509,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
+														Column: 18,
 														Line:   19,
 													},
 													File:   "influxdb.flux",
 													Source: "\"\"",
 													Start: ast.Position{
-														Column: 20,
+														Column: 16,
 														Line:   19,
 													},
 												},
@@ -2530,13 +2530,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 38,
+													Column: 34,
 													Line:   19,
 												},
 												File:   "influxdb.flux",
 												Source: "token != \"\"",
 												Start: ast.Position{
-													Column: 27,
+													Column: 23,
 													Line:   19,
 												},
 											},
@@ -2547,13 +2547,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 32,
+														Column: 28,
 														Line:   19,
 													},
 													File:   "influxdb.flux",
 													Source: "token",
 													Start: ast.Position{
-														Column: 27,
+														Column: 23,
 														Line:   19,
 													},
 												},
@@ -2567,13 +2567,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 38,
+														Column: 34,
 														Line:   19,
 													},
 													File:   "influxdb.flux",
 													Source: "\"\"",
 													Start: ast.Position{
-														Column: 36,
+														Column: 32,
 														Line:   19,
 													},
 												},
@@ -2595,7 +2595,7 @@ var pkgAST = &ast.Package{
 										Line:   32,
 									},
 									File:   "influxdb.flux",
-									Source: "if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\n    else if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\n    else if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\n    else if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\n    else if org != \"\" then\n        influxdb.from(bucket, org)\n    else if host != \"\" then\n        influxdb.from(bucket, host)\n    else if token != \"\" then\n        influxdb.from(bucket, token)\n    else\n        influxdb.from(bucket)",
+									Source: "if org != \"\" and host != \"\" and token != \"\" then\n        influxdb.from(bucket, org, host, token)\nelse if org != \"\" and token != \"\" then\n        influxdb.from(bucket, org, token)\nelse if org != \"\" and host != \"\" then\n        influxdb.from(bucket, org, host)\nelse if host != \"\" and token != \"\" then\n        influxdb.from(bucket, host, token)\nelse if org != \"\" then\n        influxdb.from(bucket, org)\nelse if host != \"\" then\n        influxdb.from(bucket, host)\nelse if token != \"\" then\n        influxdb.from(bucket, token)\nelse\n        influxdb.from(bucket)",
 									Start: ast.Position{
 										Column: 14,
 										Line:   17,
@@ -3664,7 +3664,7 @@ var pkgAST = &ast.Package{
 						Line:   82,
 					},
 					File:   "influxdb.flux",
-					Source: "select = (from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(\n        bucket,\n        start,\n        stop,\n        org,\n        host,\n        token,\n    )\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n    nfields = length(arr: fields)\n    fn = if nfields == 0 then\n        (r) => true\n    else if nfields == 1 then\n        (r) => r._field == fields[0]\n    else if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\n    else if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
+					Source: "select = (from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(\n        bucket,\n        start,\n        stop,\n        org,\n        host,\n        token,\n    )\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n    nfields = length(arr: fields)\n    fn = if nfields == 0 then\n        (r) => true\nelse if nfields == 1 then\n        (r) => r._field == fields[0]\nelse if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\nelse if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   50,
@@ -3701,7 +3701,7 @@ var pkgAST = &ast.Package{
 							Line:   82,
 						},
 						File:   "influxdb.flux",
-						Source: "(from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(\n        bucket,\n        start,\n        stop,\n        org,\n        host,\n        token,\n    )\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n    nfields = length(arr: fields)\n    fn = if nfields == 0 then\n        (r) => true\n    else if nfields == 1 then\n        (r) => r._field == fields[0]\n    else if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\n    else if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
+						Source: "(from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(\n        bucket,\n        start,\n        stop,\n        org,\n        host,\n        token,\n    )\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n    nfields = length(arr: fields)\n    fn = if nfields == 0 then\n        (r) => true\nelse if nfields == 1 then\n        (r) => r._field == fields[0]\nelse if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\nelse if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
 						Start: ast.Position{
 							Column: 10,
 							Line:   50,
@@ -3718,7 +3718,7 @@ var pkgAST = &ast.Package{
 								Line:   82,
 							},
 							File:   "influxdb.flux",
-							Source: "{\n    bucket = from\n    tables = _from(\n        bucket,\n        start,\n        stop,\n        org,\n        host,\n        token,\n    )\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n    nfields = length(arr: fields)\n    fn = if nfields == 0 then\n        (r) => true\n    else if nfields == 1 then\n        (r) => r._field == fields[0]\n    else if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\n    else if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
+							Source: "{\n    bucket = from\n    tables = _from(\n        bucket,\n        start,\n        stop,\n        org,\n        host,\n        token,\n    )\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n    nfields = length(arr: fields)\n    fn = if nfields == 0 then\n        (r) => true\nelse if nfields == 1 then\n        (r) => r._field == fields[0]\nelse if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\nelse if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
 							Start: ast.Position{
 								Column: 99,
 								Line:   50,
@@ -4685,7 +4685,7 @@ var pkgAST = &ast.Package{
 									Line:   76,
 								},
 								File:   "influxdb.flux",
-								Source: "fn = if nfields == 0 then\n        (r) => true\n    else if nfields == 1 then\n        (r) => r._field == fields[0]\n    else if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\n    else if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)",
+								Source: "fn = if nfields == 0 then\n        (r) => true\nelse if nfields == 1 then\n        (r) => r._field == fields[0]\nelse if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\nelse if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)",
 								Start: ast.Position{
 									Column: 5,
 									Line:   63,
@@ -5001,9 +5001,9 @@ var pkgAST = &ast.Package{
 															Line:   76,
 														},
 														File:   "influxdb.flux",
-														Source: "if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)",
+														Source: "if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)",
 														Start: ast.Position{
-															Column: 10,
+															Column: 6,
 															Line:   73,
 														},
 													},
@@ -5826,13 +5826,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 25,
+																Column: 21,
 																Line:   73,
 															},
 															File:   "influxdb.flux",
 															Source: "nfields == 5",
 															Start: ast.Position{
-																Column: 13,
+																Column: 9,
 																Line:   73,
 															},
 														},
@@ -5843,13 +5843,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 20,
+																	Column: 16,
 																	Line:   73,
 																},
 																File:   "influxdb.flux",
 																Source: "nfields",
 																Start: ast.Position{
-																	Column: 13,
+																	Column: 9,
 																	Line:   73,
 																},
 															},
@@ -5863,13 +5863,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 25,
+																	Column: 21,
 																	Line:   73,
 																},
 																File:   "influxdb.flux",
 																Source: "5",
 																Start: ast.Position{
-																	Column: 24,
+																	Column: 20,
 																	Line:   73,
 																},
 															},
@@ -5890,9 +5890,9 @@ var pkgAST = &ast.Package{
 														Line:   76,
 													},
 													File:   "influxdb.flux",
-													Source: "if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)",
+													Source: "if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)",
 													Start: ast.Position{
-														Column: 10,
+														Column: 6,
 														Line:   71,
 													},
 												},
@@ -6561,13 +6561,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 25,
+															Column: 21,
 															Line:   71,
 														},
 														File:   "influxdb.flux",
 														Source: "nfields == 4",
 														Start: ast.Position{
-															Column: 13,
+															Column: 9,
 															Line:   71,
 														},
 													},
@@ -6578,13 +6578,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 20,
+																Column: 16,
 																Line:   71,
 															},
 															File:   "influxdb.flux",
 															Source: "nfields",
 															Start: ast.Position{
-																Column: 13,
+																Column: 9,
 																Line:   71,
 															},
 														},
@@ -6598,13 +6598,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 25,
+																Column: 21,
 																Line:   71,
 															},
 															File:   "influxdb.flux",
 															Source: "4",
 															Start: ast.Position{
-																Column: 24,
+																Column: 20,
 																Line:   71,
 															},
 														},
@@ -6625,9 +6625,9 @@ var pkgAST = &ast.Package{
 													Line:   76,
 												},
 												File:   "influxdb.flux",
-												Source: "if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)",
+												Source: "if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)",
 												Start: ast.Position{
-													Column: 10,
+													Column: 6,
 													Line:   69,
 												},
 											},
@@ -7142,13 +7142,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 25,
+														Column: 21,
 														Line:   69,
 													},
 													File:   "influxdb.flux",
 													Source: "nfields == 3",
 													Start: ast.Position{
-														Column: 13,
+														Column: 9,
 														Line:   69,
 													},
 												},
@@ -7159,13 +7159,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 20,
+															Column: 16,
 															Line:   69,
 														},
 														File:   "influxdb.flux",
 														Source: "nfields",
 														Start: ast.Position{
-															Column: 13,
+															Column: 9,
 															Line:   69,
 														},
 													},
@@ -7179,13 +7179,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 25,
+															Column: 21,
 															Line:   69,
 														},
 														File:   "influxdb.flux",
 														Source: "3",
 														Start: ast.Position{
-															Column: 24,
+															Column: 20,
 															Line:   69,
 														},
 													},
@@ -7206,9 +7206,9 @@ var pkgAST = &ast.Package{
 												Line:   76,
 											},
 											File:   "influxdb.flux",
-											Source: "if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\n    else if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)",
+											Source: "if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\nelse if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)",
 											Start: ast.Position{
-												Column: 10,
+												Column: 6,
 												Line:   67,
 											},
 										},
@@ -7569,13 +7569,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 25,
+													Column: 21,
 													Line:   67,
 												},
 												File:   "influxdb.flux",
 												Source: "nfields == 2",
 												Start: ast.Position{
-													Column: 13,
+													Column: 9,
 													Line:   67,
 												},
 											},
@@ -7586,13 +7586,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 20,
+														Column: 16,
 														Line:   67,
 													},
 													File:   "influxdb.flux",
 													Source: "nfields",
 													Start: ast.Position{
-														Column: 13,
+														Column: 9,
 														Line:   67,
 													},
 												},
@@ -7606,13 +7606,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 25,
+														Column: 21,
 														Line:   67,
 													},
 													File:   "influxdb.flux",
 													Source: "2",
 													Start: ast.Position{
-														Column: 24,
+														Column: 20,
 														Line:   67,
 													},
 												},
@@ -7633,9 +7633,9 @@ var pkgAST = &ast.Package{
 											Line:   76,
 										},
 										File:   "influxdb.flux",
-										Source: "if nfields == 1 then\n        (r) => r._field == fields[0]\n    else if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\n    else if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)",
+										Source: "if nfields == 1 then\n        (r) => r._field == fields[0]\nelse if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\nelse if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)",
 										Start: ast.Position{
-											Column: 10,
+											Column: 6,
 											Line:   65,
 										},
 									},
@@ -7842,13 +7842,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
+												Column: 21,
 												Line:   65,
 											},
 											File:   "influxdb.flux",
 											Source: "nfields == 1",
 											Start: ast.Position{
-												Column: 13,
+												Column: 9,
 												Line:   65,
 											},
 										},
@@ -7859,13 +7859,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 20,
+													Column: 16,
 													Line:   65,
 												},
 												File:   "influxdb.flux",
 												Source: "nfields",
 												Start: ast.Position{
-													Column: 13,
+													Column: 9,
 													Line:   65,
 												},
 											},
@@ -7879,13 +7879,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 25,
+													Column: 21,
 													Line:   65,
 												},
 												File:   "influxdb.flux",
 												Source: "1",
 												Start: ast.Position{
-													Column: 24,
+													Column: 20,
 													Line:   65,
 												},
 											},
@@ -7906,7 +7906,7 @@ var pkgAST = &ast.Package{
 										Line:   76,
 									},
 									File:   "influxdb.flux",
-									Source: "if nfields == 0 then\n        (r) => true\n    else if nfields == 1 then\n        (r) => r._field == fields[0]\n    else if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\n    else if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n    else if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n    else if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n    else\n        (r) => contains(value: r._field, set: fields)",
+									Source: "if nfields == 0 then\n        (r) => true\nelse if nfields == 1 then\n        (r) => r._field == fields[0]\nelse if nfields == 2 then\n        (r) => r._field == fields[0] or r._field == fields[1]\nelse if nfields == 3 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\nelse if nfields == 4 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\nelse if nfields == 5 then\n        (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\nelse\n        (r) => contains(value: r._field, set: fields)",
 									Start: ast.Position{
 										Column: 10,
 										Line:   63,

@@ -214,7 +214,6 @@ impl Formatter {
                 }
             }
         }
-
         for (i, value) in n.imports.iter().enumerate() {
             if i != 0 {
                 self.write_rune(sep)
@@ -226,15 +225,13 @@ impl Formatter {
             self.write_rune(sep);
             self.write_rune(sep);
         }
-
         let mut prev: i8 = -1;
         let mut previous_location: i32 = -1;
         for (i, stmt) in (&n.body).iter().enumerate() {
-            println!("I: {}", i);
             let cur = stmt.typ();
             if i != 0 {
                 let current_location: i32 = stmt.base().location.start.line as i32;
-                println!("LOCATIONS: {} {}", current_location, previous_location);
+                //compare the line position of adjacent lines to preserve formatted double new lines
                 let line_gap = current_location - previous_location;
                 self.write_rune(sep);
                 // separate different statements with double newline or statements with comments
@@ -247,7 +244,6 @@ impl Formatter {
             self.format_node(&Node::from_stmt(stmt));
             prev = cur;
         }
-
         if !n.eof.is_empty() {
             self.write_rune(sep);
             self.set_indent(0);
@@ -733,19 +729,16 @@ impl Formatter {
         if !n.body.is_empty() {
             self.indent()
         }
-        println!("We are here!");
-
         let mut prev: i8 = -1;
         let mut previous_location: i32 = -1;
         for (i, stmt) in n.body.iter().enumerate() {
-            println!("I: {}", i);
             let cur = stmt.typ();
             self.write_rune(sep);
             if i != 0 {
                 let current_location: i32 = stmt.base().location.start.line as i32;
-                println!("LOCATIONS: {} {}", current_location, previous_location);
+                //compare the line position of adjacent lines to preserve formatted double new lines
                 let line_gap = current_location - previous_location;
-                // separate different statements with double newline or statements with comments
+                // separate different statements with double newline or statements with comments and preserve double newline format
                 if line_gap > 1 || cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
                     self.write_rune(sep);
                 }

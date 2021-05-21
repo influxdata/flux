@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   224,
 				},
 				File:   "geo.flux",
-				Source: "package geo\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\n\n// Units\noption units = {\n    distance: \"km\",\n}\n\n//\n// Builtin GIS functions\n//\n// Returns boolean whether the region contains specified geometry.\nbuiltin stContains : (region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record\n\n// Returns distance from given region to specified geometry.\nbuiltin stDistance : (region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record\n\n// Returns length of a curve.\nbuiltin stLength : (geometry: A, units: {distance: string}) => float where A: Record\n\n//\n// Flux GIS ST functions\n//\nST_Contains = (region, geometry, units=units) => stContains(region: region, geometry: geometry, units: units)\nST_Distance = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units)\nST_DWithin = (region, geometry, distance, units=units) => stDistance(region: region, geometry: geometry, units: units) <= distance\nST_Intersects = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units) <= 0.0\nST_Length = (geometry, units=units) => stLength(geometry: geometry, units: units)\n\n// Non-standard\nST_LineString = (tables=<-) => tables\n    |> reduce(\n        fn: (r, accumulator) => ({\n            __linestring: accumulator.__linestring + (if accumulator.__count > 0 then \", \" else \"\") + string(v: r.lon) + \" \" + string(v: r.lat),\n            __count: accumulator.__count + 1,\n        }),\n        identity: {\n            __linestring: \"\",\n            __count: 0,\n        },\n    )\n    |> drop(columns: [\"__count\"])\n    |> rename(columns: {__linestring: \"st_linestring\"})\n\n//\n// None of the following builtin functions are intended to be used by end users.\n//\n// Calculates grid (set of cell ID tokens) for given region and according to options.\nbuiltin getGrid : (\n    region: T,\n    ?minSize: int,\n    ?maxSize: int,\n    ?level: int,\n    ?maxLevel: int,\n    units: {distance: string},\n) => {level: int, set: [string]} where\n    T: Record\n\n// Returns level of specified cell ID token.\nbuiltin getLevel : (token: string) => int\n\n// Returns cell ID token for given cell or lat/lon point at specified level.\nbuiltin s2CellIDToken : (?token: string, ?point: {lat: float, lon: float}, level: int) => string\n\n// Returns lat/lon coordinates of given cell ID token.\nbuiltin s2CellLatLon : (token: string) => {lat: float, lon: float}\n\n//\n// Flux functions\n//\n// Gets level of cell ID tag `s2cellID` from the first record from the first table in the stream.\n_detectLevel = (tables=<-) => {\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\n    else\n        666\n\n    return _level\n}\n\n//\n// Convenience functions\n//\n// Pivots values to row-wise sets.\ntoRows = (tables=<-) => tables\n    |> v1.fieldsAsCols()\n\n// Shapes data to meet the requirements of the geo package.\n// Renames fields containing latitude and longitude values to lat and lon.\n// Pivots values to row-wise sets.\n// Generates an s2_cell_id tag for each reach using lat and lon values.\n// Adds the s2_cell_id column to the group key.\nshapeData = (tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )\n\n//\n// Filtering functions\n//\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}\n\n// Filters records by specified region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, region) => tables\n    |> filter(fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon}))\n\n// Two-phase filtering by specified region.\n// Checks to see if data is already pivoted and contains a lat column.\n// Returns pivoted data.\nfilterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\", \"tid\"], orderBy=[\"_time\"]) => tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
+				Source: "package geo\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\n\n// Units\noption units = {\n    distance: \"km\",\n}\n\n//\n// Builtin GIS functions\n//\n// Returns boolean whether the region contains specified geometry.\nbuiltin stContains : (region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record\n\n// Returns distance from given region to specified geometry.\nbuiltin stDistance : (region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record\n\n// Returns length of a curve.\nbuiltin stLength : (geometry: A, units: {distance: string}) => float where A: Record\n\n//\n// Flux GIS ST functions\n//\nST_Contains = (region, geometry, units=units) => stContains(region: region, geometry: geometry, units: units)\nST_Distance = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units)\nST_DWithin = (region, geometry, distance, units=units) => stDistance(region: region, geometry: geometry, units: units) <= distance\nST_Intersects = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units) <= 0.0\nST_Length = (geometry, units=units) => stLength(geometry: geometry, units: units)\n\n// Non-standard\nST_LineString = (tables=<-) => tables\n    |> reduce(\n        fn: (r, accumulator) => ({\n            __linestring: accumulator.__linestring + (if accumulator.__count > 0 then \", \" else \"\") + string(v: r.lon) + \" \" + string(v: r.lat),\n            __count: accumulator.__count + 1,\n        }),\n        identity: {\n            __linestring: \"\",\n            __count: 0,\n        },\n    )\n    |> drop(columns: [\"__count\"])\n    |> rename(columns: {__linestring: \"st_linestring\"})\n\n//\n// None of the following builtin functions are intended to be used by end users.\n//\n// Calculates grid (set of cell ID tokens) for given region and according to options.\nbuiltin getGrid : (\n    region: T,\n    ?minSize: int,\n    ?maxSize: int,\n    ?level: int,\n    ?maxLevel: int,\n    units: {distance: string},\n) => {level: int, set: [string]} where\n    T: Record\n\n// Returns level of specified cell ID token.\nbuiltin getLevel : (token: string) => int\n\n// Returns cell ID token for given cell or lat/lon point at specified level.\nbuiltin s2CellIDToken : (?token: string, ?point: {lat: float, lon: float}, level: int) => string\n\n// Returns lat/lon coordinates of given cell ID token.\nbuiltin s2CellLatLon : (token: string) => {lat: float, lon: float}\n\n//\n// Flux functions\n//\n// Gets level of cell ID tag `s2cellID` from the first record from the first table in the stream.\n_detectLevel = (tables=<-) => {\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\nelse\n        666\n\n    return _level\n}\n\n//\n// Convenience functions\n//\n// Pivots values to row-wise sets.\ntoRows = (tables=<-) => tables\n    |> v1.fieldsAsCols()\n\n// Shapes data to meet the requirements of the geo package.\n// Renames fields containing latitude and longitude values to lat and lon.\n// Pivots values to row-wise sets.\n// Generates an s2_cell_id tag for each reach using lat and lon values.\n// Adds the s2_cell_id column to the group key.\nshapeData = (tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )\n\n//\n// Filtering functions\n//\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}\n\n// Filters records by specified region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, region) => tables\n    |> filter(fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon}))\n\n// Two-phase filtering by specified region.\n// Checks to see if data is already pivoted and contains a lat column.\n// Returns pivoted data.\nfilterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\nelse\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\nelse\n        _rows\n\n    return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\nelse\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\", \"tid\"], orderBy=[\"_time\"]) => tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -7200,7 +7200,7 @@ var pkgAST = &ast.Package{
 						Line:   86,
 					},
 					File:   "geo.flux",
-					Source: "_detectLevel = (tables=<-) => {\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\n    else\n        666\n\n    return _level\n}",
+					Source: "_detectLevel = (tables=<-) => {\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\nelse\n        666\n\n    return _level\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   76,
@@ -7237,7 +7237,7 @@ var pkgAST = &ast.Package{
 							Line:   86,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-) => {\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\n    else\n        666\n\n    return _level\n}",
+						Source: "(tables=<-) => {\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\nelse\n        666\n\n    return _level\n}",
 						Start: ast.Position{
 							Column: 16,
 							Line:   76,
@@ -7254,7 +7254,7 @@ var pkgAST = &ast.Package{
 								Line:   86,
 							},
 							File:   "geo.flux",
-							Source: "{\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\n    else\n        666\n\n    return _level\n}",
+							Source: "{\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\nelse\n        666\n\n    return _level\n}",
 							Start: ast.Position{
 								Column: 31,
 								Line:   76,
@@ -7717,7 +7717,7 @@ var pkgAST = &ast.Package{
 									Line:   83,
 								},
 								File:   "geo.flux",
-								Source: "_level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\n    else\n        666",
+								Source: "_level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\nelse\n        666",
 								Start: ast.Position{
 									Column: 5,
 									Line:   80,
@@ -7772,7 +7772,7 @@ var pkgAST = &ast.Package{
 										Line:   83,
 									},
 									File:   "geo.flux",
-									Source: "if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\n    else\n        666",
+									Source: "if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\nelse\n        666",
 									Start: ast.Position{
 										Column: 14,
 										Line:   80,
@@ -8314,7 +8314,7 @@ var pkgAST = &ast.Package{
 						Line:   120,
 					},
 					File:   "geo.flux",
-					Source: "shapeData = (tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
+					Source: "shapeData = (tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
 					Start: ast.Position{
 						Column: 1,
 						Line:   100,
@@ -8351,7 +8351,7 @@ var pkgAST = &ast.Package{
 							Line:   120,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
+						Source: "(tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
 						Start: ast.Position{
 							Column: 13,
 							Line:   100,
@@ -8390,7 +8390,7 @@ var pkgAST = &ast.Package{
 											Line:   110,
 										},
 										File:   "geo.flux",
-										Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )",
+										Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }),\n    )",
 										Start: ast.Position{
 											Column: 55,
 											Line:   100,
@@ -8408,7 +8408,7 @@ var pkgAST = &ast.Package{
 													Line:   109,
 												},
 												File:   "geo.flux",
-												Source: "fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        })",
+												Source: "fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        })",
 												Start: ast.Position{
 													Column: 9,
 													Line:   102,
@@ -8426,7 +8426,7 @@ var pkgAST = &ast.Package{
 														Line:   109,
 													},
 													File:   "geo.flux",
-													Source: "fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        })",
+													Source: "fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        })",
 													Start: ast.Position{
 														Column: 9,
 														Line:   102,
@@ -8465,7 +8465,7 @@ var pkgAST = &ast.Package{
 															Line:   109,
 														},
 														File:   "geo.flux",
-														Source: "(r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        })",
+														Source: "(r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        })",
 														Start: ast.Position{
 															Column: 13,
 															Line:   102,
@@ -8482,7 +8482,7 @@ var pkgAST = &ast.Package{
 																Line:   109,
 															},
 															File:   "geo.flux",
-															Source: "({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        })",
+															Source: "({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        })",
 															Start: ast.Position{
 																Column: 20,
 																Line:   102,
@@ -8499,7 +8499,7 @@ var pkgAST = &ast.Package{
 																	Line:   109,
 																},
 																File:   "geo.flux",
-																Source: "{r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }",
+																Source: "{r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }",
 																Start: ast.Position{
 																	Column: 21,
 																	Line:   102,
@@ -8517,7 +8517,7 @@ var pkgAST = &ast.Package{
 																		Line:   108,
 																	},
 																	File:   "geo.flux",
-																	Source: "_field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field",
+																	Source: "_field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field",
 																	Start: ast.Position{
 																		Column: 13,
 																		Line:   103,
@@ -8614,9 +8614,9 @@ var pkgAST = &ast.Package{
 																				Line:   108,
 																			},
 																			File:   "geo.flux",
-																			Source: "if r._field == lonField then\n                \"lon\"\n            else\n                r._field",
+																			Source: "if r._field == lonField then\n                \"lon\"\nelse\n                r._field",
 																			Start: ast.Position{
-																				Column: 18,
+																				Column: 6,
 																				Line:   105,
 																			},
 																		},
@@ -8646,13 +8646,13 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 41,
+																					Column: 29,
 																					Line:   105,
 																				},
 																				File:   "geo.flux",
 																				Source: "r._field == lonField",
 																				Start: ast.Position{
-																					Column: 21,
+																					Column: 9,
 																					Line:   105,
 																				},
 																			},
@@ -8663,13 +8663,13 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 29,
+																						Column: 17,
 																						Line:   105,
 																					},
 																					File:   "geo.flux",
 																					Source: "r._field",
 																					Start: ast.Position{
-																						Column: 21,
+																						Column: 9,
 																						Line:   105,
 																					},
 																				},
@@ -8681,13 +8681,13 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 22,
+																							Column: 10,
 																							Line:   105,
 																						},
 																						File:   "geo.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 21,
+																							Column: 9,
 																							Line:   105,
 																						},
 																					},
@@ -8700,13 +8700,13 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 29,
+																							Column: 17,
 																							Line:   105,
 																						},
 																						File:   "geo.flux",
 																						Source: "_field",
 																						Start: ast.Position{
-																							Column: 23,
+																							Column: 11,
 																							Line:   105,
 																						},
 																					},
@@ -8722,13 +8722,13 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 41,
+																						Column: 29,
 																						Line:   105,
 																					},
 																					File:   "geo.flux",
 																					Source: "lonField",
 																					Start: ast.Position{
-																						Column: 33,
+																						Column: 21,
 																						Line:   105,
 																					},
 																				},
@@ -8749,7 +8749,7 @@ var pkgAST = &ast.Package{
 																			Line:   108,
 																		},
 																		File:   "geo.flux",
-																		Source: "if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field",
+																		Source: "if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field",
 																		Start: ast.Position{
 																			Column: 21,
 																			Line:   103,
@@ -8956,7 +8956,7 @@ var pkgAST = &ast.Package{
 												Line:   110,
 											},
 											File:   "geo.flux",
-											Source: "map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )",
+											Source: "map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }),\n    )",
 											Start: ast.Position{
 												Column: 8,
 												Line:   101,
@@ -8995,7 +8995,7 @@ var pkgAST = &ast.Package{
 										Line:   111,
 									},
 									File:   "geo.flux",
-									Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()",
+									Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }),\n    )\n    |> toRows()",
 									Start: ast.Position{
 										Column: 55,
 										Line:   100,
@@ -9052,7 +9052,7 @@ var pkgAST = &ast.Package{
 									Line:   116,
 								},
 								File:   "geo.flux",
-								Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )",
+								Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )",
 								Start: ast.Position{
 									Column: 55,
 									Line:   100,
@@ -9697,7 +9697,7 @@ var pkgAST = &ast.Package{
 								Line:   120,
 							},
 							File:   "geo.flux",
-							Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
+							Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\nelse if r._field == lonField then\n                \"lon\"\nelse\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
 							Start: ast.Position{
 								Column: 55,
 								Line:   100,
@@ -10124,7 +10124,7 @@ var pkgAST = &ast.Package{
 						Line:   150,
 					},
 					File:   "geo.flux",
-					Source: "gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
+					Source: "gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   128,
@@ -10161,7 +10161,7 @@ var pkgAST = &ast.Package{
 							Line:   150,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
+						Source: "(tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
 						Start: ast.Position{
 							Column: 14,
 							Line:   128,
@@ -10178,7 +10178,7 @@ var pkgAST = &ast.Package{
 								Line:   150,
 							},
 							File:   "geo.flux",
-							Source: "{\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
+							Source: "{\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
 							Start: ast.Position{
 								Column: 102,
 								Line:   128,
@@ -10195,7 +10195,7 @@ var pkgAST = &ast.Package{
 									Line:   133,
 								},
 								File:   "geo.flux",
-								Source: "_s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel",
+								Source: "_s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel",
 								Start: ast.Position{
 									Column: 5,
 									Line:   129,
@@ -10250,7 +10250,7 @@ var pkgAST = &ast.Package{
 										Line:   133,
 									},
 									File:   "geo.flux",
-									Source: "if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel",
+									Source: "if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel",
 									Start: ast.Position{
 										Column: 22,
 										Line:   129,
@@ -10883,7 +10883,7 @@ var pkgAST = &ast.Package{
 										Line:   149,
 									},
 									File:   "geo.flux",
-									Source: "tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
+									Source: "tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
 									Start: ast.Position{
 										Column: 12,
 										Line:   143,
@@ -10901,7 +10901,7 @@ var pkgAST = &ast.Package{
 												Line:   148,
 											},
 											File:   "geo.flux",
-											Source: "fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
+											Source: "fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 											Start: ast.Position{
 												Column: 13,
 												Line:   145,
@@ -10919,7 +10919,7 @@ var pkgAST = &ast.Package{
 													Line:   148,
 												},
 												File:   "geo.flux",
-												Source: "fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
+												Source: "fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 												Start: ast.Position{
 													Column: 13,
 													Line:   145,
@@ -10958,7 +10958,7 @@ var pkgAST = &ast.Package{
 														Line:   148,
 													},
 													File:   "geo.flux",
-													Source: "(r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
+													Source: "(r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 													Start: ast.Position{
 														Column: 17,
 														Line:   145,
@@ -11423,7 +11423,7 @@ var pkgAST = &ast.Package{
 															Line:   148,
 														},
 														File:   "geo.flux",
-														Source: "if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
+														Source: "if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 														Start: ast.Position{
 															Column: 24,
 															Line:   145,
@@ -11839,7 +11839,7 @@ var pkgAST = &ast.Package{
 											Line:   149,
 										},
 										File:   "geo.flux",
-										Source: "filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
+										Source: "filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
 										Start: ast.Position{
 											Column: 12,
 											Line:   144,
@@ -11878,7 +11878,7 @@ var pkgAST = &ast.Package{
 									Line:   149,
 								},
 								File:   "geo.flux",
-								Source: "return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
+								Source: "return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\nelse\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
 								Start: ast.Position{
 									Column: 5,
 									Line:   143,
@@ -13056,7 +13056,7 @@ var pkgAST = &ast.Package{
 						Line:   191,
 					},
 					File:   "geo.flux",
-					Source: "filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}",
+					Source: "filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\nelse\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\nelse\n        _rows\n\n    return _result\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   160,
@@ -13093,7 +13093,7 @@ var pkgAST = &ast.Package{
 							Line:   191,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}",
+						Source: "(tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\nelse\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\nelse\n        _rows\n\n    return _result\n}",
 						Start: ast.Position{
 							Column: 14,
 							Line:   160,
@@ -13110,7 +13110,7 @@ var pkgAST = &ast.Package{
 								Line:   191,
 							},
 							File:   "geo.flux",
-							Source: "{\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}",
+							Source: "{\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\nelse\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\nelse\n        _rows\n\n    return _result\n}",
 							Start: ast.Position{
 								Column: 102,
 								Line:   160,
@@ -13651,7 +13651,7 @@ var pkgAST = &ast.Package{
 									Line:   183,
 								},
 								File:   "geo.flux",
-								Source: "_rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()",
+								Source: "_rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\nelse\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()",
 								Start: ast.Position{
 									Column: 5,
 									Line:   165,
@@ -14128,7 +14128,7 @@ var pkgAST = &ast.Package{
 										Line:   183,
 									},
 									File:   "geo.flux",
-									Source: "if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()",
+									Source: "if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\nelse\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()",
 									Start: ast.Position{
 										Column: 13,
 										Line:   165,
@@ -14707,7 +14707,7 @@ var pkgAST = &ast.Package{
 									Line:   188,
 								},
 								File:   "geo.flux",
-								Source: "_result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows",
+								Source: "_result = if strict then\n        _rows\n            |> strictFilter(region)\nelse\n        _rows",
 								Start: ast.Position{
 									Column: 5,
 									Line:   184,
@@ -14762,7 +14762,7 @@ var pkgAST = &ast.Package{
 										Line:   188,
 									},
 									File:   "geo.flux",
-									Source: "if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows",
+									Source: "if strict then\n        _rows\n            |> strictFilter(region)\nelse\n        _rows",
 									Start: ast.Position{
 										Column: 15,
 										Line:   184,
@@ -15418,7 +15418,7 @@ var pkgAST = &ast.Package{
 						Line:   219,
 					},
 					File:   "geo.flux",
-					Source: "groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
+					Source: "groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\nelse\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   199,
@@ -15455,7 +15455,7 @@ var pkgAST = &ast.Package{
 							Line:   219,
 						},
 						File:   "geo.flux",
-						Source: "(tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
+						Source: "(tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\nelse\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
 						Start: ast.Position{
 							Column: 15,
 							Line:   199,
@@ -15472,7 +15472,7 @@ var pkgAST = &ast.Package{
 								Line:   219,
 							},
 							File:   "geo.flux",
-							Source: "{\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
+							Source: "{\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\nelse\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
 							Start: ast.Position{
 								Column: 66,
 								Line:   199,
@@ -15489,7 +15489,7 @@ var pkgAST = &ast.Package{
 									Line:   204,
 								},
 								File:   "geo.flux",
-								Source: "_s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel",
+								Source: "_s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel",
 								Start: ast.Position{
 									Column: 5,
 									Line:   200,
@@ -15544,7 +15544,7 @@ var pkgAST = &ast.Package{
 										Line:   204,
 									},
 									File:   "geo.flux",
-									Source: "if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel",
+									Source: "if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\nelse\n        s2cellIDLevel",
 									Start: ast.Position{
 										Column: 22,
 										Line:   200,
@@ -15718,7 +15718,7 @@ var pkgAST = &ast.Package{
 									Line:   215,
 								},
 								File:   "geo.flux",
-								Source: "_prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})",
+								Source: "_prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\nelse\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})",
 								Start: ast.Position{
 									Column: 5,
 									Line:   205,
@@ -16615,7 +16615,7 @@ var pkgAST = &ast.Package{
 										Line:   215,
 									},
 									File:   "geo.flux",
-									Source: "if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})",
+									Source: "if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\nelse\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})",
 									Start: ast.Position{
 										Column: 17,
 										Line:   205,

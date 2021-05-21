@@ -124,10 +124,10 @@ quantile = (q, tables=<-, method="exact_mean") =>
     if q <= 1.0 and q >= 0.0 then
         tables
             |> universe.quantile(q: q, method: method)
-    else if q < 0.0 then
+else if q < 0.0 then
         tables
             |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)
-    else
+else
         tables
             |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)
 join = experimental.join

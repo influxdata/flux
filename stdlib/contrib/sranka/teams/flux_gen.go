@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   62,
 				},
 				File:   "teams.flux",
-				Source: "package teams\n\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// `summaryCutoff` is used \noption summaryCutoff = 70\n\n// `message` sends a single message to Microsoft Teams via incoming web hook.\n// `url` - string - incoming web hook URL\n// `title` - string - Message card title.\n// `text` - string - Message card text.\n// `summary` - string - Message card summary, it can be an empty string to generate summary from text.\nmessage = (url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\n    else\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n    else\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}\n\n// `endpoint` creates the endpoint for the Microsoft Teams external service.\n// `url` - string - URL of the incoming web hook.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `title`, `text`, and `summary`, as defined in the `message` function arguments.\nendpoint = (url) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package teams\n\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// `summaryCutoff` is used \noption summaryCutoff = 70\n\n// `message` sends a single message to Microsoft Teams via incoming web hook.\n// `url` - string - incoming web hook URL\n// `title` - string - Message card title.\n// `text` - string - Message card text.\n// `summary` - string - Message card summary, it can be an empty string to generate summary from text.\nmessage = (url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\nelse\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}\n\n// `endpoint` creates the endpoint for the Microsoft Teams external service.\n// `url` - string - URL of the incoming web hook.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `title`, `text`, and `summary`, as defined in the `message` function arguments.\nendpoint = (url) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -117,7 +117,7 @@ var pkgAST = &ast.Package{
 						Line:   40,
 					},
 					File:   "teams.flux",
-					Source: "message = (url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\n    else\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n    else\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+					Source: "message = (url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\nelse\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -154,7 +154,7 @@ var pkgAST = &ast.Package{
 							Line:   40,
 						},
 						File:   "teams.flux",
-						Source: "(url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\n    else\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n    else\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+						Source: "(url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\nelse\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 						Start: ast.Position{
 							Column: 11,
 							Line:   16,
@@ -171,7 +171,7 @@ var pkgAST = &ast.Package{
 								Line:   40,
 							},
 							File:   "teams.flux",
-							Source: "{\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\n    else\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n    else\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+							Source: "{\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\nelse\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 							Start: ast.Position{
 								Column: 45,
 								Line:   16,
@@ -303,7 +303,7 @@ var pkgAST = &ast.Package{
 									Line:   26,
 								},
 								File:   "teams.flux",
-								Source: "summary2 = if summary == \"\" then\n        text\n    else\n        summary",
+								Source: "summary2 = if summary == \"\" then\n        text\nelse\n        summary",
 								Start: ast.Position{
 									Column: 5,
 									Line:   23,
@@ -358,7 +358,7 @@ var pkgAST = &ast.Package{
 										Line:   26,
 									},
 									File:   "teams.flux",
-									Source: "if summary == \"\" then\n        text\n    else\n        summary",
+									Source: "if summary == \"\" then\n        text\nelse\n        summary",
 									Start: ast.Position{
 										Column: 16,
 										Line:   23,
@@ -455,7 +455,7 @@ var pkgAST = &ast.Package{
 									Line:   30,
 								},
 								File:   "teams.flux",
-								Source: "shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n    else\n        summary2",
+								Source: "shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2",
 								Start: ast.Position{
 									Column: 5,
 									Line:   27,
@@ -510,7 +510,7 @@ var pkgAST = &ast.Package{
 										Line:   30,
 									},
 									File:   "teams.flux",
-									Source: "if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n    else\n        summary2",
+									Source: "if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2",
 									Start: ast.Position{
 										Column: 20,
 										Line:   27,

@@ -15,13 +15,13 @@ statusFromLevel = (level) => {
     lvl = strings.toLower(v: level)
     sev = if lvl == "warn" then
         "warning"
-    else if lvl == "crit" then
+else if lvl == "crit" then
         "critical"
-    else if lvl == "info" then
+else if lvl == "info" then
         "ok"
-    else if lvl == "ok" then
+else if lvl == "ok" then
         "ok"
-    else
+else
         "critical"
 
     return sev

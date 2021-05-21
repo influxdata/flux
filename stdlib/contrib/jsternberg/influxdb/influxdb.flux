@@ -16,19 +16,19 @@ builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Re
 from = (bucket, start, stop=now(), org="", host="", token="") => {
     source = if org != "" and host != "" and token != "" then
         influxdb.from(bucket, org, host, token)
-    else if org != "" and token != "" then
+else if org != "" and token != "" then
         influxdb.from(bucket, org, token)
-    else if org != "" and host != "" then
+else if org != "" and host != "" then
         influxdb.from(bucket, org, host)
-    else if host != "" and token != "" then
+else if host != "" and token != "" then
         influxdb.from(bucket, host, token)
-    else if org != "" then
+else if org != "" then
         influxdb.from(bucket, org)
-    else if host != "" then
+else if host != "" then
         influxdb.from(bucket, host)
-    else if token != "" then
+else if token != "" then
         influxdb.from(bucket, token)
-    else
+else
         influxdb.from(bucket)
 
     return source |> range(start, stop)
@@ -62,17 +62,17 @@ select = (from, start, stop=now(), m, fields=[], org="", host="", token="", wher
     nfields = length(arr: fields)
     fn = if nfields == 0 then
         (r) => true
-    else if nfields == 1 then
+else if nfields == 1 then
         (r) => r._field == fields[0]
-    else if nfields == 2 then
+else if nfields == 2 then
         (r) => r._field == fields[0] or r._field == fields[1]
-    else if nfields == 3 then
+else if nfields == 3 then
         (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]
-    else if nfields == 4 then
+else if nfields == 4 then
         (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]
-    else if nfields == 5 then
+else if nfields == 5 then
         (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]
-    else
+else
         (r) => contains(value: r._field, set: fields)
 
     return tables

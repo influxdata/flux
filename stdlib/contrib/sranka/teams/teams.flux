@@ -22,11 +22,11 @@ message = (url, title, text, summary="") => {
     // using string body, object cannot be used because '@' is an illegal character in the object property key
     summary2 = if summary == "" then
         text
-    else
+else
         summary
     shortSummary = if strings.strlen(v: summary2) > summaryCutoff then
         "${strings.substring(v: summary2, start: 0, end: summaryCutoff)}..."
-    else
+else
         summary2
     body = "{
 \"@type\": \"MessageCard\",
