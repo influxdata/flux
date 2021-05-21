@@ -312,6 +312,7 @@ left = from(bucket: "test")
             // strange place for a comment
             : ["user"],
     )
+
 right = from(bucket: "test")
     |> range(
         start: 2018-05-22T19:53:00Z,
@@ -340,6 +341,7 @@ right = from(bucket: "test")
     )
 
 join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
+
 from(bucket, _option
     // friends
     // stick together
