@@ -726,7 +726,7 @@ impl Formatter {
         self.write_rune('}')
     }
 
-    fn statement_list(&mut self, n: &Vec<Statement>) {
+    fn statement_list(&mut self, n: &[Statement]) { // &Vec<Statement>
         let mut prev: i8 = -1;
         let mut previous_location: i32 = -1;
         let sep = '\n';
