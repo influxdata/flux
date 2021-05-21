@@ -16,7 +16,11 @@ fn assert_unchanged(script: &str) {
 
 fn assert_format(script: &str, expected: &str) {
     let output = format(script).unwrap();
-    assert_eq!(expected, output);
+    assert_eq!(
+        expected, output,
+        "\n EXPECTED: \n {} \n OUTPUT: \n {} \n",
+        expected, output
+    );
 }
 
 #[test]
@@ -820,6 +824,7 @@ left = from(bucket: "test")
             // strange place for a comment
             : ["user"],
     )
+
 right = from(bucket: "test")
     |> range(
         start: 2018-05-22T19:53:00Z,
@@ -848,6 +853,7 @@ right = from(bucket: "test")
     )
 
 join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
+
 from(bucket, _option
     // friends
     // stick together
