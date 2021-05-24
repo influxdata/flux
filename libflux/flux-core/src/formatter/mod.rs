@@ -1,6 +1,6 @@
 //! Source code formatter.
 
-use crate::ast::{self, File, Statement, walk::Node};
+use crate::ast::{self, walk::Node, File, Statement};
 use crate::parser::parse_string;
 use crate::Error;
 
@@ -716,7 +716,7 @@ impl Formatter {
         self.write_rune(sep);
         // format the block statements
         self.statement_list(&n.body);
-        
+
         if !n.body.is_empty() {
             self.write_rune(sep);
             self.unindent();
@@ -726,7 +726,8 @@ impl Formatter {
         self.write_rune('}')
     }
 
-    fn statement_list(&mut self, n: &[Statement]) { // &Vec<Statement>
+    fn statement_list(&mut self, n: &[Statement]) {
+        // &Vec<Statement>
         let mut prev: i8 = -1;
         let mut previous_location: i32 = -1;
         let sep = '\n';
