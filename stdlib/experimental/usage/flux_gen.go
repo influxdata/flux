@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   50,
 				},
 				File:   "usage.flux",
-				Source: "package usage\n\n\nimport \"csv\"\nimport \"experimental/influxdb\"\nimport \"experimental/json\"\nimport \"http\"\n\n// from returns an organization's usage data. The time range to query is\n// bounded by start and stop arguments. Optional orgID, host and token arguments\n// allow cross-org and/or cross-cluster queries. Setting the raw parameter will\n// return raw usage data rather than the downsampled data returned by default.\n// Note that unlike the range function, the stop argument is required here,\n// pending implementation of https://github.com/influxdata/flux/issues/3629.\nfrom = (start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/usage\",\n        host: host,\n        token: token,\n        query: [\n            \"start\": string(v: start),\n             \"stop\": string(v: stop),\n              \"raw\": string(v: raw),\n        ],\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        csv.from(csv: string(v: response.body))\n}\n\n// limits returns an organization's usage limits. Optional orgID, host\n// and token arguments allow cross-org and/or cross-cluster calls.\nlimits = (host=\"\", orgID=\"\", token=\"\") => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/limits\",\n        host: host,\n        token: token,\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        json.parse(data: response.body).limits\n}",
+				Source: "package usage\n\n\nimport \"csv\"\nimport \"experimental/influxdb\"\nimport \"experimental/json\"\nimport \"http\"\n\n// from returns an organization's usage data. The time range to query is\n// bounded by start and stop arguments. Optional orgID, host and token arguments\n// allow cross-org and/or cross-cluster queries. Setting the raw parameter will\n// return raw usage data rather than the downsampled data returned by default.\n// Note that unlike the range function, the stop argument is required here,\n// pending implementation of https://github.com/influxdata/flux/issues/3629.\nfrom = (start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/usage\",\n        host: host,\n        token: token,\n        query: [\n            \"start\": string(v: start),\n             \"stop\": string(v: stop),\n              \"raw\": string(v: raw),\n        ],\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        csv.from(csv: string(v: response.body))\n}\n\n// limits returns an organization's usage limits. Optional orgID, host\n// and token arguments allow cross-org and/or cross-cluster calls.\nlimits = (host=\"\", orgID=\"\", token=\"\") => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/limits\",\n        host: host,\n        token: token,\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        json.parse(data: response.body).limits\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -44,7 +44,7 @@ var pkgAST = &ast.Package{
 						Line:   33,
 					},
 					File:   "usage.flux",
-					Source: "from = (start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/usage\",\n        host: host,\n        token: token,\n        query: [\n            \"start\": string(v: start),\n             \"stop\": string(v: stop),\n              \"raw\": string(v: raw),\n        ],\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        csv.from(csv: string(v: response.body))\n}",
+					Source: "from = (start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/usage\",\n        host: host,\n        token: token,\n        query: [\n            \"start\": string(v: start),\n             \"stop\": string(v: stop),\n              \"raw\": string(v: raw),\n        ],\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        csv.from(csv: string(v: response.body))\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   15,
@@ -81,7 +81,7 @@ var pkgAST = &ast.Package{
 							Line:   33,
 						},
 						File:   "usage.flux",
-						Source: "(start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/usage\",\n        host: host,\n        token: token,\n        query: [\n            \"start\": string(v: start),\n             \"stop\": string(v: stop),\n              \"raw\": string(v: raw),\n        ],\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        csv.from(csv: string(v: response.body))\n}",
+						Source: "(start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/usage\",\n        host: host,\n        token: token,\n        query: [\n            \"start\": string(v: start),\n             \"stop\": string(v: stop),\n              \"raw\": string(v: raw),\n        ],\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        csv.from(csv: string(v: response.body))\n}",
 						Start: ast.Position{
 							Column: 8,
 							Line:   15,
@@ -98,7 +98,7 @@ var pkgAST = &ast.Package{
 								Line:   33,
 							},
 							File:   "usage.flux",
-							Source: "{\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/usage\",\n        host: host,\n        token: token,\n        query: [\n            \"start\": string(v: start),\n             \"stop\": string(v: stop),\n              \"raw\": string(v: raw),\n        ],\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        csv.from(csv: string(v: response.body))\n}",
+							Source: "{\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/usage\",\n        host: host,\n        token: token,\n        query: [\n            \"start\": string(v: start),\n             \"stop\": string(v: stop),\n              \"raw\": string(v: raw),\n        ],\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        csv.from(csv: string(v: response.body))\n}",
 							Start: ast.Position{
 								Column: 65,
 								Line:   15,
@@ -1617,7 +1617,7 @@ var pkgAST = &ast.Package{
 										Line:   32,
 									},
 									File:   "usage.flux",
-									Source: "if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        csv.from(csv: string(v: response.body))",
+									Source: "if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        csv.from(csv: string(v: response.body))",
 									Start: ast.Position{
 										Column: 12,
 										Line:   29,
@@ -2241,7 +2241,7 @@ var pkgAST = &ast.Package{
 									Line:   32,
 								},
 								File:   "usage.flux",
-								Source: "return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        csv.from(csv: string(v: response.body))",
+								Source: "return if response.statusCode > 299 then\n        die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        csv.from(csv: string(v: response.body))",
 								Start: ast.Position{
 									Column: 5,
 									Line:   29,
@@ -2572,7 +2572,7 @@ var pkgAST = &ast.Package{
 						Line:   50,
 					},
 					File:   "usage.flux",
-					Source: "limits = (host=\"\", orgID=\"\", token=\"\") => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/limits\",\n        host: host,\n        token: token,\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        json.parse(data: response.body).limits\n}",
+					Source: "limits = (host=\"\", orgID=\"\", token=\"\") => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/limits\",\n        host: host,\n        token: token,\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        json.parse(data: response.body).limits\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   37,
@@ -2609,7 +2609,7 @@ var pkgAST = &ast.Package{
 							Line:   50,
 						},
 						File:   "usage.flux",
-						Source: "(host=\"\", orgID=\"\", token=\"\") => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/limits\",\n        host: host,\n        token: token,\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        json.parse(data: response.body).limits\n}",
+						Source: "(host=\"\", orgID=\"\", token=\"\") => {\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/limits\",\n        host: host,\n        token: token,\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        json.parse(data: response.body).limits\n}",
 						Start: ast.Position{
 							Column: 10,
 							Line:   37,
@@ -2626,7 +2626,7 @@ var pkgAST = &ast.Package{
 								Line:   50,
 							},
 							File:   "usage.flux",
-							Source: "{\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/limits\",\n        host: host,\n        token: token,\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        json.parse(data: response.body).limits\n}",
+							Source: "{\n    id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n    response = influxdb.api(\n        method: \"get\",\n        path: \"/api/v2/orgs/\" + id + \"/limits\",\n        host: host,\n        token: token,\n    )\n\n    return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        json.parse(data: response.body).limits\n}",
 							Start: ast.Position{
 								Column: 43,
 								Line:   37,
@@ -3609,7 +3609,7 @@ var pkgAST = &ast.Package{
 										Line:   49,
 									},
 									File:   "usage.flux",
-									Source: "if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        json.parse(data: response.body).limits",
+									Source: "if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        json.parse(data: response.body).limits",
 									Start: ast.Position{
 										Column: 12,
 										Line:   46,
@@ -4233,7 +4233,7 @@ var pkgAST = &ast.Package{
 									Line:   49,
 								},
 								File:   "usage.flux",
-								Source: "return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\nelse\n        json.parse(data: response.body).limits",
+								Source: "return if response.statusCode > 299 then\n        die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n        json.parse(data: response.body).limits",
 								Start: ast.Position{
 									Column: 5,
 									Line:   46,

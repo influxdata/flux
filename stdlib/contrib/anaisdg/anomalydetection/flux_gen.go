@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   38,
 				},
 				File:   "mad.flux",
-				Source: "package anomalydetection\n\n\nimport \"math\"\nimport \"experimental\"\n\nmad = (table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode: \"by\")\n    med = data |> median(column: \"_value\")\n\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))\n        |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter at Gaussian distributions k = 1.4826\n    k = 1.4826\n\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med = diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            }),\n        )\n\n    return output\n}",
+				Source: "package anomalydetection\n\n\nimport \"math\"\nimport \"experimental\"\n\nmad = (table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode: \"by\")\n    med = data |> median(column: \"_value\")\n\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))\n        |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter at Gaussian distributions k = 1.4826\n    k = 1.4826\n\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med = diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            }),\n        )\n\n    return output\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -44,7 +44,7 @@ var pkgAST = &ast.Package{
 						Line:   38,
 					},
 					File:   "mad.flux",
-					Source: "mad = (table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode: \"by\")\n    med = data |> median(column: \"_value\")\n\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))\n        |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter at Gaussian distributions k = 1.4826\n    k = 1.4826\n\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med = diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            }),\n        )\n\n    return output\n}",
+					Source: "mad = (table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode: \"by\")\n    med = data |> median(column: \"_value\")\n\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))\n        |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter at Gaussian distributions k = 1.4826\n    k = 1.4826\n\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med = diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            }),\n        )\n\n    return output\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -81,7 +81,7 @@ var pkgAST = &ast.Package{
 							Line:   38,
 						},
 						File:   "mad.flux",
-						Source: "(table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode: \"by\")\n    med = data |> median(column: \"_value\")\n\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))\n        |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter at Gaussian distributions k = 1.4826\n    k = 1.4826\n\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med = diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            }),\n        )\n\n    return output\n}",
+						Source: "(table=<-, threshold=3.0) => {\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode: \"by\")\n    med = data |> median(column: \"_value\")\n\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))\n        |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter at Gaussian distributions k = 1.4826\n    k = 1.4826\n\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med = diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            }),\n        )\n\n    return output\n}",
 						Start: ast.Position{
 							Column: 7,
 							Line:   7,
@@ -98,7 +98,7 @@ var pkgAST = &ast.Package{
 								Line:   38,
 							},
 							File:   "mad.flux",
-							Source: "{\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode: \"by\")\n    med = data |> median(column: \"_value\")\n\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))\n        |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter at Gaussian distributions k = 1.4826\n    k = 1.4826\n\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med = diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            }),\n        )\n\n    return output\n}",
+							Source: "{\n    // MEDiXi = med(x)\n    data = table |> group(columns: [\"_time\"], mode: \"by\")\n    med = data |> median(column: \"_value\")\n\n    // diff = |Xi - MEDiXi| = math.abs(xi-med(xi))\n    diff = join(tables: {data: data, med: med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))\n        |> drop(columns: [\"_start\", \"_stop\", \"_value_med\", \"_value_data\"])\n\n    // The constant k is needed to make the estimator consistent for the parameter of interest.\n    // In the case of the usual parameter at Gaussian distributions k = 1.4826\n    k = 1.4826\n\n    // MAD =  k * MEDi * |Xi - MEDiXi| \n    diff_med = diff\n        |> median(column: \"_value\")\n        |> map(fn: (r) => ({r with MAD: k * r._value}))\n        |> filter(fn: (r) => r.MAD > 0.0)\n    output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            }),\n        )\n\n    return output\n}",
 							Start: ast.Position{
 								Column: 36,
 								Line:   7,
@@ -2630,7 +2630,7 @@ var pkgAST = &ast.Package{
 									Line:   35,
 								},
 								File:   "mad.flux",
-								Source: "output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            }),\n        )",
+								Source: "output = join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            }),\n        )",
 								Start: ast.Position{
 									Column: 5,
 									Line:   26,
@@ -3446,7 +3446,7 @@ var pkgAST = &ast.Package{
 										Line:   35,
 									},
 									File:   "mad.flux",
-									Source: "join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            }),\n        )",
+									Source: "join(tables: {diff: diff, diff_med: diff_med}, on: [\"_time\"], method: \"inner\")\n        |> map(fn: (r) => ({r with _value: r._value_diff / r._value_diff_med}))\n        |> map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            }),\n        )",
 									Start: ast.Position{
 										Column: 14,
 										Line:   26,
@@ -3464,7 +3464,7 @@ var pkgAST = &ast.Package{
 												Line:   34,
 											},
 											File:   "mad.flux",
-											Source: "fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            })",
+											Source: "fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            })",
 											Start: ast.Position{
 												Column: 13,
 												Line:   29,
@@ -3482,7 +3482,7 @@ var pkgAST = &ast.Package{
 													Line:   34,
 												},
 												File:   "mad.flux",
-												Source: "fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            })",
+												Source: "fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            })",
 												Start: ast.Position{
 													Column: 13,
 													Line:   29,
@@ -3521,7 +3521,7 @@ var pkgAST = &ast.Package{
 														Line:   34,
 													},
 													File:   "mad.flux",
-													Source: "(r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            })",
+													Source: "(r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            })",
 													Start: ast.Position{
 														Column: 17,
 														Line:   29,
@@ -3538,7 +3538,7 @@ var pkgAST = &ast.Package{
 															Line:   34,
 														},
 														File:   "mad.flux",
-														Source: "({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            })",
+														Source: "({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            })",
 														Start: ast.Position{
 															Column: 24,
 															Line:   29,
@@ -3555,7 +3555,7 @@ var pkgAST = &ast.Package{
 																Line:   34,
 															},
 															File:   "mad.flux",
-															Source: "{r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            }",
+															Source: "{r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            }",
 															Start: ast.Position{
 																Column: 25,
 																Line:   29,
@@ -3573,7 +3573,7 @@ var pkgAST = &ast.Package{
 																	Line:   33,
 																},
 																File:   "mad.flux",
-																Source: "level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\"",
+																Source: "level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\"",
 																Start: ast.Position{
 																	Column: 17,
 																	Line:   30,
@@ -3630,7 +3630,7 @@ var pkgAST = &ast.Package{
 																		Line:   33,
 																	},
 																	File:   "mad.flux",
-																	Source: "if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\"",
+																	Source: "if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\"",
 																	Start: ast.Position{
 																		Column: 24,
 																		Line:   30,
@@ -3837,7 +3837,7 @@ var pkgAST = &ast.Package{
 											Line:   35,
 										},
 										File:   "mad.flux",
-										Source: "map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\nelse\n                    \"normal\",\n            }),\n        )",
+										Source: "map(\n            fn: (r) => ({r with\n                level: if r._value >= threshold then\n                    \"anomaly\"\n                else\n                    \"normal\",\n            }),\n        )",
 										Start: ast.Position{
 											Column: 12,
 											Line:   28,
