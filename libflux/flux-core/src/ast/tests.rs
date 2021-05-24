@@ -1044,6 +1044,43 @@ fn test_json_test_statement() {
     let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
+
+#[test]
+fn test_json_test_case_statement() {
+    let n = Statement::TestCase(Box::new(TestCaseStmt {
+        base: BaseNode::default(),
+        id: Identifier {
+            base: BaseNode::default(),
+            name: "my_test".to_string(),
+        },
+        extends: None,
+        block: Block {
+            base: BaseNode::default(),
+            lbrace: vec![],
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
+                base: BaseNode::default(),
+                id: Identifier {
+                    base: BaseNode::default(),
+                    name: "a".to_string(),
+                },
+                init: Expression::Integer(IntegerLit {
+                    base: Default::default(),
+                    value: 1,
+                }),
+            }))],
+            rbrace: vec![],
+        },
+    }));
+
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"TestCaseStatement","id":{"name":"my_test"},"block":{"type":"Block","body":[{"type":"VariableAssignment","id":{"name":"a"},"init":{"type":"IntegerLiteral","value":"1"}}]}}"#
+    );
+    let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
+
 /*
 {
     name: "qualified option statement",

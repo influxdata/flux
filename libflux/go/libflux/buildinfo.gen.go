@@ -23,7 +23,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/ast/flatbuffers/monotype.rs":                             "3458c71780a0eff7ab1f99dc11a0b927c8f8e68513e0da01e82cba363e608ecc",
 	"libflux/flux-core/src/ast/flatbuffers/tests.rs":                                "bc6bd70fecd933332b198f327e1121ec29fbcc47e6c0d1816d7f4568bd892714",
 	"libflux/flux-core/src/ast/mod.rs":                                              "1b371ae53fa4258d55c5f490101195100b4151718db73d0bc0696f8fec0621c3",
-	"libflux/flux-core/src/ast/tests.rs":                                            "968312928c54af3a43d4e2290a024c1fdb57add97fba58f780fbdd9be19d8642",
+	"libflux/flux-core/src/ast/tests.rs":                                            "bc7f77d569d8bbd4b9d00653f48bacd47eed46f53024dce836d3c8bbb6a80555",
 	"libflux/flux-core/src/ast/walk/mod.rs":                                         "8f1c9a842374f44cb72b92f18a13cd831912ce96cd34f491e68c90bf4f1d36fa",
 	"libflux/flux-core/src/ast/walk/tests.rs":                                       "f7b2d7dd5643bb795a86c04b6979b136b0de46b52b213caff094aed6d204a05d",
 	"libflux/flux-core/src/formatter/mod.rs":                                        "f244f1439dbad254f8b4c3bc4039009e4e601714146082825ea72a14e0d2a67b",

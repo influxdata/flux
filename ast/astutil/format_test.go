@@ -186,6 +186,25 @@ builtin baz : int`; want != got {
 	}
 }
 
+func TestFormatWithTestCaseStmt(t *testing.T) {
+	src := `testcase my_test { a = 1 }`
+	pkg := parser.ParseSource(src)
+	if ast.Check(pkg) > 0 {
+		t.Fatalf("unexpected error: %s", ast.GetError(pkg))
+	} else if len(pkg.Files) != 1 {
+		t.Fatalf("expected one file in the package, got %d", len(pkg.Files))
+	}
+
+	got, err := astutil.Format(pkg.Files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if want := "testcase my_test {\n    a = 1\n}"; want != got {
+		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
+	}
+}
+
 func TestFormatWithComments(t *testing.T) {
 	src := `    // hi
     // there
