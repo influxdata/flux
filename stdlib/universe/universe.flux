@@ -29,6 +29,7 @@ builtin derivative : (
 ) => [B] where
     A: Record,
     B: Record
+
 builtin die : (msg: string) => A
 builtin difference : (<-tables: [T], ?nonNegative: bool, ?columns: [string], ?keepFirst: bool) => [R] where T: Record, R: Record
 builtin distinct : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
@@ -50,6 +51,7 @@ builtin histogram : (
 ) => [B] where
     A: Record,
     B: Record
+
 builtin histogramQuantile : (
     <-tables: [A],
     ?quantile: float,
@@ -60,6 +62,7 @@ builtin histogramQuantile : (
 ) => [B] where
     A: Record,
     B: Record
+
 builtin holtWinters : (
     <-tables: [A],
     n: int,
@@ -71,6 +74,7 @@ builtin holtWinters : (
 ) => [B] where
     A: Record,
     B: Record
+
 builtin hourSelection : (<-tables: [A], start: int, stop: int, ?timeColumn: string) => [A] where A: Record
 builtin integral : (
     <-tables: [A],
@@ -81,6 +85,7 @@ builtin integral : (
 ) => [B] where
     A: Record,
     B: Record
+
 builtin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record
 builtin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record
 builtin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record
@@ -102,6 +107,7 @@ builtin quantile : (
     ?method: string,
 ) => [A] where
     A: Record
+
 builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B] where A: Record, B: Record
 builtin range : (
     <-tables: [{A with _time: time}],
@@ -112,6 +118,7 @@ builtin range : (
     _start: time,
     _stop: time,
 }]
+
 builtin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C] where A: Record, B: Record, C: Record
 builtin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
 builtin rename : (<-tables: [A], ?fn: (column: string) => string, ?columns: B) => [C] where A: Record, B: Record, C: Record
@@ -132,6 +139,7 @@ builtin stateTracking : (
 ) => [B] where
     A: Record,
     B: Record
+
 builtin stddev : (<-tables: [A], ?column: string, ?mode: string) => [B] where A: Record, B: Record
 builtin sum : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
 builtin tripleExponentialDerivative : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric, B: Record
@@ -149,6 +157,7 @@ builtin window : (
 ) => [B] where
     A: Record,
     B: Record
+
 builtin yield : (<-tables: [A], ?name: string) => [A] where A: Record
 
 // stream/table index functions

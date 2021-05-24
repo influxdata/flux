@@ -1,6 +1,6 @@
 //! Source code formatter.
 
-use crate::ast::{self, walk::Node, File};
+use crate::ast::{self, walk::Node, File, Statement};
 use crate::parser::parse_string;
 use crate::Error;
 
@@ -214,7 +214,6 @@ impl Formatter {
                 }
             }
         }
-
         for (i, value) in n.imports.iter().enumerate() {
             if i != 0 {
                 self.write_rune(sep)
@@ -226,21 +225,8 @@ impl Formatter {
             self.write_rune(sep);
             self.write_rune(sep);
         }
-
-        let mut prev: i8 = -1;
-        for (i, stmt) in (&n.body).iter().enumerate() {
-            let cur = stmt.typ();
-            if i != 0 {
-                self.write_rune(sep);
-                // separate different statements with double newline or statements with comments
-                if cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
-                    self.write_rune(sep);
-                }
-            }
-            self.write_indent();
-            self.format_node(&Node::from_stmt(stmt));
-            prev = cur;
-        }
+        // format the file statements
+        self.format_statement_list(&n.body);
 
         if !n.eof.is_empty() {
             self.write_rune(sep);
@@ -727,22 +713,10 @@ impl Formatter {
         if !n.body.is_empty() {
             self.indent()
         }
+        self.write_rune(sep);
+        // format the block statements
+        self.format_statement_list(&n.body);
 
-        let mut prev: i8 = -1;
-        for (i, stmt) in n.body.iter().enumerate() {
-            let cur = stmt.typ();
-            self.write_rune(sep);
-
-            if i != 0 {
-                // separate different statements with double newline or statements with comments
-                if cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
-                    self.write_rune(sep);
-                }
-            }
-            self.write_indent();
-            self.format_node(&Node::from_stmt(stmt));
-            prev = cur;
-        }
         if !n.body.is_empty() {
             self.write_rune(sep);
             self.unindent();
@@ -750,6 +724,29 @@ impl Formatter {
         }
         self.format_comments(&n.rbrace);
         self.write_rune('}')
+    }
+
+    fn format_statement_list(&mut self, n: &[Statement]) {
+        let mut prev: i8 = -1;
+        let mut previous_location: i32 = -1;
+        let sep = '\n';
+        for (i, stmt) in n.iter().enumerate() {
+            let cur = stmt.typ();
+            if i != 0 {
+                let current_location: i32 = stmt.base().location.start.line as i32;
+                //compare the line position of adjacent lines to preserve formatted double new lines
+                let line_gap = current_location - previous_location;
+                self.write_rune(sep);
+                // separate different statements with double newline or statements with comments
+                if line_gap > 1 || cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
+                    self.write_rune(sep);
+                }
+            }
+            previous_location = stmt.base().location.end.line as i32;
+            self.write_indent();
+            self.format_node(&Node::from_stmt(stmt));
+            prev = cur;
+        }
     }
 
     fn format_return_statement(&mut self, n: &ast::ReturnStmt) {
