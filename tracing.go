@@ -4,7 +4,9 @@ import (
 	"context"
 )
 
-const queryTracingContextKey = "query-tracing-enabled"
+type contextKey string
+
+const queryTracingContextKey contextKey = "query-tracing-enabled"
 
 // WithQueryTracingEnabled will return a child context
 // that will turn on experimental query tracing.

@@ -2,7 +2,6 @@ package sql
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -20,27 +19,27 @@ func TestBoolTranslation(t *testing.T) {
 	}
 
 	// create table - column type can be anything
-	q := fmt.Sprintf("CREATE TABLE IF NOT EXISTS bools (name TEXT, age INT, employed BOOL)")
+	q := "CREATE TABLE IF NOT EXISTS bools (name TEXT, age INT, employed BOOL)"
 	_, err = db.Exec(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))
 	}
 
 	// insert first row - BOOL as BOOL, which sqlite WILL accept as a write - and silently store true as 1
-	q = fmt.Sprintf("INSERT INTO bools (name, age, employed) VALUES (\"albert\",110,true)")
+	q = "INSERT INTO bools (name, age, employed) VALUES (\"albert\",110,true)"
 	_, err = db.Exec(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))
 	}
 
 	// insert second row - BOOL as INT - again, will accept ok
-	q = fmt.Sprintf("INSERT INTO bools (name, age, employed) VALUES (\"mary\",10,1)")
+	q = "INSERT INTO bools (name, age, employed) VALUES (\"mary\",10,1)"
 	_, err = db.Exec(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))
 	}
 
-	q = fmt.Sprintf("SELECT * FROM bools")
+	q = "SELECT * FROM bools"
 	results, err := db.Query(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))
@@ -79,34 +78,34 @@ func TestNulTranslation(t *testing.T) {
 	}
 
 	// create table
-	q := fmt.Sprintf("CREATE TABLE IF NOT EXISTS magic (name TEXT, age INT, employed BADINTBOOL)")
+	q := "CREATE TABLE IF NOT EXISTS magic (name TEXT, age INT, employed BADINTBOOL)"
 	_, err = db.Exec(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))
 	}
 
 	// insert first row - null string
-	q = fmt.Sprintf("INSERT INTO magic (age, employed) VALUES (11,true)")
+	q = "INSERT INTO magic (age, employed) VALUES (11,true)"
 	_, err = db.Exec(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))
 	}
 
 	// insert second row - null int
-	q = fmt.Sprintf("INSERT INTO magic (name, employed) VALUES (\"mary\",true)")
+	q = "INSERT INTO magic (name, employed) VALUES (\"mary\",true)"
 	_, err = db.Exec(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))
 	}
 
 	// insert third row - null bool
-	q = fmt.Sprintf("INSERT INTO magic (name, age) VALUES (\"casper\",10)")
+	q = "INSERT INTO magic (name, age) VALUES (\"casper\",10)"
 	_, err = db.Exec(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))
 	}
 
-	q = fmt.Sprintf("SELECT * FROM magic")
+	q = "SELECT * FROM magic"
 	results, err := db.Query(q)
 	if !cmp.Equal(err, nil) {
 		t.Fatalf("unexpected result -want/+got\n\n%s\n\n", cmp.Diff(nil, err))

@@ -162,7 +162,7 @@ func (p ParameterType) FromBuf(buf *fbast.ParameterType) *ParameterType {
 func newFBTable(f unionTableWriterFn, base *BaseNode) *flatbuffers.Table {
 	t := new(flatbuffers.Table)
 	if !f(t) {
-		base.Errors = append(base.Errors, Error{fmt.Sprint("serialization error")})
+		base.Errors = append(base.Errors, Error{"serialization error"})
 	}
 	return t
 }
