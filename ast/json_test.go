@@ -499,6 +499,24 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"TestStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"mean"},"init":{"type":"ObjectExpression","properties":[{"type":"Property","key":{"type":"Identifier","name":"want"},"value":{"type":"IntegerLiteral","value":"0"}},{"type":"Property","key":{"type":"Identifier","name":"got"},"value":{"type":"IntegerLiteral","value":"0"}}]}}}`,
 		},
 		{
+			name: "test case statement",
+			node: &ast.TestCaseStatement{
+
+				ID: &ast.Identifier{Name: "test case statement id"},
+				Extends: &ast.StringLiteral{
+					Value: "extended test case",
+				},
+				Block: &ast.Block{
+					Body: []ast.Statement{
+						&ast.ExpressionStatement{
+							Expression: &ast.StringLiteral{Value: "expression statement"},
+						},
+					},
+				},
+			},
+			want: `{"type":"TestCaseStatement","id":{"type":"Identifier","name":"test case statement id"},"extends":{"type":"StringLiteral","value":"extended test case"},"block":{"type":"Block","body":[{"type":"ExpressionStatement","expression":{"type":"StringLiteral","value":"expression statement"}}]}}`,
+		},
+		{
 			name: "qualified option statement",
 			node: &ast.OptionStatement{
 				Assignment: &ast.MemberAssignment{
