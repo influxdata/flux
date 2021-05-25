@@ -36,7 +36,6 @@ use derive_more::Display;
 /// Result returned from the various 'infer' methods defined in this
 /// module. The result of inferring an expression or statment is an
 /// updated type environment and a set of type constraints to be solved.
-#[allow(missing_docs)]
 pub type Result = std::result::Result<(Environment, Constraints), Error>;
 
 #[derive(Debug, Display, PartialEq)]
@@ -1875,7 +1874,6 @@ impl DateTimeLit {
 /// A struct that keeps track of time in months and nanoseconds.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename = "Duration")]
-#[allow(missing_docs)]
 pub struct Duration {
     /// Must be a positive value.
     pub months: i64,
@@ -1924,7 +1922,6 @@ const YEARS: i64 = MONTHS * 12;
 /// Convert an [`ast::Duration`] node to its semantic counterpart [`Duration`].
 ///
 /// Returns a `Result` type with a possible error message.
-#[allow(missing_docs)]
 pub fn convert_duration(ast_dur: &[ast::Duration]) -> std::result::Result<Duration, String> {
     if ast_dur.is_empty() {
         return Err(String::from(
