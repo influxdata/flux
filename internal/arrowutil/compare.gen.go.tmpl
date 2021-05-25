@@ -1,0 +1,102 @@
+package arrowutil
+
+import (
+	"fmt"
+
+	"github.com/apache/arrow/go/arrow/array"
+)
+
+// CompareFunc defines the interface for a comparison function.
+// The comparison function should return 0 for equivalent values,
+// -1 if x[i] is before y[j], and +1 if x[i] is after y[j].
+type CompareFunc func(x, y array.Interface, i, j int) int
+
+// Compare will compare two values in the various arrays.
+// The result will be 0 if x[i] == y[j], -1 if x[i] < y[j], and +1 if x[i] > y[j].
+// A null value is always less than every non-null value.
+func Compare(x, y array.Interface, i, j int) int {
+    switch x := x.(type) {
+    {{range .}}
+    case *{{.Type}}:
+        return {{.Name}}Compare(x, y.(*{{.Type}}), i, j)
+    {{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", x.DataType()))
+    }
+}
+
+// CompareDesc will compare two values in the various arrays.
+// The result will be 0 if x[i] == y[j], -1 if x[i] > y[j], and +1 if x[i] < y[j].
+// A null value is always greater than every non-null value.
+func CompareDesc(x, y array.Interface, i, j int) int {
+    switch x := x.(type) {
+    {{range .}}
+    case *{{.Type}}:
+        return {{.Name}}CompareDesc(x, y.(*{{.Type}}), i, j)
+    {{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", x.DataType()))
+    }
+}
+
+{{range .}}
+func {{.Name}}Compare(x, y *{{.Type}}, i, j int) int {
+    if x.IsNull(i) {
+        if y.IsNull(j) {
+            return 0
+        }
+        return -1
+    } else if y.IsNull(j) {
+        return 1
+    }
+
+    {{if eq .Name "Boolean"}}
+    if x.Value(i) {
+        if y.Value(j) {
+            return 0
+        }
+        return 1
+    } else if y.Value(j) {
+        return -1
+    }
+    return 0
+    {{else}}
+    if l, r := x.{{.Value}}(i), y.{{.Value}}(j); l < r {
+        return -1
+    } else if l == r {
+        return 0
+    }
+    return 1
+    {{end}}
+}
+
+func {{.Name}}CompareDesc(x, y *{{.Type}}, i, j int) int {
+    if x.IsNull(i) {
+        if y.IsNull(j) {
+            return 0
+        }
+        return 1
+    } else if y.IsNull(j) {
+        return -1
+    }
+
+    {{if eq .Name "Boolean"}}
+    if x.Value(i) {
+        if y.Value(j) {
+            return 0
+        }
+        return 1
+    } else if y.Value(j) {
+        return -1
+    }
+    return 0
+    {{else}}
+    if l, r := x.{{.Value}}(i), y.{{.Value}}(j); l > r {
+        return -1
+    } else if l == r {
+        return 0
+    }
+    return 1
+    {{end}}
+}
+{{end}}

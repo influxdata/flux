@@ -8,6 +8,20 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 )
 
+// BufferSize represents a constant buffer size to be used by flux
+// that buffer data by the number of rows.
+//
+// This isn't a required size, but a recommended one that can be shared
+// as a constant around the various standard library functions so that
+// they are more likely to not reorganize data.
+//
+// This number was chosen because it is the same buffer size that the
+// influxdb storage engine uses when buffering table data. In the future,
+// we may want to make it possible for different sources to report their
+// own buffer sizes so influxdb isn't given an unfair advantage just
+// because these constants are set to the same value.
+const BufferSize = 1000
+
 // BufferedTable represents a table of buffered column readers.
 type BufferedTable struct {
 	used     int32

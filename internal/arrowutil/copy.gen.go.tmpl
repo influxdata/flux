@@ -30,6 +30,18 @@ func CopyByIndexTo(b array.Builder, arr array.Interface, indices *array.Int64) {
     }
 }
 
+// CopyValue will copy an individual value from the array into the builder.
+func CopyValue(b array.Builder, arr array.Interface, i int) {
+    switch arr := arr.(type) {
+    {{range .}}
+    case *{{.Type}}:
+        Copy{{.Name}}Value(b.(*{{.Type}}Builder), arr, i)
+    {{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+    }
+}
+
 {{range .}}
 func Copy{{.Name}}sTo(b *{{.Type}}Builder, arr *{{.Type}}) {
     b.Reserve(arr.Len())
@@ -77,5 +89,13 @@ func Copy{{.Name}}sByIndexTo(b *{{.Type}}Builder, arr *{{.Type}}, indices *array
         }
         b.{{.Append}}(arr.{{.Value}}(offset))
     }
+}
+
+func Copy{{.Name}}Value(b *{{.Type}}Builder, arr *{{.Type}}, i int) {
+    if arr.IsNull(i) {
+        b.AppendNull()
+        return
+    }
+    b.{{.Append}}(arr.{{.Value}}(i))
 }
 {{end}}

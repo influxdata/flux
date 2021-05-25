@@ -6,6 +6,8 @@ import (
 	"github.com/influxdata/flux/execute/table"
 )
 
+const BufferSize = table.BufferSize
+
 type BufferedBuilder = table.BufferedBuilder
 
 func GetBufferedBuilder(key flux.GroupKey, cache *BuilderCache) (builder *BufferedBuilder, created bool) {
