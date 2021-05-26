@@ -177,7 +177,7 @@ pub enum Expression {
 }
 
 impl Expression {
-    /// `base` is an utility method that returns the BaseNode for an Expression.
+    /// Returns the [`BaseNode`] for an [`Expression`].
     pub fn base(&self) -> &BaseNode {
         match self {
             Expression::Identifier(wrapped) => &wrapped.base,
@@ -232,7 +232,7 @@ pub enum Statement {
 }
 
 impl Statement {
-    /// `base` is an utility method that returns the BaseNode for a Statement.
+    /// Returns the [`BaseNode`] for a [`Statement`].
     pub fn base(&self) -> &BaseNode {
         match self {
             Statement::Expr(wrapped) => &wrapped.base,
@@ -246,7 +246,7 @@ impl Statement {
         }
     }
 
-    /// returns a integer based type value.
+    /// Returns an integer-based type value.
     pub fn typ(&self) -> i8 {
         match self {
             Statement::Expr(_) => 0,
@@ -272,7 +272,7 @@ pub enum Assignment {
 }
 
 impl Assignment {
-    /// `base` is an utility method that returns the BaseNode for an Assignment.
+    /// Returns the [`BaseNode`] for an [`Assignment`].
     pub fn base(&self) -> &BaseNode {
         match self {
             Assignment::Variable(wrapped) => &wrapped.base,
@@ -291,7 +291,7 @@ pub enum PropertyKey {
 }
 
 impl PropertyKey {
-    /// `base` is an utility method that returns the BaseNode for a PropertyKey.
+    /// Returns the [`BaseNode`] for a [`PropertyKey`].
     pub fn base(&self) -> &BaseNode {
         match self {
             PropertyKey::Identifier(wrapped) => &wrapped.base,
@@ -313,7 +313,7 @@ pub enum FunctionBody {
 }
 
 impl FunctionBody {
-    /// `base` is an utility method that returns the BaseNode for a FunctionBody.
+    /// Returns the [`BaseNode`] for a [`FunctionBody`].
     pub fn base(&self) -> &BaseNode {
         match self {
             FunctionBody::Block(wrapped) => &wrapped.base,
