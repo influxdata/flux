@@ -22,6 +22,7 @@ import (
 func init() {
 	plan.RegisterLogicalRules(
 		universe.OptimizeSortRule{},
+		universe.OptimizeWindowRule{},
 	)
 	runtime.FinalizeBuiltIns()
 }

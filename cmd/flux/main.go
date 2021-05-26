@@ -17,6 +17,7 @@ func main() {
 		},
 		universe.MergeFiltersRule{},
 		universe.OptimizeSortRule{},
+		universe.OptimizeWindowRule{},
 	)
 	cmd.Execute()
 }
