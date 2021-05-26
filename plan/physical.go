@@ -273,7 +273,9 @@ func CreatePhysicalNode(id NodeID, spec PhysicalProcedureSpec) *PhysicalPlanNode
 	}
 }
 
-const NextPlanNodeIDKey = "NextPlanNodeID"
+type nodeIDKey string
+
+const NextPlanNodeIDKey nodeIDKey = "NextPlanNodeID"
 
 func CreateUniquePhysicalNode(ctx context.Context, prefix string, spec PhysicalProcedureSpec) *PhysicalPlanNode {
 	if value := ctx.Value(NextPlanNodeIDKey); value != nil {

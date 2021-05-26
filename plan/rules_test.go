@@ -75,12 +75,14 @@ func TestRuleRegistration(t *testing.T) {
 	}
 }
 
+type contextKey string
+
 func TestRewriteWithContext(t *testing.T) {
 	plan.ClearRegisteredRules()
 
 	var (
-		ctxKey  = "contextKey"
-		rewrite = false
+		ctxKey  contextKey = "contextKey"
+		rewrite            = false
 		value   interface{}
 	)
 	functionRule := plantest.FunctionRule{
@@ -141,10 +143,9 @@ func TestRewriteWithContext(t *testing.T) {
 
 func TestRewriteWithContext_TableObjectCompiler(t *testing.T) {
 	plan.ClearRegisteredRules()
-
 	var (
-		ctxKey  = "contextKey"
-		rewrite = false
+		ctxKey  contextKey = "contextKey"
+		rewrite            = false
 		value   interface{}
 	)
 	functionRule := plantest.FunctionRule{

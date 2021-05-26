@@ -50,7 +50,7 @@ func check(n Node) int {
 		}
 		if hasImplicit && hasExplicit {
 			n.Errors = append(n.Errors, Error{
-				Msg: fmt.Sprintf("cannot mix implicit and explicit properties"),
+				Msg: "cannot mix implicit and explicit properties",
 			})
 		}
 	case *PipeExpression:
