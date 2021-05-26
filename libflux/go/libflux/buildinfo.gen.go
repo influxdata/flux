@@ -280,7 +280,7 @@ var sourceHashes = map[string]string{
 	"stdlib/planner/group_max_push_test.flux":                                       "37124c059cffbe1f73e362ab5bb3867db388eac7d22096b6c42ea5bd533c906c",
 	"stdlib/planner/group_max_test.flux":                                            "83af33674bbae440a26073884ba84c4282728ae16c844fc127255eb956407dd4",
 	"stdlib/planner/group_min_eval_test.flux":                                       "3de6e6e6509f109aac703cab7554e03e28e20199231672ee3863a258dce56df1",
-	"stdlib/planner/group_min_max_table_test.flux":                                  "c998bca0e4b23b608d10538a0524718f1ae0f1573264c38ea3347bfb2d215ec5",
+	"stdlib/planner/group_min_max_table_test.flux":                                  "6f3730056029cad0c388a874ddf177655d27a532822e4fbce1bf196abe67778c",
 	"stdlib/planner/group_min_push_test.flux":                                       "28cd4b14c89f2b6a9ad3c4299a3478954c8e60edad5317056106a6b04831f643",
 	"stdlib/planner/group_min_test.flux":                                            "d4b07c2e18149f3b077f4198ffb17f8098d33d40347a60d994597e28e84495d2",
 	"stdlib/planner/group_sum_eval_test.flux":                                       "13673f10b7636c422a8d92d11bc236e0732db8b95da25c5bab00cf1d7eacabf7",

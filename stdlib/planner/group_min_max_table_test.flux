@@ -131,6 +131,7 @@ testcase group_no_agg_table {
         |> range(start: 2019-11-25T00:00:00Z)
         |> group(columns: ["t0"])
         |> drop(columns: ["_start", "_stop"])
+        |> sort(columns: ["t1", "_time"])
     out_no_agg_table = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,false,false
