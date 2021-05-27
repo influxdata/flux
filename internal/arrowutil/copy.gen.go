@@ -60,6 +60,30 @@ func CopyByIndexTo(b array.Builder, arr array.Interface, indices *array.Int64) {
 	}
 }
 
+// CopyValue will copy an individual value from the array into the builder.
+func CopyValue(b array.Builder, arr array.Interface, i int) {
+	switch arr := arr.(type) {
+
+	case *array.Int64:
+		CopyInt64Value(b.(*array.Int64Builder), arr, i)
+
+	case *array.Uint64:
+		CopyUint64Value(b.(*array.Uint64Builder), arr, i)
+
+	case *array.Float64:
+		CopyFloat64Value(b.(*array.Float64Builder), arr, i)
+
+	case *array.Boolean:
+		CopyBooleanValue(b.(*array.BooleanBuilder), arr, i)
+
+	case *array.Binary:
+		CopyStringValue(b.(*array.BinaryBuilder), arr, i)
+
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+	}
+}
+
 func CopyInt64sTo(b *array.Int64Builder, arr *array.Int64) {
 	b.Reserve(arr.Len())
 
@@ -83,6 +107,14 @@ func CopyInt64sByIndexTo(b *array.Int64Builder, arr *array.Int64, indices *array
 		}
 		b.Append(arr.Value(offset))
 	}
+}
+
+func CopyInt64Value(b *array.Int64Builder, arr *array.Int64, i int) {
+	if arr.IsNull(i) {
+		b.AppendNull()
+		return
+	}
+	b.Append(arr.Value(i))
 }
 
 func CopyUint64sTo(b *array.Uint64Builder, arr *array.Uint64) {
@@ -110,6 +142,14 @@ func CopyUint64sByIndexTo(b *array.Uint64Builder, arr *array.Uint64, indices *ar
 	}
 }
 
+func CopyUint64Value(b *array.Uint64Builder, arr *array.Uint64, i int) {
+	if arr.IsNull(i) {
+		b.AppendNull()
+		return
+	}
+	b.Append(arr.Value(i))
+}
+
 func CopyFloat64sTo(b *array.Float64Builder, arr *array.Float64) {
 	b.Reserve(arr.Len())
 
@@ -135,6 +175,14 @@ func CopyFloat64sByIndexTo(b *array.Float64Builder, arr *array.Float64, indices 
 	}
 }
 
+func CopyFloat64Value(b *array.Float64Builder, arr *array.Float64, i int) {
+	if arr.IsNull(i) {
+		b.AppendNull()
+		return
+	}
+	b.Append(arr.Value(i))
+}
+
 func CopyBooleansTo(b *array.BooleanBuilder, arr *array.Boolean) {
 	b.Reserve(arr.Len())
 
@@ -158,6 +206,14 @@ func CopyBooleansByIndexTo(b *array.BooleanBuilder, arr *array.Boolean, indices 
 		}
 		b.Append(arr.Value(offset))
 	}
+}
+
+func CopyBooleanValue(b *array.BooleanBuilder, arr *array.Boolean, i int) {
+	if arr.IsNull(i) {
+		b.AppendNull()
+		return
+	}
+	b.Append(arr.Value(i))
 }
 
 func CopyStringsTo(b *array.BinaryBuilder, arr *array.Binary) {
@@ -206,4 +262,12 @@ func CopyStringsByIndexTo(b *array.BinaryBuilder, arr *array.Binary, indices *ar
 		}
 		b.AppendString(arr.ValueString(offset))
 	}
+}
+
+func CopyStringValue(b *array.BinaryBuilder, arr *array.Binary, i int) {
+	if arr.IsNull(i) {
+		b.AppendNull()
+		return
+	}
+	b.AppendString(arr.ValueString(i))
 }

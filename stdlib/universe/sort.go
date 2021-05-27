@@ -68,6 +68,9 @@ type SortProcedureSpec struct {
 	plan.DefaultCost
 	Columns []string
 	Desc    bool
+
+	// Temporary internal attribute. Do not use.
+	Optimize bool
 }
 
 func newSortProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -86,13 +89,10 @@ func (s *SortProcedureSpec) Kind() plan.ProcedureKind {
 	return SortKind
 }
 func (s *SortProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(SortProcedureSpec)
-
+	ns := *s
 	ns.Columns = make([]string, len(s.Columns))
 	copy(ns.Columns, s.Columns)
-
-	ns.Desc = s.Desc
-	return ns
+	return &ns
 }
 
 // TriggerSpec implements plan.TriggerAwareProcedureSpec
@@ -105,6 +105,11 @@ func createSortTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
+
+	if s.Optimize {
+		return newSortTransformation2(id, s, a)
+	}
+
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 	t := NewSortTransformation(d, cache, s)

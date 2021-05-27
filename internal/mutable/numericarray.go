@@ -138,6 +138,11 @@ func (b *Int64Array) Set(i int, v int64) {
 	b.rawData[i] = v
 }
 
+// Int64Values returns the underlying int64 slice.
+func (b *Int64Array) Int64Values() []int64 {
+	return b.rawData
+}
+
 // Uint64Array is an array of uint64 values.
 type Uint64Array struct {
 	refCount int64

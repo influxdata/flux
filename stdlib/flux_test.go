@@ -13,11 +13,17 @@ import (
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib"
+	"github.com/influxdata/flux/stdlib/universe"
 )
 
 func init() {
+	plan.RegisterLogicalRules(
+		universe.OptimizeSortRule{},
+		universe.OptimizeWindowRule{},
+	)
 	runtime.FinalizeBuiltIns()
 }
 

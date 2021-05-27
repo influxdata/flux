@@ -140,6 +140,9 @@ type WindowProcedureSpec struct {
 	StartColumn,
 	StopColumn string
 	CreateEmpty bool
+
+	// Exposed for a test case. Do not use.
+	Optimize bool
 }
 
 func newWindowProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -165,13 +168,8 @@ func (s *WindowProcedureSpec) Kind() plan.ProcedureKind {
 	return WindowKind
 }
 func (s *WindowProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(WindowProcedureSpec)
-	ns.Window = s.Window
-	ns.TimeColumn = s.TimeColumn
-	ns.StartColumn = s.StartColumn
-	ns.StopColumn = s.StopColumn
-	ns.CreateEmpty = s.CreateEmpty
-	return ns
+	ns := *s
+	return &ns
 }
 
 func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
@@ -179,6 +177,11 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
+
+	if s.Optimize {
+		return newWindowTransformation2(id, s, a.StreamContext().Bounds(), a)
+	}
+
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 
