@@ -13,13 +13,31 @@ extern crate lazy_static;
 #[macro_use]
 extern crate serde_derive;
 
-mod doc;
-use crate::doc::*;
-
 use flux::ast;
 use flux::parser::Parser;
 use flux::semantic;
 use flux::semantic::types::{PolyType, TvarKinds};
+
+// DocPackage represents the documentation for a package and its sub packages
+#[derive(Debug, Serialize, Deserialize)]
+struct DocPackage {
+    path: Vec<String>,
+    name: String,
+    doc: String,
+    values: Vec<DocValue>,
+    packages: Vec<DocPackage>,
+}
+
+// DocValue represents the documentation for a single value within a package.
+// Values include options, builtins or any variable assignment within the top level scope of a
+// package.
+#[derive(Debug, Serialize, Deserialize)]
+struct DocValue {
+    pkgpath: Vec<String>,
+    name: String,
+    doc: String,
+    typ: String,
+}
 
 #[derive(Debug, StructOpt)]
 struct Args {
@@ -254,7 +272,7 @@ fn comments_to_string(comments: &[ast::Comment]) -> String {
 }
 
 lazy_static! {
-    pub static ref TEMPLATES: Tera = {
+    static ref TEMPLATES: Tera = {
         let mut tera = match Tera::new("fluxdoc/templates/*.html") {
             Ok(t) => t,
             Err(e) => {

@@ -372,14 +372,18 @@ dependencies = [
 name = "flux"
 version = "0.5.1"
 dependencies = [
+ "comrak",
  "criterion",
  "flatbuffers",
  "flux-core",
+ "lazy_static",
  "maplit",
  "serde",
  "serde-aux",
  "serde_derive",
  "serde_json",
+ "structopt",
+ "tera",
  "wasm-bindgen",
 ]
 
@@ -403,20 +407,6 @@ dependencies = [
  "serde_json",
  "walkdir",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "fluxdoc"
-version = "0.1.0"
-dependencies = [
- "comrak",
- "flux",
- "lazy_static",
- "serde",
- "serde_derive",
- "serde_json",
- "structopt",
- "tera",
 ]
 
 [[package]]
