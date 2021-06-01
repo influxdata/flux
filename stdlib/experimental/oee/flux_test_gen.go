@@ -23,7 +23,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   32,
 				},
 				File:   "apq_test.flux",
-				Source: "package oee_test\n\n\nimport \"experimental/oee\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#group,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,long,long\n#default,_result,,,,,\n,result,table,_time,state,partCount,badCount\n,,0,2021-03-22T00:00:00Z,running,1200,10\n,,0,2021-03-22T01:00:00Z,running,1300,11\n,,0,2021-03-22T02:00:00Z,stopped,1400,11\n,,0,2021-03-22T03:00:00Z,running,1400,11\n,,0,2021-03-22T03:30:00Z,running,1440,14\n\"\noutData = \"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runningTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"\nt_APQ = (table=<-) => table\n    |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)\n    |> oee.APQ(runningState: \"running\", plannedTime: 8h, idealCycleTime: 30s)\n    |> drop(columns: [\"_start\", \"_stop\"])\n\ntest _APQ = () => ({input: testing.loadMem(csv: inData), want: testing.loadMem(csv: outData), fn: t_APQ})",
+				Source: "package oee_test\n\n\nimport \"experimental/oee\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#group,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,long,long\n#default,_result,,,,,\n,result,table,_time,state,partCount,badCount\n,,0,2021-03-22T00:00:00Z,running,1200,10\n,,0,2021-03-22T01:00:00Z,running,1300,11\n,,0,2021-03-22T02:00:00Z,stopped,1400,11\n,,0,2021-03-22T03:00:00Z,running,1400,11\n,,0,2021-03-22T03:30:00Z,running,1440,14\n\"\noutData = \"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"\nt_APQ = (table=<-) => table\n    |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)\n    |> oee.APQ(runningState: \"running\", plannedTime: 8h, idealCycleTime: 30s)\n    |> drop(columns: [\"_start\", \"_stop\"])\n\ntest _APQ = () => ({input: testing.loadMem(csv: inData), want: testing.loadMem(csv: outData), fn: t_APQ})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -190,7 +190,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   26,
 					},
 					File:   "apq_test.flux",
-					Source: "outData = \"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runningTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"",
+					Source: "outData = \"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   20,
@@ -226,14 +226,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   26,
 						},
 						File:   "apq_test.flux",
-						Source: "\"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runningTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"",
+						Source: "\"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"",
 						Start: ast.Position{
 							Column: 11,
 							Line:   20,
 						},
 					},
 				},
-				Value: "\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runningTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n",
+				Value: "\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1719,7 +1719,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   65,
 				},
 				File:   "computeapq_test.flux",
-				Source: "package oee_test\n\n\nimport \"experimental/oee\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// not used\ninData = \"\n#group,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,long,long\n#default,_result,,,,,\n,result,table,_time,state,partCount,badCount\n\"\nproductionData = \"\n#group,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string\n#default,_result,,,\n,result,table,_time,state\n,,0,2021-03-22T00:00:00Z,running\n,,0,2021-03-22T01:00:00Z,running\n,,0,2021-03-22T02:00:00Z,stopped\n,,0,2021-03-22T03:00:00Z,running\n\"\npartData = \"\n#group,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,long,long\n#default,_result,,,,\n,result,table,_time,partCount,badCount\n,,0,2021-03-22T00:00:00Z,1200,10\n,,0,2021-03-22T00:15:00Z,1225,10\n,,0,2021-03-22T00:30:00Z,1250,11\n,,0,2021-03-22T00:45:00Z,1275,11\n,,0,2021-03-22T01:00:00Z,1300,11\n,,0,2021-03-22T01:15:00Z,1310,11\n,,0,2021-03-22T01:30:00Z,1340,11\n,,0,2021-03-22T01:45:00Z,1380,11\n,,0,2021-03-22T02:00:00Z,1400,11\n,,0,2021-03-22T03:15:00Z,1425,12\n,,0,2021-03-22T03:30:00Z,1440,14\n\"\noutData = \"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runningTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"\nproductionEvents = testing.loadMem(csv: productionData)\n    |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)\npartEvents = testing.loadMem(csv: partData)\n    |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)\nt_computeAPQ = (table=<-) => {\n    return oee.computeAPQ(\n        productionEvents: productionEvents,\n        partEvents: partEvents,\n        runningState: \"running\",\n        plannedTime: 8h,\n        idealCycleTime: 30s,\n    )\n        |> drop(columns: [\"_start\", \"_stop\"])\n}\n\ntest _computeAPQ = () => ({input: testing.loadMem(csv: inData), want: testing.loadMem(csv: outData), fn: t_computeAPQ})",
+				Source: "package oee_test\n\n\nimport \"experimental/oee\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// not used\ninData = \"\n#group,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string,long,long\n#default,_result,,,,,\n,result,table,_time,state,partCount,badCount\n\"\nproductionData = \"\n#group,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,string\n#default,_result,,,\n,result,table,_time,state\n,,0,2021-03-22T00:00:00Z,running\n,,0,2021-03-22T01:00:00Z,running\n,,0,2021-03-22T02:00:00Z,stopped\n,,0,2021-03-22T03:00:00Z,running\n\"\npartData = \"\n#group,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,long,long\n#default,_result,,,,\n,result,table,_time,partCount,badCount\n,,0,2021-03-22T00:00:00Z,1200,10\n,,0,2021-03-22T00:15:00Z,1225,10\n,,0,2021-03-22T00:30:00Z,1250,11\n,,0,2021-03-22T00:45:00Z,1275,11\n,,0,2021-03-22T01:00:00Z,1300,11\n,,0,2021-03-22T01:15:00Z,1310,11\n,,0,2021-03-22T01:30:00Z,1340,11\n,,0,2021-03-22T01:45:00Z,1380,11\n,,0,2021-03-22T02:00:00Z,1400,11\n,,0,2021-03-22T03:15:00Z,1425,12\n,,0,2021-03-22T03:30:00Z,1440,14\n\"\noutData = \"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"\nproductionEvents = testing.loadMem(csv: productionData)\n    |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)\npartEvents = testing.loadMem(csv: partData)\n    |> range(start: 2021-03-22T00:00:00Z, stop: 2021-03-22T04:00:00Z)\nt_computeAPQ = (table=<-) => {\n    return oee.computeAPQ(\n        productionEvents: productionEvents,\n        partEvents: partEvents,\n        runningState: \"running\",\n        plannedTime: 8h,\n        idealCycleTime: 30s,\n    )\n        |> drop(columns: [\"_start\", \"_stop\"])\n}\n\ntest _computeAPQ = () => ({input: testing.loadMem(csv: inData), want: testing.loadMem(csv: outData), fn: t_computeAPQ})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1996,7 +1996,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   49,
 					},
 					File:   "computeapq_test.flux",
-					Source: "outData = \"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runningTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"",
+					Source: "outData = \"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   43,
@@ -2032,14 +2032,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   49,
 						},
 						File:   "computeapq_test.flux",
-						Source: "\"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runningTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"",
+						Source: "\"\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n\"",
 						Start: ast.Position{
 							Column: 11,
 							Line:   43,
 						},
 					},
 				},
-				Value: "\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runningTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n",
+				Value: "\n#group,false,false,false,false,false,false,false,false\n#datatype,string,long,dateTime:RFC3339,double,double,double,double,long\n#default,_result,,,,,,,\n,result,table,_time,availability,oee,performance,quality,runTime\n,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

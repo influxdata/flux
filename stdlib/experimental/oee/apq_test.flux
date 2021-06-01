@@ -21,7 +21,7 @@ outData = "
 #group,false,false,false,false,false,false,false,false
 #datatype,string,long,dateTime:RFC3339,double,double,double,double,long
 #default,_result,,,,,,,
-,result,table,_time,availability,oee,performance,quality,runningTime
+,result,table,_time,availability,oee,performance,quality,runTime
 ,,0,2021-03-22T04:00:00Z,0.375,0.24583333333333332,0.6666666666666666,0.9833333333333333,10800000000000
 "
 t_APQ = (table=<-) => table

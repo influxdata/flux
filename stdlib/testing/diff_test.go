@@ -58,6 +58,51 @@ func TestDiff_Process(t *testing.T) {
 			want: []*executetest.Table(nil),
 		},
 		{
+			name: "different time same value",
+			spec: &fluxtesting.DiffProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0},
+						{execute.Time(3), 3.0},
+						{execute.Time(5), 5.0},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0},
+						{execute.Time(2), 3.0},
+						{execute.Time(5), 5.0},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_diff", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"-", execute.Time(3), 3.0},
+						{"+", execute.Time(2), 3.0},
+					},
+				},
+			},
+		},
+		{
 			name: "different values",
 			spec: &fluxtesting.DiffProcedureSpec{
 				DefaultCost: plan.DefaultCost{},
@@ -290,6 +335,52 @@ func TestDiff_Process(t *testing.T) {
 					Data: [][]interface{}{
 						{"-", execute.Time(1), 1.0},
 						{"+", execute.Time(1), 1.000001},
+					},
+				},
+			},
+		},
+		{
+			name: "float64 comparison Inf",
+			spec: &fluxtesting.DiffProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+				Epsilon:     1e-6,
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), math.Inf(1)},
+						{execute.Time(2), math.Inf(-1)},
+						{execute.Time(3), math.Inf(1)},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), math.Inf(-1)},
+						{execute.Time(2), math.Inf(-1)},
+						{execute.Time(3), math.Inf(2)},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_diff", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"-", execute.Time(1), math.Inf(1)},
+						{"+", execute.Time(1), math.Inf(-1)},
 					},
 				},
 			},
