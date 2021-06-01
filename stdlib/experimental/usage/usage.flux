@@ -12,7 +12,13 @@ import "http"
 // return raw usage data rather than the downsampled data returned by default.
 // Note that unlike the range function, the stop argument is required here,
 // pending implementation of https://github.com/influxdata/flux/issues/3629.
-from = (start, stop, host="", orgID="", token="", raw=false) => {
+from = (
+        start,
+        stop,
+        host="",
+        orgID="",
+        token="",
+        raw=false) => {
     id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
     response = influxdb.api(
         method: "get",

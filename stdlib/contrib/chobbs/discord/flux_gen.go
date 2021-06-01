@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 6,
-					Line:   52,
+					Line:   57,
 				},
 				File:   "discord.flux",
-				Source: "package discord\n\n\nimport \"http\"\nimport \"json\"\n\noption discordURL = \"https://discordapp.com/api/webhooks/\"\n\n// `webhookToken` - string - the secure token of the webhook.\n// `webhookID` - string - the ID of the webhook.\n// `username` - string - username posting the message.\n// `content` - string - the text to display in discord.\n// `avatar_url` -  override the default avatar of the webhook.\nsend = (webhookToken, webhookID, username, content, avatar_url=\"\") => {\n    data = {\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    encode = json.encode(v: data)\n\n    return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send messages to discord for each table row.\n// `webhookToken` - string - the secure token of the webhook.\n// `webhookID` - string - the ID of the webhook.\n// `username` - string - username posting the message.\n// `avatar_url` -  override the default avatar of the webhook.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `content`, as defined in the `send` function arguments.\nendpoint = (webhookToken, webhookID, username, avatar_url=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package discord\n\n\nimport \"http\"\nimport \"json\"\n\noption discordURL = \"https://discordapp.com/api/webhooks/\"\n\n// `webhookToken` - string - the secure token of the webhook.\n// `webhookID` - string - the ID of the webhook.\n// `username` - string - username posting the message.\n// `content` - string - the text to display in discord.\n// `avatar_url` -  override the default avatar of the webhook.\nsend = (\n        webhookToken,\n        webhookID,\n        username,\n        content,\n        avatar_url=\"\") => {\n    data = {\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    encode = json.encode(v: data)\n\n    return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send messages to discord for each table row.\n// `webhookToken` - string - the secure token of the webhook.\n// `webhookID` - string - the ID of the webhook.\n// `username` - string - username posting the message.\n// `avatar_url` -  override the default avatar of the webhook.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `content`, as defined in the `send` function arguments.\nendpoint = (webhookToken, webhookID, username, avatar_url=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -114,10 +114,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   26,
+						Line:   31,
 					},
 					File:   "discord.flux",
-					Source: "send = (webhookToken, webhookID, username, content, avatar_url=\"\") => {\n    data = {\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    encode = json.encode(v: data)\n\n    return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
+					Source: "send = (\n        webhookToken,\n        webhookID,\n        username,\n        content,\n        avatar_url=\"\") => {\n    data = {\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    encode = json.encode(v: data)\n\n    return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   14,
@@ -151,10 +151,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   26,
+							Line:   31,
 						},
 						File:   "discord.flux",
-						Source: "(webhookToken, webhookID, username, content, avatar_url=\"\") => {\n    data = {\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    encode = json.encode(v: data)\n\n    return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
+						Source: "(\n        webhookToken,\n        webhookID,\n        username,\n        content,\n        avatar_url=\"\") => {\n    data = {\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    encode = json.encode(v: data)\n\n    return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
 						Start: ast.Position{
 							Column: 8,
 							Line:   14,
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   26,
+								Line:   31,
 							},
 							File:   "discord.flux",
 							Source: "{\n    data = {\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    encode = json.encode(v: data)\n\n    return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)\n}",
 							Start: ast.Position{
-								Column: 71,
-								Line:   14,
+								Column: 27,
+								Line:   19,
 							},
 						},
 					},
@@ -185,13 +185,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   19,
+									Line:   24,
 								},
 								File:   "discord.flux",
 								Source: "data = {\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   15,
+									Line:   20,
 								},
 							},
 						},
@@ -202,13 +202,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   15,
+										Line:   20,
 									},
 									File:   "discord.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 5,
-										Line:   15,
+										Line:   20,
 									},
 								},
 							},
@@ -221,13 +221,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   19,
+										Line:   24,
 									},
 									File:   "discord.flux",
 									Source: "{\n        username: username,\n        content: content,\n        avatar_url: avatar_url,\n    }",
 									Start: ast.Position{
 										Column: 12,
-										Line:   15,
+										Line:   20,
 									},
 								},
 							},
@@ -239,13 +239,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   16,
+											Line:   21,
 										},
 										File:   "discord.flux",
 										Source: "username: username",
 										Start: ast.Position{
 											Column: 9,
-											Line:   16,
+											Line:   21,
 										},
 									},
 								},
@@ -257,13 +257,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   16,
+												Line:   21,
 											},
 											File:   "discord.flux",
 											Source: "username",
 											Start: ast.Position{
 												Column: 9,
-												Line:   16,
+												Line:   21,
 											},
 										},
 									},
@@ -277,13 +277,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   16,
+												Line:   21,
 											},
 											File:   "discord.flux",
 											Source: "username",
 											Start: ast.Position{
 												Column: 19,
-												Line:   16,
+												Line:   21,
 											},
 										},
 									},
@@ -296,13 +296,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   17,
+											Line:   22,
 										},
 										File:   "discord.flux",
 										Source: "content: content",
 										Start: ast.Position{
 											Column: 9,
-											Line:   17,
+											Line:   22,
 										},
 									},
 								},
@@ -314,13 +314,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   17,
+												Line:   22,
 											},
 											File:   "discord.flux",
 											Source: "content",
 											Start: ast.Position{
 												Column: 9,
-												Line:   17,
+												Line:   22,
 											},
 										},
 									},
@@ -334,13 +334,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   17,
+												Line:   22,
 											},
 											File:   "discord.flux",
 											Source: "content",
 											Start: ast.Position{
 												Column: 18,
-												Line:   17,
+												Line:   22,
 											},
 										},
 									},
@@ -353,13 +353,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   18,
+											Line:   23,
 										},
 										File:   "discord.flux",
 										Source: "avatar_url: avatar_url",
 										Start: ast.Position{
 											Column: 9,
-											Line:   18,
+											Line:   23,
 										},
 									},
 								},
@@ -371,13 +371,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   18,
+												Line:   23,
 											},
 											File:   "discord.flux",
 											Source: "avatar_url",
 											Start: ast.Position{
 												Column: 9,
-												Line:   18,
+												Line:   23,
 											},
 										},
 									},
@@ -391,13 +391,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   18,
+												Line:   23,
 											},
 											File:   "discord.flux",
 											Source: "avatar_url",
 											Start: ast.Position{
 												Column: 21,
-												Line:   18,
+												Line:   23,
 											},
 										},
 									},
@@ -414,13 +414,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   22,
+									Line:   27,
 								},
 								File:   "discord.flux",
 								Source: "headers = {\n        \"Content-Type\": \"application/json\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   20,
+									Line:   25,
 								},
 							},
 						},
@@ -431,13 +431,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   20,
+										Line:   25,
 									},
 									File:   "discord.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   20,
+										Line:   25,
 									},
 								},
 							},
@@ -450,13 +450,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   22,
+										Line:   27,
 									},
 									File:   "discord.flux",
 									Source: "{\n        \"Content-Type\": \"application/json\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   20,
+										Line:   25,
 									},
 								},
 							},
@@ -468,13 +468,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   21,
+											Line:   26,
 										},
 										File:   "discord.flux",
 										Source: "\"Content-Type\": \"application/json\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   21,
+											Line:   26,
 										},
 									},
 								},
@@ -486,13 +486,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   21,
+												Line:   26,
 											},
 											File:   "discord.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   21,
+												Line:   26,
 											},
 										},
 									},
@@ -506,13 +506,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   21,
+												Line:   26,
 											},
 											File:   "discord.flux",
 											Source: "\"application/json\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   21,
+												Line:   26,
 											},
 										},
 									},
@@ -529,13 +529,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   23,
+									Line:   28,
 								},
 								File:   "discord.flux",
 								Source: "encode = json.encode(v: data)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   23,
+									Line:   28,
 								},
 							},
 						},
@@ -546,13 +546,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   23,
+										Line:   28,
 									},
 									File:   "discord.flux",
 									Source: "encode",
 									Start: ast.Position{
 										Column: 5,
-										Line:   23,
+										Line:   28,
 									},
 								},
 							},
@@ -566,13 +566,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   23,
+											Line:   28,
 										},
 										File:   "discord.flux",
 										Source: "v: data",
 										Start: ast.Position{
 											Column: 26,
-											Line:   23,
+											Line:   28,
 										},
 									},
 								},
@@ -584,13 +584,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   23,
+												Line:   28,
 											},
 											File:   "discord.flux",
 											Source: "v: data",
 											Start: ast.Position{
 												Column: 26,
-												Line:   23,
+												Line:   28,
 											},
 										},
 									},
@@ -602,13 +602,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
-													Line:   23,
+													Line:   28,
 												},
 												File:   "discord.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 26,
-													Line:   23,
+													Line:   28,
 												},
 											},
 										},
@@ -622,13 +622,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   23,
+													Line:   28,
 												},
 												File:   "discord.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 29,
-													Line:   23,
+													Line:   28,
 												},
 											},
 										},
@@ -644,13 +644,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   23,
+										Line:   28,
 									},
 									File:   "discord.flux",
 									Source: "json.encode(v: data)",
 									Start: ast.Position{
 										Column: 14,
-										Line:   23,
+										Line:   28,
 									},
 								},
 							},
@@ -661,13 +661,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   23,
+											Line:   28,
 										},
 										File:   "discord.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 14,
-											Line:   23,
+											Line:   28,
 										},
 									},
 								},
@@ -679,13 +679,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   23,
+												Line:   28,
 											},
 											File:   "discord.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 14,
-												Line:   23,
+												Line:   28,
 											},
 										},
 									},
@@ -698,13 +698,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   23,
+												Line:   28,
 											},
 											File:   "discord.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 19,
-												Line:   23,
+												Line:   28,
 											},
 										},
 									},
@@ -724,13 +724,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 102,
-											Line:   25,
+											Line:   30,
 										},
 										File:   "discord.flux",
 										Source: "headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode",
 										Start: ast.Position{
 											Column: 22,
-											Line:   25,
+											Line:   30,
 										},
 									},
 								},
@@ -742,13 +742,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   25,
+												Line:   30,
 											},
 											File:   "discord.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   25,
+												Line:   30,
 											},
 										},
 									},
@@ -760,13 +760,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   25,
+													Line:   30,
 												},
 												File:   "discord.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   25,
+													Line:   30,
 												},
 											},
 										},
@@ -780,13 +780,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   25,
+													Line:   30,
 												},
 												File:   "discord.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   25,
+													Line:   30,
 												},
 											},
 										},
@@ -799,13 +799,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 88,
-												Line:   25,
+												Line:   30,
 											},
 											File:   "discord.flux",
 											Source: "url: discordURL + webhookID + \"/\" + webhookToken",
 											Start: ast.Position{
 												Column: 40,
-												Line:   25,
+												Line:   30,
 											},
 										},
 									},
@@ -817,13 +817,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   25,
+													Line:   30,
 												},
 												File:   "discord.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   25,
+													Line:   30,
 												},
 											},
 										},
@@ -837,13 +837,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 88,
-													Line:   25,
+													Line:   30,
 												},
 												File:   "discord.flux",
 												Source: "discordURL + webhookID + \"/\" + webhookToken",
 												Start: ast.Position{
 													Column: 45,
-													Line:   25,
+													Line:   30,
 												},
 											},
 										},
@@ -854,13 +854,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 73,
-														Line:   25,
+														Line:   30,
 													},
 													File:   "discord.flux",
 													Source: "discordURL + webhookID + \"/\"",
 													Start: ast.Position{
 														Column: 45,
-														Line:   25,
+														Line:   30,
 													},
 												},
 											},
@@ -871,13 +871,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 67,
-															Line:   25,
+															Line:   30,
 														},
 														File:   "discord.flux",
 														Source: "discordURL + webhookID",
 														Start: ast.Position{
 															Column: 45,
-															Line:   25,
+															Line:   30,
 														},
 													},
 												},
@@ -888,13 +888,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 55,
-																Line:   25,
+																Line:   30,
 															},
 															File:   "discord.flux",
 															Source: "discordURL",
 															Start: ast.Position{
 																Column: 45,
-																Line:   25,
+																Line:   30,
 															},
 														},
 													},
@@ -908,13 +908,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 67,
-																Line:   25,
+																Line:   30,
 															},
 															File:   "discord.flux",
 															Source: "webhookID",
 															Start: ast.Position{
 																Column: 58,
-																Line:   25,
+																Line:   30,
 															},
 														},
 													},
@@ -929,13 +929,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 73,
-															Line:   25,
+															Line:   30,
 														},
 														File:   "discord.flux",
 														Source: "\"/\"",
 														Start: ast.Position{
 															Column: 70,
-															Line:   25,
+															Line:   30,
 														},
 													},
 												},
@@ -950,13 +950,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 88,
-														Line:   25,
+														Line:   30,
 													},
 													File:   "discord.flux",
 													Source: "webhookToken",
 													Start: ast.Position{
 														Column: 76,
-														Line:   25,
+														Line:   30,
 													},
 												},
 											},
@@ -970,13 +970,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 102,
-												Line:   25,
+												Line:   30,
 											},
 											File:   "discord.flux",
 											Source: "data: encode",
 											Start: ast.Position{
 												Column: 90,
-												Line:   25,
+												Line:   30,
 											},
 										},
 									},
@@ -988,13 +988,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 94,
-													Line:   25,
+													Line:   30,
 												},
 												File:   "discord.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 90,
-													Line:   25,
+													Line:   30,
 												},
 											},
 										},
@@ -1008,13 +1008,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 102,
-													Line:   25,
+													Line:   30,
 												},
 												File:   "discord.flux",
 												Source: "encode",
 												Start: ast.Position{
 													Column: 96,
-													Line:   25,
+													Line:   30,
 												},
 											},
 										},
@@ -1030,13 +1030,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 103,
-										Line:   25,
+										Line:   30,
 									},
 									File:   "discord.flux",
 									Source: "http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   25,
+										Line:   30,
 									},
 								},
 							},
@@ -1047,13 +1047,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   25,
+											Line:   30,
 										},
 										File:   "discord.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   25,
+											Line:   30,
 										},
 									},
 								},
@@ -1065,13 +1065,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   25,
+												Line:   30,
 											},
 											File:   "discord.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   25,
+												Line:   30,
 											},
 										},
 									},
@@ -1084,13 +1084,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   25,
+												Line:   30,
 											},
 											File:   "discord.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   25,
+												Line:   30,
 											},
 										},
 									},
@@ -1107,13 +1107,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 103,
-									Line:   25,
+									Line:   30,
 								},
 								File:   "discord.flux",
 								Source: "return http.post(headers: headers, url: discordURL + webhookID + \"/\" + webhookToken, data: encode)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   25,
+									Line:   30,
 								},
 							},
 						},
@@ -1129,13 +1129,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   14,
+								Line:   15,
 							},
 							File:   "discord.flux",
 							Source: "webhookToken",
 							Start: ast.Position{
 								Column: 9,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -1147,13 +1147,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "discord.flux",
 								Source: "webhookToken",
 								Start: ast.Position{
 									Column: 9,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1167,14 +1167,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 32,
-								Line:   14,
+								Column: 18,
+								Line:   16,
 							},
 							File:   "discord.flux",
 							Source: "webhookID",
 							Start: ast.Position{
-								Column: 23,
-								Line:   14,
+								Column: 9,
+								Line:   16,
 							},
 						},
 					},
@@ -1185,14 +1185,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 32,
-									Line:   14,
+									Column: 18,
+									Line:   16,
 								},
 								File:   "discord.flux",
 								Source: "webhookID",
 								Start: ast.Position{
-									Column: 23,
-									Line:   14,
+									Column: 9,
+									Line:   16,
 								},
 							},
 						},
@@ -1206,14 +1206,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 42,
-								Line:   14,
+								Column: 17,
+								Line:   17,
 							},
 							File:   "discord.flux",
 							Source: "username",
 							Start: ast.Position{
-								Column: 34,
-								Line:   14,
+								Column: 9,
+								Line:   17,
 							},
 						},
 					},
@@ -1224,14 +1224,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 42,
-									Line:   14,
+									Column: 17,
+									Line:   17,
 								},
 								File:   "discord.flux",
 								Source: "username",
 								Start: ast.Position{
-									Column: 34,
-									Line:   14,
+									Column: 9,
+									Line:   17,
 								},
 							},
 						},
@@ -1245,14 +1245,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 51,
-								Line:   14,
+								Column: 16,
+								Line:   18,
 							},
 							File:   "discord.flux",
 							Source: "content",
 							Start: ast.Position{
-								Column: 44,
-								Line:   14,
+								Column: 9,
+								Line:   18,
 							},
 						},
 					},
@@ -1263,14 +1263,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 51,
-									Line:   14,
+									Column: 16,
+									Line:   18,
 								},
 								File:   "discord.flux",
 								Source: "content",
 								Start: ast.Position{
-									Column: 44,
-									Line:   14,
+									Column: 9,
+									Line:   18,
 								},
 							},
 						},
@@ -1284,14 +1284,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 66,
-								Line:   14,
+								Column: 22,
+								Line:   19,
 							},
 							File:   "discord.flux",
 							Source: "avatar_url=\"\"",
 							Start: ast.Position{
-								Column: 53,
-								Line:   14,
+								Column: 9,
+								Line:   19,
 							},
 						},
 					},
@@ -1302,14 +1302,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 63,
-									Line:   14,
+									Column: 19,
+									Line:   19,
 								},
 								File:   "discord.flux",
 								Source: "avatar_url",
 								Start: ast.Position{
-									Column: 53,
-									Line:   14,
+									Column: 9,
+									Line:   19,
 								},
 							},
 						},
@@ -1322,14 +1322,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 66,
-									Line:   14,
+									Column: 22,
+									Line:   19,
 								},
 								File:   "discord.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 64,
-									Line:   14,
+									Column: 20,
+									Line:   19,
 								},
 							},
 						},
@@ -1345,13 +1345,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 6,
-						Line:   52,
+						Line:   57,
 					},
 					File:   "discord.flux",
 					Source: "endpoint = (webhookToken, webhookID, username, avatar_url=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   35,
+						Line:   40,
 					},
 				},
 			},
@@ -1362,13 +1362,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   35,
+							Line:   40,
 						},
 						File:   "discord.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   35,
+							Line:   40,
 						},
 					},
 				},
@@ -1382,13 +1382,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   52,
+							Line:   57,
 						},
 						File:   "discord.flux",
 						Source: "(webhookToken, webhookID, username, avatar_url=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   35,
+							Line:   40,
 						},
 					},
 				},
@@ -1400,13 +1400,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 6,
-								Line:   52,
+								Line:   57,
 							},
 							File:   "discord.flux",
 							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
 								Column: 66,
-								Line:   35,
+								Line:   40,
 							},
 						},
 					},
@@ -1418,13 +1418,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   52,
+									Line:   57,
 								},
 								File:   "discord.flux",
 								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
 									Column: 77,
-									Line:   35,
+									Line:   40,
 								},
 							},
 						},
@@ -1436,13 +1436,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 98,
-											Line:   35,
+											Line:   40,
 										},
 										File:   "discord.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 92,
-											Line:   35,
+											Line:   40,
 										},
 									},
 								},
@@ -1454,13 +1454,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   52,
+										Line:   57,
 									},
 									File:   "discord.flux",
 									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
 										Column: 92,
-										Line:   35,
+										Line:   40,
 									},
 								},
 							},
@@ -1472,13 +1472,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   51,
+												Line:   56,
 											},
 											File:   "discord.flux",
 											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
 												Column: 9,
-												Line:   37,
+												Line:   42,
 											},
 										},
 									},
@@ -1490,13 +1490,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   51,
+													Line:   56,
 												},
 												File:   "discord.flux",
 												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
 													Column: 9,
-													Line:   37,
+													Line:   42,
 												},
 											},
 										},
@@ -1508,13 +1508,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   37,
+														Line:   42,
 													},
 													File:   "discord.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 9,
-														Line:   37,
+														Line:   42,
 													},
 												},
 											},
@@ -1529,13 +1529,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 10,
-														Line:   51,
+														Line:   56,
 													},
 													File:   "discord.flux",
 													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
 														Column: 13,
-														Line:   37,
+														Line:   42,
 													},
 												},
 											},
@@ -1546,13 +1546,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 10,
-															Line:   51,
+															Line:   56,
 														},
 														File:   "discord.flux",
 														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
 															Column: 20,
-															Line:   37,
+															Line:   42,
 														},
 													},
 												},
@@ -1563,13 +1563,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   38,
+																Line:   43,
 															},
 															File:   "discord.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 13,
-																Line:   38,
+																Line:   43,
 															},
 														},
 													},
@@ -1580,13 +1580,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 16,
-																	Line:   38,
+																	Line:   43,
 																},
 																File:   "discord.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   38,
+																	Line:   43,
 																},
 															},
 														},
@@ -1600,13 +1600,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 29,
-																		Line:   38,
+																		Line:   43,
 																	},
 																	File:   "discord.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   38,
+																		Line:   43,
 																	},
 																},
 															},
@@ -1618,13 +1618,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 29,
-																			Line:   38,
+																			Line:   43,
 																		},
 																		File:   "discord.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 25,
-																			Line:   38,
+																			Line:   43,
 																		},
 																	},
 																},
@@ -1636,13 +1636,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 26,
-																				Line:   38,
+																				Line:   43,
 																			},
 																			File:   "discord.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 25,
-																				Line:   38,
+																				Line:   43,
 																			},
 																		},
 																	},
@@ -1656,13 +1656,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 29,
-																				Line:   38,
+																				Line:   43,
 																			},
 																			File:   "discord.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 28,
-																				Line:   38,
+																				Line:   43,
 																			},
 																		},
 																	},
@@ -1678,13 +1678,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   38,
+																	Line:   43,
 																},
 																File:   "discord.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   38,
+																	Line:   43,
 																},
 															},
 														},
@@ -1695,13 +1695,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 24,
-																		Line:   38,
+																		Line:   43,
 																	},
 																	File:   "discord.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 19,
-																		Line:   38,
+																		Line:   43,
 																	},
 																},
 															},
@@ -1718,13 +1718,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 14,
-																	Line:   50,
+																	Line:   55,
 																},
 																File:   "discord.flux",
 																Source: "{r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   40,
+																	Line:   45,
 																},
 															},
 														},
@@ -1736,13 +1736,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 18,
-																		Line:   49,
+																		Line:   54,
 																	},
 																	File:   "discord.flux",
 																	Source: "_sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                )",
 																	Start: ast.Position{
 																		Column: 17,
-																		Line:   41,
+																		Line:   46,
 																	},
 																},
 															},
@@ -1754,13 +1754,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 22,
-																			Line:   41,
+																			Line:   46,
 																		},
 																		File:   "discord.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 17,
-																			Line:   41,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -1775,13 +1775,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 28,
-																				Line:   48,
+																				Line:   53,
 																			},
 																			File:   "discord.flux",
 																			Source: "v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100",
 																			Start: ast.Position{
 																				Column: 21,
-																				Line:   42,
+																				Line:   47,
 																			},
 																		},
 																	},
@@ -1793,13 +1793,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   48,
+																					Line:   53,
 																				},
 																				File:   "discord.flux",
 																				Source: "v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100",
 																				Start: ast.Position{
 																					Column: 21,
-																					Line:   42,
+																					Line:   47,
 																				},
 																			},
 																		},
@@ -1811,13 +1811,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 22,
-																						Line:   42,
+																						Line:   47,
 																					},
 																					File:   "discord.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   42,
+																						Line:   47,
 																					},
 																				},
 																			},
@@ -1831,13 +1831,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 28,
-																						Line:   48,
+																						Line:   53,
 																					},
 																					File:   "discord.flux",
 																					Source: "2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100",
 																					Start: ast.Position{
 																						Column: 24,
-																						Line:   42,
+																						Line:   47,
 																					},
 																				},
 																			},
@@ -1848,13 +1848,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 25,
-																							Line:   42,
+																							Line:   47,
 																						},
 																						File:   "discord.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 24,
-																							Line:   42,
+																							Line:   47,
 																						},
 																					},
 																				},
@@ -1868,13 +1868,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 28,
-																							Line:   48,
+																							Line:   53,
 																						},
 																						File:   "discord.flux",
 																						Source: "send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100",
 																						Start: ast.Position{
 																							Column: 29,
-																							Line:   42,
+																							Line:   47,
 																						},
 																					},
 																				},
@@ -1886,13 +1886,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 45,
-																									Line:   47,
+																									Line:   52,
 																								},
 																								File:   "discord.flux",
 																								Source: "webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content",
 																								Start: ast.Position{
 																									Column: 25,
-																									Line:   43,
+																									Line:   48,
 																								},
 																							},
 																						},
@@ -1904,13 +1904,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 51,
-																										Line:   43,
+																										Line:   48,
 																									},
 																									File:   "discord.flux",
 																									Source: "webhookToken: webhookToken",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   43,
+																										Line:   48,
 																									},
 																								},
 																							},
@@ -1922,13 +1922,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 37,
-																											Line:   43,
+																											Line:   48,
 																										},
 																										File:   "discord.flux",
 																										Source: "webhookToken",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   43,
+																											Line:   48,
 																										},
 																									},
 																								},
@@ -1942,13 +1942,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 51,
-																											Line:   43,
+																											Line:   48,
 																										},
 																										File:   "discord.flux",
 																										Source: "webhookToken",
 																										Start: ast.Position{
 																											Column: 39,
-																											Line:   43,
+																											Line:   48,
 																										},
 																									},
 																								},
@@ -1961,13 +1961,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 45,
-																										Line:   44,
+																										Line:   49,
 																									},
 																									File:   "discord.flux",
 																									Source: "webhookID: webhookID",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   44,
+																										Line:   49,
 																									},
 																								},
 																							},
@@ -1979,13 +1979,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 34,
-																											Line:   44,
+																											Line:   49,
 																										},
 																										File:   "discord.flux",
 																										Source: "webhookID",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   44,
+																											Line:   49,
 																										},
 																									},
 																								},
@@ -1999,13 +1999,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   44,
+																											Line:   49,
 																										},
 																										File:   "discord.flux",
 																										Source: "webhookID",
 																										Start: ast.Position{
 																											Column: 36,
-																											Line:   44,
+																											Line:   49,
 																										},
 																									},
 																								},
@@ -2018,13 +2018,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 43,
-																										Line:   45,
+																										Line:   50,
 																									},
 																									File:   "discord.flux",
 																									Source: "username: username",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   45,
+																										Line:   50,
 																									},
 																								},
 																							},
@@ -2036,13 +2036,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   45,
+																											Line:   50,
 																										},
 																										File:   "discord.flux",
 																										Source: "username",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   45,
+																											Line:   50,
 																										},
 																									},
 																								},
@@ -2056,13 +2056,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   45,
+																											Line:   50,
 																										},
 																										File:   "discord.flux",
 																										Source: "username",
 																										Start: ast.Position{
 																											Column: 35,
-																											Line:   45,
+																											Line:   50,
 																										},
 																									},
 																								},
@@ -2075,13 +2075,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 47,
-																										Line:   46,
+																										Line:   51,
 																									},
 																									File:   "discord.flux",
 																									Source: "avatar_url: avatar_url",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   46,
+																										Line:   51,
 																									},
 																								},
 																							},
@@ -2093,13 +2093,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 35,
-																											Line:   46,
+																											Line:   51,
 																										},
 																										File:   "discord.flux",
 																										Source: "avatar_url",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   46,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2113,13 +2113,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 47,
-																											Line:   46,
+																											Line:   51,
 																										},
 																										File:   "discord.flux",
 																										Source: "avatar_url",
 																										Start: ast.Position{
 																											Column: 37,
-																											Line:   46,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2132,13 +2132,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 45,
-																										Line:   47,
+																										Line:   52,
 																									},
 																									File:   "discord.flux",
 																									Source: "content: obj.content",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   47,
+																										Line:   52,
 																									},
 																								},
 																							},
@@ -2150,13 +2150,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 32,
-																											Line:   47,
+																											Line:   52,
 																										},
 																										File:   "discord.flux",
 																										Source: "content",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   47,
+																											Line:   52,
 																										},
 																									},
 																								},
@@ -2170,13 +2170,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   47,
+																											Line:   52,
 																										},
 																										File:   "discord.flux",
 																										Source: "obj.content",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   47,
+																											Line:   52,
 																										},
 																									},
 																								},
@@ -2188,13 +2188,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   47,
+																												Line:   52,
 																											},
 																											File:   "discord.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 34,
-																												Line:   47,
+																												Line:   52,
 																											},
 																										},
 																									},
@@ -2207,13 +2207,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 45,
-																												Line:   47,
+																												Line:   52,
 																											},
 																											File:   "discord.flux",
 																											Source: "content",
 																											Start: ast.Position{
 																												Column: 38,
-																												Line:   47,
+																												Line:   52,
 																											},
 																										},
 																									},
@@ -2231,13 +2231,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 22,
-																								Line:   48,
+																								Line:   53,
 																							},
 																							File:   "discord.flux",
 																							Source: "send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    )",
 																							Start: ast.Position{
 																								Column: 29,
-																								Line:   42,
+																								Line:   47,
 																							},
 																						},
 																					},
@@ -2248,13 +2248,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 33,
-																									Line:   42,
+																									Line:   47,
 																								},
 																								File:   "discord.flux",
 																								Source: "send",
 																								Start: ast.Position{
 																									Column: 29,
-																									Line:   42,
+																									Line:   47,
 																								},
 																							},
 																						},
@@ -2271,13 +2271,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 28,
-																								Line:   48,
+																								Line:   53,
 																							},
 																							File:   "discord.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 25,
-																								Line:   48,
+																								Line:   53,
 																							},
 																						},
 																					},
@@ -2295,13 +2295,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   49,
+																			Line:   54,
 																		},
 																		File:   "discord.flux",
 																		Source: "string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                )",
 																		Start: ast.Position{
 																			Column: 24,
-																			Line:   41,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -2312,13 +2312,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   41,
+																				Line:   46,
 																			},
 																			File:   "discord.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   41,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -2336,13 +2336,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 22,
-																		Line:   40,
+																		Line:   45,
 																	},
 																	File:   "discord.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 21,
-																		Line:   40,
+																		Line:   45,
 																	},
 																},
 															},
@@ -2355,13 +2355,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 14,
-																Line:   50,
+																Line:   55,
 															},
 															File:   "discord.flux",
 															Source: "return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
 																Column: 13,
-																Line:   40,
+																Line:   45,
 															},
 														},
 													},
@@ -2377,13 +2377,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   37,
+															Line:   42,
 														},
 														File:   "discord.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   37,
+															Line:   42,
 														},
 													},
 												},
@@ -2395,13 +2395,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   37,
+																Line:   42,
 															},
 															File:   "discord.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   37,
+																Line:   42,
 															},
 														},
 													},
@@ -2422,13 +2422,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   52,
+											Line:   57,
 										},
 										File:   "discord.flux",
 										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == send(\n                        webhookToken: webhookToken,\n                        webhookID: webhookID,\n                        username: username,\n                        avatar_url: avatar_url,\n                        content: obj.content,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   36,
+											Line:   41,
 										},
 									},
 								},
@@ -2439,13 +2439,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   36,
+												Line:   41,
 											},
 											File:   "discord.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   36,
+												Line:   41,
 											},
 										},
 									},
@@ -2463,13 +2463,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 87,
-										Line:   35,
+										Line:   40,
 									},
 									File:   "discord.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 78,
-										Line:   35,
+										Line:   40,
 									},
 								},
 							},
@@ -2481,13 +2481,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 84,
-											Line:   35,
+											Line:   40,
 										},
 										File:   "discord.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 78,
-											Line:   35,
+											Line:   40,
 										},
 									},
 								},
@@ -2500,13 +2500,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 87,
-										Line:   35,
+										Line:   40,
 									},
 									File:   "discord.flux",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 85,
-										Line:   35,
+										Line:   40,
 									},
 								},
 							}},
@@ -2521,13 +2521,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 72,
-									Line:   35,
+									Line:   40,
 								},
 								File:   "discord.flux",
 								Source: "mapFn",
 								Start: ast.Position{
 									Column: 67,
-									Line:   35,
+									Line:   40,
 								},
 							},
 						},
@@ -2539,13 +2539,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 72,
-										Line:   35,
+										Line:   40,
 									},
 									File:   "discord.flux",
 									Source: "mapFn",
 									Start: ast.Position{
 										Column: 67,
-										Line:   35,
+										Line:   40,
 									},
 								},
 							},
@@ -2564,13 +2564,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   35,
+								Line:   40,
 							},
 							File:   "discord.flux",
 							Source: "webhookToken",
 							Start: ast.Position{
 								Column: 13,
-								Line:   35,
+								Line:   40,
 							},
 						},
 					},
@@ -2582,13 +2582,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   35,
+									Line:   40,
 								},
 								File:   "discord.flux",
 								Source: "webhookToken",
 								Start: ast.Position{
 									Column: 13,
-									Line:   35,
+									Line:   40,
 								},
 							},
 						},
@@ -2603,13 +2603,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
-								Line:   35,
+								Line:   40,
 							},
 							File:   "discord.flux",
 							Source: "webhookID",
 							Start: ast.Position{
 								Column: 27,
-								Line:   35,
+								Line:   40,
 							},
 						},
 					},
@@ -2621,13 +2621,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   35,
+									Line:   40,
 								},
 								File:   "discord.flux",
 								Source: "webhookID",
 								Start: ast.Position{
 									Column: 27,
-									Line:   35,
+									Line:   40,
 								},
 							},
 						},
@@ -2642,13 +2642,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 46,
-								Line:   35,
+								Line:   40,
 							},
 							File:   "discord.flux",
 							Source: "username",
 							Start: ast.Position{
 								Column: 38,
-								Line:   35,
+								Line:   40,
 							},
 						},
 					},
@@ -2660,13 +2660,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   35,
+									Line:   40,
 								},
 								File:   "discord.flux",
 								Source: "username",
 								Start: ast.Position{
 									Column: 38,
-									Line:   35,
+									Line:   40,
 								},
 							},
 						},
@@ -2681,13 +2681,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 61,
-								Line:   35,
+								Line:   40,
 							},
 							File:   "discord.flux",
 							Source: "avatar_url=\"\"",
 							Start: ast.Position{
 								Column: 48,
-								Line:   35,
+								Line:   40,
 							},
 						},
 					},
@@ -2699,13 +2699,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   35,
+									Line:   40,
 								},
 								File:   "discord.flux",
 								Source: "avatar_url",
 								Start: ast.Position{
 									Column: 48,
-									Line:   35,
+									Line:   40,
 								},
 							},
 						},
@@ -2719,13 +2719,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   35,
+									Line:   40,
 								},
 								File:   "discord.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 59,
-									Line:   35,
+									Line:   40,
 								},
 							},
 						},

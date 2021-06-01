@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 6,
-					Line:   90,
+					Line:   112,
 				},
 				File:   "zenoss.flux",
-				Source: "package zenoss\n\n\nimport \"http\"\nimport \"json\"\n\n// event sends event to Zenoss.\n// `url` - string - events web service URL.\n// `username` - string - username for HTTP BASIC authentication. Default is empty string (no auth).\n// `password` - string - password for HTTP BASIC authentication. Default is empty string (no auth).\n// `action` - string - routername. Default is \"EventsRouter\".\n// `method` - string - router name. Default is \"add_event\".\n// `type` - string - event type. Default is \"rpc\".\n// `tid` - int - temporary transaction ID. Default is 1.\n// `summary` - string - event summary. Default is empty string.\n// `device` - string - related device. Default is empty string.\n// `component` - string - related component.\n// `severity` - string - severity of the event.\n// `eventClass` - string - event class. Default is empty string.\n// `eventClassKey` - string - event class key. Default is empty string.\n// `collector` - string - collector. Default is empty string.\n// `message` - string - event message. Default is empty string.\nevent = (url, username, password, action=\"EventsRouter\", method=\"add_event\", type=\"rpc\", tid=1, summary=\"\", device=\"\", component=\"\", severity, eventClass=\"\", eventClassKey=\"\", collector=\"\", message=\"\") => {\n    event = {\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }\n    payload = {\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}\n\n// endpoint return method for sending events to Zenoss.\n// Parameters:\n// `url` - string - events web service URL.\n// `username` - string - username for HTTP BASIC authentication. Default is empty string (no auth).\n// `password` - string - password for HTTP BASIC authentication. Default is empty string (no auth).\n// `action` - string - routername. Default is \"EventsRouter\".\n// `method` - string - router name. Default is \"add_event\".\n// `type` - string - event type. Default is \"rpc\".\n// `tid` - int - temporary transaction ID. Default is 1.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return record with `summary`, `device`, `component`, `severity`, `eventClass`, `eventClassKey`, `collector` and `message` fields as defined in the `event` function arguments.\nendpoint = (url, username, password, action=\"EventsRouter\", method=\"add_event\", type=\"rpc\", tid=1) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package zenoss\n\n\nimport \"http\"\nimport \"json\"\n\n// event sends event to Zenoss.\n// `url` - string - events web service URL.\n// `username` - string - username for HTTP BASIC authentication. Default is empty string (no auth).\n// `password` - string - password for HTTP BASIC authentication. Default is empty string (no auth).\n// `action` - string - routername. Default is \"EventsRouter\".\n// `method` - string - router name. Default is \"add_event\".\n// `type` - string - event type. Default is \"rpc\".\n// `tid` - int - temporary transaction ID. Default is 1.\n// `summary` - string - event summary. Default is empty string.\n// `device` - string - related device. Default is empty string.\n// `component` - string - related component.\n// `severity` - string - severity of the event.\n// `eventClass` - string - event class. Default is empty string.\n// `eventClassKey` - string - event class key. Default is empty string.\n// `collector` - string - collector. Default is empty string.\n// `message` - string - event message. Default is empty string.\nevent = (\n        url,\n        username,\n        password,\n        action=\"EventsRouter\",\n        method=\"add_event\",\n        type=\"rpc\",\n        tid=1,\n        summary=\"\",\n        device=\"\",\n        component=\"\",\n        severity,\n        eventClass=\"\",\n        eventClassKey=\"\",\n        collector=\"\",\n        message=\"\") => {\n    event = {\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }\n    payload = {\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}\n\n// endpoint return method for sending events to Zenoss.\n// Parameters:\n// `url` - string - events web service URL.\n// `username` - string - username for HTTP BASIC authentication. Default is empty string (no auth).\n// `password` - string - password for HTTP BASIC authentication. Default is empty string (no auth).\n// `action` - string - routername. Default is \"EventsRouter\".\n// `method` - string - router name. Default is \"add_event\".\n// `type` - string - event type. Default is \"rpc\".\n// `tid` - int - temporary transaction ID. Default is 1.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return record with `summary`, `device`, `component`, `severity`, `eventClass`, `eventClassKey`, `collector` and `message` fields as defined in the `event` function arguments.\nendpoint = (\n        url,\n        username,\n        password,\n        action=\"EventsRouter\",\n        method=\"add_event\",\n        type=\"rpc\",\n        tid=1) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,10 +41,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   50,
+						Line:   65,
 					},
 					File:   "zenoss.flux",
-					Source: "event = (url, username, password, action=\"EventsRouter\", method=\"add_event\", type=\"rpc\", tid=1, summary=\"\", device=\"\", component=\"\", severity, eventClass=\"\", eventClassKey=\"\", collector=\"\", message=\"\") => {\n    event = {\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }\n    payload = {\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
+					Source: "event = (\n        url,\n        username,\n        password,\n        action=\"EventsRouter\",\n        method=\"add_event\",\n        type=\"rpc\",\n        tid=1,\n        summary=\"\",\n        device=\"\",\n        component=\"\",\n        severity,\n        eventClass=\"\",\n        eventClassKey=\"\",\n        collector=\"\",\n        message=\"\") => {\n    event = {\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }\n    payload = {\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   23,
@@ -78,10 +78,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   50,
+							Line:   65,
 						},
 						File:   "zenoss.flux",
-						Source: "(url, username, password, action=\"EventsRouter\", method=\"add_event\", type=\"rpc\", tid=1, summary=\"\", device=\"\", component=\"\", severity, eventClass=\"\", eventClassKey=\"\", collector=\"\", message=\"\") => {\n    event = {\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }\n    payload = {\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
+						Source: "(\n        url,\n        username,\n        password,\n        action=\"EventsRouter\",\n        method=\"add_event\",\n        type=\"rpc\",\n        tid=1,\n        summary=\"\",\n        device=\"\",\n        component=\"\",\n        severity,\n        eventClass=\"\",\n        eventClassKey=\"\",\n        collector=\"\",\n        message=\"\") => {\n    event = {\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }\n    payload = {\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 						Start: ast.Position{
 							Column: 9,
 							Line:   23,
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   50,
+								Line:   65,
 							},
 							File:   "zenoss.flux",
 							Source: "{\n    event = {\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }\n    payload = {\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 							Start: ast.Position{
-								Column: 206,
-								Line:   23,
+								Column: 24,
+								Line:   38,
 							},
 						},
 					},
@@ -112,13 +112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   33,
+									Line:   48,
 								},
 								File:   "zenoss.flux",
 								Source: "event = {\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   24,
+									Line:   39,
 								},
 							},
 						},
@@ -129,13 +129,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   24,
+										Line:   39,
 									},
 									File:   "zenoss.flux",
 									Source: "event",
 									Start: ast.Position{
 										Column: 5,
-										Line:   24,
+										Line:   39,
 									},
 								},
 							},
@@ -148,13 +148,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   33,
+										Line:   48,
 									},
 									File:   "zenoss.flux",
 									Source: "{\n        summary: summary,\n        device: device,\n        component: component,\n        severity: severity,\n        evclass: eventClass,\n        evclasskey: eventClassKey,\n        collector: collector,\n        message: message,\n    }",
 									Start: ast.Position{
 										Column: 13,
-										Line:   24,
+										Line:   39,
 									},
 								},
 							},
@@ -166,13 +166,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   25,
+											Line:   40,
 										},
 										File:   "zenoss.flux",
 										Source: "summary: summary",
 										Start: ast.Position{
 											Column: 9,
-											Line:   25,
+											Line:   40,
 										},
 									},
 								},
@@ -184,13 +184,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   25,
+												Line:   40,
 											},
 											File:   "zenoss.flux",
 											Source: "summary",
 											Start: ast.Position{
 												Column: 9,
-												Line:   25,
+												Line:   40,
 											},
 										},
 									},
@@ -204,13 +204,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   25,
+												Line:   40,
 											},
 											File:   "zenoss.flux",
 											Source: "summary",
 											Start: ast.Position{
 												Column: 18,
-												Line:   25,
+												Line:   40,
 											},
 										},
 									},
@@ -223,13 +223,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   26,
+											Line:   41,
 										},
 										File:   "zenoss.flux",
 										Source: "device: device",
 										Start: ast.Position{
 											Column: 9,
-											Line:   26,
+											Line:   41,
 										},
 									},
 								},
@@ -241,13 +241,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   26,
+												Line:   41,
 											},
 											File:   "zenoss.flux",
 											Source: "device",
 											Start: ast.Position{
 												Column: 9,
-												Line:   26,
+												Line:   41,
 											},
 										},
 									},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   26,
+												Line:   41,
 											},
 											File:   "zenoss.flux",
 											Source: "device",
 											Start: ast.Position{
 												Column: 17,
-												Line:   26,
+												Line:   41,
 											},
 										},
 									},
@@ -280,13 +280,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   27,
+											Line:   42,
 										},
 										File:   "zenoss.flux",
 										Source: "component: component",
 										Start: ast.Position{
 											Column: 9,
-											Line:   27,
+											Line:   42,
 										},
 									},
 								},
@@ -298,13 +298,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   27,
+												Line:   42,
 											},
 											File:   "zenoss.flux",
 											Source: "component",
 											Start: ast.Position{
 												Column: 9,
-												Line:   27,
+												Line:   42,
 											},
 										},
 									},
@@ -318,13 +318,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   27,
+												Line:   42,
 											},
 											File:   "zenoss.flux",
 											Source: "component",
 											Start: ast.Position{
 												Column: 20,
-												Line:   27,
+												Line:   42,
 											},
 										},
 									},
@@ -337,13 +337,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   28,
+											Line:   43,
 										},
 										File:   "zenoss.flux",
 										Source: "severity: severity",
 										Start: ast.Position{
 											Column: 9,
-											Line:   28,
+											Line:   43,
 										},
 									},
 								},
@@ -355,13 +355,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   28,
+												Line:   43,
 											},
 											File:   "zenoss.flux",
 											Source: "severity",
 											Start: ast.Position{
 												Column: 9,
-												Line:   28,
+												Line:   43,
 											},
 										},
 									},
@@ -375,13 +375,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   28,
+												Line:   43,
 											},
 											File:   "zenoss.flux",
 											Source: "severity",
 											Start: ast.Position{
 												Column: 19,
-												Line:   28,
+												Line:   43,
 											},
 										},
 									},
@@ -394,13 +394,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   29,
+											Line:   44,
 										},
 										File:   "zenoss.flux",
 										Source: "evclass: eventClass",
 										Start: ast.Position{
 											Column: 9,
-											Line:   29,
+											Line:   44,
 										},
 									},
 								},
@@ -412,13 +412,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   29,
+												Line:   44,
 											},
 											File:   "zenoss.flux",
 											Source: "evclass",
 											Start: ast.Position{
 												Column: 9,
-												Line:   29,
+												Line:   44,
 											},
 										},
 									},
@@ -432,13 +432,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   29,
+												Line:   44,
 											},
 											File:   "zenoss.flux",
 											Source: "eventClass",
 											Start: ast.Position{
 												Column: 18,
-												Line:   29,
+												Line:   44,
 											},
 										},
 									},
@@ -451,13 +451,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   30,
+											Line:   45,
 										},
 										File:   "zenoss.flux",
 										Source: "evclasskey: eventClassKey",
 										Start: ast.Position{
 											Column: 9,
-											Line:   30,
+											Line:   45,
 										},
 									},
 								},
@@ -469,13 +469,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   30,
+												Line:   45,
 											},
 											File:   "zenoss.flux",
 											Source: "evclasskey",
 											Start: ast.Position{
 												Column: 9,
-												Line:   30,
+												Line:   45,
 											},
 										},
 									},
@@ -489,13 +489,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   30,
+												Line:   45,
 											},
 											File:   "zenoss.flux",
 											Source: "eventClassKey",
 											Start: ast.Position{
 												Column: 21,
-												Line:   30,
+												Line:   45,
 											},
 										},
 									},
@@ -508,13 +508,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   31,
+											Line:   46,
 										},
 										File:   "zenoss.flux",
 										Source: "collector: collector",
 										Start: ast.Position{
 											Column: 9,
-											Line:   31,
+											Line:   46,
 										},
 									},
 								},
@@ -526,13 +526,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   31,
+												Line:   46,
 											},
 											File:   "zenoss.flux",
 											Source: "collector",
 											Start: ast.Position{
 												Column: 9,
-												Line:   31,
+												Line:   46,
 											},
 										},
 									},
@@ -546,13 +546,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   31,
+												Line:   46,
 											},
 											File:   "zenoss.flux",
 											Source: "collector",
 											Start: ast.Position{
 												Column: 20,
-												Line:   31,
+												Line:   46,
 											},
 										},
 									},
@@ -565,13 +565,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   32,
+											Line:   47,
 										},
 										File:   "zenoss.flux",
 										Source: "message: message",
 										Start: ast.Position{
 											Column: 9,
-											Line:   32,
+											Line:   47,
 										},
 									},
 								},
@@ -583,13 +583,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   32,
+												Line:   47,
 											},
 											File:   "zenoss.flux",
 											Source: "message",
 											Start: ast.Position{
 												Column: 9,
-												Line:   32,
+												Line:   47,
 											},
 										},
 									},
@@ -603,13 +603,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   32,
+												Line:   47,
 											},
 											File:   "zenoss.flux",
 											Source: "message",
 											Start: ast.Position{
 												Column: 18,
-												Line:   32,
+												Line:   47,
 											},
 										},
 									},
@@ -626,13 +626,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   42,
+									Line:   57,
 								},
 								File:   "zenoss.flux",
 								Source: "payload = {\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   34,
+									Line:   49,
 								},
 							},
 						},
@@ -643,13 +643,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   34,
+										Line:   49,
 									},
 									File:   "zenoss.flux",
 									Source: "payload",
 									Start: ast.Position{
 										Column: 5,
-										Line:   34,
+										Line:   49,
 									},
 								},
 							},
@@ -662,13 +662,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   42,
+										Line:   57,
 									},
 									File:   "zenoss.flux",
 									Source: "{\n        action: action,\n        method: method,\n        data: [\n            event,\n        ],\n        type: type,\n        tid: tid,\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   34,
+										Line:   49,
 									},
 								},
 							},
@@ -680,13 +680,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   35,
+											Line:   50,
 										},
 										File:   "zenoss.flux",
 										Source: "action: action",
 										Start: ast.Position{
 											Column: 9,
-											Line:   35,
+											Line:   50,
 										},
 									},
 								},
@@ -698,13 +698,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   35,
+												Line:   50,
 											},
 											File:   "zenoss.flux",
 											Source: "action",
 											Start: ast.Position{
 												Column: 9,
-												Line:   35,
+												Line:   50,
 											},
 										},
 									},
@@ -718,13 +718,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   35,
+												Line:   50,
 											},
 											File:   "zenoss.flux",
 											Source: "action",
 											Start: ast.Position{
 												Column: 17,
-												Line:   35,
+												Line:   50,
 											},
 										},
 									},
@@ -737,13 +737,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   36,
+											Line:   51,
 										},
 										File:   "zenoss.flux",
 										Source: "method: method",
 										Start: ast.Position{
 											Column: 9,
-											Line:   36,
+											Line:   51,
 										},
 									},
 								},
@@ -755,13 +755,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   36,
+												Line:   51,
 											},
 											File:   "zenoss.flux",
 											Source: "method",
 											Start: ast.Position{
 												Column: 9,
-												Line:   36,
+												Line:   51,
 											},
 										},
 									},
@@ -775,13 +775,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   36,
+												Line:   51,
 											},
 											File:   "zenoss.flux",
 											Source: "method",
 											Start: ast.Position{
 												Column: 17,
-												Line:   36,
+												Line:   51,
 											},
 										},
 									},
@@ -794,13 +794,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 10,
-											Line:   39,
+											Line:   54,
 										},
 										File:   "zenoss.flux",
 										Source: "data: [\n            event,\n        ]",
 										Start: ast.Position{
 											Column: 9,
-											Line:   37,
+											Line:   52,
 										},
 									},
 								},
@@ -812,13 +812,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   37,
+												Line:   52,
 											},
 											File:   "zenoss.flux",
 											Source: "data",
 											Start: ast.Position{
 												Column: 9,
-												Line:   37,
+												Line:   52,
 											},
 										},
 									},
@@ -832,13 +832,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   39,
+												Line:   54,
 											},
 											File:   "zenoss.flux",
 											Source: "[\n            event,\n        ]",
 											Start: ast.Position{
 												Column: 15,
-												Line:   37,
+												Line:   52,
 											},
 										},
 									},
@@ -849,13 +849,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   38,
+													Line:   53,
 												},
 												File:   "zenoss.flux",
 												Source: "event",
 												Start: ast.Position{
 													Column: 13,
-													Line:   38,
+													Line:   53,
 												},
 											},
 										},
@@ -871,13 +871,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   40,
+											Line:   55,
 										},
 										File:   "zenoss.flux",
 										Source: "type: type",
 										Start: ast.Position{
 											Column: 9,
-											Line:   40,
+											Line:   55,
 										},
 									},
 								},
@@ -889,13 +889,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   40,
+												Line:   55,
 											},
 											File:   "zenoss.flux",
 											Source: "type",
 											Start: ast.Position{
 												Column: 9,
-												Line:   40,
+												Line:   55,
 											},
 										},
 									},
@@ -909,13 +909,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   40,
+												Line:   55,
 											},
 											File:   "zenoss.flux",
 											Source: "type",
 											Start: ast.Position{
 												Column: 15,
-												Line:   40,
+												Line:   55,
 											},
 										},
 									},
@@ -928,13 +928,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 17,
-											Line:   41,
+											Line:   56,
 										},
 										File:   "zenoss.flux",
 										Source: "tid: tid",
 										Start: ast.Position{
 											Column: 9,
-											Line:   41,
+											Line:   56,
 										},
 									},
 								},
@@ -946,13 +946,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   41,
+												Line:   56,
 											},
 											File:   "zenoss.flux",
 											Source: "tid",
 											Start: ast.Position{
 												Column: 9,
-												Line:   41,
+												Line:   56,
 											},
 										},
 									},
@@ -966,13 +966,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   41,
+												Line:   56,
 											},
 											File:   "zenoss.flux",
 											Source: "tid",
 											Start: ast.Position{
 												Column: 14,
-												Line:   41,
+												Line:   56,
 											},
 										},
 									},
@@ -989,13 +989,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   46,
+									Line:   61,
 								},
 								File:   "zenoss.flux",
 								Source: "headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   43,
+									Line:   58,
 								},
 							},
 						},
@@ -1006,13 +1006,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   43,
+										Line:   58,
 									},
 									File:   "zenoss.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   43,
+										Line:   58,
 									},
 								},
 							},
@@ -1025,13 +1025,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   46,
+										Line:   61,
 									},
 									File:   "zenoss.flux",
 									Source: "{\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   43,
+										Line:   58,
 									},
 								},
 							},
@@ -1043,13 +1043,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 66,
-											Line:   44,
+											Line:   59,
 										},
 										File:   "zenoss.flux",
 										Source: "\"Authorization\": http.basicAuth(u: username, p: password)",
 										Start: ast.Position{
 											Column: 9,
-											Line:   44,
+											Line:   59,
 										},
 									},
 								},
@@ -1061,13 +1061,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   44,
+												Line:   59,
 											},
 											File:   "zenoss.flux",
 											Source: "\"Authorization\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   44,
+												Line:   59,
 											},
 										},
 									},
@@ -1082,13 +1082,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   44,
+													Line:   59,
 												},
 												File:   "zenoss.flux",
 												Source: "u: username, p: password",
 												Start: ast.Position{
 													Column: 41,
-													Line:   44,
+													Line:   59,
 												},
 											},
 										},
@@ -1100,13 +1100,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 52,
-														Line:   44,
+														Line:   59,
 													},
 													File:   "zenoss.flux",
 													Source: "u: username",
 													Start: ast.Position{
 														Column: 41,
-														Line:   44,
+														Line:   59,
 													},
 												},
 											},
@@ -1118,13 +1118,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
-															Line:   44,
+															Line:   59,
 														},
 														File:   "zenoss.flux",
 														Source: "u",
 														Start: ast.Position{
 															Column: 41,
-															Line:   44,
+															Line:   59,
 														},
 													},
 												},
@@ -1138,13 +1138,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 52,
-															Line:   44,
+															Line:   59,
 														},
 														File:   "zenoss.flux",
 														Source: "username",
 														Start: ast.Position{
 															Column: 44,
-															Line:   44,
+															Line:   59,
 														},
 													},
 												},
@@ -1157,13 +1157,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 65,
-														Line:   44,
+														Line:   59,
 													},
 													File:   "zenoss.flux",
 													Source: "p: password",
 													Start: ast.Position{
 														Column: 54,
-														Line:   44,
+														Line:   59,
 													},
 												},
 											},
@@ -1175,13 +1175,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 55,
-															Line:   44,
+															Line:   59,
 														},
 														File:   "zenoss.flux",
 														Source: "p",
 														Start: ast.Position{
 															Column: 54,
-															Line:   44,
+															Line:   59,
 														},
 													},
 												},
@@ -1195,13 +1195,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 65,
-															Line:   44,
+															Line:   59,
 														},
 														File:   "zenoss.flux",
 														Source: "password",
 														Start: ast.Position{
 															Column: 57,
-															Line:   44,
+															Line:   59,
 														},
 													},
 												},
@@ -1217,13 +1217,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   44,
+												Line:   59,
 											},
 											File:   "zenoss.flux",
 											Source: "http.basicAuth(u: username, p: password)",
 											Start: ast.Position{
 												Column: 26,
-												Line:   44,
+												Line:   59,
 											},
 										},
 									},
@@ -1234,13 +1234,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 40,
-													Line:   44,
+													Line:   59,
 												},
 												File:   "zenoss.flux",
 												Source: "http.basicAuth",
 												Start: ast.Position{
 													Column: 26,
-													Line:   44,
+													Line:   59,
 												},
 											},
 										},
@@ -1252,13 +1252,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   44,
+														Line:   59,
 													},
 													File:   "zenoss.flux",
 													Source: "http",
 													Start: ast.Position{
 														Column: 26,
-														Line:   44,
+														Line:   59,
 													},
 												},
 											},
@@ -1271,13 +1271,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
-														Line:   44,
+														Line:   59,
 													},
 													File:   "zenoss.flux",
 													Source: "basicAuth",
 													Start: ast.Position{
 														Column: 31,
-														Line:   44,
+														Line:   59,
 													},
 												},
 											},
@@ -1295,13 +1295,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   45,
+											Line:   60,
 										},
 										File:   "zenoss.flux",
 										Source: "\"Content-Type\": \"application/json\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   45,
+											Line:   60,
 										},
 									},
 								},
@@ -1313,13 +1313,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   45,
+												Line:   60,
 											},
 											File:   "zenoss.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   45,
+												Line:   60,
 											},
 										},
 									},
@@ -1333,13 +1333,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   45,
+												Line:   60,
 											},
 											File:   "zenoss.flux",
 											Source: "\"application/json\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   45,
+												Line:   60,
 											},
 										},
 									},
@@ -1356,13 +1356,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   47,
+									Line:   62,
 								},
 								File:   "zenoss.flux",
 								Source: "body = json.encode(v: payload)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   47,
+									Line:   62,
 								},
 							},
 						},
@@ -1373,13 +1373,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   47,
+										Line:   62,
 									},
 									File:   "zenoss.flux",
 									Source: "body",
 									Start: ast.Position{
 										Column: 5,
-										Line:   47,
+										Line:   62,
 									},
 								},
 							},
@@ -1393,13 +1393,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   47,
+											Line:   62,
 										},
 										File:   "zenoss.flux",
 										Source: "v: payload",
 										Start: ast.Position{
 											Column: 24,
-											Line:   47,
+											Line:   62,
 										},
 									},
 								},
@@ -1411,13 +1411,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   47,
+												Line:   62,
 											},
 											File:   "zenoss.flux",
 											Source: "v: payload",
 											Start: ast.Position{
 												Column: 24,
-												Line:   47,
+												Line:   62,
 											},
 										},
 									},
@@ -1429,13 +1429,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   47,
+													Line:   62,
 												},
 												File:   "zenoss.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 24,
-													Line:   47,
+													Line:   62,
 												},
 											},
 										},
@@ -1449,13 +1449,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   47,
+													Line:   62,
 												},
 												File:   "zenoss.flux",
 												Source: "payload",
 												Start: ast.Position{
 													Column: 27,
-													Line:   47,
+													Line:   62,
 												},
 											},
 										},
@@ -1471,13 +1471,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   47,
+										Line:   62,
 									},
 									File:   "zenoss.flux",
 									Source: "json.encode(v: payload)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   47,
+										Line:   62,
 									},
 								},
 							},
@@ -1488,13 +1488,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   47,
+											Line:   62,
 										},
 										File:   "zenoss.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 12,
-											Line:   47,
+											Line:   62,
 										},
 									},
 								},
@@ -1506,13 +1506,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   47,
+												Line:   62,
 											},
 											File:   "zenoss.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 12,
-												Line:   47,
+												Line:   62,
 											},
 										},
 									},
@@ -1525,13 +1525,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   47,
+												Line:   62,
 											},
 											File:   "zenoss.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 17,
-												Line:   47,
+												Line:   62,
 											},
 										},
 									},
@@ -1551,13 +1551,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 60,
-											Line:   49,
+											Line:   64,
 										},
 										File:   "zenoss.flux",
 										Source: "headers: headers, url: url, data: body",
 										Start: ast.Position{
 											Column: 22,
-											Line:   49,
+											Line:   64,
 										},
 									},
 								},
@@ -1569,13 +1569,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   49,
+												Line:   64,
 											},
 											File:   "zenoss.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   49,
+												Line:   64,
 											},
 										},
 									},
@@ -1587,13 +1587,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   49,
+													Line:   64,
 												},
 												File:   "zenoss.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   49,
+													Line:   64,
 												},
 											},
 										},
@@ -1607,13 +1607,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   49,
+													Line:   64,
 												},
 												File:   "zenoss.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   49,
+													Line:   64,
 												},
 											},
 										},
@@ -1626,13 +1626,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   49,
+												Line:   64,
 											},
 											File:   "zenoss.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 40,
-												Line:   49,
+												Line:   64,
 											},
 										},
 									},
@@ -1644,13 +1644,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   49,
+													Line:   64,
 												},
 												File:   "zenoss.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   49,
+													Line:   64,
 												},
 											},
 										},
@@ -1664,13 +1664,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   49,
+													Line:   64,
 												},
 												File:   "zenoss.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 45,
-													Line:   49,
+													Line:   64,
 												},
 											},
 										},
@@ -1683,13 +1683,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 60,
-												Line:   49,
+												Line:   64,
 											},
 											File:   "zenoss.flux",
 											Source: "data: body",
 											Start: ast.Position{
 												Column: 50,
-												Line:   49,
+												Line:   64,
 											},
 										},
 									},
@@ -1701,13 +1701,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   49,
+													Line:   64,
 												},
 												File:   "zenoss.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 50,
-													Line:   49,
+													Line:   64,
 												},
 											},
 										},
@@ -1721,13 +1721,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   49,
+													Line:   64,
 												},
 												File:   "zenoss.flux",
 												Source: "body",
 												Start: ast.Position{
 													Column: 56,
-													Line:   49,
+													Line:   64,
 												},
 											},
 										},
@@ -1743,13 +1743,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 61,
-										Line:   49,
+										Line:   64,
 									},
 									File:   "zenoss.flux",
 									Source: "http.post(headers: headers, url: url, data: body)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   49,
+										Line:   64,
 									},
 								},
 							},
@@ -1760,13 +1760,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   49,
+											Line:   64,
 										},
 										File:   "zenoss.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   49,
+											Line:   64,
 										},
 									},
 								},
@@ -1778,13 +1778,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   49,
+												Line:   64,
 											},
 											File:   "zenoss.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   49,
+												Line:   64,
 											},
 										},
 									},
@@ -1797,13 +1797,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   49,
+												Line:   64,
 											},
 											File:   "zenoss.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   49,
+												Line:   64,
 											},
 										},
 									},
@@ -1820,13 +1820,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   49,
+									Line:   64,
 								},
 								File:   "zenoss.flux",
 								Source: "return http.post(headers: headers, url: url, data: body)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   49,
+									Line:   64,
 								},
 							},
 						},
@@ -1841,14 +1841,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 13,
-								Line:   23,
+								Column: 12,
+								Line:   24,
 							},
 							File:   "zenoss.flux",
 							Source: "url",
 							Start: ast.Position{
-								Column: 10,
-								Line:   23,
+								Column: 9,
+								Line:   24,
 							},
 						},
 					},
@@ -1859,14 +1859,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
-									Line:   23,
+									Column: 12,
+									Line:   24,
 								},
 								File:   "zenoss.flux",
 								Source: "url",
 								Start: ast.Position{
-									Column: 10,
-									Line:   23,
+									Column: 9,
+									Line:   24,
 								},
 							},
 						},
@@ -1880,14 +1880,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 23,
-								Line:   23,
+								Column: 17,
+								Line:   25,
 							},
 							File:   "zenoss.flux",
 							Source: "username",
 							Start: ast.Position{
-								Column: 15,
-								Line:   23,
+								Column: 9,
+								Line:   25,
 							},
 						},
 					},
@@ -1898,14 +1898,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 23,
-									Line:   23,
+									Column: 17,
+									Line:   25,
 								},
 								File:   "zenoss.flux",
 								Source: "username",
 								Start: ast.Position{
-									Column: 15,
-									Line:   23,
+									Column: 9,
+									Line:   25,
 								},
 							},
 						},
@@ -1919,14 +1919,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 33,
-								Line:   23,
+								Column: 17,
+								Line:   26,
 							},
 							File:   "zenoss.flux",
 							Source: "password",
 							Start: ast.Position{
-								Column: 25,
-								Line:   23,
+								Column: 9,
+								Line:   26,
 							},
 						},
 					},
@@ -1937,14 +1937,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 33,
-									Line:   23,
+									Column: 17,
+									Line:   26,
 								},
 								File:   "zenoss.flux",
 								Source: "password",
 								Start: ast.Position{
-									Column: 25,
-									Line:   23,
+									Column: 9,
+									Line:   26,
 								},
 							},
 						},
@@ -1958,14 +1958,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 56,
-								Line:   23,
+								Column: 30,
+								Line:   27,
 							},
 							File:   "zenoss.flux",
 							Source: "action=\"EventsRouter\"",
 							Start: ast.Position{
-								Column: 35,
-								Line:   23,
+								Column: 9,
+								Line:   27,
 							},
 						},
 					},
@@ -1976,14 +1976,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 41,
-									Line:   23,
+									Column: 15,
+									Line:   27,
 								},
 								File:   "zenoss.flux",
 								Source: "action",
 								Start: ast.Position{
-									Column: 35,
-									Line:   23,
+									Column: 9,
+									Line:   27,
 								},
 							},
 						},
@@ -1996,14 +1996,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 56,
-									Line:   23,
+									Column: 30,
+									Line:   27,
 								},
 								File:   "zenoss.flux",
 								Source: "\"EventsRouter\"",
 								Start: ast.Position{
-									Column: 42,
-									Line:   23,
+									Column: 16,
+									Line:   27,
 								},
 							},
 						},
@@ -2015,14 +2015,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 76,
-								Line:   23,
+								Column: 27,
+								Line:   28,
 							},
 							File:   "zenoss.flux",
 							Source: "method=\"add_event\"",
 							Start: ast.Position{
-								Column: 58,
-								Line:   23,
+								Column: 9,
+								Line:   28,
 							},
 						},
 					},
@@ -2033,14 +2033,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 64,
-									Line:   23,
+									Column: 15,
+									Line:   28,
 								},
 								File:   "zenoss.flux",
 								Source: "method",
 								Start: ast.Position{
-									Column: 58,
-									Line:   23,
+									Column: 9,
+									Line:   28,
 								},
 							},
 						},
@@ -2053,14 +2053,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 76,
-									Line:   23,
+									Column: 27,
+									Line:   28,
 								},
 								File:   "zenoss.flux",
 								Source: "\"add_event\"",
 								Start: ast.Position{
-									Column: 65,
-									Line:   23,
+									Column: 16,
+									Line:   28,
 								},
 							},
 						},
@@ -2072,14 +2072,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 88,
-								Line:   23,
+								Column: 19,
+								Line:   29,
 							},
 							File:   "zenoss.flux",
 							Source: "type=\"rpc\"",
 							Start: ast.Position{
-								Column: 78,
-								Line:   23,
+								Column: 9,
+								Line:   29,
 							},
 						},
 					},
@@ -2090,14 +2090,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 82,
-									Line:   23,
+									Column: 13,
+									Line:   29,
 								},
 								File:   "zenoss.flux",
 								Source: "type",
 								Start: ast.Position{
-									Column: 78,
-									Line:   23,
+									Column: 9,
+									Line:   29,
 								},
 							},
 						},
@@ -2110,14 +2110,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 88,
-									Line:   23,
+									Column: 19,
+									Line:   29,
 								},
 								File:   "zenoss.flux",
 								Source: "\"rpc\"",
 								Start: ast.Position{
-									Column: 83,
-									Line:   23,
+									Column: 14,
+									Line:   29,
 								},
 							},
 						},
@@ -2129,14 +2129,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 95,
-								Line:   23,
+								Column: 14,
+								Line:   30,
 							},
 							File:   "zenoss.flux",
 							Source: "tid=1",
 							Start: ast.Position{
-								Column: 90,
-								Line:   23,
+								Column: 9,
+								Line:   30,
 							},
 						},
 					},
@@ -2147,14 +2147,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 93,
-									Line:   23,
+									Column: 12,
+									Line:   30,
 								},
 								File:   "zenoss.flux",
 								Source: "tid",
 								Start: ast.Position{
-									Column: 90,
-									Line:   23,
+									Column: 9,
+									Line:   30,
 								},
 							},
 						},
@@ -2167,14 +2167,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 95,
-									Line:   23,
+									Column: 14,
+									Line:   30,
 								},
 								File:   "zenoss.flux",
 								Source: "1",
 								Start: ast.Position{
-									Column: 94,
-									Line:   23,
+									Column: 13,
+									Line:   30,
 								},
 							},
 						},
@@ -2186,14 +2186,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 107,
-								Line:   23,
+								Column: 19,
+								Line:   31,
 							},
 							File:   "zenoss.flux",
 							Source: "summary=\"\"",
 							Start: ast.Position{
-								Column: 97,
-								Line:   23,
+								Column: 9,
+								Line:   31,
 							},
 						},
 					},
@@ -2204,14 +2204,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 104,
-									Line:   23,
+									Column: 16,
+									Line:   31,
 								},
 								File:   "zenoss.flux",
 								Source: "summary",
 								Start: ast.Position{
-									Column: 97,
-									Line:   23,
+									Column: 9,
+									Line:   31,
 								},
 							},
 						},
@@ -2224,14 +2224,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 107,
-									Line:   23,
+									Column: 19,
+									Line:   31,
 								},
 								File:   "zenoss.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 105,
-									Line:   23,
+									Column: 17,
+									Line:   31,
 								},
 							},
 						},
@@ -2243,14 +2243,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 118,
-								Line:   23,
+								Column: 18,
+								Line:   32,
 							},
 							File:   "zenoss.flux",
 							Source: "device=\"\"",
 							Start: ast.Position{
-								Column: 109,
-								Line:   23,
+								Column: 9,
+								Line:   32,
 							},
 						},
 					},
@@ -2261,14 +2261,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 115,
-									Line:   23,
+									Column: 15,
+									Line:   32,
 								},
 								File:   "zenoss.flux",
 								Source: "device",
 								Start: ast.Position{
-									Column: 109,
-									Line:   23,
+									Column: 9,
+									Line:   32,
 								},
 							},
 						},
@@ -2281,14 +2281,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 118,
-									Line:   23,
+									Column: 18,
+									Line:   32,
 								},
 								File:   "zenoss.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 116,
-									Line:   23,
+									Column: 16,
+									Line:   32,
 								},
 							},
 						},
@@ -2300,14 +2300,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 132,
-								Line:   23,
+								Column: 21,
+								Line:   33,
 							},
 							File:   "zenoss.flux",
 							Source: "component=\"\"",
 							Start: ast.Position{
-								Column: 120,
-								Line:   23,
+								Column: 9,
+								Line:   33,
 							},
 						},
 					},
@@ -2318,14 +2318,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 129,
-									Line:   23,
+									Column: 18,
+									Line:   33,
 								},
 								File:   "zenoss.flux",
 								Source: "component",
 								Start: ast.Position{
-									Column: 120,
-									Line:   23,
+									Column: 9,
+									Line:   33,
 								},
 							},
 						},
@@ -2338,14 +2338,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 132,
-									Line:   23,
+									Column: 21,
+									Line:   33,
 								},
 								File:   "zenoss.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 130,
-									Line:   23,
+									Column: 19,
+									Line:   33,
 								},
 							},
 						},
@@ -2357,14 +2357,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 142,
-								Line:   23,
+								Column: 17,
+								Line:   34,
 							},
 							File:   "zenoss.flux",
 							Source: "severity",
 							Start: ast.Position{
-								Column: 134,
-								Line:   23,
+								Column: 9,
+								Line:   34,
 							},
 						},
 					},
@@ -2375,14 +2375,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 142,
-									Line:   23,
+									Column: 17,
+									Line:   34,
 								},
 								File:   "zenoss.flux",
 								Source: "severity",
 								Start: ast.Position{
-									Column: 134,
-									Line:   23,
+									Column: 9,
+									Line:   34,
 								},
 							},
 						},
@@ -2396,14 +2396,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 157,
-								Line:   23,
+								Column: 22,
+								Line:   35,
 							},
 							File:   "zenoss.flux",
 							Source: "eventClass=\"\"",
 							Start: ast.Position{
-								Column: 144,
-								Line:   23,
+								Column: 9,
+								Line:   35,
 							},
 						},
 					},
@@ -2414,14 +2414,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 154,
-									Line:   23,
+									Column: 19,
+									Line:   35,
 								},
 								File:   "zenoss.flux",
 								Source: "eventClass",
 								Start: ast.Position{
-									Column: 144,
-									Line:   23,
+									Column: 9,
+									Line:   35,
 								},
 							},
 						},
@@ -2434,14 +2434,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 157,
-									Line:   23,
+									Column: 22,
+									Line:   35,
 								},
 								File:   "zenoss.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 155,
-									Line:   23,
+									Column: 20,
+									Line:   35,
 								},
 							},
 						},
@@ -2453,14 +2453,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 175,
-								Line:   23,
+								Column: 25,
+								Line:   36,
 							},
 							File:   "zenoss.flux",
 							Source: "eventClassKey=\"\"",
 							Start: ast.Position{
-								Column: 159,
-								Line:   23,
+								Column: 9,
+								Line:   36,
 							},
 						},
 					},
@@ -2471,14 +2471,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 172,
-									Line:   23,
+									Column: 22,
+									Line:   36,
 								},
 								File:   "zenoss.flux",
 								Source: "eventClassKey",
 								Start: ast.Position{
-									Column: 159,
-									Line:   23,
+									Column: 9,
+									Line:   36,
 								},
 							},
 						},
@@ -2491,14 +2491,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 175,
-									Line:   23,
+									Column: 25,
+									Line:   36,
 								},
 								File:   "zenoss.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 173,
-									Line:   23,
+									Column: 23,
+									Line:   36,
 								},
 							},
 						},
@@ -2510,14 +2510,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 189,
-								Line:   23,
+								Column: 21,
+								Line:   37,
 							},
 							File:   "zenoss.flux",
 							Source: "collector=\"\"",
 							Start: ast.Position{
-								Column: 177,
-								Line:   23,
+								Column: 9,
+								Line:   37,
 							},
 						},
 					},
@@ -2528,14 +2528,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 186,
-									Line:   23,
+									Column: 18,
+									Line:   37,
 								},
 								File:   "zenoss.flux",
 								Source: "collector",
 								Start: ast.Position{
-									Column: 177,
-									Line:   23,
+									Column: 9,
+									Line:   37,
 								},
 							},
 						},
@@ -2548,14 +2548,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 189,
-									Line:   23,
+									Column: 21,
+									Line:   37,
 								},
 								File:   "zenoss.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 187,
-									Line:   23,
+									Column: 19,
+									Line:   37,
 								},
 							},
 						},
@@ -2567,14 +2567,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 201,
-								Line:   23,
+								Column: 19,
+								Line:   38,
 							},
 							File:   "zenoss.flux",
 							Source: "message=\"\"",
 							Start: ast.Position{
-								Column: 191,
-								Line:   23,
+								Column: 9,
+								Line:   38,
 							},
 						},
 					},
@@ -2585,14 +2585,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 198,
-									Line:   23,
+									Column: 16,
+									Line:   38,
 								},
 								File:   "zenoss.flux",
 								Source: "message",
 								Start: ast.Position{
-									Column: 191,
-									Line:   23,
+									Column: 9,
+									Line:   38,
 								},
 							},
 						},
@@ -2605,14 +2605,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 201,
-									Line:   23,
+									Column: 19,
+									Line:   38,
 								},
 								File:   "zenoss.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 199,
-									Line:   23,
+									Column: 17,
+									Line:   38,
 								},
 							},
 						},
@@ -2628,13 +2628,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 6,
-						Line:   90,
+						Line:   112,
 					},
 					File:   "zenoss.flux",
-					Source: "endpoint = (url, username, password, action=\"EventsRouter\", method=\"add_event\", type=\"rpc\", tid=1) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+					Source: "endpoint = (\n        url,\n        username,\n        password,\n        action=\"EventsRouter\",\n        method=\"add_event\",\n        type=\"rpc\",\n        tid=1) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   63,
+						Line:   78,
 					},
 				},
 			},
@@ -2645,13 +2645,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   63,
+							Line:   78,
 						},
 						File:   "zenoss.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   63,
+							Line:   78,
 						},
 					},
 				},
@@ -2665,13 +2665,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   90,
+							Line:   112,
 						},
 						File:   "zenoss.flux",
-						Source: "(url, username, password, action=\"EventsRouter\", method=\"add_event\", type=\"rpc\", tid=1) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+						Source: "(\n        url,\n        username,\n        password,\n        action=\"EventsRouter\",\n        method=\"add_event\",\n        type=\"rpc\",\n        tid=1) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   63,
+							Line:   78,
 						},
 					},
 				},
@@ -2683,13 +2683,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 6,
-								Line:   90,
+								Line:   112,
 							},
 							File:   "zenoss.flux",
 							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
-								Column: 103,
-								Line:   63,
+								Column: 19,
+								Line:   85,
 							},
 						},
 					},
@@ -2701,13 +2701,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   90,
+									Line:   112,
 								},
 								File:   "zenoss.flux",
 								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
-									Column: 114,
-									Line:   63,
+									Column: 30,
+									Line:   85,
 								},
 							},
 						},
@@ -2718,14 +2718,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 135,
-											Line:   63,
+											Column: 51,
+											Line:   85,
 										},
 										File:   "zenoss.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 129,
-											Line:   63,
+											Column: 45,
+											Line:   85,
 										},
 									},
 								},
@@ -2737,13 +2737,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   90,
+										Line:   112,
 									},
 									File:   "zenoss.flux",
 									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
-										Column: 129,
-										Line:   63,
+										Column: 45,
+										Line:   85,
 									},
 								},
 							},
@@ -2755,13 +2755,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   89,
+												Line:   111,
 											},
 											File:   "zenoss.flux",
 											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
 												Column: 9,
-												Line:   65,
+												Line:   87,
 											},
 										},
 									},
@@ -2773,13 +2773,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   89,
+													Line:   111,
 												},
 												File:   "zenoss.flux",
 												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
 													Column: 9,
-													Line:   65,
+													Line:   87,
 												},
 											},
 										},
@@ -2791,13 +2791,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   65,
+														Line:   87,
 													},
 													File:   "zenoss.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 9,
-														Line:   65,
+														Line:   87,
 													},
 												},
 											},
@@ -2812,13 +2812,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 10,
-														Line:   89,
+														Line:   111,
 													},
 													File:   "zenoss.flux",
 													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
 														Column: 13,
-														Line:   65,
+														Line:   87,
 													},
 												},
 											},
@@ -2829,13 +2829,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 10,
-															Line:   89,
+															Line:   111,
 														},
 														File:   "zenoss.flux",
 														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
 															Column: 20,
-															Line:   65,
+															Line:   87,
 														},
 													},
 												},
@@ -2846,13 +2846,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   66,
+																Line:   88,
 															},
 															File:   "zenoss.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 13,
-																Line:   66,
+																Line:   88,
 															},
 														},
 													},
@@ -2863,13 +2863,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 16,
-																	Line:   66,
+																	Line:   88,
 																},
 																File:   "zenoss.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   66,
+																	Line:   88,
 																},
 															},
 														},
@@ -2883,13 +2883,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 29,
-																		Line:   66,
+																		Line:   88,
 																	},
 																	File:   "zenoss.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   66,
+																		Line:   88,
 																	},
 																},
 															},
@@ -2901,13 +2901,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 29,
-																			Line:   66,
+																			Line:   88,
 																		},
 																		File:   "zenoss.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 25,
-																			Line:   66,
+																			Line:   88,
 																		},
 																	},
 																},
@@ -2919,13 +2919,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 26,
-																				Line:   66,
+																				Line:   88,
 																			},
 																			File:   "zenoss.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 25,
-																				Line:   66,
+																				Line:   88,
 																			},
 																		},
 																	},
@@ -2939,13 +2939,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 29,
-																				Line:   66,
+																				Line:   88,
 																			},
 																			File:   "zenoss.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 28,
-																				Line:   66,
+																				Line:   88,
 																			},
 																		},
 																	},
@@ -2961,13 +2961,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   66,
+																	Line:   88,
 																},
 																File:   "zenoss.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   66,
+																	Line:   88,
 																},
 															},
 														},
@@ -2978,13 +2978,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 24,
-																		Line:   66,
+																		Line:   88,
 																	},
 																	File:   "zenoss.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 19,
-																		Line:   66,
+																		Line:   88,
 																	},
 																},
 															},
@@ -3001,13 +3001,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 14,
-																	Line:   88,
+																	Line:   110,
 																},
 																File:   "zenoss.flux",
 																Source: "{r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   68,
+																	Line:   90,
 																},
 															},
 														},
@@ -3019,13 +3019,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 18,
-																		Line:   87,
+																		Line:   109,
 																	},
 																	File:   "zenoss.flux",
 																	Source: "_sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                )",
 																	Start: ast.Position{
 																		Column: 17,
-																		Line:   69,
+																		Line:   91,
 																	},
 																},
 															},
@@ -3037,13 +3037,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 22,
-																			Line:   69,
+																			Line:   91,
 																		},
 																		File:   "zenoss.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 17,
-																			Line:   69,
+																			Line:   91,
 																		},
 																	},
 																},
@@ -3058,13 +3058,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 28,
-																				Line:   86,
+																				Line:   108,
 																			},
 																			File:   "zenoss.flux",
 																			Source: "v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100",
 																			Start: ast.Position{
 																				Column: 21,
-																				Line:   70,
+																				Line:   92,
 																			},
 																		},
 																	},
@@ -3076,13 +3076,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   86,
+																					Line:   108,
 																				},
 																				File:   "zenoss.flux",
 																				Source: "v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100",
 																				Start: ast.Position{
 																					Column: 21,
-																					Line:   70,
+																					Line:   92,
 																				},
 																			},
 																		},
@@ -3094,13 +3094,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 22,
-																						Line:   70,
+																						Line:   92,
 																					},
 																					File:   "zenoss.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   70,
+																						Line:   92,
 																					},
 																				},
 																			},
@@ -3114,13 +3114,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 28,
-																						Line:   86,
+																						Line:   108,
 																					},
 																					File:   "zenoss.flux",
 																					Source: "2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100",
 																					Start: ast.Position{
 																						Column: 24,
-																						Line:   70,
+																						Line:   92,
 																					},
 																				},
 																			},
@@ -3131,13 +3131,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 25,
-																							Line:   70,
+																							Line:   92,
 																						},
 																						File:   "zenoss.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 24,
-																							Line:   70,
+																							Line:   92,
 																						},
 																					},
 																				},
@@ -3151,13 +3151,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 28,
-																							Line:   86,
+																							Line:   108,
 																						},
 																						File:   "zenoss.flux",
 																						Source: "event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100",
 																						Start: ast.Position{
 																							Column: 29,
-																							Line:   70,
+																							Line:   92,
 																						},
 																					},
 																				},
@@ -3169,13 +3169,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 45,
-																									Line:   85,
+																									Line:   107,
 																								},
 																								File:   "zenoss.flux",
 																								Source: "url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message",
 																								Start: ast.Position{
 																									Column: 25,
-																									Line:   71,
+																									Line:   93,
 																								},
 																							},
 																						},
@@ -3187,13 +3187,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 33,
-																										Line:   71,
+																										Line:   93,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   71,
+																										Line:   93,
 																									},
 																								},
 																							},
@@ -3205,13 +3205,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 28,
-																											Line:   71,
+																											Line:   93,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   71,
+																											Line:   93,
 																										},
 																									},
 																								},
@@ -3225,13 +3225,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   71,
+																											Line:   93,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 30,
-																											Line:   71,
+																											Line:   93,
 																										},
 																									},
 																								},
@@ -3244,13 +3244,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 43,
-																										Line:   72,
+																										Line:   94,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "username: username",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   72,
+																										Line:   94,
 																									},
 																								},
 																							},
@@ -3262,13 +3262,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   72,
+																											Line:   94,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "username",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   72,
+																											Line:   94,
 																										},
 																									},
 																								},
@@ -3282,13 +3282,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   72,
+																											Line:   94,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "username",
 																										Start: ast.Position{
 																											Column: 35,
-																											Line:   72,
+																											Line:   94,
 																										},
 																									},
 																								},
@@ -3301,13 +3301,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 43,
-																										Line:   73,
+																										Line:   95,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "password: password",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   73,
+																										Line:   95,
 																									},
 																								},
 																							},
@@ -3319,13 +3319,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   73,
+																											Line:   95,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "password",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   73,
+																											Line:   95,
 																										},
 																									},
 																								},
@@ -3339,13 +3339,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   73,
+																											Line:   95,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "password",
 																										Start: ast.Position{
 																											Column: 35,
-																											Line:   73,
+																											Line:   95,
 																										},
 																									},
 																								},
@@ -3358,13 +3358,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 39,
-																										Line:   74,
+																										Line:   96,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "action: action",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   74,
+																										Line:   96,
 																									},
 																								},
 																							},
@@ -3376,13 +3376,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   74,
+																											Line:   96,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "action",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   74,
+																											Line:   96,
 																										},
 																									},
 																								},
@@ -3396,13 +3396,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 39,
-																											Line:   74,
+																											Line:   96,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "action",
 																										Start: ast.Position{
 																											Column: 33,
-																											Line:   74,
+																											Line:   96,
 																										},
 																									},
 																								},
@@ -3415,13 +3415,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 39,
-																										Line:   75,
+																										Line:   97,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "method: method",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   75,
+																										Line:   97,
 																									},
 																								},
 																							},
@@ -3433,13 +3433,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   75,
+																											Line:   97,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "method",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   75,
+																											Line:   97,
 																										},
 																									},
 																								},
@@ -3453,13 +3453,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 39,
-																											Line:   75,
+																											Line:   97,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "method",
 																										Start: ast.Position{
 																											Column: 33,
-																											Line:   75,
+																											Line:   97,
 																										},
 																									},
 																								},
@@ -3472,13 +3472,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 35,
-																										Line:   76,
+																										Line:   98,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "type: type",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   76,
+																										Line:   98,
 																									},
 																								},
 																							},
@@ -3490,13 +3490,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   76,
+																											Line:   98,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "type",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   76,
+																											Line:   98,
 																										},
 																									},
 																								},
@@ -3510,13 +3510,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 35,
-																											Line:   76,
+																											Line:   98,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "type",
 																										Start: ast.Position{
 																											Column: 31,
-																											Line:   76,
+																											Line:   98,
 																										},
 																									},
 																								},
@@ -3529,13 +3529,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 33,
-																										Line:   77,
+																										Line:   99,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "tid: tid",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   77,
+																										Line:   99,
 																									},
 																								},
 																							},
@@ -3547,13 +3547,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 28,
-																											Line:   77,
+																											Line:   99,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "tid",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   77,
+																											Line:   99,
 																										},
 																									},
 																								},
@@ -3567,13 +3567,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   77,
+																											Line:   99,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "tid",
 																										Start: ast.Position{
 																											Column: 30,
-																											Line:   77,
+																											Line:   99,
 																										},
 																									},
 																								},
@@ -3586,13 +3586,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 45,
-																										Line:   78,
+																										Line:   100,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "summary: obj.summary",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   78,
+																										Line:   100,
 																									},
 																								},
 																							},
@@ -3604,13 +3604,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 32,
-																											Line:   78,
+																											Line:   100,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "summary",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   78,
+																											Line:   100,
 																										},
 																									},
 																								},
@@ -3624,13 +3624,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   78,
+																											Line:   100,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "obj.summary",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   78,
+																											Line:   100,
 																										},
 																									},
 																								},
@@ -3642,13 +3642,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   78,
+																												Line:   100,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 34,
-																												Line:   78,
+																												Line:   100,
 																											},
 																										},
 																									},
@@ -3661,13 +3661,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 45,
-																												Line:   78,
+																												Line:   100,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "summary",
 																											Start: ast.Position{
 																												Column: 38,
-																												Line:   78,
+																												Line:   100,
 																											},
 																										},
 																									},
@@ -3682,13 +3682,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 43,
-																										Line:   79,
+																										Line:   101,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "device: obj.device",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   79,
+																										Line:   101,
 																									},
 																								},
 																							},
@@ -3700,13 +3700,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   79,
+																											Line:   101,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "device",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   79,
+																											Line:   101,
 																										},
 																									},
 																								},
@@ -3720,13 +3720,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   79,
+																											Line:   101,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "obj.device",
 																										Start: ast.Position{
 																											Column: 33,
-																											Line:   79,
+																											Line:   101,
 																										},
 																									},
 																								},
@@ -3738,13 +3738,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 36,
-																												Line:   79,
+																												Line:   101,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 33,
-																												Line:   79,
+																												Line:   101,
 																											},
 																										},
 																									},
@@ -3757,13 +3757,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 43,
-																												Line:   79,
+																												Line:   101,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "device",
 																											Start: ast.Position{
 																												Column: 37,
-																												Line:   79,
+																												Line:   101,
 																											},
 																										},
 																									},
@@ -3778,13 +3778,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 49,
-																										Line:   80,
+																										Line:   102,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "component: obj.component",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   80,
+																										Line:   102,
 																									},
 																								},
 																							},
@@ -3796,13 +3796,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 34,
-																											Line:   80,
+																											Line:   102,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "component",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   80,
+																											Line:   102,
 																										},
 																									},
 																								},
@@ -3816,13 +3816,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 49,
-																											Line:   80,
+																											Line:   102,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "obj.component",
 																										Start: ast.Position{
 																											Column: 36,
-																											Line:   80,
+																											Line:   102,
 																										},
 																									},
 																								},
@@ -3834,13 +3834,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   80,
+																												Line:   102,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 36,
-																												Line:   80,
+																												Line:   102,
 																											},
 																										},
 																									},
@@ -3853,13 +3853,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 49,
-																												Line:   80,
+																												Line:   102,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "component",
 																											Start: ast.Position{
 																												Column: 40,
-																												Line:   80,
+																												Line:   102,
 																											},
 																										},
 																									},
@@ -3874,13 +3874,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 47,
-																										Line:   81,
+																										Line:   103,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "severity: obj.severity",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   81,
+																										Line:   103,
 																									},
 																								},
 																							},
@@ -3892,13 +3892,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   81,
+																											Line:   103,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "severity",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   81,
+																											Line:   103,
 																										},
 																									},
 																								},
@@ -3912,13 +3912,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 47,
-																											Line:   81,
+																											Line:   103,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "obj.severity",
 																										Start: ast.Position{
 																											Column: 35,
-																											Line:   81,
+																											Line:   103,
 																										},
 																									},
 																								},
@@ -3930,13 +3930,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 38,
-																												Line:   81,
+																												Line:   103,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 35,
-																												Line:   81,
+																												Line:   103,
 																											},
 																										},
 																									},
@@ -3949,13 +3949,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 47,
-																												Line:   81,
+																												Line:   103,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "severity",
 																											Start: ast.Position{
 																												Column: 39,
-																												Line:   81,
+																												Line:   103,
 																											},
 																										},
 																									},
@@ -3970,13 +3970,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 51,
-																										Line:   82,
+																										Line:   104,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "eventClass: obj.eventClass",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   82,
+																										Line:   104,
 																									},
 																								},
 																							},
@@ -3988,13 +3988,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 35,
-																											Line:   82,
+																											Line:   104,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "eventClass",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   82,
+																											Line:   104,
 																										},
 																									},
 																								},
@@ -4008,13 +4008,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 51,
-																											Line:   82,
+																											Line:   104,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "obj.eventClass",
 																										Start: ast.Position{
 																											Column: 37,
-																											Line:   82,
+																											Line:   104,
 																										},
 																									},
 																								},
@@ -4026,13 +4026,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 40,
-																												Line:   82,
+																												Line:   104,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 37,
-																												Line:   82,
+																												Line:   104,
 																											},
 																										},
 																									},
@@ -4045,13 +4045,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 51,
-																												Line:   82,
+																												Line:   104,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "eventClass",
 																											Start: ast.Position{
 																												Column: 41,
-																												Line:   82,
+																												Line:   104,
 																											},
 																										},
 																									},
@@ -4066,13 +4066,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 57,
-																										Line:   83,
+																										Line:   105,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "eventClassKey: obj.eventClassKey",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   83,
+																										Line:   105,
 																									},
 																								},
 																							},
@@ -4084,13 +4084,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 38,
-																											Line:   83,
+																											Line:   105,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "eventClassKey",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   83,
+																											Line:   105,
 																										},
 																									},
 																								},
@@ -4104,13 +4104,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 57,
-																											Line:   83,
+																											Line:   105,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "obj.eventClassKey",
 																										Start: ast.Position{
 																											Column: 40,
-																											Line:   83,
+																											Line:   105,
 																										},
 																									},
 																								},
@@ -4122,13 +4122,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 43,
-																												Line:   83,
+																												Line:   105,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 40,
-																												Line:   83,
+																												Line:   105,
 																											},
 																										},
 																									},
@@ -4141,13 +4141,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 57,
-																												Line:   83,
+																												Line:   105,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "eventClassKey",
 																											Start: ast.Position{
 																												Column: 44,
-																												Line:   83,
+																												Line:   105,
 																											},
 																										},
 																									},
@@ -4162,13 +4162,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 49,
-																										Line:   84,
+																										Line:   106,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "collector: obj.collector",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   84,
+																										Line:   106,
 																									},
 																								},
 																							},
@@ -4180,13 +4180,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 34,
-																											Line:   84,
+																											Line:   106,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "collector",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   84,
+																											Line:   106,
 																										},
 																									},
 																								},
@@ -4200,13 +4200,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 49,
-																											Line:   84,
+																											Line:   106,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "obj.collector",
 																										Start: ast.Position{
 																											Column: 36,
-																											Line:   84,
+																											Line:   106,
 																										},
 																									},
 																								},
@@ -4218,13 +4218,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   84,
+																												Line:   106,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 36,
-																												Line:   84,
+																												Line:   106,
 																											},
 																										},
 																									},
@@ -4237,13 +4237,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 49,
-																												Line:   84,
+																												Line:   106,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "collector",
 																											Start: ast.Position{
 																												Column: 40,
-																												Line:   84,
+																												Line:   106,
 																											},
 																										},
 																									},
@@ -4258,13 +4258,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 45,
-																										Line:   85,
+																										Line:   107,
 																									},
 																									File:   "zenoss.flux",
 																									Source: "message: obj.message",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   85,
+																										Line:   107,
 																									},
 																								},
 																							},
@@ -4276,13 +4276,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 32,
-																											Line:   85,
+																											Line:   107,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "message",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   85,
+																											Line:   107,
 																										},
 																									},
 																								},
@@ -4296,13 +4296,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   85,
+																											Line:   107,
 																										},
 																										File:   "zenoss.flux",
 																										Source: "obj.message",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   85,
+																											Line:   107,
 																										},
 																									},
 																								},
@@ -4314,13 +4314,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   85,
+																												Line:   107,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 34,
-																												Line:   85,
+																												Line:   107,
 																											},
 																										},
 																									},
@@ -4333,13 +4333,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 45,
-																												Line:   85,
+																												Line:   107,
 																											},
 																											File:   "zenoss.flux",
 																											Source: "message",
 																											Start: ast.Position{
 																												Column: 38,
-																												Line:   85,
+																												Line:   107,
 																											},
 																										},
 																									},
@@ -4357,13 +4357,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 22,
-																								Line:   86,
+																								Line:   108,
 																							},
 																							File:   "zenoss.flux",
 																							Source: "event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    )",
 																							Start: ast.Position{
 																								Column: 29,
-																								Line:   70,
+																								Line:   92,
 																							},
 																						},
 																					},
@@ -4374,13 +4374,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 34,
-																									Line:   70,
+																									Line:   92,
 																								},
 																								File:   "zenoss.flux",
 																								Source: "event",
 																								Start: ast.Position{
 																									Column: 29,
-																									Line:   70,
+																									Line:   92,
 																								},
 																							},
 																						},
@@ -4397,13 +4397,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 28,
-																								Line:   86,
+																								Line:   108,
 																							},
 																							File:   "zenoss.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 25,
-																								Line:   86,
+																								Line:   108,
 																							},
 																						},
 																					},
@@ -4421,13 +4421,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   87,
+																			Line:   109,
 																		},
 																		File:   "zenoss.flux",
 																		Source: "string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                )",
 																		Start: ast.Position{
 																			Column: 24,
-																			Line:   69,
+																			Line:   91,
 																		},
 																	},
 																},
@@ -4438,13 +4438,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   69,
+																				Line:   91,
 																			},
 																			File:   "zenoss.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   69,
+																				Line:   91,
 																			},
 																		},
 																	},
@@ -4462,13 +4462,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 22,
-																		Line:   68,
+																		Line:   90,
 																	},
 																	File:   "zenoss.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 21,
-																		Line:   68,
+																		Line:   90,
 																	},
 																},
 															},
@@ -4481,13 +4481,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 14,
-																Line:   88,
+																Line:   110,
 															},
 															File:   "zenoss.flux",
 															Source: "return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
 																Column: 13,
-																Line:   68,
+																Line:   90,
 															},
 														},
 													},
@@ -4503,13 +4503,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   65,
+															Line:   87,
 														},
 														File:   "zenoss.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   65,
+															Line:   87,
 														},
 													},
 												},
@@ -4521,13 +4521,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   65,
+																Line:   87,
 															},
 															File:   "zenoss.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   65,
+																Line:   87,
 															},
 														},
 													},
@@ -4548,13 +4548,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   90,
+											Line:   112,
 										},
 										File:   "zenoss.flux",
 										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        username: username,\n                        password: password,\n                        action: action,\n                        method: method,\n                        type: type,\n                        tid: tid,\n                        summary: obj.summary,\n                        device: obj.device,\n                        component: obj.component,\n                        severity: obj.severity,\n                        eventClass: obj.eventClass,\n                        eventClassKey: obj.eventClassKey,\n                        collector: obj.collector,\n                        message: obj.message,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   64,
+											Line:   86,
 										},
 									},
 								},
@@ -4565,13 +4565,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   64,
+												Line:   86,
 											},
 											File:   "zenoss.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   64,
+												Line:   86,
 											},
 										},
 									},
@@ -4588,14 +4588,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 124,
-										Line:   63,
+										Column: 40,
+										Line:   85,
 									},
 									File:   "zenoss.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
-										Column: 115,
-										Line:   63,
+										Column: 31,
+										Line:   85,
 									},
 								},
 							},
@@ -4606,14 +4606,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 121,
-											Line:   63,
+											Column: 37,
+											Line:   85,
 										},
 										File:   "zenoss.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 115,
-											Line:   63,
+											Column: 31,
+											Line:   85,
 										},
 									},
 								},
@@ -4625,14 +4625,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 124,
-										Line:   63,
+										Column: 40,
+										Line:   85,
 									},
 									File:   "zenoss.flux",
 									Source: "<-",
 									Start: ast.Position{
-										Column: 122,
-										Line:   63,
+										Column: 38,
+										Line:   85,
 									},
 								},
 							}},
@@ -4646,14 +4646,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 109,
-									Line:   63,
+									Column: 25,
+									Line:   85,
 								},
 								File:   "zenoss.flux",
 								Source: "mapFn",
 								Start: ast.Position{
-									Column: 104,
-									Line:   63,
+									Column: 20,
+									Line:   85,
 								},
 							},
 						},
@@ -4664,14 +4664,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 109,
-										Line:   63,
+										Column: 25,
+										Line:   85,
 									},
 									File:   "zenoss.flux",
 									Source: "mapFn",
 									Start: ast.Position{
-										Column: 104,
-										Line:   63,
+										Column: 20,
+										Line:   85,
 									},
 								},
 							},
@@ -4689,14 +4689,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
-								Line:   63,
+								Column: 12,
+								Line:   79,
 							},
 							File:   "zenoss.flux",
 							Source: "url",
 							Start: ast.Position{
-								Column: 13,
-								Line:   63,
+								Column: 9,
+								Line:   79,
 							},
 						},
 					},
@@ -4707,14 +4707,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
-									Line:   63,
+									Column: 12,
+									Line:   79,
 								},
 								File:   "zenoss.flux",
 								Source: "url",
 								Start: ast.Position{
-									Column: 13,
-									Line:   63,
+									Column: 9,
+									Line:   79,
 								},
 							},
 						},
@@ -4728,14 +4728,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
-								Line:   63,
+								Column: 17,
+								Line:   80,
 							},
 							File:   "zenoss.flux",
 							Source: "username",
 							Start: ast.Position{
-								Column: 18,
-								Line:   63,
+								Column: 9,
+								Line:   80,
 							},
 						},
 					},
@@ -4746,14 +4746,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 26,
-									Line:   63,
+									Column: 17,
+									Line:   80,
 								},
 								File:   "zenoss.flux",
 								Source: "username",
 								Start: ast.Position{
-									Column: 18,
-									Line:   63,
+									Column: 9,
+									Line:   80,
 								},
 							},
 						},
@@ -4767,14 +4767,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 36,
-								Line:   63,
+								Column: 17,
+								Line:   81,
 							},
 							File:   "zenoss.flux",
 							Source: "password",
 							Start: ast.Position{
-								Column: 28,
-								Line:   63,
+								Column: 9,
+								Line:   81,
 							},
 						},
 					},
@@ -4785,14 +4785,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 36,
-									Line:   63,
+									Column: 17,
+									Line:   81,
 								},
 								File:   "zenoss.flux",
 								Source: "password",
 								Start: ast.Position{
-									Column: 28,
-									Line:   63,
+									Column: 9,
+									Line:   81,
 								},
 							},
 						},
@@ -4806,14 +4806,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 59,
-								Line:   63,
+								Column: 30,
+								Line:   82,
 							},
 							File:   "zenoss.flux",
 							Source: "action=\"EventsRouter\"",
 							Start: ast.Position{
-								Column: 38,
-								Line:   63,
+								Column: 9,
+								Line:   82,
 							},
 						},
 					},
@@ -4824,14 +4824,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 44,
-									Line:   63,
+									Column: 15,
+									Line:   82,
 								},
 								File:   "zenoss.flux",
 								Source: "action",
 								Start: ast.Position{
-									Column: 38,
-									Line:   63,
+									Column: 9,
+									Line:   82,
 								},
 							},
 						},
@@ -4844,14 +4844,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 59,
-									Line:   63,
+									Column: 30,
+									Line:   82,
 								},
 								File:   "zenoss.flux",
 								Source: "\"EventsRouter\"",
 								Start: ast.Position{
-									Column: 45,
-									Line:   63,
+									Column: 16,
+									Line:   82,
 								},
 							},
 						},
@@ -4863,14 +4863,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 79,
-								Line:   63,
+								Column: 27,
+								Line:   83,
 							},
 							File:   "zenoss.flux",
 							Source: "method=\"add_event\"",
 							Start: ast.Position{
-								Column: 61,
-								Line:   63,
+								Column: 9,
+								Line:   83,
 							},
 						},
 					},
@@ -4881,14 +4881,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 67,
-									Line:   63,
+									Column: 15,
+									Line:   83,
 								},
 								File:   "zenoss.flux",
 								Source: "method",
 								Start: ast.Position{
-									Column: 61,
-									Line:   63,
+									Column: 9,
+									Line:   83,
 								},
 							},
 						},
@@ -4901,14 +4901,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 79,
-									Line:   63,
+									Column: 27,
+									Line:   83,
 								},
 								File:   "zenoss.flux",
 								Source: "\"add_event\"",
 								Start: ast.Position{
-									Column: 68,
-									Line:   63,
+									Column: 16,
+									Line:   83,
 								},
 							},
 						},
@@ -4920,14 +4920,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 91,
-								Line:   63,
+								Column: 19,
+								Line:   84,
 							},
 							File:   "zenoss.flux",
 							Source: "type=\"rpc\"",
 							Start: ast.Position{
-								Column: 81,
-								Line:   63,
+								Column: 9,
+								Line:   84,
 							},
 						},
 					},
@@ -4938,14 +4938,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 85,
-									Line:   63,
+									Column: 13,
+									Line:   84,
 								},
 								File:   "zenoss.flux",
 								Source: "type",
 								Start: ast.Position{
-									Column: 81,
-									Line:   63,
+									Column: 9,
+									Line:   84,
 								},
 							},
 						},
@@ -4958,14 +4958,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 91,
-									Line:   63,
+									Column: 19,
+									Line:   84,
 								},
 								File:   "zenoss.flux",
 								Source: "\"rpc\"",
 								Start: ast.Position{
-									Column: 86,
-									Line:   63,
+									Column: 14,
+									Line:   84,
 								},
 							},
 						},
@@ -4977,14 +4977,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 98,
-								Line:   63,
+								Column: 14,
+								Line:   85,
 							},
 							File:   "zenoss.flux",
 							Source: "tid=1",
 							Start: ast.Position{
-								Column: 93,
-								Line:   63,
+								Column: 9,
+								Line:   85,
 							},
 						},
 					},
@@ -4995,14 +4995,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 96,
-									Line:   63,
+									Column: 12,
+									Line:   85,
 								},
 								File:   "zenoss.flux",
 								Source: "tid",
 								Start: ast.Position{
-									Column: 93,
-									Line:   63,
+									Column: 9,
+									Line:   85,
 								},
 							},
 						},
@@ -5015,14 +5015,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 98,
-									Line:   63,
+									Column: 14,
+									Line:   85,
 								},
 								File:   "zenoss.flux",
 								Source: "1",
 								Start: ast.Position{
-									Column: 97,
-									Line:   63,
+									Column: 13,
+									Line:   85,
 								},
 							},
 						},

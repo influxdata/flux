@@ -17,7 +17,14 @@ option defaultSilent = true
 // `parseMode` - string - Parse mode of the message text per https://core.telegram.org/bots/api#formatting-options . Defaults to "MarkdownV2"
 // `disableWebPagePreview` - bool - Disables preview of web links in the sent messages when "true". Defaults to "false"
 // `silent` - bool - Messages are sent silently (https://telegram.org/blog/channels-2-0#silent-messages) when "true". Defaults to "true".
-message = (url=defaultURL, token, channel, text, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview, silent=defaultSilent) => {
+message = (
+        url=defaultURL,
+        token,
+        channel,
+        text,
+        parseMode=defaultParseMode,
+        disableWebPagePreview=defaultDisableWebPagePreview,
+        silent=defaultSilent) => {
     data = {
         chat_id: channel,
         text: text,

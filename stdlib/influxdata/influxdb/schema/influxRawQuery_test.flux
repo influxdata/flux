@@ -44,7 +44,16 @@ outData = "
 "
 
 // select load1, load15
-rawQuery = (stream=<-, start, stop, measurement, fields=[], groupBy=["_time", "_value"], groupMode="except", every=inf, period=0s) => stream
+rawQuery = (
+        stream=<-,
+        start,
+        stop,
+        measurement,
+        fields=[],
+        groupBy=["_time", "_value"],
+        groupMode="except",
+        every=inf,
+        period=0s) => stream
     |> range(start: start, stop: stop)
     |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))
     |> group(columns: groupBy, mode: groupMode)

@@ -20,7 +20,22 @@ import "json"
 // `eventClassKey` - string - event class key. Default is empty string.
 // `collector` - string - collector. Default is empty string.
 // `message` - string - event message. Default is empty string.
-event = (url, username, password, action="EventsRouter", method="add_event", type="rpc", tid=1, summary="", device="", component="", severity, eventClass="", eventClassKey="", collector="", message="") => {
+event = (
+        url,
+        username,
+        password,
+        action="EventsRouter",
+        method="add_event",
+        type="rpc",
+        tid=1,
+        summary="",
+        device="",
+        component="",
+        severity,
+        eventClass="",
+        eventClassKey="",
+        collector="",
+        message="") => {
     event = {
         summary: summary,
         device: device,
@@ -60,7 +75,14 @@ event = (url, username, password, action="EventsRouter", method="add_event", typ
 // `tid` - int - temporary transaction ID. Default is 1.
 // The returned factory function accepts a `mapFn` parameter.
 // The `mapFn` must return record with `summary`, `device`, `component`, `severity`, `eventClass`, `eventClassKey`, `collector` and `message` fields as defined in the `event` function arguments.
-endpoint = (url, username, password, action="EventsRouter", method="add_event", type="rpc", tid=1) => (mapFn) => (tables=<-) => tables
+endpoint = (
+        url,
+        username,
+        password,
+        action="EventsRouter",
+        method="add_event",
+        type="rpc",
+        tid=1) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)

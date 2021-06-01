@@ -19,7 +19,17 @@ defineCheck = (id, name, type="custom") => {
 }
 
 // alert is a helper function similar to TICKscript alert.
-alert = (check, id=(r) => "${r._check_id}", details=(r) => "", message=(r) => "Threshold Check: ${r._check_name} is: ${r._level}", crit=(r) => false, warn=(r) => false, info=(r) => false, ok=(r) => true, topic="", tables=<-) => {
+alert = (
+        check,
+        id=(r) => "${r._check_id}",
+        details=(r) => "",
+        message=(r) => "Threshold Check: ${r._check_name} is: ${r._level}",
+        crit=(r) => false,
+        warn=(r) => false,
+        info=(r) => false,
+        ok=(r) => true,
+        topic="",
+        tables=<-) => {
     _addTopic = if topic != "" then
         (tables=<-) => tables
             |> set(key: "_topic", value: topic)
@@ -49,7 +59,14 @@ alert = (check, id=(r) => "${r._check_id}", details=(r) => "", message=(r) => "T
 }
 
 // deadman is a helper function similar to TICKscript deadman.
-deadman = (check, measurement, threshold=0, id=(r) => "${r._check_id}", message=(r) => "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"), topic="", tables=<-) => {
+deadman = (
+        check,
+        measurement,
+        threshold=0,
+        id=(r) => "${r._check_id}",
+        message=(r) => "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"),
+        topic="",
+        tables=<-) => {
     // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,
     // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty
     // table is used as input for actual threshold check in order to get 0.
@@ -115,7 +132,13 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
 //   query("SELECT f(x) AS y")
 //     .groupBy(time(t), ...)
 //
-selectWindow = (column="_value", fn, as, every, defaultValue, tables=<-) => {
+selectWindow = (
+        column="_value",
+        fn,
+        as,
+        every,
+        defaultValue,
+        tables=<-) => {
     _column = column
     _as = as
 

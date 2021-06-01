@@ -90,8 +90,7 @@ func TestFormatWithCommentsParens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if want := `
-// comment\n(1 * 1)`; want != got {
+	if want := `// comment\n(1 * 1)`; want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }

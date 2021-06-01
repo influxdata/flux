@@ -208,7 +208,15 @@ pearsonr = (x, y, on) => cov(x: x, y: y, on: on, pearsonr: true)
 // AggregateWindow applies an aggregate function to fixed windows of time.
 // The procedure is to window the data, perform an aggregate operation,
 // and then undo the windowing to produce an output table for every input table.
-aggregateWindow = (every, fn, offset=0s, column="_value", timeSrc="_stop", timeDst="_time", createEmpty=true, tables=<-) => tables
+aggregateWindow = (
+        every,
+        fn,
+        offset=0s,
+        column="_value",
+        timeSrc="_stop",
+        timeDst="_time",
+        createEmpty=true,
+        tables=<-) => tables
     |> window(every: every, offset: offset, createEmpty: createEmpty)
     |> fn(column: column)
     |> duplicate(column: timeSrc, as: timeDst)
@@ -253,7 +261,12 @@ stateCount = (fn, column="stateCount", tables=<-) => tables
 // state duration will be 0.
 //
 // The duration is represented as an integer in the units specified.
-stateDuration = (fn, column="stateDuration", timeColumn="_time", unit=1s, tables=<-) => tables
+stateDuration = (
+        fn,
+        column="stateDuration",
+        timeColumn="_time",
+        unit=1s,
+        tables=<-) => tables
     |> stateTracking(durationColumn: column, timeColumn: timeColumn, fn: fn, durationUnit: unit)
 
 // _sortLimit is a helper function, which sorts and limits a table.
@@ -272,7 +285,13 @@ bottom = (n, columns=["_value"], tables=<-) => tables
 // _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,
 // then it selects the highest or lowest records based on the column and the _sortLimit function.
 // The default reducer assumes no reducing needs to be performed.
-_highestOrLowest = (n, _sortLimit, reducer, column="_value", groupColumns=[], tables=<-) => tables
+_highestOrLowest = (
+        n,
+        _sortLimit,
+        reducer,
+        column="_value",
+        groupColumns=[],
+        tables=<-) => tables
     |> group(columns: groupColumns)
     |> reducer()
     |> group(columns: [])

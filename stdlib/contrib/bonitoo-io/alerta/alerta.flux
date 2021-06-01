@@ -20,7 +20,22 @@ import "strings"
 // `origin` - string - monitoring component.
 // `timestamp` - time - time alert was generated.
 // `timeout` - int - seconds before alert is considered stale.
-alert = (url, apiKey, resource, event, environment="", severity, service=[], group="", value="", text="", tags=[], attributes, origin="InfluxDB", type="", timestamp=now()) => {
+alert = (
+        url,
+        apiKey,
+        resource,
+        event,
+        environment="",
+        severity,
+        service=[],
+        group="",
+        value="",
+        text="",
+        tags=[],
+        attributes,
+        origin="InfluxDB",
+        type="",
+        timestamp=now()) => {
     alert = {
         resource: resource,
         event: event,

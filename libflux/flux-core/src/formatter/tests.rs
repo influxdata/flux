@@ -401,7 +401,13 @@ fn multi_indent() {
         r#"_sortLimit = (n, desc, columns=["_value"], tables=<-) => tables
     |> sort(columns: columns, desc: desc)
     |> limit(n: n)
-_highestOrLowest = (n, _sortLimit, reducer, columns=["_value"], by, tables=<-) => tables
+_highestOrLowest = (
+        n,
+        _sortLimit,
+        reducer,
+        columns=["_value"],
+        by,
+        tables=<-) => tables
     |> group(by: by)
     |> reducer()
     |> group(none: true)
@@ -1167,5 +1173,42 @@ test2 = 2",
 test2 = 2",
         "test1 = 1
 test2 = 2",
+    );
+}
+#[test]
+fn preserve_multiline_test() {
+    // ensure functions given preserve their structure
+    //assert_unchanged("test _convariance_missing_column_2 = () =>
+    //({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
+
+    assert_unchanged(
+        "test _covariance_missing_column_2 = () => ({
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: covariance_missing_column_2,
+})",
+    );
+
+    assert_unchanged(
+        r#"event = (
+        url,
+        username,
+        password,
+        action="EventsRouter",
+        methods="add_event",
+        type="rpc",
+        tid=1,
+        summary="",
+        device="",
+        component="",
+        severity,
+        eventClass="",
+        eventClassKey="",
+        collector="",
+        message="") => {
+    body = json.encode(v: payload)
+
+    return http.post(headers: headers, url: url, data: body)
+}"#,
     );
 }

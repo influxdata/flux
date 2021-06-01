@@ -12,7 +12,14 @@ import "json"
 // `stateMessage` - string - Incident verbose message.
 // `timestamp` - time - Incident timestamp. Default value: now().
 // `monitoringTool` - string - Monitoring agent name. Default value: "InfluxDB".
-alert = (url, messageType, entityID="", entityDisplayName="", stateMessage="", timestamp=now(), monitoringTool="InfluxDB") => {
+alert = (
+        url,
+        messageType,
+        entityID="",
+        entityDisplayName="",
+        stateMessage="",
+        timestamp=now(),
+        monitoringTool="InfluxDB") => {
     alert = {
         message_type: messageType,
         entity_id: entityID,

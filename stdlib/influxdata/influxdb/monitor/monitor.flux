@@ -131,7 +131,14 @@ deadman = (t, tables=<-) => tables
 
 // Check performs a check against its input using the given ok, info, warn and crit functions
 // and writes the result to a system bucket.
-check = (tables=<-, data, messageFn, crit=(r) => false, warn=(r) => false, info=(r) => false, ok=(r) => true) => tables
+check = (
+        tables=<-,
+        data,
+        messageFn,
+        crit=(r) => false,
+        warn=(r) => false,
+        info=(r) => false,
+        ok=(r) => true) => tables
     |> experimental.set(o: data.tags)
     |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data.tags))
     |> map(
