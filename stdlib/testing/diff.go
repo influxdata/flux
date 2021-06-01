@@ -504,8 +504,9 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 		switch wantCol.Type {
 		case flux.TFloat:
 			want, got := wantCol.Values.(*array.Float64).Value(i), gotCol.Values.(*array.Float64).Value(i)
-			// want == got is for handling +Inf and -Inf.
-			return want == got || math.Abs(want-got) <= t.epsilon
+			if math.Abs(want-got) > t.epsilon {
+				return false
+			}
 		case flux.TInt:
 			want, got := wantCol.Values.(*array.Int64), gotCol.Values.(*array.Int64)
 			if want.Value(i) != got.Value(i) {
