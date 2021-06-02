@@ -19,7 +19,8 @@ from = (
         stop=now(),
         org="",
         host="",
-        token="") => {
+        token="",
+) => {
     source = if org != "" and host != "" and token != "" then
         influxdb.from(bucket, org, host, token)
     else if org != "" and token != "" then
@@ -62,7 +63,8 @@ select = (
         org="",
         host="",
         token="",
-        where=(r) => true) => {
+        where=(r) => true,
+) => {
     bucket = from
     tables = _from(
         bucket,

@@ -24,7 +24,8 @@ message = (
         text,
         parseMode=defaultParseMode,
         disableWebPagePreview=defaultDisableWebPagePreview,
-        silent=defaultSilent) => {
+        silent=defaultSilent,
+) => {
     data = {
         chat_id: channel,
         text: text,

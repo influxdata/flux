@@ -57,7 +57,8 @@ sendEvent = (
         eventAction,
         source,
         summary,
-        timestamp) => {
+        timestamp,
+) => {
     payload = {
         summary: summary,
         timestamp: timestamp,

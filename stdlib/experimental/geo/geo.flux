@@ -132,7 +132,8 @@ gridFilter = (
         maxSize=-1,
         level=-1,
         s2cellIDLevel=-1,
-        units=units) => {
+        units=units,
+) => {
     _s2cellIDLevel = if s2cellIDLevel == -1 then
         tables
             |> _detectLevel()
@@ -171,7 +172,8 @@ filterRows = (
         maxSize=-1,
         level=-1,
         s2cellIDLevel=-1,
-        strict=true) => {
+        strict=true,
+) => {
     _columns = tables
         |> columns(column: "_value")
         |> tableFind(fn: (key) => true)

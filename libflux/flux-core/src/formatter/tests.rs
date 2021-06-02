@@ -407,7 +407,8 @@ _highestOrLowest = (
         reducer,
         columns=["_value"],
         by,
-        tables=<-) => tables
+        tables=<-,
+) => tables
     |> group(by: by)
     |> reducer()
     |> group(none: true)
@@ -1205,13 +1206,14 @@ fn preserve_multiline_test() {
         eventClass="",
         eventClassKey="",
         collector="",
-        message="") => {
+        message="",
+) => {
     body = json.encode(v: payload)
 
     return http.post(headers: headers, url: url, data: body)
 }"#,
     );
-    //Checks that a method with >4 params gets collapsed correctly
+    //Checks that a method with >4 params gets expanded correctly
     assert_format(
         r#"selectWindow = (column="_value", fn, as, every, defaultValue, tables=<-) => {
     _column = column
@@ -1227,7 +1229,8 @@ fn preserve_multiline_test() {
         as,
         every,
         defaultValue,
-        tables=<-) => {
+        tables=<-,
+) => {
     _column = column
     _as = as
 

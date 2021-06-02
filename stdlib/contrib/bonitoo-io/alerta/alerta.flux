@@ -35,7 +35,8 @@ alert = (
         attributes,
         origin="InfluxDB",
         type="",
-        timestamp=now()) => {
+        timestamp=now(),
+) => {
     alert = {
         resource: resource,
         event: event,

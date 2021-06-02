@@ -53,7 +53,8 @@ rawQuery = (
         groupBy=["_time", "_value"],
         groupMode="except",
         every=inf,
-        period=0s) => stream
+        period=0s,
+) => stream
     |> range(start: start, stop: stop)
     |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))
     |> group(columns: groupBy, mode: groupMode)

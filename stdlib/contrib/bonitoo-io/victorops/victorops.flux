@@ -19,7 +19,8 @@ alert = (
         entityDisplayName="",
         stateMessage="",
         timestamp=now(),
-        monitoringTool="InfluxDB") => {
+        monitoringTool="InfluxDB",
+) => {
     alert = {
         message_type: messageType,
         entity_id: entityID,

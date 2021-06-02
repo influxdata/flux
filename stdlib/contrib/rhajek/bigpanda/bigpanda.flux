@@ -38,7 +38,8 @@ sendAlert = (
         token,
         appKey,
         status,
-        rec) => {
+        rec,
+) => {
     headers = {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": defaultTokenPrefix + " " + token,

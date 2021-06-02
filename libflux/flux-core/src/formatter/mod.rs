@@ -545,6 +545,7 @@ impl Formatter {
         if multiline {
             self.unindent();
             self.unindent();
+            self.write_string(sep);
         }
         self.format_comments(&n.rparen);
         self.write_string(") ");

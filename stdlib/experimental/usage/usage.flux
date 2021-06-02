@@ -18,7 +18,8 @@ from = (
         host="",
         orgID="",
         token="",
-        raw=false) => {
+        raw=false,
+) => {
     id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
     response = influxdb.api(
         method: "get",

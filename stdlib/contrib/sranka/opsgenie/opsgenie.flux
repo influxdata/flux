@@ -33,7 +33,8 @@ sendAlert = (
         entity="",
         actions=[],
         visibleTo=[],
-        details="{}") => {
+        details="{}",
+) => {
     headers = {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": "GenieKey " + apiKey,

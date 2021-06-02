@@ -27,7 +27,8 @@ event = (
         status=0,
         state="",
         namespace="default",
-        entityName="influxdb") => {
+        entityName="influxdb",
+) => {
     data = {
         entity: {
             entity_class: "proxy",
@@ -69,7 +70,8 @@ endpoint = (
         apiKey,
         handlers=[],
         namespace="default",
-        entityName="influxdb") => (mapFn) => (tables=<-) => tables
+        entityName="influxdb",
+) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)

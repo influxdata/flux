@@ -14,7 +14,8 @@ inBucket = (
         start,
         stop=now(),
         fields=[],
-        predicate=(r) => true) => fromRange(bucket: bucket, start: start, stop: stop)
+        predicate=(r) => true,
+) => fromRange(bucket: bucket, start: start, stop: stop)
     |> filterMeasurement(measurement)
     |> filter(fn: predicate)
     |> filterFields(fields)

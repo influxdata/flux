@@ -138,7 +138,8 @@ check = (
         crit=(r) => false,
         warn=(r) => false,
         info=(r) => false,
-        ok=(r) => true) => tables
+        ok=(r) => true,
+) => tables
     |> experimental.set(o: data.tags)
     |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data.tags))
     |> map(

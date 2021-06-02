@@ -216,7 +216,8 @@ aggregateWindow = (
         timeSrc="_stop",
         timeDst="_time",
         createEmpty=true,
-        tables=<-) => tables
+        tables=<-,
+) => tables
     |> window(every: every, offset: offset, createEmpty: createEmpty)
     |> fn(column: column)
     |> duplicate(column: timeSrc, as: timeDst)
@@ -266,7 +267,8 @@ stateDuration = (
         column="stateDuration",
         timeColumn="_time",
         unit=1s,
-        tables=<-) => tables
+        tables=<-,
+) => tables
     |> stateTracking(durationColumn: column, timeColumn: timeColumn, fn: fn, durationUnit: unit)
 
 // _sortLimit is a helper function, which sorts and limits a table.
@@ -291,7 +293,8 @@ _highestOrLowest = (
         reducer,
         column="_value",
         groupColumns=[],
-        tables=<-) => tables
+        tables=<-,
+) => tables
     |> group(columns: groupColumns)
     |> reducer()
     |> group(columns: [])

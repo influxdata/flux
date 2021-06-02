@@ -16,7 +16,8 @@ send = (
         webhookID,
         username,
         content,
-        avatar_url="") => {
+        avatar_url="",
+) => {
     data = {
         username: username,
         content: content,

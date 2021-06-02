@@ -35,7 +35,8 @@ event = (
         eventClass="",
         eventClassKey="",
         collector="",
-        message="") => {
+        message="",
+) => {
     event = {
         summary: summary,
         device: device,
@@ -82,7 +83,8 @@ endpoint = (
         action="EventsRouter",
         method="add_event",
         type="rpc",
-        tid=1) => (mapFn) => (tables=<-) => tables
+        tid=1,
+) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)

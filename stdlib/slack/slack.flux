@@ -19,7 +19,8 @@ message = (
         token="",
         channel,
         text,
-        color) => {
+        color,
+) => {
     attachments = [
         {color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]},
     ]

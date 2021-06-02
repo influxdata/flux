@@ -17,7 +17,8 @@ computeAPQ = (
         partEvents,
         runningState,
         plannedTime,
-        idealCycleTime) => {
+        idealCycleTime,
+) => {
     availability = productionEvents
         |> events.duration(unit: 1ns, columnName: "runTime")
         |> filter(fn: (r) => r.state == runningState)

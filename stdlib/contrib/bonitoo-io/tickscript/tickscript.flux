@@ -29,7 +29,8 @@ alert = (
         info=(r) => false,
         ok=(r) => true,
         topic="",
-        tables=<-) => {
+        tables=<-,
+) => {
     _addTopic = if topic != "" then
         (tables=<-) => tables
             |> set(key: "_topic", value: topic)
@@ -66,7 +67,8 @@ deadman = (
         id=(r) => "${r._check_id}",
         message=(r) => "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"),
         topic="",
-        tables=<-) => {
+        tables=<-,
+) => {
     // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,
     // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty
     // table is used as input for actual threshold check in order to get 0.
@@ -138,7 +140,8 @@ selectWindow = (
         as,
         every,
         defaultValue,
-        tables=<-) => {
+        tables=<-,
+) => {
     _column = column
     _as = as
 
