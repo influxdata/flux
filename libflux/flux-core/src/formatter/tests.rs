@@ -1245,5 +1245,4 @@ fn preserve_multiline_test() {
     return http.post(headers: headers, url: url, data: body)
 }"#,
     );
-
 }
