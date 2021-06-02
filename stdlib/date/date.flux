@@ -1,46 +1,116 @@
 package date
 
 
-// Second returns the seconds of a specified time. Results range from [0-59].
+// date.second is a function that returns the second of the specified time.
+// Results can range from [0 - 59].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin second : (t: T) => int where T: Timeable
 
-// Minute returns the minutes of a specified time. Results range from [0-59].
+// date.minute is a function that returns the minute of a specified time.
+// Results range from [0 - 59].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin minute : (t: T) => int where T: Timeable
 
-// Hour returns the hours of a specified time. Results range from [0-23].
+// date.hour is a function that returns the hour of the specified time.
+// Results range from [0 - 23].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin hour : (t: T) => int where T: Timeable
 
-// WeekDay returns the day of the week for a specified time. Results range from [0-6].
+// date.weekDay is a funcion that returns the day of the week for a specified time.
+// Results range from [0 - 6].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin weekDay : (t: T) => int where T: Timeable
 
-// MonthDay returns the day of the month for a specified time. Results range from [1-31].
+// date.monthDay is a function that returns the day of the month for a specified time.
+// Results range from [1 - 31].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin monthDay : (t: T) => int where T: Timeable
 
-// YearDay returns the day of the year for a specified time. Results range from [1-366].
+// date.yearDay is a function that returns the day of the year for a specified time.
+// Results include leap days, and range from [1 - 366].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin yearDay : (t: T) => int where T: Timeable
 
-// Month returns the month for a specified time. Results range from [1-12].
+// date.month is a function that returns the month of a specified time.
+// Results range from [1 - 12].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin month : (t: T) => int where T: Timeable
 
-// Year returns the year for a specified time.
+// date.year is a function that returns the year of a specified time.
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin year : (t: T) => int where T: Timeable
 
-// Week returns the ISO week of the year for a specified time. Results range from [1-53].
+// date.week is a function that returns the ISO week of the year for a
+// specified time. Results range from [1 - 53].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin week : (t: T) => int where T: Timeable
 
-// Quarter returns the quarter for a specified time. Results range from [1-4].
+// date.quarter is a function that returns the quarter of the year for a
+// specified time. Results range from [1 - 4].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin quarter : (t: T) => int where T: Timeable
 
-// Millisecond returns the milliseconds for a specified time. Results range from [0-999].
+// date.millisecond is a function that returns the millisecond of a
+// specified time. Results range from [0 - 999].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin millisecond : (t: T) => int where T: Timeable
 
-// Microsecond returns the microseconds for a specified time. Results range from [0-999999].
+// date.microsecond is a function that returns the microsecond of a
+// specified time. Results range from [0 - 999999].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin microsecond : (t: T) => int where T: Timeable
 
-// Nanosecond returns the nanoseconds for a specified time. Results range from [0-999999999].
+// date.nanosecond is a function that returns the nanosecond of a
+// specified time. Results range from [0 - 999999999].
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
 builtin nanosecond : (t: T) => int where T: Timeable
 
-// Truncate returns a time truncated to the specified duration unit.
+// date.truncate returns a time truncated to the specified duration unit.
+//
+// - `t` is the time to operate on. Use an absolute time, relative duration,
+//	or integer. Durations are relative to now().
+//
+// - `unit` is the unit of time to truncate to.
+//
 builtin truncate : (t: T, unit: duration) => time where T: Timeable
 
 // Sunday is a constant that represents Sunday as a day of the week

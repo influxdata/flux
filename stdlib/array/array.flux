@@ -1,16 +1,14 @@
 package array
 
 
-// from will construct a table from the input rows.
+// array.from constructs a table from an array of records. each
+// record in the array is converted into an output row or record.
+// all records must have the same keys and data types.
 //
-// This function takes the `rows` parameter. The rows
-// parameter is an array of records that will be constructed.
-// All of the records must have the same keys and the same types
-// for the values.
+// - `rows` is the array of records that is used to construct a table.
 //
 // Example:
 //
-//    import "array"
 //    array.from(rows:[{a:1, b: false, c: "hi"}, {a:2, b: true, c: "bye"}])
 //
 builtin from : (rows: [A]) => [A] where A: Record
