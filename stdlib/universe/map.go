@@ -154,7 +154,7 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 		for i := 0; i < l; i++ {
 			m, err := fn.Eval(t.ctx, i, cr)
 			if err != nil {
-				return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
+				return errors.Wrap(err, codes.Invalid, "failed to evaluate map function")
 			}
 
 			// If we haven't determined the columns to group on, do that now.
