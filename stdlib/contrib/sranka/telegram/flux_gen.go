@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 6,
-					Line:   69,
+					Line:   70,
 				},
 				File:   "telegram.flux",
-				Source: "package telegram\n\n\nimport \"http\"\nimport \"json\"\n\noption defaultURL = \"https://api.telegram.org/bot\"\noption defaultParseMode = \"MarkdownV2\"\noption defaultDisableWebPagePreview = false\noption defaultSilent = true\n\n// `message` sends a single message to a Telegram channel using the API descibed in https://core.telegram.org/bots/api#sendmessage\n// `url` - string - URL of the telegram bot endpoint. Defaults to: \"https://api.telegram.org/bot\"\n// `token` - string - Required telegram bot token string, such as 123456789:AAxSFgij0ln9C7zUKnr4ScDi5QXTGF71S\n// `channel` - string - Required id of the telegram channel.\n// `text` - string - The text to display.\n// `parseMode` - string - Parse mode of the message text per https://core.telegram.org/bots/api#formatting-options . Defaults to \"MarkdownV2\"\n// `disableWebPagePreview` - bool - Disables preview of web links in the sent messages when \"true\". Defaults to \"false\"\n// `silent` - bool - Messages are sent silently (https://telegram.org/blog/channels-2-0#silent-messages) when \"true\". Defaults to \"true\".\nmessage = (\n        url=defaultURL,\n        token,\n        channel,\n        text,\n        parseMode=defaultParseMode,\n        disableWebPagePreview=defaultDisableWebPagePreview,\n        silent=defaultSilent) => {\n    data = {\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send messages to telegram for each table row.\n// `url` - string - URL of the telegram bot endpoint. Defaults to: \"https://api.telegram.org/bot\"\n// `token` - string - Required telegram bot token string, such as 123456789:AAxSFgij0ln9C7zUKnr4ScDi5QXTGF71S\n// `parseMode` - string - Parse mode of the message text per https://core.telegram.org/bots/api#formatting-options . Defaults to \"MarkdownV2\"\n// `disableWebPagePreview` - bool - Disables preview of web links in the sent messages when \"true\". Defaults to \"false\"\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `channel`, `text`, and `silent`, as defined in the `message` function arguments.\nendpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package telegram\n\n\nimport \"http\"\nimport \"json\"\n\noption defaultURL = \"https://api.telegram.org/bot\"\noption defaultParseMode = \"MarkdownV2\"\noption defaultDisableWebPagePreview = false\noption defaultSilent = true\n\n// `message` sends a single message to a Telegram channel using the API descibed in https://core.telegram.org/bots/api#sendmessage\n// `url` - string - URL of the telegram bot endpoint. Defaults to: \"https://api.telegram.org/bot\"\n// `token` - string - Required telegram bot token string, such as 123456789:AAxSFgij0ln9C7zUKnr4ScDi5QXTGF71S\n// `channel` - string - Required id of the telegram channel.\n// `text` - string - The text to display.\n// `parseMode` - string - Parse mode of the message text per https://core.telegram.org/bots/api#formatting-options . Defaults to \"MarkdownV2\"\n// `disableWebPagePreview` - bool - Disables preview of web links in the sent messages when \"true\". Defaults to \"false\"\n// `silent` - bool - Messages are sent silently (https://telegram.org/blog/channels-2-0#silent-messages) when \"true\". Defaults to \"true\".\nmessage = (\n        url=defaultURL,\n        token,\n        channel,\n        text,\n        parseMode=defaultParseMode,\n        disableWebPagePreview=defaultDisableWebPagePreview,\n        silent=defaultSilent,\n) => {\n    data = {\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send messages to telegram for each table row.\n// `url` - string - URL of the telegram bot endpoint. Defaults to: \"https://api.telegram.org/bot\"\n// `token` - string - Required telegram bot token string, such as 123456789:AAxSFgij0ln9C7zUKnr4ScDi5QXTGF71S\n// `parseMode` - string - Parse mode of the message text per https://core.telegram.org/bots/api#formatting-options . Defaults to \"MarkdownV2\"\n// `disableWebPagePreview` - bool - Disables preview of web links in the sent messages when \"true\". Defaults to \"false\"\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `channel`, `text`, and `silent`, as defined in the `message` function arguments.\nendpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -333,10 +333,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   41,
+						Line:   42,
 					},
 					File:   "telegram.flux",
-					Source: "message = (\n        url=defaultURL,\n        token,\n        channel,\n        text,\n        parseMode=defaultParseMode,\n        disableWebPagePreview=defaultDisableWebPagePreview,\n        silent=defaultSilent) => {\n    data = {\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)\n}",
+					Source: "message = (\n        url=defaultURL,\n        token,\n        channel,\n        text,\n        parseMode=defaultParseMode,\n        disableWebPagePreview=defaultDisableWebPagePreview,\n        silent=defaultSilent,\n) => {\n    data = {\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   20,
@@ -370,10 +370,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   41,
+							Line:   42,
 						},
 						File:   "telegram.flux",
-						Source: "(\n        url=defaultURL,\n        token,\n        channel,\n        text,\n        parseMode=defaultParseMode,\n        disableWebPagePreview=defaultDisableWebPagePreview,\n        silent=defaultSilent) => {\n    data = {\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)\n}",
+						Source: "(\n        url=defaultURL,\n        token,\n        channel,\n        text,\n        parseMode=defaultParseMode,\n        disableWebPagePreview=defaultDisableWebPagePreview,\n        silent=defaultSilent,\n) => {\n    data = {\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)\n}",
 						Start: ast.Position{
 							Column: 11,
 							Line:   20,
@@ -387,13 +387,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   41,
+								Line:   42,
 							},
 							File:   "telegram.flux",
 							Source: "{\n    data = {\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)\n}",
 							Start: ast.Position{
-								Column: 34,
-								Line:   27,
+								Column: 6,
+								Line:   28,
 							},
 						},
 					},
@@ -404,13 +404,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   34,
+									Line:   35,
 								},
 								File:   "telegram.flux",
 								Source: "data = {\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   28,
+									Line:   29,
 								},
 							},
 						},
@@ -421,13 +421,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   28,
+										Line:   29,
 									},
 									File:   "telegram.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 5,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -440,13 +440,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   34,
+										Line:   35,
 									},
 									File:   "telegram.flux",
 									Source: "{\n        chat_id: channel,\n        text: text,\n        parse_mode: parseMode,\n        disable_web_page_preview: disableWebPagePreview,\n        disable_notification: silent,\n    }",
 									Start: ast.Position{
 										Column: 12,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -458,13 +458,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   29,
+											Line:   30,
 										},
 										File:   "telegram.flux",
 										Source: "chat_id: channel",
 										Start: ast.Position{
 											Column: 9,
-											Line:   29,
+											Line:   30,
 										},
 									},
 								},
@@ -476,13 +476,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   29,
+												Line:   30,
 											},
 											File:   "telegram.flux",
 											Source: "chat_id",
 											Start: ast.Position{
 												Column: 9,
-												Line:   29,
+												Line:   30,
 											},
 										},
 									},
@@ -496,13 +496,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   29,
+												Line:   30,
 											},
 											File:   "telegram.flux",
 											Source: "channel",
 											Start: ast.Position{
 												Column: 18,
-												Line:   29,
+												Line:   30,
 											},
 										},
 									},
@@ -515,13 +515,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   30,
+											Line:   31,
 										},
 										File:   "telegram.flux",
 										Source: "text: text",
 										Start: ast.Position{
 											Column: 9,
-											Line:   30,
+											Line:   31,
 										},
 									},
 								},
@@ -533,13 +533,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   30,
+												Line:   31,
 											},
 											File:   "telegram.flux",
 											Source: "text",
 											Start: ast.Position{
 												Column: 9,
-												Line:   30,
+												Line:   31,
 											},
 										},
 									},
@@ -553,13 +553,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   30,
+												Line:   31,
 											},
 											File:   "telegram.flux",
 											Source: "text",
 											Start: ast.Position{
 												Column: 15,
-												Line:   30,
+												Line:   31,
 											},
 										},
 									},
@@ -572,13 +572,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   31,
+											Line:   32,
 										},
 										File:   "telegram.flux",
 										Source: "parse_mode: parseMode",
 										Start: ast.Position{
 											Column: 9,
-											Line:   31,
+											Line:   32,
 										},
 									},
 								},
@@ -590,13 +590,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   31,
+												Line:   32,
 											},
 											File:   "telegram.flux",
 											Source: "parse_mode",
 											Start: ast.Position{
 												Column: 9,
-												Line:   31,
+												Line:   32,
 											},
 										},
 									},
@@ -610,13 +610,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   31,
+												Line:   32,
 											},
 											File:   "telegram.flux",
 											Source: "parseMode",
 											Start: ast.Position{
 												Column: 21,
-												Line:   31,
+												Line:   32,
 											},
 										},
 									},
@@ -629,13 +629,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 56,
-											Line:   32,
+											Line:   33,
 										},
 										File:   "telegram.flux",
 										Source: "disable_web_page_preview: disableWebPagePreview",
 										Start: ast.Position{
 											Column: 9,
-											Line:   32,
+											Line:   33,
 										},
 									},
 								},
@@ -647,13 +647,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   32,
+												Line:   33,
 											},
 											File:   "telegram.flux",
 											Source: "disable_web_page_preview",
 											Start: ast.Position{
 												Column: 9,
-												Line:   32,
+												Line:   33,
 											},
 										},
 									},
@@ -667,13 +667,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 56,
-												Line:   32,
+												Line:   33,
 											},
 											File:   "telegram.flux",
 											Source: "disableWebPagePreview",
 											Start: ast.Position{
 												Column: 35,
-												Line:   32,
+												Line:   33,
 											},
 										},
 									},
@@ -686,13 +686,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 37,
-											Line:   33,
+											Line:   34,
 										},
 										File:   "telegram.flux",
 										Source: "disable_notification: silent",
 										Start: ast.Position{
 											Column: 9,
-											Line:   33,
+											Line:   34,
 										},
 									},
 								},
@@ -704,13 +704,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   33,
+												Line:   34,
 											},
 											File:   "telegram.flux",
 											Source: "disable_notification",
 											Start: ast.Position{
 												Column: 9,
-												Line:   33,
+												Line:   34,
 											},
 										},
 									},
@@ -724,13 +724,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   33,
+												Line:   34,
 											},
 											File:   "telegram.flux",
 											Source: "silent",
 											Start: ast.Position{
 												Column: 31,
-												Line:   33,
+												Line:   34,
 											},
 										},
 									},
@@ -747,13 +747,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   37,
+									Line:   38,
 								},
 								File:   "telegram.flux",
 								Source: "headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   35,
+									Line:   36,
 								},
 							},
 						},
@@ -764,13 +764,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   35,
+										Line:   36,
 									},
 									File:   "telegram.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   35,
+										Line:   36,
 									},
 								},
 							},
@@ -783,13 +783,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   37,
+										Line:   38,
 									},
 									File:   "telegram.flux",
 									Source: "{\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   35,
+										Line:   36,
 									},
 								},
 							},
@@ -801,13 +801,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   36,
+											Line:   37,
 										},
 										File:   "telegram.flux",
 										Source: "\"Content-Type\": \"application/json; charset=utf-8\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   36,
+											Line:   37,
 										},
 									},
 								},
@@ -819,13 +819,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   36,
+												Line:   37,
 											},
 											File:   "telegram.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   36,
+												Line:   37,
 											},
 										},
 									},
@@ -839,13 +839,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   36,
+												Line:   37,
 											},
 											File:   "telegram.flux",
 											Source: "\"application/json; charset=utf-8\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   36,
+												Line:   37,
 											},
 										},
 									},
@@ -862,13 +862,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   38,
+									Line:   39,
 								},
 								File:   "telegram.flux",
 								Source: "enc = json.encode(v: data)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   38,
+									Line:   39,
 								},
 							},
 						},
@@ -879,13 +879,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   38,
+										Line:   39,
 									},
 									File:   "telegram.flux",
 									Source: "enc",
 									Start: ast.Position{
 										Column: 5,
-										Line:   38,
+										Line:   39,
 									},
 								},
 							},
@@ -899,13 +899,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   38,
+											Line:   39,
 										},
 										File:   "telegram.flux",
 										Source: "v: data",
 										Start: ast.Position{
 											Column: 23,
-											Line:   38,
+											Line:   39,
 										},
 									},
 								},
@@ -917,13 +917,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   38,
+												Line:   39,
 											},
 											File:   "telegram.flux",
 											Source: "v: data",
 											Start: ast.Position{
 												Column: 23,
-												Line:   38,
+												Line:   39,
 											},
 										},
 									},
@@ -935,13 +935,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   38,
+													Line:   39,
 												},
 												File:   "telegram.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 23,
-													Line:   38,
+													Line:   39,
 												},
 											},
 										},
@@ -955,13 +955,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   38,
+													Line:   39,
 												},
 												File:   "telegram.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 26,
-													Line:   38,
+													Line:   39,
 												},
 											},
 										},
@@ -977,13 +977,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   38,
+										Line:   39,
 									},
 									File:   "telegram.flux",
 									Source: "json.encode(v: data)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   38,
+										Line:   39,
 									},
 								},
 							},
@@ -994,13 +994,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   38,
+											Line:   39,
 										},
 										File:   "telegram.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 11,
-											Line:   38,
+											Line:   39,
 										},
 									},
 								},
@@ -1012,13 +1012,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   38,
+												Line:   39,
 											},
 											File:   "telegram.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 11,
-												Line:   38,
+												Line:   39,
 											},
 										},
 									},
@@ -1031,13 +1031,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   38,
+												Line:   39,
 											},
 											File:   "telegram.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 16,
-												Line:   38,
+												Line:   39,
 											},
 										},
 									},
@@ -1057,13 +1057,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 84,
-											Line:   40,
+											Line:   41,
 										},
 										File:   "telegram.flux",
 										Source: "headers: headers, url: url + token + \"/sendMessage\", data: enc",
 										Start: ast.Position{
 											Column: 22,
-											Line:   40,
+											Line:   41,
 										},
 									},
 								},
@@ -1075,13 +1075,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   40,
+												Line:   41,
 											},
 											File:   "telegram.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   40,
+												Line:   41,
 											},
 										},
 									},
@@ -1093,13 +1093,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   40,
+													Line:   41,
 												},
 												File:   "telegram.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   40,
+													Line:   41,
 												},
 											},
 										},
@@ -1113,13 +1113,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   40,
+													Line:   41,
 												},
 												File:   "telegram.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   40,
+													Line:   41,
 												},
 											},
 										},
@@ -1132,13 +1132,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   40,
+												Line:   41,
 											},
 											File:   "telegram.flux",
 											Source: "url: url + token + \"/sendMessage\"",
 											Start: ast.Position{
 												Column: 40,
-												Line:   40,
+												Line:   41,
 											},
 										},
 									},
@@ -1150,13 +1150,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   40,
+													Line:   41,
 												},
 												File:   "telegram.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   40,
+													Line:   41,
 												},
 											},
 										},
@@ -1170,13 +1170,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 73,
-													Line:   40,
+													Line:   41,
 												},
 												File:   "telegram.flux",
 												Source: "url + token + \"/sendMessage\"",
 												Start: ast.Position{
 													Column: 45,
-													Line:   40,
+													Line:   41,
 												},
 											},
 										},
@@ -1187,13 +1187,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   40,
+														Line:   41,
 													},
 													File:   "telegram.flux",
 													Source: "url + token",
 													Start: ast.Position{
 														Column: 45,
-														Line:   40,
+														Line:   41,
 													},
 												},
 											},
@@ -1204,13 +1204,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 48,
-															Line:   40,
+															Line:   41,
 														},
 														File:   "telegram.flux",
 														Source: "url",
 														Start: ast.Position{
 															Column: 45,
-															Line:   40,
+															Line:   41,
 														},
 													},
 												},
@@ -1224,13 +1224,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 56,
-															Line:   40,
+															Line:   41,
 														},
 														File:   "telegram.flux",
 														Source: "token",
 														Start: ast.Position{
 															Column: 51,
-															Line:   40,
+															Line:   41,
 														},
 													},
 												},
@@ -1245,13 +1245,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 73,
-														Line:   40,
+														Line:   41,
 													},
 													File:   "telegram.flux",
 													Source: "\"/sendMessage\"",
 													Start: ast.Position{
 														Column: 59,
-														Line:   40,
+														Line:   41,
 													},
 												},
 											},
@@ -1265,13 +1265,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
-												Line:   40,
+												Line:   41,
 											},
 											File:   "telegram.flux",
 											Source: "data: enc",
 											Start: ast.Position{
 												Column: 75,
-												Line:   40,
+												Line:   41,
 											},
 										},
 									},
@@ -1283,13 +1283,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 79,
-													Line:   40,
+													Line:   41,
 												},
 												File:   "telegram.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 75,
-													Line:   40,
+													Line:   41,
 												},
 											},
 										},
@@ -1303,13 +1303,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 84,
-													Line:   40,
+													Line:   41,
 												},
 												File:   "telegram.flux",
 												Source: "enc",
 												Start: ast.Position{
 													Column: 81,
-													Line:   40,
+													Line:   41,
 												},
 											},
 										},
@@ -1325,13 +1325,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 85,
-										Line:   40,
+										Line:   41,
 									},
 									File:   "telegram.flux",
 									Source: "http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   40,
+										Line:   41,
 									},
 								},
 							},
@@ -1342,13 +1342,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   40,
+											Line:   41,
 										},
 										File:   "telegram.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   40,
+											Line:   41,
 										},
 									},
 								},
@@ -1360,13 +1360,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   40,
+												Line:   41,
 											},
 											File:   "telegram.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   40,
+												Line:   41,
 											},
 										},
 									},
@@ -1379,13 +1379,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   40,
+												Line:   41,
 											},
 											File:   "telegram.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   40,
+												Line:   41,
 											},
 										},
 									},
@@ -1402,13 +1402,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 85,
-									Line:   40,
+									Line:   41,
 								},
 								File:   "telegram.flux",
 								Source: "return http.post(headers: headers, url: url + token + \"/sendMessage\", data: enc)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   40,
+									Line:   41,
 								},
 							},
 						},
@@ -1772,13 +1772,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 6,
-						Line:   69,
+						Line:   70,
 					},
 					File:   "telegram.flux",
 					Source: "endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   50,
+						Line:   51,
 					},
 				},
 			},
@@ -1789,13 +1789,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   50,
+							Line:   51,
 						},
 						File:   "telegram.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   50,
+							Line:   51,
 						},
 					},
 				},
@@ -1809,13 +1809,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   69,
+							Line:   70,
 						},
 						File:   "telegram.flux",
 						Source: "(url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   50,
+							Line:   51,
 						},
 					},
 				},
@@ -1827,13 +1827,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 6,
-								Line:   69,
+								Line:   70,
 							},
 							File:   "telegram.flux",
 							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
 								Column: 119,
-								Line:   50,
+								Line:   51,
 							},
 						},
 					},
@@ -1845,13 +1845,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   69,
+									Line:   70,
 								},
 								File:   "telegram.flux",
 								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
 									Column: 130,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
@@ -1863,13 +1863,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 151,
-											Line:   50,
+											Line:   51,
 										},
 										File:   "telegram.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 145,
-											Line:   50,
+											Line:   51,
 										},
 									},
 								},
@@ -1881,13 +1881,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   69,
+										Line:   70,
 									},
 									File:   "telegram.flux",
 									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
 										Column: 145,
-										Line:   50,
+										Line:   51,
 									},
 								},
 							},
@@ -1899,13 +1899,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   68,
+												Line:   69,
 											},
 											File:   "telegram.flux",
 											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
 												Column: 9,
-												Line:   52,
+												Line:   53,
 											},
 										},
 									},
@@ -1917,13 +1917,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   68,
+													Line:   69,
 												},
 												File:   "telegram.flux",
 												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
 													Column: 9,
-													Line:   52,
+													Line:   53,
 												},
 											},
 										},
@@ -1935,13 +1935,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   52,
+														Line:   53,
 													},
 													File:   "telegram.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 9,
-														Line:   52,
+														Line:   53,
 													},
 												},
 											},
@@ -1956,13 +1956,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 10,
-														Line:   68,
+														Line:   69,
 													},
 													File:   "telegram.flux",
 													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
 														Column: 13,
-														Line:   52,
+														Line:   53,
 													},
 												},
 											},
@@ -1973,13 +1973,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 10,
-															Line:   68,
+															Line:   69,
 														},
 														File:   "telegram.flux",
 														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
 															Column: 20,
-															Line:   52,
+															Line:   53,
 														},
 													},
 												},
@@ -1990,13 +1990,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   53,
+																Line:   54,
 															},
 															File:   "telegram.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 13,
-																Line:   53,
+																Line:   54,
 															},
 														},
 													},
@@ -2007,13 +2007,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 16,
-																	Line:   53,
+																	Line:   54,
 																},
 																File:   "telegram.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   53,
+																	Line:   54,
 																},
 															},
 														},
@@ -2027,13 +2027,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 29,
-																		Line:   53,
+																		Line:   54,
 																	},
 																	File:   "telegram.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   53,
+																		Line:   54,
 																	},
 																},
 															},
@@ -2045,13 +2045,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 29,
-																			Line:   53,
+																			Line:   54,
 																		},
 																		File:   "telegram.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 25,
-																			Line:   53,
+																			Line:   54,
 																		},
 																	},
 																},
@@ -2063,13 +2063,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 26,
-																				Line:   53,
+																				Line:   54,
 																			},
 																			File:   "telegram.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 25,
-																				Line:   53,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -2083,13 +2083,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 29,
-																				Line:   53,
+																				Line:   54,
 																			},
 																			File:   "telegram.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 28,
-																				Line:   53,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -2105,13 +2105,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   53,
+																	Line:   54,
 																},
 																File:   "telegram.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   53,
+																	Line:   54,
 																},
 															},
 														},
@@ -2122,13 +2122,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 24,
-																		Line:   53,
+																		Line:   54,
 																	},
 																	File:   "telegram.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 19,
-																		Line:   53,
+																		Line:   54,
 																	},
 																},
 															},
@@ -2145,13 +2145,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 14,
-																	Line:   67,
+																	Line:   68,
 																},
 																File:   "telegram.flux",
 																Source: "{r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   55,
+																	Line:   56,
 																},
 															},
 														},
@@ -2163,13 +2163,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 18,
-																		Line:   66,
+																		Line:   67,
 																	},
 																	File:   "telegram.flux",
 																	Source: "_sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                )",
 																	Start: ast.Position{
 																		Column: 17,
-																		Line:   56,
+																		Line:   57,
 																	},
 																},
 															},
@@ -2181,13 +2181,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 22,
-																			Line:   56,
+																			Line:   57,
 																		},
 																		File:   "telegram.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 17,
-																			Line:   56,
+																			Line:   57,
 																		},
 																	},
 																},
@@ -2202,13 +2202,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 28,
-																				Line:   65,
+																				Line:   66,
 																			},
 																			File:   "telegram.flux",
 																			Source: "v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100",
 																			Start: ast.Position{
 																				Column: 21,
-																				Line:   57,
+																				Line:   58,
 																			},
 																		},
 																	},
@@ -2220,13 +2220,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   65,
+																					Line:   66,
 																				},
 																				File:   "telegram.flux",
 																				Source: "v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100",
 																				Start: ast.Position{
 																					Column: 21,
-																					Line:   57,
+																					Line:   58,
 																				},
 																			},
 																		},
@@ -2238,13 +2238,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 22,
-																						Line:   57,
+																						Line:   58,
 																					},
 																					File:   "telegram.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   57,
+																						Line:   58,
 																					},
 																				},
 																			},
@@ -2258,13 +2258,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 28,
-																						Line:   65,
+																						Line:   66,
 																					},
 																					File:   "telegram.flux",
 																					Source: "2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100",
 																					Start: ast.Position{
 																						Column: 24,
-																						Line:   57,
+																						Line:   58,
 																					},
 																				},
 																			},
@@ -2275,13 +2275,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 25,
-																							Line:   57,
+																							Line:   58,
 																						},
 																						File:   "telegram.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 24,
-																							Line:   57,
+																							Line:   58,
 																						},
 																					},
 																				},
@@ -2295,13 +2295,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 28,
-																							Line:   65,
+																							Line:   66,
 																						},
 																						File:   "telegram.flux",
 																						Source: "message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100",
 																						Start: ast.Position{
 																							Column: 29,
-																							Line:   57,
+																							Line:   58,
 																						},
 																					},
 																				},
@@ -2313,13 +2313,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 43,
-																									Line:   64,
+																									Line:   65,
 																								},
 																								File:   "telegram.flux",
 																								Source: "url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent",
 																								Start: ast.Position{
 																									Column: 25,
-																									Line:   58,
+																									Line:   59,
 																								},
 																							},
 																						},
@@ -2331,13 +2331,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 33,
-																										Line:   58,
+																										Line:   59,
 																									},
 																									File:   "telegram.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   58,
+																										Line:   59,
 																									},
 																								},
 																							},
@@ -2349,13 +2349,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 28,
-																											Line:   58,
+																											Line:   59,
 																										},
 																										File:   "telegram.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   58,
+																											Line:   59,
 																										},
 																									},
 																								},
@@ -2369,13 +2369,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   58,
+																											Line:   59,
 																										},
 																										File:   "telegram.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 30,
-																											Line:   58,
+																											Line:   59,
 																										},
 																									},
 																								},
@@ -2388,13 +2388,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 37,
-																										Line:   59,
+																										Line:   60,
 																									},
 																									File:   "telegram.flux",
 																									Source: "token: token",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   59,
+																										Line:   60,
 																									},
 																								},
 																							},
@@ -2406,13 +2406,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 30,
-																											Line:   59,
+																											Line:   60,
 																										},
 																										File:   "telegram.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   59,
+																											Line:   60,
 																										},
 																									},
 																								},
@@ -2426,13 +2426,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 37,
-																											Line:   59,
+																											Line:   60,
 																										},
 																										File:   "telegram.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 32,
-																											Line:   59,
+																											Line:   60,
 																										},
 																									},
 																								},
@@ -2445,13 +2445,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 45,
-																										Line:   60,
+																										Line:   61,
 																									},
 																									File:   "telegram.flux",
 																									Source: "channel: obj.channel",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   60,
+																										Line:   61,
 																									},
 																								},
 																							},
@@ -2463,13 +2463,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 32,
-																											Line:   60,
+																											Line:   61,
 																										},
 																										File:   "telegram.flux",
 																										Source: "channel",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   60,
+																											Line:   61,
 																										},
 																									},
 																								},
@@ -2483,13 +2483,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   60,
+																											Line:   61,
 																										},
 																										File:   "telegram.flux",
 																										Source: "obj.channel",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   60,
+																											Line:   61,
 																										},
 																									},
 																								},
@@ -2501,13 +2501,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   60,
+																												Line:   61,
 																											},
 																											File:   "telegram.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 34,
-																												Line:   60,
+																												Line:   61,
 																											},
 																										},
 																									},
@@ -2520,13 +2520,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 45,
-																												Line:   60,
+																												Line:   61,
 																											},
 																											File:   "telegram.flux",
 																											Source: "channel",
 																											Start: ast.Position{
 																												Column: 38,
-																												Line:   60,
+																												Line:   61,
 																											},
 																										},
 																									},
@@ -2541,13 +2541,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 39,
-																										Line:   61,
+																										Line:   62,
 																									},
 																									File:   "telegram.flux",
 																									Source: "text: obj.text",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   61,
+																										Line:   62,
 																									},
 																								},
 																							},
@@ -2559,13 +2559,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   61,
+																											Line:   62,
 																										},
 																										File:   "telegram.flux",
 																										Source: "text",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   61,
+																											Line:   62,
 																										},
 																									},
 																								},
@@ -2579,13 +2579,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 39,
-																											Line:   61,
+																											Line:   62,
 																										},
 																										File:   "telegram.flux",
 																										Source: "obj.text",
 																										Start: ast.Position{
 																											Column: 31,
-																											Line:   61,
+																											Line:   62,
 																										},
 																									},
 																								},
@@ -2597,13 +2597,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 34,
-																												Line:   61,
+																												Line:   62,
 																											},
 																											File:   "telegram.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 31,
-																												Line:   61,
+																												Line:   62,
 																											},
 																										},
 																									},
@@ -2616,13 +2616,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   61,
+																												Line:   62,
 																											},
 																											File:   "telegram.flux",
 																											Source: "text",
 																											Start: ast.Position{
 																												Column: 35,
-																												Line:   61,
+																												Line:   62,
 																											},
 																										},
 																									},
@@ -2637,13 +2637,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 45,
-																										Line:   62,
+																										Line:   63,
 																									},
 																									File:   "telegram.flux",
 																									Source: "parseMode: parseMode",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   62,
+																										Line:   63,
 																									},
 																								},
 																							},
@@ -2655,13 +2655,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 34,
-																											Line:   62,
+																											Line:   63,
 																										},
 																										File:   "telegram.flux",
 																										Source: "parseMode",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   62,
+																											Line:   63,
 																										},
 																									},
 																								},
@@ -2675,13 +2675,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   62,
+																											Line:   63,
 																										},
 																										File:   "telegram.flux",
 																										Source: "parseMode",
 																										Start: ast.Position{
 																											Column: 36,
-																											Line:   62,
+																											Line:   63,
 																										},
 																									},
 																								},
@@ -2694,13 +2694,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 69,
-																										Line:   63,
+																										Line:   64,
 																									},
 																									File:   "telegram.flux",
 																									Source: "disableWebPagePreview: disableWebPagePreview",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   63,
+																										Line:   64,
 																									},
 																								},
 																							},
@@ -2712,13 +2712,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 46,
-																											Line:   63,
+																											Line:   64,
 																										},
 																										File:   "telegram.flux",
 																										Source: "disableWebPagePreview",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   63,
+																											Line:   64,
 																										},
 																									},
 																								},
@@ -2732,13 +2732,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 69,
-																											Line:   63,
+																											Line:   64,
 																										},
 																										File:   "telegram.flux",
 																										Source: "disableWebPagePreview",
 																										Start: ast.Position{
 																											Column: 48,
-																											Line:   63,
+																											Line:   64,
 																										},
 																									},
 																								},
@@ -2751,13 +2751,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 43,
-																										Line:   64,
+																										Line:   65,
 																									},
 																									File:   "telegram.flux",
 																									Source: "silent: obj.silent",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   64,
+																										Line:   65,
 																									},
 																								},
 																							},
@@ -2769,13 +2769,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   64,
+																											Line:   65,
 																										},
 																										File:   "telegram.flux",
 																										Source: "silent",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   64,
+																											Line:   65,
 																										},
 																									},
 																								},
@@ -2789,13 +2789,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   64,
+																											Line:   65,
 																										},
 																										File:   "telegram.flux",
 																										Source: "obj.silent",
 																										Start: ast.Position{
 																											Column: 33,
-																											Line:   64,
+																											Line:   65,
 																										},
 																									},
 																								},
@@ -2807,13 +2807,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 36,
-																												Line:   64,
+																												Line:   65,
 																											},
 																											File:   "telegram.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 33,
-																												Line:   64,
+																												Line:   65,
 																											},
 																										},
 																									},
@@ -2826,13 +2826,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 43,
-																												Line:   64,
+																												Line:   65,
 																											},
 																											File:   "telegram.flux",
 																											Source: "silent",
 																											Start: ast.Position{
 																												Column: 37,
-																												Line:   64,
+																												Line:   65,
 																											},
 																										},
 																									},
@@ -2850,13 +2850,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 22,
-																								Line:   65,
+																								Line:   66,
 																							},
 																							File:   "telegram.flux",
 																							Source: "message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    )",
 																							Start: ast.Position{
 																								Column: 29,
-																								Line:   57,
+																								Line:   58,
 																							},
 																						},
 																					},
@@ -2867,13 +2867,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 36,
-																									Line:   57,
+																									Line:   58,
 																								},
 																								File:   "telegram.flux",
 																								Source: "message",
 																								Start: ast.Position{
 																									Column: 29,
-																									Line:   57,
+																									Line:   58,
 																								},
 																							},
 																						},
@@ -2890,13 +2890,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 28,
-																								Line:   65,
+																								Line:   66,
 																							},
 																							File:   "telegram.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 25,
-																								Line:   65,
+																								Line:   66,
 																							},
 																						},
 																					},
@@ -2914,13 +2914,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   66,
+																			Line:   67,
 																		},
 																		File:   "telegram.flux",
 																		Source: "string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                )",
 																		Start: ast.Position{
 																			Column: 24,
-																			Line:   56,
+																			Line:   57,
 																		},
 																	},
 																},
@@ -2931,13 +2931,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   56,
+																				Line:   57,
 																			},
 																			File:   "telegram.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   56,
+																				Line:   57,
 																			},
 																		},
 																	},
@@ -2955,13 +2955,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 22,
-																		Line:   55,
+																		Line:   56,
 																	},
 																	File:   "telegram.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 21,
-																		Line:   55,
+																		Line:   56,
 																	},
 																},
 															},
@@ -2974,13 +2974,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 14,
-																Line:   67,
+																Line:   68,
 															},
 															File:   "telegram.flux",
 															Source: "return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
 																Column: 13,
-																Line:   55,
+																Line:   56,
 															},
 														},
 													},
@@ -2996,13 +2996,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   52,
+															Line:   53,
 														},
 														File:   "telegram.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   52,
+															Line:   53,
 														},
 													},
 												},
@@ -3014,13 +3014,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   52,
+																Line:   53,
 															},
 															File:   "telegram.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   52,
+																Line:   53,
 															},
 														},
 													},
@@ -3041,13 +3041,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   69,
+											Line:   70,
 										},
 										File:   "telegram.flux",
 										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        channel: obj.channel,\n                        text: obj.text,\n                        parseMode: parseMode,\n                        disableWebPagePreview: disableWebPagePreview,\n                        silent: obj.silent,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   51,
+											Line:   52,
 										},
 									},
 								},
@@ -3058,13 +3058,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   51,
+												Line:   52,
 											},
 											File:   "telegram.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   51,
+												Line:   52,
 											},
 										},
 									},
@@ -3082,13 +3082,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 140,
-										Line:   50,
+										Line:   51,
 									},
 									File:   "telegram.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 131,
-										Line:   50,
+										Line:   51,
 									},
 								},
 							},
@@ -3100,13 +3100,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 137,
-											Line:   50,
+											Line:   51,
 										},
 										File:   "telegram.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 131,
-											Line:   50,
+											Line:   51,
 										},
 									},
 								},
@@ -3119,13 +3119,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 140,
-										Line:   50,
+										Line:   51,
 									},
 									File:   "telegram.flux",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 138,
-										Line:   50,
+										Line:   51,
 									},
 								},
 							}},
@@ -3140,13 +3140,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 125,
-									Line:   50,
+									Line:   51,
 								},
 								File:   "telegram.flux",
 								Source: "mapFn",
 								Start: ast.Position{
 									Column: 120,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
@@ -3158,13 +3158,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 125,
-										Line:   50,
+										Line:   51,
 									},
 									File:   "telegram.flux",
 									Source: "mapFn",
 									Start: ast.Position{
 										Column: 120,
-										Line:   50,
+										Line:   51,
 									},
 								},
 							},
@@ -3183,13 +3183,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   50,
+								Line:   51,
 							},
 							File:   "telegram.flux",
 							Source: "url=defaultURL",
 							Start: ast.Position{
 								Column: 13,
-								Line:   50,
+								Line:   51,
 							},
 						},
 					},
@@ -3201,13 +3201,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   50,
+									Line:   51,
 								},
 								File:   "telegram.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
@@ -3221,13 +3221,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   50,
+									Line:   51,
 								},
 								File:   "telegram.flux",
 								Source: "defaultURL",
 								Start: ast.Position{
 									Column: 17,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
@@ -3240,13 +3240,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   50,
+								Line:   51,
 							},
 							File:   "telegram.flux",
 							Source: "token",
 							Start: ast.Position{
 								Column: 29,
-								Line:   50,
+								Line:   51,
 							},
 						},
 					},
@@ -3258,13 +3258,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   50,
+									Line:   51,
 								},
 								File:   "telegram.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 29,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
@@ -3279,13 +3279,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 62,
-								Line:   50,
+								Line:   51,
 							},
 							File:   "telegram.flux",
 							Source: "parseMode=defaultParseMode",
 							Start: ast.Position{
 								Column: 36,
-								Line:   50,
+								Line:   51,
 							},
 						},
 					},
@@ -3297,13 +3297,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   50,
+									Line:   51,
 								},
 								File:   "telegram.flux",
 								Source: "parseMode",
 								Start: ast.Position{
 									Column: 36,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
@@ -3317,13 +3317,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 62,
-									Line:   50,
+									Line:   51,
 								},
 								File:   "telegram.flux",
 								Source: "defaultParseMode",
 								Start: ast.Position{
 									Column: 46,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
@@ -3336,13 +3336,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 114,
-								Line:   50,
+								Line:   51,
 							},
 							File:   "telegram.flux",
 							Source: "disableWebPagePreview=defaultDisableWebPagePreview",
 							Start: ast.Position{
 								Column: 64,
-								Line:   50,
+								Line:   51,
 							},
 						},
 					},
@@ -3354,13 +3354,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 85,
-									Line:   50,
+									Line:   51,
 								},
 								File:   "telegram.flux",
 								Source: "disableWebPagePreview",
 								Start: ast.Position{
 									Column: 64,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
@@ -3374,13 +3374,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 114,
-									Line:   50,
+									Line:   51,
 								},
 								File:   "telegram.flux",
 								Source: "defaultDisableWebPagePreview",
 								Start: ast.Position{
 									Column: 86,
-									Line:   50,
+									Line:   51,
 								},
 							},
 						},
