@@ -1211,4 +1211,39 @@ fn preserve_multiline_test() {
     return http.post(headers: headers, url: url, data: body)
 }"#,
     );
+    //Checks that a method with >4 params gets collapsed correctly
+    assert_format(
+        r#"selectWindow = (column="_value", fn, as, every, defaultValue, tables=<-) => {
+    _column = column
+    _as = as
+
+    return tables
+        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
+        |> fill(column: _column, value: defaultValue)
+        |> rename(fn: (column) => if column == _column then _as else column)"#,
+        r#"selectWindow = (
+        column="_value",
+        fn,
+        as,
+        every,
+        defaultValue,
+        tables=<-) => {
+    _column = column
+    _as = as
+
+    return tables
+        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
+        |> fill(column: _column, value: defaultValue)
+        |> rename(fn: (column) => if column == _column then _as else column)
+}"#,
+    );
+    //Checks that a method with <4 params does not get reformatted
+    assert_unchanged(
+        r#"event = (url, message="") => {
+    body = json.encode(v: payload)
+
+    return http.post(headers: headers, url: url, data: body)
+}"#,
+    );
+
 }
