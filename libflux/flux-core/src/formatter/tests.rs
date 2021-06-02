@@ -1237,7 +1237,7 @@ fn preserve_multiline_test() {
         |> rename(fn: (column) => if column == _column then _as else column)
 }"#,
     );
-    //Checks that a method with <4 params does not get reformatted
+    //Checks that a method with <= 4 params does not get reformatted
     assert_unchanged(
         r#"event = (url, message="") => {
     body = json.encode(v: payload)
