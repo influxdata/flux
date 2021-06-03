@@ -45,7 +45,20 @@ actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve"
 // `source` - string - The unique location of the affected system, preferably a hostname or FQDN.
 // `summary` - string - A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.
 // `timestamp` - string - The time at which the emitting tool detected or generated the event, in RFC 3339 nano format.
-sendEvent = (pagerdutyURL=defaultURL, routingKey, client, clientURL, dedupKey, class, group, severity, eventAction, source, summary, timestamp) => {
+sendEvent = (
+        pagerdutyURL=defaultURL,
+        routingKey,
+        client,
+        clientURL,
+        dedupKey,
+        class,
+        group,
+        severity,
+        eventAction,
+        source,
+        summary,
+        timestamp,
+) => {
     payload = {
         summary: summary,
         timestamp: timestamp,

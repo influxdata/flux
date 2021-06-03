@@ -1480,10 +1480,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   58,
+					Line:   68,
 				},
 				File:   "influxRawQuery_test.flux",
-				Source: "package schema_test\n\n\nimport \"testing\"\nimport \"influxdata/influxdb/v1\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,1.83,load1,system,host.local\n,,0,2018-05-22T19:53:36Z,1.7,load1,system,host.local\n,,0,2018-05-22T19:53:46Z,1.74,load1,system,host.local\n,,0,2018-05-22T19:53:56Z,1.63,load1,system,host.local\n,,0,2018-05-22T19:54:06Z,1.91,load1,system,host.local\n,,0,2018-05-22T19:54:16Z,1.84,load1,system,host.local\n,,1,2018-05-22T19:53:26Z,1.98,load15,system,host.local\n,,1,2018-05-22T19:53:36Z,1.97,load15,system,host.local\n,,1,2018-05-22T19:53:46Z,1.97,load15,system,host.local\n,,1,2018-05-22T19:53:56Z,1.96,load15,system,host.local\n,,1,2018-05-22T19:54:06Z,1.98,load15,system,host.local\n,,1,2018-05-22T19:54:16Z,1.97,load15,system,host.local\n,,2,2018-05-22T19:53:26Z,1.95,load5,system,host.local\n,,2,2018-05-22T19:53:36Z,1.92,load5,system,host.local\n,,2,2018-05-22T19:53:46Z,1.92,load5,system,host.local\n,,2,2018-05-22T19:53:56Z,1.89,load5,system,host.local\n,,2,2018-05-22T19:54:06Z,1.94,load5,system,host.local\n,,2,2018-05-22T19:54:16Z,1.93,load5,system,host.local\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,double\n#group,false,false,true,true,false,true,true,false,false,false\n#default,0,,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,load1,load15,load5\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:53:26Z,system,host.local,1.83,1.98,1.95\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:53:36Z,system,host.local,1.7,1.97,1.92\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:53:46Z,system,host.local,1.74,1.97,1.92\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:53:56Z,system,host.local,1.63,1.96,1.89\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:54:06Z,system,host.local,1.91,1.98,1.94\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:54:16Z,system,host.local,1.84,1.97,1.93\n\"\n\n// select load1, load15\nrawQuery = (stream=<-, start, stop, measurement, fields=[], groupBy=[\"_time\", \"_value\"], groupMode=\"except\", every=inf, period=0s) => stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)\n    |> v1.fieldsAsCols()\n    |> window(every: every, period: period)\n\ntest influx_raw_query = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: (table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z),\n})",
+				Source: "package schema_test\n\n\nimport \"testing\"\nimport \"influxdata/influxdb/v1\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,1.83,load1,system,host.local\n,,0,2018-05-22T19:53:36Z,1.7,load1,system,host.local\n,,0,2018-05-22T19:53:46Z,1.74,load1,system,host.local\n,,0,2018-05-22T19:53:56Z,1.63,load1,system,host.local\n,,0,2018-05-22T19:54:06Z,1.91,load1,system,host.local\n,,0,2018-05-22T19:54:16Z,1.84,load1,system,host.local\n,,1,2018-05-22T19:53:26Z,1.98,load15,system,host.local\n,,1,2018-05-22T19:53:36Z,1.97,load15,system,host.local\n,,1,2018-05-22T19:53:46Z,1.97,load15,system,host.local\n,,1,2018-05-22T19:53:56Z,1.96,load15,system,host.local\n,,1,2018-05-22T19:54:06Z,1.98,load15,system,host.local\n,,1,2018-05-22T19:54:16Z,1.97,load15,system,host.local\n,,2,2018-05-22T19:53:26Z,1.95,load5,system,host.local\n,,2,2018-05-22T19:53:36Z,1.92,load5,system,host.local\n,,2,2018-05-22T19:53:46Z,1.92,load5,system,host.local\n,,2,2018-05-22T19:53:56Z,1.89,load5,system,host.local\n,,2,2018-05-22T19:54:06Z,1.94,load5,system,host.local\n,,2,2018-05-22T19:54:16Z,1.93,load5,system,host.local\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,double\n#group,false,false,true,true,false,true,true,false,false,false\n#default,0,,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,load1,load15,load5\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:53:26Z,system,host.local,1.83,1.98,1.95\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:53:36Z,system,host.local,1.7,1.97,1.92\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:53:46Z,system,host.local,1.74,1.97,1.92\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:53:56Z,system,host.local,1.63,1.96,1.89\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:54:06Z,system,host.local,1.91,1.98,1.94\n,,0,2018-05-22T19:53:26Z,2018-05-22T19:54:17Z,2018-05-22T19:54:16Z,system,host.local,1.84,1.97,1.93\n\"\n\n// select load1, load15\nrawQuery = (\n        stream=<-,\n        start,\n        stop,\n        measurement,\n        fields=[],\n        groupBy=[\"_time\", \"_value\"],\n        groupMode=\"except\",\n        every=inf,\n        period=0s,\n) => stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)\n    |> v1.fieldsAsCols()\n    |> window(every: every, period: period)\n\ntest influx_raw_query = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: (table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z),\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1702,10 +1702,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 44,
-						Line:   52,
+						Line:   62,
 					},
 					File:   "influxRawQuery_test.flux",
-					Source: "rawQuery = (stream=<-, start, stop, measurement, fields=[], groupBy=[\"_time\", \"_value\"], groupMode=\"except\", every=inf, period=0s) => stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)\n    |> v1.fieldsAsCols()\n    |> window(every: every, period: period)",
+					Source: "rawQuery = (\n        stream=<-,\n        start,\n        stop,\n        measurement,\n        fields=[],\n        groupBy=[\"_time\", \"_value\"],\n        groupMode=\"except\",\n        every=inf,\n        period=0s,\n) => stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)\n    |> v1.fieldsAsCols()\n    |> window(every: every, period: period)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   47,
@@ -1739,10 +1739,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 44,
-							Line:   52,
+							Line:   62,
 						},
 						File:   "influxRawQuery_test.flux",
-						Source: "(stream=<-, start, stop, measurement, fields=[], groupBy=[\"_time\", \"_value\"], groupMode=\"except\", every=inf, period=0s) => stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)\n    |> v1.fieldsAsCols()\n    |> window(every: every, period: period)",
+						Source: "(\n        stream=<-,\n        start,\n        stop,\n        measurement,\n        fields=[],\n        groupBy=[\"_time\", \"_value\"],\n        groupMode=\"except\",\n        every=inf,\n        period=0s,\n) => stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)\n    |> v1.fieldsAsCols()\n    |> window(every: every, period: period)",
 						Start: ast.Position{
 							Column: 12,
 							Line:   47,
@@ -1760,14 +1760,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 141,
-													Line:   47,
+													Column: 12,
+													Line:   57,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "stream",
 												Start: ast.Position{
-													Column: 135,
-													Line:   47,
+													Column: 6,
+													Line:   57,
 												},
 											},
 										},
@@ -1779,13 +1779,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   48,
+												Line:   58,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "stream\n    |> range(start: start, stop: stop)",
 											Start: ast.Position{
-												Column: 135,
-												Line:   47,
+												Column: 6,
+												Line:   57,
 											},
 										},
 									},
@@ -1797,13 +1797,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   48,
+														Line:   58,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "start: start, stop: stop",
 													Start: ast.Position{
 														Column: 14,
-														Line:   48,
+														Line:   58,
 													},
 												},
 											},
@@ -1815,13 +1815,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 26,
-															Line:   48,
+															Line:   58,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "start: start",
 														Start: ast.Position{
 															Column: 14,
-															Line:   48,
+															Line:   58,
 														},
 													},
 												},
@@ -1833,13 +1833,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 19,
-																Line:   48,
+																Line:   58,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "start",
 															Start: ast.Position{
 																Column: 14,
-																Line:   48,
+																Line:   58,
 															},
 														},
 													},
@@ -1853,13 +1853,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   48,
+																Line:   58,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "start",
 															Start: ast.Position{
 																Column: 21,
-																Line:   48,
+																Line:   58,
 															},
 														},
 													},
@@ -1872,13 +1872,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
-															Line:   48,
+															Line:   58,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "stop: stop",
 														Start: ast.Position{
 															Column: 28,
-															Line:   48,
+															Line:   58,
 														},
 													},
 												},
@@ -1890,13 +1890,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 32,
-																Line:   48,
+																Line:   58,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "stop",
 															Start: ast.Position{
 																Column: 28,
-																Line:   48,
+																Line:   58,
 															},
 														},
 													},
@@ -1910,13 +1910,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 38,
-																Line:   48,
+																Line:   58,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "stop",
 															Start: ast.Position{
 																Column: 34,
-																Line:   48,
+																Line:   58,
 															},
 														},
 													},
@@ -1932,13 +1932,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
-													Line:   48,
+													Line:   58,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "range(start: start, stop: stop)",
 												Start: ast.Position{
 													Column: 8,
-													Line:   48,
+													Line:   58,
 												},
 											},
 										},
@@ -1949,13 +1949,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 13,
-														Line:   48,
+														Line:   58,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "range",
 													Start: ast.Position{
 														Column: 8,
-														Line:   48,
+														Line:   58,
 													},
 												},
 											},
@@ -1971,13 +1971,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 99,
-											Line:   49,
+											Line:   59,
 										},
 										File:   "influxRawQuery_test.flux",
 										Source: "stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))",
 										Start: ast.Position{
-											Column: 135,
-											Line:   47,
+											Column: 6,
+											Line:   57,
 										},
 									},
 								},
@@ -1989,13 +1989,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 98,
-													Line:   49,
+													Line:   59,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields)",
 												Start: ast.Position{
 													Column: 15,
-													Line:   49,
+													Line:   59,
 												},
 											},
 										},
@@ -2007,13 +2007,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 98,
-														Line:   49,
+														Line:   59,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields)",
 													Start: ast.Position{
 														Column: 15,
-														Line:   49,
+														Line:   59,
 													},
 												},
 											},
@@ -2025,13 +2025,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
-															Line:   49,
+															Line:   59,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 15,
-															Line:   49,
+															Line:   59,
 														},
 													},
 												},
@@ -2046,13 +2046,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 98,
-															Line:   49,
+															Line:   59,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "(r) => r._measurement == measurement and contains(value: r._field, set: fields)",
 														Start: ast.Position{
 															Column: 19,
-															Line:   49,
+															Line:   59,
 														},
 													},
 												},
@@ -2063,13 +2063,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 98,
-																Line:   49,
+																Line:   59,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "r._measurement == measurement and contains(value: r._field, set: fields)",
 															Start: ast.Position{
 																Column: 26,
-																Line:   49,
+																Line:   59,
 															},
 														},
 													},
@@ -2080,13 +2080,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 55,
-																	Line:   49,
+																	Line:   59,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "r._measurement == measurement",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   49,
+																	Line:   59,
 																},
 															},
 														},
@@ -2097,13 +2097,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 40,
-																		Line:   49,
+																		Line:   59,
 																	},
 																	File:   "influxRawQuery_test.flux",
 																	Source: "r._measurement",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   49,
+																		Line:   59,
 																	},
 																},
 															},
@@ -2115,13 +2115,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 27,
-																			Line:   49,
+																			Line:   59,
 																		},
 																		File:   "influxRawQuery_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   49,
+																			Line:   59,
 																		},
 																	},
 																},
@@ -2134,13 +2134,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 40,
-																			Line:   49,
+																			Line:   59,
 																		},
 																		File:   "influxRawQuery_test.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
 																			Column: 28,
-																			Line:   49,
+																			Line:   59,
 																		},
 																	},
 																},
@@ -2156,13 +2156,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 55,
-																		Line:   49,
+																		Line:   59,
 																	},
 																	File:   "influxRawQuery_test.flux",
 																	Source: "measurement",
 																	Start: ast.Position{
 																		Column: 44,
-																		Line:   49,
+																		Line:   59,
 																	},
 																},
 															},
@@ -2178,13 +2178,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 97,
-																		Line:   49,
+																		Line:   59,
 																	},
 																	File:   "influxRawQuery_test.flux",
 																	Source: "value: r._field, set: fields",
 																	Start: ast.Position{
 																		Column: 69,
-																		Line:   49,
+																		Line:   59,
 																	},
 																},
 															},
@@ -2196,13 +2196,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 84,
-																			Line:   49,
+																			Line:   59,
 																		},
 																		File:   "influxRawQuery_test.flux",
 																		Source: "value: r._field",
 																		Start: ast.Position{
 																			Column: 69,
-																			Line:   49,
+																			Line:   59,
 																		},
 																	},
 																},
@@ -2214,13 +2214,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 74,
-																				Line:   49,
+																				Line:   59,
 																			},
 																			File:   "influxRawQuery_test.flux",
 																			Source: "value",
 																			Start: ast.Position{
 																				Column: 69,
-																				Line:   49,
+																				Line:   59,
 																			},
 																		},
 																	},
@@ -2234,13 +2234,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 84,
-																				Line:   49,
+																				Line:   59,
 																			},
 																			File:   "influxRawQuery_test.flux",
 																			Source: "r._field",
 																			Start: ast.Position{
 																				Column: 76,
-																				Line:   49,
+																				Line:   59,
 																			},
 																		},
 																	},
@@ -2252,13 +2252,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 77,
-																					Line:   49,
+																					Line:   59,
 																				},
 																				File:   "influxRawQuery_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 76,
-																					Line:   49,
+																					Line:   59,
 																				},
 																			},
 																		},
@@ -2271,13 +2271,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 84,
-																					Line:   49,
+																					Line:   59,
 																				},
 																				File:   "influxRawQuery_test.flux",
 																				Source: "_field",
 																				Start: ast.Position{
 																					Column: 78,
-																					Line:   49,
+																					Line:   59,
 																				},
 																			},
 																		},
@@ -2292,13 +2292,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 97,
-																			Line:   49,
+																			Line:   59,
 																		},
 																		File:   "influxRawQuery_test.flux",
 																		Source: "set: fields",
 																		Start: ast.Position{
 																			Column: 86,
-																			Line:   49,
+																			Line:   59,
 																		},
 																	},
 																},
@@ -2310,13 +2310,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 89,
-																				Line:   49,
+																				Line:   59,
 																			},
 																			File:   "influxRawQuery_test.flux",
 																			Source: "set",
 																			Start: ast.Position{
 																				Column: 86,
-																				Line:   49,
+																				Line:   59,
 																			},
 																		},
 																	},
@@ -2330,13 +2330,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 97,
-																				Line:   49,
+																				Line:   59,
 																			},
 																			File:   "influxRawQuery_test.flux",
 																			Source: "fields",
 																			Start: ast.Position{
 																				Column: 91,
-																				Line:   49,
+																				Line:   59,
 																			},
 																		},
 																	},
@@ -2352,13 +2352,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 98,
-																	Line:   49,
+																	Line:   59,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "contains(value: r._field, set: fields)",
 																Start: ast.Position{
 																	Column: 60,
-																	Line:   49,
+																	Line:   59,
 																},
 															},
 														},
@@ -2369,13 +2369,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 68,
-																		Line:   49,
+																		Line:   59,
 																	},
 																	File:   "influxRawQuery_test.flux",
 																	Source: "contains",
 																	Start: ast.Position{
 																		Column: 60,
-																		Line:   49,
+																		Line:   59,
 																	},
 																},
 															},
@@ -2393,13 +2393,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
-																Line:   49,
+																Line:   59,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 20,
-																Line:   49,
+																Line:   59,
 															},
 														},
 													},
@@ -2411,13 +2411,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
-																	Line:   49,
+																	Line:   59,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   49,
+																	Line:   59,
 																},
 															},
 														},
@@ -2438,13 +2438,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 99,
-												Line:   49,
+												Line:   59,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))",
 											Start: ast.Position{
 												Column: 8,
-												Line:   49,
+												Line:   59,
 											},
 										},
 									},
@@ -2455,13 +2455,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   49,
+													Line:   59,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "filter",
 												Start: ast.Position{
 													Column: 8,
-													Line:   49,
+													Line:   59,
 												},
 											},
 										},
@@ -2477,13 +2477,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   50,
+										Line:   60,
 									},
 									File:   "influxRawQuery_test.flux",
 									Source: "stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)",
 									Start: ast.Position{
-										Column: 135,
-										Line:   47,
+										Column: 6,
+										Line:   57,
 									},
 								},
 							},
@@ -2495,13 +2495,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 47,
-												Line:   50,
+												Line:   60,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "columns: groupBy, mode: groupMode",
 											Start: ast.Position{
 												Column: 14,
-												Line:   50,
+												Line:   60,
 											},
 										},
 									},
@@ -2513,13 +2513,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   50,
+													Line:   60,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "columns: groupBy",
 												Start: ast.Position{
 													Column: 14,
-													Line:   50,
+													Line:   60,
 												},
 											},
 										},
@@ -2531,13 +2531,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   50,
+														Line:   60,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 14,
-														Line:   50,
+														Line:   60,
 													},
 												},
 											},
@@ -2551,13 +2551,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   50,
+														Line:   60,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "groupBy",
 													Start: ast.Position{
 														Column: 23,
-														Line:   50,
+														Line:   60,
 													},
 												},
 											},
@@ -2570,13 +2570,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   50,
+													Line:   60,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "mode: groupMode",
 												Start: ast.Position{
 													Column: 32,
-													Line:   50,
+													Line:   60,
 												},
 											},
 										},
@@ -2588,13 +2588,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
-														Line:   50,
+														Line:   60,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "mode",
 													Start: ast.Position{
 														Column: 32,
-														Line:   50,
+														Line:   60,
 													},
 												},
 											},
@@ -2608,13 +2608,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 47,
-														Line:   50,
+														Line:   60,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "groupMode",
 													Start: ast.Position{
 														Column: 38,
-														Line:   50,
+														Line:   60,
 													},
 												},
 											},
@@ -2630,13 +2630,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   50,
+											Line:   60,
 										},
 										File:   "influxRawQuery_test.flux",
 										Source: "group(columns: groupBy, mode: groupMode)",
 										Start: ast.Position{
 											Column: 8,
-											Line:   50,
+											Line:   60,
 										},
 									},
 								},
@@ -2647,13 +2647,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   50,
+												Line:   60,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "group",
 											Start: ast.Position{
 												Column: 8,
-												Line:   50,
+												Line:   60,
 											},
 										},
 									},
@@ -2669,13 +2669,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   51,
+									Line:   61,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)\n    |> v1.fieldsAsCols()",
 								Start: ast.Position{
-									Column: 135,
-									Line:   47,
+									Column: 6,
+									Line:   57,
 								},
 							},
 						},
@@ -2687,13 +2687,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   51,
+										Line:   61,
 									},
 									File:   "influxRawQuery_test.flux",
 									Source: "v1.fieldsAsCols()",
 									Start: ast.Position{
 										Column: 8,
-										Line:   51,
+										Line:   61,
 									},
 								},
 							},
@@ -2704,13 +2704,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   51,
+											Line:   61,
 										},
 										File:   "influxRawQuery_test.flux",
 										Source: "v1.fieldsAsCols",
 										Start: ast.Position{
 											Column: 8,
-											Line:   51,
+											Line:   61,
 										},
 									},
 								},
@@ -2722,13 +2722,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   51,
+												Line:   61,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "v1",
 											Start: ast.Position{
 												Column: 8,
-												Line:   51,
+												Line:   61,
 											},
 										},
 									},
@@ -2741,13 +2741,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   51,
+												Line:   61,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "fieldsAsCols",
 											Start: ast.Position{
 												Column: 11,
-												Line:   51,
+												Line:   61,
 											},
 										},
 									},
@@ -2765,13 +2765,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
-								Line:   52,
+								Line:   62,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "stream\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))\n    |> group(columns: groupBy, mode: groupMode)\n    |> v1.fieldsAsCols()\n    |> window(every: every, period: period)",
 							Start: ast.Position{
-								Column: 135,
-								Line:   47,
+								Column: 6,
+								Line:   57,
 							},
 						},
 					},
@@ -2783,13 +2783,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   52,
+										Line:   62,
 									},
 									File:   "influxRawQuery_test.flux",
 									Source: "every: every, period: period",
 									Start: ast.Position{
 										Column: 15,
-										Line:   52,
+										Line:   62,
 									},
 								},
 							},
@@ -2801,13 +2801,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   52,
+											Line:   62,
 										},
 										File:   "influxRawQuery_test.flux",
 										Source: "every: every",
 										Start: ast.Position{
 											Column: 15,
-											Line:   52,
+											Line:   62,
 										},
 									},
 								},
@@ -2819,13 +2819,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   52,
+												Line:   62,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "every",
 											Start: ast.Position{
 												Column: 15,
-												Line:   52,
+												Line:   62,
 											},
 										},
 									},
@@ -2839,13 +2839,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   52,
+												Line:   62,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "every",
 											Start: ast.Position{
 												Column: 22,
-												Line:   52,
+												Line:   62,
 											},
 										},
 									},
@@ -2858,13 +2858,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   52,
+											Line:   62,
 										},
 										File:   "influxRawQuery_test.flux",
 										Source: "period: period",
 										Start: ast.Position{
 											Column: 29,
-											Line:   52,
+											Line:   62,
 										},
 									},
 								},
@@ -2876,13 +2876,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   52,
+												Line:   62,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "period",
 											Start: ast.Position{
 												Column: 29,
-												Line:   52,
+												Line:   62,
 											},
 										},
 									},
@@ -2896,13 +2896,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   52,
+												Line:   62,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "period",
 											Start: ast.Position{
 												Column: 37,
-												Line:   52,
+												Line:   62,
 											},
 										},
 									},
@@ -2918,13 +2918,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   52,
+									Line:   62,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "window(every: every, period: period)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   52,
+									Line:   62,
 								},
 							},
 						},
@@ -2935,13 +2935,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
-										Line:   52,
+										Line:   62,
 									},
 									File:   "influxRawQuery_test.flux",
 									Source: "window",
 									Start: ast.Position{
 										Column: 8,
-										Line:   52,
+										Line:   62,
 									},
 								},
 							},
@@ -2958,14 +2958,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
-								Line:   47,
+								Column: 18,
+								Line:   48,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "stream=<-",
 							Start: ast.Position{
-								Column: 13,
-								Line:   47,
+								Column: 9,
+								Line:   48,
 							},
 						},
 					},
@@ -2976,14 +2976,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 19,
-									Line:   47,
+									Column: 15,
+									Line:   48,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "stream",
 								Start: ast.Position{
-									Column: 13,
-									Line:   47,
+									Column: 9,
+									Line:   48,
 								},
 							},
 						},
@@ -2995,14 +2995,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
-								Line:   47,
+								Column: 18,
+								Line:   48,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "<-",
 							Start: ast.Position{
-								Column: 20,
-								Line:   47,
+								Column: 16,
+								Line:   48,
 							},
 						},
 					}},
@@ -3012,14 +3012,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 29,
-								Line:   47,
+								Column: 14,
+								Line:   49,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "start",
 							Start: ast.Position{
-								Column: 24,
-								Line:   47,
+								Column: 9,
+								Line:   49,
 							},
 						},
 					},
@@ -3030,14 +3030,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 29,
-									Line:   47,
+									Column: 14,
+									Line:   49,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "start",
 								Start: ast.Position{
-									Column: 24,
-									Line:   47,
+									Column: 9,
+									Line:   49,
 								},
 							},
 						},
@@ -3051,14 +3051,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 35,
-								Line:   47,
+								Column: 13,
+								Line:   50,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "stop",
 							Start: ast.Position{
-								Column: 31,
-								Line:   47,
+								Column: 9,
+								Line:   50,
 							},
 						},
 					},
@@ -3069,14 +3069,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 35,
-									Line:   47,
+									Column: 13,
+									Line:   50,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "stop",
 								Start: ast.Position{
-									Column: 31,
-									Line:   47,
+									Column: 9,
+									Line:   50,
 								},
 							},
 						},
@@ -3090,14 +3090,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 48,
-								Line:   47,
+								Column: 20,
+								Line:   51,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "measurement",
 							Start: ast.Position{
-								Column: 37,
-								Line:   47,
+								Column: 9,
+								Line:   51,
 							},
 						},
 					},
@@ -3108,14 +3108,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 48,
-									Line:   47,
+									Column: 20,
+									Line:   51,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "measurement",
 								Start: ast.Position{
-									Column: 37,
-									Line:   47,
+									Column: 9,
+									Line:   51,
 								},
 							},
 						},
@@ -3129,14 +3129,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 59,
-								Line:   47,
+								Column: 18,
+								Line:   52,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "fields=[]",
 							Start: ast.Position{
-								Column: 50,
-								Line:   47,
+								Column: 9,
+								Line:   52,
 							},
 						},
 					},
@@ -3147,14 +3147,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 56,
-									Line:   47,
+									Column: 15,
+									Line:   52,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "fields",
 								Start: ast.Position{
-									Column: 50,
-									Line:   47,
+									Column: 9,
+									Line:   52,
 								},
 							},
 						},
@@ -3167,14 +3167,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 59,
-									Line:   47,
+									Column: 18,
+									Line:   52,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "[]",
 								Start: ast.Position{
-									Column: 57,
-									Line:   47,
+									Column: 16,
+									Line:   52,
 								},
 							},
 						},
@@ -3188,14 +3188,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 88,
-								Line:   47,
+								Column: 36,
+								Line:   53,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "groupBy=[\"_time\", \"_value\"]",
 							Start: ast.Position{
-								Column: 61,
-								Line:   47,
+								Column: 9,
+								Line:   53,
 							},
 						},
 					},
@@ -3206,14 +3206,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 68,
-									Line:   47,
+									Column: 16,
+									Line:   53,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "groupBy",
 								Start: ast.Position{
-									Column: 61,
-									Line:   47,
+									Column: 9,
+									Line:   53,
 								},
 							},
 						},
@@ -3226,14 +3226,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 88,
-									Line:   47,
+									Column: 36,
+									Line:   53,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "[\"_time\", \"_value\"]",
 								Start: ast.Position{
-									Column: 69,
-									Line:   47,
+									Column: 17,
+									Line:   53,
 								},
 							},
 						},
@@ -3243,14 +3243,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 77,
-										Line:   47,
+										Column: 25,
+										Line:   53,
 									},
 									File:   "influxRawQuery_test.flux",
 									Source: "\"_time\"",
 									Start: ast.Position{
-										Column: 70,
-										Line:   47,
+										Column: 18,
+										Line:   53,
 									},
 								},
 							},
@@ -3261,14 +3261,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 87,
-										Line:   47,
+										Column: 35,
+										Line:   53,
 									},
 									File:   "influxRawQuery_test.flux",
 									Source: "\"_value\"",
 									Start: ast.Position{
-										Column: 79,
-										Line:   47,
+										Column: 27,
+										Line:   53,
 									},
 								},
 							},
@@ -3283,14 +3283,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 108,
-								Line:   47,
+								Column: 27,
+								Line:   54,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "groupMode=\"except\"",
 							Start: ast.Position{
-								Column: 90,
-								Line:   47,
+								Column: 9,
+								Line:   54,
 							},
 						},
 					},
@@ -3301,14 +3301,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 99,
-									Line:   47,
+									Column: 18,
+									Line:   54,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "groupMode",
 								Start: ast.Position{
-									Column: 90,
-									Line:   47,
+									Column: 9,
+									Line:   54,
 								},
 							},
 						},
@@ -3321,14 +3321,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 108,
-									Line:   47,
+									Column: 27,
+									Line:   54,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "\"except\"",
 								Start: ast.Position{
-									Column: 100,
-									Line:   47,
+									Column: 19,
+									Line:   54,
 								},
 							},
 						},
@@ -3340,14 +3340,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 119,
-								Line:   47,
+								Column: 18,
+								Line:   55,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "every=inf",
 							Start: ast.Position{
-								Column: 110,
-								Line:   47,
+								Column: 9,
+								Line:   55,
 							},
 						},
 					},
@@ -3358,14 +3358,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 115,
-									Line:   47,
+									Column: 14,
+									Line:   55,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "every",
 								Start: ast.Position{
-									Column: 110,
-									Line:   47,
+									Column: 9,
+									Line:   55,
 								},
 							},
 						},
@@ -3378,14 +3378,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 119,
-									Line:   47,
+									Column: 18,
+									Line:   55,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "inf",
 								Start: ast.Position{
-									Column: 116,
-									Line:   47,
+									Column: 15,
+									Line:   55,
 								},
 							},
 						},
@@ -3397,14 +3397,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 130,
-								Line:   47,
+								Column: 18,
+								Line:   56,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "period=0s",
 							Start: ast.Position{
-								Column: 121,
-								Line:   47,
+								Column: 9,
+								Line:   56,
 							},
 						},
 					},
@@ -3415,14 +3415,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 127,
-									Line:   47,
+									Column: 15,
+									Line:   56,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "period",
 								Start: ast.Position{
-									Column: 121,
-									Line:   47,
+									Column: 9,
+									Line:   56,
 								},
 							},
 						},
@@ -3435,14 +3435,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 130,
-									Line:   47,
+									Column: 18,
+									Line:   56,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "0s",
 								Start: ast.Position{
-									Column: 128,
-									Line:   47,
+									Column: 16,
+									Line:   56,
 								},
 							},
 						},
@@ -3462,13 +3462,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   58,
+							Line:   68,
 						},
 						File:   "influxRawQuery_test.flux",
 						Source: "influx_raw_query = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: (table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z),\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   54,
+							Line:   64,
 						},
 					},
 				},
@@ -3479,13 +3479,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   54,
+								Line:   64,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "influx_raw_query",
 							Start: ast.Position{
 								Column: 6,
-								Line:   54,
+								Line:   64,
 							},
 						},
 					},
@@ -3499,13 +3499,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   58,
+								Line:   68,
 							},
 							File:   "influxRawQuery_test.flux",
 							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: (table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z),\n})",
 							Start: ast.Position{
 								Column: 25,
-								Line:   54,
+								Line:   64,
 							},
 						},
 					},
@@ -3516,13 +3516,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   58,
+									Line:   68,
 								},
 								File:   "influxRawQuery_test.flux",
 								Source: "({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: (table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z),\n})",
 								Start: ast.Position{
 									Column: 31,
-									Line:   54,
+									Line:   64,
 								},
 							},
 						},
@@ -3533,13 +3533,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   58,
+										Line:   68,
 									},
 									File:   "influxRawQuery_test.flux",
 									Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: (table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z),\n}",
 									Start: ast.Position{
 										Column: 32,
-										Line:   54,
+										Line:   64,
 									},
 								},
 							},
@@ -3551,13 +3551,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
-											Line:   55,
+											Line:   65,
 										},
 										File:   "influxRawQuery_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 5,
-											Line:   55,
+											Line:   65,
 										},
 									},
 								},
@@ -3569,13 +3569,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   55,
+												Line:   65,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 5,
-												Line:   55,
+												Line:   65,
 											},
 										},
 									},
@@ -3590,13 +3590,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   55,
+													Line:   65,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 32,
-													Line:   55,
+													Line:   65,
 												},
 											},
 										},
@@ -3608,13 +3608,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 43,
-														Line:   55,
+														Line:   65,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 32,
-														Line:   55,
+														Line:   65,
 													},
 												},
 											},
@@ -3626,13 +3626,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 35,
-															Line:   55,
+															Line:   65,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 32,
-															Line:   55,
+															Line:   65,
 														},
 													},
 												},
@@ -3646,13 +3646,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 43,
-															Line:   55,
+															Line:   65,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 37,
-															Line:   55,
+															Line:   65,
 														},
 													},
 												},
@@ -3668,13 +3668,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   55,
+												Line:   65,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 12,
-												Line:   55,
+												Line:   65,
 											},
 										},
 									},
@@ -3685,13 +3685,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
-													Line:   55,
+													Line:   65,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 12,
-													Line:   55,
+													Line:   65,
 												},
 											},
 										},
@@ -3703,13 +3703,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   55,
+														Line:   65,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 12,
-														Line:   55,
+														Line:   65,
 													},
 												},
 											},
@@ -3722,13 +3722,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 31,
-														Line:   55,
+														Line:   65,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 20,
-														Line:   55,
+														Line:   65,
 													},
 												},
 											},
@@ -3746,13 +3746,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   56,
+											Line:   66,
 										},
 										File:   "influxRawQuery_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 5,
-											Line:   56,
+											Line:   66,
 										},
 									},
 								},
@@ -3764,13 +3764,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
-												Line:   56,
+												Line:   66,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 5,
-												Line:   56,
+												Line:   66,
 											},
 										},
 									},
@@ -3785,13 +3785,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
-													Line:   56,
+													Line:   66,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 27,
-													Line:   56,
+													Line:   66,
 												},
 											},
 										},
@@ -3803,13 +3803,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 39,
-														Line:   56,
+														Line:   66,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 27,
-														Line:   56,
+														Line:   66,
 													},
 												},
 											},
@@ -3821,13 +3821,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
-															Line:   56,
+															Line:   66,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 27,
-															Line:   56,
+															Line:   66,
 														},
 													},
 												},
@@ -3841,13 +3841,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
-															Line:   56,
+															Line:   66,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 32,
-															Line:   56,
+															Line:   66,
 														},
 													},
 												},
@@ -3863,13 +3863,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 40,
-												Line:   56,
+												Line:   66,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 11,
-												Line:   56,
+												Line:   66,
 											},
 										},
 									},
@@ -3880,13 +3880,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   56,
+													Line:   66,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 11,
-													Line:   56,
+													Line:   66,
 												},
 											},
 										},
@@ -3898,13 +3898,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   56,
+														Line:   66,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
-														Line:   56,
+														Line:   66,
 													},
 												},
 											},
@@ -3917,13 +3917,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   56,
+														Line:   66,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 19,
-														Line:   56,
+														Line:   66,
 													},
 												},
 											},
@@ -3941,13 +3941,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 158,
-											Line:   57,
+											Line:   67,
 										},
 										File:   "influxRawQuery_test.flux",
 										Source: "fn: (table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)",
 										Start: ast.Position{
 											Column: 5,
-											Line:   57,
+											Line:   67,
 										},
 									},
 								},
@@ -3959,13 +3959,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 7,
-												Line:   57,
+												Line:   67,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 5,
-												Line:   57,
+												Line:   67,
 											},
 										},
 									},
@@ -3980,13 +3980,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 158,
-												Line:   57,
+												Line:   67,
 											},
 											File:   "influxRawQuery_test.flux",
 											Source: "(table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)",
 											Start: ast.Position{
 												Column: 9,
-												Line:   57,
+												Line:   67,
 											},
 										},
 									},
@@ -3998,13 +3998,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 28,
-														Line:   57,
+														Line:   67,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "table",
 													Start: ast.Position{
 														Column: 23,
-														Line:   57,
+														Line:   67,
 													},
 												},
 											},
@@ -4016,13 +4016,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 158,
-													Line:   57,
+													Line:   67,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)",
 												Start: ast.Position{
 													Column: 23,
-													Line:   57,
+													Line:   67,
 												},
 											},
 										},
@@ -4034,13 +4034,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 157,
-															Line:   57,
+															Line:   67,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z",
 														Start: ast.Position{
 															Column: 41,
-															Line:   57,
+															Line:   67,
 														},
 													},
 												},
@@ -4052,13 +4052,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 62,
-																Line:   57,
+																Line:   67,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "measurement: \"system\"",
 															Start: ast.Position{
 																Column: 41,
-																Line:   57,
+																Line:   67,
 															},
 														},
 													},
@@ -4070,13 +4070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 52,
-																	Line:   57,
+																	Line:   67,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "measurement",
 																Start: ast.Position{
 																	Column: 41,
-																	Line:   57,
+																	Line:   67,
 																},
 															},
 														},
@@ -4090,13 +4090,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 62,
-																	Line:   57,
+																	Line:   67,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "\"system\"",
 																Start: ast.Position{
 																	Column: 54,
-																	Line:   57,
+																	Line:   67,
 																},
 															},
 														},
@@ -4109,13 +4109,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 100,
-																Line:   57,
+																Line:   67,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "fields: [\"load1\", \"load15\", \"load5\"]",
 															Start: ast.Position{
 																Column: 64,
-																Line:   57,
+																Line:   67,
 															},
 														},
 													},
@@ -4127,13 +4127,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 70,
-																	Line:   57,
+																	Line:   67,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "fields",
 																Start: ast.Position{
 																	Column: 64,
-																	Line:   57,
+																	Line:   67,
 																},
 															},
 														},
@@ -4147,13 +4147,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 100,
-																	Line:   57,
+																	Line:   67,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "[\"load1\", \"load15\", \"load5\"]",
 																Start: ast.Position{
 																	Column: 72,
-																	Line:   57,
+																	Line:   67,
 																},
 															},
 														},
@@ -4164,13 +4164,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 80,
-																		Line:   57,
+																		Line:   67,
 																	},
 																	File:   "influxRawQuery_test.flux",
 																	Source: "\"load1\"",
 																	Start: ast.Position{
 																		Column: 73,
-																		Line:   57,
+																		Line:   67,
 																	},
 																},
 															},
@@ -4182,13 +4182,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 90,
-																		Line:   57,
+																		Line:   67,
 																	},
 																	File:   "influxRawQuery_test.flux",
 																	Source: "\"load15\"",
 																	Start: ast.Position{
 																		Column: 82,
-																		Line:   57,
+																		Line:   67,
 																	},
 																},
 															},
@@ -4200,13 +4200,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 99,
-																		Line:   57,
+																		Line:   67,
 																	},
 																	File:   "influxRawQuery_test.flux",
 																	Source: "\"load5\"",
 																	Start: ast.Position{
 																		Column: 92,
-																		Line:   57,
+																		Line:   67,
 																	},
 																},
 															},
@@ -4222,13 +4222,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 129,
-																Line:   57,
+																Line:   67,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "start: 2018-05-22T19:53:26Z",
 															Start: ast.Position{
 																Column: 102,
-																Line:   57,
+																Line:   67,
 															},
 														},
 													},
@@ -4240,13 +4240,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 107,
-																	Line:   57,
+																	Line:   67,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "start",
 																Start: ast.Position{
 																	Column: 102,
-																	Line:   57,
+																	Line:   67,
 																},
 															},
 														},
@@ -4260,13 +4260,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 129,
-																	Line:   57,
+																	Line:   67,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "2018-05-22T19:53:26Z",
 																Start: ast.Position{
 																	Column: 109,
-																	Line:   57,
+																	Line:   67,
 																},
 															},
 														},
@@ -4279,13 +4279,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 157,
-																Line:   57,
+																Line:   67,
 															},
 															File:   "influxRawQuery_test.flux",
 															Source: "stop: 2018-05-22T19:54:17Z",
 															Start: ast.Position{
 																Column: 131,
-																Line:   57,
+																Line:   67,
 															},
 														},
 													},
@@ -4297,13 +4297,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 135,
-																	Line:   57,
+																	Line:   67,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "stop",
 																Start: ast.Position{
 																	Column: 131,
-																	Line:   57,
+																	Line:   67,
 																},
 															},
 														},
@@ -4317,13 +4317,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 157,
-																	Line:   57,
+																	Line:   67,
 																},
 																File:   "influxRawQuery_test.flux",
 																Source: "2018-05-22T19:54:17Z",
 																Start: ast.Position{
 																	Column: 137,
-																	Line:   57,
+																	Line:   67,
 																},
 															},
 														},
@@ -4339,13 +4339,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 158,
-														Line:   57,
+														Line:   67,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)",
 													Start: ast.Position{
 														Column: 32,
-														Line:   57,
+														Line:   67,
 													},
 												},
 											},
@@ -4356,13 +4356,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 40,
-															Line:   57,
+															Line:   67,
 														},
 														File:   "influxRawQuery_test.flux",
 														Source: "rawQuery",
 														Start: ast.Position{
 															Column: 32,
-															Line:   57,
+															Line:   67,
 														},
 													},
 												},
@@ -4380,13 +4380,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   57,
+													Line:   67,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "table=<-",
 												Start: ast.Position{
 													Column: 10,
-													Line:   57,
+													Line:   67,
 												},
 											},
 										},
@@ -4398,13 +4398,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 15,
-														Line:   57,
+														Line:   67,
 													},
 													File:   "influxRawQuery_test.flux",
 													Source: "table",
 													Start: ast.Position{
 														Column: 10,
-														Line:   57,
+														Line:   67,
 													},
 												},
 											},
@@ -4417,13 +4417,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   57,
+													Line:   67,
 												},
 												File:   "influxRawQuery_test.flux",
 												Source: "<-",
 												Start: ast.Position{
 													Column: 16,
-													Line:   57,
+													Line:   67,
 												},
 											},
 										}},
@@ -4448,13 +4448,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   58,
+						Line:   68,
 					},
 					File:   "influxRawQuery_test.flux",
 					Source: "test influx_raw_query = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: (table=<-) => table |> rawQuery(measurement: \"system\", fields: [\"load1\", \"load15\", \"load5\"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z),\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   54,
+						Line:   64,
 					},
 				},
 			},

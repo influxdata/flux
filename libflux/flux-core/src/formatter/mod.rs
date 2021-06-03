@@ -203,6 +203,7 @@ impl Formatter {
 
     /// Format a file.
     pub fn format_file(&mut self, n: &File, include_pkg: bool) {
+        let multiline = n.base.is_multiline();
         let sep = '\n';
         if let Some(pkg) = &n.package {
             if include_pkg && !pkg.name.name.is_empty() {
@@ -229,7 +230,9 @@ impl Formatter {
         self.format_statement_list(&n.body);
 
         if !n.eof.is_empty() {
-            self.write_rune(sep);
+            if multiline {
+                self.write_rune(sep);
+            }
             self.set_indent(0);
             self.clear = true;
             self.format_comments(&n.eof);
@@ -516,15 +519,33 @@ impl Formatter {
 
     fn format_function_expression(&mut self, n: &ast::FunctionExpr) {
         self.format_comments(&n.lparen);
+        let multiline = n.params.len() > 4 && n.base.is_multiline();
         self.write_rune('(');
-        let sep = ", ";
+        let sep;
+        if multiline && n.params.len() > 1 {
+            self.indent();
+            sep = ",\n";
+            self.write_string("\n");
+            self.indent();
+            self.write_indent();
+        } else {
+            sep = ", ";
+        }
         for (i, property) in (&n.params).iter().enumerate() {
             if i != 0 {
-                self.write_string(sep)
+                self.write_string(sep);
+                if multiline {
+                    self.write_indent();
+                }
             }
             // treat properties differently than in general case
             self.format_function_argument(property);
             self.format_comments(&property.comma);
+        }
+        if multiline {
+            self.unindent();
+            self.unindent();
+            self.write_string(sep);
         }
         self.format_comments(&n.rparen);
         self.write_string(") ");

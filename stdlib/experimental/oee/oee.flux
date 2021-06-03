@@ -12,7 +12,13 @@ import "experimental"
 // runningState - production event or state value that corresponds to equipment running state
 // plannedTime - total time that equipment is expected to produce
 // idealCycleTime - theoretical minimum time to produce one part
-computeAPQ = (productionEvents, partEvents, runningState, plannedTime, idealCycleTime) => {
+computeAPQ = (
+        productionEvents,
+        partEvents,
+        runningState,
+        plannedTime,
+        idealCycleTime,
+) => {
     availability = productionEvents
         |> events.duration(unit: 1ns, columnName: "runTime")
         |> filter(fn: (r) => r.state == runningState)

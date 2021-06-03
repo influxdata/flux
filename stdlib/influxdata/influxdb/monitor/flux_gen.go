@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   173,
+					Line:   181,
 				},
 				File:   "monitor.flux",
-				Source: "package monitor\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\nimport \"influxdata/influxdb\"\n\nbucket = \"_monitoring\"\n\n// Write persists the check statuses\noption write = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// Log records notification events\noption log = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// From retrieves the check statuses that have been stored.\nfrom = (start, stop=now(), fn=(r) => true) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"statuses\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// levels describing the result of a check\nlevelOK = \"ok\"\nlevelInfo = \"info\"\nlevelWarn = \"warn\"\nlevelCrit = \"crit\"\nlevelUnknown = \"unknown\"\n_stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// stateChangesOnly takes a stream of tables that contains a _level column and\n// returns a stream of tables where each record in a table represents a state change\n// of the _level column.\n// Statuses are sorted by source timestamp, because default sort order of statuses may differ\n// (`_time` column holds the time when check was executed) and that could result in detecting\n// status changes at the wrong time or even false changes.\nstateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// StateChanges takes a stream of tables, fromLevel, and toLevel and returns\n// a stream of tables where status has gone from fromLevel to toLevel.\n//\n// StateChanges only operates on data with data where r._level exists.\nstateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}\n\n// Notify will call the endpoint and log the results.\nnotify = (tables=<-, endpoint, data) => tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])\n    |> log()\n\n// Logs retrieves notification events that have been logged.\nlogs = (start, stop=now(), fn) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"notifications\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// Deadman takes in a stream of tables and reports which tables\n// were observed strictly before t and which were observed after.\n//\ndeadman = (t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))\n\n// Check performs a check against its input using the given ok, info, warn and crit functions\n// and writes the result to a system bucket.\ncheck = (tables=<-, data, messageFn, crit=(r) => false, warn=(r) => false, info=(r) => false, ok=(r) => true) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
+				Source: "package monitor\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\nimport \"influxdata/influxdb\"\n\nbucket = \"_monitoring\"\n\n// Write persists the check statuses\noption write = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// Log records notification events\noption log = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// From retrieves the check statuses that have been stored.\nfrom = (start, stop=now(), fn=(r) => true) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"statuses\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// levels describing the result of a check\nlevelOK = \"ok\"\nlevelInfo = \"info\"\nlevelWarn = \"warn\"\nlevelCrit = \"crit\"\nlevelUnknown = \"unknown\"\n_stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// stateChangesOnly takes a stream of tables that contains a _level column and\n// returns a stream of tables where each record in a table represents a state change\n// of the _level column.\n// Statuses are sorted by source timestamp, because default sort order of statuses may differ\n// (`_time` column holds the time when check was executed) and that could result in detecting\n// status changes at the wrong time or even false changes.\nstateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// StateChanges takes a stream of tables, fromLevel, and toLevel and returns\n// a stream of tables where status has gone from fromLevel to toLevel.\n//\n// StateChanges only operates on data with data where r._level exists.\nstateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}\n\n// Notify will call the endpoint and log the results.\nnotify = (tables=<-, endpoint, data) => tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])\n    |> log()\n\n// Logs retrieves notification events that have been logged.\nlogs = (start, stop=now(), fn) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"notifications\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// Deadman takes in a stream of tables and reports which tables\n// were observed strictly before t and which were observed after.\n//\ndeadman = (t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))\n\n// Check performs a check against its input using the given ok, info, warn and crit functions\n// and writes the result to a system bucket.\ncheck = (\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -12476,10 +12476,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   173,
+						Line:   181,
 					},
 					File:   "monitor.flux",
-					Source: "check = (tables=<-, data, messageFn, crit=(r) => false, warn=(r) => false, info=(r) => false, ok=(r) => true) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
+					Source: "check = (\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
 					Start: ast.Position{
 						Column: 1,
 						Line:   134,
@@ -12513,10 +12513,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   173,
+							Line:   181,
 						},
 						File:   "monitor.flux",
-						Source: "(tables=<-, data, messageFn, crit=(r) => false, warn=(r) => false, info=(r) => false, ok=(r) => true) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
+						Source: "(\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
 						Start: ast.Position{
 							Column: 9,
 							Line:   134,
@@ -12535,14 +12535,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 120,
-														Line:   134,
+														Column: 12,
+														Line:   142,
 													},
 													File:   "monitor.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 114,
-														Line:   134,
+														Column: 6,
+														Line:   142,
 													},
 												},
 											},
@@ -12554,13 +12554,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   135,
+													Line:   143,
 												},
 												File:   "monitor.flux",
 												Source: "tables\n    |> experimental.set(o: data.tags)",
 												Start: ast.Position{
-													Column: 114,
-													Line:   134,
+													Column: 6,
+													Line:   142,
 												},
 											},
 										},
@@ -12572,13 +12572,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   135,
+															Line:   143,
 														},
 														File:   "monitor.flux",
 														Source: "o: data.tags",
 														Start: ast.Position{
 															Column: 25,
-															Line:   135,
+															Line:   143,
 														},
 													},
 												},
@@ -12590,13 +12590,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
-																Line:   135,
+																Line:   143,
 															},
 															File:   "monitor.flux",
 															Source: "o: data.tags",
 															Start: ast.Position{
 																Column: 25,
-																Line:   135,
+																Line:   143,
 															},
 														},
 													},
@@ -12608,13 +12608,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 26,
-																	Line:   135,
+																	Line:   143,
 																},
 																File:   "monitor.flux",
 																Source: "o",
 																Start: ast.Position{
 																	Column: 25,
-																	Line:   135,
+																	Line:   143,
 																},
 															},
 														},
@@ -12628,13 +12628,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
-																	Line:   135,
+																	Line:   143,
 																},
 																File:   "monitor.flux",
 																Source: "data.tags",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   135,
+																	Line:   143,
 																},
 															},
 														},
@@ -12646,13 +12646,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 32,
-																		Line:   135,
+																		Line:   143,
 																	},
 																	File:   "monitor.flux",
 																	Source: "data",
 																	Start: ast.Position{
 																		Column: 28,
-																		Line:   135,
+																		Line:   143,
 																	},
 																},
 															},
@@ -12665,13 +12665,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 37,
-																		Line:   135,
+																		Line:   143,
 																	},
 																	File:   "monitor.flux",
 																	Source: "tags",
 																	Start: ast.Position{
 																		Column: 33,
-																		Line:   135,
+																		Line:   143,
 																	},
 																},
 															},
@@ -12689,13 +12689,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   135,
+														Line:   143,
 													},
 													File:   "monitor.flux",
 													Source: "experimental.set(o: data.tags)",
 													Start: ast.Position{
 														Column: 8,
-														Line:   135,
+														Line:   143,
 													},
 												},
 											},
@@ -12706,13 +12706,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   135,
+															Line:   143,
 														},
 														File:   "monitor.flux",
 														Source: "experimental.set",
 														Start: ast.Position{
 															Column: 8,
-															Line:   135,
+															Line:   143,
 														},
 													},
 												},
@@ -12724,13 +12724,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 20,
-																Line:   135,
+																Line:   143,
 															},
 															File:   "monitor.flux",
 															Source: "experimental",
 															Start: ast.Position{
 																Column: 8,
-																Line:   135,
+																Line:   143,
 															},
 														},
 													},
@@ -12743,13 +12743,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 24,
-																Line:   135,
+																Line:   143,
 															},
 															File:   "monitor.flux",
 															Source: "set",
 															Start: ast.Position{
 																Column: 21,
-																Line:   135,
+																Line:   143,
 															},
 														},
 													},
@@ -12767,13 +12767,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 90,
-												Line:   136,
+												Line:   144,
 											},
 											File:   "monitor.flux",
 											Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))",
 											Start: ast.Position{
-												Column: 114,
-												Line:   134,
+												Column: 6,
+												Line:   142,
 											},
 										},
 									},
@@ -12785,13 +12785,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 89,
-														Line:   136,
+														Line:   144,
 													},
 													File:   "monitor.flux",
 													Source: "mode: \"extend\", columns: experimental.objectKeys(o: data.tags)",
 													Start: ast.Position{
 														Column: 27,
-														Line:   136,
+														Line:   144,
 													},
 												},
 											},
@@ -12803,13 +12803,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
-															Line:   136,
+															Line:   144,
 														},
 														File:   "monitor.flux",
 														Source: "mode: \"extend\"",
 														Start: ast.Position{
 															Column: 27,
-															Line:   136,
+															Line:   144,
 														},
 													},
 												},
@@ -12821,13 +12821,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 31,
-																Line:   136,
+																Line:   144,
 															},
 															File:   "monitor.flux",
 															Source: "mode",
 															Start: ast.Position{
 																Column: 27,
-																Line:   136,
+																Line:   144,
 															},
 														},
 													},
@@ -12841,13 +12841,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
-																Line:   136,
+																Line:   144,
 															},
 															File:   "monitor.flux",
 															Source: "\"extend\"",
 															Start: ast.Position{
 																Column: 33,
-																Line:   136,
+																Line:   144,
 															},
 														},
 													},
@@ -12860,13 +12860,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 89,
-															Line:   136,
+															Line:   144,
 														},
 														File:   "monitor.flux",
 														Source: "columns: experimental.objectKeys(o: data.tags)",
 														Start: ast.Position{
 															Column: 43,
-															Line:   136,
+															Line:   144,
 														},
 													},
 												},
@@ -12878,13 +12878,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
-																Line:   136,
+																Line:   144,
 															},
 															File:   "monitor.flux",
 															Source: "columns",
 															Start: ast.Position{
 																Column: 43,
-																Line:   136,
+																Line:   144,
 															},
 														},
 													},
@@ -12899,13 +12899,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 88,
-																	Line:   136,
+																	Line:   144,
 																},
 																File:   "monitor.flux",
 																Source: "o: data.tags",
 																Start: ast.Position{
 																	Column: 76,
-																	Line:   136,
+																	Line:   144,
 																},
 															},
 														},
@@ -12917,13 +12917,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 88,
-																		Line:   136,
+																		Line:   144,
 																	},
 																	File:   "monitor.flux",
 																	Source: "o: data.tags",
 																	Start: ast.Position{
 																		Column: 76,
-																		Line:   136,
+																		Line:   144,
 																	},
 																},
 															},
@@ -12935,13 +12935,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 77,
-																			Line:   136,
+																			Line:   144,
 																		},
 																		File:   "monitor.flux",
 																		Source: "o",
 																		Start: ast.Position{
 																			Column: 76,
-																			Line:   136,
+																			Line:   144,
 																		},
 																	},
 																},
@@ -12955,13 +12955,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 88,
-																			Line:   136,
+																			Line:   144,
 																		},
 																		File:   "monitor.flux",
 																		Source: "data.tags",
 																		Start: ast.Position{
 																			Column: 79,
-																			Line:   136,
+																			Line:   144,
 																		},
 																	},
 																},
@@ -12973,13 +12973,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 83,
-																				Line:   136,
+																				Line:   144,
 																			},
 																			File:   "monitor.flux",
 																			Source: "data",
 																			Start: ast.Position{
 																				Column: 79,
-																				Line:   136,
+																				Line:   144,
 																			},
 																		},
 																	},
@@ -12992,13 +12992,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 88,
-																				Line:   136,
+																				Line:   144,
 																			},
 																			File:   "monitor.flux",
 																			Source: "tags",
 																			Start: ast.Position{
 																				Column: 84,
-																				Line:   136,
+																				Line:   144,
 																			},
 																		},
 																	},
@@ -13016,13 +13016,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 89,
-																Line:   136,
+																Line:   144,
 															},
 															File:   "monitor.flux",
 															Source: "experimental.objectKeys(o: data.tags)",
 															Start: ast.Position{
 																Column: 52,
-																Line:   136,
+																Line:   144,
 															},
 														},
 													},
@@ -13033,13 +13033,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 75,
-																	Line:   136,
+																	Line:   144,
 																},
 																File:   "monitor.flux",
 																Source: "experimental.objectKeys",
 																Start: ast.Position{
 																	Column: 52,
-																	Line:   136,
+																	Line:   144,
 																},
 															},
 														},
@@ -13051,13 +13051,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 64,
-																		Line:   136,
+																		Line:   144,
 																	},
 																	File:   "monitor.flux",
 																	Source: "experimental",
 																	Start: ast.Position{
 																		Column: 52,
-																		Line:   136,
+																		Line:   144,
 																	},
 																},
 															},
@@ -13070,13 +13070,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 75,
-																		Line:   136,
+																		Line:   144,
 																	},
 																	File:   "monitor.flux",
 																	Source: "objectKeys",
 																	Start: ast.Position{
 																		Column: 65,
-																		Line:   136,
+																		Line:   144,
 																	},
 																},
 															},
@@ -13097,13 +13097,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 90,
-													Line:   136,
+													Line:   144,
 												},
 												File:   "monitor.flux",
 												Source: "experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))",
 												Start: ast.Position{
 													Column: 8,
-													Line:   136,
+													Line:   144,
 												},
 											},
 										},
@@ -13114,13 +13114,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   136,
+														Line:   144,
 													},
 													File:   "monitor.flux",
 													Source: "experimental.group",
 													Start: ast.Position{
 														Column: 8,
-														Line:   136,
+														Line:   144,
 													},
 												},
 											},
@@ -13132,13 +13132,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   136,
+															Line:   144,
 														},
 														File:   "monitor.flux",
 														Source: "experimental",
 														Start: ast.Position{
 															Column: 8,
-															Line:   136,
+															Line:   144,
 														},
 													},
 												},
@@ -13151,13 +13151,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 26,
-															Line:   136,
+															Line:   144,
 														},
 														File:   "monitor.flux",
 														Source: "group",
 														Start: ast.Position{
 															Column: 21,
-															Line:   136,
+															Line:   144,
 														},
 													},
 												},
@@ -13175,13 +13175,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   157,
+											Line:   165,
 										},
 										File:   "monitor.flux",
 										Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )",
 										Start: ast.Position{
-											Column: 114,
-											Line:   134,
+											Column: 6,
+											Line:   142,
 										},
 									},
 								},
@@ -13193,13 +13193,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   156,
+													Line:   164,
 												},
 												File:   "monitor.flux",
 												Source: "fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
 												Start: ast.Position{
 													Column: 9,
-													Line:   138,
+													Line:   146,
 												},
 											},
 										},
@@ -13211,13 +13211,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   156,
+														Line:   164,
 													},
 													File:   "monitor.flux",
 													Source: "fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
 													Start: ast.Position{
 														Column: 9,
-														Line:   138,
+														Line:   146,
 													},
 												},
 											},
@@ -13229,13 +13229,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   138,
+															Line:   146,
 														},
 														File:   "monitor.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 9,
-															Line:   138,
+															Line:   146,
 														},
 													},
 												},
@@ -13250,13 +13250,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   156,
+															Line:   164,
 														},
 														File:   "monitor.flux",
 														Source: "(r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
 														Start: ast.Position{
 															Column: 13,
-															Line:   138,
+															Line:   146,
 														},
 													},
 												},
@@ -13267,13 +13267,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 11,
-																Line:   156,
+																Line:   164,
 															},
 															File:   "monitor.flux",
 															Source: "({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
 															Start: ast.Position{
 																Column: 20,
-																Line:   138,
+																Line:   146,
 															},
 														},
 													},
@@ -13284,13 +13284,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 10,
-																	Line:   156,
+																	Line:   164,
 																},
 																File:   "monitor.flux",
 																Source: "{r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   138,
+																	Line:   146,
 																},
 															},
 														},
@@ -13302,13 +13302,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 37,
-																		Line:   139,
+																		Line:   147,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_measurement: \"statuses\"",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   139,
+																		Line:   147,
 																	},
 																},
 															},
@@ -13320,13 +13320,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
-																			Line:   139,
+																			Line:   147,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   139,
+																			Line:   147,
 																		},
 																	},
 																},
@@ -13340,13 +13340,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   139,
+																			Line:   147,
 																		},
 																		File:   "monitor.flux",
 																		Source: "\"statuses\"",
 																		Start: ast.Position{
 																			Column: 27,
-																			Line:   139,
+																			Line:   147,
 																		},
 																	},
 																},
@@ -13359,13 +13359,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 48,
-																		Line:   140,
+																		Line:   148,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_source_measurement: r._measurement",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   140,
+																		Line:   148,
 																	},
 																},
 															},
@@ -13377,13 +13377,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 32,
-																			Line:   140,
+																			Line:   148,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_source_measurement",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   140,
+																			Line:   148,
 																		},
 																	},
 																},
@@ -13397,13 +13397,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 48,
-																			Line:   140,
+																			Line:   148,
 																		},
 																		File:   "monitor.flux",
 																		Source: "r._measurement",
 																		Start: ast.Position{
 																			Column: 34,
-																			Line:   140,
+																			Line:   148,
 																		},
 																	},
 																},
@@ -13415,13 +13415,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 35,
-																				Line:   140,
+																				Line:   148,
 																			},
 																			File:   "monitor.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 34,
-																				Line:   140,
+																				Line:   148,
 																			},
 																		},
 																	},
@@ -13434,13 +13434,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 48,
-																				Line:   140,
+																				Line:   148,
 																			},
 																			File:   "monitor.flux",
 																			Source: "_measurement",
 																			Start: ast.Position{
 																				Column: 36,
-																				Line:   140,
+																				Line:   148,
 																			},
 																		},
 																	},
@@ -13455,13 +13455,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 30,
-																		Line:   141,
+																		Line:   149,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_type: data._type",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   141,
+																		Line:   149,
 																	},
 																},
 															},
@@ -13473,13 +13473,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   141,
+																			Line:   149,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_type",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   141,
+																			Line:   149,
 																		},
 																	},
 																},
@@ -13493,13 +13493,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 30,
-																			Line:   141,
+																			Line:   149,
 																		},
 																		File:   "monitor.flux",
 																		Source: "data._type",
 																		Start: ast.Position{
 																			Column: 20,
-																			Line:   141,
+																			Line:   149,
 																		},
 																	},
 																},
@@ -13511,13 +13511,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 24,
-																				Line:   141,
+																				Line:   149,
 																			},
 																			File:   "monitor.flux",
 																			Source: "data",
 																			Start: ast.Position{
 																				Column: 20,
-																				Line:   141,
+																				Line:   149,
 																			},
 																		},
 																	},
@@ -13530,13 +13530,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   141,
+																				Line:   149,
 																			},
 																			File:   "monitor.flux",
 																			Source: "_type",
 																			Start: ast.Position{
 																				Column: 25,
-																				Line:   141,
+																				Line:   149,
 																			},
 																		},
 																	},
@@ -13551,13 +13551,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 38,
-																		Line:   142,
+																		Line:   150,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_check_id: data._check_id",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   142,
+																		Line:   150,
 																	},
 																},
 															},
@@ -13569,13 +13569,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 22,
-																			Line:   142,
+																			Line:   150,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_check_id",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   142,
+																			Line:   150,
 																		},
 																	},
 																},
@@ -13589,13 +13589,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 38,
-																			Line:   142,
+																			Line:   150,
 																		},
 																		File:   "monitor.flux",
 																		Source: "data._check_id",
 																		Start: ast.Position{
 																			Column: 24,
-																			Line:   142,
+																			Line:   150,
 																		},
 																	},
 																},
@@ -13607,13 +13607,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 28,
-																				Line:   142,
+																				Line:   150,
 																			},
 																			File:   "monitor.flux",
 																			Source: "data",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   142,
+																				Line:   150,
 																			},
 																		},
 																	},
@@ -13626,13 +13626,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 38,
-																				Line:   142,
+																				Line:   150,
 																			},
 																			File:   "monitor.flux",
 																			Source: "_check_id",
 																			Start: ast.Position{
 																				Column: 29,
-																				Line:   142,
+																				Line:   150,
 																			},
 																		},
 																	},
@@ -13647,13 +13647,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 42,
-																		Line:   143,
+																		Line:   151,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_check_name: data._check_name",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   143,
+																		Line:   151,
 																	},
 																},
 															},
@@ -13665,13 +13665,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 24,
-																			Line:   143,
+																			Line:   151,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_check_name",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   143,
+																			Line:   151,
 																		},
 																	},
 																},
@@ -13685,13 +13685,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 42,
-																			Line:   143,
+																			Line:   151,
 																		},
 																		File:   "monitor.flux",
 																		Source: "data._check_name",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   143,
+																			Line:   151,
 																		},
 																	},
 																},
@@ -13703,13 +13703,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   143,
+																				Line:   151,
 																			},
 																			File:   "monitor.flux",
 																			Source: "data",
 																			Start: ast.Position{
 																				Column: 26,
-																				Line:   143,
+																				Line:   151,
 																			},
 																		},
 																	},
@@ -13722,13 +13722,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 42,
-																				Line:   143,
+																				Line:   151,
 																			},
 																			File:   "monitor.flux",
 																			Source: "_check_name",
 																			Start: ast.Position{
 																				Column: 31,
-																				Line:   143,
+																				Line:   151,
 																			},
 																		},
 																	},
@@ -13743,13 +13743,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 29,
-																		Line:   153,
+																		Line:   161,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   144,
+																		Line:   152,
 																	},
 																},
 															},
@@ -13761,13 +13761,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 19,
-																			Line:   144,
+																			Line:   152,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_level",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   144,
+																			Line:   152,
 																		},
 																	},
 																},
@@ -13785,13 +13785,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 29,
-																							Line:   153,
+																							Line:   161,
 																						},
 																						File:   "monitor.flux",
 																						Source: "levelUnknown",
 																						Start: ast.Position{
 																							Column: 17,
-																							Line:   153,
+																							Line:   161,
 																						},
 																					},
 																				},
@@ -13803,13 +13803,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 29,
-																						Line:   153,
+																						Line:   161,
 																					},
 																					File:   "monitor.flux",
 																					Source: "if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
 																					Start: ast.Position{
 																						Column: 18,
-																						Line:   150,
+																						Line:   158,
 																					},
 																				},
 																			},
@@ -13820,13 +13820,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 24,
-																							Line:   151,
+																							Line:   159,
 																						},
 																						File:   "monitor.flux",
 																						Source: "levelOK",
 																						Start: ast.Position{
 																							Column: 17,
-																							Line:   151,
+																							Line:   159,
 																						},
 																					},
 																				},
@@ -13840,13 +13840,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 28,
-																								Line:   150,
+																								Line:   158,
 																							},
 																							File:   "monitor.flux",
 																							Source: "r: r",
 																							Start: ast.Position{
 																								Column: 24,
-																								Line:   150,
+																								Line:   158,
 																							},
 																						},
 																					},
@@ -13858,13 +13858,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 28,
-																									Line:   150,
+																									Line:   158,
 																								},
 																								File:   "monitor.flux",
 																								Source: "r: r",
 																								Start: ast.Position{
 																									Column: 24,
-																									Line:   150,
+																									Line:   158,
 																								},
 																							},
 																						},
@@ -13876,13 +13876,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 25,
-																										Line:   150,
+																										Line:   158,
 																									},
 																									File:   "monitor.flux",
 																									Source: "r",
 																									Start: ast.Position{
 																										Column: 24,
-																										Line:   150,
+																										Line:   158,
 																									},
 																								},
 																							},
@@ -13896,13 +13896,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 28,
-																										Line:   150,
+																										Line:   158,
 																									},
 																									File:   "monitor.flux",
 																									Source: "r",
 																									Start: ast.Position{
 																										Column: 27,
-																										Line:   150,
+																										Line:   158,
 																									},
 																								},
 																							},
@@ -13918,13 +13918,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 29,
-																							Line:   150,
+																							Line:   158,
 																						},
 																						File:   "monitor.flux",
 																						Source: "ok(r: r)",
 																						Start: ast.Position{
 																							Column: 21,
-																							Line:   150,
+																							Line:   158,
 																						},
 																					},
 																				},
@@ -13935,13 +13935,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 23,
-																								Line:   150,
+																								Line:   158,
 																							},
 																							File:   "monitor.flux",
 																							Source: "ok",
 																							Start: ast.Position{
 																								Column: 21,
-																								Line:   150,
+																								Line:   158,
 																							},
 																						},
 																					},
@@ -13960,13 +13960,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 29,
-																					Line:   153,
+																					Line:   161,
 																				},
 																				File:   "monitor.flux",
 																				Source: "if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
 																				Start: ast.Position{
 																					Column: 18,
-																					Line:   148,
+																					Line:   156,
 																				},
 																			},
 																		},
@@ -13977,13 +13977,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 26,
-																						Line:   149,
+																						Line:   157,
 																					},
 																					File:   "monitor.flux",
 																					Source: "levelInfo",
 																					Start: ast.Position{
 																						Column: 17,
-																						Line:   149,
+																						Line:   157,
 																					},
 																				},
 																			},
@@ -13997,13 +13997,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 30,
-																							Line:   148,
+																							Line:   156,
 																						},
 																						File:   "monitor.flux",
 																						Source: "r: r",
 																						Start: ast.Position{
 																							Column: 26,
-																							Line:   148,
+																							Line:   156,
 																						},
 																					},
 																				},
@@ -14015,13 +14015,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 30,
-																								Line:   148,
+																								Line:   156,
 																							},
 																							File:   "monitor.flux",
 																							Source: "r: r",
 																							Start: ast.Position{
 																								Column: 26,
-																								Line:   148,
+																								Line:   156,
 																							},
 																						},
 																					},
@@ -14033,13 +14033,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 27,
-																									Line:   148,
+																									Line:   156,
 																								},
 																								File:   "monitor.flux",
 																								Source: "r",
 																								Start: ast.Position{
 																									Column: 26,
-																									Line:   148,
+																									Line:   156,
 																								},
 																							},
 																						},
@@ -14053,13 +14053,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 30,
-																									Line:   148,
+																									Line:   156,
 																								},
 																								File:   "monitor.flux",
 																								Source: "r",
 																								Start: ast.Position{
 																									Column: 29,
-																									Line:   148,
+																									Line:   156,
 																								},
 																							},
 																						},
@@ -14075,13 +14075,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 31,
-																						Line:   148,
+																						Line:   156,
 																					},
 																					File:   "monitor.flux",
 																					Source: "info(r: r)",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   148,
+																						Line:   156,
 																					},
 																				},
 																			},
@@ -14092,13 +14092,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 25,
-																							Line:   148,
+																							Line:   156,
 																						},
 																						File:   "monitor.flux",
 																						Source: "info",
 																						Start: ast.Position{
 																							Column: 21,
-																							Line:   148,
+																							Line:   156,
 																						},
 																					},
 																				},
@@ -14117,13 +14117,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 29,
-																				Line:   153,
+																				Line:   161,
 																			},
 																			File:   "monitor.flux",
 																			Source: "if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
 																			Start: ast.Position{
 																				Column: 18,
-																				Line:   146,
+																				Line:   154,
 																			},
 																		},
 																	},
@@ -14134,13 +14134,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 26,
-																					Line:   147,
+																					Line:   155,
 																				},
 																				File:   "monitor.flux",
 																				Source: "levelWarn",
 																				Start: ast.Position{
 																					Column: 17,
-																					Line:   147,
+																					Line:   155,
 																				},
 																			},
 																		},
@@ -14154,13 +14154,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 30,
-																						Line:   146,
+																						Line:   154,
 																					},
 																					File:   "monitor.flux",
 																					Source: "r: r",
 																					Start: ast.Position{
 																						Column: 26,
-																						Line:   146,
+																						Line:   154,
 																					},
 																				},
 																			},
@@ -14172,13 +14172,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 30,
-																							Line:   146,
+																							Line:   154,
 																						},
 																						File:   "monitor.flux",
 																						Source: "r: r",
 																						Start: ast.Position{
 																							Column: 26,
-																							Line:   146,
+																							Line:   154,
 																						},
 																					},
 																				},
@@ -14190,13 +14190,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 27,
-																								Line:   146,
+																								Line:   154,
 																							},
 																							File:   "monitor.flux",
 																							Source: "r",
 																							Start: ast.Position{
 																								Column: 26,
-																								Line:   146,
+																								Line:   154,
 																							},
 																						},
 																					},
@@ -14210,13 +14210,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 30,
-																								Line:   146,
+																								Line:   154,
 																							},
 																							File:   "monitor.flux",
 																							Source: "r",
 																							Start: ast.Position{
 																								Column: 29,
-																								Line:   146,
+																								Line:   154,
 																							},
 																						},
 																					},
@@ -14232,13 +14232,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 31,
-																					Line:   146,
+																					Line:   154,
 																				},
 																				File:   "monitor.flux",
 																				Source: "warn(r: r)",
 																				Start: ast.Position{
 																					Column: 21,
-																					Line:   146,
+																					Line:   154,
 																				},
 																			},
 																		},
@@ -14249,13 +14249,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 25,
-																						Line:   146,
+																						Line:   154,
 																					},
 																					File:   "monitor.flux",
 																					Source: "warn",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   146,
+																						Line:   154,
 																					},
 																				},
 																			},
@@ -14274,13 +14274,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 29,
-																			Line:   153,
+																			Line:   161,
 																		},
 																		File:   "monitor.flux",
 																		Source: "if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
 																		Start: ast.Position{
 																			Column: 21,
-																			Line:   144,
+																			Line:   152,
 																		},
 																	},
 																},
@@ -14291,13 +14291,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 26,
-																				Line:   145,
+																				Line:   153,
 																			},
 																			File:   "monitor.flux",
 																			Source: "levelCrit",
 																			Start: ast.Position{
 																				Column: 17,
-																				Line:   145,
+																				Line:   153,
 																			},
 																		},
 																	},
@@ -14311,13 +14311,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 33,
-																					Line:   144,
+																					Line:   152,
 																				},
 																				File:   "monitor.flux",
 																				Source: "r: r",
 																				Start: ast.Position{
 																					Column: 29,
-																					Line:   144,
+																					Line:   152,
 																				},
 																			},
 																		},
@@ -14329,13 +14329,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 33,
-																						Line:   144,
+																						Line:   152,
 																					},
 																					File:   "monitor.flux",
 																					Source: "r: r",
 																					Start: ast.Position{
 																						Column: 29,
-																						Line:   144,
+																						Line:   152,
 																					},
 																				},
 																			},
@@ -14347,13 +14347,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 30,
-																							Line:   144,
+																							Line:   152,
 																						},
 																						File:   "monitor.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 29,
-																							Line:   144,
+																							Line:   152,
 																						},
 																					},
 																				},
@@ -14367,13 +14367,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 33,
-																							Line:   144,
+																							Line:   152,
 																						},
 																						File:   "monitor.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 32,
-																							Line:   144,
+																							Line:   152,
 																						},
 																					},
 																				},
@@ -14389,13 +14389,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 34,
-																				Line:   144,
+																				Line:   152,
 																			},
 																			File:   "monitor.flux",
 																			Source: "crit(r: r)",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   144,
+																				Line:   152,
 																			},
 																		},
 																	},
@@ -14406,13 +14406,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   144,
+																					Line:   152,
 																				},
 																				File:   "monitor.flux",
 																				Source: "crit",
 																				Start: ast.Position{
 																					Column: 24,
-																					Line:   144,
+																					Line:   152,
 																				},
 																			},
 																		},
@@ -14432,13 +14432,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 47,
-																		Line:   154,
+																		Line:   162,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_source_timestamp: int(v: r._time)",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   154,
+																		Line:   162,
 																	},
 																},
 															},
@@ -14450,13 +14450,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 30,
-																			Line:   154,
+																			Line:   162,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_source_timestamp",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   154,
+																			Line:   162,
 																		},
 																	},
 																},
@@ -14471,13 +14471,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 46,
-																				Line:   154,
+																				Line:   162,
 																			},
 																			File:   "monitor.flux",
 																			Source: "v: r._time",
 																			Start: ast.Position{
 																				Column: 36,
-																				Line:   154,
+																				Line:   162,
 																			},
 																		},
 																	},
@@ -14489,13 +14489,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 46,
-																					Line:   154,
+																					Line:   162,
 																				},
 																				File:   "monitor.flux",
 																				Source: "v: r._time",
 																				Start: ast.Position{
 																					Column: 36,
-																					Line:   154,
+																					Line:   162,
 																				},
 																			},
 																		},
@@ -14507,13 +14507,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 37,
-																						Line:   154,
+																						Line:   162,
 																					},
 																					File:   "monitor.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 36,
-																						Line:   154,
+																						Line:   162,
 																					},
 																				},
 																			},
@@ -14527,13 +14527,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 46,
-																						Line:   154,
+																						Line:   162,
 																					},
 																					File:   "monitor.flux",
 																					Source: "r._time",
 																					Start: ast.Position{
 																						Column: 39,
-																						Line:   154,
+																						Line:   162,
 																					},
 																				},
 																			},
@@ -14545,13 +14545,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 40,
-																							Line:   154,
+																							Line:   162,
 																						},
 																						File:   "monitor.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 39,
-																							Line:   154,
+																							Line:   162,
 																						},
 																					},
 																				},
@@ -14564,13 +14564,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 46,
-																							Line:   154,
+																							Line:   162,
 																						},
 																						File:   "monitor.flux",
 																						Source: "_time",
 																						Start: ast.Position{
 																							Column: 41,
-																							Line:   154,
+																							Line:   162,
 																						},
 																					},
 																				},
@@ -14588,13 +14588,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 47,
-																			Line:   154,
+																			Line:   162,
 																		},
 																		File:   "monitor.flux",
 																		Source: "int(v: r._time)",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   154,
+																			Line:   162,
 																		},
 																	},
 																},
@@ -14605,13 +14605,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 35,
-																				Line:   154,
+																				Line:   162,
 																			},
 																			File:   "monitor.flux",
 																			Source: "int",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   154,
+																				Line:   162,
 																			},
 																		},
 																	},
@@ -14627,13 +14627,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   155,
+																		Line:   163,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_time: now()",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   155,
+																		Line:   163,
 																	},
 																},
 															},
@@ -14645,13 +14645,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   155,
+																			Line:   163,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_time",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   155,
+																			Line:   163,
 																		},
 																	},
 																},
@@ -14666,13 +14666,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
-																			Line:   155,
+																			Line:   163,
 																		},
 																		File:   "monitor.flux",
 																		Source: "now()",
 																		Start: ast.Position{
 																			Column: 20,
-																			Line:   155,
+																			Line:   163,
 																		},
 																	},
 																},
@@ -14683,13 +14683,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 23,
-																				Line:   155,
+																				Line:   163,
 																			},
 																			File:   "monitor.flux",
 																			Source: "now",
 																			Start: ast.Position{
 																				Column: 20,
-																				Line:   155,
+																				Line:   163,
 																			},
 																		},
 																	},
@@ -14707,13 +14707,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 23,
-																		Line:   138,
+																		Line:   146,
 																	},
 																	File:   "monitor.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 22,
-																		Line:   138,
+																		Line:   146,
 																	},
 																},
 															},
@@ -14731,13 +14731,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   138,
+																Line:   146,
 															},
 															File:   "monitor.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   138,
+																Line:   146,
 															},
 														},
 													},
@@ -14749,13 +14749,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 15,
-																	Line:   138,
+																	Line:   146,
 																},
 																File:   "monitor.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 14,
-																	Line:   138,
+																	Line:   146,
 																},
 															},
 														},
@@ -14776,13 +14776,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 6,
-												Line:   157,
+												Line:   165,
 											},
 											File:   "monitor.flux",
 											Source: "map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )",
 											Start: ast.Position{
 												Column: 8,
-												Line:   137,
+												Line:   145,
 											},
 										},
 									},
@@ -14793,13 +14793,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   137,
+													Line:   145,
 												},
 												File:   "monitor.flux",
 												Source: "map",
 												Start: ast.Position{
 													Column: 8,
-													Line:   137,
+													Line:   145,
 												},
 											},
 										},
@@ -14815,13 +14815,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   162,
+										Line:   170,
 									},
 									File:   "monitor.flux",
 									Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )",
 									Start: ast.Position{
-										Column: 114,
-										Line:   134,
+										Column: 6,
+										Line:   142,
 									},
 								},
 							},
@@ -14833,13 +14833,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   161,
+												Line:   169,
 											},
 											File:   "monitor.flux",
 											Source: "fn: (r) => ({r with\n            _message: messageFn(r: r),\n        })",
 											Start: ast.Position{
 												Column: 9,
-												Line:   159,
+												Line:   167,
 											},
 										},
 									},
@@ -14851,13 +14851,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   161,
+													Line:   169,
 												},
 												File:   "monitor.flux",
 												Source: "fn: (r) => ({r with\n            _message: messageFn(r: r),\n        })",
 												Start: ast.Position{
 													Column: 9,
-													Line:   159,
+													Line:   167,
 												},
 											},
 										},
@@ -14869,13 +14869,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   159,
+														Line:   167,
 													},
 													File:   "monitor.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 9,
-														Line:   159,
+														Line:   167,
 													},
 												},
 											},
@@ -14890,13 +14890,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   161,
+														Line:   169,
 													},
 													File:   "monitor.flux",
 													Source: "(r) => ({r with\n            _message: messageFn(r: r),\n        })",
 													Start: ast.Position{
 														Column: 13,
-														Line:   159,
+														Line:   167,
 													},
 												},
 											},
@@ -14907,13 +14907,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   161,
+															Line:   169,
 														},
 														File:   "monitor.flux",
 														Source: "({r with\n            _message: messageFn(r: r),\n        })",
 														Start: ast.Position{
 															Column: 20,
-															Line:   159,
+															Line:   167,
 														},
 													},
 												},
@@ -14924,13 +14924,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 10,
-																Line:   161,
+																Line:   169,
 															},
 															File:   "monitor.flux",
 															Source: "{r with\n            _message: messageFn(r: r),\n        }",
 															Start: ast.Position{
 																Column: 21,
-																Line:   159,
+																Line:   167,
 															},
 														},
 													},
@@ -14942,13 +14942,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 38,
-																	Line:   160,
+																	Line:   168,
 																},
 																File:   "monitor.flux",
 																Source: "_message: messageFn(r: r)",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   160,
+																	Line:   168,
 																},
 															},
 														},
@@ -14960,13 +14960,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   160,
+																		Line:   168,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_message",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   160,
+																		Line:   168,
 																	},
 																},
 															},
@@ -14981,13 +14981,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   160,
+																			Line:   168,
 																		},
 																		File:   "monitor.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 33,
-																			Line:   160,
+																			Line:   168,
 																		},
 																	},
 																},
@@ -14999,13 +14999,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 37,
-																				Line:   160,
+																				Line:   168,
 																			},
 																			File:   "monitor.flux",
 																			Source: "r: r",
 																			Start: ast.Position{
 																				Column: 33,
-																				Line:   160,
+																				Line:   168,
 																			},
 																		},
 																	},
@@ -15017,13 +15017,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 34,
-																					Line:   160,
+																					Line:   168,
 																				},
 																				File:   "monitor.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 33,
-																					Line:   160,
+																					Line:   168,
 																				},
 																			},
 																		},
@@ -15037,13 +15037,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 37,
-																					Line:   160,
+																					Line:   168,
 																				},
 																				File:   "monitor.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 36,
-																					Line:   160,
+																					Line:   168,
 																				},
 																			},
 																		},
@@ -15059,13 +15059,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 38,
-																		Line:   160,
+																		Line:   168,
 																	},
 																	File:   "monitor.flux",
 																	Source: "messageFn(r: r)",
 																	Start: ast.Position{
 																		Column: 23,
-																		Line:   160,
+																		Line:   168,
 																	},
 																},
 															},
@@ -15076,13 +15076,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 32,
-																			Line:   160,
+																			Line:   168,
 																		},
 																		File:   "monitor.flux",
 																		Source: "messageFn",
 																		Start: ast.Position{
 																			Column: 23,
-																			Line:   160,
+																			Line:   168,
 																		},
 																	},
 																},
@@ -15100,13 +15100,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   159,
+																	Line:   167,
 																},
 																File:   "monitor.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 22,
-																	Line:   159,
+																	Line:   167,
 																},
 															},
 														},
@@ -15124,13 +15124,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   159,
+															Line:   167,
 														},
 														File:   "monitor.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   159,
+															Line:   167,
 														},
 													},
 												},
@@ -15142,13 +15142,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   159,
+																Line:   167,
 															},
 															File:   "monitor.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   159,
+																Line:   167,
 															},
 														},
 													},
@@ -15169,13 +15169,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   162,
+											Line:   170,
 										},
 										File:   "monitor.flux",
 										Source: "map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   158,
+											Line:   166,
 										},
 									},
 								},
@@ -15186,13 +15186,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   158,
+												Line:   166,
 											},
 											File:   "monitor.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   158,
+												Line:   166,
 											},
 										},
 									},
@@ -15208,13 +15208,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   172,
+									Line:   180,
 								},
 								File:   "monitor.flux",
 								Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )",
 								Start: ast.Position{
-									Column: 114,
-									Line:   134,
+									Column: 6,
+									Line:   142,
 								},
 							},
 						},
@@ -15226,13 +15226,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 10,
-											Line:   171,
+											Line:   179,
 										},
 										File:   "monitor.flux",
 										Source: "mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ]",
 										Start: ast.Position{
 											Column: 9,
-											Line:   164,
+											Line:   172,
 										},
 									},
 								},
@@ -15244,13 +15244,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   164,
+												Line:   172,
 											},
 											File:   "monitor.flux",
 											Source: "mode: \"extend\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   164,
+												Line:   172,
 											},
 										},
 									},
@@ -15262,13 +15262,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 13,
-													Line:   164,
+													Line:   172,
 												},
 												File:   "monitor.flux",
 												Source: "mode",
 												Start: ast.Position{
 													Column: 9,
-													Line:   164,
+													Line:   172,
 												},
 											},
 										},
@@ -15282,13 +15282,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   164,
+													Line:   172,
 												},
 												File:   "monitor.flux",
 												Source: "\"extend\"",
 												Start: ast.Position{
 													Column: 15,
-													Line:   164,
+													Line:   172,
 												},
 											},
 										},
@@ -15301,13 +15301,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   171,
+												Line:   179,
 											},
 											File:   "monitor.flux",
 											Source: "columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ]",
 											Start: ast.Position{
 												Column: 9,
-												Line:   165,
+												Line:   173,
 											},
 										},
 									},
@@ -15319,13 +15319,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   165,
+													Line:   173,
 												},
 												File:   "monitor.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 9,
-													Line:   165,
+													Line:   173,
 												},
 											},
 										},
@@ -15339,13 +15339,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   171,
+													Line:   179,
 												},
 												File:   "monitor.flux",
 												Source: "[\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ]",
 												Start: ast.Position{
 													Column: 18,
-													Line:   165,
+													Line:   173,
 												},
 											},
 										},
@@ -15356,13 +15356,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   166,
+														Line:   174,
 													},
 													File:   "monitor.flux",
 													Source: "\"_source_measurement\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   166,
+														Line:   174,
 													},
 												},
 											},
@@ -15374,13 +15374,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   167,
+														Line:   175,
 													},
 													File:   "monitor.flux",
 													Source: "\"_type\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   167,
+														Line:   175,
 													},
 												},
 											},
@@ -15392,13 +15392,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   168,
+														Line:   176,
 													},
 													File:   "monitor.flux",
 													Source: "\"_check_id\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   168,
+														Line:   176,
 													},
 												},
 											},
@@ -15410,13 +15410,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   169,
+														Line:   177,
 													},
 													File:   "monitor.flux",
 													Source: "\"_check_name\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   169,
+														Line:   177,
 													},
 												},
 											},
@@ -15428,13 +15428,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   170,
+														Line:   178,
 													},
 													File:   "monitor.flux",
 													Source: "\"_level\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   170,
+														Line:   178,
 													},
 												},
 											},
@@ -15453,13 +15453,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   172,
+										Line:   180,
 									},
 									File:   "monitor.flux",
 									Source: "experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )",
 									Start: ast.Position{
 										Column: 8,
-										Line:   163,
+										Line:   171,
 									},
 								},
 							},
@@ -15470,13 +15470,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   163,
+											Line:   171,
 										},
 										File:   "monitor.flux",
 										Source: "experimental.group",
 										Start: ast.Position{
 											Column: 8,
-											Line:   163,
+											Line:   171,
 										},
 									},
 								},
@@ -15488,13 +15488,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   163,
+												Line:   171,
 											},
 											File:   "monitor.flux",
 											Source: "experimental",
 											Start: ast.Position{
 												Column: 8,
-												Line:   163,
+												Line:   171,
 											},
 										},
 									},
@@ -15507,13 +15507,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   163,
+												Line:   171,
 											},
 											File:   "monitor.flux",
 											Source: "group",
 											Start: ast.Position{
 												Column: 21,
-												Line:   163,
+												Line:   171,
 											},
 										},
 									},
@@ -15531,13 +15531,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   173,
+								Line:   181,
 							},
 							File:   "monitor.flux",
 							Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
 							Start: ast.Position{
-								Column: 114,
-								Line:   134,
+								Column: 6,
+								Line:   142,
 							},
 						},
 					},
@@ -15549,13 +15549,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   173,
+									Line:   181,
 								},
 								File:   "monitor.flux",
 								Source: "write()",
 								Start: ast.Position{
 									Column: 8,
-									Line:   173,
+									Line:   181,
 								},
 							},
 						},
@@ -15566,13 +15566,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   173,
+										Line:   181,
 									},
 									File:   "monitor.flux",
 									Source: "write",
 									Start: ast.Position{
 										Column: 8,
-										Line:   173,
+										Line:   181,
 									},
 								},
 							},
@@ -15589,14 +15589,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 19,
-								Line:   134,
+								Column: 18,
+								Line:   135,
 							},
 							File:   "monitor.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
-								Column: 10,
-								Line:   134,
+								Column: 9,
+								Line:   135,
 							},
 						},
 					},
@@ -15607,14 +15607,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
-									Line:   134,
+									Column: 15,
+									Line:   135,
 								},
 								File:   "monitor.flux",
 								Source: "tables",
 								Start: ast.Position{
-									Column: 10,
-									Line:   134,
+									Column: 9,
+									Line:   135,
 								},
 							},
 						},
@@ -15626,14 +15626,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 19,
-								Line:   134,
+								Column: 18,
+								Line:   135,
 							},
 							File:   "monitor.flux",
 							Source: "<-",
 							Start: ast.Position{
-								Column: 17,
-								Line:   134,
+								Column: 16,
+								Line:   135,
 							},
 						},
 					}},
@@ -15643,14 +15643,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 25,
-								Line:   134,
+								Column: 13,
+								Line:   136,
 							},
 							File:   "monitor.flux",
 							Source: "data",
 							Start: ast.Position{
-								Column: 21,
-								Line:   134,
+								Column: 9,
+								Line:   136,
 							},
 						},
 					},
@@ -15661,14 +15661,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
-									Line:   134,
+									Column: 13,
+									Line:   136,
 								},
 								File:   "monitor.flux",
 								Source: "data",
 								Start: ast.Position{
-									Column: 21,
-									Line:   134,
+									Column: 9,
+									Line:   136,
 								},
 							},
 						},
@@ -15682,14 +15682,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 36,
-								Line:   134,
+								Column: 18,
+								Line:   137,
 							},
 							File:   "monitor.flux",
 							Source: "messageFn",
 							Start: ast.Position{
-								Column: 27,
-								Line:   134,
+								Column: 9,
+								Line:   137,
 							},
 						},
 					},
@@ -15700,14 +15700,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 36,
-									Line:   134,
+									Column: 18,
+									Line:   137,
 								},
 								File:   "monitor.flux",
 								Source: "messageFn",
 								Start: ast.Position{
-									Column: 27,
-									Line:   134,
+									Column: 9,
+									Line:   137,
 								},
 							},
 						},
@@ -15721,14 +15721,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 55,
-								Line:   134,
+								Column: 26,
+								Line:   138,
 							},
 							File:   "monitor.flux",
 							Source: "crit=(r) => false",
 							Start: ast.Position{
-								Column: 38,
-								Line:   134,
+								Column: 9,
+								Line:   138,
 							},
 						},
 					},
@@ -15739,14 +15739,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 42,
-									Line:   134,
+									Column: 13,
+									Line:   138,
 								},
 								File:   "monitor.flux",
 								Source: "crit",
 								Start: ast.Position{
-									Column: 38,
-									Line:   134,
+									Column: 9,
+									Line:   138,
 								},
 							},
 						},
@@ -15760,14 +15760,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 55,
-									Line:   134,
+									Column: 26,
+									Line:   138,
 								},
 								File:   "monitor.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
-									Column: 43,
-									Line:   134,
+									Column: 14,
+									Line:   138,
 								},
 							},
 						},
@@ -15777,14 +15777,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 55,
-										Line:   134,
+										Column: 26,
+										Line:   138,
 									},
 									File:   "monitor.flux",
 									Source: "false",
 									Start: ast.Position{
-										Column: 50,
-										Line:   134,
+										Column: 21,
+										Line:   138,
 									},
 								},
 							},
@@ -15797,14 +15797,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 45,
-										Line:   134,
+										Column: 16,
+										Line:   138,
 									},
 									File:   "monitor.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 44,
-										Line:   134,
+										Column: 15,
+										Line:   138,
 									},
 								},
 							},
@@ -15815,14 +15815,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 45,
-											Line:   134,
+											Column: 16,
+											Line:   138,
 										},
 										File:   "monitor.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 44,
-											Line:   134,
+											Column: 15,
+											Line:   138,
 										},
 									},
 								},
@@ -15839,14 +15839,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 74,
-								Line:   134,
+								Column: 26,
+								Line:   139,
 							},
 							File:   "monitor.flux",
 							Source: "warn=(r) => false",
 							Start: ast.Position{
-								Column: 57,
-								Line:   134,
+								Column: 9,
+								Line:   139,
 							},
 						},
 					},
@@ -15857,14 +15857,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 61,
-									Line:   134,
+									Column: 13,
+									Line:   139,
 								},
 								File:   "monitor.flux",
 								Source: "warn",
 								Start: ast.Position{
-									Column: 57,
-									Line:   134,
+									Column: 9,
+									Line:   139,
 								},
 							},
 						},
@@ -15878,14 +15878,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 74,
-									Line:   134,
+									Column: 26,
+									Line:   139,
 								},
 								File:   "monitor.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
-									Column: 62,
-									Line:   134,
+									Column: 14,
+									Line:   139,
 								},
 							},
 						},
@@ -15895,14 +15895,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 74,
-										Line:   134,
+										Column: 26,
+										Line:   139,
 									},
 									File:   "monitor.flux",
 									Source: "false",
 									Start: ast.Position{
-										Column: 69,
-										Line:   134,
+										Column: 21,
+										Line:   139,
 									},
 								},
 							},
@@ -15915,14 +15915,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 64,
-										Line:   134,
+										Column: 16,
+										Line:   139,
 									},
 									File:   "monitor.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 63,
-										Line:   134,
+										Column: 15,
+										Line:   139,
 									},
 								},
 							},
@@ -15933,14 +15933,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 64,
-											Line:   134,
+											Column: 16,
+											Line:   139,
 										},
 										File:   "monitor.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 63,
-											Line:   134,
+											Column: 15,
+											Line:   139,
 										},
 									},
 								},
@@ -15957,14 +15957,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 93,
-								Line:   134,
+								Column: 26,
+								Line:   140,
 							},
 							File:   "monitor.flux",
 							Source: "info=(r) => false",
 							Start: ast.Position{
-								Column: 76,
-								Line:   134,
+								Column: 9,
+								Line:   140,
 							},
 						},
 					},
@@ -15975,14 +15975,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 80,
-									Line:   134,
+									Column: 13,
+									Line:   140,
 								},
 								File:   "monitor.flux",
 								Source: "info",
 								Start: ast.Position{
-									Column: 76,
-									Line:   134,
+									Column: 9,
+									Line:   140,
 								},
 							},
 						},
@@ -15996,14 +15996,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 93,
-									Line:   134,
+									Column: 26,
+									Line:   140,
 								},
 								File:   "monitor.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
-									Column: 81,
-									Line:   134,
+									Column: 14,
+									Line:   140,
 								},
 							},
 						},
@@ -16013,14 +16013,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 93,
-										Line:   134,
+										Column: 26,
+										Line:   140,
 									},
 									File:   "monitor.flux",
 									Source: "false",
 									Start: ast.Position{
-										Column: 88,
-										Line:   134,
+										Column: 21,
+										Line:   140,
 									},
 								},
 							},
@@ -16033,14 +16033,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 83,
-										Line:   134,
+										Column: 16,
+										Line:   140,
 									},
 									File:   "monitor.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 82,
-										Line:   134,
+										Column: 15,
+										Line:   140,
 									},
 								},
 							},
@@ -16051,14 +16051,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 83,
-											Line:   134,
+											Column: 16,
+											Line:   140,
 										},
 										File:   "monitor.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 82,
-											Line:   134,
+											Column: 15,
+											Line:   140,
 										},
 									},
 								},
@@ -16075,14 +16075,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 109,
-								Line:   134,
+								Column: 23,
+								Line:   141,
 							},
 							File:   "monitor.flux",
 							Source: "ok=(r) => true",
 							Start: ast.Position{
-								Column: 95,
-								Line:   134,
+								Column: 9,
+								Line:   141,
 							},
 						},
 					},
@@ -16093,14 +16093,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 97,
-									Line:   134,
+									Column: 11,
+									Line:   141,
 								},
 								File:   "monitor.flux",
 								Source: "ok",
 								Start: ast.Position{
-									Column: 95,
-									Line:   134,
+									Column: 9,
+									Line:   141,
 								},
 							},
 						},
@@ -16114,14 +16114,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 109,
-									Line:   134,
+									Column: 23,
+									Line:   141,
 								},
 								File:   "monitor.flux",
 								Source: "(r) => true",
 								Start: ast.Position{
-									Column: 98,
-									Line:   134,
+									Column: 12,
+									Line:   141,
 								},
 							},
 						},
@@ -16131,14 +16131,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 109,
-										Line:   134,
+										Column: 23,
+										Line:   141,
 									},
 									File:   "monitor.flux",
 									Source: "true",
 									Start: ast.Position{
-										Column: 105,
-										Line:   134,
+										Column: 19,
+										Line:   141,
 									},
 								},
 							},
@@ -16151,14 +16151,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 100,
-										Line:   134,
+										Column: 14,
+										Line:   141,
 									},
 									File:   "monitor.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 99,
-										Line:   134,
+										Column: 13,
+										Line:   141,
 									},
 								},
 							},
@@ -16169,14 +16169,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 100,
-											Line:   134,
+											Column: 14,
+											Line:   141,
 										},
 										File:   "monitor.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 99,
-											Line:   134,
+											Column: 13,
+											Line:   141,
 										},
 									},
 								},

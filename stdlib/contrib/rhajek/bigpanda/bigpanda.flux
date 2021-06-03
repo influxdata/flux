@@ -33,7 +33,13 @@ statusFromLevel = (level) => {
 // `appKey` - string - BigPanda App Key.
 // `status` - string - Status of the BigPanda alert. One of ok, critical, warning, acknowledged.
 // `rec` - record - additional data appended to alert
-sendAlert = (url, token, appKey, status, rec) => {
+sendAlert = (
+        url,
+        token,
+        appKey,
+        status,
+        rec,
+) => {
     headers = {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": defaultTokenPrefix + " " + token,

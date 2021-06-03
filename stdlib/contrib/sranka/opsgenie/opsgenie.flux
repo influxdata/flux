@@ -21,7 +21,20 @@ builtin respondersToJSON : (v: [string]) => string
 // `actions`     - array  - Array of strings that specifies actions that will be available for the alert. 
 // `details`     - string - Additional details of an alert, it must be a JSON-encoded map of key-value string pairs. 
 // `visibleTo`   - array  - Arrays of teams and users that the alert will become visible to without sending any notification. Optional. 
-sendAlert = (url="https://api.opsgenie.com/v2/alerts", apiKey, message, alias="", description="", priority="P3", responders=[], tags=[], entity="", actions=[], visibleTo=[], details="{}") => {
+sendAlert = (
+        url="https://api.opsgenie.com/v2/alerts",
+        apiKey,
+        message,
+        alias="",
+        description="",
+        priority="P3",
+        responders=[],
+        tags=[],
+        entity="",
+        actions=[],
+        visibleTo=[],
+        details="{}",
+) => {
     headers = {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": "GenieKey " + apiKey,

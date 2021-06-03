@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 6,
-					Line:   78,
+					Line:   94,
 				},
 				File:   "sensu.flux",
-				Source: "package sensu\n\n\nimport \"http\"\nimport \"json\"\n\n// toSensuName translates a string value to a Sensu name.\n// Characters not being [a-zA-Z0-9_.\\-] are replaced by underscore.\nbuiltin toSensuName : (v: string) => string\n\n// `event` sends a single event to Sensu as described in https://docs.sensu.io/sensu-go/latest/api/events/#create-a-new-event API. \n// `url` - string - base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture) without a trailing slash, for example \"http://localhost:8080\" .\n// `apiKey` - string - Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).\n// `checkName` - string - Check name, it can contain [a-zA-Z0-9_.\\-] characters, other characters are replaced by underscore.\n// `text` - string - The event text (named output in a Sensu Event).\n// `handlers` - array<string> - Sensu handlers to execute, optional.\n// `status` - int - The event status, 0 (default) indicates \"OK\", 1 indicates \"WARNING\", 2 indicates \"CRITICAL\", any other value indicates an “UNKNOWN” or custom status.\n// `state` - string - The event state can be \"failing\", \"passing\" or \"flapping\". Defaults to \"passing\" for 0 status, \"failing\" otherwise. \n// `namespace` - string - The Sensu namespace. Defaults to \"default\".\n// `entityName` - string - Source of the event, it can contain [a-zA-Z0-9_.\\-] characters, other characters are replaced by underscore. Defaults to \"influxdb\".\nevent = (url, apiKey, checkName, text, handlers=[], status=0, state=\"\", namespace=\"default\", entityName=\"influxdb\") => {\n    data = {\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send event to Sensu for each table row.\n// `url` - string - base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture) without a trailing slash, for example \"http://localhost:8080\" .\n// `apiKey` - string - Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).\n// `handlers` - array<string> - Sensu handlers to execute.\n// `namespace` - string - The Sensu namespace. Defaults to \"default\".\n// `entityName` - string - Source of the event, it can contain [a-zA-Z0-9_.\\-] characters, other characters are replaced by underscore. Defaults to \"influxdb\".\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `checkName`, `text`, and `status`, as defined in the `event` function arguments.\nendpoint = (url, apiKey, handlers=[], namespace=\"default\", entityName=\"influxdb\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package sensu\n\n\nimport \"http\"\nimport \"json\"\n\n// toSensuName translates a string value to a Sensu name.\n// Characters not being [a-zA-Z0-9_.\\-] are replaced by underscore.\nbuiltin toSensuName : (v: string) => string\n\n// `event` sends a single event to Sensu as described in https://docs.sensu.io/sensu-go/latest/api/events/#create-a-new-event API. \n// `url` - string - base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture) without a trailing slash, for example \"http://localhost:8080\" .\n// `apiKey` - string - Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).\n// `checkName` - string - Check name, it can contain [a-zA-Z0-9_.\\-] characters, other characters are replaced by underscore.\n// `text` - string - The event text (named output in a Sensu Event).\n// `handlers` - array<string> - Sensu handlers to execute, optional.\n// `status` - int - The event status, 0 (default) indicates \"OK\", 1 indicates \"WARNING\", 2 indicates \"CRITICAL\", any other value indicates an “UNKNOWN” or custom status.\n// `state` - string - The event state can be \"failing\", \"passing\" or \"flapping\". Defaults to \"passing\" for 0 status, \"failing\" otherwise. \n// `namespace` - string - The Sensu namespace. Defaults to \"default\".\n// `entityName` - string - Source of the event, it can contain [a-zA-Z0-9_.\\-] characters, other characters are replaced by underscore. Defaults to \"influxdb\".\nevent = (\n        url,\n        apiKey,\n        checkName,\n        text,\n        handlers=[],\n        status=0,\n        state=\"\",\n        namespace=\"default\",\n        entityName=\"influxdb\",\n) => {\n    data = {\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send event to Sensu for each table row.\n// `url` - string - base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture) without a trailing slash, for example \"http://localhost:8080\" .\n// `apiKey` - string - Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).\n// `handlers` - array<string> - Sensu handlers to execute.\n// `namespace` - string - The Sensu namespace. Defaults to \"default\".\n// `entityName` - string - Source of the event, it can contain [a-zA-Z0-9_.\\-] characters, other characters are replaced by underscore. Defaults to \"influxdb\".\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `checkName`, `text`, and `status`, as defined in the `event` function arguments.\nendpoint = (\n        url,\n        apiKey,\n        handlers=[],\n        namespace=\"default\",\n        entityName=\"influxdb\",\n) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -227,10 +227,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   48,
+						Line:   58,
 					},
 					File:   "sensu.flux",
-					Source: "event = (url, apiKey, checkName, text, handlers=[], status=0, state=\"\", namespace=\"default\", entityName=\"influxdb\") => {\n    data = {\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)\n}",
+					Source: "event = (\n        url,\n        apiKey,\n        checkName,\n        text,\n        handlers=[],\n        status=0,\n        state=\"\",\n        namespace=\"default\",\n        entityName=\"influxdb\",\n) => {\n    data = {\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   21,
@@ -264,10 +264,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   48,
+							Line:   58,
 						},
 						File:   "sensu.flux",
-						Source: "(url, apiKey, checkName, text, handlers=[], status=0, state=\"\", namespace=\"default\", entityName=\"influxdb\") => {\n    data = {\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)\n}",
+						Source: "(\n        url,\n        apiKey,\n        checkName,\n        text,\n        handlers=[],\n        status=0,\n        state=\"\",\n        namespace=\"default\",\n        entityName=\"influxdb\",\n) => {\n    data = {\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)\n}",
 						Start: ast.Position{
 							Column: 9,
 							Line:   21,
@@ -281,13 +281,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   48,
+								Line:   58,
 							},
 							File:   "sensu.flux",
 							Source: "{\n    data = {\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)\n}",
 							Start: ast.Position{
-								Column: 120,
-								Line:   21,
+								Column: 6,
+								Line:   31,
 							},
 						},
 					},
@@ -298,13 +298,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   40,
+									Line:   50,
 								},
 								File:   "sensu.flux",
 								Source: "data = {\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   22,
+									Line:   32,
 								},
 							},
 						},
@@ -315,13 +315,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   22,
+										Line:   32,
 									},
 									File:   "sensu.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 5,
-										Line:   22,
+										Line:   32,
 									},
 								},
 							},
@@ -334,13 +334,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   40,
+										Line:   50,
 									},
 									File:   "sensu.flux",
 									Source: "{\n        entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        },\n        check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        },\n    }",
 									Start: ast.Position{
 										Column: 12,
-										Line:   22,
+										Line:   32,
 									},
 								},
 							},
@@ -352,13 +352,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 10,
-											Line:   28,
+											Line:   38,
 										},
 										File:   "sensu.flux",
 										Source: "entity: {\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        }",
 										Start: ast.Position{
 											Column: 9,
-											Line:   23,
+											Line:   33,
 										},
 									},
 								},
@@ -370,13 +370,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   23,
+												Line:   33,
 											},
 											File:   "sensu.flux",
 											Source: "entity",
 											Start: ast.Position{
 												Column: 9,
-												Line:   23,
+												Line:   33,
 											},
 										},
 									},
@@ -390,13 +390,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   28,
+												Line:   38,
 											},
 											File:   "sensu.flux",
 											Source: "{\n            entity_class: \"proxy\",\n            metadata: {\n                name: toSensuName(v: entityName),\n            },\n        }",
 											Start: ast.Position{
 												Column: 17,
-												Line:   23,
+												Line:   33,
 											},
 										},
 									},
@@ -408,13 +408,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   24,
+													Line:   34,
 												},
 												File:   "sensu.flux",
 												Source: "entity_class: \"proxy\"",
 												Start: ast.Position{
 													Column: 13,
-													Line:   24,
+													Line:   34,
 												},
 											},
 										},
@@ -426,13 +426,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 25,
-														Line:   24,
+														Line:   34,
 													},
 													File:   "sensu.flux",
 													Source: "entity_class",
 													Start: ast.Position{
 														Column: 13,
-														Line:   24,
+														Line:   34,
 													},
 												},
 											},
@@ -446,13 +446,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   24,
+														Line:   34,
 													},
 													File:   "sensu.flux",
 													Source: "\"proxy\"",
 													Start: ast.Position{
 														Column: 27,
-														Line:   24,
+														Line:   34,
 													},
 												},
 											},
@@ -465,13 +465,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   27,
+													Line:   37,
 												},
 												File:   "sensu.flux",
 												Source: "metadata: {\n                name: toSensuName(v: entityName),\n            }",
 												Start: ast.Position{
 													Column: 13,
-													Line:   25,
+													Line:   35,
 												},
 											},
 										},
@@ -483,13 +483,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   25,
+														Line:   35,
 													},
 													File:   "sensu.flux",
 													Source: "metadata",
 													Start: ast.Position{
 														Column: 13,
-														Line:   25,
+														Line:   35,
 													},
 												},
 											},
@@ -503,13 +503,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   27,
+														Line:   37,
 													},
 													File:   "sensu.flux",
 													Source: "{\n                name: toSensuName(v: entityName),\n            }",
 													Start: ast.Position{
 														Column: 23,
-														Line:   25,
+														Line:   35,
 													},
 												},
 											},
@@ -521,13 +521,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   26,
+															Line:   36,
 														},
 														File:   "sensu.flux",
 														Source: "name: toSensuName(v: entityName)",
 														Start: ast.Position{
 															Column: 17,
-															Line:   26,
+															Line:   36,
 														},
 													},
 												},
@@ -539,13 +539,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
-																Line:   26,
+																Line:   36,
 															},
 															File:   "sensu.flux",
 															Source: "name",
 															Start: ast.Position{
 																Column: 17,
-																Line:   26,
+																Line:   36,
 															},
 														},
 													},
@@ -560,13 +560,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 48,
-																	Line:   26,
+																	Line:   36,
 																},
 																File:   "sensu.flux",
 																Source: "v: entityName",
 																Start: ast.Position{
 																	Column: 35,
-																	Line:   26,
+																	Line:   36,
 																},
 															},
 														},
@@ -578,13 +578,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 48,
-																		Line:   26,
+																		Line:   36,
 																	},
 																	File:   "sensu.flux",
 																	Source: "v: entityName",
 																	Start: ast.Position{
 																		Column: 35,
-																		Line:   26,
+																		Line:   36,
 																	},
 																},
 															},
@@ -596,13 +596,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 36,
-																			Line:   26,
+																			Line:   36,
 																		},
 																		File:   "sensu.flux",
 																		Source: "v",
 																		Start: ast.Position{
 																			Column: 35,
-																			Line:   26,
+																			Line:   36,
 																		},
 																	},
 																},
@@ -616,13 +616,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 48,
-																			Line:   26,
+																			Line:   36,
 																		},
 																		File:   "sensu.flux",
 																		Source: "entityName",
 																		Start: ast.Position{
 																			Column: 38,
-																			Line:   26,
+																			Line:   36,
 																		},
 																	},
 																},
@@ -638,13 +638,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 49,
-																Line:   26,
+																Line:   36,
 															},
 															File:   "sensu.flux",
 															Source: "toSensuName(v: entityName)",
 															Start: ast.Position{
 																Column: 23,
-																Line:   26,
+																Line:   36,
 															},
 														},
 													},
@@ -655,13 +655,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   26,
+																	Line:   36,
 																},
 																File:   "sensu.flux",
 																Source: "toSensuName",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   26,
+																	Line:   36,
 																},
 															},
 														},
@@ -685,13 +685,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 10,
-											Line:   39,
+											Line:   49,
 										},
 										File:   "sensu.flux",
 										Source: "check: {\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        }",
 										Start: ast.Position{
 											Column: 9,
-											Line:   29,
+											Line:   39,
 										},
 									},
 								},
@@ -703,13 +703,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   29,
+												Line:   39,
 											},
 											File:   "sensu.flux",
 											Source: "check",
 											Start: ast.Position{
 												Column: 9,
-												Line:   29,
+												Line:   39,
 											},
 										},
 									},
@@ -723,13 +723,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   39,
+												Line:   49,
 											},
 											File:   "sensu.flux",
 											Source: "{\n            output: text,\n            state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\",\n            status: status,\n            handlers: handlers,\n            // required\n            interval: 60,\n            metadata: {\n                name: toSensuName(v: checkName),\n            },\n        }",
 											Start: ast.Position{
 												Column: 16,
-												Line:   29,
+												Line:   39,
 											},
 										},
 									},
@@ -741,13 +741,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   30,
+													Line:   40,
 												},
 												File:   "sensu.flux",
 												Source: "output: text",
 												Start: ast.Position{
 													Column: 13,
-													Line:   30,
+													Line:   40,
 												},
 											},
 										},
@@ -759,13 +759,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   30,
+														Line:   40,
 													},
 													File:   "sensu.flux",
 													Source: "output",
 													Start: ast.Position{
 														Column: 13,
-														Line:   30,
+														Line:   40,
 													},
 												},
 											},
@@ -779,13 +779,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 25,
-														Line:   30,
+														Line:   40,
 													},
 													File:   "sensu.flux",
 													Source: "text",
 													Start: ast.Position{
 														Column: 21,
-														Line:   30,
+														Line:   40,
 													},
 												},
 											},
@@ -798,13 +798,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 95,
-													Line:   31,
+													Line:   41,
 												},
 												File:   "sensu.flux",
 												Source: "state: if state != \"\" then state else if status == 0 then \"passing\" else \"failing\"",
 												Start: ast.Position{
 													Column: 13,
-													Line:   31,
+													Line:   41,
 												},
 											},
 										},
@@ -816,13 +816,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   31,
+														Line:   41,
 													},
 													File:   "sensu.flux",
 													Source: "state",
 													Start: ast.Position{
 														Column: 13,
-														Line:   31,
+														Line:   41,
 													},
 												},
 											},
@@ -838,13 +838,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 95,
-																Line:   31,
+																Line:   41,
 															},
 															File:   "sensu.flux",
 															Source: "\"failing\"",
 															Start: ast.Position{
 																Column: 86,
-																Line:   31,
+																Line:   41,
 															},
 														},
 													},
@@ -856,13 +856,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 95,
-															Line:   31,
+															Line:   41,
 														},
 														File:   "sensu.flux",
 														Source: "if status == 0 then \"passing\" else \"failing\"",
 														Start: ast.Position{
 															Column: 51,
-															Line:   31,
+															Line:   41,
 														},
 													},
 												},
@@ -873,13 +873,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 80,
-																Line:   31,
+																Line:   41,
 															},
 															File:   "sensu.flux",
 															Source: "\"passing\"",
 															Start: ast.Position{
 																Column: 71,
-																Line:   31,
+																Line:   41,
 															},
 														},
 													},
@@ -892,13 +892,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 65,
-																Line:   31,
+																Line:   41,
 															},
 															File:   "sensu.flux",
 															Source: "status == 0",
 															Start: ast.Position{
 																Column: 54,
-																Line:   31,
+																Line:   41,
 															},
 														},
 													},
@@ -909,13 +909,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 60,
-																	Line:   31,
+																	Line:   41,
 																},
 																File:   "sensu.flux",
 																Source: "status",
 																Start: ast.Position{
 																	Column: 54,
-																	Line:   31,
+																	Line:   41,
 																},
 															},
 														},
@@ -929,13 +929,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 65,
-																	Line:   31,
+																	Line:   41,
 																},
 																File:   "sensu.flux",
 																Source: "0",
 																Start: ast.Position{
 																	Column: 64,
-																	Line:   31,
+																	Line:   41,
 																},
 															},
 														},
@@ -952,13 +952,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 95,
-														Line:   31,
+														Line:   41,
 													},
 													File:   "sensu.flux",
 													Source: "if state != \"\" then state else if status == 0 then \"passing\" else \"failing\"",
 													Start: ast.Position{
 														Column: 20,
-														Line:   31,
+														Line:   41,
 													},
 												},
 											},
@@ -969,13 +969,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   31,
+															Line:   41,
 														},
 														File:   "sensu.flux",
 														Source: "state",
 														Start: ast.Position{
 															Column: 40,
-															Line:   31,
+															Line:   41,
 														},
 													},
 												},
@@ -988,13 +988,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   31,
+															Line:   41,
 														},
 														File:   "sensu.flux",
 														Source: "state != \"\"",
 														Start: ast.Position{
 															Column: 23,
-															Line:   31,
+															Line:   41,
 														},
 													},
 												},
@@ -1005,13 +1005,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 28,
-																Line:   31,
+																Line:   41,
 															},
 															File:   "sensu.flux",
 															Source: "state",
 															Start: ast.Position{
 																Column: 23,
-																Line:   31,
+																Line:   41,
 															},
 														},
 													},
@@ -1025,13 +1025,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   31,
+																Line:   41,
 															},
 															File:   "sensu.flux",
 															Source: "\"\"",
 															Start: ast.Position{
 																Column: 32,
-																Line:   31,
+																Line:   41,
 															},
 														},
 													},
@@ -1049,13 +1049,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
-													Line:   32,
+													Line:   42,
 												},
 												File:   "sensu.flux",
 												Source: "status: status",
 												Start: ast.Position{
 													Column: 13,
-													Line:   32,
+													Line:   42,
 												},
 											},
 										},
@@ -1067,13 +1067,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   32,
+														Line:   42,
 													},
 													File:   "sensu.flux",
 													Source: "status",
 													Start: ast.Position{
 														Column: 13,
-														Line:   32,
+														Line:   42,
 													},
 												},
 											},
@@ -1087,13 +1087,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 27,
-														Line:   32,
+														Line:   42,
 													},
 													File:   "sensu.flux",
 													Source: "status",
 													Start: ast.Position{
 														Column: 21,
-														Line:   32,
+														Line:   42,
 													},
 												},
 											},
@@ -1106,13 +1106,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
-													Line:   33,
+													Line:   43,
 												},
 												File:   "sensu.flux",
 												Source: "handlers: handlers",
 												Start: ast.Position{
 													Column: 13,
-													Line:   33,
+													Line:   43,
 												},
 											},
 										},
@@ -1124,13 +1124,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   33,
+														Line:   43,
 													},
 													File:   "sensu.flux",
 													Source: "handlers",
 													Start: ast.Position{
 														Column: 13,
-														Line:   33,
+														Line:   43,
 													},
 												},
 											},
@@ -1144,13 +1144,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 31,
-														Line:   33,
+														Line:   43,
 													},
 													File:   "sensu.flux",
 													Source: "handlers",
 													Start: ast.Position{
 														Column: 23,
-														Line:   33,
+														Line:   43,
 													},
 												},
 											},
@@ -1163,13 +1163,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   35,
+													Line:   45,
 												},
 												File:   "sensu.flux",
 												Source: "interval: 60",
 												Start: ast.Position{
 													Column: 13,
-													Line:   35,
+													Line:   45,
 												},
 											},
 										},
@@ -1181,13 +1181,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   35,
+														Line:   45,
 													},
 													File:   "sensu.flux",
 													Source: "interval",
 													Start: ast.Position{
 														Column: 13,
-														Line:   35,
+														Line:   45,
 													},
 												},
 											},
@@ -1201,13 +1201,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 25,
-														Line:   35,
+														Line:   45,
 													},
 													File:   "sensu.flux",
 													Source: "60",
 													Start: ast.Position{
 														Column: 23,
-														Line:   35,
+														Line:   45,
 													},
 												},
 											},
@@ -1220,13 +1220,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   38,
+													Line:   48,
 												},
 												File:   "sensu.flux",
 												Source: "metadata: {\n                name: toSensuName(v: checkName),\n            }",
 												Start: ast.Position{
 													Column: 13,
-													Line:   36,
+													Line:   46,
 												},
 											},
 										},
@@ -1238,13 +1238,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   36,
+														Line:   46,
 													},
 													File:   "sensu.flux",
 													Source: "metadata",
 													Start: ast.Position{
 														Column: 13,
-														Line:   36,
+														Line:   46,
 													},
 												},
 											},
@@ -1258,13 +1258,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   38,
+														Line:   48,
 													},
 													File:   "sensu.flux",
 													Source: "{\n                name: toSensuName(v: checkName),\n            }",
 													Start: ast.Position{
 														Column: 23,
-														Line:   36,
+														Line:   46,
 													},
 												},
 											},
@@ -1276,13 +1276,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 48,
-															Line:   37,
+															Line:   47,
 														},
 														File:   "sensu.flux",
 														Source: "name: toSensuName(v: checkName)",
 														Start: ast.Position{
 															Column: 17,
-															Line:   37,
+															Line:   47,
 														},
 													},
 												},
@@ -1294,13 +1294,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
-																Line:   37,
+																Line:   47,
 															},
 															File:   "sensu.flux",
 															Source: "name",
 															Start: ast.Position{
 																Column: 17,
-																Line:   37,
+																Line:   47,
 															},
 														},
 													},
@@ -1315,13 +1315,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
-																	Line:   37,
+																	Line:   47,
 																},
 																File:   "sensu.flux",
 																Source: "v: checkName",
 																Start: ast.Position{
 																	Column: 35,
-																	Line:   37,
+																	Line:   47,
 																},
 															},
 														},
@@ -1333,13 +1333,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 47,
-																		Line:   37,
+																		Line:   47,
 																	},
 																	File:   "sensu.flux",
 																	Source: "v: checkName",
 																	Start: ast.Position{
 																		Column: 35,
-																		Line:   37,
+																		Line:   47,
 																	},
 																},
 															},
@@ -1351,13 +1351,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 36,
-																			Line:   37,
+																			Line:   47,
 																		},
 																		File:   "sensu.flux",
 																		Source: "v",
 																		Start: ast.Position{
 																			Column: 35,
-																			Line:   37,
+																			Line:   47,
 																		},
 																	},
 																},
@@ -1371,13 +1371,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 47,
-																			Line:   37,
+																			Line:   47,
 																		},
 																		File:   "sensu.flux",
 																		Source: "checkName",
 																		Start: ast.Position{
 																			Column: 38,
-																			Line:   37,
+																			Line:   47,
 																		},
 																	},
 																},
@@ -1393,13 +1393,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 48,
-																Line:   37,
+																Line:   47,
 															},
 															File:   "sensu.flux",
 															Source: "toSensuName(v: checkName)",
 															Start: ast.Position{
 																Column: 23,
-																Line:   37,
+																Line:   47,
 															},
 														},
 													},
@@ -1410,13 +1410,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   37,
+																	Line:   47,
 																},
 																File:   "sensu.flux",
 																Source: "toSensuName",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   37,
+																	Line:   47,
 																},
 															},
 														},
@@ -1444,13 +1444,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   44,
+									Line:   54,
 								},
 								File:   "sensu.flux",
 								Source: "headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   41,
+									Line:   51,
 								},
 							},
 						},
@@ -1461,13 +1461,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   41,
+										Line:   51,
 									},
 									File:   "sensu.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   41,
+										Line:   51,
 									},
 								},
 							},
@@ -1480,13 +1480,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   44,
+										Line:   54,
 									},
 									File:   "sensu.flux",
 									Source: "{\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Key \" + apiKey,\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   41,
+										Line:   51,
 									},
 								},
 							},
@@ -1498,13 +1498,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   42,
+											Line:   52,
 										},
 										File:   "sensu.flux",
 										Source: "\"Content-Type\": \"application/json; charset=utf-8\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   42,
+											Line:   52,
 										},
 									},
 								},
@@ -1516,13 +1516,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   42,
+												Line:   52,
 											},
 											File:   "sensu.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   42,
+												Line:   52,
 											},
 										},
 									},
@@ -1536,13 +1536,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   42,
+												Line:   52,
 											},
 											File:   "sensu.flux",
 											Source: "\"application/json; charset=utf-8\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   42,
+												Line:   52,
 											},
 										},
 									},
@@ -1555,13 +1555,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 41,
-											Line:   43,
+											Line:   53,
 										},
 										File:   "sensu.flux",
 										Source: "\"Authorization\": \"Key \" + apiKey",
 										Start: ast.Position{
 											Column: 9,
-											Line:   43,
+											Line:   53,
 										},
 									},
 								},
@@ -1573,13 +1573,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   43,
+												Line:   53,
 											},
 											File:   "sensu.flux",
 											Source: "\"Authorization\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   43,
+												Line:   53,
 											},
 										},
 									},
@@ -1593,13 +1593,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   43,
+												Line:   53,
 											},
 											File:   "sensu.flux",
 											Source: "\"Key \" + apiKey",
 											Start: ast.Position{
 												Column: 26,
-												Line:   43,
+												Line:   53,
 											},
 										},
 									},
@@ -1610,13 +1610,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
-													Line:   43,
+													Line:   53,
 												},
 												File:   "sensu.flux",
 												Source: "\"Key \"",
 												Start: ast.Position{
 													Column: 26,
-													Line:   43,
+													Line:   53,
 												},
 											},
 										},
@@ -1630,13 +1630,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   43,
+													Line:   53,
 												},
 												File:   "sensu.flux",
 												Source: "apiKey",
 												Start: ast.Position{
 													Column: 35,
-													Line:   43,
+													Line:   53,
 												},
 											},
 										},
@@ -1654,13 +1654,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   45,
+									Line:   55,
 								},
 								File:   "sensu.flux",
 								Source: "enc = json.encode(v: data)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   45,
+									Line:   55,
 								},
 							},
 						},
@@ -1671,13 +1671,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   45,
+										Line:   55,
 									},
 									File:   "sensu.flux",
 									Source: "enc",
 									Start: ast.Position{
 										Column: 5,
-										Line:   45,
+										Line:   55,
 									},
 								},
 							},
@@ -1691,13 +1691,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   45,
+											Line:   55,
 										},
 										File:   "sensu.flux",
 										Source: "v: data",
 										Start: ast.Position{
 											Column: 23,
-											Line:   45,
+											Line:   55,
 										},
 									},
 								},
@@ -1709,13 +1709,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   45,
+												Line:   55,
 											},
 											File:   "sensu.flux",
 											Source: "v: data",
 											Start: ast.Position{
 												Column: 23,
-												Line:   45,
+												Line:   55,
 											},
 										},
 									},
@@ -1727,13 +1727,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   45,
+													Line:   55,
 												},
 												File:   "sensu.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 23,
-													Line:   45,
+													Line:   55,
 												},
 											},
 										},
@@ -1747,13 +1747,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   45,
+													Line:   55,
 												},
 												File:   "sensu.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 26,
-													Line:   45,
+													Line:   55,
 												},
 											},
 										},
@@ -1769,13 +1769,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   45,
+										Line:   55,
 									},
 									File:   "sensu.flux",
 									Source: "json.encode(v: data)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   45,
+										Line:   55,
 									},
 								},
 							},
@@ -1786,13 +1786,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   45,
+											Line:   55,
 										},
 										File:   "sensu.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 11,
-											Line:   45,
+											Line:   55,
 										},
 									},
 								},
@@ -1804,13 +1804,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   45,
+												Line:   55,
 											},
 											File:   "sensu.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 11,
-												Line:   45,
+												Line:   55,
 											},
 										},
 									},
@@ -1823,13 +1823,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   45,
+												Line:   55,
 											},
 											File:   "sensu.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 16,
-												Line:   45,
+												Line:   55,
 											},
 										},
 									},
@@ -1849,13 +1849,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 112,
-											Line:   47,
+											Line:   57,
 										},
 										File:   "sensu.flux",
 										Source: "headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc",
 										Start: ast.Position{
 											Column: 22,
-											Line:   47,
+											Line:   57,
 										},
 									},
 								},
@@ -1867,13 +1867,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   47,
+												Line:   57,
 											},
 											File:   "sensu.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   47,
+												Line:   57,
 											},
 										},
 									},
@@ -1885,13 +1885,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   47,
+													Line:   57,
 												},
 												File:   "sensu.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   47,
+													Line:   57,
 												},
 											},
 										},
@@ -1905,13 +1905,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   47,
+													Line:   57,
 												},
 												File:   "sensu.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   47,
+													Line:   57,
 												},
 											},
 										},
@@ -1924,13 +1924,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 101,
-												Line:   47,
+												Line:   57,
 											},
 											File:   "sensu.flux",
 											Source: "url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\"",
 											Start: ast.Position{
 												Column: 40,
-												Line:   47,
+												Line:   57,
 											},
 										},
 									},
@@ -1942,13 +1942,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   47,
+													Line:   57,
 												},
 												File:   "sensu.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   47,
+													Line:   57,
 												},
 											},
 										},
@@ -1962,13 +1962,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 101,
-													Line:   47,
+													Line:   57,
 												},
 												File:   "sensu.flux",
 												Source: "url + \"/api/core/v2/namespaces/\" + namespace + \"/events\"",
 												Start: ast.Position{
 													Column: 45,
-													Line:   47,
+													Line:   57,
 												},
 											},
 										},
@@ -1979,13 +1979,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 89,
-														Line:   47,
+														Line:   57,
 													},
 													File:   "sensu.flux",
 													Source: "url + \"/api/core/v2/namespaces/\" + namespace",
 													Start: ast.Position{
 														Column: 45,
-														Line:   47,
+														Line:   57,
 													},
 												},
 											},
@@ -1996,13 +1996,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 77,
-															Line:   47,
+															Line:   57,
 														},
 														File:   "sensu.flux",
 														Source: "url + \"/api/core/v2/namespaces/\"",
 														Start: ast.Position{
 															Column: 45,
-															Line:   47,
+															Line:   57,
 														},
 													},
 												},
@@ -2013,13 +2013,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 48,
-																Line:   47,
+																Line:   57,
 															},
 															File:   "sensu.flux",
 															Source: "url",
 															Start: ast.Position{
 																Column: 45,
-																Line:   47,
+																Line:   57,
 															},
 														},
 													},
@@ -2033,13 +2033,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 77,
-																Line:   47,
+																Line:   57,
 															},
 															File:   "sensu.flux",
 															Source: "\"/api/core/v2/namespaces/\"",
 															Start: ast.Position{
 																Column: 51,
-																Line:   47,
+																Line:   57,
 															},
 														},
 													},
@@ -2054,13 +2054,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 89,
-															Line:   47,
+															Line:   57,
 														},
 														File:   "sensu.flux",
 														Source: "namespace",
 														Start: ast.Position{
 															Column: 80,
-															Line:   47,
+															Line:   57,
 														},
 													},
 												},
@@ -2075,13 +2075,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 101,
-														Line:   47,
+														Line:   57,
 													},
 													File:   "sensu.flux",
 													Source: "\"/events\"",
 													Start: ast.Position{
 														Column: 92,
-														Line:   47,
+														Line:   57,
 													},
 												},
 											},
@@ -2095,13 +2095,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 112,
-												Line:   47,
+												Line:   57,
 											},
 											File:   "sensu.flux",
 											Source: "data: enc",
 											Start: ast.Position{
 												Column: 103,
-												Line:   47,
+												Line:   57,
 											},
 										},
 									},
@@ -2113,13 +2113,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 107,
-													Line:   47,
+													Line:   57,
 												},
 												File:   "sensu.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 103,
-													Line:   47,
+													Line:   57,
 												},
 											},
 										},
@@ -2133,13 +2133,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 112,
-													Line:   47,
+													Line:   57,
 												},
 												File:   "sensu.flux",
 												Source: "enc",
 												Start: ast.Position{
 													Column: 109,
-													Line:   47,
+													Line:   57,
 												},
 											},
 										},
@@ -2155,13 +2155,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 113,
-										Line:   47,
+										Line:   57,
 									},
 									File:   "sensu.flux",
 									Source: "http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   47,
+										Line:   57,
 									},
 								},
 							},
@@ -2172,13 +2172,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   47,
+											Line:   57,
 										},
 										File:   "sensu.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   47,
+											Line:   57,
 										},
 									},
 								},
@@ -2190,13 +2190,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   47,
+												Line:   57,
 											},
 											File:   "sensu.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   47,
+												Line:   57,
 											},
 										},
 									},
@@ -2209,13 +2209,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   47,
+												Line:   57,
 											},
 											File:   "sensu.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   47,
+												Line:   57,
 											},
 										},
 									},
@@ -2232,13 +2232,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 113,
-									Line:   47,
+									Line:   57,
 								},
 								File:   "sensu.flux",
 								Source: "return http.post(headers: headers, url: url + \"/api/core/v2/namespaces/\" + namespace + \"/events\", data: enc)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   47,
+									Line:   57,
 								},
 							},
 						},
@@ -2253,14 +2253,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 13,
-								Line:   21,
+								Column: 12,
+								Line:   22,
 							},
 							File:   "sensu.flux",
 							Source: "url",
 							Start: ast.Position{
-								Column: 10,
-								Line:   21,
+								Column: 9,
+								Line:   22,
 							},
 						},
 					},
@@ -2271,14 +2271,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
-									Line:   21,
+									Column: 12,
+									Line:   22,
 								},
 								File:   "sensu.flux",
 								Source: "url",
 								Start: ast.Position{
-									Column: 10,
-									Line:   21,
+									Column: 9,
+									Line:   22,
 								},
 							},
 						},
@@ -2292,14 +2292,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 21,
-								Line:   21,
+								Column: 15,
+								Line:   23,
 							},
 							File:   "sensu.flux",
 							Source: "apiKey",
 							Start: ast.Position{
-								Column: 15,
-								Line:   21,
+								Column: 9,
+								Line:   23,
 							},
 						},
 					},
@@ -2310,14 +2310,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 21,
-									Line:   21,
+									Column: 15,
+									Line:   23,
 								},
 								File:   "sensu.flux",
 								Source: "apiKey",
 								Start: ast.Position{
-									Column: 15,
-									Line:   21,
+									Column: 9,
+									Line:   23,
 								},
 							},
 						},
@@ -2331,14 +2331,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 32,
-								Line:   21,
+								Column: 18,
+								Line:   24,
 							},
 							File:   "sensu.flux",
 							Source: "checkName",
 							Start: ast.Position{
-								Column: 23,
-								Line:   21,
+								Column: 9,
+								Line:   24,
 							},
 						},
 					},
@@ -2349,14 +2349,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 32,
-									Line:   21,
+									Column: 18,
+									Line:   24,
 								},
 								File:   "sensu.flux",
 								Source: "checkName",
 								Start: ast.Position{
-									Column: 23,
-									Line:   21,
+									Column: 9,
+									Line:   24,
 								},
 							},
 						},
@@ -2370,14 +2370,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 38,
-								Line:   21,
+								Column: 13,
+								Line:   25,
 							},
 							File:   "sensu.flux",
 							Source: "text",
 							Start: ast.Position{
-								Column: 34,
-								Line:   21,
+								Column: 9,
+								Line:   25,
 							},
 						},
 					},
@@ -2388,14 +2388,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 38,
-									Line:   21,
+									Column: 13,
+									Line:   25,
 								},
 								File:   "sensu.flux",
 								Source: "text",
 								Start: ast.Position{
-									Column: 34,
-									Line:   21,
+									Column: 9,
+									Line:   25,
 								},
 							},
 						},
@@ -2409,14 +2409,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 51,
-								Line:   21,
+								Column: 20,
+								Line:   26,
 							},
 							File:   "sensu.flux",
 							Source: "handlers=[]",
 							Start: ast.Position{
-								Column: 40,
-								Line:   21,
+								Column: 9,
+								Line:   26,
 							},
 						},
 					},
@@ -2427,14 +2427,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 48,
-									Line:   21,
+									Column: 17,
+									Line:   26,
 								},
 								File:   "sensu.flux",
 								Source: "handlers",
 								Start: ast.Position{
-									Column: 40,
-									Line:   21,
+									Column: 9,
+									Line:   26,
 								},
 							},
 						},
@@ -2447,14 +2447,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 51,
-									Line:   21,
+									Column: 20,
+									Line:   26,
 								},
 								File:   "sensu.flux",
 								Source: "[]",
 								Start: ast.Position{
-									Column: 49,
-									Line:   21,
+									Column: 18,
+									Line:   26,
 								},
 							},
 						},
@@ -2468,14 +2468,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 61,
-								Line:   21,
+								Column: 17,
+								Line:   27,
 							},
 							File:   "sensu.flux",
 							Source: "status=0",
 							Start: ast.Position{
-								Column: 53,
-								Line:   21,
+								Column: 9,
+								Line:   27,
 							},
 						},
 					},
@@ -2486,14 +2486,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 59,
-									Line:   21,
+									Column: 15,
+									Line:   27,
 								},
 								File:   "sensu.flux",
 								Source: "status",
 								Start: ast.Position{
-									Column: 53,
-									Line:   21,
+									Column: 9,
+									Line:   27,
 								},
 							},
 						},
@@ -2506,14 +2506,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 61,
-									Line:   21,
+									Column: 17,
+									Line:   27,
 								},
 								File:   "sensu.flux",
 								Source: "0",
 								Start: ast.Position{
-									Column: 60,
-									Line:   21,
+									Column: 16,
+									Line:   27,
 								},
 							},
 						},
@@ -2525,14 +2525,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 71,
-								Line:   21,
+								Column: 17,
+								Line:   28,
 							},
 							File:   "sensu.flux",
 							Source: "state=\"\"",
 							Start: ast.Position{
-								Column: 63,
-								Line:   21,
+								Column: 9,
+								Line:   28,
 							},
 						},
 					},
@@ -2543,14 +2543,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 68,
-									Line:   21,
+									Column: 14,
+									Line:   28,
 								},
 								File:   "sensu.flux",
 								Source: "state",
 								Start: ast.Position{
-									Column: 63,
-									Line:   21,
+									Column: 9,
+									Line:   28,
 								},
 							},
 						},
@@ -2563,14 +2563,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 71,
-									Line:   21,
+									Column: 17,
+									Line:   28,
 								},
 								File:   "sensu.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 69,
-									Line:   21,
+									Column: 15,
+									Line:   28,
 								},
 							},
 						},
@@ -2582,14 +2582,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 92,
-								Line:   21,
+								Column: 28,
+								Line:   29,
 							},
 							File:   "sensu.flux",
 							Source: "namespace=\"default\"",
 							Start: ast.Position{
-								Column: 73,
-								Line:   21,
+								Column: 9,
+								Line:   29,
 							},
 						},
 					},
@@ -2600,14 +2600,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 82,
-									Line:   21,
+									Column: 18,
+									Line:   29,
 								},
 								File:   "sensu.flux",
 								Source: "namespace",
 								Start: ast.Position{
-									Column: 73,
-									Line:   21,
+									Column: 9,
+									Line:   29,
 								},
 							},
 						},
@@ -2620,14 +2620,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 92,
-									Line:   21,
+									Column: 28,
+									Line:   29,
 								},
 								File:   "sensu.flux",
 								Source: "\"default\"",
 								Start: ast.Position{
-									Column: 83,
-									Line:   21,
+									Column: 19,
+									Line:   29,
 								},
 							},
 						},
@@ -2639,14 +2639,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 115,
-								Line:   21,
+								Column: 30,
+								Line:   30,
 							},
 							File:   "sensu.flux",
 							Source: "entityName=\"influxdb\"",
 							Start: ast.Position{
-								Column: 94,
-								Line:   21,
+								Column: 9,
+								Line:   30,
 							},
 						},
 					},
@@ -2657,14 +2657,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 104,
-									Line:   21,
+									Column: 19,
+									Line:   30,
 								},
 								File:   "sensu.flux",
 								Source: "entityName",
 								Start: ast.Position{
-									Column: 94,
-									Line:   21,
+									Column: 9,
+									Line:   30,
 								},
 							},
 						},
@@ -2677,14 +2677,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 115,
-									Line:   21,
+									Column: 30,
+									Line:   30,
 								},
 								File:   "sensu.flux",
 								Source: "\"influxdb\"",
 								Start: ast.Position{
-									Column: 105,
-									Line:   21,
+									Column: 20,
+									Line:   30,
 								},
 							},
 						},
@@ -2700,13 +2700,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 6,
-						Line:   78,
+						Line:   94,
 					},
 					File:   "sensu.flux",
-					Source: "endpoint = (url, apiKey, handlers=[], namespace=\"default\", entityName=\"influxdb\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+					Source: "endpoint = (\n        url,\n        apiKey,\n        handlers=[],\n        namespace=\"default\",\n        entityName=\"influxdb\",\n) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   58,
+						Line:   68,
 					},
 				},
 			},
@@ -2717,13 +2717,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   58,
+							Line:   68,
 						},
 						File:   "sensu.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   58,
+							Line:   68,
 						},
 					},
 				},
@@ -2737,13 +2737,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   78,
+							Line:   94,
 						},
 						File:   "sensu.flux",
-						Source: "(url, apiKey, handlers=[], namespace=\"default\", entityName=\"influxdb\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+						Source: "(\n        url,\n        apiKey,\n        handlers=[],\n        namespace=\"default\",\n        entityName=\"influxdb\",\n) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   58,
+							Line:   68,
 						},
 					},
 				},
@@ -2755,13 +2755,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 6,
-								Line:   78,
+								Line:   94,
 							},
 							File:   "sensu.flux",
 							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
-								Column: 86,
-								Line:   58,
+								Column: 6,
+								Line:   74,
 							},
 						},
 					},
@@ -2773,13 +2773,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   78,
+									Line:   94,
 								},
 								File:   "sensu.flux",
 								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
-									Column: 97,
-									Line:   58,
+									Column: 17,
+									Line:   74,
 								},
 							},
 						},
@@ -2790,14 +2790,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 118,
-											Line:   58,
+											Column: 38,
+											Line:   74,
 										},
 										File:   "sensu.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 112,
-											Line:   58,
+											Column: 32,
+											Line:   74,
 										},
 									},
 								},
@@ -2809,13 +2809,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   78,
+										Line:   94,
 									},
 									File:   "sensu.flux",
 									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
-										Column: 112,
-										Line:   58,
+										Column: 32,
+										Line:   74,
 									},
 								},
 							},
@@ -2827,13 +2827,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   77,
+												Line:   93,
 											},
 											File:   "sensu.flux",
 											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
 												Column: 9,
-												Line:   60,
+												Line:   76,
 											},
 										},
 									},
@@ -2845,13 +2845,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   77,
+													Line:   93,
 												},
 												File:   "sensu.flux",
 												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
 													Column: 9,
-													Line:   60,
+													Line:   76,
 												},
 											},
 										},
@@ -2863,13 +2863,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   60,
+														Line:   76,
 													},
 													File:   "sensu.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 9,
-														Line:   60,
+														Line:   76,
 													},
 												},
 											},
@@ -2884,13 +2884,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 10,
-														Line:   77,
+														Line:   93,
 													},
 													File:   "sensu.flux",
 													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
 														Column: 13,
-														Line:   60,
+														Line:   76,
 													},
 												},
 											},
@@ -2901,13 +2901,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 10,
-															Line:   77,
+															Line:   93,
 														},
 														File:   "sensu.flux",
 														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
 															Column: 20,
-															Line:   60,
+															Line:   76,
 														},
 													},
 												},
@@ -2918,13 +2918,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   61,
+																Line:   77,
 															},
 															File:   "sensu.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 13,
-																Line:   61,
+																Line:   77,
 															},
 														},
 													},
@@ -2935,13 +2935,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 16,
-																	Line:   61,
+																	Line:   77,
 																},
 																File:   "sensu.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   61,
+																	Line:   77,
 																},
 															},
 														},
@@ -2955,13 +2955,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 29,
-																		Line:   61,
+																		Line:   77,
 																	},
 																	File:   "sensu.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   61,
+																		Line:   77,
 																	},
 																},
 															},
@@ -2973,13 +2973,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 29,
-																			Line:   61,
+																			Line:   77,
 																		},
 																		File:   "sensu.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 25,
-																			Line:   61,
+																			Line:   77,
 																		},
 																	},
 																},
@@ -2991,13 +2991,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 26,
-																				Line:   61,
+																				Line:   77,
 																			},
 																			File:   "sensu.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 25,
-																				Line:   61,
+																				Line:   77,
 																			},
 																		},
 																	},
@@ -3011,13 +3011,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 29,
-																				Line:   61,
+																				Line:   77,
 																			},
 																			File:   "sensu.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 28,
-																				Line:   61,
+																				Line:   77,
 																			},
 																		},
 																	},
@@ -3033,13 +3033,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   61,
+																	Line:   77,
 																},
 																File:   "sensu.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   61,
+																	Line:   77,
 																},
 															},
 														},
@@ -3050,13 +3050,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 24,
-																		Line:   61,
+																		Line:   77,
 																	},
 																	File:   "sensu.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 19,
-																		Line:   61,
+																		Line:   77,
 																	},
 																},
 															},
@@ -3073,13 +3073,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 14,
-																	Line:   76,
+																	Line:   92,
 																},
 																File:   "sensu.flux",
 																Source: "{r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   63,
+																	Line:   79,
 																},
 															},
 														},
@@ -3091,13 +3091,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 18,
-																		Line:   75,
+																		Line:   91,
 																	},
 																	File:   "sensu.flux",
 																	Source: "_sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                )",
 																	Start: ast.Position{
 																		Column: 17,
-																		Line:   64,
+																		Line:   80,
 																	},
 																},
 															},
@@ -3109,13 +3109,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 22,
-																			Line:   64,
+																			Line:   80,
 																		},
 																		File:   "sensu.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 17,
-																			Line:   64,
+																			Line:   80,
 																		},
 																	},
 																},
@@ -3130,13 +3130,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 28,
-																				Line:   74,
+																				Line:   90,
 																			},
 																			File:   "sensu.flux",
 																			Source: "v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100",
 																			Start: ast.Position{
 																				Column: 21,
-																				Line:   65,
+																				Line:   81,
 																			},
 																		},
 																	},
@@ -3148,13 +3148,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   74,
+																					Line:   90,
 																				},
 																				File:   "sensu.flux",
 																				Source: "v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100",
 																				Start: ast.Position{
 																					Column: 21,
-																					Line:   65,
+																					Line:   81,
 																				},
 																			},
 																		},
@@ -3166,13 +3166,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 22,
-																						Line:   65,
+																						Line:   81,
 																					},
 																					File:   "sensu.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   65,
+																						Line:   81,
 																					},
 																				},
 																			},
@@ -3186,13 +3186,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 28,
-																						Line:   74,
+																						Line:   90,
 																					},
 																					File:   "sensu.flux",
 																					Source: "2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100",
 																					Start: ast.Position{
 																						Column: 24,
-																						Line:   65,
+																						Line:   81,
 																					},
 																				},
 																			},
@@ -3203,13 +3203,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 25,
-																							Line:   65,
+																							Line:   81,
 																						},
 																						File:   "sensu.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 24,
-																							Line:   65,
+																							Line:   81,
 																						},
 																					},
 																				},
@@ -3223,13 +3223,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 28,
-																							Line:   74,
+																							Line:   90,
 																						},
 																						File:   "sensu.flux",
 																						Source: "event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100",
 																						Start: ast.Position{
 																							Column: 29,
-																							Line:   65,
+																							Line:   81,
 																						},
 																					},
 																				},
@@ -3241,13 +3241,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 47,
-																									Line:   73,
+																									Line:   89,
 																								},
 																								File:   "sensu.flux",
 																								Source: "url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName",
 																								Start: ast.Position{
 																									Column: 25,
-																									Line:   66,
+																									Line:   82,
 																								},
 																							},
 																						},
@@ -3259,13 +3259,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 33,
-																										Line:   66,
+																										Line:   82,
 																									},
 																									File:   "sensu.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   66,
+																										Line:   82,
 																									},
 																								},
 																							},
@@ -3277,13 +3277,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 28,
-																											Line:   66,
+																											Line:   82,
 																										},
 																										File:   "sensu.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   66,
+																											Line:   82,
 																										},
 																									},
 																								},
@@ -3297,13 +3297,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   66,
+																											Line:   82,
 																										},
 																										File:   "sensu.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 30,
-																											Line:   66,
+																											Line:   82,
 																										},
 																									},
 																								},
@@ -3316,13 +3316,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 39,
-																										Line:   67,
+																										Line:   83,
 																									},
 																									File:   "sensu.flux",
 																									Source: "apiKey: apiKey",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   67,
+																										Line:   83,
 																									},
 																								},
 																							},
@@ -3334,13 +3334,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   67,
+																											Line:   83,
 																										},
 																										File:   "sensu.flux",
 																										Source: "apiKey",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   67,
+																											Line:   83,
 																										},
 																									},
 																								},
@@ -3354,13 +3354,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 39,
-																											Line:   67,
+																											Line:   83,
 																										},
 																										File:   "sensu.flux",
 																										Source: "apiKey",
 																										Start: ast.Position{
 																											Column: 33,
-																											Line:   67,
+																											Line:   83,
 																										},
 																									},
 																								},
@@ -3373,13 +3373,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 49,
-																										Line:   68,
+																										Line:   84,
 																									},
 																									File:   "sensu.flux",
 																									Source: "checkName: obj.checkName",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   68,
+																										Line:   84,
 																									},
 																								},
 																							},
@@ -3391,13 +3391,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 34,
-																											Line:   68,
+																											Line:   84,
 																										},
 																										File:   "sensu.flux",
 																										Source: "checkName",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   68,
+																											Line:   84,
 																										},
 																									},
 																								},
@@ -3411,13 +3411,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 49,
-																											Line:   68,
+																											Line:   84,
 																										},
 																										File:   "sensu.flux",
 																										Source: "obj.checkName",
 																										Start: ast.Position{
 																											Column: 36,
-																											Line:   68,
+																											Line:   84,
 																										},
 																									},
 																								},
@@ -3429,13 +3429,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   68,
+																												Line:   84,
 																											},
 																											File:   "sensu.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 36,
-																												Line:   68,
+																												Line:   84,
 																											},
 																										},
 																									},
@@ -3448,13 +3448,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 49,
-																												Line:   68,
+																												Line:   84,
 																											},
 																											File:   "sensu.flux",
 																											Source: "checkName",
 																											Start: ast.Position{
 																												Column: 40,
-																												Line:   68,
+																												Line:   84,
 																											},
 																										},
 																									},
@@ -3469,13 +3469,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 39,
-																										Line:   69,
+																										Line:   85,
 																									},
 																									File:   "sensu.flux",
 																									Source: "text: obj.text",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   69,
+																										Line:   85,
 																									},
 																								},
 																							},
@@ -3487,13 +3487,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   69,
+																											Line:   85,
 																										},
 																										File:   "sensu.flux",
 																										Source: "text",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   69,
+																											Line:   85,
 																										},
 																									},
 																								},
@@ -3507,13 +3507,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 39,
-																											Line:   69,
+																											Line:   85,
 																										},
 																										File:   "sensu.flux",
 																										Source: "obj.text",
 																										Start: ast.Position{
 																											Column: 31,
-																											Line:   69,
+																											Line:   85,
 																										},
 																									},
 																								},
@@ -3525,13 +3525,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 34,
-																												Line:   69,
+																												Line:   85,
 																											},
 																											File:   "sensu.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 31,
-																												Line:   69,
+																												Line:   85,
 																											},
 																										},
 																									},
@@ -3544,13 +3544,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   69,
+																												Line:   85,
 																											},
 																											File:   "sensu.flux",
 																											Source: "text",
 																											Start: ast.Position{
 																												Column: 35,
-																												Line:   69,
+																												Line:   85,
 																											},
 																										},
 																									},
@@ -3565,13 +3565,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 43,
-																										Line:   70,
+																										Line:   86,
 																									},
 																									File:   "sensu.flux",
 																									Source: "handlers: handlers",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   70,
+																										Line:   86,
 																									},
 																								},
 																							},
@@ -3583,13 +3583,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   70,
+																											Line:   86,
 																										},
 																										File:   "sensu.flux",
 																										Source: "handlers",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   70,
+																											Line:   86,
 																										},
 																									},
 																								},
@@ -3603,13 +3603,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   70,
+																											Line:   86,
 																										},
 																										File:   "sensu.flux",
 																										Source: "handlers",
 																										Start: ast.Position{
 																											Column: 35,
-																											Line:   70,
+																											Line:   86,
 																										},
 																									},
 																								},
@@ -3622,13 +3622,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 43,
-																										Line:   71,
+																										Line:   87,
 																									},
 																									File:   "sensu.flux",
 																									Source: "status: obj.status",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   71,
+																										Line:   87,
 																									},
 																								},
 																							},
@@ -3640,13 +3640,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   71,
+																											Line:   87,
 																										},
 																										File:   "sensu.flux",
 																										Source: "status",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   71,
+																											Line:   87,
 																										},
 																									},
 																								},
@@ -3660,13 +3660,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   71,
+																											Line:   87,
 																										},
 																										File:   "sensu.flux",
 																										Source: "obj.status",
 																										Start: ast.Position{
 																											Column: 33,
-																											Line:   71,
+																											Line:   87,
 																										},
 																									},
 																								},
@@ -3678,13 +3678,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 36,
-																												Line:   71,
+																												Line:   87,
 																											},
 																											File:   "sensu.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 33,
-																												Line:   71,
+																												Line:   87,
 																											},
 																										},
 																									},
@@ -3697,13 +3697,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 43,
-																												Line:   71,
+																												Line:   87,
 																											},
 																											File:   "sensu.flux",
 																											Source: "status",
 																											Start: ast.Position{
 																												Column: 37,
-																												Line:   71,
+																												Line:   87,
 																											},
 																										},
 																									},
@@ -3718,13 +3718,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 45,
-																										Line:   72,
+																										Line:   88,
 																									},
 																									File:   "sensu.flux",
 																									Source: "namespace: namespace",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   72,
+																										Line:   88,
 																									},
 																								},
 																							},
@@ -3736,13 +3736,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 34,
-																											Line:   72,
+																											Line:   88,
 																										},
 																										File:   "sensu.flux",
 																										Source: "namespace",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   72,
+																											Line:   88,
 																										},
 																									},
 																								},
@@ -3756,13 +3756,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 45,
-																											Line:   72,
+																											Line:   88,
 																										},
 																										File:   "sensu.flux",
 																										Source: "namespace",
 																										Start: ast.Position{
 																											Column: 36,
-																											Line:   72,
+																											Line:   88,
 																										},
 																									},
 																								},
@@ -3775,13 +3775,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 47,
-																										Line:   73,
+																										Line:   89,
 																									},
 																									File:   "sensu.flux",
 																									Source: "entityName: entityName",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   73,
+																										Line:   89,
 																									},
 																								},
 																							},
@@ -3793,13 +3793,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 35,
-																											Line:   73,
+																											Line:   89,
 																										},
 																										File:   "sensu.flux",
 																										Source: "entityName",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   73,
+																											Line:   89,
 																										},
 																									},
 																								},
@@ -3813,13 +3813,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 47,
-																											Line:   73,
+																											Line:   89,
 																										},
 																										File:   "sensu.flux",
 																										Source: "entityName",
 																										Start: ast.Position{
 																											Column: 37,
-																											Line:   73,
+																											Line:   89,
 																										},
 																									},
 																								},
@@ -3835,13 +3835,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 22,
-																								Line:   74,
+																								Line:   90,
 																							},
 																							File:   "sensu.flux",
 																							Source: "event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    )",
 																							Start: ast.Position{
 																								Column: 29,
-																								Line:   65,
+																								Line:   81,
 																							},
 																						},
 																					},
@@ -3852,13 +3852,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 34,
-																									Line:   65,
+																									Line:   81,
 																								},
 																								File:   "sensu.flux",
 																								Source: "event",
 																								Start: ast.Position{
 																									Column: 29,
-																									Line:   65,
+																									Line:   81,
 																								},
 																							},
 																						},
@@ -3875,13 +3875,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 28,
-																								Line:   74,
+																								Line:   90,
 																							},
 																							File:   "sensu.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 25,
-																								Line:   74,
+																								Line:   90,
 																							},
 																						},
 																					},
@@ -3899,13 +3899,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   75,
+																			Line:   91,
 																		},
 																		File:   "sensu.flux",
 																		Source: "string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                )",
 																		Start: ast.Position{
 																			Column: 24,
-																			Line:   64,
+																			Line:   80,
 																		},
 																	},
 																},
@@ -3916,13 +3916,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   64,
+																				Line:   80,
 																			},
 																			File:   "sensu.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   64,
+																				Line:   80,
 																			},
 																		},
 																	},
@@ -3940,13 +3940,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 22,
-																		Line:   63,
+																		Line:   79,
 																	},
 																	File:   "sensu.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 21,
-																		Line:   63,
+																		Line:   79,
 																	},
 																},
 															},
@@ -3959,13 +3959,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 14,
-																Line:   76,
+																Line:   92,
 															},
 															File:   "sensu.flux",
 															Source: "return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
 																Column: 13,
-																Line:   63,
+																Line:   79,
 															},
 														},
 													},
@@ -3981,13 +3981,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   60,
+															Line:   76,
 														},
 														File:   "sensu.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   60,
+															Line:   76,
 														},
 													},
 												},
@@ -3999,13 +3999,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   60,
+																Line:   76,
 															},
 															File:   "sensu.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   60,
+																Line:   76,
 															},
 														},
 													},
@@ -4026,13 +4026,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   78,
+											Line:   94,
 										},
 										File:   "sensu.flux",
 										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == event(\n                        url: url,\n                        apiKey: apiKey,\n                        checkName: obj.checkName,\n                        text: obj.text,\n                        handlers: handlers,\n                        status: obj.status,\n                        namespace: namespace,\n                        entityName: entityName,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   59,
+											Line:   75,
 										},
 									},
 								},
@@ -4043,13 +4043,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   59,
+												Line:   75,
 											},
 											File:   "sensu.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   59,
+												Line:   75,
 											},
 										},
 									},
@@ -4066,14 +4066,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 107,
-										Line:   58,
+										Column: 27,
+										Line:   74,
 									},
 									File:   "sensu.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
-										Column: 98,
-										Line:   58,
+										Column: 18,
+										Line:   74,
 									},
 								},
 							},
@@ -4084,14 +4084,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 104,
-											Line:   58,
+											Column: 24,
+											Line:   74,
 										},
 										File:   "sensu.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 98,
-											Line:   58,
+											Column: 18,
+											Line:   74,
 										},
 									},
 								},
@@ -4103,14 +4103,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 107,
-										Line:   58,
+										Column: 27,
+										Line:   74,
 									},
 									File:   "sensu.flux",
 									Source: "<-",
 									Start: ast.Position{
-										Column: 105,
-										Line:   58,
+										Column: 25,
+										Line:   74,
 									},
 								},
 							}},
@@ -4124,14 +4124,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 92,
-									Line:   58,
+									Column: 12,
+									Line:   74,
 								},
 								File:   "sensu.flux",
 								Source: "mapFn",
 								Start: ast.Position{
-									Column: 87,
-									Line:   58,
+									Column: 7,
+									Line:   74,
 								},
 							},
 						},
@@ -4142,14 +4142,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 92,
-										Line:   58,
+										Column: 12,
+										Line:   74,
 									},
 									File:   "sensu.flux",
 									Source: "mapFn",
 									Start: ast.Position{
-										Column: 87,
-										Line:   58,
+										Column: 7,
+										Line:   74,
 									},
 								},
 							},
@@ -4167,14 +4167,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
-								Line:   58,
+								Column: 12,
+								Line:   69,
 							},
 							File:   "sensu.flux",
 							Source: "url",
 							Start: ast.Position{
-								Column: 13,
-								Line:   58,
+								Column: 9,
+								Line:   69,
 							},
 						},
 					},
@@ -4185,14 +4185,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
-									Line:   58,
+									Column: 12,
+									Line:   69,
 								},
 								File:   "sensu.flux",
 								Source: "url",
 								Start: ast.Position{
-									Column: 13,
-									Line:   58,
+									Column: 9,
+									Line:   69,
 								},
 							},
 						},
@@ -4206,14 +4206,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 24,
-								Line:   58,
+								Column: 15,
+								Line:   70,
 							},
 							File:   "sensu.flux",
 							Source: "apiKey",
 							Start: ast.Position{
-								Column: 18,
-								Line:   58,
+								Column: 9,
+								Line:   70,
 							},
 						},
 					},
@@ -4224,14 +4224,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 24,
-									Line:   58,
+									Column: 15,
+									Line:   70,
 								},
 								File:   "sensu.flux",
 								Source: "apiKey",
 								Start: ast.Position{
-									Column: 18,
-									Line:   58,
+									Column: 9,
+									Line:   70,
 								},
 							},
 						},
@@ -4245,14 +4245,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 37,
-								Line:   58,
+								Column: 20,
+								Line:   71,
 							},
 							File:   "sensu.flux",
 							Source: "handlers=[]",
 							Start: ast.Position{
-								Column: 26,
-								Line:   58,
+								Column: 9,
+								Line:   71,
 							},
 						},
 					},
@@ -4263,14 +4263,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 34,
-									Line:   58,
+									Column: 17,
+									Line:   71,
 								},
 								File:   "sensu.flux",
 								Source: "handlers",
 								Start: ast.Position{
-									Column: 26,
-									Line:   58,
+									Column: 9,
+									Line:   71,
 								},
 							},
 						},
@@ -4283,14 +4283,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 37,
-									Line:   58,
+									Column: 20,
+									Line:   71,
 								},
 								File:   "sensu.flux",
 								Source: "[]",
 								Start: ast.Position{
-									Column: 35,
-									Line:   58,
+									Column: 18,
+									Line:   71,
 								},
 							},
 						},
@@ -4304,14 +4304,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 58,
-								Line:   58,
+								Column: 28,
+								Line:   72,
 							},
 							File:   "sensu.flux",
 							Source: "namespace=\"default\"",
 							Start: ast.Position{
-								Column: 39,
-								Line:   58,
+								Column: 9,
+								Line:   72,
 							},
 						},
 					},
@@ -4322,14 +4322,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 48,
-									Line:   58,
+									Column: 18,
+									Line:   72,
 								},
 								File:   "sensu.flux",
 								Source: "namespace",
 								Start: ast.Position{
-									Column: 39,
-									Line:   58,
+									Column: 9,
+									Line:   72,
 								},
 							},
 						},
@@ -4342,14 +4342,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 58,
-									Line:   58,
+									Column: 28,
+									Line:   72,
 								},
 								File:   "sensu.flux",
 								Source: "\"default\"",
 								Start: ast.Position{
-									Column: 49,
-									Line:   58,
+									Column: 19,
+									Line:   72,
 								},
 							},
 						},
@@ -4361,14 +4361,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 81,
-								Line:   58,
+								Column: 30,
+								Line:   73,
 							},
 							File:   "sensu.flux",
 							Source: "entityName=\"influxdb\"",
 							Start: ast.Position{
-								Column: 60,
-								Line:   58,
+								Column: 9,
+								Line:   73,
 							},
 						},
 					},
@@ -4379,14 +4379,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 70,
-									Line:   58,
+									Column: 19,
+									Line:   73,
 								},
 								File:   "sensu.flux",
 								Source: "entityName",
 								Start: ast.Position{
-									Column: 60,
-									Line:   58,
+									Column: 9,
+									Line:   73,
 								},
 							},
 						},
@@ -4399,14 +4399,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 81,
-									Line:   58,
+									Column: 30,
+									Line:   73,
 								},
 								File:   "sensu.flux",
 								Source: "\"influxdb\"",
 								Start: ast.Position{
-									Column: 71,
-									Line:   58,
+									Column: 20,
+									Line:   73,
 								},
 							},
 						},

@@ -33,4 +33,3 @@ test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadM
 // stream 
 //  |eval(lambda: 2 * _value)
 //.as('_newValue')
-

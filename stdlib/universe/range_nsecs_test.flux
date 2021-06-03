@@ -182,7 +182,8 @@ testcase range_nsecs_group_last {
             {_value: 5.0, _time: 2021-01-01T00:00:01.000000011Z, section: "1a", _field: "foo"},
             {_value: 1.2, _time: 2021-01-01T00:00:01.000000022Z, section: "2b", _field: "foo"},
         ],
-    ) |> group(columns: ["_field", "_measurement", "section"])
+    )
+        |> group(columns: ["_field", "_measurement", "section"])
 
     got = input
         |> range(start: 2021-01-01T00:00:01.000000001Z, stop: 2021-01-01T00:00:01.000000024Z)
@@ -250,7 +251,8 @@ testcase range_nsecs_window_first {
             {_time: 2021-01-01T00:00:01.000000011Z, _value: 5.0, section: "1a"},
             {_time: 2021-01-01T00:00:01.000000022Z, _value: 1.2, section: "1a"},
         ],
-    ) |> group(columns: ["_field", "_measurement", "section"])
+    )
+        |> group(columns: ["_field", "_measurement", "section"])
 
     got = input
         |> range(start: 2021-01-01T00:00:01.000000001Z, stop: 2021-01-01T00:00:01.000000031Z)
@@ -280,15 +282,12 @@ testcase range_nsecs_window_min {
     want = array.from(
         rows: [
             {_time: 2021-01-01T00:00:01.000000001Z, _value:   1.0, section: "1a", _field: "foo"},
-            {_time: 2021-01-01T00:00:01.000000024Z, _value:   11.24, section: "1a", _field: "foo"},
-
+            {_time: 2021-01-01T00:00:01.000000024Z, _value: 11.24, section: "1a", _field: "foo"},
             {_time: 2021-01-01T00:00:01.000000011Z, _value:   5.0, section: "1a", _field: "bar"},
-
             {_time: 2021-01-01T00:00:01.000000002Z, _value:   2.0, section: "2b", _field: "foo"},
             {_time: 2021-01-01T00:00:01.000000009Z, _value:   4.0, section: "2b", _field: "bar"},
             {_time: 2021-01-01T00:00:01.000000015Z, _value:   6.0, section: "2b", _field: "bar"},
             {_time: 2021-01-01T00:00:01.000000022Z, _value:   1.2, section: "2b", _field: "bar"},
-
         ],
     )
         |> group(columns: ["_field", "_measurement", "section"])
@@ -321,35 +320,35 @@ testcase range_nsecs_agg_count {
     want = array.from(
         rows: [
             {_time: 2021-01-01T00:00:01.000000005Z, _value: 1, _field: "foo", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000020Z, _value: 1, _field: "foo", section: "1a"},
+            {_time:  2021-01-01T00:00:01.00000002Z, _value: 1, _field: "foo", section: "1a"},
             {_time: 2021-01-01T00:00:01.000000035Z, _value: 1, _field: "foo", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000050Z, _value: 0, _field: "foo", section: "1a"},
-
+            {_time:  2021-01-01T00:00:01.00000005Z, _value: 0, _field: "foo", section: "1a"},
             {_time: 2021-01-01T00:00:01.000000005Z, _value: 0, _field: "bar", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000020Z, _value: 1, _field: "bar", section: "1a"},
+            {_time:  2021-01-01T00:00:01.00000002Z, _value: 1, _field: "bar", section: "1a"},
             {_time: 2021-01-01T00:00:01.000000035Z, _value: 1, _field: "bar", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000050Z, _value: 0, _field: "bar", section: "1a"},
-
+            {_time:  2021-01-01T00:00:01.00000005Z, _value: 0, _field: "bar", section: "1a"},
             {_time: 2021-01-01T00:00:01.000000005Z, _value: 1, _field: "foo", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000020Z, _value: 0, _field: "foo", section: "2b"},
+            {_time:  2021-01-01T00:00:01.00000002Z, _value: 0, _field: "foo", section: "2b"},
             {_time: 2021-01-01T00:00:01.000000035Z, _value: 0, _field: "foo", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000050Z, _value: 0, _field: "foo", section: "2b"},
-            
+            {_time:  2021-01-01T00:00:01.00000005Z, _value: 0, _field: "foo", section: "2b"},
             {_time: 2021-01-01T00:00:01.000000005Z, _value: 0, _field: "bar", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000020Z, _value: 2, _field: "bar", section: "2b"},
+            {_time:  2021-01-01T00:00:01.00000002Z, _value: 2, _field: "bar", section: "2b"},
             {_time: 2021-01-01T00:00:01.000000035Z, _value: 1, _field: "bar", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000050Z, _value: 0, _field: "bar", section: "2b"},
+            {_time:  2021-01-01T00:00:01.00000005Z, _value: 0, _field: "bar", section: "2b"},
         ],
-    ) |> group(columns: ["_field", "_measurement", "section"])
+    )
+        |> group(columns: ["_field", "section"])
 
     got = input
-        |> range(start: 2021-01-01T00:00:01.000000000Z, stop: 2021-01-01T00:00:01.00000005Z)
+        |> range(start: 2021-01-01T00:00:01Z, stop: 2021-01-01T00:00:01.00000005Z)
         |> aggregateWindow(every: 15ns, fn: count)
-        |> drop(columns: [
-            "_start",
-            "_stop",
-            "_measurement",
-        ])
+        |> drop(
+            columns: [
+                "_start",
+                "_stop",
+                "_measurement",
+            ],
+        )
 
     testing.diff(got, want) |> yield()
 }
@@ -369,7 +368,7 @@ testcase range_nsecs_agg_last {
     )
         |> group(columns: ["_field", "_measurement", "section"])
         |> testing.load()
-    
+
     want = array.from(
         rows: [
             {_time: 2021-01-01T00:00:01.000000009Z, _value: 3.0, _field: "foo", section: "1a"},
@@ -377,16 +376,19 @@ testcase range_nsecs_agg_last {
             {_time: 2021-01-01T00:00:01.000000014Z, _value: 4.0, _field: "bar", section: "2b"},
             {_time: 2021-01-01T00:00:01.000000019Z, _value: 6.0, _field: "bar", section: "2b"},
         ],
-    ) |> group(columns: ["_field", "_measurement", "section"])
+    )
+        |> group(columns: ["_field", "_measurement", "section"])
 
     got = input
         |> range(start: 2021-01-01T00:00:01.000000005Z, stop: 2021-01-01T00:00:01.00000002Z)
         |> aggregateWindow(every: 5ns, offset: -1ns, fn: last)
-        |> drop(columns: [
-            "_start",
-            "_stop",
-            "_measurement",
-        ])
+        |> drop(
+            columns: [
+                "_start",
+                "_stop",
+                "_measurement",
+            ],
+        )
 
     testing.diff(got, want) |> yield()
 }

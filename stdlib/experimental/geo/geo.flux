@@ -125,7 +125,15 @@ shapeData = (tables=<-, latField, lonField, level) => tables
 // Filters records by a box, a circle or a polygon area using S2 cell ID tag.
 // It is a coarse filter, as the grid always overlays the region, the result will likely contain records
 // with lat/lon outside the specified region.
-gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {
+gridFilter = (
+        tables=<-,
+        region,
+        minSize=24,
+        maxSize=-1,
+        level=-1,
+        s2cellIDLevel=-1,
+        units=units,
+) => {
     _s2cellIDLevel = if s2cellIDLevel == -1 then
         tables
             |> _detectLevel()
@@ -157,7 +165,15 @@ strictFilter = (tables=<-, region) => tables
 // Two-phase filtering by specified region.
 // Checks to see if data is already pivoted and contains a lat column.
 // Returns pivoted data.
-filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {
+filterRows = (
+        tables=<-,
+        region,
+        minSize=24,
+        maxSize=-1,
+        level=-1,
+        s2cellIDLevel=-1,
+        strict=true,
+) => {
     _columns = tables
         |> columns(column: "_value")
         |> tableFind(fn: (key) => true)

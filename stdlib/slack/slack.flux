@@ -14,7 +14,13 @@ option defaultURL = "https://slack.com/api/chat.postMessage"
 // `channel` - string - Name of channel in which to post the message. No default.
 // `text` - string - The text to display.
 // `color` - string - Color to give message: one of good, warning, and danger, or any hex rgb color value ex. #439FE0.
-message = (url=defaultURL, token="", channel, text, color) => {
+message = (
+        url=defaultURL,
+        token="",
+        channel,
+        text,
+        color,
+) => {
     attachments = [
         {color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]},
     ]

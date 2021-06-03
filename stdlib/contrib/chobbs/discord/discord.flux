@@ -11,7 +11,13 @@ option discordURL = "https://discordapp.com/api/webhooks/"
 // `username` - string - username posting the message.
 // `content` - string - the text to display in discord.
 // `avatar_url` -  override the default avatar of the webhook.
-send = (webhookToken, webhookID, username, content, avatar_url="") => {
+send = (
+        webhookToken,
+        webhookID,
+        username,
+        content,
+        avatar_url="",
+) => {
     data = {
         username: username,
         content: content,
