@@ -43,11 +43,11 @@ testcase from_annotations {
 "
     want = array.from(
         rows: [
-            {time: 2021-03-12T13:58:59Z, float:           42.69, int:   -67, uint: uint(v:    152), bool:  false, string: "hello world"},
-            {time: 2021-03-12T13:58:59Z, float:           42.69, int:   -67, uint: uint(v:    152), bool:  false, string: "hello world"},
-            {time: 2021-03-12T13:58:59Z, float: math.mInf(sign:    1), int:    -67,  uint: uint(v:   152), bool:    false,     string: "hello world"},
-            {time: 2021-03-12T13:58:59Z, float: math.mInf(sign:   -1), int:    -67,  uint: uint(v:   152), bool:    false,     string: "hello world"},
-            {time: 2021-03-12T13:58:59Z, float:      math.NaN(), int:   -67, uint: uint(v:    152), bool:  false, string: "hello world"},
+            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "hello world"},
+            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "hello world"},
+            {time: 2021-03-12T13:58:59Z, float: math.mInf(sign: 1), int: -67, uint: uint(v: 152), bool: false, string: "hello world"},
+            {time: 2021-03-12T13:58:59Z, float: math.mInf(sign: -1), int: -67, uint: uint(v: 152), bool: false, string: "hello world"},
+            {time: 2021-03-12T13:58:59Z, float: math.NaN(), int: -67, uint: uint(v: 152), bool: false, string: "hello world"},
         ],
     )
 
@@ -82,10 +82,10 @@ testcase from_multiple_tables {
             {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "hello world"},
             {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "hello world"},
             {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "hello world"},
-            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string:   "bye world"},
-            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string:   "bye world"},
-            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string:   "bye world"},
-            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string:   "bye world"},
+            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "bye world"},
+            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "bye world"},
+            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "bye world"},
+            {time: 2021-03-12T13:58:59Z, float: 42.69, int: -67, uint: uint(v: 152), bool: false, string: "bye world"},
         ],
     )
         |> group(columns: ["string"])

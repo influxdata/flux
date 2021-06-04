@@ -6,9 +6,9 @@ import "array"
 
 inData = array.from(
     rows: [
-        {_measurement: "command", _field:    "id", _time: 2018-12-19T22:13:30.005Z, _value: 12},
-        {_measurement: "command", _field:    "id", _time: 2018-12-19T22:13:40.005Z, _value: 23},
-        {_measurement: "command", _field:    "id", _time: 2018-12-19T22:13:50.005Z, _value: 34},
+        {_measurement: "command", _field: "id", _time: 2018-12-19T22:13:30.005Z, _value: 12},
+        {_measurement: "command", _field: "id", _time: 2018-12-19T22:13:40.005Z, _value: 23},
+        {_measurement: "command", _field: "id", _time: 2018-12-19T22:13:50.005Z, _value: 34},
         {_measurement: "command", _field: "guild", _time: 2018-12-19T22:13:30.005Z, _value: 12},
         {_measurement: "command", _field: "guild", _time: 2018-12-19T22:13:40.005Z, _value: 23},
         {_measurement: "command", _field: "guild", _time: 2018-12-19T22:13:50.005Z, _value: 34},

@@ -28,8 +28,8 @@ from = (
         token: token,
         query: [
             "start": string(v: start),
-             "stop": string(v: stop),
-              "raw": string(v: raw),
+            "stop": string(v: stop),
+            "raw": string(v: raw),
         ],
     )
 

@@ -22,7 +22,7 @@ testcase string_trim {
     want = array.from(
         rows: [
             {_time: 2018-05-22T19:53:26Z, _value: "trailing", _field: "_field", _measurement: "_measurement"},
-            {_time: 2018-05-22T19:53:36Z, _value:  "leading", _field: "_field", _measurement: "_measurement"},
+            {_time: 2018-05-22T19:53:36Z, _value: "leading", _field: "_field", _measurement: "_measurement"},
         ],
     )
         |> map(fn: (r) => ({r with _value: r._value}))
@@ -38,7 +38,7 @@ testcase string_trim {
 testcase string_toUpper {
     input = array.from(
         rows: [
-            {_time: 2018-05-22T19:53:26Z, _value:  "lowercase", _field: "_field", _measurement: "_measurement"},
+            {_time: 2018-05-22T19:53:26Z, _value: "lowercase", _field: "_field", _measurement: "_measurement"},
             {_time: 2018-05-22T19:53:36Z, _value: "LoLlErCaSe", _field: "_field", _measurement: "_measurement"},
         ],
     )
@@ -48,7 +48,7 @@ testcase string_toUpper {
     // See https://github.com/influxdata/flux/issues/3443
     want = array.from(
         rows: [
-            {_time: 2018-05-22T19:53:26Z, _value:  "LOWERCASE", _field: "_field", _measurement: "_measurement"},
+            {_time: 2018-05-22T19:53:26Z, _value: "LOWERCASE", _field: "_field", _measurement: "_measurement"},
             {_time: 2018-05-22T19:53:36Z, _value: "LOLLERCASE", _field: "_field", _measurement: "_measurement"},
         ],
     )
@@ -65,7 +65,7 @@ testcase string_toUpper {
 testcase string_toLower {
     input = array.from(
         rows: [
-            {_time: 2018-05-22T19:53:26Z, _value:  "uppercase", _field: "_field", _measurement: "_measurement"},
+            {_time: 2018-05-22T19:53:26Z, _value: "uppercase", _field: "_field", _measurement: "_measurement"},
             {_time: 2018-05-22T19:53:36Z, _value: "LoLlErCaSe", _field: "_field", _measurement: "_measurement"},
         ],
     )
@@ -75,7 +75,7 @@ testcase string_toLower {
     // See https://github.com/influxdata/flux/issues/3443
     want = array.from(
         rows: [
-            {_time: 2018-05-22T19:53:26Z, _value:  "uppercase", _field: "_field", _measurement: "_measurement"},
+            {_time: 2018-05-22T19:53:26Z, _value: "uppercase", _field: "_field", _measurement: "_measurement"},
             {_time: 2018-05-22T19:53:36Z, _value: "lollercase", _field: "_field", _measurement: "_measurement"},
         ],
     )
@@ -219,13 +219,13 @@ testcase string_replace_twice {
 testcase string_length {
     input = array.from(
         rows: [
-            {_time: 2018-05-22T19:53:26Z, _value:                                 "字", _field: "_field", _measurement: "_measurement"},
+            {_time: 2018-05-22T19:53:26Z, _value: "字", _field: "_field", _measurement: "_measurement"},
             {_time: 2018-05-22T19:53:26Z, _value: "Supercalifragilisticexpialidocious", _field: "_field", _measurement: "_measurement"},
         ],
     )
     want = array.from(
         rows: [
-            {_time: 2018-05-22T19:53:26Z, _value:                                 "字", _field: "_field", _measurement: "_measurement", len:  1},
+            {_time: 2018-05-22T19:53:26Z, _value: "字", _field: "_field", _measurement: "_measurement", len: 1},
             {_time: 2018-05-22T19:53:26Z, _value: "Supercalifragilisticexpialidocious", _field: "_field", _measurement: "_measurement", len: 34},
         ],
     )

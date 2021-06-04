@@ -9,8 +9,8 @@ option now = () => 2030-01-01T00:00:00Z
 codes1 = dict.fromList(
     pairs: [
         {key: "internal", value: 0},
-        {key:  "invalid", value: 1},
-        {key:  "unknown", value: 3},
+        {key: "invalid", value: 1},
+        {key: "unknown", value: 3},
     ],
 )
 codes2 = dict.remove(dict: codes1, key: "unknown")

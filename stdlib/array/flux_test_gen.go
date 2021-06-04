@@ -23,7 +23,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   38,
 				},
 				File:   "from_group_test.flux",
-				Source: "package array_test\n\n\nimport \"testing\"\nimport \"array\"\n\noption now = () => 2018-12-19T22:14:30Z\n\ndata = \"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,m0,f0,tagvalue,2018-12-19T22:13:30Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:13:40Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:13:50Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:00Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:10Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:14:20Z,true\n\"\ninput = array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ],\n)\npass = (tables=<-) => tables\n    |> group(columns: [\"_measurement\", \"_field\", \"t0\"])\n\ntest from = () => ({\n    input: input,\n    want: testing.loadMem(csv: data),\n    fn: pass,\n})",
+				Source: "package array_test\n\n\nimport \"testing\"\nimport \"array\"\n\noption now = () => 2018-12-19T22:14:30Z\n\ndata = \"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,m0,f0,tagvalue,2018-12-19T22:13:30Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:13:40Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:13:50Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:00Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:10Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:14:20Z,true\n\"\ninput = array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ],\n)\npass = (tables=<-) => tables\n    |> group(columns: [\"_measurement\", \"_field\", \"t0\"])\n\ntest from = () => ({\n    input: input,\n    want: testing.loadMem(csv: data),\n    fn: pass,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -190,7 +190,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   30,
 					},
 					File:   "from_group_test.flux",
-					Source: "input = array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ],\n)",
+					Source: "input = array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   21,
@@ -227,7 +227,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Line:   29,
 							},
 							File:   "from_group_test.flux",
-							Source: "rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ]",
+							Source: "rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ]",
 							Start: ast.Position{
 								Column: 5,
 								Line:   22,
@@ -245,7 +245,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Line:   29,
 								},
 								File:   "from_group_test.flux",
-								Source: "rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ]",
+								Source: "rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ]",
 								Start: ast.Position{
 									Column: 5,
 									Line:   22,
@@ -283,7 +283,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Line:   29,
 									},
 									File:   "from_group_test.flux",
-									Source: "[\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ]",
+									Source: "[\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ]",
 									Start: ast.Position{
 										Column: 11,
 										Line:   22,
@@ -602,11 +602,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 103,
+											Column: 102,
 											Line:   24,
 										},
 										File:   "from_group_test.flux",
-										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true}",
+										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   24,
@@ -848,11 +848,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 102,
+												Column: 101,
 												Line:   24,
 											},
 											File:   "from_group_test.flux",
-											Source: "_value:  true",
+											Source: "_value: true",
 											Start: ast.Position{
 												Column: 89,
 												Line:   24,
@@ -886,13 +886,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 102,
+													Column: 101,
 													Line:   24,
 												},
 												File:   "from_group_test.flux",
 												Source: "true",
 												Start: ast.Position{
-													Column: 98,
+													Column: 97,
 													Line:   24,
 												},
 											},
@@ -1520,11 +1520,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 103,
+											Column: 102,
 											Line:   27,
 										},
 										File:   "from_group_test.flux",
-										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true}",
+										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   27,
@@ -1766,11 +1766,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 102,
+												Column: 101,
 												Line:   27,
 											},
 											File:   "from_group_test.flux",
-											Source: "_value:  true",
+											Source: "_value: true",
 											Start: ast.Position{
 												Column: 89,
 												Line:   27,
@@ -1804,13 +1804,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 102,
+													Column: 101,
 													Line:   27,
 												},
 												File:   "from_group_test.flux",
 												Source: "true",
 												Start: ast.Position{
-													Column: 98,
+													Column: 97,
 													Line:   27,
 												},
 											},
@@ -1826,11 +1826,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 103,
+											Column: 102,
 											Line:   28,
 										},
 										File:   "from_group_test.flux",
-										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true}",
+										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   28,
@@ -2072,11 +2072,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 102,
+												Column: 101,
 												Line:   28,
 											},
 											File:   "from_group_test.flux",
-											Source: "_value:  true",
+											Source: "_value: true",
 											Start: ast.Position{
 												Column: 89,
 												Line:   28,
@@ -2110,13 +2110,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 102,
+													Column: 101,
 													Line:   28,
 												},
 												File:   "from_group_test.flux",
 												Source: "true",
 												Start: ast.Position{
-													Column: 98,
+													Column: 97,
 													Line:   28,
 												},
 											},
@@ -2143,7 +2143,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   30,
 						},
 						File:   "from_group_test.flux",
-						Source: "array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ],\n)",
+						Source: "array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ],\n)",
 						Start: ast.Position{
 							Column: 9,
 							Line:   21,
@@ -3087,7 +3087,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   37,
 				},
 				File:   "from_test.flux",
-				Source: "package array_test\n\n\nimport \"testing\"\nimport \"array\"\n\noption now = () => 2018-12-19T22:14:30Z\n\ndata = \"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,false,false,false,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,m0,f0,tagvalue,2018-12-19T22:13:30Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:13:40Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:13:50Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:00Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:10Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:14:20Z,true\n\"\ninput = array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ],\n)\npass = (tables=<-) => tables\n\ntest from = () => ({\n    input: input,\n    want: testing.loadMem(csv: data),\n    fn: pass,\n})",
+				Source: "package array_test\n\n\nimport \"testing\"\nimport \"array\"\n\noption now = () => 2018-12-19T22:14:30Z\n\ndata = \"\n#datatype,string,long,string,string,string,dateTime:RFC3339,boolean\n#group,false,false,false,false,false,false,false\n#default,_result,,,,,,\n,result,table,_measurement,_field,t0,_time,_value\n,,0,m0,f0,tagvalue,2018-12-19T22:13:30Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:13:40Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:13:50Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:00Z,false\n,,0,m0,f0,tagvalue,2018-12-19T22:14:10Z,true\n,,0,m0,f0,tagvalue,2018-12-19T22:14:20Z,true\n\"\ninput = array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ],\n)\npass = (tables=<-) => tables\n\ntest from = () => ({\n    input: input,\n    want: testing.loadMem(csv: data),\n    fn: pass,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -3254,7 +3254,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   30,
 					},
 					File:   "from_test.flux",
-					Source: "input = array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ],\n)",
+					Source: "input = array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   21,
@@ -3291,7 +3291,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Line:   29,
 							},
 							File:   "from_test.flux",
-							Source: "rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ]",
+							Source: "rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ]",
 							Start: ast.Position{
 								Column: 5,
 								Line:   22,
@@ -3309,7 +3309,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Line:   29,
 								},
 								File:   "from_test.flux",
-								Source: "rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ]",
+								Source: "rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ]",
 								Start: ast.Position{
 									Column: 5,
 									Line:   22,
@@ -3347,7 +3347,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Line:   29,
 									},
 									File:   "from_test.flux",
-									Source: "[\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ]",
+									Source: "[\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ]",
 									Start: ast.Position{
 										Column: 11,
 										Line:   22,
@@ -3666,11 +3666,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 103,
+											Column: 102,
 											Line:   24,
 										},
 										File:   "from_test.flux",
-										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true}",
+										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   24,
@@ -3912,11 +3912,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 102,
+												Column: 101,
 												Line:   24,
 											},
 											File:   "from_test.flux",
-											Source: "_value:  true",
+											Source: "_value: true",
 											Start: ast.Position{
 												Column: 89,
 												Line:   24,
@@ -3950,13 +3950,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 102,
+													Column: 101,
 													Line:   24,
 												},
 												File:   "from_test.flux",
 												Source: "true",
 												Start: ast.Position{
-													Column: 98,
+													Column: 97,
 													Line:   24,
 												},
 											},
@@ -4584,11 +4584,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 103,
+											Column: 102,
 											Line:   27,
 										},
 										File:   "from_test.flux",
-										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true}",
+										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   27,
@@ -4830,11 +4830,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 102,
+												Column: 101,
 												Line:   27,
 											},
 											File:   "from_test.flux",
-											Source: "_value:  true",
+											Source: "_value: true",
 											Start: ast.Position{
 												Column: 89,
 												Line:   27,
@@ -4868,13 +4868,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 102,
+													Column: 101,
 													Line:   27,
 												},
 												File:   "from_test.flux",
 												Source: "true",
 												Start: ast.Position{
-													Column: 98,
+													Column: 97,
 													Line:   27,
 												},
 											},
@@ -4890,11 +4890,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 103,
+											Column: 102,
 											Line:   28,
 										},
 										File:   "from_test.flux",
-										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true}",
+										Source: "{_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   28,
@@ -5136,11 +5136,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 102,
+												Column: 101,
 												Line:   28,
 											},
 											File:   "from_test.flux",
-											Source: "_value:  true",
+											Source: "_value: true",
 											Start: ast.Position{
 												Column: 89,
 												Line:   28,
@@ -5174,13 +5174,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 102,
+													Column: 101,
 													Line:   28,
 												},
 												File:   "from_test.flux",
 												Source: "true",
 												Start: ast.Position{
-													Column: 98,
+													Column: 97,
 													Line:   28,
 												},
 											},
@@ -5207,7 +5207,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   30,
 						},
 						File:   "from_test.flux",
-						Source: "array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value:  true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value:  true},\n    ],\n)",
+						Source: "array.from(\n    rows: [\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:30Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:40Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:13:50Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:00Z, _value: false},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:10Z, _value: true},\n        {_measurement: \"m0\", _field: \"f0\", t0: \"tagvalue\", _time: 2018-12-19T22:14:20Z, _value: true},\n    ],\n)",
 						Start: ast.Position{
 							Column: 9,
 							Line:   21,

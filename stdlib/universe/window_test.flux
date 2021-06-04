@@ -52,12 +52,12 @@ testcase window_offset {
             {_time: 2018-05-22T19:53:56Z, _value: 15205226, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
             {_time: 2018-05-22T19:54:06Z, _value: 15205499, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
             {_time: 2018-05-22T19:54:16Z, _value: 15205755, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
-            {_time: 2018-05-22T19:53:26Z, _value:      648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
-            {_time: 2018-05-22T19:53:36Z, _value:      648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
-            {_time: 2018-05-22T19:53:46Z, _value:      648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
-            {_time: 2018-05-22T19:53:56Z, _value:      648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
-            {_time: 2018-05-22T19:54:06Z, _value:      648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
-            {_time: 2018-05-22T19:54:16Z, _value:      648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
+            {_time: 2018-05-22T19:53:26Z, _value: 648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
+            {_time: 2018-05-22T19:53:36Z, _value: 648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
+            {_time: 2018-05-22T19:53:46Z, _value: 648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
+            {_time: 2018-05-22T19:53:56Z, _value: 648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
+            {_time: 2018-05-22T19:54:06Z, _value: 648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
+            {_time: 2018-05-22T19:54:16Z, _value: 648, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk2"},
         ],
     )
         |> group(columns: ["_field", "_measurement", "host", "name"])

@@ -8,8 +8,8 @@ option now = () => 2030-01-01T00:00:00Z
 
 codes = dict.fromList(
     pairs: [
-        {key:      "internal", value: 0},
-        {key:       "invalid", value: 1},
+        {key: "internal", value: 0},
+        {key: "invalid", value: 1},
         {key: "unimplemented", value: 2},
     ],
 )
