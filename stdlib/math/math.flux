@@ -1,22 +1,57 @@
+// "math"
+//
+// The Flux math package provides basic constants and mathematical functions.
 package math
 
 
+// math.pi = 3.14159265358979323846264338327950288419716939937510582097494459
 builtin pi : float
+
+// math.e = 2.71828182845904523536028747135266249775724709369995957496696763
 builtin e : float
+
+// math.phi = 1.61803398874989484820458683436563811772030917980576286213544862
 builtin phi : float
+
+// math.sqrt2 = 1.41421356237309504880168872420969807856967187537694807317667974
 builtin sqrt2 : float
+
+// math.sqrte = 1.64872127070012814684865078781416357165377610071014801157507931
 builtin sqrte : float
+
+// math.sqrtpi = 1.77245385090551602729816748334114518279754945612238712821380779
 builtin sqrtpi : float
+
+// math.sqrtphi = 1.27201964951406896425242246173749149171560804184009624861664038
 builtin sqrtphi : float
+
+// math.ln2 = 0.693147180559945309417232121458176568075500134360255254120680009
 builtin ln2 : float
+
+// math.log2e = 1 ÷ math.ln2
 builtin log2e : float
+
+// math.ln10 = 2.30258509299404568401799145468436420760110148862877297603332790
 builtin ln10 : float
+
+// math.log10e = 1 ÷ math.ln10
 builtin log10e : float
+
+// math.maxfloat = 1.797693134862315708145274237317043567981e+308
 builtin maxfloat : float
+
+// math.smallestNonzeroFloat = 4.940656458412465441765687928682213723651e-324
 builtin smallestNonzeroFloat : float
+
+// math.maxint = 1<<63 - 1
 builtin maxint : int
+
+// math.minint = -1 << 63
 builtin minint : int
+
+// math.maxuint = 1<<64 - 1
 builtin maxuint : uint
+
 
 // Abs returns x as a positive value.
 //

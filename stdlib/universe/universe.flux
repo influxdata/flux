@@ -86,6 +86,70 @@ builtin integral : (
     A: Record,
     B: Record
 
+// `join` merges two input streams into a single output stream based on columns
+// with equal values. Null values are not considered equal when comparing column
+// values. The resulting schema is the union of the input schemas. The resulting
+// group key is the union of the input group keys.
+//
+// - `tables` is a stream of tables
+// - `method` is the method to use when joining (defaults to 'inner')
+// - `on` is a list of columns on which to join
+//
+// **Joining two tables**
+// 
+// ```
+// import "array"
+//
+// sf_temp = array.from(
+//     rows: [
+//         {_time: 2021-06-01T01:00:00Z, _field: "temp", _value: 70},
+//         {_time: 2021-06-01T02:00:00Z, _field: "temp", _value: 75},
+//         {_time: 2021-06-01T03:00:00Z, _field: "temp", _value: 72},
+//     ],
+// )
+//
+// ny_temp = array.from(
+//     rows: [
+//         {_time: 2021-06-01T01:00:00Z, _field: "temp", _value: 55},
+//         {_time: 2021-06-01T02:00:00Z, _field: "temp", _value: 56},
+//         {_time: 2021-06-01T03:00:00Z, _field: "temp", _value: 57},
+//     ],
+// )
+//
+// join(
+//   tables: {sf: sf_temp, ny: ny_temp},
+//   on: ["_time", "_field"]
+// )
+// ```
+//
+// **Output schema of a joined table**
+//
+// The column schema of the output stream is the union
+// of the input schemas. It is also the same for the 
+// output group key. Columns are renamed using the pattern
+// `<column>_<table>` to prevent ambiguity in joined tables.
+//
+// ```
+// import "array"
+//
+// data_1 = array.from(
+//     rows: [
+//         {_time: 2021-06-01T01:00:00Z, _field: "meter", _value: 100},
+//         {_time: 2021-06-01T02:00:00Z, _field: "meter", _value: 200},
+//         {_time: 2021-06-01T03:00:00Z, _field: "meter", _value: 300},
+//     ],
+// ) |> group(columns: ["_time", "_field"])
+//
+// data_2 = array.from(
+//     rows: [
+//         {_time: 2021-06-01T01:00:00Z, _field: "meter", _value: 400},
+//         {_time: 2021-06-01T02:00:00Z, _field: "meter", _value: 500},
+//         {_time: 2021-06-01T03:00:00Z, _field: "meter", _value: 600},
+//     ],
+// ) |> group(columns: ["_time", "_field"])
+//
+// join(tables: {d1: data_1, d2: data_2}, on: ["_time"]) // group key should be [_time, _field_d1, _field_d2]
+// ```
 builtin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record
 builtin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record
 builtin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record
@@ -205,9 +269,42 @@ cov = (x, y, on, pearsonr=false) => join(
     |> covariance(pearsonr: pearsonr, columns: ["_value_x", "_value_y"])
 pearsonr = (x, y, on) => cov(x: x, y: y, on: on, pearsonr: true)
 
-// AggregateWindow applies an aggregate function to fixed windows of time.
+// `aggregateWindow` applies an aggregate function to fixed windows of time.
 // The procedure is to window the data, perform an aggregate operation,
 // and then undo the windowing to produce an output table for every input table.
+//
+// - `every` specifies how large the windows should be
+// - `fn` is the function to use to aggregate the data in each window, can be [mean, count, etc.]
+// - `offset` is the offset of each window
+// - `column` is...
+// - `timeSrc` is...
+// - `timeDst` is...
+// - `createEmpty` is...
+// - `tables` is...
+//
+// TODO: use array.from() in examples
+// The examples below use a `data` variable to represent a filtered data set.
+//
+// ```
+// data = from(bucket: "example-bucket")
+//   |> range(start: -1h)
+//   |> filter(fn: (r) =>
+//     r._measurement == "mem" and
+//     r._field == "used_percent")
+// ```
+//
+// **Use an aggregate function with default parameters**
+//
+// The following example uses the default parameters of the mean() function to
+// aggregate time-based windows:
+//
+// ```
+// data
+//   |> aggregateWindow(
+//     every: 5m,
+//     fn: mean
+//   )
+// ```
 aggregateWindow = (
         every,
         fn,
