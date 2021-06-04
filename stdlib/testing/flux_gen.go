@@ -25,10 +25,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   42,
+					Line:   48,
 				},
 				File:   "testing.flux",
-				Source: "package testing\n\n\nimport c \"csv\"\n\nbuiltin assertEquals : (name: string, <-got: [A], want: [A]) => [A]\nbuiltin assertEmpty : (<-tables: [A]) => [A]\nbuiltin diff : (<-got: [A], want: [A], ?verbose: bool, ?epsilon: float) => [{A with _diff: string}]\n\noption loadStorage = (csv) => c.from(csv: csv)\n    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )\noption load = (tables=<-) => tables\noption loadMem = (csv) => c.from(csv: csv)\n\ninspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n\n    return {\n        fn: tc.fn,\n        input: tc.input,\n        want: tc.want |> yield(name: \"want\"),\n        got: got |> yield(name: \"got\"),\n        diff: dif |> yield(name: \"diff\"),\n    }\n}\nrun = (case) => {\n    return inspect(case: case).diff |> assertEmpty()\n}\nbenchmark = (case) => {\n    tc = case()\n\n    return tc.input |> tc.fn()\n}",
+				Source: "package testing\n\n\nimport c \"csv\"\n\nbuiltin assertEquals : (name: string, <-got: [A], want: [A]) => [A]\nbuiltin assertEmpty : (<-tables: [A]) => [A]\nbuiltin diff : (\n    <-got: [A],\n    want: [A],\n    ?verbose: bool,\n    ?epsilon: float,\n    ?nansEqual: bool,\n) => [{A with _diff: string}]\n\noption loadStorage = (csv) => c.from(csv: csv)\n    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )\noption load = (tables=<-) => tables\noption loadMem = (csv) => c.from(csv: csv)\n\ninspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n\n    return {\n        fn: tc.fn,\n        input: tc.input,\n        want: tc.want |> yield(name: \"want\"),\n        got: got |> yield(name: \"got\"),\n        diff: dif |> yield(name: \"diff\"),\n    }\n}\nrun = (case) => {\n    return inspect(case: case).diff |> assertEmpty()\n}\nbenchmark = (case) => {\n    tc = case()\n\n    return tc.input |> tc.fn()\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -688,11 +688,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 100,
-							Line:   8,
+							Column: 30,
+							Line:   14,
 						},
 						File:   "testing.flux",
-						Source: "(<-got: [A], want: [A], ?verbose: bool, ?epsilon: float) => [{A with _diff: string}]",
+						Source: "(\n    <-got: [A],\n    want: [A],\n    ?verbose: bool,\n    ?epsilon: float,\n    ?nansEqual: bool,\n) => [{A with _diff: string}]",
 						Start: ast.Position{
 							Column: 16,
 							Line:   8,
@@ -706,11 +706,11 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 100,
-								Line:   8,
+								Column: 30,
+								Line:   14,
 							},
 							File:   "testing.flux",
-							Source: "(<-got: [A], want: [A], ?verbose: bool, ?epsilon: float) => [{A with _diff: string}]",
+							Source: "(\n    <-got: [A],\n    want: [A],\n    ?verbose: bool,\n    ?epsilon: float,\n    ?nansEqual: bool,\n) => [{A with _diff: string}]",
 							Start: ast.Position{
 								Column: 16,
 								Line:   8,
@@ -723,14 +723,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 27,
-									Line:   8,
+									Column: 15,
+									Line:   9,
 								},
 								File:   "testing.flux",
 								Source: "<-got: [A]",
 								Start: ast.Position{
-									Column: 17,
-									Line:   8,
+									Column: 5,
+									Line:   9,
 								},
 							},
 						},
@@ -741,14 +741,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
-										Line:   8,
+										Column: 10,
+										Line:   9,
 									},
 									File:   "testing.flux",
 									Source: "got",
 									Start: ast.Position{
-										Column: 19,
-										Line:   8,
+										Column: 7,
+										Line:   9,
 									},
 								},
 							},
@@ -760,14 +760,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 27,
-										Line:   8,
+										Column: 15,
+										Line:   9,
 									},
 									File:   "testing.flux",
 									Source: "[A]",
 									Start: ast.Position{
-										Column: 24,
-										Line:   8,
+										Column: 12,
+										Line:   9,
 									},
 								},
 							},
@@ -777,14 +777,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 26,
-											Line:   8,
+											Column: 14,
+											Line:   9,
 										},
 										File:   "testing.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 25,
-											Line:   8,
+											Column: 13,
+											Line:   9,
 										},
 									},
 								},
@@ -794,14 +794,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 26,
-												Line:   8,
+												Column: 14,
+												Line:   9,
 											},
 											File:   "testing.flux",
 											Source: "A",
 											Start: ast.Position{
-												Column: 25,
-												Line:   8,
+												Column: 13,
+												Line:   9,
 											},
 										},
 									},
@@ -815,14 +815,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 38,
-									Line:   8,
+									Column: 14,
+									Line:   10,
 								},
 								File:   "testing.flux",
 								Source: "want: [A]",
 								Start: ast.Position{
-									Column: 29,
-									Line:   8,
+									Column: 5,
+									Line:   10,
 								},
 							},
 						},
@@ -833,14 +833,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 33,
-										Line:   8,
+										Column: 9,
+										Line:   10,
 									},
 									File:   "testing.flux",
 									Source: "want",
 									Start: ast.Position{
-										Column: 29,
-										Line:   8,
+										Column: 5,
+										Line:   10,
 									},
 								},
 							},
@@ -852,14 +852,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 38,
-										Line:   8,
+										Column: 14,
+										Line:   10,
 									},
 									File:   "testing.flux",
 									Source: "[A]",
 									Start: ast.Position{
-										Column: 35,
-										Line:   8,
+										Column: 11,
+										Line:   10,
 									},
 								},
 							},
@@ -869,14 +869,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   8,
+											Column: 13,
+											Line:   10,
 										},
 										File:   "testing.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 36,
-											Line:   8,
+											Column: 12,
+											Line:   10,
 										},
 									},
 								},
@@ -886,14 +886,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   8,
+												Column: 13,
+												Line:   10,
 											},
 											File:   "testing.flux",
 											Source: "A",
 											Start: ast.Position{
-												Column: 36,
-												Line:   8,
+												Column: 12,
+												Line:   10,
 											},
 										},
 									},
@@ -907,14 +907,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 54,
-									Line:   8,
+									Column: 19,
+									Line:   11,
 								},
 								File:   "testing.flux",
 								Source: "?verbose: bool",
 								Start: ast.Position{
-									Column: 40,
-									Line:   8,
+									Column: 5,
+									Line:   11,
 								},
 							},
 						},
@@ -925,14 +925,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 48,
-										Line:   8,
+										Column: 13,
+										Line:   11,
 									},
 									File:   "testing.flux",
 									Source: "verbose",
 									Start: ast.Position{
-										Column: 41,
-										Line:   8,
+										Column: 6,
+										Line:   11,
 									},
 								},
 							},
@@ -944,14 +944,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 54,
-										Line:   8,
+										Column: 19,
+										Line:   11,
 									},
 									File:   "testing.flux",
 									Source: "bool",
 									Start: ast.Position{
-										Column: 50,
-										Line:   8,
+										Column: 15,
+										Line:   11,
 									},
 								},
 							},
@@ -961,14 +961,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 54,
-											Line:   8,
+											Column: 19,
+											Line:   11,
 										},
 										File:   "testing.flux",
 										Source: "bool",
 										Start: ast.Position{
-											Column: 50,
-											Line:   8,
+											Column: 15,
+											Line:   11,
 										},
 									},
 								},
@@ -981,14 +981,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 71,
-									Line:   8,
+									Column: 20,
+									Line:   12,
 								},
 								File:   "testing.flux",
 								Source: "?epsilon: float",
 								Start: ast.Position{
-									Column: 56,
-									Line:   8,
+									Column: 5,
+									Line:   12,
 								},
 							},
 						},
@@ -999,14 +999,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 64,
-										Line:   8,
+										Column: 13,
+										Line:   12,
 									},
 									File:   "testing.flux",
 									Source: "epsilon",
 									Start: ast.Position{
-										Column: 57,
-										Line:   8,
+										Column: 6,
+										Line:   12,
 									},
 								},
 							},
@@ -1018,14 +1018,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 71,
-										Line:   8,
+										Column: 20,
+										Line:   12,
 									},
 									File:   "testing.flux",
 									Source: "float",
 									Start: ast.Position{
-										Column: 66,
-										Line:   8,
+										Column: 15,
+										Line:   12,
 									},
 								},
 							},
@@ -1035,18 +1035,92 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 71,
-											Line:   8,
+											Column: 20,
+											Line:   12,
 										},
 										File:   "testing.flux",
 										Source: "float",
 										Start: ast.Position{
-											Column: 66,
-											Line:   8,
+											Column: 15,
+											Line:   12,
 										},
 									},
 								},
 								Name: "float",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   13,
+								},
+								File:   "testing.flux",
+								Source: "?nansEqual: bool",
+								Start: ast.Position{
+									Column: 5,
+									Line:   13,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   13,
+									},
+									File:   "testing.flux",
+									Source: "nansEqual",
+									Start: ast.Position{
+										Column: 6,
+										Line:   13,
+									},
+								},
+							},
+							Name: "nansEqual",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   13,
+									},
+									File:   "testing.flux",
+									Source: "bool",
+									Start: ast.Position{
+										Column: 17,
+										Line:   13,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   13,
+										},
+										File:   "testing.flux",
+										Source: "bool",
+										Start: ast.Position{
+											Column: 17,
+											Line:   13,
+										},
+									},
+								},
+								Name: "bool",
 							},
 						},
 					}},
@@ -1056,14 +1130,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 100,
-									Line:   8,
+									Column: 30,
+									Line:   14,
 								},
 								File:   "testing.flux",
 								Source: "[{A with _diff: string}]",
 								Start: ast.Position{
-									Column: 76,
-									Line:   8,
+									Column: 6,
+									Line:   14,
 								},
 							},
 						},
@@ -1073,14 +1147,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 99,
-										Line:   8,
+										Column: 29,
+										Line:   14,
 									},
 									File:   "testing.flux",
 									Source: "{A with _diff: string}",
 									Start: ast.Position{
-										Column: 77,
-										Line:   8,
+										Column: 7,
+										Line:   14,
 									},
 								},
 							},
@@ -1090,14 +1164,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 98,
-											Line:   8,
+											Column: 28,
+											Line:   14,
 										},
 										File:   "testing.flux",
 										Source: "_diff: string",
 										Start: ast.Position{
-											Column: 85,
-											Line:   8,
+											Column: 15,
+											Line:   14,
 										},
 									},
 								},
@@ -1107,14 +1181,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 90,
-												Line:   8,
+												Column: 20,
+												Line:   14,
 											},
 											File:   "testing.flux",
 											Source: "_diff",
 											Start: ast.Position{
-												Column: 85,
-												Line:   8,
+												Column: 15,
+												Line:   14,
 											},
 										},
 									},
@@ -1126,14 +1200,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 98,
-												Line:   8,
+												Column: 28,
+												Line:   14,
 											},
 											File:   "testing.flux",
 											Source: "string",
 											Start: ast.Position{
-												Column: 92,
-												Line:   8,
+												Column: 22,
+												Line:   14,
 											},
 										},
 									},
@@ -1143,14 +1217,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 98,
-													Line:   8,
+													Column: 28,
+													Line:   14,
 												},
 												File:   "testing.flux",
 												Source: "string",
 												Start: ast.Position{
-													Column: 92,
-													Line:   8,
+													Column: 22,
+													Line:   14,
 												},
 											},
 										},
@@ -1164,14 +1238,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 79,
-											Line:   8,
+											Column: 9,
+											Line:   14,
 										},
 										File:   "testing.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 78,
-											Line:   8,
+											Column: 8,
+											Line:   14,
 										},
 									},
 								},
@@ -1189,13 +1263,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   18,
+							Line:   24,
 						},
 						File:   "testing.flux",
 						Source: "loadStorage = (csv) => c.from(csv: csv)\n    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
 						Start: ast.Position{
 							Column: 8,
-							Line:   10,
+							Line:   16,
 						},
 					},
 				},
@@ -1206,13 +1280,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   10,
+								Line:   16,
 							},
 							File:   "testing.flux",
 							Source: "loadStorage",
 							Start: ast.Position{
 								Column: 8,
-								Line:   10,
+								Line:   16,
 							},
 						},
 					},
@@ -1226,13 +1300,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 6,
-								Line:   18,
+								Line:   24,
 							},
 							File:   "testing.flux",
 							Source: "(csv) => c.from(csv: csv)\n    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
 							Start: ast.Position{
 								Column: 22,
-								Line:   10,
+								Line:   16,
 							},
 						},
 					},
@@ -1246,13 +1320,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   10,
+												Line:   16,
 											},
 											File:   "testing.flux",
 											Source: "csv: csv",
 											Start: ast.Position{
 												Column: 38,
-												Line:   10,
+												Line:   16,
 											},
 										},
 									},
@@ -1264,13 +1338,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   10,
+													Line:   16,
 												},
 												File:   "testing.flux",
 												Source: "csv: csv",
 												Start: ast.Position{
 													Column: 38,
-													Line:   10,
+													Line:   16,
 												},
 											},
 										},
@@ -1282,13 +1356,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
-														Line:   10,
+														Line:   16,
 													},
 													File:   "testing.flux",
 													Source: "csv",
 													Start: ast.Position{
 														Column: 38,
-														Line:   10,
+														Line:   16,
 													},
 												},
 											},
@@ -1302,13 +1376,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 46,
-														Line:   10,
+														Line:   16,
 													},
 													File:   "testing.flux",
 													Source: "csv",
 													Start: ast.Position{
 														Column: 43,
-														Line:   10,
+														Line:   16,
 													},
 												},
 											},
@@ -1324,13 +1398,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   10,
+											Line:   16,
 										},
 										File:   "testing.flux",
 										Source: "c.from(csv: csv)",
 										Start: ast.Position{
 											Column: 31,
-											Line:   10,
+											Line:   16,
 										},
 									},
 								},
@@ -1341,13 +1415,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   10,
+												Line:   16,
 											},
 											File:   "testing.flux",
 											Source: "c.from",
 											Start: ast.Position{
 												Column: 31,
-												Line:   10,
+												Line:   16,
 											},
 										},
 									},
@@ -1359,13 +1433,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
-													Line:   10,
+													Line:   16,
 												},
 												File:   "testing.flux",
 												Source: "c",
 												Start: ast.Position{
 													Column: 31,
-													Line:   10,
+													Line:   16,
 												},
 											},
 										},
@@ -1378,13 +1452,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 37,
-													Line:   10,
+													Line:   16,
 												},
 												File:   "testing.flux",
 												Source: "from",
 												Start: ast.Position{
 													Column: 33,
-													Line:   10,
+													Line:   16,
 												},
 											},
 										},
@@ -1401,13 +1475,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   11,
+										Line:   17,
 									},
 									File:   "testing.flux",
 									Source: "c.from(csv: csv)\n    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)",
 									Start: ast.Position{
 										Column: 31,
-										Line:   10,
+										Line:   16,
 									},
 								},
 							},
@@ -1419,13 +1493,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   11,
+												Line:   17,
 											},
 											File:   "testing.flux",
 											Source: "start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   11,
+												Line:   17,
 											},
 										},
 									},
@@ -1437,13 +1511,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   11,
+													Line:   17,
 												},
 												File:   "testing.flux",
 												Source: "start: 1800-01-01T00:00:00Z",
 												Start: ast.Position{
 													Column: 14,
-													Line:   11,
+													Line:   17,
 												},
 											},
 										},
@@ -1455,13 +1529,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   11,
+														Line:   17,
 													},
 													File:   "testing.flux",
 													Source: "start",
 													Start: ast.Position{
 														Column: 14,
-														Line:   11,
+														Line:   17,
 													},
 												},
 											},
@@ -1475,13 +1549,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
-														Line:   11,
+														Line:   17,
 													},
 													File:   "testing.flux",
 													Source: "1800-01-01T00:00:00Z",
 													Start: ast.Position{
 														Column: 21,
-														Line:   11,
+														Line:   17,
 													},
 												},
 											},
@@ -1494,13 +1568,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   11,
+													Line:   17,
 												},
 												File:   "testing.flux",
 												Source: "stop: 2200-12-31T11:59:59Z",
 												Start: ast.Position{
 													Column: 43,
-													Line:   11,
+													Line:   17,
 												},
 											},
 										},
@@ -1512,13 +1586,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 47,
-														Line:   11,
+														Line:   17,
 													},
 													File:   "testing.flux",
 													Source: "stop",
 													Start: ast.Position{
 														Column: 43,
-														Line:   11,
+														Line:   17,
 													},
 												},
 											},
@@ -1532,13 +1606,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 69,
-														Line:   11,
+														Line:   17,
 													},
 													File:   "testing.flux",
 													Source: "2200-12-31T11:59:59Z",
 													Start: ast.Position{
 														Column: 49,
-														Line:   11,
+														Line:   17,
 													},
 												},
 											},
@@ -1554,13 +1628,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 70,
-											Line:   11,
+											Line:   17,
 										},
 										File:   "testing.flux",
 										Source: "range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)",
 										Start: ast.Position{
 											Column: 8,
-											Line:   11,
+											Line:   17,
 										},
 									},
 								},
@@ -1571,13 +1645,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   11,
+												Line:   17,
 											},
 											File:   "testing.flux",
 											Source: "range",
 											Start: ast.Position{
 												Column: 8,
-												Line:   11,
+												Line:   17,
 											},
 										},
 									},
@@ -1593,13 +1667,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   18,
+									Line:   24,
 								},
 								File:   "testing.flux",
 								Source: "c.from(csv: csv)\n    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
 								Start: ast.Position{
 									Column: 31,
-									Line:   10,
+									Line:   16,
 								},
 							},
 						},
@@ -1611,13 +1685,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
-											Line:   17,
+											Line:   23,
 										},
 										File:   "testing.flux",
 										Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
 										Start: ast.Position{
 											Column: 9,
-											Line:   13,
+											Line:   19,
 										},
 									},
 								},
@@ -1629,13 +1703,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   17,
+												Line:   23,
 											},
 											File:   "testing.flux",
 											Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
 											Start: ast.Position{
 												Column: 9,
-												Line:   13,
+												Line:   19,
 											},
 										},
 									},
@@ -1647,13 +1721,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   13,
+													Line:   19,
 												},
 												File:   "testing.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 9,
-													Line:   13,
+													Line:   19,
 												},
 											},
 										},
@@ -1668,13 +1742,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   17,
+													Line:   23,
 												},
 												File:   "testing.flux",
 												Source: "(r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
 												Start: ast.Position{
 													Column: 13,
-													Line:   13,
+													Line:   19,
 												},
 											},
 										},
@@ -1685,13 +1759,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   17,
+														Line:   23,
 													},
 													File:   "testing.flux",
 													Source: "({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
 													Start: ast.Position{
 														Column: 20,
-														Line:   13,
+														Line:   19,
 													},
 												},
 											},
@@ -1702,13 +1776,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 10,
-															Line:   17,
+															Line:   23,
 														},
 														File:   "testing.flux",
 														Source: "{r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }",
 														Start: ast.Position{
 															Column: 21,
-															Line:   13,
+															Line:   19,
 														},
 													},
 												},
@@ -1720,13 +1794,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 115,
-																Line:   14,
+																Line:   20,
 															},
 															File:   "testing.flux",
 															Source: "_field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 															Start: ast.Position{
 																Column: 13,
-																Line:   14,
+																Line:   20,
 															},
 														},
 													},
@@ -1738,13 +1812,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
-																	Line:   14,
+																	Line:   20,
 																},
 																File:   "testing.flux",
 																Source: "_field",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   14,
+																	Line:   20,
 																},
 															},
 														},
@@ -1760,13 +1834,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 114,
-																			Line:   14,
+																			Line:   20,
 																		},
 																		File:   "testing.flux",
 																		Source: "msg: \"test input table does not have _field column\"",
 																		Start: ast.Position{
 																			Column: 63,
-																			Line:   14,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1778,13 +1852,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 114,
-																				Line:   14,
+																				Line:   20,
 																			},
 																			File:   "testing.flux",
 																			Source: "msg: \"test input table does not have _field column\"",
 																			Start: ast.Position{
 																				Column: 63,
-																				Line:   14,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -1796,13 +1870,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 66,
-																					Line:   14,
+																					Line:   20,
 																				},
 																				File:   "testing.flux",
 																				Source: "msg",
 																				Start: ast.Position{
 																					Column: 63,
-																					Line:   14,
+																					Line:   20,
 																				},
 																			},
 																		},
@@ -1816,13 +1890,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 114,
-																					Line:   14,
+																					Line:   20,
 																				},
 																				File:   "testing.flux",
 																				Source: "\"test input table does not have _field column\"",
 																				Start: ast.Position{
 																					Column: 68,
-																					Line:   14,
+																					Line:   20,
 																				},
 																			},
 																		},
@@ -1838,13 +1912,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 115,
-																		Line:   14,
+																		Line:   20,
 																	},
 																	File:   "testing.flux",
 																	Source: "die(msg: \"test input table does not have _field column\")",
 																	Start: ast.Position{
 																		Column: 59,
-																		Line:   14,
+																		Line:   20,
 																	},
 																},
 															},
@@ -1855,13 +1929,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 62,
-																			Line:   14,
+																			Line:   20,
 																		},
 																		File:   "testing.flux",
 																		Source: "die",
 																		Start: ast.Position{
 																			Column: 59,
-																			Line:   14,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1876,13 +1950,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 115,
-																	Line:   14,
+																	Line:   20,
 																},
 																File:   "testing.flux",
 																Source: "if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   14,
+																	Line:   20,
 																},
 															},
 														},
@@ -1893,13 +1967,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 53,
-																		Line:   14,
+																		Line:   20,
 																	},
 																	File:   "testing.flux",
 																	Source: "r._field",
 																	Start: ast.Position{
 																		Column: 45,
-																		Line:   14,
+																		Line:   20,
 																	},
 																},
 															},
@@ -1911,13 +1985,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 46,
-																			Line:   14,
+																			Line:   20,
 																		},
 																		File:   "testing.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 45,
-																			Line:   14,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1930,13 +2004,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 53,
-																			Line:   14,
+																			Line:   20,
 																		},
 																		File:   "testing.flux",
 																		Source: "_field",
 																		Start: ast.Position{
 																			Column: 47,
-																			Line:   14,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1952,13 +2026,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 39,
-																			Line:   14,
+																			Line:   20,
 																		},
 																		File:   "testing.flux",
 																		Source: "r._field",
 																		Start: ast.Position{
 																			Column: 31,
-																			Line:   14,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1970,13 +2044,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 32,
-																				Line:   14,
+																				Line:   20,
 																			},
 																			File:   "testing.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 31,
-																				Line:   14,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -1989,13 +2063,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 39,
-																				Line:   14,
+																				Line:   20,
 																			},
 																			File:   "testing.flux",
 																			Source: "_field",
 																			Start: ast.Position{
 																				Column: 33,
-																				Line:   14,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -2009,13 +2083,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 39,
-																		Line:   14,
+																		Line:   20,
 																	},
 																	File:   "testing.flux",
 																	Source: "exists r._field",
 																	Start: ast.Position{
 																		Column: 24,
-																		Line:   14,
+																		Line:   20,
 																	},
 																},
 															},
@@ -2032,13 +2106,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 139,
-																Line:   15,
+																Line:   21,
 															},
 															File:   "testing.flux",
 															Source: "_measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 															Start: ast.Position{
 																Column: 13,
-																Line:   15,
+																Line:   21,
 															},
 														},
 													},
@@ -2050,13 +2124,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
-																	Line:   15,
+																	Line:   21,
 																},
 																File:   "testing.flux",
 																Source: "_measurement",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   15,
+																	Line:   21,
 																},
 															},
 														},
@@ -2072,13 +2146,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 138,
-																			Line:   15,
+																			Line:   21,
 																		},
 																		File:   "testing.flux",
 																		Source: "msg: \"test input table does not have _measurement column\"",
 																		Start: ast.Position{
 																			Column: 81,
-																			Line:   15,
+																			Line:   21,
 																		},
 																	},
 																},
@@ -2090,13 +2164,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 138,
-																				Line:   15,
+																				Line:   21,
 																			},
 																			File:   "testing.flux",
 																			Source: "msg: \"test input table does not have _measurement column\"",
 																			Start: ast.Position{
 																				Column: 81,
-																				Line:   15,
+																				Line:   21,
 																			},
 																		},
 																	},
@@ -2108,13 +2182,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 84,
-																					Line:   15,
+																					Line:   21,
 																				},
 																				File:   "testing.flux",
 																				Source: "msg",
 																				Start: ast.Position{
 																					Column: 81,
-																					Line:   15,
+																					Line:   21,
 																				},
 																			},
 																		},
@@ -2128,13 +2202,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 138,
-																					Line:   15,
+																					Line:   21,
 																				},
 																				File:   "testing.flux",
 																				Source: "\"test input table does not have _measurement column\"",
 																				Start: ast.Position{
 																					Column: 86,
-																					Line:   15,
+																					Line:   21,
 																				},
 																			},
 																		},
@@ -2150,13 +2224,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 139,
-																		Line:   15,
+																		Line:   21,
 																	},
 																	File:   "testing.flux",
 																	Source: "die(msg: \"test input table does not have _measurement column\")",
 																	Start: ast.Position{
 																		Column: 77,
-																		Line:   15,
+																		Line:   21,
 																	},
 																},
 															},
@@ -2167,13 +2241,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 80,
-																			Line:   15,
+																			Line:   21,
 																		},
 																		File:   "testing.flux",
 																		Source: "die",
 																		Start: ast.Position{
 																			Column: 77,
-																			Line:   15,
+																			Line:   21,
 																		},
 																	},
 																},
@@ -2188,13 +2262,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 139,
-																	Line:   15,
+																	Line:   21,
 																},
 																File:   "testing.flux",
 																Source: "if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 																Start: ast.Position{
 																	Column: 27,
-																	Line:   15,
+																	Line:   21,
 																},
 															},
 														},
@@ -2205,13 +2279,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 71,
-																		Line:   15,
+																		Line:   21,
 																	},
 																	File:   "testing.flux",
 																	Source: "r._measurement",
 																	Start: ast.Position{
 																		Column: 57,
-																		Line:   15,
+																		Line:   21,
 																	},
 																},
 															},
@@ -2223,13 +2297,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 58,
-																			Line:   15,
+																			Line:   21,
 																		},
 																		File:   "testing.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 57,
-																			Line:   15,
+																			Line:   21,
 																		},
 																	},
 																},
@@ -2242,13 +2316,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 71,
-																			Line:   15,
+																			Line:   21,
 																		},
 																		File:   "testing.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
 																			Column: 59,
-																			Line:   15,
+																			Line:   21,
 																		},
 																	},
 																},
@@ -2264,13 +2338,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 51,
-																			Line:   15,
+																			Line:   21,
 																		},
 																		File:   "testing.flux",
 																		Source: "r._measurement",
 																		Start: ast.Position{
 																			Column: 37,
-																			Line:   15,
+																			Line:   21,
 																		},
 																	},
 																},
@@ -2282,13 +2356,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 38,
-																				Line:   15,
+																				Line:   21,
 																			},
 																			File:   "testing.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 37,
-																				Line:   15,
+																				Line:   21,
 																			},
 																		},
 																	},
@@ -2301,13 +2375,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 51,
-																				Line:   15,
+																				Line:   21,
 																			},
 																			File:   "testing.flux",
 																			Source: "_measurement",
 																			Start: ast.Position{
 																				Column: 39,
-																				Line:   15,
+																				Line:   21,
 																			},
 																		},
 																	},
@@ -2321,13 +2395,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 51,
-																		Line:   15,
+																		Line:   21,
 																	},
 																	File:   "testing.flux",
 																	Source: "exists r._measurement",
 																	Start: ast.Position{
 																		Column: 30,
-																		Line:   15,
+																		Line:   21,
 																	},
 																},
 															},
@@ -2344,13 +2418,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 111,
-																Line:   16,
+																Line:   22,
 															},
 															File:   "testing.flux",
 															Source: "_time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 															Start: ast.Position{
 																Column: 13,
-																Line:   16,
+																Line:   22,
 															},
 														},
 													},
@@ -2362,13 +2436,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 18,
-																	Line:   16,
+																	Line:   22,
 																},
 																File:   "testing.flux",
 																Source: "_time",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   16,
+																	Line:   22,
 																},
 															},
 														},
@@ -2384,13 +2458,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 110,
-																			Line:   16,
+																			Line:   22,
 																		},
 																		File:   "testing.flux",
 																		Source: "msg: \"test input table does not have _time column\"",
 																		Start: ast.Position{
 																			Column: 60,
-																			Line:   16,
+																			Line:   22,
 																		},
 																	},
 																},
@@ -2402,13 +2476,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 110,
-																				Line:   16,
+																				Line:   22,
 																			},
 																			File:   "testing.flux",
 																			Source: "msg: \"test input table does not have _time column\"",
 																			Start: ast.Position{
 																				Column: 60,
-																				Line:   16,
+																				Line:   22,
 																			},
 																		},
 																	},
@@ -2420,13 +2494,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 63,
-																					Line:   16,
+																					Line:   22,
 																				},
 																				File:   "testing.flux",
 																				Source: "msg",
 																				Start: ast.Position{
 																					Column: 60,
-																					Line:   16,
+																					Line:   22,
 																				},
 																			},
 																		},
@@ -2440,13 +2514,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 110,
-																					Line:   16,
+																					Line:   22,
 																				},
 																				File:   "testing.flux",
 																				Source: "\"test input table does not have _time column\"",
 																				Start: ast.Position{
 																					Column: 65,
-																					Line:   16,
+																					Line:   22,
 																				},
 																			},
 																		},
@@ -2462,13 +2536,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 111,
-																		Line:   16,
+																		Line:   22,
 																	},
 																	File:   "testing.flux",
 																	Source: "die(msg: \"test input table does not have _time column\")",
 																	Start: ast.Position{
 																		Column: 56,
-																		Line:   16,
+																		Line:   22,
 																	},
 																},
 															},
@@ -2479,13 +2553,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 59,
-																			Line:   16,
+																			Line:   22,
 																		},
 																		File:   "testing.flux",
 																		Source: "die",
 																		Start: ast.Position{
 																			Column: 56,
-																			Line:   16,
+																			Line:   22,
 																		},
 																	},
 																},
@@ -2500,13 +2574,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 111,
-																	Line:   16,
+																	Line:   22,
 																},
 																File:   "testing.flux",
 																Source: "if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   16,
+																	Line:   22,
 																},
 															},
 														},
@@ -2517,13 +2591,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 50,
-																		Line:   16,
+																		Line:   22,
 																	},
 																	File:   "testing.flux",
 																	Source: "r._time",
 																	Start: ast.Position{
 																		Column: 43,
-																		Line:   16,
+																		Line:   22,
 																	},
 																},
 															},
@@ -2535,13 +2609,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 44,
-																			Line:   16,
+																			Line:   22,
 																		},
 																		File:   "testing.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 43,
-																			Line:   16,
+																			Line:   22,
 																		},
 																	},
 																},
@@ -2554,13 +2628,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 50,
-																			Line:   16,
+																			Line:   22,
 																		},
 																		File:   "testing.flux",
 																		Source: "_time",
 																		Start: ast.Position{
 																			Column: 45,
-																			Line:   16,
+																			Line:   22,
 																		},
 																	},
 																},
@@ -2576,13 +2650,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   16,
+																			Line:   22,
 																		},
 																		File:   "testing.flux",
 																		Source: "r._time",
 																		Start: ast.Position{
 																			Column: 30,
-																			Line:   16,
+																			Line:   22,
 																		},
 																	},
 																},
@@ -2594,13 +2668,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 31,
-																				Line:   16,
+																				Line:   22,
 																			},
 																			File:   "testing.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 30,
-																				Line:   16,
+																				Line:   22,
 																			},
 																		},
 																	},
@@ -2613,13 +2687,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 37,
-																				Line:   16,
+																				Line:   22,
 																			},
 																			File:   "testing.flux",
 																			Source: "_time",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   16,
+																				Line:   22,
 																			},
 																		},
 																	},
@@ -2633,13 +2707,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 37,
-																		Line:   16,
+																		Line:   22,
 																	},
 																	File:   "testing.flux",
 																	Source: "exists r._time",
 																	Start: ast.Position{
 																		Column: 23,
-																		Line:   16,
+																		Line:   22,
 																	},
 																},
 															},
@@ -2658,13 +2732,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 23,
-																Line:   13,
+																Line:   19,
 															},
 															File:   "testing.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 22,
-																Line:   13,
+																Line:   19,
 															},
 														},
 													},
@@ -2682,13 +2756,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 15,
-														Line:   13,
+														Line:   19,
 													},
 													File:   "testing.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 14,
-														Line:   13,
+														Line:   19,
 													},
 												},
 											},
@@ -2700,13 +2774,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   13,
+															Line:   19,
 														},
 														File:   "testing.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   13,
+															Line:   19,
 														},
 													},
 												},
@@ -2727,13 +2801,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   18,
+										Line:   24,
 									},
 									File:   "testing.flux",
 									Source: "map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
 									Start: ast.Position{
 										Column: 8,
-										Line:   12,
+										Line:   18,
 									},
 								},
 							},
@@ -2744,13 +2818,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
-											Line:   12,
+											Line:   18,
 										},
 										File:   "testing.flux",
 										Source: "map",
 										Start: ast.Position{
 											Column: 8,
-											Line:   12,
+											Line:   18,
 										},
 									},
 								},
@@ -2768,13 +2842,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   10,
+									Line:   16,
 								},
 								File:   "testing.flux",
 								Source: "csv",
 								Start: ast.Position{
 									Column: 23,
-									Line:   10,
+									Line:   16,
 								},
 							},
 						},
@@ -2786,13 +2860,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   10,
+										Line:   16,
 									},
 									File:   "testing.flux",
 									Source: "csv",
 									Start: ast.Position{
 										Column: 23,
-										Line:   10,
+										Line:   16,
 									},
 								},
 							},
@@ -2810,13 +2884,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 6,
-						Line:   18,
+						Line:   24,
 					},
 					File:   "testing.flux",
 					Source: "option loadStorage = (csv) => c.from(csv: csv)\n    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   16,
 					},
 				},
 			},
@@ -2828,13 +2902,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 36,
-							Line:   19,
+							Line:   25,
 						},
 						File:   "testing.flux",
 						Source: "load = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   19,
+							Line:   25,
 						},
 					},
 				},
@@ -2845,13 +2919,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   19,
+								Line:   25,
 							},
 							File:   "testing.flux",
 							Source: "load",
 							Start: ast.Position{
 								Column: 8,
-								Line:   19,
+								Line:   25,
 							},
 						},
 					},
@@ -2865,13 +2939,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
-								Line:   19,
+								Line:   25,
 							},
 							File:   "testing.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 15,
-								Line:   19,
+								Line:   25,
 							},
 						},
 					},
@@ -2882,13 +2956,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   19,
+									Line:   25,
 								},
 								File:   "testing.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 30,
-									Line:   19,
+									Line:   25,
 								},
 							},
 						},
@@ -2902,13 +2976,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   19,
+									Line:   25,
 								},
 								File:   "testing.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 16,
-									Line:   19,
+									Line:   25,
 								},
 							},
 						},
@@ -2920,13 +2994,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   19,
+										Line:   25,
 									},
 									File:   "testing.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 16,
-										Line:   19,
+										Line:   25,
 									},
 								},
 							},
@@ -2939,13 +3013,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   19,
+									Line:   25,
 								},
 								File:   "testing.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 23,
-									Line:   19,
+									Line:   25,
 								},
 							},
 						}},
@@ -2959,13 +3033,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 36,
-						Line:   19,
+						Line:   25,
 					},
 					File:   "testing.flux",
 					Source: "option load = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   19,
+						Line:   25,
 					},
 				},
 			},
@@ -2977,13 +3051,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 43,
-							Line:   20,
+							Line:   26,
 						},
 						File:   "testing.flux",
 						Source: "loadMem = (csv) => c.from(csv: csv)",
 						Start: ast.Position{
 							Column: 8,
-							Line:   20,
+							Line:   26,
 						},
 					},
 				},
@@ -2994,13 +3068,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   20,
+								Line:   26,
 							},
 							File:   "testing.flux",
 							Source: "loadMem",
 							Start: ast.Position{
 								Column: 8,
-								Line:   20,
+								Line:   26,
 							},
 						},
 					},
@@ -3014,13 +3088,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   20,
+								Line:   26,
 							},
 							File:   "testing.flux",
 							Source: "(csv) => c.from(csv: csv)",
 							Start: ast.Position{
 								Column: 18,
-								Line:   20,
+								Line:   26,
 							},
 						},
 					},
@@ -3032,13 +3106,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   20,
+										Line:   26,
 									},
 									File:   "testing.flux",
 									Source: "csv: csv",
 									Start: ast.Position{
 										Column: 34,
-										Line:   20,
+										Line:   26,
 									},
 								},
 							},
@@ -3050,13 +3124,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   20,
+											Line:   26,
 										},
 										File:   "testing.flux",
 										Source: "csv: csv",
 										Start: ast.Position{
 											Column: 34,
-											Line:   20,
+											Line:   26,
 										},
 									},
 								},
@@ -3068,13 +3142,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   20,
+												Line:   26,
 											},
 											File:   "testing.flux",
 											Source: "csv",
 											Start: ast.Position{
 												Column: 34,
-												Line:   20,
+												Line:   26,
 											},
 										},
 									},
@@ -3088,13 +3162,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
-												Line:   20,
+												Line:   26,
 											},
 											File:   "testing.flux",
 											Source: "csv",
 											Start: ast.Position{
 												Column: 39,
-												Line:   20,
+												Line:   26,
 											},
 										},
 									},
@@ -3110,13 +3184,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   20,
+									Line:   26,
 								},
 								File:   "testing.flux",
 								Source: "c.from(csv: csv)",
 								Start: ast.Position{
 									Column: 27,
-									Line:   20,
+									Line:   26,
 								},
 							},
 						},
@@ -3127,13 +3201,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   20,
+										Line:   26,
 									},
 									File:   "testing.flux",
 									Source: "c.from",
 									Start: ast.Position{
 										Column: 27,
-										Line:   20,
+										Line:   26,
 									},
 								},
 							},
@@ -3145,13 +3219,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   20,
+											Line:   26,
 										},
 										File:   "testing.flux",
 										Source: "c",
 										Start: ast.Position{
 											Column: 27,
-											Line:   20,
+											Line:   26,
 										},
 									},
 								},
@@ -3164,13 +3238,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   20,
+											Line:   26,
 										},
 										File:   "testing.flux",
 										Source: "from",
 										Start: ast.Position{
 											Column: 29,
-											Line:   20,
+											Line:   26,
 										},
 									},
 								},
@@ -3189,13 +3263,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   20,
+									Line:   26,
 								},
 								File:   "testing.flux",
 								Source: "csv",
 								Start: ast.Position{
 									Column: 19,
-									Line:   20,
+									Line:   26,
 								},
 							},
 						},
@@ -3207,13 +3281,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   20,
+										Line:   26,
 									},
 									File:   "testing.flux",
 									Source: "csv",
 									Start: ast.Position{
 										Column: 19,
-										Line:   20,
+										Line:   26,
 									},
 								},
 							},
@@ -3231,13 +3305,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 43,
-						Line:   20,
+						Line:   26,
 					},
 					File:   "testing.flux",
 					Source: "option loadMem = (csv) => c.from(csv: csv)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   20,
+						Line:   26,
 					},
 				},
 			},
@@ -3248,13 +3322,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   34,
+						Line:   40,
 					},
 					File:   "testing.flux",
 					Source: "inspect = (case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n\n    return {\n        fn: tc.fn,\n        input: tc.input,\n        want: tc.want |> yield(name: \"want\"),\n        got: got |> yield(name: \"got\"),\n        diff: dif |> yield(name: \"diff\"),\n    }\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   22,
+						Line:   28,
 					},
 				},
 			},
@@ -3265,13 +3339,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   22,
+							Line:   28,
 						},
 						File:   "testing.flux",
 						Source: "inspect",
 						Start: ast.Position{
 							Column: 1,
-							Line:   22,
+							Line:   28,
 						},
 					},
 				},
@@ -3285,13 +3359,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   34,
+							Line:   40,
 						},
 						File:   "testing.flux",
 						Source: "(case) => {\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n\n    return {\n        fn: tc.fn,\n        input: tc.input,\n        want: tc.want |> yield(name: \"want\"),\n        got: got |> yield(name: \"got\"),\n        diff: dif |> yield(name: \"diff\"),\n    }\n}",
 						Start: ast.Position{
 							Column: 11,
-							Line:   22,
+							Line:   28,
 						},
 					},
 				},
@@ -3302,13 +3376,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   34,
+								Line:   40,
 							},
 							File:   "testing.flux",
 							Source: "{\n    tc = case()\n    got = tc.input |> tc.fn()\n    dif = got |> diff(want: tc.want)\n\n    return {\n        fn: tc.fn,\n        input: tc.input,\n        want: tc.want |> yield(name: \"want\"),\n        got: got |> yield(name: \"got\"),\n        diff: dif |> yield(name: \"diff\"),\n    }\n}",
 							Start: ast.Position{
 								Column: 21,
-								Line:   22,
+								Line:   28,
 							},
 						},
 					},
@@ -3319,13 +3393,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   23,
+									Line:   29,
 								},
 								File:   "testing.flux",
 								Source: "tc = case()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   23,
+									Line:   29,
 								},
 							},
 						},
@@ -3336,13 +3410,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 7,
-										Line:   23,
+										Line:   29,
 									},
 									File:   "testing.flux",
 									Source: "tc",
 									Start: ast.Position{
 										Column: 5,
-										Line:   23,
+										Line:   29,
 									},
 								},
 							},
@@ -3356,13 +3430,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   23,
+										Line:   29,
 									},
 									File:   "testing.flux",
 									Source: "case()",
 									Start: ast.Position{
 										Column: 10,
-										Line:   23,
+										Line:   29,
 									},
 								},
 							},
@@ -3373,13 +3447,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   23,
+											Line:   29,
 										},
 										File:   "testing.flux",
 										Source: "case",
 										Start: ast.Position{
 											Column: 10,
-											Line:   23,
+											Line:   29,
 										},
 									},
 								},
@@ -3395,13 +3469,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   24,
+									Line:   30,
 								},
 								File:   "testing.flux",
 								Source: "got = tc.input |> tc.fn()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   24,
+									Line:   30,
 								},
 							},
 						},
@@ -3412,13 +3486,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   24,
+										Line:   30,
 									},
 									File:   "testing.flux",
 									Source: "got",
 									Start: ast.Position{
 										Column: 5,
-										Line:   24,
+										Line:   30,
 									},
 								},
 							},
@@ -3432,13 +3506,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   24,
+											Line:   30,
 										},
 										File:   "testing.flux",
 										Source: "tc.input",
 										Start: ast.Position{
 											Column: 11,
-											Line:   24,
+											Line:   30,
 										},
 									},
 								},
@@ -3450,13 +3524,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   24,
+												Line:   30,
 											},
 											File:   "testing.flux",
 											Source: "tc",
 											Start: ast.Position{
 												Column: 11,
-												Line:   24,
+												Line:   30,
 											},
 										},
 									},
@@ -3469,13 +3543,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   24,
+												Line:   30,
 											},
 											File:   "testing.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 14,
-												Line:   24,
+												Line:   30,
 											},
 										},
 									},
@@ -3489,13 +3563,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   24,
+										Line:   30,
 									},
 									File:   "testing.flux",
 									Source: "tc.input |> tc.fn()",
 									Start: ast.Position{
 										Column: 11,
-										Line:   24,
+										Line:   30,
 									},
 								},
 							},
@@ -3507,13 +3581,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   24,
+											Line:   30,
 										},
 										File:   "testing.flux",
 										Source: "tc.fn()",
 										Start: ast.Position{
 											Column: 23,
-											Line:   24,
+											Line:   30,
 										},
 									},
 								},
@@ -3524,13 +3598,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   24,
+												Line:   30,
 											},
 											File:   "testing.flux",
 											Source: "tc.fn",
 											Start: ast.Position{
 												Column: 23,
-												Line:   24,
+												Line:   30,
 											},
 										},
 									},
@@ -3542,13 +3616,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   24,
+													Line:   30,
 												},
 												File:   "testing.flux",
 												Source: "tc",
 												Start: ast.Position{
 													Column: 23,
-													Line:   24,
+													Line:   30,
 												},
 											},
 										},
@@ -3561,13 +3635,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   24,
+													Line:   30,
 												},
 												File:   "testing.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 26,
-													Line:   24,
+													Line:   30,
 												},
 											},
 										},
@@ -3586,13 +3660,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   25,
+									Line:   31,
 								},
 								File:   "testing.flux",
 								Source: "dif = got |> diff(want: tc.want)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   25,
+									Line:   31,
 								},
 							},
 						},
@@ -3603,13 +3677,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   25,
+										Line:   31,
 									},
 									File:   "testing.flux",
 									Source: "dif",
 									Start: ast.Position{
 										Column: 5,
-										Line:   25,
+										Line:   31,
 									},
 								},
 							},
@@ -3623,13 +3697,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   25,
+											Line:   31,
 										},
 										File:   "testing.flux",
 										Source: "got",
 										Start: ast.Position{
 											Column: 11,
-											Line:   25,
+											Line:   31,
 										},
 									},
 								},
@@ -3641,13 +3715,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   25,
+										Line:   31,
 									},
 									File:   "testing.flux",
 									Source: "got |> diff(want: tc.want)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   25,
+										Line:   31,
 									},
 								},
 							},
@@ -3659,13 +3733,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   25,
+												Line:   31,
 											},
 											File:   "testing.flux",
 											Source: "want: tc.want",
 											Start: ast.Position{
 												Column: 23,
-												Line:   25,
+												Line:   31,
 											},
 										},
 									},
@@ -3677,13 +3751,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 36,
-													Line:   25,
+													Line:   31,
 												},
 												File:   "testing.flux",
 												Source: "want: tc.want",
 												Start: ast.Position{
 													Column: 23,
-													Line:   25,
+													Line:   31,
 												},
 											},
 										},
@@ -3695,13 +3769,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 27,
-														Line:   25,
+														Line:   31,
 													},
 													File:   "testing.flux",
 													Source: "want",
 													Start: ast.Position{
 														Column: 23,
-														Line:   25,
+														Line:   31,
 													},
 												},
 											},
@@ -3715,13 +3789,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
-														Line:   25,
+														Line:   31,
 													},
 													File:   "testing.flux",
 													Source: "tc.want",
 													Start: ast.Position{
 														Column: 29,
-														Line:   25,
+														Line:   31,
 													},
 												},
 											},
@@ -3733,13 +3807,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 31,
-															Line:   25,
+															Line:   31,
 														},
 														File:   "testing.flux",
 														Source: "tc",
 														Start: ast.Position{
 															Column: 29,
-															Line:   25,
+															Line:   31,
 														},
 													},
 												},
@@ -3752,13 +3826,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
-															Line:   25,
+															Line:   31,
 														},
 														File:   "testing.flux",
 														Source: "want",
 														Start: ast.Position{
 															Column: 32,
-															Line:   25,
+															Line:   31,
 														},
 													},
 												},
@@ -3776,13 +3850,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 37,
-											Line:   25,
+											Line:   31,
 										},
 										File:   "testing.flux",
 										Source: "diff(want: tc.want)",
 										Start: ast.Position{
 											Column: 18,
-											Line:   25,
+											Line:   31,
 										},
 									},
 								},
@@ -3793,13 +3867,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   25,
+												Line:   31,
 											},
 											File:   "testing.flux",
 											Source: "diff",
 											Start: ast.Position{
 												Column: 18,
-												Line:   25,
+												Line:   31,
 											},
 										},
 									},
@@ -3817,13 +3891,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   33,
+										Line:   39,
 									},
 									File:   "testing.flux",
 									Source: "{\n        fn: tc.fn,\n        input: tc.input,\n        want: tc.want |> yield(name: \"want\"),\n        got: got |> yield(name: \"got\"),\n        diff: dif |> yield(name: \"diff\"),\n    }",
 									Start: ast.Position{
 										Column: 12,
-										Line:   27,
+										Line:   33,
 									},
 								},
 							},
@@ -3835,13 +3909,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   28,
+											Line:   34,
 										},
 										File:   "testing.flux",
 										Source: "fn: tc.fn",
 										Start: ast.Position{
 											Column: 9,
-											Line:   28,
+											Line:   34,
 										},
 									},
 								},
@@ -3853,13 +3927,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   28,
+												Line:   34,
 											},
 											File:   "testing.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 9,
-												Line:   28,
+												Line:   34,
 											},
 										},
 									},
@@ -3873,13 +3947,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   28,
+												Line:   34,
 											},
 											File:   "testing.flux",
 											Source: "tc.fn",
 											Start: ast.Position{
 												Column: 13,
-												Line:   28,
+												Line:   34,
 											},
 										},
 									},
@@ -3891,13 +3965,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   28,
+													Line:   34,
 												},
 												File:   "testing.flux",
 												Source: "tc",
 												Start: ast.Position{
 													Column: 13,
-													Line:   28,
+													Line:   34,
 												},
 											},
 										},
@@ -3910,13 +3984,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   28,
+													Line:   34,
 												},
 												File:   "testing.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 16,
-													Line:   28,
+													Line:   34,
 												},
 											},
 										},
@@ -3931,13 +4005,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   29,
+											Line:   35,
 										},
 										File:   "testing.flux",
 										Source: "input: tc.input",
 										Start: ast.Position{
 											Column: 9,
-											Line:   29,
+											Line:   35,
 										},
 									},
 								},
@@ -3949,13 +4023,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   29,
+												Line:   35,
 											},
 											File:   "testing.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 9,
-												Line:   29,
+												Line:   35,
 											},
 										},
 									},
@@ -3969,13 +4043,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   29,
+												Line:   35,
 											},
 											File:   "testing.flux",
 											Source: "tc.input",
 											Start: ast.Position{
 												Column: 16,
-												Line:   29,
+												Line:   35,
 											},
 										},
 									},
@@ -3987,13 +4061,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   29,
+													Line:   35,
 												},
 												File:   "testing.flux",
 												Source: "tc",
 												Start: ast.Position{
 													Column: 16,
-													Line:   29,
+													Line:   35,
 												},
 											},
 										},
@@ -4006,13 +4080,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   29,
+													Line:   35,
 												},
 												File:   "testing.flux",
 												Source: "input",
 												Start: ast.Position{
 													Column: 19,
-													Line:   29,
+													Line:   35,
 												},
 											},
 										},
@@ -4027,13 +4101,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   30,
+											Line:   36,
 										},
 										File:   "testing.flux",
 										Source: "want: tc.want |> yield(name: \"want\")",
 										Start: ast.Position{
 											Column: 9,
-											Line:   30,
+											Line:   36,
 										},
 									},
 								},
@@ -4045,13 +4119,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   30,
+												Line:   36,
 											},
 											File:   "testing.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 9,
-												Line:   30,
+												Line:   36,
 											},
 										},
 									},
@@ -4066,13 +4140,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   30,
+													Line:   36,
 												},
 												File:   "testing.flux",
 												Source: "tc.want",
 												Start: ast.Position{
 													Column: 15,
-													Line:   30,
+													Line:   36,
 												},
 											},
 										},
@@ -4084,13 +4158,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 17,
-														Line:   30,
+														Line:   36,
 													},
 													File:   "testing.flux",
 													Source: "tc",
 													Start: ast.Position{
 														Column: 15,
-														Line:   30,
+														Line:   36,
 													},
 												},
 											},
@@ -4103,13 +4177,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   30,
+														Line:   36,
 													},
 													File:   "testing.flux",
 													Source: "want",
 													Start: ast.Position{
 														Column: 18,
-														Line:   30,
+														Line:   36,
 													},
 												},
 											},
@@ -4123,13 +4197,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   30,
+												Line:   36,
 											},
 											File:   "testing.flux",
 											Source: "tc.want |> yield(name: \"want\")",
 											Start: ast.Position{
 												Column: 15,
-												Line:   30,
+												Line:   36,
 											},
 										},
 									},
@@ -4141,13 +4215,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   30,
+														Line:   36,
 													},
 													File:   "testing.flux",
 													Source: "name: \"want\"",
 													Start: ast.Position{
 														Column: 32,
-														Line:   30,
+														Line:   36,
 													},
 												},
 											},
@@ -4159,13 +4233,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
-															Line:   30,
+															Line:   36,
 														},
 														File:   "testing.flux",
 														Source: "name: \"want\"",
 														Start: ast.Position{
 															Column: 32,
-															Line:   30,
+															Line:   36,
 														},
 													},
 												},
@@ -4177,13 +4251,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
-																Line:   30,
+																Line:   36,
 															},
 															File:   "testing.flux",
 															Source: "name",
 															Start: ast.Position{
 																Column: 32,
-																Line:   30,
+																Line:   36,
 															},
 														},
 													},
@@ -4197,13 +4271,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 44,
-																Line:   30,
+																Line:   36,
 															},
 															File:   "testing.flux",
 															Source: "\"want\"",
 															Start: ast.Position{
 																Column: 38,
-																Line:   30,
+																Line:   36,
 															},
 														},
 													},
@@ -4219,13 +4293,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   30,
+													Line:   36,
 												},
 												File:   "testing.flux",
 												Source: "yield(name: \"want\")",
 												Start: ast.Position{
 													Column: 26,
-													Line:   30,
+													Line:   36,
 												},
 											},
 										},
@@ -4236,13 +4310,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 31,
-														Line:   30,
+														Line:   36,
 													},
 													File:   "testing.flux",
 													Source: "yield",
 													Start: ast.Position{
 														Column: 26,
-														Line:   30,
+														Line:   36,
 													},
 												},
 											},
@@ -4259,13 +4333,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   31,
+											Line:   37,
 										},
 										File:   "testing.flux",
 										Source: "got: got |> yield(name: \"got\")",
 										Start: ast.Position{
 											Column: 9,
-											Line:   31,
+											Line:   37,
 										},
 									},
 								},
@@ -4277,13 +4351,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   31,
+												Line:   37,
 											},
 											File:   "testing.flux",
 											Source: "got",
 											Start: ast.Position{
 												Column: 9,
-												Line:   31,
+												Line:   37,
 											},
 										},
 									},
@@ -4298,13 +4372,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
-													Line:   31,
+													Line:   37,
 												},
 												File:   "testing.flux",
 												Source: "got",
 												Start: ast.Position{
 													Column: 14,
-													Line:   31,
+													Line:   37,
 												},
 											},
 										},
@@ -4316,13 +4390,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   31,
+												Line:   37,
 											},
 											File:   "testing.flux",
 											Source: "got |> yield(name: \"got\")",
 											Start: ast.Position{
 												Column: 14,
-												Line:   31,
+												Line:   37,
 											},
 										},
 									},
@@ -4334,13 +4408,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   31,
+														Line:   37,
 													},
 													File:   "testing.flux",
 													Source: "name: \"got\"",
 													Start: ast.Position{
 														Column: 27,
-														Line:   31,
+														Line:   37,
 													},
 												},
 											},
@@ -4352,13 +4426,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
-															Line:   31,
+															Line:   37,
 														},
 														File:   "testing.flux",
 														Source: "name: \"got\"",
 														Start: ast.Position{
 															Column: 27,
-															Line:   31,
+															Line:   37,
 														},
 													},
 												},
@@ -4370,13 +4444,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 31,
-																Line:   31,
+																Line:   37,
 															},
 															File:   "testing.flux",
 															Source: "name",
 															Start: ast.Position{
 																Column: 27,
-																Line:   31,
+																Line:   37,
 															},
 														},
 													},
@@ -4390,13 +4464,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 38,
-																Line:   31,
+																Line:   37,
 															},
 															File:   "testing.flux",
 															Source: "\"got\"",
 															Start: ast.Position{
 																Column: 33,
-																Line:   31,
+																Line:   37,
 															},
 														},
 													},
@@ -4412,13 +4486,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
-													Line:   31,
+													Line:   37,
 												},
 												File:   "testing.flux",
 												Source: "yield(name: \"got\")",
 												Start: ast.Position{
 													Column: 21,
-													Line:   31,
+													Line:   37,
 												},
 											},
 										},
@@ -4429,13 +4503,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   31,
+														Line:   37,
 													},
 													File:   "testing.flux",
 													Source: "yield",
 													Start: ast.Position{
 														Column: 21,
-														Line:   31,
+														Line:   37,
 													},
 												},
 											},
@@ -4452,13 +4526,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 41,
-											Line:   32,
+											Line:   38,
 										},
 										File:   "testing.flux",
 										Source: "diff: dif |> yield(name: \"diff\")",
 										Start: ast.Position{
 											Column: 9,
-											Line:   32,
+											Line:   38,
 										},
 									},
 								},
@@ -4470,13 +4544,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   32,
+												Line:   38,
 											},
 											File:   "testing.flux",
 											Source: "diff",
 											Start: ast.Position{
 												Column: 9,
-												Line:   32,
+												Line:   38,
 											},
 										},
 									},
@@ -4491,13 +4565,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   32,
+													Line:   38,
 												},
 												File:   "testing.flux",
 												Source: "dif",
 												Start: ast.Position{
 													Column: 15,
-													Line:   32,
+													Line:   38,
 												},
 											},
 										},
@@ -4509,13 +4583,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   32,
+												Line:   38,
 											},
 											File:   "testing.flux",
 											Source: "dif |> yield(name: \"diff\")",
 											Start: ast.Position{
 												Column: 15,
-												Line:   32,
+												Line:   38,
 											},
 										},
 									},
@@ -4527,13 +4601,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
-														Line:   32,
+														Line:   38,
 													},
 													File:   "testing.flux",
 													Source: "name: \"diff\"",
 													Start: ast.Position{
 														Column: 28,
-														Line:   32,
+														Line:   38,
 													},
 												},
 											},
@@ -4545,13 +4619,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 40,
-															Line:   32,
+															Line:   38,
 														},
 														File:   "testing.flux",
 														Source: "name: \"diff\"",
 														Start: ast.Position{
 															Column: 28,
-															Line:   32,
+															Line:   38,
 														},
 													},
 												},
@@ -4563,13 +4637,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 32,
-																Line:   32,
+																Line:   38,
 															},
 															File:   "testing.flux",
 															Source: "name",
 															Start: ast.Position{
 																Column: 28,
-																Line:   32,
+																Line:   38,
 															},
 														},
 													},
@@ -4583,13 +4657,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 40,
-																Line:   32,
+																Line:   38,
 															},
 															File:   "testing.flux",
 															Source: "\"diff\"",
 															Start: ast.Position{
 																Column: 34,
-																Line:   32,
+																Line:   38,
 															},
 														},
 													},
@@ -4605,13 +4679,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   32,
+													Line:   38,
 												},
 												File:   "testing.flux",
 												Source: "yield(name: \"diff\")",
 												Start: ast.Position{
 													Column: 22,
-													Line:   32,
+													Line:   38,
 												},
 											},
 										},
@@ -4622,13 +4696,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 27,
-														Line:   32,
+														Line:   38,
 													},
 													File:   "testing.flux",
 													Source: "yield",
 													Start: ast.Position{
 														Column: 22,
-														Line:   32,
+														Line:   38,
 													},
 												},
 											},
@@ -4648,13 +4722,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   33,
+									Line:   39,
 								},
 								File:   "testing.flux",
 								Source: "return {\n        fn: tc.fn,\n        input: tc.input,\n        want: tc.want |> yield(name: \"want\"),\n        got: got |> yield(name: \"got\"),\n        diff: dif |> yield(name: \"diff\"),\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   27,
+									Line:   33,
 								},
 							},
 						},
@@ -4670,13 +4744,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   22,
+								Line:   28,
 							},
 							File:   "testing.flux",
 							Source: "case",
 							Start: ast.Position{
 								Column: 12,
-								Line:   22,
+								Line:   28,
 							},
 						},
 					},
@@ -4688,13 +4762,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   22,
+									Line:   28,
 								},
 								File:   "testing.flux",
 								Source: "case",
 								Start: ast.Position{
 									Column: 12,
-									Line:   22,
+									Line:   28,
 								},
 							},
 						},
@@ -4712,13 +4786,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   37,
+						Line:   43,
 					},
 					File:   "testing.flux",
 					Source: "run = (case) => {\n    return inspect(case: case).diff |> assertEmpty()\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   35,
+						Line:   41,
 					},
 				},
 			},
@@ -4729,13 +4803,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   35,
+							Line:   41,
 						},
 						File:   "testing.flux",
 						Source: "run",
 						Start: ast.Position{
 							Column: 1,
-							Line:   35,
+							Line:   41,
 						},
 					},
 				},
@@ -4749,13 +4823,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   37,
+							Line:   43,
 						},
 						File:   "testing.flux",
 						Source: "(case) => {\n    return inspect(case: case).diff |> assertEmpty()\n}",
 						Start: ast.Position{
 							Column: 7,
-							Line:   35,
+							Line:   41,
 						},
 					},
 				},
@@ -4766,13 +4840,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   37,
+								Line:   43,
 							},
 							File:   "testing.flux",
 							Source: "{\n    return inspect(case: case).diff |> assertEmpty()\n}",
 							Start: ast.Position{
 								Column: 17,
-								Line:   35,
+								Line:   41,
 							},
 						},
 					},
@@ -4785,13 +4859,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 36,
-											Line:   36,
+											Line:   42,
 										},
 										File:   "testing.flux",
 										Source: "inspect(case: case).diff",
 										Start: ast.Position{
 											Column: 12,
-											Line:   36,
+											Line:   42,
 										},
 									},
 								},
@@ -4804,13 +4878,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   36,
+													Line:   42,
 												},
 												File:   "testing.flux",
 												Source: "case: case",
 												Start: ast.Position{
 													Column: 20,
-													Line:   36,
+													Line:   42,
 												},
 											},
 										},
@@ -4822,13 +4896,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   36,
+														Line:   42,
 													},
 													File:   "testing.flux",
 													Source: "case: case",
 													Start: ast.Position{
 														Column: 20,
-														Line:   36,
+														Line:   42,
 													},
 												},
 											},
@@ -4840,13 +4914,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   36,
+															Line:   42,
 														},
 														File:   "testing.flux",
 														Source: "case",
 														Start: ast.Position{
 															Column: 20,
-															Line:   36,
+															Line:   42,
 														},
 													},
 												},
@@ -4860,13 +4934,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
-															Line:   36,
+															Line:   42,
 														},
 														File:   "testing.flux",
 														Source: "case",
 														Start: ast.Position{
 															Column: 26,
-															Line:   36,
+															Line:   42,
 														},
 													},
 												},
@@ -4882,13 +4956,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   36,
+												Line:   42,
 											},
 											File:   "testing.flux",
 											Source: "inspect(case: case)",
 											Start: ast.Position{
 												Column: 12,
-												Line:   36,
+												Line:   42,
 											},
 										},
 									},
@@ -4899,13 +4973,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   36,
+													Line:   42,
 												},
 												File:   "testing.flux",
 												Source: "inspect",
 												Start: ast.Position{
 													Column: 12,
-													Line:   36,
+													Line:   42,
 												},
 											},
 										},
@@ -4921,13 +4995,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   36,
+												Line:   42,
 											},
 											File:   "testing.flux",
 											Source: "diff",
 											Start: ast.Position{
 												Column: 32,
-												Line:   36,
+												Line:   42,
 											},
 										},
 									},
@@ -4941,13 +5015,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   36,
+										Line:   42,
 									},
 									File:   "testing.flux",
 									Source: "inspect(case: case).diff |> assertEmpty()",
 									Start: ast.Position{
 										Column: 12,
-										Line:   36,
+										Line:   42,
 									},
 								},
 							},
@@ -4959,13 +5033,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
-											Line:   36,
+											Line:   42,
 										},
 										File:   "testing.flux",
 										Source: "assertEmpty()",
 										Start: ast.Position{
 											Column: 40,
-											Line:   36,
+											Line:   42,
 										},
 									},
 								},
@@ -4976,13 +5050,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   36,
+												Line:   42,
 											},
 											File:   "testing.flux",
 											Source: "assertEmpty",
 											Start: ast.Position{
 												Column: 40,
-												Line:   36,
+												Line:   42,
 											},
 										},
 									},
@@ -4998,13 +5072,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   36,
+									Line:   42,
 								},
 								File:   "testing.flux",
 								Source: "return inspect(case: case).diff |> assertEmpty()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   36,
+									Line:   42,
 								},
 							},
 						},
@@ -5020,13 +5094,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   35,
+								Line:   41,
 							},
 							File:   "testing.flux",
 							Source: "case",
 							Start: ast.Position{
 								Column: 8,
-								Line:   35,
+								Line:   41,
 							},
 						},
 					},
@@ -5038,13 +5112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   35,
+									Line:   41,
 								},
 								File:   "testing.flux",
 								Source: "case",
 								Start: ast.Position{
 									Column: 8,
-									Line:   35,
+									Line:   41,
 								},
 							},
 						},
@@ -5062,13 +5136,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   42,
+						Line:   48,
 					},
 					File:   "testing.flux",
 					Source: "benchmark = (case) => {\n    tc = case()\n\n    return tc.input |> tc.fn()\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   38,
+						Line:   44,
 					},
 				},
 			},
@@ -5079,13 +5153,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   38,
+							Line:   44,
 						},
 						File:   "testing.flux",
 						Source: "benchmark",
 						Start: ast.Position{
 							Column: 1,
-							Line:   38,
+							Line:   44,
 						},
 					},
 				},
@@ -5099,13 +5173,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   42,
+							Line:   48,
 						},
 						File:   "testing.flux",
 						Source: "(case) => {\n    tc = case()\n\n    return tc.input |> tc.fn()\n}",
 						Start: ast.Position{
 							Column: 13,
-							Line:   38,
+							Line:   44,
 						},
 					},
 				},
@@ -5116,13 +5190,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   42,
+								Line:   48,
 							},
 							File:   "testing.flux",
 							Source: "{\n    tc = case()\n\n    return tc.input |> tc.fn()\n}",
 							Start: ast.Position{
 								Column: 23,
-								Line:   38,
+								Line:   44,
 							},
 						},
 					},
@@ -5133,13 +5207,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   39,
+									Line:   45,
 								},
 								File:   "testing.flux",
 								Source: "tc = case()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   39,
+									Line:   45,
 								},
 							},
 						},
@@ -5150,13 +5224,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 7,
-										Line:   39,
+										Line:   45,
 									},
 									File:   "testing.flux",
 									Source: "tc",
 									Start: ast.Position{
 										Column: 5,
-										Line:   39,
+										Line:   45,
 									},
 								},
 							},
@@ -5170,13 +5244,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   39,
+										Line:   45,
 									},
 									File:   "testing.flux",
 									Source: "case()",
 									Start: ast.Position{
 										Column: 10,
-										Line:   39,
+										Line:   45,
 									},
 								},
 							},
@@ -5187,13 +5261,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   39,
+											Line:   45,
 										},
 										File:   "testing.flux",
 										Source: "case",
 										Start: ast.Position{
 											Column: 10,
-											Line:   39,
+											Line:   45,
 										},
 									},
 								},
@@ -5211,13 +5285,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   41,
+											Line:   47,
 										},
 										File:   "testing.flux",
 										Source: "tc.input",
 										Start: ast.Position{
 											Column: 12,
-											Line:   41,
+											Line:   47,
 										},
 									},
 								},
@@ -5229,13 +5303,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   41,
+												Line:   47,
 											},
 											File:   "testing.flux",
 											Source: "tc",
 											Start: ast.Position{
 												Column: 12,
-												Line:   41,
+												Line:   47,
 											},
 										},
 									},
@@ -5248,13 +5322,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   41,
+												Line:   47,
 											},
 											File:   "testing.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 15,
-												Line:   41,
+												Line:   47,
 											},
 										},
 									},
@@ -5268,13 +5342,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   41,
+										Line:   47,
 									},
 									File:   "testing.flux",
 									Source: "tc.input |> tc.fn()",
 									Start: ast.Position{
 										Column: 12,
-										Line:   41,
+										Line:   47,
 									},
 								},
 							},
@@ -5286,13 +5360,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   41,
+											Line:   47,
 										},
 										File:   "testing.flux",
 										Source: "tc.fn()",
 										Start: ast.Position{
 											Column: 24,
-											Line:   41,
+											Line:   47,
 										},
 									},
 								},
@@ -5303,13 +5377,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   41,
+												Line:   47,
 											},
 											File:   "testing.flux",
 											Source: "tc.fn",
 											Start: ast.Position{
 												Column: 24,
-												Line:   41,
+												Line:   47,
 											},
 										},
 									},
@@ -5321,13 +5395,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   41,
+													Line:   47,
 												},
 												File:   "testing.flux",
 												Source: "tc",
 												Start: ast.Position{
 													Column: 24,
-													Line:   41,
+													Line:   47,
 												},
 											},
 										},
@@ -5340,13 +5414,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   41,
+													Line:   47,
 												},
 												File:   "testing.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 27,
-													Line:   41,
+													Line:   47,
 												},
 											},
 										},
@@ -5364,13 +5438,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   41,
+									Line:   47,
 								},
 								File:   "testing.flux",
 								Source: "return tc.input |> tc.fn()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   41,
+									Line:   47,
 								},
 							},
 						},
@@ -5386,13 +5460,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   38,
+								Line:   44,
 							},
 							File:   "testing.flux",
 							Source: "case",
 							Start: ast.Position{
 								Column: 14,
-								Line:   38,
+								Line:   44,
 							},
 						},
 					},
@@ -5404,13 +5478,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   38,
+									Line:   44,
 								},
 								File:   "testing.flux",
 								Source: "case",
 								Start: ast.Position{
 									Column: 14,
-									Line:   38,
+									Line:   44,
 								},
 							},
 						},

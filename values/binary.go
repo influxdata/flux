@@ -135,9 +135,6 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.DivisionOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
 		l := lv.Float()
 		r := rv.Float()
-		if r == 0 {
-			return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
-		}
 		return NewFloat(l / r), nil
 	},
 	{Operator: ast.ModuloOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
@@ -159,9 +156,6 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 	{Operator: ast.ModuloOperator, Left: semantic.Float, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
 		l := lv.Float()
 		r := rv.Float()
-		if r == 0 {
-			return nil, errors.Newf(codes.FailedPrecondition, "cannot mod zero")
-		}
 		return NewFloat(math.Mod(l, r)), nil
 	},
 	{Operator: ast.PowerOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {

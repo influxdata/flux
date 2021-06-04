@@ -22,6 +22,7 @@ import (
 	oee "github.com/influxdata/flux/stdlib/experimental/oee"
 	table "github.com/influxdata/flux/stdlib/experimental/table"
 	http "github.com/influxdata/flux/stdlib/http"
+	influxdb "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
 	schema "github.com/influxdata/flux/stdlib/influxdata/influxdb/schema"
 	secrets "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
@@ -62,6 +63,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, oee.FluxTestPackages...)
 	pkgs = append(pkgs, table.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
+	pkgs = append(pkgs, influxdb.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
 	pkgs = append(pkgs, schema.FluxTestPackages...)
 	pkgs = append(pkgs, secrets.FluxTestPackages...)

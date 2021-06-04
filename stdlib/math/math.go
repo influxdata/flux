@@ -81,7 +81,7 @@ func init() {
 	runtime.RegisterPackageValue("math", "maxfloat", values.NewFloat(math.MaxFloat64))
 	runtime.RegisterPackageValue("math", "smallestNonzeroFloat", values.NewFloat(math.SmallestNonzeroFloat64))
 	runtime.RegisterPackageValue("math", "maxint", values.NewInt(math.MaxInt64))
-	runtime.RegisterPackageValue("math", "minint", values.NewFloat(math.MinInt64))
+	runtime.RegisterPackageValue("math", "minint", values.NewInt(math.MinInt64))
 	runtime.RegisterPackageValue("math", "maxuint", values.NewUInt(math.MaxUint64))
 
 	runtime.RegisterPackageValue("math", "abs", generateMathFunctionX("abs", math.Abs))

@@ -1001,7 +1001,8 @@ The operator precedence is encoded directly into the grammar as the following.
                              | CallExpression
                              | IndexExpression .
 
-Dividing by 0 or using the mod operator with a divisor of 0 will result in an error.
+Dividing by zero or using the mod operator with a divisor of zero for integer and unsigned integer types will result in an error.
+Floating point divide by zero produces positive or negative infinity according to the [IEEE-754](https://en.wikipedia.org/wiki/IEEE_754) floating point specification.
 
 ### Packages
 
