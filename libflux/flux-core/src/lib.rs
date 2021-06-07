@@ -82,3 +82,39 @@ impl From<semantic::check::Error> for Error {
         }
     }
 }
+
+/// merge_packages takes an input package and an output package, checks that the package
+/// clauses match and merges the files from the input package into the output package. If
+/// package clauses fail validation then an option with an Error is returned.
+pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> Option<Error> {
+    let out_pkg_name = if let Some(pc) = &out_pkg.files[0].package {
+        &pc.name.name
+    } else {
+        DEFAULT_PACKAGE_NAME
+    };
+
+    // Check that all input files have a package clause that matches the output package.
+    for file in &in_pkg.files {
+        match file.package.as_ref() {
+            Some(pc) => {
+                let in_pkg_name = &pc.name.name;
+                if in_pkg_name != out_pkg_name {
+                    return Some(Error::from(format!(
+                        r#"error at {}: file is in package "{}", but other files are in package "{}""#,
+                        pc.base.location, in_pkg_name, out_pkg_name
+                    )));
+                }
+            }
+            None => {
+                if out_pkg_name != DEFAULT_PACKAGE_NAME {
+                    return Some(Error::from(format!(
+                        r#"error at {}: file is in default package "{}", but other files are in package "{}""#,
+                        file.base.location, DEFAULT_PACKAGE_NAME, out_pkg_name
+                    )));
+                }
+            }
+        };
+    }
+    out_pkg.files.append(&mut in_pkg.files);
+    None
+}
