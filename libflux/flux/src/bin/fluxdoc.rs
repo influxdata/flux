@@ -1,12 +1,12 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
 
 //use std::collections::HashMap;
+use flux::docs::{self, DocPackage};
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 use tera::{Context, Tera};
-use flux::docs::{self, DocPackage};
 
 #[macro_use]
 extern crate lazy_static;

@@ -1,14 +1,13 @@
-
 //#[macro_use]
 //extern crate serde_derive;
 
-use std::collections::HashMap;
-use std::path::{PathBuf, Path};
-use std::fs;
-use crate::parser::Parser;
-use crate::{analyze, merge_packages, semantic};
-use crate::semantic::types::{PolyType, TvarKinds};
 use crate::ast;
+use crate::parser::Parser;
+use crate::semantic::types::{PolyType, TvarKinds};
+use crate::{analyze, merge_packages, semantic};
+use std::collections::HashMap;
+use std::fs;
+use std::path::{Path, PathBuf};
 
 // DocPackage represents the documentation for a package and its sub packages
 #[derive(Debug, Serialize, Deserialize)]
