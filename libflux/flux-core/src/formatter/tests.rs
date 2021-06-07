@@ -73,6 +73,21 @@ fn funcs() {
 }
 
 #[test]
+fn call_expr() {
+    // call function
+    assert_unchanged("a()");
+    assert_format("(a)()", "a()");
+    // call anonymous function
+    assert_unchanged("((a) => a)()");
+    // pipe anonymous function
+    assert_unchanged("(() => 1) |> f()");
+}
+#[test]
+fn function_expr() {
+    assert_unchanged("() => 1 and () => 2");
+}
+
+#[test]
 fn record() {
     assert_unchanged("{a: 1, b: {c: 11, d: 12}}");
     assert_unchanged("{foo with a: 1, b: {c: 11, d: 12}}"); // with
