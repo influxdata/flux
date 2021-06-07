@@ -5,10 +5,7 @@ use crate::parser::parse_string;
 use crate::Error;
 
 use std::io;
-use std::io::Write;
 use std::string::FromUtf8Error;
-
-use tabwriter::{Alignment, IntoInnerError, TabWriter};
 
 use chrono::SecondsFormat;
 use wasm_bindgen::prelude::*;
@@ -50,10 +47,7 @@ pub fn format(contents: &str) -> Result<String, Error> {
 /// options, and errors.
 /// Provides methods for formatting files and strings of source code.
 pub struct Formatter {
-    // Builder is a buffer of the formatted code. We use a TabWriter to align tabstops
-    // vertically.
-    // See http://nickgravgaard.com/elastic-tabstops/ for a description of the algorithm
-    builder: TabWriter<Vec<u8>>,
+    builder: String,
     indentation: u32,
     // clear is true if the last line consists of only whitespace
     clear: bool,
@@ -67,29 +61,23 @@ pub struct Formatter {
     temp_indent: bool,
     err: Option<Error>,
 
-    // temp_tabstops indicates if we should be inserting tabstops when formatting nodes.
-    temp_tabstops: bool,
+    // temp_singleline is true then records will be formatted on a single line
+    // in order to make them read more like a table.
+    temp_singleline: bool,
 }
 
 // INDENT_BYTES is 4 spaces as a constant byte slice
-const INDENT_BYTES: [u8; 4] = [32, 32, 32, 32];
+const INDENT_BYTES: &str = "    ";
 
 impl Default for Formatter {
     fn default() -> Self {
         Formatter {
-            // The TabWriter replaces \t characters with spaces according to its vertical alignment
-            // rules.
-            // We set the padding and minwidth to 0 so that \t characters are removed unless they
-            // appear in a set of adjacent lines in the output source.
-            builder: TabWriter::new(vec![])
-                .alignment(Alignment::Right)
-                .padding(0)
-                .minwidth(0),
+            builder: String::new(),
             indentation: 0,
             clear: true,
             temp_indent: false,
             err: None,
-            temp_tabstops: false,
+            temp_singleline: false,
         }
     }
 }
@@ -113,29 +101,14 @@ impl From<FromUtf8Error> for Error {
     }
 }
 
-impl From<IntoInnerError<TabWriter<Vec<u8>>>> for Error {
-    fn from(err: IntoInnerError<TabWriter<Vec<u8>>>) -> Self {
-        Error {
-            msg: format!("{}", err),
-        }
-    }
-}
-
 impl Formatter {
     /// Returns the final formatted string and error message.
-    pub fn output(mut self) -> Result<String, Error> {
+    pub fn output(self) -> Result<String, Error> {
         if let Some(err) = self.err {
             return Err(err);
         }
 
-        self.builder.flush()?;
-        Ok(String::from_utf8(self.builder.into_inner()?)?)
-    }
-
-    fn write_bytes(&mut self, data: &[u8]) {
-        if let Err(e) = self.builder.write_all(data) {
-            self.err = Some(Error::from(e))
-        }
+        Ok(self.builder)
     }
 
     fn write_string(&mut self, s: &str) {
@@ -146,7 +119,7 @@ impl Formatter {
                 self.clear = true;
             }
         }
-        self.write_bytes(s.as_bytes())
+        (&mut self.builder).push_str(s);
     }
 
     fn write_rune(&mut self, c: char) {
@@ -159,13 +132,12 @@ impl Formatter {
         } else if c != '\t' && c != ' ' {
             self.clear = false;
         }
-        // Any char in Rust fits into 4 bytes
-        self.write_bytes(c.encode_utf8(&mut [0; 4]).as_bytes())
+        (&mut self.builder).push(c);
     }
 
     fn write_indent(&mut self) {
         for _ in 0..self.indentation {
-            self.write_bytes(&INDENT_BYTES)
+            (&mut self.builder).push_str(INDENT_BYTES);
         }
     }
     fn indent(&mut self) {
@@ -267,7 +239,7 @@ impl Formatter {
             Node::LogicalExpr(m) => self.format_logical_expression(m),
             Node::ParenExpr(m) => self.format_paren_expression(m),
             Node::FunctionExpr(m) => self.format_function_expression(m),
-            Node::Property(m) => self.format_property(m, self.temp_tabstops),
+            Node::Property(m) => self.format_property(m),
             Node::TextPart(m) => self.format_text_part(m),
             Node::InterpolatedPart(m) => self.format_interpolated_part(m),
             Node::StringLit(m) => self.format_string_literal(m),
@@ -281,7 +253,7 @@ impl Formatter {
             Node::PipeLit(m) => self.format_pipe_literal(m),
             Node::Identifier(m) => self.format_identifier(m),
             Node::ObjectExpr(m) => {
-                self.format_record_expression_braces(m, true, self.temp_tabstops)
+                self.format_record_expression_braces(m, true, self.temp_singleline)
             }
             Node::Package(m) => self.format_package(m),
             Node::BadStmt(_) => self.err = Some(Error::from("bad statement")),
@@ -504,15 +476,11 @@ impl Formatter {
         self.format_identifier(&n.name);
     }
 
-    fn format_property(&mut self, n: &ast::Property, tabstops: bool) {
+    fn format_property(&mut self, n: &ast::Property) {
         self.format_property_key(&n.key);
         if let Some(v) = &n.value {
             self.format_comments(&n.separator);
-            if tabstops {
-                self.write_string(": \t");
-            } else {
-                self.write_string(": ");
-            }
+            self.write_string(": ");
             self.format_node(&Node::from_expr(&v));
         }
     }
@@ -648,7 +616,7 @@ impl Formatter {
         self.format_comments(&n.lbrack);
         self.write_rune('[');
         if multiline {
-            self.temp_tabstops = true;
+            self.temp_singleline = true;
             self.write_rune('\n');
             self.indent();
             self.write_indent();
@@ -668,7 +636,7 @@ impl Formatter {
             self.format_comments(&item.comma);
         }
         if multiline {
-            self.temp_tabstops = false;
+            self.temp_singleline = false;
             self.write_string(sep);
             self.unindent();
             self.write_indent();
@@ -682,7 +650,6 @@ impl Formatter {
         self.format_comments(&n.lbrack);
         self.write_rune('[');
         if multiline {
-            self.temp_tabstops = true;
             self.write_rune('\n');
             self.indent();
             self.write_indent();
@@ -709,7 +676,6 @@ impl Formatter {
             self.write_rune(':');
         }
         if multiline {
-            self.temp_tabstops = false;
             self.write_string(sep);
             self.unindent();
             self.write_indent();
@@ -910,10 +876,9 @@ impl Formatter {
         &mut self,
         n: &ast::ObjectExpr,
         braces: bool,
-        tabstops: bool,
+        single_line: bool,
     ) {
-        // tabstops force single line formatting
-        let multiline = !tabstops && (n.properties.len() > 4 || n.base.is_multiline());
+        let multiline = !single_line && (n.properties.len() > 4 || n.base.is_multiline());
         self.format_comments(&n.lbrace);
         if braces {
             self.write_rune('{');
@@ -931,11 +896,9 @@ impl Formatter {
             self.indent();
             self.write_indent();
         }
-        let sep = match (multiline, tabstops) {
-            (true, true) => "NOTREACHABLE",
-            (true, false) => ",\n",
-            (false, true) => ",\t ",
-            (false, false) => ", ",
+        let sep = match multiline {
+            true => ",\n",
+            false => ", ",
         };
         for (i, property) in (&n.properties).iter().enumerate() {
             if i != 0 {
@@ -951,9 +914,6 @@ impl Formatter {
             self.write_string(sep);
             self.unindent();
             self.write_indent();
-        }
-        if !multiline && tabstops {
-            self.write_rune('\t');
         }
         self.format_comments(&n.rbrace);
         if braces {

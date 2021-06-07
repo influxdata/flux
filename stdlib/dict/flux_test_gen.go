@@ -23,7 +23,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   67,
 				},
 				File:   "dict_insert_remove_test.flux",
-				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ncodes1 = dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key:  \"invalid\", value: 1},\n        {key:  \"unknown\", value: 3},\n    ],\n)\ncodes2 = dict.remove(dict: codes1, key: \"unknown\")\ncodes3 = dict.insert(dict: codes2, key: \"unimplemented\", value: 2)\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long,long,long\n#group,false,false,false,true,true,true,false,false,false,false\n#default,_result,,,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code1,error_code2,error_code3\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0,0,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0,0,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1,1,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1,1,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,-1,-1,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,-1,-1,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,3,-1,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,3,-1,-1\n\"\nt_dict = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> map(\n        fn: (r) => {\n            error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n            error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n            error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n            return {r with\n                error_code1: error_code1,\n                error_code2: error_code2,\n                error_code3: error_code3,\n            }\n        },\n    )\n\ntest _dict = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_dict,\n})",
+				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ncodes1 = dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unknown\", value: 3},\n    ],\n)\ncodes2 = dict.remove(dict: codes1, key: \"unknown\")\ncodes3 = dict.insert(dict: codes2, key: \"unimplemented\", value: 2)\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long,long,long\n#group,false,false,false,true,true,true,false,false,false,false\n#default,_result,,,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code1,error_code2,error_code3\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0,0,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0,0,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1,1,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1,1,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,-1,-1,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,-1,-1,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,3,-1,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,3,-1,-1\n\"\nt_dict = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> map(\n        fn: (r) => {\n            error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)\n            error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)\n            error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)\n\n            return {r with\n                error_code1: error_code1,\n                error_code2: error_code2,\n                error_code3: error_code3,\n            }\n        },\n    )\n\ntest _dict = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_dict,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -135,7 +135,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   15,
 					},
 					File:   "dict_insert_remove_test.flux",
-					Source: "codes1 = dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key:  \"invalid\", value: 1},\n        {key:  \"unknown\", value: 3},\n    ],\n)",
+					Source: "codes1 = dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unknown\", value: 3},\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -172,7 +172,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Line:   14,
 							},
 							File:   "dict_insert_remove_test.flux",
-							Source: "pairs: [\n        {key: \"internal\", value: 0},\n        {key:  \"invalid\", value: 1},\n        {key:  \"unknown\", value: 3},\n    ]",
+							Source: "pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unknown\", value: 3},\n    ]",
 							Start: ast.Position{
 								Column: 5,
 								Line:   10,
@@ -190,7 +190,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Line:   14,
 								},
 								File:   "dict_insert_remove_test.flux",
-								Source: "pairs: [\n        {key: \"internal\", value: 0},\n        {key:  \"invalid\", value: 1},\n        {key:  \"unknown\", value: 3},\n    ]",
+								Source: "pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unknown\", value: 3},\n    ]",
 								Start: ast.Position{
 									Column: 5,
 									Line:   10,
@@ -228,7 +228,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Line:   14,
 									},
 									File:   "dict_insert_remove_test.flux",
-									Source: "[\n        {key: \"internal\", value: 0},\n        {key:  \"invalid\", value: 1},\n        {key:  \"unknown\", value: 3},\n    ]",
+									Source: "[\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unknown\", value: 3},\n    ]",
 									Start: ast.Position{
 										Column: 12,
 										Line:   10,
@@ -376,11 +376,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
+											Column: 35,
 											Line:   12,
 										},
 										File:   "dict_insert_remove_test.flux",
-										Source: "{key:  \"invalid\", value: 1}",
+										Source: "{key: \"invalid\", value: 1}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   12,
@@ -394,11 +394,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
+												Column: 24,
 												Line:   12,
 											},
 											File:   "dict_insert_remove_test.flux",
-											Source: "key:  \"invalid\"",
+											Source: "key: \"invalid\"",
 											Start: ast.Position{
 												Column: 10,
 												Line:   12,
@@ -432,13 +432,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 25,
+													Column: 24,
 													Line:   12,
 												},
 												File:   "dict_insert_remove_test.flux",
 												Source: "\"invalid\"",
 												Start: ast.Position{
-													Column: 16,
+													Column: 15,
 													Line:   12,
 												},
 											},
@@ -451,13 +451,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
+												Column: 34,
 												Line:   12,
 											},
 											File:   "dict_insert_remove_test.flux",
 											Source: "value: 1",
 											Start: ast.Position{
-												Column: 27,
+												Column: 26,
 												Line:   12,
 											},
 										},
@@ -469,13 +469,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 32,
+													Column: 31,
 													Line:   12,
 												},
 												File:   "dict_insert_remove_test.flux",
 												Source: "value",
 												Start: ast.Position{
-													Column: 27,
+													Column: 26,
 													Line:   12,
 												},
 											},
@@ -489,13 +489,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 35,
+													Column: 34,
 													Line:   12,
 												},
 												File:   "dict_insert_remove_test.flux",
 												Source: "1",
 												Start: ast.Position{
-													Column: 34,
+													Column: 33,
 													Line:   12,
 												},
 											},
@@ -511,11 +511,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
+											Column: 35,
 											Line:   13,
 										},
 										File:   "dict_insert_remove_test.flux",
-										Source: "{key:  \"unknown\", value: 3}",
+										Source: "{key: \"unknown\", value: 3}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   13,
@@ -529,11 +529,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
+												Column: 24,
 												Line:   13,
 											},
 											File:   "dict_insert_remove_test.flux",
-											Source: "key:  \"unknown\"",
+											Source: "key: \"unknown\"",
 											Start: ast.Position{
 												Column: 10,
 												Line:   13,
@@ -567,13 +567,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 25,
+													Column: 24,
 													Line:   13,
 												},
 												File:   "dict_insert_remove_test.flux",
 												Source: "\"unknown\"",
 												Start: ast.Position{
-													Column: 16,
+													Column: 15,
 													Line:   13,
 												},
 											},
@@ -586,13 +586,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
+												Column: 34,
 												Line:   13,
 											},
 											File:   "dict_insert_remove_test.flux",
 											Source: "value: 3",
 											Start: ast.Position{
-												Column: 27,
+												Column: 26,
 												Line:   13,
 											},
 										},
@@ -604,13 +604,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 32,
+													Column: 31,
 													Line:   13,
 												},
 												File:   "dict_insert_remove_test.flux",
 												Source: "value",
 												Start: ast.Position{
-													Column: 27,
+													Column: 26,
 													Line:   13,
 												},
 											},
@@ -624,13 +624,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 35,
+													Column: 34,
 													Line:   13,
 												},
 												File:   "dict_insert_remove_test.flux",
 												Source: "3",
 												Start: ast.Position{
-													Column: 34,
+													Column: 33,
 													Line:   13,
 												},
 											},
@@ -657,7 +657,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   15,
 						},
 						File:   "dict_insert_remove_test.flux",
-						Source: "dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key:  \"invalid\", value: 1},\n        {key:  \"unknown\", value: 3},\n    ],\n)",
+						Source: "dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unknown\", value: 3},\n    ],\n)",
 						Start: ast.Position{
 							Column: 10,
 							Line:   9,
@@ -8008,7 +8008,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   59,
 				},
 				File:   "dict_test.flux",
-				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ncodes = dict.fromList(\n    pairs: [\n        {key:      \"internal\", value: 0},\n        {key:       \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ],\n)\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,-1\n\"\nt_dict = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> map(\n        fn: (r) => {\n            error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n            return {r with error_code: error_code}\n        },\n    )\n\ntest _dict = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_dict,\n})",
+				Source: "package dict_test\n\n\nimport \"testing\"\nimport \"dict\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ncodes = dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ],\n)\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,error_type,_value,error_code\n,,0,2018-05-22T19:53:26Z,requests,error,internal,some internal error,0\n,,0,2018-05-22T19:53:36Z,requests,error,internal,another internal error,0\n,,1,2018-05-22T19:53:46Z,requests,error,invalid,unknown parameter,1\n,,1,2018-05-22T19:53:56Z,requests,error,invalid,cannot use duration as value,1\n,,2,2018-05-22T19:54:06Z,requests,error,unimplemented,implement me,2\n,,2,2018-05-22T19:54:16Z,requests,error,unimplemented,not implemented,2\n,,3,2018-05-22T19:53:26Z,requests,error,unknown,unknown error,-1\n,,3,2018-05-22T19:53:36Z,requests,error,unknown,network error,-1\n\"\nt_dict = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> map(\n        fn: (r) => {\n            error_code = dict.get(dict: codes, key: r.error_type, default: -1)\n\n            return {r with error_code: error_code}\n        },\n    )\n\ntest _dict = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_dict,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -8120,7 +8120,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   15,
 					},
 					File:   "dict_test.flux",
-					Source: "codes = dict.fromList(\n    pairs: [\n        {key:      \"internal\", value: 0},\n        {key:       \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ],\n)",
+					Source: "codes = dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -8157,7 +8157,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Line:   14,
 							},
 							File:   "dict_test.flux",
-							Source: "pairs: [\n        {key:      \"internal\", value: 0},\n        {key:       \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ]",
+							Source: "pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ]",
 							Start: ast.Position{
 								Column: 5,
 								Line:   10,
@@ -8175,7 +8175,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Line:   14,
 								},
 								File:   "dict_test.flux",
-								Source: "pairs: [\n        {key:      \"internal\", value: 0},\n        {key:       \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ]",
+								Source: "pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ]",
 								Start: ast.Position{
 									Column: 5,
 									Line:   10,
@@ -8213,7 +8213,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Line:   14,
 									},
 									File:   "dict_test.flux",
-									Source: "[\n        {key:      \"internal\", value: 0},\n        {key:       \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ]",
+									Source: "[\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ]",
 									Start: ast.Position{
 										Column: 12,
 										Line:   10,
@@ -8226,11 +8226,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
+											Column: 36,
 											Line:   11,
 										},
 										File:   "dict_test.flux",
-										Source: "{key:      \"internal\", value: 0}",
+										Source: "{key: \"internal\", value: 0}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   11,
@@ -8244,11 +8244,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
+												Column: 25,
 												Line:   11,
 											},
 											File:   "dict_test.flux",
-											Source: "key:      \"internal\"",
+											Source: "key: \"internal\"",
 											Start: ast.Position{
 												Column: 10,
 												Line:   11,
@@ -8282,13 +8282,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 30,
+													Column: 25,
 													Line:   11,
 												},
 												File:   "dict_test.flux",
 												Source: "\"internal\"",
 												Start: ast.Position{
-													Column: 20,
+													Column: 15,
 													Line:   11,
 												},
 											},
@@ -8301,13 +8301,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 40,
+												Column: 35,
 												Line:   11,
 											},
 											File:   "dict_test.flux",
 											Source: "value: 0",
 											Start: ast.Position{
-												Column: 32,
+												Column: 27,
 												Line:   11,
 											},
 										},
@@ -8319,13 +8319,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 32,
 													Line:   11,
 												},
 												File:   "dict_test.flux",
 												Source: "value",
 												Start: ast.Position{
-													Column: 32,
+													Column: 27,
 													Line:   11,
 												},
 											},
@@ -8339,13 +8339,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 40,
+													Column: 35,
 													Line:   11,
 												},
 												File:   "dict_test.flux",
 												Source: "0",
 												Start: ast.Position{
-													Column: 39,
+													Column: 34,
 													Line:   11,
 												},
 											},
@@ -8361,11 +8361,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
+											Column: 35,
 											Line:   12,
 										},
 										File:   "dict_test.flux",
-										Source: "{key:       \"invalid\", value: 1}",
+										Source: "{key: \"invalid\", value: 1}",
 										Start: ast.Position{
 											Column: 9,
 											Line:   12,
@@ -8379,11 +8379,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
+												Column: 24,
 												Line:   12,
 											},
 											File:   "dict_test.flux",
-											Source: "key:       \"invalid\"",
+											Source: "key: \"invalid\"",
 											Start: ast.Position{
 												Column: 10,
 												Line:   12,
@@ -8417,13 +8417,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 30,
+													Column: 24,
 													Line:   12,
 												},
 												File:   "dict_test.flux",
 												Source: "\"invalid\"",
 												Start: ast.Position{
-													Column: 21,
+													Column: 15,
 													Line:   12,
 												},
 											},
@@ -8436,13 +8436,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 40,
+												Column: 34,
 												Line:   12,
 											},
 											File:   "dict_test.flux",
 											Source: "value: 1",
 											Start: ast.Position{
-												Column: 32,
+												Column: 26,
 												Line:   12,
 											},
 										},
@@ -8454,13 +8454,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 31,
 													Line:   12,
 												},
 												File:   "dict_test.flux",
 												Source: "value",
 												Start: ast.Position{
-													Column: 32,
+													Column: 26,
 													Line:   12,
 												},
 											},
@@ -8474,13 +8474,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 40,
+													Column: 34,
 													Line:   12,
 												},
 												File:   "dict_test.flux",
 												Source: "1",
 												Start: ast.Position{
-													Column: 39,
+													Column: 33,
 													Line:   12,
 												},
 											},
@@ -8642,7 +8642,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   15,
 						},
 						File:   "dict_test.flux",
-						Source: "dict.fromList(\n    pairs: [\n        {key:      \"internal\", value: 0},\n        {key:       \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ],\n)",
+						Source: "dict.fromList(\n    pairs: [\n        {key: \"internal\", value: 0},\n        {key: \"invalid\", value: 1},\n        {key: \"unimplemented\", value: 2},\n    ],\n)",
 						Start: ast.Position{
 							Column: 9,
 							Line:   9,

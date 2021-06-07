@@ -82,18 +82,12 @@ fn record() {
     assert_unchanged("{\n    a: 1,\n    b: 2,\n    c: 3,\n    d: 4,\n}"); // multiline object based on property count
     assert_unchanged("{\n    a: 1,\n    b: 2,\n}"); // multiline object based on initial conditions
     assert_unchanged("{x with\n    a: 1,\n    b: 2,\n}"); // multiline object using "with"
-    assert_format(
+    assert_unchanged(
         "[
     {a: 1, b: 2},
     {a: 111, b: 2},
     {a: 1, b: 222},
     {a: 1, b: -892},
-]",
-        "[
-    {a:   1, b:    2},
-    {a: 111, b:    2},
-    {a:   1, b:  222},
-    {a:   1, b: -892},
 ]",
     );
     assert_format(
@@ -116,10 +110,10 @@ fn record() {
     },
 ]",
         "[
-    {a:   1, b:    2},
-    {a: 111, b:    2},
-    {a:   1, b:  222},
-    {a:   1, b: -892},
+    {a: 1, b: 2},
+    {a: 111, b: 2},
+    {a: 1, b: 222},
+    {a: 1, b: -892},
 ]",
     );
 }
@@ -1248,4 +1242,14 @@ fn preserve_multiline_test() {
     return http.post(headers: headers, url: url, data: body)
 }"#,
     );
+}
+
+#[test]
+fn tab_literals() {
+    assert_unchanged(
+        "// This is a comment with a literal tabstop character
+//	<- that is a tab
+a",
+    );
+    assert_unchanged(r#"a = "a string literal with a tabstop '	'""#);
 }
