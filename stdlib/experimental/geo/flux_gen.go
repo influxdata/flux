@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 30,
-					Line:   240,
+					Line:   242,
 				},
 				File:   "geo.flux",
-				Source: "package geo\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\n\n// Units\noption units = {\n    distance: \"km\",\n}\n\n//\n// Builtin GIS functions\n//\n// Returns boolean whether the region contains specified geometry.\nbuiltin stContains : (region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record\n\n// Returns distance from given region to specified geometry.\nbuiltin stDistance : (region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record\n\n// Returns length of a curve.\nbuiltin stLength : (geometry: A, units: {distance: string}) => float where A: Record\n\n//\n// Flux GIS ST functions\n//\nST_Contains = (region, geometry, units=units) => stContains(region: region, geometry: geometry, units: units)\nST_Distance = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units)\nST_DWithin = (region, geometry, distance, units=units) => stDistance(region: region, geometry: geometry, units: units) <= distance\nST_Intersects = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units) <= 0.0\nST_Length = (geometry, units=units) => stLength(geometry: geometry, units: units)\n\n// Non-standard\nST_LineString = (tables=<-) => tables\n    |> reduce(\n        fn: (r, accumulator) => ({\n            __linestring: accumulator.__linestring + (if accumulator.__count > 0 then \", \" else \"\") + string(v: r.lon) + \" \" + string(v: r.lat),\n            __count: accumulator.__count + 1,\n        }),\n        identity: {\n            __linestring: \"\",\n            __count: 0,\n        },\n    )\n    |> drop(columns: [\"__count\"])\n    |> rename(columns: {__linestring: \"st_linestring\"})\n\n//\n// None of the following builtin functions are intended to be used by end users.\n//\n// Calculates grid (set of cell ID tokens) for given region and according to options.\nbuiltin getGrid : (\n    region: T,\n    ?minSize: int,\n    ?maxSize: int,\n    ?level: int,\n    ?maxLevel: int,\n    units: {distance: string},\n) => {level: int, set: [string]} where\n    T: Record\n\n// Returns level of specified cell ID token.\nbuiltin getLevel : (token: string) => int\n\n// Returns cell ID token for given cell or lat/lon point at specified level.\nbuiltin s2CellIDToken : (?token: string, ?point: {lat: float, lon: float}, level: int) => string\n\n// Returns lat/lon coordinates of given cell ID token.\nbuiltin s2CellLatLon : (token: string) => {lat: float, lon: float}\n\n//\n// Flux functions\n//\n// Gets level of cell ID tag `s2cellID` from the first record from the first table in the stream.\n_detectLevel = (tables=<-) => {\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\n    else\n        666\n\n    return _level\n}\n\n//\n// Convenience functions\n//\n// Pivots values to row-wise sets.\ntoRows = (tables=<-) => tables\n    |> v1.fieldsAsCols()\n\n// Shapes data to meet the requirements of the geo package.\n// Renames fields containing latitude and longitude values to lat and lon.\n// Pivots values to row-wise sets.\n// Generates an s2_cell_id tag for each reach using lat and lon values.\n// Adds the s2_cell_id column to the group key.\nshapeData = (tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )\n\n//\n// Filtering functions\n//\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (\n        tables=<-,\n        region,\n        minSize=24,\n        maxSize=-1,\n        level=-1,\n        s2cellIDLevel=-1,\n        units=units,\n) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}\n\n// Filters records by specified region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, region) => tables\n    |> filter(fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon}))\n\n// Two-phase filtering by specified region.\n// Checks to see if data is already pivoted and contains a lat column.\n// Returns pivoted data.\nfilterRows = (\n        tables=<-,\n        region,\n        minSize=24,\n        maxSize=-1,\n        level=-1,\n        s2cellIDLevel=-1,\n        strict=true,\n) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\", \"tid\"], orderBy=[\"_time\"]) => tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
+				Source: "package geo\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\n\n// Units\noption units = {\n    distance: \"km\",\n}\n\n//\n// Builtin GIS functions\n//\n// Returns boolean whether the region contains specified geometry.\nbuiltin stContains : (region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record\n\n// Returns distance from given region to specified geometry.\nbuiltin stDistance : (region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record\n\n// Returns length of a curve.\nbuiltin stLength : (geometry: A, units: {distance: string}) => float where A: Record\n\n//\n// Flux GIS ST functions\n//\nST_Contains = (region, geometry, units=units) => stContains(region: region, geometry: geometry, units: units)\nST_Distance = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units)\nST_DWithin = (region, geometry, distance, units=units) => stDistance(region: region, geometry: geometry, units: units) <= distance\nST_Intersects = (region, geometry, units=units) => stDistance(region: region, geometry: geometry, units: units) <= 0.0\nST_Length = (geometry, units=units) => stLength(geometry: geometry, units: units)\n\n// Non-standard\nST_LineString = (tables=<-) => tables\n    |> reduce(\n        fn: (r, accumulator) => ({\n            __linestring: accumulator.__linestring + (if accumulator.__count > 0 then \", \" else \"\") + string(v: r.lon) + \" \" + string(v: r.lat),\n            __count: accumulator.__count + 1,\n        }),\n        identity: {\n            __linestring: \"\",\n            __count: 0,\n        },\n    )\n    |> drop(columns: [\"__count\"])\n    |> rename(columns: {__linestring: \"st_linestring\"})\n\n//\n// None of the following builtin functions are intended to be used by end users.\n//\n// Calculates grid (set of cell ID tokens) for given region and according to options.\nbuiltin getGrid : (\n    region: T,\n    ?minSize: int,\n    ?maxSize: int,\n    ?level: int,\n    ?maxLevel: int,\n    units: {distance: string},\n) => {level: int, set: [string]} where\n    T: Record\n\n// Returns level of specified cell ID token.\nbuiltin getLevel : (token: string) => int\n\n// Returns cell ID token for given cell or lat/lon point at specified level.\nbuiltin s2CellIDToken : (?token: string, ?point: {lat: float, lon: float}, level: int) => string\n\n// Returns lat/lon coordinates of given cell ID token.\nbuiltin s2CellLatLon : (token: string) => {lat: float, lon: float}\n\n//\n// Flux functions\n//\n// Gets level of cell ID tag `s2cellID` from the first record from the first table in the stream.\n_detectLevel = (tables=<-) => {\n    _r0 = tables\n        |> tableFind(fn: (key) => exists key.s2_cell_id)\n        |> getRecord(idx: 0)\n    _level = if exists _r0 then\n        getLevel(token: _r0.s2_cell_id)\n    else\n        666\n\n    return _level\n}\n\n//\n// Convenience functions\n//\n// Pivots values to row-wise sets.\ntoRows = (tables=<-) => tables\n    |> v1.fieldsAsCols()\n\n// `shapeData` modifies data to meet the requirements of the geo package. Renames\n// fields containing latitude and longitude values to lat and lon. Pivots values\n// to row-wise sets. Generates an s2_cell_id tag for each reach using lat and lon\n// values. Adds the s2_cell_id column to the group key.\n//\n// - `tables` is a stream of input tables\n// - `latField` is a \nshapeData = (tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )\n\n//\n// Filtering functions\n//\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (\n        tables=<-,\n        region,\n        minSize=24,\n        maxSize=-1,\n        level=-1,\n        s2cellIDLevel=-1,\n        units=units,\n) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}\n\n// Filters records by specified region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, region) => tables\n    |> filter(fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon}))\n\n// Two-phase filtering by specified region.\n// Checks to see if data is already pivoted and contains a lat column.\n// Returns pivoted data.\nfilterRows = (\n        tables=<-,\n        region,\n        minSize=24,\n        maxSize=-1,\n        level=-1,\n        s2cellIDLevel=-1,\n        strict=true,\n) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\", \"tid\"], orderBy=[\"_time\"]) => tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -8311,30 +8311,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 6,
-						Line:   120,
+						Line:   122,
 					},
 					File:   "geo.flux",
 					Source: "shapeData = (tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   100,
+						Line:   102,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// Shapes data to meet the requirements of the geo package.\n"}, ast.Comment{Text: "// Renames fields containing latitude and longitude values to lat and lon.\n"}, ast.Comment{Text: "// Pivots values to row-wise sets.\n"}, ast.Comment{Text: "// Generates an s2_cell_id tag for each reach using lat and lon values.\n"}, ast.Comment{Text: "// Adds the s2_cell_id column to the group key.\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// `shapeData` modifies data to meet the requirements of the geo package. Renames\n"}, ast.Comment{Text: "// fields containing latitude and longitude values to lat and lon. Pivots values\n"}, ast.Comment{Text: "// to row-wise sets. Generates an s2_cell_id tag for each reach using lat and lon\n"}, ast.Comment{Text: "// values. Adds the s2_cell_id column to the group key.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `tables` is a stream of input tables\n"}, ast.Comment{Text: "// - `latField` is a \n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   100,
+							Line:   102,
 						},
 						File:   "geo.flux",
 						Source: "shapeData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   100,
+							Line:   102,
 						},
 					},
 				},
@@ -8348,13 +8348,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   120,
+							Line:   122,
 						},
 						File:   "geo.flux",
 						Source: "(tables=<-, latField, lonField, level) => tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
 						Start: ast.Position{
 							Column: 13,
-							Line:   100,
+							Line:   102,
 						},
 					},
 				},
@@ -8369,13 +8369,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 61,
-												Line:   100,
+												Line:   102,
 											},
 											File:   "geo.flux",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 55,
-												Line:   100,
+												Line:   102,
 											},
 										},
 									},
@@ -8387,13 +8387,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   110,
+											Line:   112,
 										},
 										File:   "geo.flux",
 										Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )",
 										Start: ast.Position{
 											Column: 55,
-											Line:   100,
+											Line:   102,
 										},
 									},
 								},
@@ -8405,13 +8405,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   109,
+													Line:   111,
 												},
 												File:   "geo.flux",
 												Source: "fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        })",
 												Start: ast.Position{
 													Column: 9,
-													Line:   102,
+													Line:   104,
 												},
 											},
 										},
@@ -8423,13 +8423,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   109,
+														Line:   111,
 													},
 													File:   "geo.flux",
 													Source: "fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        })",
 													Start: ast.Position{
 														Column: 9,
-														Line:   102,
+														Line:   104,
 													},
 												},
 											},
@@ -8441,13 +8441,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   102,
+															Line:   104,
 														},
 														File:   "geo.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 9,
-															Line:   102,
+															Line:   104,
 														},
 													},
 												},
@@ -8462,13 +8462,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   109,
+															Line:   111,
 														},
 														File:   "geo.flux",
 														Source: "(r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        })",
 														Start: ast.Position{
 															Column: 13,
-															Line:   102,
+															Line:   104,
 														},
 													},
 												},
@@ -8479,13 +8479,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 11,
-																Line:   109,
+																Line:   111,
 															},
 															File:   "geo.flux",
 															Source: "({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        })",
 															Start: ast.Position{
 																Column: 20,
-																Line:   102,
+																Line:   104,
 															},
 														},
 													},
@@ -8496,13 +8496,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 10,
-																	Line:   109,
+																	Line:   111,
 																},
 																File:   "geo.flux",
 																Source: "{r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   102,
+																	Line:   104,
 																},
 															},
 														},
@@ -8514,13 +8514,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   108,
+																		Line:   110,
 																	},
 																	File:   "geo.flux",
 																	Source: "_field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   103,
+																		Line:   105,
 																	},
 																},
 															},
@@ -8532,13 +8532,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 19,
-																			Line:   103,
+																			Line:   105,
 																		},
 																		File:   "geo.flux",
 																		Source: "_field",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   103,
+																			Line:   105,
 																		},
 																	},
 																},
@@ -8554,13 +8554,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 25,
-																					Line:   108,
+																					Line:   110,
 																				},
 																				File:   "geo.flux",
 																				Source: "r._field",
 																				Start: ast.Position{
 																					Column: 17,
-																					Line:   108,
+																					Line:   110,
 																				},
 																			},
 																		},
@@ -8572,13 +8572,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 18,
-																						Line:   108,
+																						Line:   110,
 																					},
 																					File:   "geo.flux",
 																					Source: "r",
 																					Start: ast.Position{
 																						Column: 17,
-																						Line:   108,
+																						Line:   110,
 																					},
 																				},
 																			},
@@ -8591,13 +8591,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 25,
-																						Line:   108,
+																						Line:   110,
 																					},
 																					File:   "geo.flux",
 																					Source: "_field",
 																					Start: ast.Position{
 																						Column: 19,
-																						Line:   108,
+																						Line:   110,
 																					},
 																				},
 																			},
@@ -8611,13 +8611,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 25,
-																				Line:   108,
+																				Line:   110,
 																			},
 																			File:   "geo.flux",
 																			Source: "if r._field == lonField then\n                \"lon\"\n            else\n                r._field",
 																			Start: ast.Position{
 																				Column: 18,
-																				Line:   105,
+																				Line:   107,
 																			},
 																		},
 																	},
@@ -8628,13 +8628,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 22,
-																					Line:   106,
+																					Line:   108,
 																				},
 																				File:   "geo.flux",
 																				Source: "\"lon\"",
 																				Start: ast.Position{
 																					Column: 17,
-																					Line:   106,
+																					Line:   108,
 																				},
 																			},
 																		},
@@ -8647,13 +8647,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 41,
-																					Line:   105,
+																					Line:   107,
 																				},
 																				File:   "geo.flux",
 																				Source: "r._field == lonField",
 																				Start: ast.Position{
 																					Column: 21,
-																					Line:   105,
+																					Line:   107,
 																				},
 																			},
 																		},
@@ -8664,13 +8664,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 29,
-																						Line:   105,
+																						Line:   107,
 																					},
 																					File:   "geo.flux",
 																					Source: "r._field",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   105,
+																						Line:   107,
 																					},
 																				},
 																			},
@@ -8682,13 +8682,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 22,
-																							Line:   105,
+																							Line:   107,
 																						},
 																						File:   "geo.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 21,
-																							Line:   105,
+																							Line:   107,
 																						},
 																					},
 																				},
@@ -8701,13 +8701,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 29,
-																							Line:   105,
+																							Line:   107,
 																						},
 																						File:   "geo.flux",
 																						Source: "_field",
 																						Start: ast.Position{
 																							Column: 23,
-																							Line:   105,
+																							Line:   107,
 																						},
 																					},
 																				},
@@ -8723,13 +8723,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 41,
-																						Line:   105,
+																						Line:   107,
 																					},
 																					File:   "geo.flux",
 																					Source: "lonField",
 																					Start: ast.Position{
 																						Column: 33,
-																						Line:   105,
+																						Line:   107,
 																					},
 																				},
 																			},
@@ -8746,13 +8746,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
-																			Line:   108,
+																			Line:   110,
 																		},
 																		File:   "geo.flux",
 																		Source: "if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field",
 																		Start: ast.Position{
 																			Column: 21,
-																			Line:   103,
+																			Line:   105,
 																		},
 																	},
 																},
@@ -8763,13 +8763,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 22,
-																				Line:   104,
+																				Line:   106,
 																			},
 																			File:   "geo.flux",
 																			Source: "\"lat\"",
 																			Start: ast.Position{
 																				Column: 17,
-																				Line:   104,
+																				Line:   106,
 																			},
 																		},
 																	},
@@ -8782,13 +8782,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 44,
-																				Line:   103,
+																				Line:   105,
 																			},
 																			File:   "geo.flux",
 																			Source: "r._field == latField",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   103,
+																				Line:   105,
 																			},
 																		},
 																	},
@@ -8799,13 +8799,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 32,
-																					Line:   103,
+																					Line:   105,
 																				},
 																				File:   "geo.flux",
 																				Source: "r._field",
 																				Start: ast.Position{
 																					Column: 24,
-																					Line:   103,
+																					Line:   105,
 																				},
 																			},
 																		},
@@ -8817,13 +8817,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 25,
-																						Line:   103,
+																						Line:   105,
 																					},
 																					File:   "geo.flux",
 																					Source: "r",
 																					Start: ast.Position{
 																						Column: 24,
-																						Line:   103,
+																						Line:   105,
 																					},
 																				},
 																			},
@@ -8836,13 +8836,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 32,
-																						Line:   103,
+																						Line:   105,
 																					},
 																					File:   "geo.flux",
 																					Source: "_field",
 																					Start: ast.Position{
 																						Column: 26,
-																						Line:   103,
+																						Line:   105,
 																					},
 																				},
 																			},
@@ -8858,13 +8858,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 44,
-																					Line:   103,
+																					Line:   105,
 																				},
 																				File:   "geo.flux",
 																				Source: "latField",
 																				Start: ast.Position{
 																					Column: 36,
-																					Line:   103,
+																					Line:   105,
 																				},
 																			},
 																		},
@@ -8884,13 +8884,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 23,
-																		Line:   102,
+																		Line:   104,
 																	},
 																	File:   "geo.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 22,
-																		Line:   102,
+																		Line:   104,
 																	},
 																},
 															},
@@ -8908,13 +8908,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   102,
+																Line:   104,
 															},
 															File:   "geo.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   102,
+																Line:   104,
 															},
 														},
 													},
@@ -8926,13 +8926,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 15,
-																	Line:   102,
+																	Line:   104,
 																},
 																File:   "geo.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 14,
-																	Line:   102,
+																	Line:   104,
 																},
 															},
 														},
@@ -8953,13 +8953,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 6,
-												Line:   110,
+												Line:   112,
 											},
 											File:   "geo.flux",
 											Source: "map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )",
 											Start: ast.Position{
 												Column: 8,
-												Line:   101,
+												Line:   103,
 											},
 										},
 									},
@@ -8970,13 +8970,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   101,
+													Line:   103,
 												},
 												File:   "geo.flux",
 												Source: "map",
 												Start: ast.Position{
 													Column: 8,
-													Line:   101,
+													Line:   103,
 												},
 											},
 										},
@@ -8992,13 +8992,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   111,
+										Line:   113,
 									},
 									File:   "geo.flux",
 									Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()",
 									Start: ast.Position{
 										Column: 55,
-										Line:   100,
+										Line:   102,
 									},
 								},
 							},
@@ -9010,13 +9010,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   111,
+											Line:   113,
 										},
 										File:   "geo.flux",
 										Source: "toRows()",
 										Start: ast.Position{
 											Column: 8,
-											Line:   111,
+											Line:   113,
 										},
 									},
 								},
@@ -9027,13 +9027,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   111,
+												Line:   113,
 											},
 											File:   "geo.flux",
 											Source: "toRows",
 											Start: ast.Position{
 												Column: 8,
-												Line:   111,
+												Line:   113,
 											},
 										},
 									},
@@ -9049,13 +9049,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   116,
+									Line:   118,
 								},
 								File:   "geo.flux",
 								Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )",
 								Start: ast.Position{
 									Column: 55,
-									Line:   100,
+									Line:   102,
 								},
 							},
 						},
@@ -9067,13 +9067,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
-											Line:   115,
+											Line:   117,
 										},
 										File:   "geo.flux",
 										Source: "fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        })",
 										Start: ast.Position{
 											Column: 9,
-											Line:   113,
+											Line:   115,
 										},
 									},
 								},
@@ -9085,13 +9085,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   115,
+												Line:   117,
 											},
 											File:   "geo.flux",
 											Source: "fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        })",
 											Start: ast.Position{
 												Column: 9,
-												Line:   113,
+												Line:   115,
 											},
 										},
 									},
@@ -9103,13 +9103,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   113,
+													Line:   115,
 												},
 												File:   "geo.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 9,
-													Line:   113,
+													Line:   115,
 												},
 											},
 										},
@@ -9124,13 +9124,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   115,
+													Line:   117,
 												},
 												File:   "geo.flux",
 												Source: "(r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        })",
 												Start: ast.Position{
 													Column: 13,
-													Line:   113,
+													Line:   115,
 												},
 											},
 										},
@@ -9141,13 +9141,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   115,
+														Line:   117,
 													},
 													File:   "geo.flux",
 													Source: "({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        })",
 													Start: ast.Position{
 														Column: 20,
-														Line:   113,
+														Line:   115,
 													},
 												},
 											},
@@ -9158,13 +9158,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 10,
-															Line:   115,
+															Line:   117,
 														},
 														File:   "geo.flux",
 														Source: "{r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }",
 														Start: ast.Position{
 															Column: 21,
-															Line:   113,
+															Line:   115,
 														},
 													},
 												},
@@ -9176,13 +9176,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 85,
-																Line:   114,
+																Line:   116,
 															},
 															File:   "geo.flux",
 															Source: "s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)",
 															Start: ast.Position{
 																Column: 13,
-																Line:   114,
+																Line:   116,
 															},
 														},
 													},
@@ -9194,13 +9194,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   114,
+																	Line:   116,
 																},
 																File:   "geo.flux",
 																Source: "s2_cell_id",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   114,
+																	Line:   116,
 																},
 															},
 														},
@@ -9215,13 +9215,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 84,
-																		Line:   114,
+																		Line:   116,
 																	},
 																	File:   "geo.flux",
 																	Source: "point: {lat: r.lat, lon: r.lon}, level: level",
 																	Start: ast.Position{
 																		Column: 39,
-																		Line:   114,
+																		Line:   116,
 																	},
 																},
 															},
@@ -9233,13 +9233,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 70,
-																			Line:   114,
+																			Line:   116,
 																		},
 																		File:   "geo.flux",
 																		Source: "point: {lat: r.lat, lon: r.lon}",
 																		Start: ast.Position{
 																			Column: 39,
-																			Line:   114,
+																			Line:   116,
 																		},
 																	},
 																},
@@ -9251,13 +9251,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 44,
-																				Line:   114,
+																				Line:   116,
 																			},
 																			File:   "geo.flux",
 																			Source: "point",
 																			Start: ast.Position{
 																				Column: 39,
-																				Line:   114,
+																				Line:   116,
 																			},
 																		},
 																	},
@@ -9271,13 +9271,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 70,
-																				Line:   114,
+																				Line:   116,
 																			},
 																			File:   "geo.flux",
 																			Source: "{lat: r.lat, lon: r.lon}",
 																			Start: ast.Position{
 																				Column: 46,
-																				Line:   114,
+																				Line:   116,
 																			},
 																		},
 																	},
@@ -9289,13 +9289,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 57,
-																					Line:   114,
+																					Line:   116,
 																				},
 																				File:   "geo.flux",
 																				Source: "lat: r.lat",
 																				Start: ast.Position{
 																					Column: 47,
-																					Line:   114,
+																					Line:   116,
 																				},
 																			},
 																		},
@@ -9307,13 +9307,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 50,
-																						Line:   114,
+																						Line:   116,
 																					},
 																					File:   "geo.flux",
 																					Source: "lat",
 																					Start: ast.Position{
 																						Column: 47,
-																						Line:   114,
+																						Line:   116,
 																					},
 																				},
 																			},
@@ -9327,13 +9327,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 57,
-																						Line:   114,
+																						Line:   116,
 																					},
 																					File:   "geo.flux",
 																					Source: "r.lat",
 																					Start: ast.Position{
 																						Column: 52,
-																						Line:   114,
+																						Line:   116,
 																					},
 																				},
 																			},
@@ -9345,13 +9345,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 53,
-																							Line:   114,
+																							Line:   116,
 																						},
 																						File:   "geo.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 52,
-																							Line:   114,
+																							Line:   116,
 																						},
 																					},
 																				},
@@ -9364,13 +9364,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 57,
-																							Line:   114,
+																							Line:   116,
 																						},
 																						File:   "geo.flux",
 																						Source: "lat",
 																						Start: ast.Position{
 																							Column: 54,
-																							Line:   114,
+																							Line:   116,
 																						},
 																					},
 																				},
@@ -9385,13 +9385,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 69,
-																					Line:   114,
+																					Line:   116,
 																				},
 																				File:   "geo.flux",
 																				Source: "lon: r.lon",
 																				Start: ast.Position{
 																					Column: 59,
-																					Line:   114,
+																					Line:   116,
 																				},
 																			},
 																		},
@@ -9403,13 +9403,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 62,
-																						Line:   114,
+																						Line:   116,
 																					},
 																					File:   "geo.flux",
 																					Source: "lon",
 																					Start: ast.Position{
 																						Column: 59,
-																						Line:   114,
+																						Line:   116,
 																					},
 																				},
 																			},
@@ -9423,13 +9423,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 69,
-																						Line:   114,
+																						Line:   116,
 																					},
 																					File:   "geo.flux",
 																					Source: "r.lon",
 																					Start: ast.Position{
 																						Column: 64,
-																						Line:   114,
+																						Line:   116,
 																					},
 																				},
 																			},
@@ -9441,13 +9441,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 65,
-																							Line:   114,
+																							Line:   116,
 																						},
 																						File:   "geo.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 64,
-																							Line:   114,
+																							Line:   116,
 																						},
 																					},
 																				},
@@ -9460,13 +9460,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 69,
-																							Line:   114,
+																							Line:   116,
 																						},
 																						File:   "geo.flux",
 																						Source: "lon",
 																						Start: ast.Position{
 																							Column: 66,
-																							Line:   114,
+																							Line:   116,
 																						},
 																					},
 																				},
@@ -9485,13 +9485,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 84,
-																			Line:   114,
+																			Line:   116,
 																		},
 																		File:   "geo.flux",
 																		Source: "level: level",
 																		Start: ast.Position{
 																			Column: 72,
-																			Line:   114,
+																			Line:   116,
 																		},
 																	},
 																},
@@ -9503,13 +9503,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 77,
-																				Line:   114,
+																				Line:   116,
 																			},
 																			File:   "geo.flux",
 																			Source: "level",
 																			Start: ast.Position{
 																				Column: 72,
-																				Line:   114,
+																				Line:   116,
 																			},
 																		},
 																	},
@@ -9523,13 +9523,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 84,
-																				Line:   114,
+																				Line:   116,
 																			},
 																			File:   "geo.flux",
 																			Source: "level",
 																			Start: ast.Position{
 																				Column: 79,
-																				Line:   114,
+																				Line:   116,
 																			},
 																		},
 																	},
@@ -9545,13 +9545,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 85,
-																	Line:   114,
+																	Line:   116,
 																},
 																File:   "geo.flux",
 																Source: "s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)",
 																Start: ast.Position{
 																	Column: 25,
-																	Line:   114,
+																	Line:   116,
 																},
 															},
 														},
@@ -9562,13 +9562,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 38,
-																		Line:   114,
+																		Line:   116,
 																	},
 																	File:   "geo.flux",
 																	Source: "s2CellIDToken",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   114,
+																		Line:   116,
 																	},
 																},
 															},
@@ -9586,13 +9586,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 23,
-																Line:   113,
+																Line:   115,
 															},
 															File:   "geo.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 22,
-																Line:   113,
+																Line:   115,
 															},
 														},
 													},
@@ -9610,13 +9610,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 15,
-														Line:   113,
+														Line:   115,
 													},
 													File:   "geo.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 14,
-														Line:   113,
+														Line:   115,
 													},
 												},
 											},
@@ -9628,13 +9628,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   113,
+															Line:   115,
 														},
 														File:   "geo.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   113,
+															Line:   115,
 														},
 													},
 												},
@@ -9655,13 +9655,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   116,
+										Line:   118,
 									},
 									File:   "geo.flux",
 									Source: "map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )",
 									Start: ast.Position{
 										Column: 8,
-										Line:   112,
+										Line:   114,
 									},
 								},
 							},
@@ -9672,13 +9672,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
-											Line:   112,
+											Line:   114,
 										},
 										File:   "geo.flux",
 										Source: "map",
 										Start: ast.Position{
 											Column: 8,
-											Line:   112,
+											Line:   114,
 										},
 									},
 								},
@@ -9694,13 +9694,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 6,
-								Line:   120,
+								Line:   122,
 							},
 							File:   "geo.flux",
 							Source: "tables\n    |> map(\n        fn: (r) => ({r with\n            _field: if r._field == latField then\n                \"lat\"\n            else if r._field == lonField then\n                \"lon\"\n            else\n                r._field,\n        }),\n    )\n    |> toRows()\n    |> map(\n        fn: (r) => ({r with\n            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n        }),\n    )\n    |> experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
 							Start: ast.Position{
 								Column: 55,
-								Line:   100,
+								Line:   102,
 							},
 						},
 					},
@@ -9712,13 +9712,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   119,
+										Line:   121,
 									},
 									File:   "geo.flux",
 									Source: "columns: [\"s2_cell_id\"],\n        mode: \"extend\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   118,
+										Line:   120,
 									},
 								},
 							},
@@ -9730,13 +9730,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   118,
+											Line:   120,
 										},
 										File:   "geo.flux",
 										Source: "columns: [\"s2_cell_id\"]",
 										Start: ast.Position{
 											Column: 9,
-											Line:   118,
+											Line:   120,
 										},
 									},
 								},
@@ -9748,13 +9748,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   118,
+												Line:   120,
 											},
 											File:   "geo.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 9,
-												Line:   118,
+												Line:   120,
 											},
 										},
 									},
@@ -9768,13 +9768,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   118,
+												Line:   120,
 											},
 											File:   "geo.flux",
 											Source: "[\"s2_cell_id\"]",
 											Start: ast.Position{
 												Column: 18,
-												Line:   118,
+												Line:   120,
 											},
 										},
 									},
@@ -9785,13 +9785,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
-													Line:   118,
+													Line:   120,
 												},
 												File:   "geo.flux",
 												Source: "\"s2_cell_id\"",
 												Start: ast.Position{
 													Column: 19,
-													Line:   118,
+													Line:   120,
 												},
 											},
 										},
@@ -9807,13 +9807,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   119,
+											Line:   121,
 										},
 										File:   "geo.flux",
 										Source: "mode: \"extend\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   119,
+											Line:   121,
 										},
 									},
 								},
@@ -9825,13 +9825,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   119,
+												Line:   121,
 											},
 											File:   "geo.flux",
 											Source: "mode",
 											Start: ast.Position{
 												Column: 9,
-												Line:   119,
+												Line:   121,
 											},
 										},
 									},
@@ -9845,13 +9845,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   119,
+												Line:   121,
 											},
 											File:   "geo.flux",
 											Source: "\"extend\"",
 											Start: ast.Position{
 												Column: 15,
-												Line:   119,
+												Line:   121,
 											},
 										},
 									},
@@ -9867,13 +9867,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   120,
+									Line:   122,
 								},
 								File:   "geo.flux",
 								Source: "experimental.group(\n        columns: [\"s2_cell_id\"],\n        mode: \"extend\",\n    )",
 								Start: ast.Position{
 									Column: 8,
-									Line:   117,
+									Line:   119,
 								},
 							},
 						},
@@ -9884,13 +9884,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   117,
+										Line:   119,
 									},
 									File:   "geo.flux",
 									Source: "experimental.group",
 									Start: ast.Position{
 										Column: 8,
-										Line:   117,
+										Line:   119,
 									},
 								},
 							},
@@ -9902,13 +9902,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   117,
+											Line:   119,
 										},
 										File:   "geo.flux",
 										Source: "experimental",
 										Start: ast.Position{
 											Column: 8,
-											Line:   117,
+											Line:   119,
 										},
 									},
 								},
@@ -9921,13 +9921,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   117,
+											Line:   119,
 										},
 										File:   "geo.flux",
 										Source: "group",
 										Start: ast.Position{
 											Column: 21,
-											Line:   117,
+											Line:   119,
 										},
 									},
 								},
@@ -9947,13 +9947,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   100,
+								Line:   102,
 							},
 							File:   "geo.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 14,
-								Line:   100,
+								Line:   102,
 							},
 						},
 					},
@@ -9965,13 +9965,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   100,
+									Line:   102,
 								},
 								File:   "geo.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 14,
-									Line:   100,
+									Line:   102,
 								},
 							},
 						},
@@ -9984,13 +9984,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   100,
+								Line:   102,
 							},
 							File:   "geo.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 21,
-								Line:   100,
+								Line:   102,
 							},
 						},
 					}},
@@ -10001,13 +10001,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
-								Line:   100,
+								Line:   102,
 							},
 							File:   "geo.flux",
 							Source: "latField",
 							Start: ast.Position{
 								Column: 25,
-								Line:   100,
+								Line:   102,
 							},
 						},
 					},
@@ -10019,13 +10019,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   100,
+									Line:   102,
 								},
 								File:   "geo.flux",
 								Source: "latField",
 								Start: ast.Position{
 									Column: 25,
-									Line:   100,
+									Line:   102,
 								},
 							},
 						},
@@ -10040,13 +10040,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   100,
+								Line:   102,
 							},
 							File:   "geo.flux",
 							Source: "lonField",
 							Start: ast.Position{
 								Column: 35,
-								Line:   100,
+								Line:   102,
 							},
 						},
 					},
@@ -10058,13 +10058,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   100,
+									Line:   102,
 								},
 								File:   "geo.flux",
 								Source: "lonField",
 								Start: ast.Position{
 									Column: 35,
-									Line:   100,
+									Line:   102,
 								},
 							},
 						},
@@ -10079,13 +10079,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   100,
+								Line:   102,
 							},
 							File:   "geo.flux",
 							Source: "level",
 							Start: ast.Position{
 								Column: 45,
-								Line:   100,
+								Line:   102,
 							},
 						},
 					},
@@ -10097,13 +10097,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   100,
+									Line:   102,
 								},
 								File:   "geo.flux",
 								Source: "level",
 								Start: ast.Position{
 									Column: 45,
-									Line:   100,
+									Line:   102,
 								},
 							},
 						},
@@ -10121,13 +10121,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   158,
+						Line:   160,
 					},
 					File:   "geo.flux",
 					Source: "gridFilter = (\n        tables=<-,\n        region,\n        minSize=24,\n        maxSize=-1,\n        level=-1,\n        s2cellIDLevel=-1,\n        units=units,\n) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   128,
+						Line:   130,
 					},
 				},
 			},
@@ -10138,13 +10138,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   128,
+							Line:   130,
 						},
 						File:   "geo.flux",
 						Source: "gridFilter",
 						Start: ast.Position{
 							Column: 1,
-							Line:   128,
+							Line:   130,
 						},
 					},
 				},
@@ -10158,13 +10158,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   158,
+							Line:   160,
 						},
 						File:   "geo.flux",
 						Source: "(\n        tables=<-,\n        region,\n        minSize=24,\n        maxSize=-1,\n        level=-1,\n        s2cellIDLevel=-1,\n        units=units,\n) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
 						Start: ast.Position{
 							Column: 14,
-							Line:   128,
+							Line:   130,
 						},
 					},
 				},
@@ -10175,13 +10175,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   158,
+								Line:   160,
 							},
 							File:   "geo.flux",
 							Source: "{\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )\n\n    return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )\n}",
 							Start: ast.Position{
 								Column: 6,
-								Line:   136,
+								Line:   138,
 							},
 						},
 					},
@@ -10192,13 +10192,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   141,
+									Line:   143,
 								},
 								File:   "geo.flux",
 								Source: "_s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel",
 								Start: ast.Position{
 									Column: 5,
-									Line:   137,
+									Line:   139,
 								},
 							},
 						},
@@ -10209,13 +10209,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   137,
+										Line:   139,
 									},
 									File:   "geo.flux",
 									Source: "_s2cellIDLevel",
 									Start: ast.Position{
 										Column: 5,
-										Line:   137,
+										Line:   139,
 									},
 								},
 							},
@@ -10229,13 +10229,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   141,
+											Line:   143,
 										},
 										File:   "geo.flux",
 										Source: "s2cellIDLevel",
 										Start: ast.Position{
 											Column: 9,
-											Line:   141,
+											Line:   143,
 										},
 									},
 								},
@@ -10247,13 +10247,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   141,
+										Line:   143,
 									},
 									File:   "geo.flux",
 									Source: "if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel",
 									Start: ast.Position{
 										Column: 22,
-										Line:   137,
+										Line:   139,
 									},
 								},
 							},
@@ -10265,13 +10265,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   138,
+												Line:   140,
 											},
 											File:   "geo.flux",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 9,
-												Line:   138,
+												Line:   140,
 											},
 										},
 									},
@@ -10283,13 +10283,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   139,
+											Line:   141,
 										},
 										File:   "geo.flux",
 										Source: "tables\n            |> _detectLevel()",
 										Start: ast.Position{
 											Column: 9,
-											Line:   138,
+											Line:   140,
 										},
 									},
 								},
@@ -10301,13 +10301,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   139,
+												Line:   141,
 											},
 											File:   "geo.flux",
 											Source: "_detectLevel()",
 											Start: ast.Position{
 												Column: 16,
-												Line:   139,
+												Line:   141,
 											},
 										},
 									},
@@ -10318,13 +10318,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   139,
+													Line:   141,
 												},
 												File:   "geo.flux",
 												Source: "_detectLevel",
 												Start: ast.Position{
 													Column: 16,
-													Line:   139,
+													Line:   141,
 												},
 											},
 										},
@@ -10341,13 +10341,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
-											Line:   137,
+											Line:   139,
 										},
 										File:   "geo.flux",
 										Source: "s2cellIDLevel == -1",
 										Start: ast.Position{
 											Column: 25,
-											Line:   137,
+											Line:   139,
 										},
 									},
 								},
@@ -10358,13 +10358,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   137,
+												Line:   139,
 											},
 											File:   "geo.flux",
 											Source: "s2cellIDLevel",
 											Start: ast.Position{
 												Column: 25,
-												Line:   137,
+												Line:   139,
 											},
 										},
 									},
@@ -10379,13 +10379,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   137,
+													Line:   139,
 												},
 												File:   "geo.flux",
 												Source: "1",
 												Start: ast.Position{
 													Column: 43,
-													Line:   137,
+													Line:   139,
 												},
 											},
 										},
@@ -10397,13 +10397,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   137,
+												Line:   139,
 											},
 											File:   "geo.flux",
 											Source: "-1",
 											Start: ast.Position{
 												Column: 42,
-												Line:   137,
+												Line:   139,
 											},
 										},
 									},
@@ -10421,13 +10421,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   149,
+									Line:   151,
 								},
 								File:   "geo.flux",
 								Source: "_grid = getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )",
 								Start: ast.Position{
 									Column: 5,
-									Line:   142,
+									Line:   144,
 								},
 							},
 						},
@@ -10438,13 +10438,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   142,
+										Line:   144,
 									},
 									File:   "geo.flux",
 									Source: "_grid",
 									Start: ast.Position{
 										Column: 5,
-										Line:   142,
+										Line:   144,
 									},
 								},
 							},
@@ -10458,13 +10458,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   148,
+											Line:   150,
 										},
 										File:   "geo.flux",
 										Source: "region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units",
 										Start: ast.Position{
 											Column: 9,
-											Line:   143,
+											Line:   145,
 										},
 									},
 								},
@@ -10476,13 +10476,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   143,
+												Line:   145,
 											},
 											File:   "geo.flux",
 											Source: "region: region",
 											Start: ast.Position{
 												Column: 9,
-												Line:   143,
+												Line:   145,
 											},
 										},
 									},
@@ -10494,13 +10494,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   143,
+													Line:   145,
 												},
 												File:   "geo.flux",
 												Source: "region",
 												Start: ast.Position{
 													Column: 9,
-													Line:   143,
+													Line:   145,
 												},
 											},
 										},
@@ -10514,13 +10514,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   143,
+													Line:   145,
 												},
 												File:   "geo.flux",
 												Source: "region",
 												Start: ast.Position{
 													Column: 17,
-													Line:   143,
+													Line:   145,
 												},
 											},
 										},
@@ -10533,13 +10533,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   144,
+												Line:   146,
 											},
 											File:   "geo.flux",
 											Source: "minSize: minSize",
 											Start: ast.Position{
 												Column: 9,
-												Line:   144,
+												Line:   146,
 											},
 										},
 									},
@@ -10551,13 +10551,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   144,
+													Line:   146,
 												},
 												File:   "geo.flux",
 												Source: "minSize",
 												Start: ast.Position{
 													Column: 9,
-													Line:   144,
+													Line:   146,
 												},
 											},
 										},
@@ -10571,13 +10571,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   144,
+													Line:   146,
 												},
 												File:   "geo.flux",
 												Source: "minSize",
 												Start: ast.Position{
 													Column: 18,
-													Line:   144,
+													Line:   146,
 												},
 											},
 										},
@@ -10590,13 +10590,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   145,
+												Line:   147,
 											},
 											File:   "geo.flux",
 											Source: "maxSize: maxSize",
 											Start: ast.Position{
 												Column: 9,
-												Line:   145,
+												Line:   147,
 											},
 										},
 									},
@@ -10608,13 +10608,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   145,
+													Line:   147,
 												},
 												File:   "geo.flux",
 												Source: "maxSize",
 												Start: ast.Position{
 													Column: 9,
-													Line:   145,
+													Line:   147,
 												},
 											},
 										},
@@ -10628,13 +10628,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   145,
+													Line:   147,
 												},
 												File:   "geo.flux",
 												Source: "maxSize",
 												Start: ast.Position{
 													Column: 18,
-													Line:   145,
+													Line:   147,
 												},
 											},
 										},
@@ -10647,13 +10647,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   146,
+												Line:   148,
 											},
 											File:   "geo.flux",
 											Source: "level: level",
 											Start: ast.Position{
 												Column: 9,
-												Line:   146,
+												Line:   148,
 											},
 										},
 									},
@@ -10665,13 +10665,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   146,
+													Line:   148,
 												},
 												File:   "geo.flux",
 												Source: "level",
 												Start: ast.Position{
 													Column: 9,
-													Line:   146,
+													Line:   148,
 												},
 											},
 										},
@@ -10685,13 +10685,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   146,
+													Line:   148,
 												},
 												File:   "geo.flux",
 												Source: "level",
 												Start: ast.Position{
 													Column: 16,
-													Line:   146,
+													Line:   148,
 												},
 											},
 										},
@@ -10704,13 +10704,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   147,
+												Line:   149,
 											},
 											File:   "geo.flux",
 											Source: "maxLevel: _s2cellIDLevel",
 											Start: ast.Position{
 												Column: 9,
-												Line:   147,
+												Line:   149,
 											},
 										},
 									},
@@ -10722,13 +10722,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
-													Line:   147,
+													Line:   149,
 												},
 												File:   "geo.flux",
 												Source: "maxLevel",
 												Start: ast.Position{
 													Column: 9,
-													Line:   147,
+													Line:   149,
 												},
 											},
 										},
@@ -10742,13 +10742,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   147,
+													Line:   149,
 												},
 												File:   "geo.flux",
 												Source: "_s2cellIDLevel",
 												Start: ast.Position{
 													Column: 19,
-													Line:   147,
+													Line:   149,
 												},
 											},
 										},
@@ -10761,13 +10761,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   148,
+												Line:   150,
 											},
 											File:   "geo.flux",
 											Source: "units: units",
 											Start: ast.Position{
 												Column: 9,
-												Line:   148,
+												Line:   150,
 											},
 										},
 									},
@@ -10779,13 +10779,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   148,
+													Line:   150,
 												},
 												File:   "geo.flux",
 												Source: "units",
 												Start: ast.Position{
 													Column: 9,
-													Line:   148,
+													Line:   150,
 												},
 											},
 										},
@@ -10799,13 +10799,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   148,
+													Line:   150,
 												},
 												File:   "geo.flux",
 												Source: "units",
 												Start: ast.Position{
 													Column: 16,
-													Line:   148,
+													Line:   150,
 												},
 											},
 										},
@@ -10821,13 +10821,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   149,
+										Line:   151,
 									},
 									File:   "geo.flux",
 									Source: "getGrid(\n        region: region,\n        minSize: minSize,\n        maxSize: maxSize,\n        level: level,\n        maxLevel: _s2cellIDLevel,\n        units: units,\n    )",
 									Start: ast.Position{
 										Column: 13,
-										Line:   142,
+										Line:   144,
 									},
 								},
 							},
@@ -10838,13 +10838,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   142,
+											Line:   144,
 										},
 										File:   "geo.flux",
 										Source: "getGrid",
 										Start: ast.Position{
 											Column: 13,
-											Line:   142,
+											Line:   144,
 										},
 									},
 								},
@@ -10862,13 +10862,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   151,
+											Line:   153,
 										},
 										File:   "geo.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 12,
-											Line:   151,
+											Line:   153,
 										},
 									},
 								},
@@ -10880,13 +10880,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   157,
+										Line:   159,
 									},
 									File:   "geo.flux",
 									Source: "tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
 									Start: ast.Position{
 										Column: 12,
-										Line:   151,
+										Line:   153,
 									},
 								},
 							},
@@ -10898,13 +10898,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 104,
-												Line:   156,
+												Line:   158,
 											},
 											File:   "geo.flux",
 											Source: "fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 											Start: ast.Position{
 												Column: 13,
-												Line:   153,
+												Line:   155,
 											},
 										},
 									},
@@ -10916,13 +10916,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 104,
-													Line:   156,
+													Line:   158,
 												},
 												File:   "geo.flux",
 												Source: "fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 												Start: ast.Position{
 													Column: 13,
-													Line:   153,
+													Line:   155,
 												},
 											},
 										},
@@ -10934,13 +10934,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 15,
-														Line:   153,
+														Line:   155,
 													},
 													File:   "geo.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 13,
-														Line:   153,
+														Line:   155,
 													},
 												},
 											},
@@ -10955,13 +10955,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 104,
-														Line:   156,
+														Line:   158,
 													},
 													File:   "geo.flux",
 													Source: "(r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 													Start: ast.Position{
 														Column: 17,
-														Line:   153,
+														Line:   155,
 													},
 												},
 											},
@@ -10974,13 +10974,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 103,
-																	Line:   156,
+																	Line:   158,
 																},
 																File:   "geo.flux",
 																Source: "value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   156,
+																	Line:   158,
 																},
 															},
 														},
@@ -10992,13 +10992,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 87,
-																		Line:   156,
+																		Line:   158,
 																	},
 																	File:   "geo.flux",
 																	Source: "value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level)",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   156,
+																		Line:   158,
 																	},
 																},
 															},
@@ -11010,13 +11010,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 31,
-																			Line:   156,
+																			Line:   158,
 																		},
 																		File:   "geo.flux",
 																		Source: "value",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   156,
+																			Line:   158,
 																		},
 																	},
 																},
@@ -11031,13 +11031,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 86,
-																				Line:   156,
+																				Line:   158,
 																			},
 																			File:   "geo.flux",
 																			Source: "token: r.s2_cell_id, level: _grid.level",
 																			Start: ast.Position{
 																				Column: 47,
-																				Line:   156,
+																				Line:   158,
 																			},
 																		},
 																	},
@@ -11049,13 +11049,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 66,
-																					Line:   156,
+																					Line:   158,
 																				},
 																				File:   "geo.flux",
 																				Source: "token: r.s2_cell_id",
 																				Start: ast.Position{
 																					Column: 47,
-																					Line:   156,
+																					Line:   158,
 																				},
 																			},
 																		},
@@ -11067,13 +11067,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 52,
-																						Line:   156,
+																						Line:   158,
 																					},
 																					File:   "geo.flux",
 																					Source: "token",
 																					Start: ast.Position{
 																						Column: 47,
-																						Line:   156,
+																						Line:   158,
 																					},
 																				},
 																			},
@@ -11087,13 +11087,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 66,
-																						Line:   156,
+																						Line:   158,
 																					},
 																					File:   "geo.flux",
 																					Source: "r.s2_cell_id",
 																					Start: ast.Position{
 																						Column: 54,
-																						Line:   156,
+																						Line:   158,
 																					},
 																				},
 																			},
@@ -11105,13 +11105,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 55,
-																							Line:   156,
+																							Line:   158,
 																						},
 																						File:   "geo.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 54,
-																							Line:   156,
+																							Line:   158,
 																						},
 																					},
 																				},
@@ -11124,13 +11124,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 66,
-																							Line:   156,
+																							Line:   158,
 																						},
 																						File:   "geo.flux",
 																						Source: "s2_cell_id",
 																						Start: ast.Position{
 																							Column: 56,
-																							Line:   156,
+																							Line:   158,
 																						},
 																					},
 																				},
@@ -11145,13 +11145,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 86,
-																					Line:   156,
+																					Line:   158,
 																				},
 																				File:   "geo.flux",
 																				Source: "level: _grid.level",
 																				Start: ast.Position{
 																					Column: 68,
-																					Line:   156,
+																					Line:   158,
 																				},
 																			},
 																		},
@@ -11163,13 +11163,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 73,
-																						Line:   156,
+																						Line:   158,
 																					},
 																					File:   "geo.flux",
 																					Source: "level",
 																					Start: ast.Position{
 																						Column: 68,
-																						Line:   156,
+																						Line:   158,
 																					},
 																				},
 																			},
@@ -11183,13 +11183,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 86,
-																						Line:   156,
+																						Line:   158,
 																					},
 																					File:   "geo.flux",
 																					Source: "_grid.level",
 																					Start: ast.Position{
 																						Column: 75,
-																						Line:   156,
+																						Line:   158,
 																					},
 																				},
 																			},
@@ -11201,13 +11201,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 80,
-																							Line:   156,
+																							Line:   158,
 																						},
 																						File:   "geo.flux",
 																						Source: "_grid",
 																						Start: ast.Position{
 																							Column: 75,
-																							Line:   156,
+																							Line:   158,
 																						},
 																					},
 																				},
@@ -11220,13 +11220,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 86,
-																							Line:   156,
+																							Line:   158,
 																						},
 																						File:   "geo.flux",
 																						Source: "level",
 																						Start: ast.Position{
 																							Column: 81,
-																							Line:   156,
+																							Line:   158,
 																						},
 																					},
 																				},
@@ -11244,13 +11244,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 87,
-																			Line:   156,
+																			Line:   158,
 																		},
 																		File:   "geo.flux",
 																		Source: "s2CellIDToken(token: r.s2_cell_id, level: _grid.level)",
 																		Start: ast.Position{
 																			Column: 33,
-																			Line:   156,
+																			Line:   158,
 																		},
 																	},
 																},
@@ -11261,13 +11261,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 46,
-																				Line:   156,
+																				Line:   158,
 																			},
 																			File:   "geo.flux",
 																			Source: "s2CellIDToken",
 																			Start: ast.Position{
 																				Column: 33,
-																				Line:   156,
+																				Line:   158,
 																			},
 																		},
 																	},
@@ -11283,13 +11283,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 103,
-																		Line:   156,
+																		Line:   158,
 																	},
 																	File:   "geo.flux",
 																	Source: "set: _grid.set",
 																	Start: ast.Position{
 																		Column: 89,
-																		Line:   156,
+																		Line:   158,
 																	},
 																},
 															},
@@ -11301,13 +11301,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 92,
-																			Line:   156,
+																			Line:   158,
 																		},
 																		File:   "geo.flux",
 																		Source: "set",
 																		Start: ast.Position{
 																			Column: 89,
-																			Line:   156,
+																			Line:   158,
 																		},
 																	},
 																},
@@ -11321,13 +11321,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 103,
-																			Line:   156,
+																			Line:   158,
 																		},
 																		File:   "geo.flux",
 																		Source: "_grid.set",
 																		Start: ast.Position{
 																			Column: 94,
-																			Line:   156,
+																			Line:   158,
 																		},
 																	},
 																},
@@ -11339,13 +11339,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 99,
-																				Line:   156,
+																				Line:   158,
 																			},
 																			File:   "geo.flux",
 																			Source: "_grid",
 																			Start: ast.Position{
 																				Column: 94,
-																				Line:   156,
+																				Line:   158,
 																			},
 																		},
 																	},
@@ -11358,13 +11358,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 103,
-																				Line:   156,
+																				Line:   158,
 																			},
 																			File:   "geo.flux",
 																			Source: "set",
 																			Start: ast.Position{
 																				Column: 100,
-																				Line:   156,
+																				Line:   158,
 																			},
 																		},
 																	},
@@ -11382,13 +11382,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 104,
-																Line:   156,
+																Line:   158,
 															},
 															File:   "geo.flux",
 															Source: "contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 															Start: ast.Position{
 																Column: 17,
-																Line:   156,
+																Line:   158,
 															},
 														},
 													},
@@ -11399,13 +11399,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
-																	Line:   156,
+																	Line:   158,
 																},
 																File:   "geo.flux",
 																Source: "contains",
 																Start: ast.Position{
 																	Column: 17,
-																	Line:   156,
+																	Line:   158,
 																},
 															},
 														},
@@ -11420,13 +11420,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 104,
-															Line:   156,
+															Line:   158,
 														},
 														File:   "geo.flux",
 														Source: "if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)",
 														Start: ast.Position{
 															Column: 24,
-															Line:   153,
+															Line:   155,
 														},
 													},
 												},
@@ -11438,13 +11438,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 61,
-																	Line:   154,
+																	Line:   156,
 																},
 																File:   "geo.flux",
 																Source: "value: r.s2_cell_id, set: _grid.set",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   154,
+																	Line:   156,
 																},
 															},
 														},
@@ -11456,13 +11456,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 45,
-																		Line:   154,
+																		Line:   156,
 																	},
 																	File:   "geo.flux",
 																	Source: "value: r.s2_cell_id",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   154,
+																		Line:   156,
 																	},
 																},
 															},
@@ -11474,13 +11474,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 31,
-																			Line:   154,
+																			Line:   156,
 																		},
 																		File:   "geo.flux",
 																		Source: "value",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   154,
+																			Line:   156,
 																		},
 																	},
 																},
@@ -11494,13 +11494,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 45,
-																			Line:   154,
+																			Line:   156,
 																		},
 																		File:   "geo.flux",
 																		Source: "r.s2_cell_id",
 																		Start: ast.Position{
 																			Column: 33,
-																			Line:   154,
+																			Line:   156,
 																		},
 																	},
 																},
@@ -11512,13 +11512,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 34,
-																				Line:   154,
+																				Line:   156,
 																			},
 																			File:   "geo.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 33,
-																				Line:   154,
+																				Line:   156,
 																			},
 																		},
 																	},
@@ -11531,13 +11531,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 45,
-																				Line:   154,
+																				Line:   156,
 																			},
 																			File:   "geo.flux",
 																			Source: "s2_cell_id",
 																			Start: ast.Position{
 																				Column: 35,
-																				Line:   154,
+																				Line:   156,
 																			},
 																		},
 																	},
@@ -11552,13 +11552,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 61,
-																		Line:   154,
+																		Line:   156,
 																	},
 																	File:   "geo.flux",
 																	Source: "set: _grid.set",
 																	Start: ast.Position{
 																		Column: 47,
-																		Line:   154,
+																		Line:   156,
 																	},
 																},
 															},
@@ -11570,13 +11570,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 50,
-																			Line:   154,
+																			Line:   156,
 																		},
 																		File:   "geo.flux",
 																		Source: "set",
 																		Start: ast.Position{
 																			Column: 47,
-																			Line:   154,
+																			Line:   156,
 																		},
 																	},
 																},
@@ -11590,13 +11590,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 61,
-																			Line:   154,
+																			Line:   156,
 																		},
 																		File:   "geo.flux",
 																		Source: "_grid.set",
 																		Start: ast.Position{
 																			Column: 52,
-																			Line:   154,
+																			Line:   156,
 																		},
 																	},
 																},
@@ -11608,13 +11608,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 57,
-																				Line:   154,
+																				Line:   156,
 																			},
 																			File:   "geo.flux",
 																			Source: "_grid",
 																			Start: ast.Position{
 																				Column: 52,
-																				Line:   154,
+																				Line:   156,
 																			},
 																		},
 																	},
@@ -11627,13 +11627,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 61,
-																				Line:   154,
+																				Line:   156,
 																			},
 																			File:   "geo.flux",
 																			Source: "set",
 																			Start: ast.Position{
 																				Column: 58,
-																				Line:   154,
+																				Line:   156,
 																			},
 																		},
 																	},
@@ -11651,13 +11651,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 62,
-																Line:   154,
+																Line:   156,
 															},
 															File:   "geo.flux",
 															Source: "contains(value: r.s2_cell_id, set: _grid.set)",
 															Start: ast.Position{
 																Column: 17,
-																Line:   154,
+																Line:   156,
 															},
 														},
 													},
@@ -11668,13 +11668,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
-																	Line:   154,
+																	Line:   156,
 																},
 																File:   "geo.flux",
 																Source: "contains",
 																Start: ast.Position{
 																	Column: 17,
-																	Line:   154,
+																	Line:   156,
 																},
 															},
 														},
@@ -11690,13 +11690,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 56,
-																Line:   153,
+																Line:   155,
 															},
 															File:   "geo.flux",
 															Source: "_grid.level == _s2cellIDLevel",
 															Start: ast.Position{
 																Column: 27,
-																Line:   153,
+																Line:   155,
 															},
 														},
 													},
@@ -11707,13 +11707,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 38,
-																	Line:   153,
+																	Line:   155,
 																},
 																File:   "geo.flux",
 																Source: "_grid.level",
 																Start: ast.Position{
 																	Column: 27,
-																	Line:   153,
+																	Line:   155,
 																},
 															},
 														},
@@ -11725,13 +11725,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 32,
-																		Line:   153,
+																		Line:   155,
 																	},
 																	File:   "geo.flux",
 																	Source: "_grid",
 																	Start: ast.Position{
 																		Column: 27,
-																		Line:   153,
+																		Line:   155,
 																	},
 																},
 															},
@@ -11744,13 +11744,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 38,
-																		Line:   153,
+																		Line:   155,
 																	},
 																	File:   "geo.flux",
 																	Source: "level",
 																	Start: ast.Position{
 																		Column: 33,
-																		Line:   153,
+																		Line:   155,
 																	},
 																},
 															},
@@ -11766,13 +11766,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 56,
-																	Line:   153,
+																	Line:   155,
 																},
 																File:   "geo.flux",
 																Source: "_s2cellIDLevel",
 																Start: ast.Position{
 																	Column: 42,
-																	Line:   153,
+																	Line:   155,
 																},
 															},
 														},
@@ -11791,13 +11791,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 19,
-															Line:   153,
+															Line:   155,
 														},
 														File:   "geo.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 18,
-															Line:   153,
+															Line:   155,
 														},
 													},
 												},
@@ -11809,13 +11809,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 19,
-																Line:   153,
+																Line:   155,
 															},
 															File:   "geo.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 18,
-																Line:   153,
+																Line:   155,
 															},
 														},
 													},
@@ -11836,13 +11836,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 10,
-											Line:   157,
+											Line:   159,
 										},
 										File:   "geo.flux",
 										Source: "filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
 										Start: ast.Position{
 											Column: 12,
-											Line:   152,
+											Line:   154,
 										},
 									},
 								},
@@ -11853,13 +11853,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   152,
+												Line:   154,
 											},
 											File:   "geo.flux",
 											Source: "filter",
 											Start: ast.Position{
 												Column: 12,
-												Line:   152,
+												Line:   154,
 											},
 										},
 									},
@@ -11875,13 +11875,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 10,
-									Line:   157,
+									Line:   159,
 								},
 								File:   "geo.flux",
 								Source: "return tables\n        |> filter(\n            fn: (r) => if _grid.level == _s2cellIDLevel then\n                contains(value: r.s2_cell_id, set: _grid.set)\n            else\n                contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),\n        )",
 								Start: ast.Position{
 									Column: 5,
-									Line:   151,
+									Line:   153,
 								},
 							},
 						},
@@ -11897,13 +11897,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   129,
+								Line:   131,
 							},
 							File:   "geo.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 9,
-								Line:   129,
+								Line:   131,
 							},
 						},
 					},
@@ -11915,13 +11915,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   129,
+									Line:   131,
 								},
 								File:   "geo.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 9,
-									Line:   129,
+									Line:   131,
 								},
 							},
 						},
@@ -11934,13 +11934,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   129,
+								Line:   131,
 							},
 							File:   "geo.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 16,
-								Line:   129,
+								Line:   131,
 							},
 						},
 					}},
@@ -11951,13 +11951,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   130,
+								Line:   132,
 							},
 							File:   "geo.flux",
 							Source: "region",
 							Start: ast.Position{
 								Column: 9,
-								Line:   130,
+								Line:   132,
 							},
 						},
 					},
@@ -11969,13 +11969,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   130,
+									Line:   132,
 								},
 								File:   "geo.flux",
 								Source: "region",
 								Start: ast.Position{
 									Column: 9,
-									Line:   130,
+									Line:   132,
 								},
 							},
 						},
@@ -11990,13 +11990,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   131,
+								Line:   133,
 							},
 							File:   "geo.flux",
 							Source: "minSize=24",
 							Start: ast.Position{
 								Column: 9,
-								Line:   131,
+								Line:   133,
 							},
 						},
 					},
@@ -12008,13 +12008,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   131,
+									Line:   133,
 								},
 								File:   "geo.flux",
 								Source: "minSize",
 								Start: ast.Position{
 									Column: 9,
-									Line:   131,
+									Line:   133,
 								},
 							},
 						},
@@ -12028,13 +12028,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   131,
+									Line:   133,
 								},
 								File:   "geo.flux",
 								Source: "24",
 								Start: ast.Position{
 									Column: 17,
-									Line:   131,
+									Line:   133,
 								},
 							},
 						},
@@ -12047,13 +12047,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   132,
+								Line:   134,
 							},
 							File:   "geo.flux",
 							Source: "maxSize=-1",
 							Start: ast.Position{
 								Column: 9,
-								Line:   132,
+								Line:   134,
 							},
 						},
 					},
@@ -12065,13 +12065,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   132,
+									Line:   134,
 								},
 								File:   "geo.flux",
 								Source: "maxSize",
 								Start: ast.Position{
 									Column: 9,
-									Line:   132,
+									Line:   134,
 								},
 							},
 						},
@@ -12086,13 +12086,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   132,
+										Line:   134,
 									},
 									File:   "geo.flux",
 									Source: "1",
 									Start: ast.Position{
 										Column: 18,
-										Line:   132,
+										Line:   134,
 									},
 								},
 							},
@@ -12104,13 +12104,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   132,
+									Line:   134,
 								},
 								File:   "geo.flux",
 								Source: "-1",
 								Start: ast.Position{
 									Column: 17,
-									Line:   132,
+									Line:   134,
 								},
 							},
 						},
@@ -12123,13 +12123,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   133,
+								Line:   135,
 							},
 							File:   "geo.flux",
 							Source: "level=-1",
 							Start: ast.Position{
 								Column: 9,
-								Line:   133,
+								Line:   135,
 							},
 						},
 					},
@@ -12141,13 +12141,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   133,
+									Line:   135,
 								},
 								File:   "geo.flux",
 								Source: "level",
 								Start: ast.Position{
 									Column: 9,
-									Line:   133,
+									Line:   135,
 								},
 							},
 						},
@@ -12162,13 +12162,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 17,
-										Line:   133,
+										Line:   135,
 									},
 									File:   "geo.flux",
 									Source: "1",
 									Start: ast.Position{
 										Column: 16,
-										Line:   133,
+										Line:   135,
 									},
 								},
 							},
@@ -12180,13 +12180,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   133,
+									Line:   135,
 								},
 								File:   "geo.flux",
 								Source: "-1",
 								Start: ast.Position{
 									Column: 15,
-									Line:   133,
+									Line:   135,
 								},
 							},
 						},
@@ -12199,13 +12199,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   134,
+								Line:   136,
 							},
 							File:   "geo.flux",
 							Source: "s2cellIDLevel=-1",
 							Start: ast.Position{
 								Column: 9,
-								Line:   134,
+								Line:   136,
 							},
 						},
 					},
@@ -12217,13 +12217,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   134,
+									Line:   136,
 								},
 								File:   "geo.flux",
 								Source: "s2cellIDLevel",
 								Start: ast.Position{
 									Column: 9,
-									Line:   134,
+									Line:   136,
 								},
 							},
 						},
@@ -12238,13 +12238,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   134,
+										Line:   136,
 									},
 									File:   "geo.flux",
 									Source: "1",
 									Start: ast.Position{
 										Column: 24,
-										Line:   134,
+										Line:   136,
 									},
 								},
 							},
@@ -12256,13 +12256,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   134,
+									Line:   136,
 								},
 								File:   "geo.flux",
 								Source: "-1",
 								Start: ast.Position{
 									Column: 23,
-									Line:   134,
+									Line:   136,
 								},
 							},
 						},
@@ -12275,13 +12275,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   135,
+								Line:   137,
 							},
 							File:   "geo.flux",
 							Source: "units=units",
 							Start: ast.Position{
 								Column: 9,
-								Line:   135,
+								Line:   137,
 							},
 						},
 					},
@@ -12293,13 +12293,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   135,
+									Line:   137,
 								},
 								File:   "geo.flux",
 								Source: "units",
 								Start: ast.Position{
 									Column: 9,
-									Line:   135,
+									Line:   137,
 								},
 							},
 						},
@@ -12313,13 +12313,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   135,
+									Line:   137,
 								},
 								File:   "geo.flux",
 								Source: "units",
 								Start: ast.Position{
 									Column: 15,
-									Line:   135,
+									Line:   137,
 								},
 							},
 						},
@@ -12335,13 +12335,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 90,
-						Line:   163,
+						Line:   165,
 					},
 					File:   "geo.flux",
 					Source: "strictFilter = (tables=<-, region) => tables\n    |> filter(fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon}))",
 					Start: ast.Position{
 						Column: 1,
-						Line:   162,
+						Line:   164,
 					},
 				},
 			},
@@ -12352,13 +12352,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   162,
+							Line:   164,
 						},
 						File:   "geo.flux",
 						Source: "strictFilter",
 						Start: ast.Position{
 							Column: 1,
-							Line:   162,
+							Line:   164,
 						},
 					},
 				},
@@ -12372,13 +12372,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 90,
-							Line:   163,
+							Line:   165,
 						},
 						File:   "geo.flux",
 						Source: "(tables=<-, region) => tables\n    |> filter(fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon}))",
 						Start: ast.Position{
 							Column: 16,
-							Line:   162,
+							Line:   164,
 						},
 					},
 				},
@@ -12390,13 +12390,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   162,
+									Line:   164,
 								},
 								File:   "geo.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 39,
-									Line:   162,
+									Line:   164,
 								},
 							},
 						},
@@ -12408,13 +12408,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 90,
-								Line:   163,
+								Line:   165,
 							},
 							File:   "geo.flux",
 							Source: "tables\n    |> filter(fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon}))",
 							Start: ast.Position{
 								Column: 39,
-								Line:   162,
+								Line:   164,
 							},
 						},
 					},
@@ -12426,13 +12426,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 89,
-										Line:   163,
+										Line:   165,
 									},
 									File:   "geo.flux",
 									Source: "fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})",
 									Start: ast.Position{
 										Column: 15,
-										Line:   163,
+										Line:   165,
 									},
 								},
 							},
@@ -12444,13 +12444,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 89,
-											Line:   163,
+											Line:   165,
 										},
 										File:   "geo.flux",
 										Source: "fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})",
 										Start: ast.Position{
 											Column: 15,
-											Line:   163,
+											Line:   165,
 										},
 									},
 								},
@@ -12462,13 +12462,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   163,
+												Line:   165,
 											},
 											File:   "geo.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 15,
-												Line:   163,
+												Line:   165,
 											},
 										},
 									},
@@ -12483,13 +12483,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 89,
-												Line:   163,
+												Line:   165,
 											},
 											File:   "geo.flux",
 											Source: "(r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})",
 											Start: ast.Position{
 												Column: 19,
-												Line:   163,
+												Line:   165,
 											},
 										},
 									},
@@ -12501,13 +12501,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 88,
-														Line:   163,
+														Line:   165,
 													},
 													File:   "geo.flux",
 													Source: "region: region, geometry: {lat: r.lat, lon: r.lon}",
 													Start: ast.Position{
 														Column: 38,
-														Line:   163,
+														Line:   165,
 													},
 												},
 											},
@@ -12519,13 +12519,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 52,
-															Line:   163,
+															Line:   165,
 														},
 														File:   "geo.flux",
 														Source: "region: region",
 														Start: ast.Position{
 															Column: 38,
-															Line:   163,
+															Line:   165,
 														},
 													},
 												},
@@ -12537,13 +12537,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 44,
-																Line:   163,
+																Line:   165,
 															},
 															File:   "geo.flux",
 															Source: "region",
 															Start: ast.Position{
 																Column: 38,
-																Line:   163,
+																Line:   165,
 															},
 														},
 													},
@@ -12557,13 +12557,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 52,
-																Line:   163,
+																Line:   165,
 															},
 															File:   "geo.flux",
 															Source: "region",
 															Start: ast.Position{
 																Column: 46,
-																Line:   163,
+																Line:   165,
 															},
 														},
 													},
@@ -12576,13 +12576,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 88,
-															Line:   163,
+															Line:   165,
 														},
 														File:   "geo.flux",
 														Source: "geometry: {lat: r.lat, lon: r.lon}",
 														Start: ast.Position{
 															Column: 54,
-															Line:   163,
+															Line:   165,
 														},
 													},
 												},
@@ -12594,13 +12594,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 62,
-																Line:   163,
+																Line:   165,
 															},
 															File:   "geo.flux",
 															Source: "geometry",
 															Start: ast.Position{
 																Column: 54,
-																Line:   163,
+																Line:   165,
 															},
 														},
 													},
@@ -12614,13 +12614,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 88,
-																Line:   163,
+																Line:   165,
 															},
 															File:   "geo.flux",
 															Source: "{lat: r.lat, lon: r.lon}",
 															Start: ast.Position{
 																Column: 64,
-																Line:   163,
+																Line:   165,
 															},
 														},
 													},
@@ -12632,13 +12632,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 75,
-																	Line:   163,
+																	Line:   165,
 																},
 																File:   "geo.flux",
 																Source: "lat: r.lat",
 																Start: ast.Position{
 																	Column: 65,
-																	Line:   163,
+																	Line:   165,
 																},
 															},
 														},
@@ -12650,13 +12650,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 68,
-																		Line:   163,
+																		Line:   165,
 																	},
 																	File:   "geo.flux",
 																	Source: "lat",
 																	Start: ast.Position{
 																		Column: 65,
-																		Line:   163,
+																		Line:   165,
 																	},
 																},
 															},
@@ -12670,13 +12670,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 75,
-																		Line:   163,
+																		Line:   165,
 																	},
 																	File:   "geo.flux",
 																	Source: "r.lat",
 																	Start: ast.Position{
 																		Column: 70,
-																		Line:   163,
+																		Line:   165,
 																	},
 																},
 															},
@@ -12688,13 +12688,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 71,
-																			Line:   163,
+																			Line:   165,
 																		},
 																		File:   "geo.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 70,
-																			Line:   163,
+																			Line:   165,
 																		},
 																	},
 																},
@@ -12707,13 +12707,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 75,
-																			Line:   163,
+																			Line:   165,
 																		},
 																		File:   "geo.flux",
 																		Source: "lat",
 																		Start: ast.Position{
 																			Column: 72,
-																			Line:   163,
+																			Line:   165,
 																		},
 																	},
 																},
@@ -12728,13 +12728,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 87,
-																	Line:   163,
+																	Line:   165,
 																},
 																File:   "geo.flux",
 																Source: "lon: r.lon",
 																Start: ast.Position{
 																	Column: 77,
-																	Line:   163,
+																	Line:   165,
 																},
 															},
 														},
@@ -12746,13 +12746,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 80,
-																		Line:   163,
+																		Line:   165,
 																	},
 																	File:   "geo.flux",
 																	Source: "lon",
 																	Start: ast.Position{
 																		Column: 77,
-																		Line:   163,
+																		Line:   165,
 																	},
 																},
 															},
@@ -12766,13 +12766,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 87,
-																		Line:   163,
+																		Line:   165,
 																	},
 																	File:   "geo.flux",
 																	Source: "r.lon",
 																	Start: ast.Position{
 																		Column: 82,
-																		Line:   163,
+																		Line:   165,
 																	},
 																},
 															},
@@ -12784,13 +12784,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 83,
-																			Line:   163,
+																			Line:   165,
 																		},
 																		File:   "geo.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 82,
-																			Line:   163,
+																			Line:   165,
 																		},
 																	},
 																},
@@ -12803,13 +12803,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 87,
-																			Line:   163,
+																			Line:   165,
 																		},
 																		File:   "geo.flux",
 																		Source: "lon",
 																		Start: ast.Position{
 																			Column: 84,
-																			Line:   163,
+																			Line:   165,
 																		},
 																	},
 																},
@@ -12831,13 +12831,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 89,
-													Line:   163,
+													Line:   165,
 												},
 												File:   "geo.flux",
 												Source: "ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})",
 												Start: ast.Position{
 													Column: 26,
-													Line:   163,
+													Line:   165,
 												},
 											},
 										},
@@ -12848,13 +12848,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 37,
-														Line:   163,
+														Line:   165,
 													},
 													File:   "geo.flux",
 													Source: "ST_Contains",
 													Start: ast.Position{
 														Column: 26,
-														Line:   163,
+														Line:   165,
 													},
 												},
 											},
@@ -12871,13 +12871,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   163,
+													Line:   165,
 												},
 												File:   "geo.flux",
 												Source: "r",
 												Start: ast.Position{
 													Column: 20,
-													Line:   163,
+													Line:   165,
 												},
 											},
 										},
@@ -12889,13 +12889,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   163,
+														Line:   165,
 													},
 													File:   "geo.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 20,
-														Line:   163,
+														Line:   165,
 													},
 												},
 											},
@@ -12916,13 +12916,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 90,
-									Line:   163,
+									Line:   165,
 								},
 								File:   "geo.flux",
 								Source: "filter(fn: (r) => ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon}))",
 								Start: ast.Position{
 									Column: 8,
-									Line:   163,
+									Line:   165,
 								},
 							},
 						},
@@ -12933,13 +12933,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
-										Line:   163,
+										Line:   165,
 									},
 									File:   "geo.flux",
 									Source: "filter",
 									Start: ast.Position{
 										Column: 8,
-										Line:   163,
+										Line:   165,
 									},
 								},
 							},
@@ -12957,13 +12957,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   162,
+								Line:   164,
 							},
 							File:   "geo.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 17,
-								Line:   162,
+								Line:   164,
 							},
 						},
 					},
@@ -12975,13 +12975,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   162,
+									Line:   164,
 								},
 								File:   "geo.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 17,
-									Line:   162,
+									Line:   164,
 								},
 							},
 						},
@@ -12994,13 +12994,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   162,
+								Line:   164,
 							},
 							File:   "geo.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 24,
-								Line:   162,
+								Line:   164,
 							},
 						},
 					}},
@@ -13011,13 +13011,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   162,
+								Line:   164,
 							},
 							File:   "geo.flux",
 							Source: "region",
 							Start: ast.Position{
 								Column: 28,
-								Line:   162,
+								Line:   164,
 							},
 						},
 					},
@@ -13029,13 +13029,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   162,
+									Line:   164,
 								},
 								File:   "geo.flux",
 								Source: "region",
 								Start: ast.Position{
 									Column: 28,
-									Line:   162,
+									Line:   164,
 								},
 							},
 						},
@@ -13053,13 +13053,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   207,
+						Line:   209,
 					},
 					File:   "geo.flux",
 					Source: "filterRows = (\n        tables=<-,\n        region,\n        minSize=24,\n        maxSize=-1,\n        level=-1,\n        s2cellIDLevel=-1,\n        strict=true,\n) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   168,
+						Line:   170,
 					},
 				},
 			},
@@ -13070,13 +13070,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   168,
+							Line:   170,
 						},
 						File:   "geo.flux",
 						Source: "filterRows",
 						Start: ast.Position{
 							Column: 1,
-							Line:   168,
+							Line:   170,
 						},
 					},
 				},
@@ -13090,13 +13090,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   207,
+							Line:   209,
 						},
 						File:   "geo.flux",
 						Source: "(\n        tables=<-,\n        region,\n        minSize=24,\n        maxSize=-1,\n        level=-1,\n        s2cellIDLevel=-1,\n        strict=true,\n) => {\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}",
 						Start: ast.Position{
 							Column: 14,
-							Line:   168,
+							Line:   170,
 						},
 					},
 				},
@@ -13107,13 +13107,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   207,
+								Line:   209,
 							},
 							File:   "geo.flux",
 							Source: "{\n    _columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")\n    _rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()\n    _result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows\n\n    return _result\n}",
 							Start: ast.Position{
 								Column: 6,
-								Line:   176,
+								Line:   178,
 							},
 						},
 					},
@@ -13124,13 +13124,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   180,
+									Line:   182,
 								},
 								File:   "geo.flux",
 								Source: "_columns = tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")",
 								Start: ast.Position{
 									Column: 5,
-									Line:   177,
+									Line:   179,
 								},
 							},
 						},
@@ -13141,13 +13141,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   177,
+										Line:   179,
 									},
 									File:   "geo.flux",
 									Source: "_columns",
 									Start: ast.Position{
 										Column: 5,
-										Line:   177,
+										Line:   179,
 									},
 								},
 							},
@@ -13163,13 +13163,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   177,
+													Line:   179,
 												},
 												File:   "geo.flux",
 												Source: "tables",
 												Start: ast.Position{
 													Column: 16,
-													Line:   177,
+													Line:   179,
 												},
 											},
 										},
@@ -13181,13 +13181,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   178,
+												Line:   180,
 											},
 											File:   "geo.flux",
 											Source: "tables\n        |> columns(column: \"_value\")",
 											Start: ast.Position{
 												Column: 16,
-												Line:   177,
+												Line:   179,
 											},
 										},
 									},
@@ -13199,13 +13199,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
-														Line:   178,
+														Line:   180,
 													},
 													File:   "geo.flux",
 													Source: "column: \"_value\"",
 													Start: ast.Position{
 														Column: 20,
-														Line:   178,
+														Line:   180,
 													},
 												},
 											},
@@ -13217,13 +13217,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
-															Line:   178,
+															Line:   180,
 														},
 														File:   "geo.flux",
 														Source: "column: \"_value\"",
 														Start: ast.Position{
 															Column: 20,
-															Line:   178,
+															Line:   180,
 														},
 													},
 												},
@@ -13235,13 +13235,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   178,
+																Line:   180,
 															},
 															File:   "geo.flux",
 															Source: "column",
 															Start: ast.Position{
 																Column: 20,
-																Line:   178,
+																Line:   180,
 															},
 														},
 													},
@@ -13255,13 +13255,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
-																Line:   178,
+																Line:   180,
 															},
 															File:   "geo.flux",
 															Source: "\"_value\"",
 															Start: ast.Position{
 																Column: 28,
-																Line:   178,
+																Line:   180,
 															},
 														},
 													},
@@ -13277,13 +13277,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 37,
-													Line:   178,
+													Line:   180,
 												},
 												File:   "geo.flux",
 												Source: "columns(column: \"_value\")",
 												Start: ast.Position{
 													Column: 12,
-													Line:   178,
+													Line:   180,
 												},
 											},
 										},
@@ -13294,13 +13294,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   178,
+														Line:   180,
 													},
 													File:   "geo.flux",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 12,
-														Line:   178,
+														Line:   180,
 													},
 												},
 											},
@@ -13316,13 +13316,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   179,
+											Line:   181,
 										},
 										File:   "geo.flux",
 										Source: "tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)",
 										Start: ast.Position{
 											Column: 16,
-											Line:   177,
+											Line:   179,
 										},
 									},
 								},
@@ -13334,13 +13334,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
-													Line:   179,
+													Line:   181,
 												},
 												File:   "geo.flux",
 												Source: "fn: (key) => true",
 												Start: ast.Position{
 													Column: 22,
-													Line:   179,
+													Line:   181,
 												},
 											},
 										},
@@ -13352,13 +13352,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 39,
-														Line:   179,
+														Line:   181,
 													},
 													File:   "geo.flux",
 													Source: "fn: (key) => true",
 													Start: ast.Position{
 														Column: 22,
-														Line:   179,
+														Line:   181,
 													},
 												},
 											},
@@ -13370,13 +13370,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   179,
+															Line:   181,
 														},
 														File:   "geo.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 22,
-															Line:   179,
+															Line:   181,
 														},
 													},
 												},
@@ -13391,13 +13391,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
-															Line:   179,
+															Line:   181,
 														},
 														File:   "geo.flux",
 														Source: "(key) => true",
 														Start: ast.Position{
 															Column: 26,
-															Line:   179,
+															Line:   181,
 														},
 													},
 												},
@@ -13408,13 +13408,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 39,
-																Line:   179,
+																Line:   181,
 															},
 															File:   "geo.flux",
 															Source: "true",
 															Start: ast.Position{
 																Column: 35,
-																Line:   179,
+																Line:   181,
 															},
 														},
 													},
@@ -13428,13 +13428,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   179,
+																Line:   181,
 															},
 															File:   "geo.flux",
 															Source: "key",
 															Start: ast.Position{
 																Column: 27,
-																Line:   179,
+																Line:   181,
 															},
 														},
 													},
@@ -13446,13 +13446,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   179,
+																	Line:   181,
 																},
 																File:   "geo.flux",
 																Source: "key",
 																Start: ast.Position{
 																	Column: 27,
-																	Line:   179,
+																	Line:   181,
 																},
 															},
 														},
@@ -13473,13 +13473,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 40,
-												Line:   179,
+												Line:   181,
 											},
 											File:   "geo.flux",
 											Source: "tableFind(fn: (key) => true)",
 											Start: ast.Position{
 												Column: 12,
-												Line:   179,
+												Line:   181,
 											},
 										},
 									},
@@ -13490,13 +13490,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   179,
+													Line:   181,
 												},
 												File:   "geo.flux",
 												Source: "tableFind",
 												Start: ast.Position{
 													Column: 12,
-													Line:   179,
+													Line:   181,
 												},
 											},
 										},
@@ -13512,13 +13512,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   180,
+										Line:   182,
 									},
 									File:   "geo.flux",
 									Source: "tables\n        |> columns(column: \"_value\")\n        |> tableFind(fn: (key) => true)\n        |> getColumn(column: \"_value\")",
 									Start: ast.Position{
 										Column: 16,
-										Line:   177,
+										Line:   179,
 									},
 								},
 							},
@@ -13530,13 +13530,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   180,
+												Line:   182,
 											},
 											File:   "geo.flux",
 											Source: "column: \"_value\"",
 											Start: ast.Position{
 												Column: 22,
-												Line:   180,
+												Line:   182,
 											},
 										},
 									},
@@ -13548,13 +13548,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   180,
+													Line:   182,
 												},
 												File:   "geo.flux",
 												Source: "column: \"_value\"",
 												Start: ast.Position{
 													Column: 22,
-													Line:   180,
+													Line:   182,
 												},
 											},
 										},
@@ -13566,13 +13566,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 28,
-														Line:   180,
+														Line:   182,
 													},
 													File:   "geo.flux",
 													Source: "column",
 													Start: ast.Position{
 														Column: 22,
-														Line:   180,
+														Line:   182,
 													},
 												},
 											},
@@ -13586,13 +13586,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   180,
+														Line:   182,
 													},
 													File:   "geo.flux",
 													Source: "\"_value\"",
 													Start: ast.Position{
 														Column: 30,
-														Line:   180,
+														Line:   182,
 													},
 												},
 											},
@@ -13608,13 +13608,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   180,
+											Line:   182,
 										},
 										File:   "geo.flux",
 										Source: "getColumn(column: \"_value\")",
 										Start: ast.Position{
 											Column: 12,
-											Line:   180,
+											Line:   182,
 										},
 									},
 								},
@@ -13625,13 +13625,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   180,
+												Line:   182,
 											},
 											File:   "geo.flux",
 											Source: "getColumn",
 											Start: ast.Position{
 												Column: 12,
-												Line:   180,
+												Line:   182,
 											},
 										},
 									},
@@ -13648,13 +13648,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   199,
+									Line:   201,
 								},
 								File:   "geo.flux",
 								Source: "_rows = if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   181,
+									Line:   183,
 								},
 							},
 						},
@@ -13665,13 +13665,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   181,
+										Line:   183,
 									},
 									File:   "geo.flux",
 									Source: "_rows",
 									Start: ast.Position{
 										Column: 5,
-										Line:   181,
+										Line:   183,
 									},
 								},
 							},
@@ -13687,13 +13687,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   191,
+													Line:   193,
 												},
 												File:   "geo.flux",
 												Source: "tables",
 												Start: ast.Position{
 													Column: 9,
-													Line:   191,
+													Line:   193,
 												},
 											},
 										},
@@ -13705,13 +13705,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   198,
+												Line:   200,
 											},
 											File:   "geo.flux",
 											Source: "tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )",
 											Start: ast.Position{
 												Column: 9,
-												Line:   191,
+												Line:   193,
 											},
 										},
 									},
@@ -13723,13 +13723,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   197,
+														Line:   199,
 													},
 													File:   "geo.flux",
 													Source: "region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel",
 													Start: ast.Position{
 														Column: 17,
-														Line:   193,
+														Line:   195,
 													},
 												},
 											},
@@ -13741,13 +13741,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 31,
-															Line:   193,
+															Line:   195,
 														},
 														File:   "geo.flux",
 														Source: "region: region",
 														Start: ast.Position{
 															Column: 17,
-															Line:   193,
+															Line:   195,
 														},
 													},
 												},
@@ -13759,13 +13759,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 23,
-																Line:   193,
+																Line:   195,
 															},
 															File:   "geo.flux",
 															Source: "region",
 															Start: ast.Position{
 																Column: 17,
-																Line:   193,
+																Line:   195,
 															},
 														},
 													},
@@ -13779,13 +13779,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 31,
-																Line:   193,
+																Line:   195,
 															},
 															File:   "geo.flux",
 															Source: "region",
 															Start: ast.Position{
 																Column: 25,
-																Line:   193,
+																Line:   195,
 															},
 														},
 													},
@@ -13798,13 +13798,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
-															Line:   194,
+															Line:   196,
 														},
 														File:   "geo.flux",
 														Source: "minSize: minSize",
 														Start: ast.Position{
 															Column: 17,
-															Line:   194,
+															Line:   196,
 														},
 													},
 												},
@@ -13816,13 +13816,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 24,
-																Line:   194,
+																Line:   196,
 															},
 															File:   "geo.flux",
 															Source: "minSize",
 															Start: ast.Position{
 																Column: 17,
-																Line:   194,
+																Line:   196,
 															},
 														},
 													},
@@ -13836,13 +13836,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 33,
-																Line:   194,
+																Line:   196,
 															},
 															File:   "geo.flux",
 															Source: "minSize",
 															Start: ast.Position{
 																Column: 26,
-																Line:   194,
+																Line:   196,
 															},
 														},
 													},
@@ -13855,13 +13855,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
-															Line:   195,
+															Line:   197,
 														},
 														File:   "geo.flux",
 														Source: "maxSize: maxSize",
 														Start: ast.Position{
 															Column: 17,
-															Line:   195,
+															Line:   197,
 														},
 													},
 												},
@@ -13873,13 +13873,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 24,
-																Line:   195,
+																Line:   197,
 															},
 															File:   "geo.flux",
 															Source: "maxSize",
 															Start: ast.Position{
 																Column: 17,
-																Line:   195,
+																Line:   197,
 															},
 														},
 													},
@@ -13893,13 +13893,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 33,
-																Line:   195,
+																Line:   197,
 															},
 															File:   "geo.flux",
 															Source: "maxSize",
 															Start: ast.Position{
 																Column: 26,
-																Line:   195,
+																Line:   197,
 															},
 														},
 													},
@@ -13912,13 +13912,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 29,
-															Line:   196,
+															Line:   198,
 														},
 														File:   "geo.flux",
 														Source: "level: level",
 														Start: ast.Position{
 															Column: 17,
-															Line:   196,
+															Line:   198,
 														},
 													},
 												},
@@ -13930,13 +13930,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 22,
-																Line:   196,
+																Line:   198,
 															},
 															File:   "geo.flux",
 															Source: "level",
 															Start: ast.Position{
 																Column: 17,
-																Line:   196,
+																Line:   198,
 															},
 														},
 													},
@@ -13950,13 +13950,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 29,
-																Line:   196,
+																Line:   198,
 															},
 															File:   "geo.flux",
 															Source: "level",
 															Start: ast.Position{
 																Column: 24,
-																Line:   196,
+																Line:   198,
 															},
 														},
 													},
@@ -13969,13 +13969,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   197,
+															Line:   199,
 														},
 														File:   "geo.flux",
 														Source: "s2cellIDLevel: s2cellIDLevel",
 														Start: ast.Position{
 															Column: 17,
-															Line:   197,
+															Line:   199,
 														},
 													},
 												},
@@ -13987,13 +13987,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   197,
+																Line:   199,
 															},
 															File:   "geo.flux",
 															Source: "s2cellIDLevel",
 															Start: ast.Position{
 																Column: 17,
-																Line:   197,
+																Line:   199,
 															},
 														},
 													},
@@ -14007,13 +14007,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   197,
+																Line:   199,
 															},
 															File:   "geo.flux",
 															Source: "s2cellIDLevel",
 															Start: ast.Position{
 																Column: 32,
-																Line:   197,
+																Line:   199,
 															},
 														},
 													},
@@ -14029,13 +14029,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   198,
+													Line:   200,
 												},
 												File:   "geo.flux",
 												Source: "gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )",
 												Start: ast.Position{
 													Column: 16,
-													Line:   192,
+													Line:   194,
 												},
 											},
 										},
@@ -14046,13 +14046,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   192,
+														Line:   194,
 													},
 													File:   "geo.flux",
 													Source: "gridFilter",
 													Start: ast.Position{
 														Column: 16,
-														Line:   192,
+														Line:   194,
 													},
 												},
 											},
@@ -14068,13 +14068,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   199,
+											Line:   201,
 										},
 										File:   "geo.flux",
 										Source: "tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()",
 										Start: ast.Position{
 											Column: 9,
-											Line:   191,
+											Line:   193,
 										},
 									},
 								},
@@ -14086,13 +14086,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   199,
+												Line:   201,
 											},
 											File:   "geo.flux",
 											Source: "toRows()",
 											Start: ast.Position{
 												Column: 16,
-												Line:   199,
+												Line:   201,
 											},
 										},
 									},
@@ -14103,13 +14103,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   199,
+													Line:   201,
 												},
 												File:   "geo.flux",
 												Source: "toRows",
 												Start: ast.Position{
 													Column: 16,
-													Line:   199,
+													Line:   201,
 												},
 											},
 										},
@@ -14125,13 +14125,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   199,
+										Line:   201,
 									},
 									File:   "geo.flux",
 									Source: "if contains(value: \"lat\", set: _columns) then\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n    else\n        tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )\n            |> toRows()",
 									Start: ast.Position{
 										Column: 13,
-										Line:   181,
+										Line:   183,
 									},
 								},
 							},
@@ -14143,13 +14143,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   182,
+												Line:   184,
 											},
 											File:   "geo.flux",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 9,
-												Line:   182,
+												Line:   184,
 											},
 										},
 									},
@@ -14161,13 +14161,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   189,
+											Line:   191,
 										},
 										File:   "geo.flux",
 										Source: "tables\n            |> gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )",
 										Start: ast.Position{
 											Column: 9,
-											Line:   182,
+											Line:   184,
 										},
 									},
 								},
@@ -14179,13 +14179,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   188,
+													Line:   190,
 												},
 												File:   "geo.flux",
 												Source: "region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel",
 												Start: ast.Position{
 													Column: 17,
-													Line:   184,
+													Line:   186,
 												},
 											},
 										},
@@ -14197,13 +14197,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 31,
-														Line:   184,
+														Line:   186,
 													},
 													File:   "geo.flux",
 													Source: "region: region",
 													Start: ast.Position{
 														Column: 17,
-														Line:   184,
+														Line:   186,
 													},
 												},
 											},
@@ -14215,13 +14215,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 23,
-															Line:   184,
+															Line:   186,
 														},
 														File:   "geo.flux",
 														Source: "region",
 														Start: ast.Position{
 															Column: 17,
-															Line:   184,
+															Line:   186,
 														},
 													},
 												},
@@ -14235,13 +14235,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 31,
-															Line:   184,
+															Line:   186,
 														},
 														File:   "geo.flux",
 														Source: "region",
 														Start: ast.Position{
 															Column: 25,
-															Line:   184,
+															Line:   186,
 														},
 													},
 												},
@@ -14254,13 +14254,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
-														Line:   185,
+														Line:   187,
 													},
 													File:   "geo.flux",
 													Source: "minSize: minSize",
 													Start: ast.Position{
 														Column: 17,
-														Line:   185,
+														Line:   187,
 													},
 												},
 											},
@@ -14272,13 +14272,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   185,
+															Line:   187,
 														},
 														File:   "geo.flux",
 														Source: "minSize",
 														Start: ast.Position{
 															Column: 17,
-															Line:   185,
+															Line:   187,
 														},
 													},
 												},
@@ -14292,13 +14292,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
-															Line:   185,
+															Line:   187,
 														},
 														File:   "geo.flux",
 														Source: "minSize",
 														Start: ast.Position{
 															Column: 26,
-															Line:   185,
+															Line:   187,
 														},
 													},
 												},
@@ -14311,13 +14311,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
-														Line:   186,
+														Line:   188,
 													},
 													File:   "geo.flux",
 													Source: "maxSize: maxSize",
 													Start: ast.Position{
 														Column: 17,
-														Line:   186,
+														Line:   188,
 													},
 												},
 											},
@@ -14329,13 +14329,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   186,
+															Line:   188,
 														},
 														File:   "geo.flux",
 														Source: "maxSize",
 														Start: ast.Position{
 															Column: 17,
-															Line:   186,
+															Line:   188,
 														},
 													},
 												},
@@ -14349,13 +14349,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
-															Line:   186,
+															Line:   188,
 														},
 														File:   "geo.flux",
 														Source: "maxSize",
 														Start: ast.Position{
 															Column: 26,
-															Line:   186,
+															Line:   188,
 														},
 													},
 												},
@@ -14368,13 +14368,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 29,
-														Line:   187,
+														Line:   189,
 													},
 													File:   "geo.flux",
 													Source: "level: level",
 													Start: ast.Position{
 														Column: 17,
-														Line:   187,
+														Line:   189,
 													},
 												},
 											},
@@ -14386,13 +14386,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   187,
+															Line:   189,
 														},
 														File:   "geo.flux",
 														Source: "level",
 														Start: ast.Position{
 															Column: 17,
-															Line:   187,
+															Line:   189,
 														},
 													},
 												},
@@ -14406,13 +14406,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 29,
-															Line:   187,
+															Line:   189,
 														},
 														File:   "geo.flux",
 														Source: "level",
 														Start: ast.Position{
 															Column: 24,
-															Line:   187,
+															Line:   189,
 														},
 													},
 												},
@@ -14425,13 +14425,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   188,
+														Line:   190,
 													},
 													File:   "geo.flux",
 													Source: "s2cellIDLevel: s2cellIDLevel",
 													Start: ast.Position{
 														Column: 17,
-														Line:   188,
+														Line:   190,
 													},
 												},
 											},
@@ -14443,13 +14443,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
-															Line:   188,
+															Line:   190,
 														},
 														File:   "geo.flux",
 														Source: "s2cellIDLevel",
 														Start: ast.Position{
 															Column: 17,
-															Line:   188,
+															Line:   190,
 														},
 													},
 												},
@@ -14463,13 +14463,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   188,
+															Line:   190,
 														},
 														File:   "geo.flux",
 														Source: "s2cellIDLevel",
 														Start: ast.Position{
 															Column: 32,
-															Line:   188,
+															Line:   190,
 														},
 													},
 												},
@@ -14485,13 +14485,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   189,
+												Line:   191,
 											},
 											File:   "geo.flux",
 											Source: "gridFilter(\n                region: region,\n                minSize: minSize,\n                maxSize: maxSize,\n                level: level,\n                s2cellIDLevel: s2cellIDLevel,\n            )",
 											Start: ast.Position{
 												Column: 16,
-												Line:   183,
+												Line:   185,
 											},
 										},
 									},
@@ -14502,13 +14502,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   183,
+													Line:   185,
 												},
 												File:   "geo.flux",
 												Source: "gridFilter",
 												Start: ast.Position{
 													Column: 16,
-													Line:   183,
+													Line:   185,
 												},
 											},
 										},
@@ -14526,13 +14526,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 52,
-												Line:   181,
+												Line:   183,
 											},
 											File:   "geo.flux",
 											Source: "value: \"lat\", set: _columns",
 											Start: ast.Position{
 												Column: 25,
-												Line:   181,
+												Line:   183,
 											},
 										},
 									},
@@ -14544,13 +14544,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 37,
-													Line:   181,
+													Line:   183,
 												},
 												File:   "geo.flux",
 												Source: "value: \"lat\"",
 												Start: ast.Position{
 													Column: 25,
-													Line:   181,
+													Line:   183,
 												},
 											},
 										},
@@ -14562,13 +14562,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   181,
+														Line:   183,
 													},
 													File:   "geo.flux",
 													Source: "value",
 													Start: ast.Position{
 														Column: 25,
-														Line:   181,
+														Line:   183,
 													},
 												},
 											},
@@ -14582,13 +14582,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 37,
-														Line:   181,
+														Line:   183,
 													},
 													File:   "geo.flux",
 													Source: "\"lat\"",
 													Start: ast.Position{
 														Column: 32,
-														Line:   181,
+														Line:   183,
 													},
 												},
 											},
@@ -14601,13 +14601,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 52,
-													Line:   181,
+													Line:   183,
 												},
 												File:   "geo.flux",
 												Source: "set: _columns",
 												Start: ast.Position{
 													Column: 39,
-													Line:   181,
+													Line:   183,
 												},
 											},
 										},
@@ -14619,13 +14619,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
-														Line:   181,
+														Line:   183,
 													},
 													File:   "geo.flux",
 													Source: "set",
 													Start: ast.Position{
 														Column: 39,
-														Line:   181,
+														Line:   183,
 													},
 												},
 											},
@@ -14639,13 +14639,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 52,
-														Line:   181,
+														Line:   183,
 													},
 													File:   "geo.flux",
 													Source: "_columns",
 													Start: ast.Position{
 														Column: 44,
-														Line:   181,
+														Line:   183,
 													},
 												},
 											},
@@ -14661,13 +14661,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
-											Line:   181,
+											Line:   183,
 										},
 										File:   "geo.flux",
 										Source: "contains(value: \"lat\", set: _columns)",
 										Start: ast.Position{
 											Column: 16,
-											Line:   181,
+											Line:   183,
 										},
 									},
 								},
@@ -14678,13 +14678,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   181,
+												Line:   183,
 											},
 											File:   "geo.flux",
 											Source: "contains",
 											Start: ast.Position{
 												Column: 16,
-												Line:   181,
+												Line:   183,
 											},
 										},
 									},
@@ -14704,13 +14704,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   204,
+									Line:   206,
 								},
 								File:   "geo.flux",
 								Source: "_result = if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows",
 								Start: ast.Position{
 									Column: 5,
-									Line:   200,
+									Line:   202,
 								},
 							},
 						},
@@ -14721,13 +14721,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   200,
+										Line:   202,
 									},
 									File:   "geo.flux",
 									Source: "_result",
 									Start: ast.Position{
 										Column: 5,
-										Line:   200,
+										Line:   202,
 									},
 								},
 							},
@@ -14741,13 +14741,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   204,
+											Line:   206,
 										},
 										File:   "geo.flux",
 										Source: "_rows",
 										Start: ast.Position{
 											Column: 9,
-											Line:   204,
+											Line:   206,
 										},
 									},
 								},
@@ -14759,13 +14759,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
-										Line:   204,
+										Line:   206,
 									},
 									File:   "geo.flux",
 									Source: "if strict then\n        _rows\n            |> strictFilter(region)\n    else\n        _rows",
 									Start: ast.Position{
 										Column: 15,
-										Line:   200,
+										Line:   202,
 									},
 								},
 							},
@@ -14777,13 +14777,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   201,
+												Line:   203,
 											},
 											File:   "geo.flux",
 											Source: "_rows",
 											Start: ast.Position{
 												Column: 9,
-												Line:   201,
+												Line:   203,
 											},
 										},
 									},
@@ -14795,13 +14795,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 36,
-											Line:   202,
+											Line:   204,
 										},
 										File:   "geo.flux",
 										Source: "_rows\n            |> strictFilter(region)",
 										Start: ast.Position{
 											Column: 9,
-											Line:   201,
+											Line:   203,
 										},
 									},
 								},
@@ -14813,13 +14813,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
-													Line:   202,
+													Line:   204,
 												},
 												File:   "geo.flux",
 												Source: "region",
 												Start: ast.Position{
 													Column: 29,
-													Line:   202,
+													Line:   204,
 												},
 											},
 										},
@@ -14831,13 +14831,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 35,
-														Line:   202,
+														Line:   204,
 													},
 													File:   "geo.flux",
 													Source: "region",
 													Start: ast.Position{
 														Column: 29,
-														Line:   202,
+														Line:   204,
 													},
 												},
 											},
@@ -14849,13 +14849,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 35,
-															Line:   202,
+															Line:   204,
 														},
 														File:   "geo.flux",
 														Source: "region",
 														Start: ast.Position{
 															Column: 29,
-															Line:   202,
+															Line:   204,
 														},
 													},
 												},
@@ -14873,13 +14873,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   202,
+												Line:   204,
 											},
 											File:   "geo.flux",
 											Source: "strictFilter(region)",
 											Start: ast.Position{
 												Column: 16,
-												Line:   202,
+												Line:   204,
 											},
 										},
 									},
@@ -14890,13 +14890,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   202,
+													Line:   204,
 												},
 												File:   "geo.flux",
 												Source: "strictFilter",
 												Start: ast.Position{
 													Column: 16,
-													Line:   202,
+													Line:   204,
 												},
 											},
 										},
@@ -14913,13 +14913,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   200,
+											Line:   202,
 										},
 										File:   "geo.flux",
 										Source: "strict",
 										Start: ast.Position{
 											Column: 18,
-											Line:   200,
+											Line:   202,
 										},
 									},
 								},
@@ -14937,13 +14937,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   206,
+										Line:   208,
 									},
 									File:   "geo.flux",
 									Source: "_result",
 									Start: ast.Position{
 										Column: 12,
-										Line:   206,
+										Line:   208,
 									},
 								},
 							},
@@ -14955,13 +14955,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   206,
+									Line:   208,
 								},
 								File:   "geo.flux",
 								Source: "return _result",
 								Start: ast.Position{
 									Column: 5,
-									Line:   206,
+									Line:   208,
 								},
 							},
 						},
@@ -14977,13 +14977,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   169,
+								Line:   171,
 							},
 							File:   "geo.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 9,
-								Line:   169,
+								Line:   171,
 							},
 						},
 					},
@@ -14995,13 +14995,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   169,
+									Line:   171,
 								},
 								File:   "geo.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 9,
-									Line:   169,
+									Line:   171,
 								},
 							},
 						},
@@ -15014,13 +15014,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   169,
+								Line:   171,
 							},
 							File:   "geo.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 16,
-								Line:   169,
+								Line:   171,
 							},
 						},
 					}},
@@ -15031,13 +15031,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   170,
+								Line:   172,
 							},
 							File:   "geo.flux",
 							Source: "region",
 							Start: ast.Position{
 								Column: 9,
-								Line:   170,
+								Line:   172,
 							},
 						},
 					},
@@ -15049,13 +15049,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   170,
+									Line:   172,
 								},
 								File:   "geo.flux",
 								Source: "region",
 								Start: ast.Position{
 									Column: 9,
-									Line:   170,
+									Line:   172,
 								},
 							},
 						},
@@ -15070,13 +15070,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   171,
+								Line:   173,
 							},
 							File:   "geo.flux",
 							Source: "minSize=24",
 							Start: ast.Position{
 								Column: 9,
-								Line:   171,
+								Line:   173,
 							},
 						},
 					},
@@ -15088,13 +15088,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   171,
+									Line:   173,
 								},
 								File:   "geo.flux",
 								Source: "minSize",
 								Start: ast.Position{
 									Column: 9,
-									Line:   171,
+									Line:   173,
 								},
 							},
 						},
@@ -15108,13 +15108,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   171,
+									Line:   173,
 								},
 								File:   "geo.flux",
 								Source: "24",
 								Start: ast.Position{
 									Column: 17,
-									Line:   171,
+									Line:   173,
 								},
 							},
 						},
@@ -15127,13 +15127,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   172,
+								Line:   174,
 							},
 							File:   "geo.flux",
 							Source: "maxSize=-1",
 							Start: ast.Position{
 								Column: 9,
-								Line:   172,
+								Line:   174,
 							},
 						},
 					},
@@ -15145,13 +15145,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   172,
+									Line:   174,
 								},
 								File:   "geo.flux",
 								Source: "maxSize",
 								Start: ast.Position{
 									Column: 9,
-									Line:   172,
+									Line:   174,
 								},
 							},
 						},
@@ -15166,13 +15166,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   172,
+										Line:   174,
 									},
 									File:   "geo.flux",
 									Source: "1",
 									Start: ast.Position{
 										Column: 18,
-										Line:   172,
+										Line:   174,
 									},
 								},
 							},
@@ -15184,13 +15184,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   172,
+									Line:   174,
 								},
 								File:   "geo.flux",
 								Source: "-1",
 								Start: ast.Position{
 									Column: 17,
-									Line:   172,
+									Line:   174,
 								},
 							},
 						},
@@ -15203,13 +15203,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   173,
+								Line:   175,
 							},
 							File:   "geo.flux",
 							Source: "level=-1",
 							Start: ast.Position{
 								Column: 9,
-								Line:   173,
+								Line:   175,
 							},
 						},
 					},
@@ -15221,13 +15221,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   173,
+									Line:   175,
 								},
 								File:   "geo.flux",
 								Source: "level",
 								Start: ast.Position{
 									Column: 9,
-									Line:   173,
+									Line:   175,
 								},
 							},
 						},
@@ -15242,13 +15242,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 17,
-										Line:   173,
+										Line:   175,
 									},
 									File:   "geo.flux",
 									Source: "1",
 									Start: ast.Position{
 										Column: 16,
-										Line:   173,
+										Line:   175,
 									},
 								},
 							},
@@ -15260,13 +15260,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   173,
+									Line:   175,
 								},
 								File:   "geo.flux",
 								Source: "-1",
 								Start: ast.Position{
 									Column: 15,
-									Line:   173,
+									Line:   175,
 								},
 							},
 						},
@@ -15279,13 +15279,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   174,
+								Line:   176,
 							},
 							File:   "geo.flux",
 							Source: "s2cellIDLevel=-1",
 							Start: ast.Position{
 								Column: 9,
-								Line:   174,
+								Line:   176,
 							},
 						},
 					},
@@ -15297,13 +15297,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   174,
+									Line:   176,
 								},
 								File:   "geo.flux",
 								Source: "s2cellIDLevel",
 								Start: ast.Position{
 									Column: 9,
-									Line:   174,
+									Line:   176,
 								},
 							},
 						},
@@ -15318,13 +15318,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   174,
+										Line:   176,
 									},
 									File:   "geo.flux",
 									Source: "1",
 									Start: ast.Position{
 										Column: 24,
-										Line:   174,
+										Line:   176,
 									},
 								},
 							},
@@ -15336,13 +15336,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   174,
+									Line:   176,
 								},
 								File:   "geo.flux",
 								Source: "-1",
 								Start: ast.Position{
 									Column: 23,
-									Line:   174,
+									Line:   176,
 								},
 							},
 						},
@@ -15355,13 +15355,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   175,
+								Line:   177,
 							},
 							File:   "geo.flux",
 							Source: "strict=true",
 							Start: ast.Position{
 								Column: 9,
-								Line:   175,
+								Line:   177,
 							},
 						},
 					},
@@ -15373,13 +15373,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   175,
+									Line:   177,
 								},
 								File:   "geo.flux",
 								Source: "strict",
 								Start: ast.Position{
 									Column: 9,
-									Line:   175,
+									Line:   177,
 								},
 							},
 						},
@@ -15393,13 +15393,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   175,
+									Line:   177,
 								},
 								File:   "geo.flux",
 								Source: "true",
 								Start: ast.Position{
 									Column: 16,
-									Line:   175,
+									Line:   177,
 								},
 							},
 						},
@@ -15415,13 +15415,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   235,
+						Line:   237,
 					},
 					File:   "geo.flux",
 					Source: "groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   215,
+						Line:   217,
 					},
 				},
 			},
@@ -15432,13 +15432,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   215,
+							Line:   217,
 						},
 						File:   "geo.flux",
 						Source: "groupByArea",
 						Start: ast.Position{
 							Column: 1,
-							Line:   215,
+							Line:   217,
 						},
 					},
 				},
@@ -15452,13 +15452,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   235,
+							Line:   237,
 						},
 						File:   "geo.flux",
 						Source: "(tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
 						Start: ast.Position{
 							Column: 15,
-							Line:   215,
+							Line:   217,
 						},
 					},
 				},
@@ -15469,13 +15469,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   235,
+								Line:   237,
 							},
 							File:   "geo.flux",
 							Source: "{\n    _s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel\n    _prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})\n\n    return _prepared\n        |> group(columns: [newColumn])\n}",
 							Start: ast.Position{
 								Column: 66,
-								Line:   215,
+								Line:   217,
 							},
 						},
 					},
@@ -15486,13 +15486,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   220,
+									Line:   222,
 								},
 								File:   "geo.flux",
 								Source: "_s2cellIDLevel = if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel",
 								Start: ast.Position{
 									Column: 5,
-									Line:   216,
+									Line:   218,
 								},
 							},
 						},
@@ -15503,13 +15503,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   216,
+										Line:   218,
 									},
 									File:   "geo.flux",
 									Source: "_s2cellIDLevel",
 									Start: ast.Position{
 										Column: 5,
-										Line:   216,
+										Line:   218,
 									},
 								},
 							},
@@ -15523,13 +15523,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   220,
+											Line:   222,
 										},
 										File:   "geo.flux",
 										Source: "s2cellIDLevel",
 										Start: ast.Position{
 											Column: 9,
-											Line:   220,
+											Line:   222,
 										},
 									},
 								},
@@ -15541,13 +15541,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   220,
+										Line:   222,
 									},
 									File:   "geo.flux",
 									Source: "if s2cellIDLevel == -1 then\n        tables\n            |> _detectLevel()\n    else\n        s2cellIDLevel",
 									Start: ast.Position{
 										Column: 22,
-										Line:   216,
+										Line:   218,
 									},
 								},
 							},
@@ -15559,13 +15559,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   217,
+												Line:   219,
 											},
 											File:   "geo.flux",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 9,
-												Line:   217,
+												Line:   219,
 											},
 										},
 									},
@@ -15577,13 +15577,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   218,
+											Line:   220,
 										},
 										File:   "geo.flux",
 										Source: "tables\n            |> _detectLevel()",
 										Start: ast.Position{
 											Column: 9,
-											Line:   217,
+											Line:   219,
 										},
 									},
 								},
@@ -15595,13 +15595,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   218,
+												Line:   220,
 											},
 											File:   "geo.flux",
 											Source: "_detectLevel()",
 											Start: ast.Position{
 												Column: 16,
-												Line:   218,
+												Line:   220,
 											},
 										},
 									},
@@ -15612,13 +15612,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   218,
+													Line:   220,
 												},
 												File:   "geo.flux",
 												Source: "_detectLevel",
 												Start: ast.Position{
 													Column: 16,
-													Line:   218,
+													Line:   220,
 												},
 											},
 										},
@@ -15635,13 +15635,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
-											Line:   216,
+											Line:   218,
 										},
 										File:   "geo.flux",
 										Source: "s2cellIDLevel == -1",
 										Start: ast.Position{
 											Column: 25,
-											Line:   216,
+											Line:   218,
 										},
 									},
 								},
@@ -15652,13 +15652,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   216,
+												Line:   218,
 											},
 											File:   "geo.flux",
 											Source: "s2cellIDLevel",
 											Start: ast.Position{
 												Column: 25,
-												Line:   216,
+												Line:   218,
 											},
 										},
 									},
@@ -15673,13 +15673,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   216,
+													Line:   218,
 												},
 												File:   "geo.flux",
 												Source: "1",
 												Start: ast.Position{
 													Column: 43,
-													Line:   216,
+													Line:   218,
 												},
 											},
 										},
@@ -15691,13 +15691,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   216,
+												Line:   218,
 											},
 											File:   "geo.flux",
 											Source: "-1",
 											Start: ast.Position{
 												Column: 42,
-												Line:   216,
+												Line:   218,
 											},
 										},
 									},
@@ -15715,13 +15715,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   231,
+									Line:   233,
 								},
 								File:   "geo.flux",
 								Source: "_prepared = if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})",
 								Start: ast.Position{
 									Column: 5,
-									Line:   221,
+									Line:   223,
 								},
 							},
 						},
@@ -15732,13 +15732,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
-										Line:   221,
+										Line:   223,
 									},
 									File:   "geo.flux",
 									Source: "_prepared",
 									Start: ast.Position{
 										Column: 5,
-										Line:   221,
+										Line:   223,
 									},
 								},
 							},
@@ -15754,13 +15754,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   225,
+													Line:   227,
 												},
 												File:   "geo.flux",
 												Source: "tables",
 												Start: ast.Position{
 													Column: 9,
-													Line:   225,
+													Line:   227,
 												},
 											},
 										},
@@ -15772,13 +15772,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   230,
+												Line:   232,
 											},
 											File:   "geo.flux",
 											Source: "tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )",
 											Start: ast.Position{
 												Column: 9,
-												Line:   225,
+												Line:   227,
 											},
 										},
 									},
@@ -15790,13 +15790,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   229,
+														Line:   231,
 													},
 													File:   "geo.flux",
 													Source: "fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                })",
 													Start: ast.Position{
 														Column: 17,
-														Line:   227,
+														Line:   229,
 													},
 												},
 											},
@@ -15808,13 +15808,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 19,
-															Line:   229,
+															Line:   231,
 														},
 														File:   "geo.flux",
 														Source: "fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                })",
 														Start: ast.Position{
 															Column: 17,
-															Line:   227,
+															Line:   229,
 														},
 													},
 												},
@@ -15826,13 +15826,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 19,
-																Line:   227,
+																Line:   229,
 															},
 															File:   "geo.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 17,
-																Line:   227,
+																Line:   229,
 															},
 														},
 													},
@@ -15847,13 +15847,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 19,
-																Line:   229,
+																Line:   231,
 															},
 															File:   "geo.flux",
 															Source: "(r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                })",
 															Start: ast.Position{
 																Column: 21,
-																Line:   227,
+																Line:   229,
 															},
 														},
 													},
@@ -15864,13 +15864,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
-																	Line:   229,
+																	Line:   231,
 																},
 																File:   "geo.flux",
 																Source: "({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                })",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   227,
+																	Line:   229,
 																},
 															},
 														},
@@ -15881,13 +15881,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 18,
-																		Line:   229,
+																		Line:   231,
 																	},
 																	File:   "geo.flux",
 																	Source: "{r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }",
 																	Start: ast.Position{
 																		Column: 29,
-																		Line:   227,
+																		Line:   229,
 																	},
 																},
 															},
@@ -15899,13 +15899,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 98,
-																			Line:   228,
+																			Line:   230,
 																		},
 																		File:   "geo.flux",
 																		Source: "_s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)",
 																		Start: ast.Position{
 																			Column: 21,
-																			Line:   228,
+																			Line:   230,
 																		},
 																	},
 																},
@@ -15917,13 +15917,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 36,
-																				Line:   228,
+																				Line:   230,
 																			},
 																			File:   "geo.flux",
 																			Source: "_s2_cell_id_xxx",
 																			Start: ast.Position{
 																				Column: 21,
-																				Line:   228,
+																				Line:   230,
 																			},
 																		},
 																	},
@@ -15938,13 +15938,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 97,
-																					Line:   228,
+																					Line:   230,
 																				},
 																				File:   "geo.flux",
 																				Source: "point: {lat: r.lat, lon: r.lon}, level: level",
 																				Start: ast.Position{
 																					Column: 52,
-																					Line:   228,
+																					Line:   230,
 																				},
 																			},
 																		},
@@ -15956,13 +15956,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 83,
-																						Line:   228,
+																						Line:   230,
 																					},
 																					File:   "geo.flux",
 																					Source: "point: {lat: r.lat, lon: r.lon}",
 																					Start: ast.Position{
 																						Column: 52,
-																						Line:   228,
+																						Line:   230,
 																					},
 																				},
 																			},
@@ -15974,13 +15974,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 57,
-																							Line:   228,
+																							Line:   230,
 																						},
 																						File:   "geo.flux",
 																						Source: "point",
 																						Start: ast.Position{
 																							Column: 52,
-																							Line:   228,
+																							Line:   230,
 																						},
 																					},
 																				},
@@ -15994,13 +15994,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 83,
-																							Line:   228,
+																							Line:   230,
 																						},
 																						File:   "geo.flux",
 																						Source: "{lat: r.lat, lon: r.lon}",
 																						Start: ast.Position{
 																							Column: 59,
-																							Line:   228,
+																							Line:   230,
 																						},
 																					},
 																				},
@@ -16012,13 +16012,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 70,
-																								Line:   228,
+																								Line:   230,
 																							},
 																							File:   "geo.flux",
 																							Source: "lat: r.lat",
 																							Start: ast.Position{
 																								Column: 60,
-																								Line:   228,
+																								Line:   230,
 																							},
 																						},
 																					},
@@ -16030,13 +16030,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 63,
-																									Line:   228,
+																									Line:   230,
 																								},
 																								File:   "geo.flux",
 																								Source: "lat",
 																								Start: ast.Position{
 																									Column: 60,
-																									Line:   228,
+																									Line:   230,
 																								},
 																							},
 																						},
@@ -16050,13 +16050,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 70,
-																									Line:   228,
+																									Line:   230,
 																								},
 																								File:   "geo.flux",
 																								Source: "r.lat",
 																								Start: ast.Position{
 																									Column: 65,
-																									Line:   228,
+																									Line:   230,
 																								},
 																							},
 																						},
@@ -16068,13 +16068,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 66,
-																										Line:   228,
+																										Line:   230,
 																									},
 																									File:   "geo.flux",
 																									Source: "r",
 																									Start: ast.Position{
 																										Column: 65,
-																										Line:   228,
+																										Line:   230,
 																									},
 																								},
 																							},
@@ -16087,13 +16087,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 70,
-																										Line:   228,
+																										Line:   230,
 																									},
 																									File:   "geo.flux",
 																									Source: "lat",
 																									Start: ast.Position{
 																										Column: 67,
-																										Line:   228,
+																										Line:   230,
 																									},
 																								},
 																							},
@@ -16108,13 +16108,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 82,
-																								Line:   228,
+																								Line:   230,
 																							},
 																							File:   "geo.flux",
 																							Source: "lon: r.lon",
 																							Start: ast.Position{
 																								Column: 72,
-																								Line:   228,
+																								Line:   230,
 																							},
 																						},
 																					},
@@ -16126,13 +16126,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 75,
-																									Line:   228,
+																									Line:   230,
 																								},
 																								File:   "geo.flux",
 																								Source: "lon",
 																								Start: ast.Position{
 																									Column: 72,
-																									Line:   228,
+																									Line:   230,
 																								},
 																							},
 																						},
@@ -16146,13 +16146,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 82,
-																									Line:   228,
+																									Line:   230,
 																								},
 																								File:   "geo.flux",
 																								Source: "r.lon",
 																								Start: ast.Position{
 																									Column: 77,
-																									Line:   228,
+																									Line:   230,
 																								},
 																							},
 																						},
@@ -16164,13 +16164,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 78,
-																										Line:   228,
+																										Line:   230,
 																									},
 																									File:   "geo.flux",
 																									Source: "r",
 																									Start: ast.Position{
 																										Column: 77,
-																										Line:   228,
+																										Line:   230,
 																									},
 																								},
 																							},
@@ -16183,13 +16183,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 82,
-																										Line:   228,
+																										Line:   230,
 																									},
 																									File:   "geo.flux",
 																									Source: "lon",
 																									Start: ast.Position{
 																										Column: 79,
-																										Line:   228,
+																										Line:   230,
 																									},
 																								},
 																							},
@@ -16208,13 +16208,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 97,
-																						Line:   228,
+																						Line:   230,
 																					},
 																					File:   "geo.flux",
 																					Source: "level: level",
 																					Start: ast.Position{
 																						Column: 85,
-																						Line:   228,
+																						Line:   230,
 																					},
 																				},
 																			},
@@ -16226,13 +16226,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 90,
-																							Line:   228,
+																							Line:   230,
 																						},
 																						File:   "geo.flux",
 																						Source: "level",
 																						Start: ast.Position{
 																							Column: 85,
-																							Line:   228,
+																							Line:   230,
 																						},
 																					},
 																				},
@@ -16246,13 +16246,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 97,
-																							Line:   228,
+																							Line:   230,
 																						},
 																						File:   "geo.flux",
 																						Source: "level",
 																						Start: ast.Position{
 																							Column: 92,
-																							Line:   228,
+																							Line:   230,
 																						},
 																					},
 																				},
@@ -16268,13 +16268,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 98,
-																				Line:   228,
+																				Line:   230,
 																			},
 																			File:   "geo.flux",
 																			Source: "s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)",
 																			Start: ast.Position{
 																				Column: 38,
-																				Line:   228,
+																				Line:   230,
 																			},
 																		},
 																	},
@@ -16285,13 +16285,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 51,
-																					Line:   228,
+																					Line:   230,
 																				},
 																				File:   "geo.flux",
 																				Source: "s2CellIDToken",
 																				Start: ast.Position{
 																					Column: 38,
-																					Line:   228,
+																					Line:   230,
 																				},
 																			},
 																		},
@@ -16309,13 +16309,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 31,
-																			Line:   227,
+																			Line:   229,
 																		},
 																		File:   "geo.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 30,
-																			Line:   227,
+																			Line:   229,
 																		},
 																	},
 																},
@@ -16333,13 +16333,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   227,
+																	Line:   229,
 																},
 																File:   "geo.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 22,
-																	Line:   227,
+																	Line:   229,
 																},
 															},
 														},
@@ -16351,13 +16351,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 23,
-																		Line:   227,
+																		Line:   229,
 																	},
 																	File:   "geo.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 22,
-																		Line:   227,
+																		Line:   229,
 																	},
 																},
 															},
@@ -16378,13 +16378,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   230,
+													Line:   232,
 												},
 												File:   "geo.flux",
 												Source: "map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )",
 												Start: ast.Position{
 													Column: 16,
-													Line:   226,
+													Line:   228,
 												},
 											},
 										},
@@ -16395,13 +16395,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   226,
+														Line:   228,
 													},
 													File:   "geo.flux",
 													Source: "map",
 													Start: ast.Position{
 														Column: 16,
-														Line:   226,
+														Line:   228,
 													},
 												},
 											},
@@ -16417,13 +16417,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 61,
-											Line:   231,
+											Line:   233,
 										},
 										File:   "geo.flux",
 										Source: "tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})",
 										Start: ast.Position{
 											Column: 9,
-											Line:   225,
+											Line:   227,
 										},
 									},
 								},
@@ -16435,13 +16435,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   231,
+													Line:   233,
 												},
 												File:   "geo.flux",
 												Source: "columns: {_s2_cell_id_xxx: newColumn}",
 												Start: ast.Position{
 													Column: 23,
-													Line:   231,
+													Line:   233,
 												},
 											},
 										},
@@ -16453,13 +16453,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   231,
+														Line:   233,
 													},
 													File:   "geo.flux",
 													Source: "columns: {_s2_cell_id_xxx: newColumn}",
 													Start: ast.Position{
 														Column: 23,
-														Line:   231,
+														Line:   233,
 													},
 												},
 											},
@@ -16471,13 +16471,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
-															Line:   231,
+															Line:   233,
 														},
 														File:   "geo.flux",
 														Source: "columns",
 														Start: ast.Position{
 															Column: 23,
-															Line:   231,
+															Line:   233,
 														},
 													},
 												},
@@ -16491,13 +16491,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   231,
+															Line:   233,
 														},
 														File:   "geo.flux",
 														Source: "{_s2_cell_id_xxx: newColumn}",
 														Start: ast.Position{
 															Column: 32,
-															Line:   231,
+															Line:   233,
 														},
 													},
 												},
@@ -16509,13 +16509,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 59,
-																Line:   231,
+																Line:   233,
 															},
 															File:   "geo.flux",
 															Source: "_s2_cell_id_xxx: newColumn",
 															Start: ast.Position{
 																Column: 33,
-																Line:   231,
+																Line:   233,
 															},
 														},
 													},
@@ -16527,13 +16527,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 48,
-																	Line:   231,
+																	Line:   233,
 																},
 																File:   "geo.flux",
 																Source: "_s2_cell_id_xxx",
 																Start: ast.Position{
 																	Column: 33,
-																	Line:   231,
+																	Line:   233,
 																},
 															},
 														},
@@ -16547,13 +16547,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 59,
-																	Line:   231,
+																	Line:   233,
 																},
 																File:   "geo.flux",
 																Source: "newColumn",
 																Start: ast.Position{
 																	Column: 50,
-																	Line:   231,
+																	Line:   233,
 																},
 															},
 														},
@@ -16573,13 +16573,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 61,
-												Line:   231,
+												Line:   233,
 											},
 											File:   "geo.flux",
 											Source: "rename(columns: {_s2_cell_id_xxx: newColumn})",
 											Start: ast.Position{
 												Column: 16,
-												Line:   231,
+												Line:   233,
 											},
 										},
 									},
@@ -16590,13 +16590,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   231,
+													Line:   233,
 												},
 												File:   "geo.flux",
 												Source: "rename",
 												Start: ast.Position{
 													Column: 16,
-													Line:   231,
+													Line:   233,
 												},
 											},
 										},
@@ -16612,13 +16612,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 61,
-										Line:   231,
+										Line:   233,
 									},
 									File:   "geo.flux",
 									Source: "if level == _s2cellIDLevel then\n        tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n        tables\n            |> map(\n                fn: (r) => ({r with\n                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),\n                }),\n            )\n            |> rename(columns: {_s2_cell_id_xxx: newColumn})",
 									Start: ast.Position{
 										Column: 17,
-										Line:   221,
+										Line:   223,
 									},
 								},
 							},
@@ -16630,13 +16630,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   222,
+												Line:   224,
 											},
 											File:   "geo.flux",
 											Source: "tables",
 											Start: ast.Position{
 												Column: 9,
-												Line:   222,
+												Line:   224,
 											},
 										},
 									},
@@ -16648,13 +16648,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 62,
-											Line:   223,
+											Line:   225,
 										},
 										File:   "geo.flux",
 										Source: "tables\n            |> duplicate(column: \"s2_cell_id\", as: newColumn)",
 										Start: ast.Position{
 											Column: 9,
-											Line:   222,
+											Line:   224,
 										},
 									},
 								},
@@ -16666,13 +16666,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 61,
-													Line:   223,
+													Line:   225,
 												},
 												File:   "geo.flux",
 												Source: "column: \"s2_cell_id\", as: newColumn",
 												Start: ast.Position{
 													Column: 26,
-													Line:   223,
+													Line:   225,
 												},
 											},
 										},
@@ -16684,13 +16684,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 46,
-														Line:   223,
+														Line:   225,
 													},
 													File:   "geo.flux",
 													Source: "column: \"s2_cell_id\"",
 													Start: ast.Position{
 														Column: 26,
-														Line:   223,
+														Line:   225,
 													},
 												},
 											},
@@ -16702,13 +16702,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
-															Line:   223,
+															Line:   225,
 														},
 														File:   "geo.flux",
 														Source: "column",
 														Start: ast.Position{
 															Column: 26,
-															Line:   223,
+															Line:   225,
 														},
 													},
 												},
@@ -16722,13 +16722,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 46,
-															Line:   223,
+															Line:   225,
 														},
 														File:   "geo.flux",
 														Source: "\"s2_cell_id\"",
 														Start: ast.Position{
 															Column: 34,
-															Line:   223,
+															Line:   225,
 														},
 													},
 												},
@@ -16741,13 +16741,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
-														Line:   223,
+														Line:   225,
 													},
 													File:   "geo.flux",
 													Source: "as: newColumn",
 													Start: ast.Position{
 														Column: 48,
-														Line:   223,
+														Line:   225,
 													},
 												},
 											},
@@ -16759,13 +16759,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
-															Line:   223,
+															Line:   225,
 														},
 														File:   "geo.flux",
 														Source: "as",
 														Start: ast.Position{
 															Column: 48,
-															Line:   223,
+															Line:   225,
 														},
 													},
 												},
@@ -16779,13 +16779,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 61,
-															Line:   223,
+															Line:   225,
 														},
 														File:   "geo.flux",
 														Source: "newColumn",
 														Start: ast.Position{
 															Column: 52,
-															Line:   223,
+															Line:   225,
 														},
 													},
 												},
@@ -16801,13 +16801,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 62,
-												Line:   223,
+												Line:   225,
 											},
 											File:   "geo.flux",
 											Source: "duplicate(column: \"s2_cell_id\", as: newColumn)",
 											Start: ast.Position{
 												Column: 16,
-												Line:   223,
+												Line:   225,
 											},
 										},
 									},
@@ -16818,13 +16818,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   223,
+													Line:   225,
 												},
 												File:   "geo.flux",
 												Source: "duplicate",
 												Start: ast.Position{
 													Column: 16,
-													Line:   223,
+													Line:   225,
 												},
 											},
 										},
@@ -16841,13 +16841,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   221,
+											Line:   223,
 										},
 										File:   "geo.flux",
 										Source: "level == _s2cellIDLevel",
 										Start: ast.Position{
 											Column: 20,
-											Line:   221,
+											Line:   223,
 										},
 									},
 								},
@@ -16858,13 +16858,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   221,
+												Line:   223,
 											},
 											File:   "geo.flux",
 											Source: "level",
 											Start: ast.Position{
 												Column: 20,
-												Line:   221,
+												Line:   223,
 											},
 										},
 									},
@@ -16878,13 +16878,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   221,
+												Line:   223,
 											},
 											File:   "geo.flux",
 											Source: "_s2cellIDLevel",
 											Start: ast.Position{
 												Column: 29,
-												Line:   221,
+												Line:   223,
 											},
 										},
 									},
@@ -16904,13 +16904,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   233,
+											Line:   235,
 										},
 										File:   "geo.flux",
 										Source: "_prepared",
 										Start: ast.Position{
 											Column: 12,
-											Line:   233,
+											Line:   235,
 										},
 									},
 								},
@@ -16922,13 +16922,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   234,
+										Line:   236,
 									},
 									File:   "geo.flux",
 									Source: "_prepared\n        |> group(columns: [newColumn])",
 									Start: ast.Position{
 										Column: 12,
-										Line:   233,
+										Line:   235,
 									},
 								},
 							},
@@ -16940,13 +16940,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   234,
+												Line:   236,
 											},
 											File:   "geo.flux",
 											Source: "columns: [newColumn]",
 											Start: ast.Position{
 												Column: 18,
-												Line:   234,
+												Line:   236,
 											},
 										},
 									},
@@ -16958,13 +16958,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   234,
+													Line:   236,
 												},
 												File:   "geo.flux",
 												Source: "columns: [newColumn]",
 												Start: ast.Position{
 													Column: 18,
-													Line:   234,
+													Line:   236,
 												},
 											},
 										},
@@ -16976,13 +16976,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 25,
-														Line:   234,
+														Line:   236,
 													},
 													File:   "geo.flux",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 18,
-														Line:   234,
+														Line:   236,
 													},
 												},
 											},
@@ -16996,13 +16996,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   234,
+														Line:   236,
 													},
 													File:   "geo.flux",
 													Source: "[newColumn]",
 													Start: ast.Position{
 														Column: 27,
-														Line:   234,
+														Line:   236,
 													},
 												},
 											},
@@ -17013,13 +17013,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   234,
+															Line:   236,
 														},
 														File:   "geo.flux",
 														Source: "newColumn",
 														Start: ast.Position{
 															Column: 28,
-															Line:   234,
+															Line:   236,
 														},
 													},
 												},
@@ -17038,13 +17038,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   234,
+											Line:   236,
 										},
 										File:   "geo.flux",
 										Source: "group(columns: [newColumn])",
 										Start: ast.Position{
 											Column: 12,
-											Line:   234,
+											Line:   236,
 										},
 									},
 								},
@@ -17055,13 +17055,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   234,
+												Line:   236,
 											},
 											File:   "geo.flux",
 											Source: "group",
 											Start: ast.Position{
 												Column: 12,
-												Line:   234,
+												Line:   236,
 											},
 										},
 									},
@@ -17077,13 +17077,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   234,
+									Line:   236,
 								},
 								File:   "geo.flux",
 								Source: "return _prepared\n        |> group(columns: [newColumn])",
 								Start: ast.Position{
 									Column: 5,
-									Line:   233,
+									Line:   235,
 								},
 							},
 						},
@@ -17099,13 +17099,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   215,
+								Line:   217,
 							},
 							File:   "geo.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 16,
-								Line:   215,
+								Line:   217,
 							},
 						},
 					},
@@ -17117,13 +17117,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   215,
+									Line:   217,
 								},
 								File:   "geo.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 16,
-									Line:   215,
+									Line:   217,
 								},
 							},
 						},
@@ -17136,13 +17136,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   215,
+								Line:   217,
 							},
 							File:   "geo.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   215,
+								Line:   217,
 							},
 						},
 					}},
@@ -17153,13 +17153,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
-								Line:   215,
+								Line:   217,
 							},
 							File:   "geo.flux",
 							Source: "newColumn",
 							Start: ast.Position{
 								Column: 27,
-								Line:   215,
+								Line:   217,
 							},
 						},
 					},
@@ -17171,13 +17171,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   215,
+									Line:   217,
 								},
 								File:   "geo.flux",
 								Source: "newColumn",
 								Start: ast.Position{
 									Column: 27,
-									Line:   215,
+									Line:   217,
 								},
 							},
 						},
@@ -17192,13 +17192,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   215,
+								Line:   217,
 							},
 							File:   "geo.flux",
 							Source: "level",
 							Start: ast.Position{
 								Column: 38,
-								Line:   215,
+								Line:   217,
 							},
 						},
 					},
@@ -17210,13 +17210,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   215,
+									Line:   217,
 								},
 								File:   "geo.flux",
 								Source: "level",
 								Start: ast.Position{
 									Column: 38,
-									Line:   215,
+									Line:   217,
 								},
 							},
 						},
@@ -17231,13 +17231,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 61,
-								Line:   215,
+								Line:   217,
 							},
 							File:   "geo.flux",
 							Source: "s2cellIDLevel=-1",
 							Start: ast.Position{
 								Column: 45,
-								Line:   215,
+								Line:   217,
 							},
 						},
 					},
@@ -17249,13 +17249,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   215,
+									Line:   217,
 								},
 								File:   "geo.flux",
 								Source: "s2cellIDLevel",
 								Start: ast.Position{
 									Column: 45,
-									Line:   215,
+									Line:   217,
 								},
 							},
 						},
@@ -17270,13 +17270,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 61,
-										Line:   215,
+										Line:   217,
 									},
 									File:   "geo.flux",
 									Source: "1",
 									Start: ast.Position{
 										Column: 60,
-										Line:   215,
+										Line:   217,
 									},
 								},
 							},
@@ -17288,13 +17288,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   215,
+									Line:   217,
 								},
 								File:   "geo.flux",
 								Source: "-1",
 								Start: ast.Position{
 									Column: 59,
-									Line:   215,
+									Line:   217,
 								},
 							},
 						},
@@ -17310,13 +17310,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 30,
-						Line:   240,
+						Line:   242,
 					},
 					File:   "geo.flux",
 					Source: "asTracks = (tables=<-, groupBy=[\"id\", \"tid\"], orderBy=[\"_time\"]) => tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   238,
+						Line:   240,
 					},
 				},
 			},
@@ -17327,13 +17327,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   238,
+							Line:   240,
 						},
 						File:   "geo.flux",
 						Source: "asTracks",
 						Start: ast.Position{
 							Column: 1,
-							Line:   238,
+							Line:   240,
 						},
 					},
 				},
@@ -17347,13 +17347,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 30,
-							Line:   240,
+							Line:   242,
 						},
 						File:   "geo.flux",
 						Source: "(tables=<-, groupBy=[\"id\", \"tid\"], orderBy=[\"_time\"]) => tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 						Start: ast.Position{
 							Column: 12,
-							Line:   238,
+							Line:   240,
 						},
 					},
 				},
@@ -17366,13 +17366,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 75,
-										Line:   238,
+										Line:   240,
 									},
 									File:   "geo.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 69,
-										Line:   238,
+										Line:   240,
 									},
 								},
 							},
@@ -17384,13 +17384,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   239,
+									Line:   241,
 								},
 								File:   "geo.flux",
 								Source: "tables\n    |> group(columns: groupBy)",
 								Start: ast.Position{
 									Column: 69,
-									Line:   238,
+									Line:   240,
 								},
 							},
 						},
@@ -17402,13 +17402,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   239,
+											Line:   241,
 										},
 										File:   "geo.flux",
 										Source: "columns: groupBy",
 										Start: ast.Position{
 											Column: 14,
-											Line:   239,
+											Line:   241,
 										},
 									},
 								},
@@ -17420,13 +17420,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   239,
+												Line:   241,
 											},
 											File:   "geo.flux",
 											Source: "columns: groupBy",
 											Start: ast.Position{
 												Column: 14,
-												Line:   239,
+												Line:   241,
 											},
 										},
 									},
@@ -17438,13 +17438,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   239,
+													Line:   241,
 												},
 												File:   "geo.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 14,
-													Line:   239,
+													Line:   241,
 												},
 											},
 										},
@@ -17458,13 +17458,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   239,
+													Line:   241,
 												},
 												File:   "geo.flux",
 												Source: "groupBy",
 												Start: ast.Position{
 													Column: 23,
-													Line:   239,
+													Line:   241,
 												},
 											},
 										},
@@ -17480,13 +17480,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   239,
+										Line:   241,
 									},
 									File:   "geo.flux",
 									Source: "group(columns: groupBy)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   239,
+										Line:   241,
 									},
 								},
 							},
@@ -17497,13 +17497,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   239,
+											Line:   241,
 										},
 										File:   "geo.flux",
 										Source: "group",
 										Start: ast.Position{
 											Column: 8,
-											Line:   239,
+											Line:   241,
 										},
 									},
 								},
@@ -17519,13 +17519,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   240,
+								Line:   242,
 							},
 							File:   "geo.flux",
 							Source: "tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 							Start: ast.Position{
 								Column: 69,
-								Line:   238,
+								Line:   240,
 							},
 						},
 					},
@@ -17537,13 +17537,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   240,
+										Line:   242,
 									},
 									File:   "geo.flux",
 									Source: "columns: orderBy",
 									Start: ast.Position{
 										Column: 13,
-										Line:   240,
+										Line:   242,
 									},
 								},
 							},
@@ -17555,13 +17555,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   240,
+											Line:   242,
 										},
 										File:   "geo.flux",
 										Source: "columns: orderBy",
 										Start: ast.Position{
 											Column: 13,
-											Line:   240,
+											Line:   242,
 										},
 									},
 								},
@@ -17573,13 +17573,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   240,
+												Line:   242,
 											},
 											File:   "geo.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   240,
+												Line:   242,
 											},
 										},
 									},
@@ -17593,13 +17593,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   240,
+												Line:   242,
 											},
 											File:   "geo.flux",
 											Source: "orderBy",
 											Start: ast.Position{
 												Column: 22,
-												Line:   240,
+												Line:   242,
 											},
 										},
 									},
@@ -17615,13 +17615,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   240,
+									Line:   242,
 								},
 								File:   "geo.flux",
 								Source: "sort(columns: orderBy)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   240,
+									Line:   242,
 								},
 							},
 						},
@@ -17632,13 +17632,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   240,
+										Line:   242,
 									},
 									File:   "geo.flux",
 									Source: "sort",
 									Start: ast.Position{
 										Column: 8,
-										Line:   240,
+										Line:   242,
 									},
 								},
 							},
@@ -17656,13 +17656,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   238,
+								Line:   240,
 							},
 							File:   "geo.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 13,
-								Line:   238,
+								Line:   240,
 							},
 						},
 					},
@@ -17674,13 +17674,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   238,
+									Line:   240,
 								},
 								File:   "geo.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 13,
-									Line:   238,
+									Line:   240,
 								},
 							},
 						},
@@ -17693,13 +17693,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   238,
+								Line:   240,
 							},
 							File:   "geo.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 20,
-								Line:   238,
+								Line:   240,
 							},
 						},
 					}},
@@ -17710,13 +17710,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 45,
-								Line:   238,
+								Line:   240,
 							},
 							File:   "geo.flux",
 							Source: "groupBy=[\"id\", \"tid\"]",
 							Start: ast.Position{
 								Column: 24,
-								Line:   238,
+								Line:   240,
 							},
 						},
 					},
@@ -17728,13 +17728,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   238,
+									Line:   240,
 								},
 								File:   "geo.flux",
 								Source: "groupBy",
 								Start: ast.Position{
 									Column: 24,
-									Line:   238,
+									Line:   240,
 								},
 							},
 						},
@@ -17748,13 +17748,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   238,
+									Line:   240,
 								},
 								File:   "geo.flux",
 								Source: "[\"id\", \"tid\"]",
 								Start: ast.Position{
 									Column: 32,
-									Line:   238,
+									Line:   240,
 								},
 							},
 						},
@@ -17765,13 +17765,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   238,
+										Line:   240,
 									},
 									File:   "geo.flux",
 									Source: "\"id\"",
 									Start: ast.Position{
 										Column: 33,
-										Line:   238,
+										Line:   240,
 									},
 								},
 							},
@@ -17783,13 +17783,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 44,
-										Line:   238,
+										Line:   240,
 									},
 									File:   "geo.flux",
 									Source: "\"tid\"",
 									Start: ast.Position{
 										Column: 39,
-										Line:   238,
+										Line:   240,
 									},
 								},
 							},
@@ -17805,13 +17805,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 64,
-								Line:   238,
+								Line:   240,
 							},
 							File:   "geo.flux",
 							Source: "orderBy=[\"_time\"]",
 							Start: ast.Position{
 								Column: 47,
-								Line:   238,
+								Line:   240,
 							},
 						},
 					},
@@ -17823,13 +17823,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   238,
+									Line:   240,
 								},
 								File:   "geo.flux",
 								Source: "orderBy",
 								Start: ast.Position{
 									Column: 47,
-									Line:   238,
+									Line:   240,
 								},
 							},
 						},
@@ -17843,13 +17843,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 64,
-									Line:   238,
+									Line:   240,
 								},
 								File:   "geo.flux",
 								Source: "[\"_time\"]",
 								Start: ast.Position{
 									Column: 55,
-									Line:   238,
+									Line:   240,
 								},
 							},
 						},
@@ -17860,13 +17860,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 63,
-										Line:   238,
+										Line:   240,
 									},
 									File:   "geo.flux",
 									Source: "\"_time\"",
 									Start: ast.Position{
 										Column: 56,
-										Line:   238,
+										Line:   240,
 									},
 								},
 							},

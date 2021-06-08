@@ -24,13 +24,13 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 31,
-					Line:   17,
+					Line:   23,
 				},
 				File:   "profiler.flux",
-				Source: "package profiler\n\n\n// EnabledProfilers sets a list of profilers that should be enabled during execution.\n//\n// Available profilers are:\n//   * query - Profiles time spent in the various phases of query execution.\n//   * operator - Profiles time spent in each operator of the query.\n//\n// Example:\n//\n//    import \"profiler\"\n//    option profiler.enabledProfilers = [\"query\", \"operator\"]\n//\noption enabledProfilers = [\"\"]",
+				Source: "package profiler\n\n\n// `enabledProfilers` sets a list of profilers that should be enabled during execution.\n//\n// There are two profilers available: the query profiler and the operator profiler.\n//\n// - The `query` profiler measures time spent in various phases of query execution\n// - The `operator` profiler measures time spent in each operator of the query\n//\n// # Enabling the profilers\n//\n// Add the following lines to your flux query to see profiler results in the output:\n// \n// ```\n// import \"profiler\"\n// option profiler.enabledProfilers = [\"query\", \"operator\"]\n// ```\noption enabledProfilers = [\"\"]",
 				Start: ast.Position{
 					Column: 1,
-					Line:   3,
+					Line:   5,
 				},
 			},
 		},
@@ -42,13 +42,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 31,
-							Line:   17,
+							Line:   23,
 						},
 						File:   "profiler.flux",
 						Source: "enabledProfilers = [\"\"]",
 						Start: ast.Position{
 							Column: 8,
-							Line:   17,
+							Line:   23,
 						},
 					},
 				},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   17,
+								Line:   23,
 							},
 							File:   "profiler.flux",
 							Source: "enabledProfilers",
 							Start: ast.Position{
 								Column: 8,
-								Line:   17,
+								Line:   23,
 							},
 						},
 					},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   17,
+								Line:   23,
 							},
 							File:   "profiler.flux",
 							Source: "[\"\"]",
 							Start: ast.Position{
 								Column: 27,
-								Line:   17,
+								Line:   23,
 							},
 						},
 					},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   17,
+									Line:   23,
 								},
 								File:   "profiler.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 28,
-									Line:   17,
+									Line:   23,
 								},
 							},
 						},
@@ -112,18 +112,18 @@ var pkgAST = &ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// EnabledProfilers sets a list of profilers that should be enabled during execution.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Available profilers are:\n"}, ast.Comment{Text: "//   * query - Profiles time spent in the various phases of query execution.\n"}, ast.Comment{Text: "//   * operator - Profiles time spent in each operator of the query.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Example:\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//    import \"profiler\"\n"}, ast.Comment{Text: "//    option profiler.enabledProfilers = [\"query\", \"operator\"]\n"}, ast.Comment{Text: "//\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// `enabledProfilers` sets a list of profilers that should be enabled during execution.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// There are two profilers available: the query profiler and the operator profiler.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - The `query` profiler measures time spent in various phases of query execution\n"}, ast.Comment{Text: "// - The `operator` profiler measures time spent in each operator of the query\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Enabling the profilers\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Add the following lines to your flux query to see profiler results in the output:\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"profiler\"\n"}, ast.Comment{Text: "// option profiler.enabledProfilers = [\"query\", \"operator\"]\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 31,
-						Line:   17,
+						Line:   23,
 					},
 					File:   "profiler.flux",
 					Source: "option enabledProfilers = [\"\"]",
 					Start: ast.Position{
 						Column: 1,
-						Line:   17,
+						Line:   23,
 					},
 				},
 			},
@@ -134,18 +134,18 @@ var pkgAST = &ast.Package{
 		Name:     "profiler.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Profiler exposes an API to profile queries.\n"}, ast.Comment{Text: "// Profile results are returned as an extra result in the response named according to the profiles which are enabled.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// `profiler`\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Profiler exposes an API to profile queries. Profile results are returned as\n"}, ast.Comment{Text: "// an extra result in the response named according to the profiles which are enabled.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   5,
 					},
 					File:   "profiler.flux",
 					Source: "package profiler",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   5,
 					},
 				},
 			},
@@ -156,13 +156,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   5,
 						},
 						File:   "profiler.flux",
 						Source: "profiler",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   5,
 						},
 					},
 				},

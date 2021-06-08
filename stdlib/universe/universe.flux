@@ -86,6 +86,72 @@ builtin integral : (
     A: Record,
     B: Record
 
+// `join` merges two input streams into a single output stream based on columns
+// with equal values. 
+// 
+// Null values are not considered equal when comparing column
+// values. The resulting schema is the union of the input schemas. The resulting
+// group key is the union of the input group keys.
+//
+// - `tables` is a stream of tables
+// - `method` is the method to use when joining (defaults to 'inner')
+// - `on` is a list of columns on which to join
+//
+// # Joining two tables
+// 
+// ```
+// import "array"
+//
+// sf_temp = array.from(
+//     rows: [
+//         {_time: 2021-06-01T01:00:00Z, _field: "temp", _value: 70},
+//         {_time: 2021-06-01T02:00:00Z, _field: "temp", _value: 75},
+//         {_time: 2021-06-01T03:00:00Z, _field: "temp", _value: 72},
+//     ],
+// )
+//
+// ny_temp = array.from(
+//     rows: [
+//         {_time: 2021-06-01T01:00:00Z, _field: "temp", _value: 55},
+//         {_time: 2021-06-01T02:00:00Z, _field: "temp", _value: 56},
+//         {_time: 2021-06-01T03:00:00Z, _field: "temp", _value: 57},
+//     ],
+// )
+//
+// join(
+//   tables: {sf: sf_temp, ny: ny_temp},
+//   on: ["_time", "_field"]
+// )
+// ```
+//
+// # Output schema of a joined table
+//
+// The column schema of the output stream is the union
+// of the input schemas. It is also the same for the 
+// output group key. Columns are renamed using the pattern
+// `<column>_<table>` to prevent ambiguity in joined tables.
+//
+// ```
+// import "array"
+//
+// data_1 = array.from(
+//     rows: [
+//         {_time: 2021-06-01T01:00:00Z, _field: "meter", _value: 100},
+//         {_time: 2021-06-01T02:00:00Z, _field: "meter", _value: 200},
+//         {_time: 2021-06-01T03:00:00Z, _field: "meter", _value: 300},
+//     ],
+// ) |> group(columns: ["_time", "_field"])
+//
+// data_2 = array.from(
+//     rows: [
+//         {_time: 2021-06-01T01:00:00Z, _field: "meter", _value: 400},
+//         {_time: 2021-06-01T02:00:00Z, _field: "meter", _value: 500},
+//         {_time: 2021-06-01T03:00:00Z, _field: "meter", _value: 600},
+//     ],
+// ) |> group(columns: ["_time", "_field"])
+//
+// join(tables: {d1: data_1, d2: data_2}, on: ["_time"]) // group key should be [_time, _field_d1, _field_d2]
+// ```
 builtin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record
 builtin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record
 builtin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record
@@ -205,9 +271,59 @@ cov = (x, y, on, pearsonr=false) => join(
     |> covariance(pearsonr: pearsonr, columns: ["_value_x", "_value_y"])
 pearsonr = (x, y, on) => cov(x: x, y: y, on: on, pearsonr: true)
 
-// AggregateWindow applies an aggregate function to fixed windows of time.
+// `aggregateWindow` applies an aggregate function to fixed windows of time.
+//
 // The procedure is to window the data, perform an aggregate operation,
 // and then undo the windowing to produce an output table for every input table.
+//
+// As data is windowed into separate tables and processed, the _time column is
+// dropped from each group key. This function copies the timestamp from a remaining
+// column into the _time column.
+//
+// `aggregateWindow()` restores the original `_start` and `_stop` values of input data
+// and, by default, uses `_stop` to set the `_time` value for each aggregated window.
+// Each row in the output of aggregateWindow represents an aggregated window ending at `_time`.
+//
+// - `every` is the duration of each window
+// - `fn` is the aggregate function to be used in the operation
+// - `offset` is the offset of each window
+// - `column` is the column on which to operate (default is `_value`)
+// - `timeSrc` is the time column from which time is copied for the aggregate record (default is `_stop`)
+// - `timeDst` is the column to which time is copied for the aggregate record (default is `_time`)
+// - `createEmpty` determines whether or not windows with no data will be filled in with a `null` aggregate value (default is `true`)
+// - `tables` is a stream of input tables
+//
+// # Handling time windows with no data
+// 
+// In the example below, we have data points reported at 10 second intervals. By calling `aggregateWindow()`
+// with a 5 second window duration, we can see how this function handles windows with no data.
+//
+// Try setting the `createEmpty` parameter to `false` in the call to `aggregateWindow()`
+// and note the difference in the output.
+//
+// ```
+// import "array"
+//
+// array.from(
+//     rows: [
+//         {_time: 2018-05-22T00:00:00Z, _measurement: "disk", _field: "percentage", _value: 67.1},
+//         {_time: 2018-05-22T00:00:10Z, _measurement: "disk", _field: "percentage", _value: 67.4},
+//         {_time: 2018-05-22T00:00:20Z, _measurement: "disk", _field: "percentage", _value: 67.5},
+//         {_time: 2018-05-22T00:00:30Z, _measurement: "disk", _field: "percentage", _value: 67.6},
+//         {_time: 2018-05-22T00:00:40Z, _measurement: "disk", _field: "percentage", _value: 67.9},
+//         {_time: 2018-05-22T00:00:50Z, _measurement: "disk", _field: "percentage", _value: 67.9},
+//         {_time: 2018-05-22T00:00:00Z, _measurement: "disk", _field: "percentage", _value: 92.2},
+//         {_time: 2018-05-22T00:00:10Z, _measurement: "disk", _field: "percentage", _value: 92.2},
+//         {_time: 2018-05-22T00:00:20Z, _measurement: "disk", _field: "percentage", _value: 92.2},
+//         {_time: 2018-05-22T00:00:30Z, _measurement: "disk", _field: "percentage", _value: 92.2},
+//         {_time: 2018-05-22T00:00:40Z, _measurement: "disk", _field: "percentage", _value: 92.2},
+//         {_time: 2018-05-22T00:00:50Z, _measurement: "disk", _field: "percentage", _value: 92.2},
+//
+//     ],
+// )
+//     |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
+//     |> aggregateWindow(every: 5s, fn: mean)
+// ```
 aggregateWindow = (
         every,
         fn,

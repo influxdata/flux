@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 14,
-					Line:   101,
+					Line:   71,
 				},
 				File:   "date.flux",
-				Source: "package date\n\n\n// Second returns the seconds of a specified time. Results range from [0-59].\nbuiltin second : (t: T) => int where T: Timeable\n\n// Minute returns the minutes of a specified time. Results range from [0-59].\nbuiltin minute : (t: T) => int where T: Timeable\n\n// Hour returns the hours of a specified time. Results range from [0-23].\nbuiltin hour : (t: T) => int where T: Timeable\n\n// WeekDay returns the day of the week for a specified time. Results range from [0-6].\nbuiltin weekDay : (t: T) => int where T: Timeable\n\n// MonthDay returns the day of the month for a specified time. Results range from [1-31].\nbuiltin monthDay : (t: T) => int where T: Timeable\n\n// YearDay returns the day of the year for a specified time. Results range from [1-366].\nbuiltin yearDay : (t: T) => int where T: Timeable\n\n// Month returns the month for a specified time. Results range from [1-12].\nbuiltin month : (t: T) => int where T: Timeable\n\n// Year returns the year for a specified time.\nbuiltin year : (t: T) => int where T: Timeable\n\n// Week returns the ISO week of the year for a specified time. Results range from [1-53].\nbuiltin week : (t: T) => int where T: Timeable\n\n// Quarter returns the quarter for a specified time. Results range from [1-4].\nbuiltin quarter : (t: T) => int where T: Timeable\n\n// Millisecond returns the milliseconds for a specified time. Results range from [0-999].\nbuiltin millisecond : (t: T) => int where T: Timeable\n\n// Microsecond returns the microseconds for a specified time. Results range from [0-999999].\nbuiltin microsecond : (t: T) => int where T: Timeable\n\n// Nanosecond returns the nanoseconds for a specified time. Results range from [0-999999999].\nbuiltin nanosecond : (t: T) => int where T: Timeable\n\n// Truncate returns a time truncated to the specified duration unit.\nbuiltin truncate : (t: T, unit: duration) => time where T: Timeable\n\n// Sunday is a constant that represents Sunday as a day of the week\nSunday = 0\n\n// Monday is a constant that represents Monday as a day of the week.\nMonday = 1\n\n// Tuesday is a constant that represents Tuesday as a day of the week.\nTuesday = 2\n\n// Wednesday is a constant that represents Wednesday as a day of the week.\nWednesday = 3\n\n// Thursday is a constant that represents Thursday as a day of the week.\nThursday = 4\n\n// Friday is a constant that represents Friday as a day of the week.\nFriday = 5\n\n// Saturday is a constant that represents Saturday as a day of the week.\nSaturday = 6\n\n// January is a constant that represents the month of January.\nJanuary = 1\n\n// February is a constant that represents the month of February.\nFebruary = 2\n\n// March is a constant that represents the month of March.\nMarch = 3\n\n// April is a constant that represents the month of April.\nApril = 4\n\n// May is a constant that represents the month of May.\nMay = 5\n\n// June is a constant that represents the month of June.\nJune = 6\n\n// July is a constant that represents the month of July.\nJuly = 7\n\n// August is a constant that represents the month of August.\nAugust = 8\n\n// September is a constant that represents the month of September.\nSeptember = 9\n\n// October is a constant that represents the month of October.\nOctober = 10\n\n// November is a constant that represents the month of November.\nNovember = 11\n\n// December is a constant that represents the month of December.\nDecember = 12",
+				Source: "package date\n\n\n// Second returns the seconds of a specified time. Results range from [0-59].\nbuiltin second : (t: T) => int where T: Timeable\n\n// Minute returns the minutes of a specified time. Results range from [0-59].\nbuiltin minute : (t: T) => int where T: Timeable\n\n// Hour returns the hours of a specified time. Results range from [0-23].\nbuiltin hour : (t: T) => int where T: Timeable\n\n// WeekDay returns the day of the week for a specified time. Results range from [0-6].\nbuiltin weekDay : (t: T) => int where T: Timeable\n\n// MonthDay returns the day of the month for a specified time. Results range from [1-31].\nbuiltin monthDay : (t: T) => int where T: Timeable\n\n// YearDay returns the day of the year for a specified time. Results range from [1-366].\nbuiltin yearDay : (t: T) => int where T: Timeable\n\n// Month returns the month for a specified time. Results range from [1-12].\nbuiltin month : (t: T) => int where T: Timeable\n\n// Year returns the year for a specified time.\nbuiltin year : (t: T) => int where T: Timeable\n\n// Week returns the ISO week of the year for a specified time. Results range from [1-53].\nbuiltin week : (t: T) => int where T: Timeable\n\n// Quarter returns the quarter for a specified time. Results range from [1-4].\nbuiltin quarter : (t: T) => int where T: Timeable\n\n// Millisecond returns the milliseconds for a specified time. Results range from [0-999].\nbuiltin millisecond : (t: T) => int where T: Timeable\n\n// Microsecond returns the microseconds for a specified time. Results range from [0-999999].\nbuiltin microsecond : (t: T) => int where T: Timeable\n\n// Nanosecond returns the nanoseconds for a specified time. Results range from [0-999999999].\nbuiltin nanosecond : (t: T) => int where T: Timeable\n\n// Truncate returns a time truncated to the specified duration unit.\nbuiltin truncate : (t: T, unit: duration) => time where T: Timeable\n\n// # Days of the week\n//\n// The days of the week are represented as integers in the range `[0-6]`\nSunday = 0\nMonday = 1\nTuesday = 2\nWednesday = 3\nThursday = 4\nFriday = 5\nSaturday = 6\n\n// # Months of the year\n//\n// Months are represented as integers in the range `[1-12]`\nJanuary = 1\nFebruary = 2\nMarch = 3\nApril = 4\nMay = 5\nJune = 6\nJuly = 7\nAugust = 8\nSeptember = 9\nOctober = 10\nNovember = 11\nDecember = 12",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -3489,30 +3489,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   47,
+						Line:   49,
 					},
 					File:   "date.flux",
 					Source: "Sunday = 0",
 					Start: ast.Position{
 						Column: 1,
-						Line:   47,
+						Line:   49,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// Sunday is a constant that represents Sunday as a day of the week\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// # Days of the week\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// The days of the week are represented as integers in the range `[0-6]`\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   47,
+							Line:   49,
 						},
 						File:   "date.flux",
 						Source: "Sunday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   47,
+							Line:   49,
 						},
 					},
 				},
@@ -3525,13 +3525,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   47,
+							Line:   49,
 						},
 						File:   "date.flux",
 						Source: "0",
 						Start: ast.Position{
 							Column: 10,
-							Line:   47,
+							Line:   49,
 						},
 					},
 				},
@@ -3556,7 +3556,7 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// Monday is a constant that represents Monday as a day of the week.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
@@ -3599,30 +3599,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   53,
+						Line:   51,
 					},
 					File:   "date.flux",
 					Source: "Tuesday = 2",
 					Start: ast.Position{
 						Column: 1,
-						Line:   53,
+						Line:   51,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// Tuesday is a constant that represents Tuesday as a day of the week.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   53,
+							Line:   51,
 						},
 						File:   "date.flux",
 						Source: "Tuesday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   53,
+							Line:   51,
 						},
 					},
 				},
@@ -3635,13 +3635,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   53,
+							Line:   51,
 						},
 						File:   "date.flux",
 						Source: "2",
 						Start: ast.Position{
 							Column: 11,
-							Line:   53,
+							Line:   51,
 						},
 					},
 				},
@@ -3654,30 +3654,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   56,
+						Line:   52,
 					},
 					File:   "date.flux",
 					Source: "Wednesday = 3",
 					Start: ast.Position{
 						Column: 1,
-						Line:   56,
+						Line:   52,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// Wednesday is a constant that represents Wednesday as a day of the week.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   56,
+							Line:   52,
 						},
 						File:   "date.flux",
 						Source: "Wednesday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   56,
+							Line:   52,
 						},
 					},
 				},
@@ -3690,13 +3690,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   56,
+							Line:   52,
 						},
 						File:   "date.flux",
 						Source: "3",
 						Start: ast.Position{
 							Column: 13,
-							Line:   56,
+							Line:   52,
 						},
 					},
 				},
@@ -3709,30 +3709,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   59,
+						Line:   53,
 					},
 					File:   "date.flux",
 					Source: "Thursday = 4",
 					Start: ast.Position{
 						Column: 1,
-						Line:   59,
+						Line:   53,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// Thursday is a constant that represents Thursday as a day of the week.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   59,
+							Line:   53,
 						},
 						File:   "date.flux",
 						Source: "Thursday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   59,
+							Line:   53,
 						},
 					},
 				},
@@ -3745,13 +3745,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   59,
+							Line:   53,
 						},
 						File:   "date.flux",
 						Source: "4",
 						Start: ast.Position{
 							Column: 12,
-							Line:   59,
+							Line:   53,
 						},
 					},
 				},
@@ -3764,30 +3764,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   62,
+						Line:   54,
 					},
 					File:   "date.flux",
 					Source: "Friday = 5",
 					Start: ast.Position{
 						Column: 1,
-						Line:   62,
+						Line:   54,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// Friday is a constant that represents Friday as a day of the week.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   62,
+							Line:   54,
 						},
 						File:   "date.flux",
 						Source: "Friday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   62,
+							Line:   54,
 						},
 					},
 				},
@@ -3800,13 +3800,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   62,
+							Line:   54,
 						},
 						File:   "date.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 10,
-							Line:   62,
+							Line:   54,
 						},
 					},
 				},
@@ -3819,30 +3819,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   65,
+						Line:   55,
 					},
 					File:   "date.flux",
 					Source: "Saturday = 6",
 					Start: ast.Position{
 						Column: 1,
-						Line:   65,
+						Line:   55,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// Saturday is a constant that represents Saturday as a day of the week.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   65,
+							Line:   55,
 						},
 						File:   "date.flux",
 						Source: "Saturday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   65,
+							Line:   55,
 						},
 					},
 				},
@@ -3855,13 +3855,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   65,
+							Line:   55,
 						},
 						File:   "date.flux",
 						Source: "6",
 						Start: ast.Position{
 							Column: 12,
-							Line:   65,
+							Line:   55,
 						},
 					},
 				},
@@ -3874,30 +3874,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   68,
+						Line:   60,
 					},
 					File:   "date.flux",
 					Source: "January = 1",
 					Start: ast.Position{
 						Column: 1,
-						Line:   68,
+						Line:   60,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// January is a constant that represents the month of January.\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// # Months of the year\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Months are represented as integers in the range `[1-12]`\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   68,
+							Line:   60,
 						},
 						File:   "date.flux",
 						Source: "January",
 						Start: ast.Position{
 							Column: 1,
-							Line:   68,
+							Line:   60,
 						},
 					},
 				},
@@ -3910,13 +3910,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   68,
+							Line:   60,
 						},
 						File:   "date.flux",
 						Source: "1",
 						Start: ast.Position{
 							Column: 11,
-							Line:   68,
+							Line:   60,
 						},
 					},
 				},
@@ -3929,30 +3929,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   71,
+						Line:   61,
 					},
 					File:   "date.flux",
 					Source: "February = 2",
 					Start: ast.Position{
 						Column: 1,
-						Line:   71,
+						Line:   61,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// February is a constant that represents the month of February.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   71,
+							Line:   61,
 						},
 						File:   "date.flux",
 						Source: "February",
 						Start: ast.Position{
 							Column: 1,
-							Line:   71,
+							Line:   61,
 						},
 					},
 				},
@@ -3965,13 +3965,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   71,
+							Line:   61,
 						},
 						File:   "date.flux",
 						Source: "2",
 						Start: ast.Position{
 							Column: 12,
-							Line:   71,
+							Line:   61,
 						},
 					},
 				},
@@ -3984,30 +3984,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 10,
-						Line:   74,
+						Line:   62,
 					},
 					File:   "date.flux",
 					Source: "March = 3",
 					Start: ast.Position{
 						Column: 1,
-						Line:   74,
+						Line:   62,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// March is a constant that represents the month of March.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   74,
+							Line:   62,
 						},
 						File:   "date.flux",
 						Source: "March",
 						Start: ast.Position{
 							Column: 1,
-							Line:   74,
+							Line:   62,
 						},
 					},
 				},
@@ -4020,13 +4020,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   74,
+							Line:   62,
 						},
 						File:   "date.flux",
 						Source: "3",
 						Start: ast.Position{
 							Column: 9,
-							Line:   74,
+							Line:   62,
 						},
 					},
 				},
@@ -4039,30 +4039,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 10,
-						Line:   77,
+						Line:   63,
 					},
 					File:   "date.flux",
 					Source: "April = 4",
 					Start: ast.Position{
 						Column: 1,
-						Line:   77,
+						Line:   63,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// April is a constant that represents the month of April.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   77,
+							Line:   63,
 						},
 						File:   "date.flux",
 						Source: "April",
 						Start: ast.Position{
 							Column: 1,
-							Line:   77,
+							Line:   63,
 						},
 					},
 				},
@@ -4075,13 +4075,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   77,
+							Line:   63,
 						},
 						File:   "date.flux",
 						Source: "4",
 						Start: ast.Position{
 							Column: 9,
-							Line:   77,
+							Line:   63,
 						},
 					},
 				},
@@ -4094,30 +4094,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 8,
-						Line:   80,
+						Line:   64,
 					},
 					File:   "date.flux",
 					Source: "May = 5",
 					Start: ast.Position{
 						Column: 1,
-						Line:   80,
+						Line:   64,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// May is a constant that represents the month of May.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   80,
+							Line:   64,
 						},
 						File:   "date.flux",
 						Source: "May",
 						Start: ast.Position{
 							Column: 1,
-							Line:   80,
+							Line:   64,
 						},
 					},
 				},
@@ -4130,13 +4130,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   80,
+							Line:   64,
 						},
 						File:   "date.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 7,
-							Line:   80,
+							Line:   64,
 						},
 					},
 				},
@@ -4149,30 +4149,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 9,
-						Line:   83,
+						Line:   65,
 					},
 					File:   "date.flux",
 					Source: "June = 6",
 					Start: ast.Position{
 						Column: 1,
-						Line:   83,
+						Line:   65,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// June is a constant that represents the month of June.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   83,
+							Line:   65,
 						},
 						File:   "date.flux",
 						Source: "June",
 						Start: ast.Position{
 							Column: 1,
-							Line:   83,
+							Line:   65,
 						},
 					},
 				},
@@ -4185,13 +4185,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   83,
+							Line:   65,
 						},
 						File:   "date.flux",
 						Source: "6",
 						Start: ast.Position{
 							Column: 8,
-							Line:   83,
+							Line:   65,
 						},
 					},
 				},
@@ -4204,30 +4204,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 9,
-						Line:   86,
+						Line:   66,
 					},
 					File:   "date.flux",
 					Source: "July = 7",
 					Start: ast.Position{
 						Column: 1,
-						Line:   86,
+						Line:   66,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// July is a constant that represents the month of July.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   86,
+							Line:   66,
 						},
 						File:   "date.flux",
 						Source: "July",
 						Start: ast.Position{
 							Column: 1,
-							Line:   86,
+							Line:   66,
 						},
 					},
 				},
@@ -4240,13 +4240,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   86,
+							Line:   66,
 						},
 						File:   "date.flux",
 						Source: "7",
 						Start: ast.Position{
 							Column: 8,
-							Line:   86,
+							Line:   66,
 						},
 					},
 				},
@@ -4259,30 +4259,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   89,
+						Line:   67,
 					},
 					File:   "date.flux",
 					Source: "August = 8",
 					Start: ast.Position{
 						Column: 1,
-						Line:   89,
+						Line:   67,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// August is a constant that represents the month of August.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   89,
+							Line:   67,
 						},
 						File:   "date.flux",
 						Source: "August",
 						Start: ast.Position{
 							Column: 1,
-							Line:   89,
+							Line:   67,
 						},
 					},
 				},
@@ -4295,13 +4295,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   89,
+							Line:   67,
 						},
 						File:   "date.flux",
 						Source: "8",
 						Start: ast.Position{
 							Column: 10,
-							Line:   89,
+							Line:   67,
 						},
 					},
 				},
@@ -4314,30 +4314,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   92,
+						Line:   68,
 					},
 					File:   "date.flux",
 					Source: "September = 9",
 					Start: ast.Position{
 						Column: 1,
-						Line:   92,
+						Line:   68,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// September is a constant that represents the month of September.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   92,
+							Line:   68,
 						},
 						File:   "date.flux",
 						Source: "September",
 						Start: ast.Position{
 							Column: 1,
-							Line:   92,
+							Line:   68,
 						},
 					},
 				},
@@ -4350,13 +4350,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   92,
+							Line:   68,
 						},
 						File:   "date.flux",
 						Source: "9",
 						Start: ast.Position{
 							Column: 13,
-							Line:   92,
+							Line:   68,
 						},
 					},
 				},
@@ -4369,30 +4369,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   95,
+						Line:   69,
 					},
 					File:   "date.flux",
 					Source: "October = 10",
 					Start: ast.Position{
 						Column: 1,
-						Line:   95,
+						Line:   69,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// October is a constant that represents the month of October.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   95,
+							Line:   69,
 						},
 						File:   "date.flux",
 						Source: "October",
 						Start: ast.Position{
 							Column: 1,
-							Line:   95,
+							Line:   69,
 						},
 					},
 				},
@@ -4405,13 +4405,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   95,
+							Line:   69,
 						},
 						File:   "date.flux",
 						Source: "10",
 						Start: ast.Position{
 							Column: 11,
-							Line:   95,
+							Line:   69,
 						},
 					},
 				},
@@ -4424,30 +4424,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   98,
+						Line:   70,
 					},
 					File:   "date.flux",
 					Source: "November = 11",
 					Start: ast.Position{
 						Column: 1,
-						Line:   98,
+						Line:   70,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// November is a constant that represents the month of November.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   98,
+							Line:   70,
 						},
 						File:   "date.flux",
 						Source: "November",
 						Start: ast.Position{
 							Column: 1,
-							Line:   98,
+							Line:   70,
 						},
 					},
 				},
@@ -4460,13 +4460,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   98,
+							Line:   70,
 						},
 						File:   "date.flux",
 						Source: "11",
 						Start: ast.Position{
 							Column: 12,
-							Line:   98,
+							Line:   70,
 						},
 					},
 				},
@@ -4479,30 +4479,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   101,
+						Line:   71,
 					},
 					File:   "date.flux",
 					Source: "December = 12",
 					Start: ast.Position{
 						Column: 1,
-						Line:   101,
+						Line:   71,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// December is a constant that represents the month of December.\n"}},
+					Comments: nil,
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   101,
+							Line:   71,
 						},
 						File:   "date.flux",
 						Source: "December",
 						Start: ast.Position{
 							Column: 1,
-							Line:   101,
+							Line:   71,
 						},
 					},
 				},
@@ -4515,13 +4515,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   101,
+							Line:   71,
 						},
 						File:   "date.flux",
 						Source: "12",
 						Start: ast.Position{
 							Column: 12,
-							Line:   101,
+							Line:   71,
 						},
 					},
 				},

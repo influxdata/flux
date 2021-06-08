@@ -43,59 +43,29 @@ builtin nanosecond : (t: T) => int where T: Timeable
 // Truncate returns a time truncated to the specified duration unit.
 builtin truncate : (t: T, unit: duration) => time where T: Timeable
 
-// Sunday is a constant that represents Sunday as a day of the week
+// # Days of the week
+//
+// The days of the week are represented as integers in the range `[0-6]`
 Sunday = 0
-
-// Monday is a constant that represents Monday as a day of the week.
 Monday = 1
-
-// Tuesday is a constant that represents Tuesday as a day of the week.
 Tuesday = 2
-
-// Wednesday is a constant that represents Wednesday as a day of the week.
 Wednesday = 3
-
-// Thursday is a constant that represents Thursday as a day of the week.
 Thursday = 4
-
-// Friday is a constant that represents Friday as a day of the week.
 Friday = 5
-
-// Saturday is a constant that represents Saturday as a day of the week.
 Saturday = 6
 
-// January is a constant that represents the month of January.
+// # Months of the year
+//
+// Months are represented as integers in the range `[1-12]`
 January = 1
-
-// February is a constant that represents the month of February.
 February = 2
-
-// March is a constant that represents the month of March.
 March = 3
-
-// April is a constant that represents the month of April.
 April = 4
-
-// May is a constant that represents the month of May.
 May = 5
-
-// June is a constant that represents the month of June.
 June = 6
-
-// July is a constant that represents the month of July.
 July = 7
-
-// August is a constant that represents the month of August.
 August = 8
-
-// September is a constant that represents the month of September.
 September = 9
-
-// October is a constant that represents the month of October.
 October = 10
-
-// November is a constant that represents the month of November.
 November = 11
-
-// December is a constant that represents the month of December.
 December = 12
