@@ -8,18 +8,18 @@ use std::io;
 use std::string::FromUtf8Error;
 
 use chrono::SecondsFormat;
-use wasm_bindgen::prelude::*;
+//use wasm_bindgen::prelude::*;
 
-/// Format a JS file.
-#[wasm_bindgen]
-pub fn format_from_js_file(js_file: JsValue) -> String {
-    if let Ok(file) = js_file.into_serde::<File>() {
-        if let Ok(converted) = convert_to_string(&file) {
-            return converted;
-        }
-    }
-    "".to_string()
-}
+// /// Format a JS file.
+// #[wasm_bindgen]
+// pub fn format_from_js_file(js_file: JsValue) -> String {
+//     if let Ok(file) = js_file.into_serde::<File>() {
+//         if let Ok(converted) = convert_to_string(&file) {
+//             return converted;
+//         }
+//     }
+//     "".to_string()
+// }
 
 /// Format a [`File`].
 pub fn convert_to_string(file: &File) -> Result<String, Error> {
