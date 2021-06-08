@@ -376,6 +376,7 @@ dependencies = [
  "criterion",
  "flatbuffers",
  "flux-core",
+ "getrandom",
  "lazy_static",
  "maplit",
  "serde",
@@ -431,8 +432,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9495705279e7140bf035dde1f6e750c162df8b625267cd52cc44e0b156732c8"
 dependencies = [
  "cfg-if",
+ "js-sys",
  "libc",
  "wasi",
+ "wasm-bindgen",
 ]
 
 [[package]]

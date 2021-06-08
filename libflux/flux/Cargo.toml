@@ -16,6 +16,7 @@ strict = []
 comrak = "0.10.1"
 flux-core = { path = "../flux-core" }
 flatbuffers = "0.6.0"
+getrandom = { version = "0.2", features = ["js"] }
 lazy_static = "1.4.0"
 serde = "^1.0.59"
 serde_derive = "^1.0.59"

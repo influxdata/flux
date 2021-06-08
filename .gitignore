@@ -1,6 +1,6 @@
 /bin
 /vendor
-libflux/target
+**/target
 /dist
 .DS_Store
 .netrc

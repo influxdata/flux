@@ -12,7 +12,7 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                            "d4defc922be70253f56d43194f9f8d2e9eeb63b04b84f1797893bb47e4c0d59a",
+	"libflux/Cargo.lock":                                                            "980a72d68fc24b0c4b76f52e1c47e81e8dd8608562b53155f3519b8a91e52fe9",
 	"libflux/Cargo.toml":                                                            "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
 	"libflux/flux-core/Cargo.toml":                                                  "250d498b2cec53225353a2a091660debd05c2ce69ad421e161c401b5dfc45df1",
 	"libflux/flux-core/benches/scanner.rs":                                          "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
@@ -60,7 +60,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/walk/test_utils.rs":                             "ffec273fc2e54c640ba5f2ce5c1faa1516a3d98b1365d6f4cab762f582102650",
 	"libflux/flux-core/src/semantic/walk/walk_mut.rs":                               "845e0b706c90fd84b1f7ef08ab85d86a5af24392d7973415ed6d1c778a67e012",
 	"libflux/flux-core/tests/analyze_test.rs":                                       "537fcf7722f940794646d5916e3484262769fd90a7fa5e74e8095fb732136be6",
-	"libflux/flux/Cargo.toml":                                                       "e0390c5d041c03f99596b030ad21348fef2e6b310cc9ca60f7d2b072cc7237d1",
+	"libflux/flux/Cargo.toml":                                                       "8feec5c98ca94e3bd9d87e5aec66383eb7c25daf07a6e642b1c74db7d4ac1be1",
 	"libflux/flux/benches/basic.rs":                                                 "f6b1d133a4edaa38b0ab6e2b63de1bbd62a489e39b77c62d0df6fa8e5462da0e",
 	"libflux/flux/benches/builtins.rs":                                              "625b3de708d49a3cb758f331a01f41805ac59d22bbadfee417922504f2d5797e",
 	"libflux/flux/benches/everything.flux":                                          "39134841113ac5e8437e29c5ac379f54a9bef8d84ef761799e6ffefcee2cb9b4",
