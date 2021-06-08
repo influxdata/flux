@@ -12,9 +12,9 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                            "980a72d68fc24b0c4b76f52e1c47e81e8dd8608562b53155f3519b8a91e52fe9",
+	"libflux/Cargo.lock":                                                            "387ed81f4fb2ba5c1a8b931782cb4b419dfbecceb65ed1f274a40002b59b644e",
 	"libflux/Cargo.toml":                                                            "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                  "250d498b2cec53225353a2a091660debd05c2ce69ad421e161c401b5dfc45df1",
+	"libflux/flux-core/Cargo.toml":                                                  "5039dc72c2c9732749cf0bf5ef439675ed96bcd8144d1388134aa36c633ffa05",
 	"libflux/flux-core/benches/scanner.rs":                                          "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
 	"libflux/flux-core/src/ast/check/mod.rs":                                        "066040a5d7284deb05121370511dbe69b153550120db7d9925c35e13acf301a5",
 	"libflux/flux-core/src/ast/check/tests.rs":                                      "dfa6dc9b877a72825c4b6669606c5b79de1bc11602c4259f712af1a252c92820",
@@ -26,8 +26,8 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/ast/tests.rs":                                            "bc7f77d569d8bbd4b9d00653f48bacd47eed46f53024dce836d3c8bbb6a80555",
 	"libflux/flux-core/src/ast/walk/mod.rs":                                         "8f1c9a842374f44cb72b92f18a13cd831912ce96cd34f491e68c90bf4f1d36fa",
 	"libflux/flux-core/src/ast/walk/tests.rs":                                       "f7b2d7dd5643bb795a86c04b6979b136b0de46b52b213caff094aed6d204a05d",
-	"libflux/flux-core/src/formatter/mod.rs":                                        "4daffd1168347766475408da4369a95639d968712bf253c1cd24496514cd3899",
-	"libflux/flux-core/src/formatter/tests.rs":                                      "b19f8e1519851ed12a349b5d1d0be46dabf64d6e7841ef70f940313177fdde28",
+	"libflux/flux-core/src/formatter/mod.rs":                                        "5a2124040887306568e5d51c87bad5b84c4b8c3d2113ce317da40599b62b3046",
+	"libflux/flux-core/src/formatter/tests.rs":                                      "b0a10998a65fc4b54a8f68b3a0ed186d8548ba3d7638f911eb188d2ce485206f",
 	"libflux/flux-core/src/lib.rs":                                                  "d19b7054e07f234c107d457030a0031374c123fe14a84a5b8e35537d138bac7a",
 	"libflux/flux-core/src/parser/mod.rs":                                           "31b69ead574a94a5652b25be1d134bd48a4b342603c6a6f72f46726520ca5b3c",
 	"libflux/flux-core/src/parser/strconv.rs":                                       "748c82f6efc2eafaafb872db5b4185ce29aafa8f03ba02c4b84f4a9614e832d2",
@@ -547,7 +547,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/quantile_defaults_test.flux":                                   "18bf66ecd7af89aa303c3094ad3591dc38cfee1c65729b9e646fe601e4558efe",
 	"stdlib/universe/quantile_tdigest_test.flux":                                    "92821a1cabb67d8a0b5b72e284047792617f29d5efd9192570f7bf4bd3fd1711",
 	"stdlib/universe/quantile_test.flux":                                            "91a77faea93ab5cb4df0f289f01a256f8bd0593d89bb877a2b735bb3ab023a89",
-	"stdlib/universe/range_nsecs_test.flux":                                         "8749ec2e3eb9408f98524448959303d934b0c9a696f2373873f65d8e1c3547fd",
+	"stdlib/universe/range_nsecs_test.flux":                                         "05ba0e8e1a12b32c10e85714cfc735e04408fe545e7ccc444f496cf782840971",
 	"stdlib/universe/range_stop_test.flux":                                          "462bb39ce7d3acd0d59673e5826abf3c71eb6046299cb79160f12d430edfec57",
 	"stdlib/universe/range_test.flux":                                               "9b768ecc5bcaa36f47802a9e7f0e6e88ded27704b02946400bba8a3dceb4c05b",
 	"stdlib/universe/reduce_noref_test.flux":                                        "38a043e41c9994328c44c165f54c8a32ca8123242ee290050391839ac5b7d127",
