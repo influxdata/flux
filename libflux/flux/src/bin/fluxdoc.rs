@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 lazy_static! {
     static ref TEMPLATES: Tera = {
-        let mut tera = match Tera::new("fluxdoc/templates/*.html") {
+        let mut tera = match Tera::new("flux/templates/*.html") {
             Ok(t) => t,
             Err(e) => {
                 println!("Parsing error(s): {}", e);
