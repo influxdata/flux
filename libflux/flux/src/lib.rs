@@ -1,5 +1,7 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
 
+pub mod wasm;
+
 extern crate fluxcore;
 extern crate serde_aux;
 extern crate serde_derive;
@@ -15,17 +17,15 @@ use fluxcore::semantic::sub::Substitution;
 
 pub use fluxcore::ast;
 pub use fluxcore::formatter;
-pub use fluxcore::parser;
 pub use fluxcore::scanner;
 pub use fluxcore::semantic;
 pub use fluxcore::*;
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use fluxcore::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
+use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
-use wasm_bindgen::prelude::*;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -554,16 +554,6 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
     );
     infer_with_env(ast_pkg, f, Some(env))
         .map(|(_, env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
-}
-
-/// wasm version of the flux_find_var_type() API. Instead of returning a flat buffer that contains
-/// the MonoType, it returns a JsValue。
-#[wasm_bindgen]
-pub fn wasm_find_var_type(source: &str, file_name: &str, var_name: &str) -> JsValue {
-    let mut p = Parser::new(source);
-    let pkg: ast::Package = p.parse_file(file_name.to_string()).into();
-    let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0)));
-    JsValue::from_serde(&ty).unwrap()
 }
 
 /// # Safety
