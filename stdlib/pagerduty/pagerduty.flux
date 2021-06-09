@@ -5,8 +5,8 @@ import "http"
 import "json"
 import "strings"
 
-// `dedupKey` - adds a newline concatinated value of the sorted group key that is then sha256-hashed and hex-encoded to a column with the key `_pagerdutyDedupKey`.
-builtin dedupKey : (<-tables: [A]) => [{A with _pagerdutyDedupKey: string}]
+// `dedupKey` - adds a newline concatenated value of the sorted group key that is then sha256-hashed and hex-encoded to a column with the key `_pagerdutyDedupKey`.
+builtin dedupKey : (<-tables: [A], ?exclude: [string]) => [{A with _pagerdutyDedupKey: string}]
 
 option defaultURL = "https://events.pagerduty.com/v2/enqueue"
 

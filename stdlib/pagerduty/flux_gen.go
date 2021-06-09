@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   117,
 				},
 				File:   "pagerduty.flux",
-				Source: "package pagerduty\n\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// `dedupKey` - adds a newline concatinated value of the sorted group key that is then sha256-hashed and hex-encoded to a column with the key `_pagerdutyDedupKey`.\nbuiltin dedupKey : (<-tables: [A]) => [{A with _pagerdutyDedupKey: string}]\n\noption defaultURL = \"https://events.pagerduty.com/v2/enqueue\"\n\n// severity levels on status objects can be one of the following: ok,info,warn,crit,unknown\n// but pagerduty only accepts critical, error, warning or info.\n// severityFromLevel turns a level from the status object into a pagerduty severity\nseverityFromLevel = (level) => {\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\n    else if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"info\"\n    else if lvl == \"ok\" then\n        \"info\"\n    else\n        \"error\"\n\n    return sev\n}\n\n// `actionFromLevel` converts a monitoring level to an action; \"ok\" becomes \"resolve\" everything else converts to \"trigger\".\nactionFromLevel = (level) => if strings.toLower(v: level) == \"ok\" then \"resolve\" else \"trigger\"\n\n// `sendEvent` sends an event to PagerDuty, the description of some of these parameters taken from the pagerduty documentation at https://v2.developer.pagerduty.com/docs/send-an-event-events-api-v2\n// `pagerdutyURL` - sring - URL of the pagerduty endpoint.  Defaults to: `option defaultURL = \"https://events.pagerduty.com/v2/enqueue\"`\n// `routingKey` - string - routingKey.\n// `client` - string - name of the client sending the alert.\n// `clientURL` - string - url of the client sending the alert.\n// `dedupkey` - string - a per alert ID. It acts as deduplication key, that allows you to ack or change the severity of previous messages. Supports a maximum of 255 characters.\n// `class` - string - The class/type of the event, for example ping failure or cpu load.\n// `group` - string - Logical grouping of components of a service, for example app-stack.\n// `severity` - string - The perceived severity of the status the event is describing with respect to the affected system. This can be critical, error, warning or info.\n// `eventAction` - string - The type of event to send to PagerDuty (ex. trigger, resolve, acknowledge)\n// `source` - string - The unique location of the affected system, preferably a hostname or FQDN.\n// `summary` - string - A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.\n// `timestamp` - string - The time at which the emitting tool detected or generated the event, in RFC 3339 nano format.\nsendEvent = (\n        pagerdutyURL=defaultURL,\n        routingKey,\n        client,\n        clientURL,\n        dedupKey,\n        class,\n        group,\n        severity,\n        eventAction,\n        source,\n        summary,\n        timestamp,\n) => {\n    payload = {\n        summary: summary,\n        timestamp: timestamp,\n        source: source,\n        severity: severity,\n        group: group,\n        class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}\n\n// `endpoint` creates the endpoint for the PagerDuty external service.\n// `url` - string - URL of the Pagerduty endpoint. Defaults to: \"https://events.pagerduty.com/v2/enqueue\".\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` parameter must be a function that returns an object with `routingKey`, `client`, `client_url`, `class`, `group`, `severity`, `eventAction`, `source`, `summary`, and `timestamp` as defined in the sendEvent function.\n// Note that while sendEvent accepts a dedup key, endpoint gets the dedupkey from the groupkey of the input table instead of it being handled by the `mapFn`.\nendpoint = (url=defaultURL) => (mapFn) => (tables=<-) => tables\n    |> dedupKey()\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendEvent(\n                        pagerdutyURL: url,\n                        routingKey: obj.routingKey,\n                        client: obj.client,\n                        clientURL: obj.clientURL,\n                        dedupKey: r._pagerdutyDedupKey,\n                        class: obj.class,\n                        group: obj.group,\n                        severity: obj.severity,\n                        eventAction: obj.eventAction,\n                        source: obj.source,\n                        summary: obj.summary,\n                        timestamp: obj.timestamp,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package pagerduty\n\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// `dedupKey` - adds a newline concatenated value of the sorted group key that is then sha256-hashed and hex-encoded to a column with the key `_pagerdutyDedupKey`.\nbuiltin dedupKey : (<-tables: [A], ?exclude: [string]) => [{A with _pagerdutyDedupKey: string}]\n\noption defaultURL = \"https://events.pagerduty.com/v2/enqueue\"\n\n// severity levels on status objects can be one of the following: ok,info,warn,crit,unknown\n// but pagerduty only accepts critical, error, warning or info.\n// severityFromLevel turns a level from the status object into a pagerduty severity\nseverityFromLevel = (level) => {\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\n    else if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"info\"\n    else if lvl == \"ok\" then\n        \"info\"\n    else\n        \"error\"\n\n    return sev\n}\n\n// `actionFromLevel` converts a monitoring level to an action; \"ok\" becomes \"resolve\" everything else converts to \"trigger\".\nactionFromLevel = (level) => if strings.toLower(v: level) == \"ok\" then \"resolve\" else \"trigger\"\n\n// `sendEvent` sends an event to PagerDuty, the description of some of these parameters taken from the pagerduty documentation at https://v2.developer.pagerduty.com/docs/send-an-event-events-api-v2\n// `pagerdutyURL` - sring - URL of the pagerduty endpoint.  Defaults to: `option defaultURL = \"https://events.pagerduty.com/v2/enqueue\"`\n// `routingKey` - string - routingKey.\n// `client` - string - name of the client sending the alert.\n// `clientURL` - string - url of the client sending the alert.\n// `dedupkey` - string - a per alert ID. It acts as deduplication key, that allows you to ack or change the severity of previous messages. Supports a maximum of 255 characters.\n// `class` - string - The class/type of the event, for example ping failure or cpu load.\n// `group` - string - Logical grouping of components of a service, for example app-stack.\n// `severity` - string - The perceived severity of the status the event is describing with respect to the affected system. This can be critical, error, warning or info.\n// `eventAction` - string - The type of event to send to PagerDuty (ex. trigger, resolve, acknowledge)\n// `source` - string - The unique location of the affected system, preferably a hostname or FQDN.\n// `summary` - string - A brief text summary of the event, used to generate the summaries/titles of any associated alerts. The maximum permitted length of this property is 1024 characters.\n// `timestamp` - string - The time at which the emitting tool detected or generated the event, in RFC 3339 nano format.\nsendEvent = (\n        pagerdutyURL=defaultURL,\n        routingKey,\n        client,\n        clientURL,\n        dedupKey,\n        class,\n        group,\n        severity,\n        eventAction,\n        source,\n        summary,\n        timestamp,\n) => {\n    payload = {\n        summary: summary,\n        timestamp: timestamp,\n        source: source,\n        severity: severity,\n        group: group,\n        class: class,\n    }\n    data = {\n        payload: payload,\n        routing_key: routingKey,\n        dedup_key: dedupKey,\n        event_action: eventAction,\n        client: client,\n        client_url: clientURL,\n    }\n    headers = {\n        \"Accept\": \"application/vnd.pagerduty+json;version=2\",\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: pagerdutyURL, data: enc)\n}\n\n// `endpoint` creates the endpoint for the PagerDuty external service.\n// `url` - string - URL of the Pagerduty endpoint. Defaults to: \"https://events.pagerduty.com/v2/enqueue\".\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` parameter must be a function that returns an object with `routingKey`, `client`, `client_url`, `class`, `group`, `severity`, `eventAction`, `source`, `summary`, and `timestamp` as defined in the sendEvent function.\n// Note that while sendEvent accepts a dedup key, endpoint gets the dedupkey from the groupkey of the input table instead of it being handled by the `mapFn`.\nendpoint = (url=defaultURL) => (mapFn) => (tables=<-) => tables\n    |> dedupKey()\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendEvent(\n                        pagerdutyURL: url,\n                        routingKey: obj.routingKey,\n                        client: obj.client,\n                        clientURL: obj.clientURL,\n                        dedupKey: r._pagerdutyDedupKey,\n                        class: obj.class,\n                        group: obj.group,\n                        severity: obj.severity,\n                        eventAction: obj.eventAction,\n                        source: obj.source,\n                        summary: obj.summary,\n                        timestamp: obj.timestamp,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -36,7 +36,7 @@ var pkgAST = &ast.Package{
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// `dedupKey` - adds a newline concatinated value of the sorted group key that is then sha256-hashed and hex-encoded to a column with the key `_pagerdutyDedupKey`.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// `dedupKey` - adds a newline concatenated value of the sorted group key that is then sha256-hashed and hex-encoded to a column with the key `_pagerdutyDedupKey`.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
@@ -77,11 +77,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 76,
+							Column: 96,
 							Line:   9,
 						},
 						File:   "pagerduty.flux",
-						Source: "(<-tables: [A]) => [{A with _pagerdutyDedupKey: string}]",
+						Source: "(<-tables: [A], ?exclude: [string]) => [{A with _pagerdutyDedupKey: string}]",
 						Start: ast.Position{
 							Column: 20,
 							Line:   9,
@@ -95,11 +95,11 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 76,
+								Column: 96,
 								Line:   9,
 							},
 							File:   "pagerduty.flux",
-							Source: "(<-tables: [A]) => [{A with _pagerdutyDedupKey: string}]",
+							Source: "(<-tables: [A], ?exclude: [string]) => [{A with _pagerdutyDedupKey: string}]",
 							Start: ast.Position{
 								Column: 20,
 								Line:   9,
@@ -198,6 +198,98 @@ var pkgAST = &ast.Package{
 								},
 							},
 						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 54,
+									Line:   9,
+								},
+								File:   "pagerduty.flux",
+								Source: "?exclude: [string]",
+								Start: ast.Position{
+									Column: 36,
+									Line:   9,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 44,
+										Line:   9,
+									},
+									File:   "pagerduty.flux",
+									Source: "exclude",
+									Start: ast.Position{
+										Column: 37,
+										Line:   9,
+									},
+								},
+							},
+							Name: "exclude",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 54,
+										Line:   9,
+									},
+									File:   "pagerduty.flux",
+									Source: "[string]",
+									Start: ast.Position{
+										Column: 46,
+										Line:   9,
+									},
+								},
+							},
+							ElementType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 53,
+											Line:   9,
+										},
+										File:   "pagerduty.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 47,
+											Line:   9,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 53,
+												Line:   9,
+											},
+											File:   "pagerduty.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 47,
+												Line:   9,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+						},
 					}},
 					Return: &ast.ArrayType{
 						BaseNode: ast.BaseNode{
@@ -205,13 +297,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 76,
+									Column: 96,
 									Line:   9,
 								},
 								File:   "pagerduty.flux",
 								Source: "[{A with _pagerdutyDedupKey: string}]",
 								Start: ast.Position{
-									Column: 39,
+									Column: 59,
 									Line:   9,
 								},
 							},
@@ -222,13 +314,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 75,
+										Column: 95,
 										Line:   9,
 									},
 									File:   "pagerduty.flux",
 									Source: "{A with _pagerdutyDedupKey: string}",
 									Start: ast.Position{
-										Column: 40,
+										Column: 60,
 										Line:   9,
 									},
 								},
@@ -239,13 +331,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 74,
+											Column: 94,
 											Line:   9,
 										},
 										File:   "pagerduty.flux",
 										Source: "_pagerdutyDedupKey: string",
 										Start: ast.Position{
-											Column: 48,
+											Column: 68,
 											Line:   9,
 										},
 									},
@@ -256,13 +348,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 66,
+												Column: 86,
 												Line:   9,
 											},
 											File:   "pagerduty.flux",
 											Source: "_pagerdutyDedupKey",
 											Start: ast.Position{
-												Column: 48,
+												Column: 68,
 												Line:   9,
 											},
 										},
@@ -275,13 +367,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 74,
+												Column: 94,
 												Line:   9,
 											},
 											File:   "pagerduty.flux",
 											Source: "string",
 											Start: ast.Position{
-												Column: 68,
+												Column: 88,
 												Line:   9,
 											},
 										},
@@ -292,13 +384,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 74,
+													Column: 94,
 													Line:   9,
 												},
 												File:   "pagerduty.flux",
 												Source: "string",
 												Start: ast.Position{
-													Column: 68,
+													Column: 88,
 													Line:   9,
 												},
 											},
@@ -313,13 +405,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 42,
+											Column: 62,
 											Line:   9,
 										},
 										File:   "pagerduty.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 41,
+											Column: 61,
 											Line:   9,
 										},
 									},
