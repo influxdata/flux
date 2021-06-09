@@ -9,7 +9,9 @@ import (
 	"strings"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -19,7 +21,9 @@ import (
 const DedupKeyKind = "dedupKey"
 const dedupKeyColName = "_pagerdutyDedupKey" // if you change this, make sure to change it in the pagerduty.flux too!
 
-type DedupKeyOpSpec struct{}
+type DedupKeyOpSpec struct {
+	Exclude []string
+}
 
 func (s *DedupKeyOpSpec) Kind() flux.OperationKind {
 	return DedupKeyKind
@@ -28,7 +32,6 @@ func (s *DedupKeyOpSpec) Kind() flux.OperationKind {
 func init() {
 	dedupKeySignature := runtime.MustLookupBuiltinType("pagerduty", "dedupKey")
 	runtime.RegisterPackageValue("pagerduty", "dedupKey", flux.MustValue(flux.FunctionValue(DedupKeyKind, createDedupKeyOpSpec, dedupKeySignature)))
-	flux.RegisterOpSpec(DedupKeyKind, newDedupKeyOp)
 	plan.RegisterProcedureSpec(DedupKeyKind, newDedupKeyProcedure, DedupKeyKind)
 	execute.RegisterTransformation(DedupKeyKind, createDedupKeyTransformation)
 }
@@ -37,15 +40,33 @@ func createDedupKeyOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
-	return &DedupKeyOpSpec{}, nil
-}
 
-func newDedupKeyOp() flux.OperationSpec {
-	return new(DedupKeyOpSpec)
+	exclude, ok, err := args.GetArrayAllowEmpty("exclude", semantic.String)
+	if err != nil {
+		return nil, err
+	} else if !ok {
+		exclude = values.NewArrayWithBacking(
+			semantic.NewArrayType(semantic.BasicString),
+			[]values.Value{
+				values.NewString(execute.DefaultStartColLabel),
+				values.NewString(execute.DefaultStopColLabel),
+				values.NewString("_level"),
+			},
+		)
+	}
+
+	spec := &DedupKeyOpSpec{
+		Exclude: make([]string, exclude.Len()),
+	}
+	exclude.Range(func(i int, v values.Value) {
+		spec.Exclude[i] = v.Str()
+	})
+	return spec, nil
 }
 
 type DedupProcedureSpec struct {
 	plan.DefaultCost
+	Exclude []string
 }
 
 func (s *DedupProcedureSpec) Kind() plan.ProcedureKind {
@@ -54,37 +75,45 @@ func (s *DedupProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *DedupProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := *s
+	ns.Exclude = make([]string, len(s.Exclude))
+	copy(ns.Exclude, s.Exclude)
 	return &ns
 }
 
 func newDedupKeyProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	if _, ok := qs.(*DedupKeyOpSpec); !ok {
+	spec, ok := qs.(*DedupKeyOpSpec)
+	if !ok {
 		return nil, fmt.Errorf("invalid spec type %T", qs)
 	}
-	return &DedupProcedureSpec{}, nil
+	return &DedupProcedureSpec{
+		Exclude: spec.Exclude,
+	}, nil
 }
 
 type DedupKeyTransformation struct {
 	execute.ExecutionNode
-	d     execute.Dataset
-	cache execute.TableBuilderCache
+	d       execute.Dataset
+	cache   execute.TableBuilderCache
+	exclude []string
 }
 
 func createDedupKeyTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	dataset := execute.NewDataset(id, mode, cache)
-	if _, ok := spec.(*DedupProcedureSpec); !ok {
+	s, ok := spec.(*DedupProcedureSpec)
+	if !ok {
 		return nil, nil, fmt.Errorf("invalid spec type %T", spec)
 	}
 
-	transform := NewDedupKeyTransformation(dataset, cache)
+	transform := NewDedupKeyTransformation(dataset, s, cache)
 	return transform, dataset, nil
 }
 
-func NewDedupKeyTransformation(d execute.Dataset, cache execute.TableBuilderCache) *DedupKeyTransformation {
+func NewDedupKeyTransformation(d execute.Dataset, spec *DedupProcedureSpec, cache execute.TableBuilderCache) *DedupKeyTransformation {
 	return &DedupKeyTransformation{
-		d:     d,
-		cache: cache,
+		d:       d,
+		cache:   cache,
+		exclude: spec.Exclude,
 	}
 }
 
@@ -100,9 +129,12 @@ type kvs struct {
 func (t *DedupKeyTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	groupCols := tbl.Key().Cols()
 	groupVals := tbl.Key().Values()
-	keys := make([]kvs, len(groupCols))
-	for i := range groupCols {
-		keys[i].k = groupCols[i].Label
+	keys := make([]kvs, 0, len(groupCols))
+	for i, col := range groupCols {
+		if execute.ContainsStr(t.exclude, col.Label) {
+			continue
+		}
+
 		v := groupVals[i]
 		var str string
 		switch v.Type().Nature() {
@@ -121,10 +153,12 @@ func (t *DedupKeyTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		case semantic.Duration:
 			str = v.Duration().String()
 		default:
-			return fmt.Errorf("cannot convert %v to string", v.Type())
+			return errors.Newf(codes.Invalid, "cannot convert %v to string", v.Type())
 		}
-
-		keys[i].v = str
+		keys = append(keys, kvs{
+			k: col.Label,
+			v: str,
+		})
 
 	}
 	sort.Slice(keys, func(i, j int) bool {

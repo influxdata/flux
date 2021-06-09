@@ -1354,6 +1354,7 @@ type Arguments interface {
 	GetBool(name string) (bool, bool, error)
 	GetFunction(name string) (values.Function, bool, error)
 	GetArray(name string, t semantic.Nature) (values.Array, bool, error)
+	GetArrayAllowEmpty(name string, t semantic.Nature) (values.Array, bool, error)
 	GetObject(name string) (values.Object, bool, error)
 	GetDictionary(name string) (values.Dictionary, bool, error)
 
@@ -1483,6 +1484,23 @@ func (a *arguments) GetArray(name string, t semantic.Nature) (values.Array, bool
 		return nil, true, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type())
 	}
 	return v.Array(), ok, nil
+}
+func (a *arguments) GetArrayAllowEmpty(name string, t semantic.Nature) (values.Array, bool, error) {
+	v, ok, err := a.get(name, semantic.Array, false)
+	if err != nil || !ok {
+		return nil, ok, err
+	}
+	arr := v.Array()
+	if arr.Len() > 0 {
+		et, err := arr.Type().ElemType()
+		if err != nil {
+			return nil, false, err
+		}
+		if et.Nature() != t {
+			return nil, true, errors.Newf(codes.Invalid, "keyword argument %q should be of an array of type %v, but got an array of type %v", name, t, arr.Type())
+		}
+	}
+	return arr, ok, nil
 }
 func (a *arguments) GetRequiredArray(name string, t semantic.Nature) (values.Array, error) {
 	v, _, err := a.get(name, semantic.Array, true)
