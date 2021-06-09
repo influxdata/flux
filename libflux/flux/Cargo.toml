@@ -16,7 +16,6 @@ strict = []
 comrak = "0.10.1"
 flux-core = { path = "../flux-core" }
 flatbuffers = "0.6.0"
-getrandom = { version = "0.2", features = ["js"] }
 lazy_static = "1.4.0"
 serde = "^1.0.59"
 serde_derive = "^1.0.59"
@@ -25,6 +24,14 @@ serde-aux = "0.6.1"
 structopt = "0.3.13"
 tera = "1"
 wasm-bindgen = { version = "0.2.62", features = ["serde-serialize"] }
+
+# `getrandom` is a dependency of the `tera` crate, which does not support
+# the wasm32-unknown-unknown target by default. Explicitly importing it here
+# allows us to enable that support with the "js" feature.
+# For details, see 'https://docs.rs/getrandom/0.2.3/getrandom/#webassembly-support'
+[dependencies.getrandom]
+version = "0.2"
+features = ["js"]
 
 [dev-dependencies]
 maplit = "1.0.2"
