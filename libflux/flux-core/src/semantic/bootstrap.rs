@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 use crate::ast;
 use crate::parser;
+use crate::parser::Parser;
 use crate::semantic::convert::convert_file;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
@@ -53,6 +54,20 @@ pub struct DocValue {
     pub name: String,
     pub doc: String,
     pub typ: String,
+}
+
+struct UntypedDocPackage {
+    pub path: Vec<String>,
+    pub name: String,
+    pub doc: String,
+    pub values: Vec<UntypedDocValue>,
+    pub packages: Vec<UntypedDocPackage>,
+}
+
+struct UntypedDocValue {
+    pub pkgpath: Vec<String>,
+    pub name: String,
+    pub doc: String,
 }
 
 impl From<io::Error> for Error {
@@ -127,7 +142,115 @@ pub fn stdlib_docs(lib:PolyTypeMap, files:Vec<String>) -> Result<Vec<DocPackage>
     //     created, and set its type.
     //
     // return the results from the parsing
+
+    //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
+    let path = Path::new("../../../../stdlib");
+    let pkg = walk_pkg(&path, &path)?;
 }
+
+// Walks the directory and generates docs for the package found at topdir and any sub packages.
+pub fn walk_pkg(topdir: &Path, dir: &Path) -> Result<DocPackage, Box<dyn std::error::Error>> {
+    let mut packages = Vec::<DocPackage>::new();
+    let mut src = Vec::<PathBuf>::new();
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            let pkg = walk_pkg(topdir, &path)?;
+            packages.push(pkg);
+            continue;
+        }
+        match path.extension() {
+            Some(ext) => {
+                if ext != "flux" {
+                    continue;
+                }
+            }
+            None => {
+                continue;
+            }
+        }
+        src.push(path.clone());
+    }
+    let pkgpath = dir.strip_prefix(topdir.parent().unwrap())?;
+    generate_docs(&pkgpath, src, packages)
+}
+
+// Generates the docs by parsing the sources and checking type inference.
+fn generate_docs(
+    pkgpath: &Path,
+    srcs: Vec<PathBuf>,
+    mut packages: Vec<DocPackage>,
+) -> Result<DocPackage, Box<dyn std::error::Error>> {
+    // determine path vector
+    let mut path: Vec<String> = Vec::new();
+    let mut curr = pkgpath;
+    loop {
+        if curr == Path::new("") {
+            break;
+        }
+        path.push(curr.file_name().unwrap().to_str().unwrap().to_string());
+        if let Some(parent) = curr.parent() {
+            curr = parent
+        }
+    }
+    path.reverse();
+
+    // parse each src in the package
+    let mut pkg: Option<ast::Package> = None;
+    for src in srcs {
+        let source = fs::read_to_string(&src)?;
+        let file_name = src.file_name().unwrap();
+        let mut p = Parser::new(source.as_str());
+        let mut fpkg: ast::Package = p.parse_file(file_name.to_str().unwrap().to_owned()).into();
+        // skip test packages
+        if !fpkg.package.ends_with("_test") {
+            match pkg {
+                None => pkg = Some(fpkg),
+                Some(ref mut pkg) => {
+                    if let Some(err) = merge_packages(&mut fpkg, pkg) {
+                        return Err(Box::new(err));
+                    }
+                }
+            }
+        }
+    }
+    packages.sort_by_key(|p| p.name.clone());
+
+    // construct the package documentation
+    if let Some(pkg) = pkg {
+        // use type inference to determine types of all values
+        //let sem_pkg = analyze(pkg.clone())?;
+        //let types = pkg_types(&sem_pkg);
+        let mut values: Vec<DocValue> = Vec::new();
+        values.sort_by_key(|v| v.name.clone());
+        let mut doc = String::new();
+        for f in &pkg.files {
+            let vs = generate_values(&f, &types, &path)?;
+            values.extend(vs);
+            if let Some(comment) = &f.package {
+                doc = comments_to_string(&comment.base.comments);
+            }
+        }
+        Ok(DocPackage {
+            path,
+            name: pkg.package,
+            doc,
+            values,
+            packages,
+        })
+    } else {
+        let name = path.last().unwrap().clone();
+        Ok(DocPackage {
+            path,
+            name,
+            doc: "".to_string(),
+            values: vec![],
+            packages,
+        })
+    }
+}
+
 
 fn compute_file_dependencies(root: &str) -> Vec<String> {
     // Iterate through each ast file and canonicalize the
