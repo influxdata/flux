@@ -5,7 +5,7 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use crate::ast;
+use crate::{ast, merge_packages};
 use crate::parser;
 use crate::parser::Parser;
 use crate::semantic::convert::convert_file;
@@ -118,7 +118,7 @@ impl From<&str> for Error {
 /// Infers the types of the standard library returning two [`PolyTypeMap`]s, one for the prelude
 /// and one for the standard library, as well as a type variable [`Fresher`].
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
+pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>, AstFileMap), Error> {
     let mut f = Fresher::default();
 
     let dir = "../../stdlib";
@@ -128,7 +128,7 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>)
     let (prelude, importer) = infer_pre(&mut f, &files)?;
     let importer = infer_std(&mut f, &files, prelude.clone(), importer)?;
 
-    Ok((prelude, importer, f, rerun_if_changed))
+    Ok((prelude, importer, f, rerun_if_changed, files))
 }
 
 // new stdlib docs function
@@ -146,35 +146,9 @@ pub fn stdlib_docs(lib:PolyTypeMap, files:Vec<String>) -> Result<Vec<DocPackage>
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let path = Path::new("../../../../stdlib");
     let pkg = walk_pkg(&path, &path)?;
+    let typ = lib.Fmt([monotype]);
 }
 
-// Walks the directory and generates docs for the package found at topdir and any sub packages.
-pub fn walk_pkg(topdir: &Path, dir: &Path) -> Result<DocPackage, Box<dyn std::error::Error>> {
-    let mut packages = Vec::<DocPackage>::new();
-    let mut src = Vec::<PathBuf>::new();
-    for entry in fs::read_dir(dir)? {
-        let entry = entry?;
-        let path = entry.path();
-        if path.is_dir() {
-            let pkg = walk_pkg(topdir, &path)?;
-            packages.push(pkg);
-            continue;
-        }
-        match path.extension() {
-            Some(ext) => {
-                if ext != "flux" {
-                    continue;
-                }
-            }
-            None => {
-                continue;
-            }
-        }
-        src.push(path.clone());
-    }
-    let pkgpath = dir.strip_prefix(topdir.parent().unwrap())?;
-    generate_docs(&pkgpath, src, packages)
-}
 
 // Generates the docs by parsing the sources and checking type inference.
 fn generate_docs(
@@ -250,7 +224,44 @@ fn generate_docs(
         })
     }
 }
-
+fn pkg_types(pkg: &semantic::nodes::Package) -> HashMap<String, PolyType> {
+    let mut types: HashMap<String, PolyType> = HashMap::new();
+    for f in &pkg.files {
+        for s in &f.body {
+            match s {
+                semantic::nodes::Statement::Variable(s) => {
+                    let typ = s.init.type_of();
+                    types.insert(
+                        s.id.name.clone(),
+                        PolyType {
+                            vars: vec![],
+                            cons: TvarKinds::new(),
+                            expr: typ,
+                        },
+                    );
+                }
+                semantic::nodes::Statement::Builtin(s) => {
+                    types.insert(s.id.name.clone(), s.typ_expr.clone());
+                }
+                semantic::nodes::Statement::Option(s) => {
+                    if let semantic::nodes::Assignment::Variable(v) = &s.assignment {
+                        let typ = v.init.type_of();
+                        types.insert(
+                            v.id.name.clone(),
+                            PolyType {
+                                vars: vec![],
+                                cons: TvarKinds::new(),
+                                expr: typ,
+                            },
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    types
+}
 
 fn compute_file_dependencies(root: &str) -> Vec<String> {
     // Iterate through each ast file and canonicalize the
