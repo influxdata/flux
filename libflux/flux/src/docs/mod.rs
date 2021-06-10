@@ -1,6 +1,7 @@
 //#[macro_use]
 //extern crate serde_derive;
 
+use fluxcore::semantic::bootstrap::{DocPackage, DocValue};
 use crate::ast;
 use crate::parser::Parser;
 use crate::semantic::types::{PolyType, TvarKinds};
