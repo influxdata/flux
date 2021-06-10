@@ -95,6 +95,19 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>)
     Ok((prelude, importer, f, rerun_if_changed))
 }
 
+// new stdlib docs function
+pub fn stdlib_docs(lib:PolyTypeMap, files:Vec<String>) -> Result<Vec<DocPackage>, Error> {
+    // initialize DocPackage vector
+    // run through stdlib and parse all value comments
+    //     create and populate a DocValue for each individual
+    //     comment value found, and push to the corresponding
+    //     DocPackage.
+    //     find the type information corresponding to the DocValue
+    //     created, and set its type.
+    //
+    // return the results from the parsing
+}
+
 fn compute_file_dependencies(root: &str) -> Vec<String> {
     // Iterate through each ast file and canonicalize the
     // file path to an absolute path.
