@@ -1,6 +1,6 @@
-bin
-vendor
-target
+/bin
+/vendor
+**/target
 /dist
 .DS_Store
 .netrc

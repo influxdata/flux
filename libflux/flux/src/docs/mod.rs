@@ -1,57 +1,37 @@
-#![cfg_attr(feature = "strict", deny(warnings))]
+//#[macro_use]
+//extern crate serde_derive;
 
+use crate::ast;
+use crate::parser::Parser;
+use crate::semantic::types::{PolyType, TvarKinds};
+use crate::{analyze, merge_packages, semantic};
 use std::collections::HashMap;
-use std::fs::{self, File};
-use std::io::Write;
+use std::fs;
 use std::path::{Path, PathBuf};
-use structopt::StructOpt;
-use tera::{Context, Tera};
 
-#[macro_use]
-extern crate lazy_static;
-
-#[macro_use]
-extern crate serde_derive;
-
-mod doc;
-use crate::doc::*;
-
-use flux::ast;
-use flux::parser::Parser;
-use flux::semantic;
-use flux::semantic::types::{PolyType, TvarKinds};
-
-#[derive(Debug, StructOpt)]
-struct Args {
-    // The root path of packages for which to generate documentation
-    #[structopt(parse(from_os_str), long)]
-    pkg: PathBuf,
-    // The name of the file to write the documentation JSON data
-    #[structopt(parse(from_os_str), long, default_value = "")]
-    json: PathBuf,
-    // The name of the directory into which to write the documentation html files
-    #[structopt(parse(from_os_str), long, default_value = "")]
-    html: PathBuf,
+// DocPackage represents the documentation for a package and its sub packages
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocPackage {
+    pub path: Vec<String>,
+    pub name: String,
+    pub doc: String,
+    pub values: Vec<DocValue>,
+    pub packages: Vec<DocPackage>,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = Args::from_args();
-    let pkg = walk_pkg(&args.pkg, &args.pkg)?;
-
-    if args.json != Path::new("") {
-        let f = File::create(args.json)?;
-        serde_json::to_writer(f, &pkg)?;
-    }
-
-    if args.html != Path::new("") {
-        write_home(&args.html)?;
-        return write_html(&args.html, &pkg);
-    }
-    Ok(())
+// DocValue represents the documentation for a single value within a package.
+// Values include options, builtins or any variable assignment within the top level scope of a
+// package.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocValue {
+    pub pkgpath: Vec<String>,
+    pub name: String,
+    pub doc: String,
+    pub typ: String,
 }
 
 // Walks the directory and generates docs for the package found at topdir and any sub packages.
-fn walk_pkg(topdir: &Path, dir: &Path) -> Result<DocPackage, Box<dyn std::error::Error>> {
+pub fn walk_pkg(topdir: &Path, dir: &Path) -> Result<DocPackage, Box<dyn std::error::Error>> {
     let mut packages = Vec::<DocPackage>::new();
     let mut src = Vec::<PathBuf>::new();
     for entry in fs::read_dir(dir)? {
@@ -110,7 +90,7 @@ fn generate_docs(
             match pkg {
                 None => pkg = Some(fpkg),
                 Some(ref mut pkg) => {
-                    if let Some(err) = flux::merge_packages(&mut fpkg, pkg) {
+                    if let Some(err) = merge_packages(&mut fpkg, pkg) {
                         return Err(Box::new(err));
                     }
                 }
@@ -122,7 +102,7 @@ fn generate_docs(
     // construct the package documentation
     if let Some(pkg) = pkg {
         // use type inference to determine types of all values
-        let sem_pkg = flux::analyze(pkg.clone())?;
+        let sem_pkg = analyze(pkg.clone())?;
         let types = pkg_types(&sem_pkg);
         let mut values: Vec<DocValue> = Vec::new();
         values.sort_by_key(|v| v.name.clone());
@@ -153,7 +133,6 @@ fn generate_docs(
     }
 }
 
-// Produces a map of identifiers to their type for a package.
 fn pkg_types(pkg: &semantic::nodes::Package) -> HashMap<String, PolyType> {
     let mut types: HashMap<String, PolyType> = HashMap::new();
     for f in &pkg.files {
@@ -251,50 +230,4 @@ fn comments_to_string(comments: &[ast::Comment]) -> String {
         }
     }
     comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
-}
-
-lazy_static! {
-    pub static ref TEMPLATES: Tera = {
-        let mut tera = match Tera::new("fluxdoc/templates/*.html") {
-            Ok(t) => t,
-            Err(e) => {
-                println!("Parsing error(s): {}", e);
-                ::std::process::exit(1);
-            }
-        };
-        tera.autoescape_on(vec!["html"]);
-        tera
-    };
-}
-
-// Write out a tree of html like this
-// pkgRoot
-//      index.html -- contains pkgRoot description and index
-//      valuea.html -- contains value A description
-//      subpkgA
-//          index.html -- Contains subpkgA index
-//          valueb.html -- contains value B description
-fn write_html(dir: &Path, pkg: &DocPackage) -> Result<(), Box<dyn std::error::Error>> {
-    let pkgdir = dir.join(&pkg.name);
-    fs::create_dir(&pkgdir)?;
-    let mut f = File::create(pkgdir.join("index.html"))?;
-    let data = TEMPLATES.render("package.html", &Context::from_serialize(&pkg)?)?;
-    f.write_all(data.as_bytes())?;
-    for v in &pkg.values {
-        let mut vf = File::create(pkgdir.join(format!("{}.html", v.name)))?;
-        let data = TEMPLATES.render("value.html", &Context::from_serialize(&v)?)?;
-        vf.write_all(data.as_bytes())?;
-    }
-    for p in &pkg.packages {
-        write_html(&pkgdir, &p)?;
-    }
-    Ok(())
-}
-// Render home.html template
-fn write_home(dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
-    let ctx = Context::new();
-    let data = TEMPLATES.render("home.html", &ctx)?;
-    let mut f = File::create(dir.join("index.html"))?;
-    f.write_all(data.as_bytes())?;
-    Ok(())
 }

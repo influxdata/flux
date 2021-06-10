@@ -372,14 +372,19 @@ dependencies = [
 name = "flux"
 version = "0.5.1"
 dependencies = [
+ "comrak",
  "criterion",
  "flatbuffers",
  "flux-core",
+ "getrandom",
+ "lazy_static",
  "maplit",
  "serde",
  "serde-aux",
  "serde_derive",
  "serde_json",
+ "structopt",
+ "tera",
  "wasm-bindgen",
 ]
 
@@ -406,20 +411,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fluxdoc"
-version = "0.1.0"
-dependencies = [
- "comrak",
- "flux",
- "lazy_static",
- "serde",
- "serde_derive",
- "serde_json",
- "structopt",
- "tera",
-]
-
-[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -441,8 +432,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9495705279e7140bf035dde1f6e750c162df8b625267cd52cc44e0b156732c8"
 dependencies = [
  "cfg-if",
+ "js-sys",
  "libc",
  "wasi",
+ "wasm-bindgen",
 ]
 
 [[package]]
