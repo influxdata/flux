@@ -266,7 +266,7 @@ var sourceHashes = map[string]string{
 	"stdlib/kafka/kafka.flux":                                                       "214fb699bcde2db9ecb9a6673bf9f29c481ec51306bcf6316cec23324431ea3d",
 	"stdlib/math/math.flux":                                                         "66e94140d5dedfd69446b55d275be8d391be982fb926f06cd0faa5174c1b5ff1",
 	"stdlib/pagerduty/pagerduty.flux":                                               "2243db0ced078978ccbeeecc4a3cdb947c77c961e2c9089208d36c384ea4cd11",
-	"stdlib/pagerduty/pagerduty_test.flux":                                          "684e5fa6a6a71dba84701002ce27be891ffa6bc94eb27e3d8fa4a75e097f5bdf",
+	"stdlib/pagerduty/pagerduty_test.flux":                                          "f41a4b0e3650496a2933a0da94ced9fdcab5b9e0f273f7351c96ad80e1043854",
 	"stdlib/planner/aggregate_window_max_eval_test.flux":                            "7993881ef948aad5039e3534bd05964e008cefe14c6259152fbc36dca8b3d902",
 	"stdlib/planner/aggregate_window_max_push_test.flux":                            "98f872b4fc07261f85fb8c52f75198a6af73626cd7b7db68ae098d005e1ece60",
 	"stdlib/planner/aggregate_window_min_eval_test.flux":                            "d939ca6fef1640a2a074f580f085f6c57a65fb10e1210c8d7a89267b20d1111b",

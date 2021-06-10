@@ -4,24 +4,24 @@ import "array"
 import "pagerduty"
 import "testing"
 
-input = array.from(
+input = () => array.from(
     rows: [
-        {_time: 2021-06-08T09:00:00Z, _measurement: "m0", _field: "f0", _level: "ok", host: "a"},
-        {_time: 2021-06-08T10:00:00Z, _measurement: "m0", _field: "f0", _level: "crit", host: "a"},
-        {_time: 2021-06-08T11:00:00Z, _measurement: "m0", _field: "f0", _level: "crit", host: "a"},
-        {_time: 2021-06-08T09:00:00Z, _measurement: "m0", _field: "f0", _level: "crit", host: "b"},
-        {_time: 2021-06-08T10:00:00Z, _measurement: "m0", _field: "f0", _level: "crit", host: "b"},
-        {_time: 2021-06-08T11:00:00Z, _measurement: "m0", _field: "f0", _level: "ok", host: "b"},
+        {_time: 2021-06-08T09:00:00Z, _measurement: "m0", _field: "f0", _level: "ok", host: "a", _value: 0.0},
+        {_time: 2021-06-08T10:00:00Z, _measurement: "m0", _field: "f0", _level: "crit", host: "a", _value: 0.0},
+        {_time: 2021-06-08T11:00:00Z, _measurement: "m0", _field: "f0", _level: "crit", host: "a", _value: 0.0},
+        {_time: 2021-06-08T09:00:00Z, _measurement: "m0", _field: "f0", _level: "crit", host: "b", _value: 0.0},
+        {_time: 2021-06-08T10:00:00Z, _measurement: "m0", _field: "f0", _level: "crit", host: "b", _value: 0.0},
+        {_time: 2021-06-08T11:00:00Z, _measurement: "m0", _field: "f0", _level: "ok", host: "b", _value: 0.0},
     ]
 )
     |> group(columns: ["_measurement", "_field", "_level", "host"])
 
 default_tc = (start, stop) => {
-    got = input
+    got = input()
         |> testing.load()
         |> range(start, stop)
         |> pagerduty.dedupKey()
-        |> drop(columns: ["_start", "_stop"])
+        |> drop(columns: ["_start", "_stop", "_value"])
 
     want = array.from(
         rows: [
@@ -46,11 +46,11 @@ testcase default_larger_range {
 }
 
 custom_exclude_tc = (start, stop) => {
-    got = input
+    got = input()
         |> testing.load()
         |> range(start, stop)
         |> pagerduty.dedupKey(exclude: ["_start", "_stop"])
-        |> drop(columns: ["_start", "_stop"])
+        |> drop(columns: ["_start", "_stop", "_value"])
 
     want = array.from(
         rows: [
