@@ -1495,6 +1495,33 @@ data1,data2,data3
 				}},
 			},
 		},
+		{
+			name:          "error on short annotation datatype",
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded:       toCRLF("#datatype,long"),
+			result: &executetest.Result{
+				Nm:  "_result",
+				Err: errors.New("failed to read metadata: failed to read \"datatype\" annotation: wrong number of fields"),
+			},
+		},
+		{
+			name:          "error on short annotation group",
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded:       toCRLF("#group,false"),
+			result: &executetest.Result{
+				Nm:  "_result",
+				Err: errors.New("failed to read metadata: failed to read \"group\" annotation: wrong number of fields"),
+			},
+		},
+		{
+			name:          "error on short annotation default",
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded:       toCRLF("#default,1"),
+			result: &executetest.Result{
+				Nm:  "_result",
+				Err: errors.New("failed to read metadata: failed to read \"default\" annotation: wrong number of fields"),
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

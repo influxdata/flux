@@ -384,10 +384,19 @@ func readMetadata(r *bufferedCSVReader, c ResultDecoderConfig) (tableMetadata, e
 			}
 			switch annotation := strings.TrimPrefix(line[annotationIdx], commentPrefix); annotation {
 			case datatypeAnnotation:
+				if defaultRecordStartIdx > len(line) {
+					return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, codes.Invalid, "failed to read \"datatype\" annotation")
+				}
 				datatypes = copyLine(line[defaultRecordStartIdx:])
 			case groupAnnotation:
+				if defaultRecordStartIdx > len(line) {
+					return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, codes.Invalid, "failed to read \"group\" annotation")
+				}
 				groups = copyLine(line[defaultRecordStartIdx:])
 			case defaultAnnotation:
+				if defaultRecordStartIdx > len(line) {
+					return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, codes.Invalid, "failed to read \"default\" annotation")
+				}
 				resultID = line[resultIdx]
 				tableID = line[tableIdx]
 				if _, err := strconv.ParseInt(tableID, 10, 64); tableID != "" && err != nil {
