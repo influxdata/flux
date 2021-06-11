@@ -1,13 +1,14 @@
 //! Flux start-up.
 
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
-use crate::{ast, merge_packages};
+use crate::ast;
 use crate::parser;
-use crate::parser::Parser;
+//use crate::parser::Parser;
 use crate::semantic::convert::convert_file;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
@@ -154,7 +155,7 @@ fn generate_docs(
     if let Some(comment) = &file.package {
         doc = comments_to_string(&comment.base.comments);
     }
-    ///TODO check if package name exists and if it doesn't throw an error message
+    //TODO check if package name exists and if it doesn't throw an error message
     Ok(DocPackage {
         path,
         name: file.package.unwrap().name.name.clone(),
@@ -163,10 +164,12 @@ fn generate_docs(
     })
 
 }
+
+// Generates docs for the values in a given source file.
 fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
-    pkgpath: &[String],
+    pkgpath: &String,
 ) -> Result<Vec<DocValue>, Box<dyn std::error::Error>> {
     let mut values: Vec<DocValue> = Vec::new();
     for stmt in &f.body {
@@ -176,7 +179,7 @@ fn generate_values(
                 let name = s.id.name.clone();
                 let typ = format!("{}", types[&name].normal());
                 values.push(DocValue {
-                    pkgpath: pkgpath.to_vec(),
+                    pkgpath: pkgpath.to_string(),
                     name,
                     doc,
                     typ,
@@ -187,7 +190,7 @@ fn generate_values(
                 let name = s.id.name.clone();
                 let typ = format!("{}", types[&name].normal());
                 values.push(DocValue {
-                    pkgpath: pkgpath.to_vec(),
+                    pkgpath: pkgpath.to_string(),
                     name,
                     doc,
                     typ,
@@ -199,7 +202,7 @@ fn generate_values(
                     let name = v.id.name.clone();
                     let typ = format!("{}", types[&name].normal());
                     values.push(DocValue {
-                        pkgpath: pkgpath.to_vec(),
+                        pkgpath: pkgpath.to_string(),
                         name,
                         doc,
                         typ,
@@ -211,12 +214,13 @@ fn generate_values(
     }
     Ok(values)
 }
-fn pkg_types(pkg: &semantic::nodes::Package) -> HashMap<String, PolyType> {
+
+fn pkg_types(pkg: &nodes::Package) -> HashMap<String, PolyType> {
     let mut types: HashMap<String, PolyType> = HashMap::new();
     for f in &pkg.files {
         for s in &f.body {
             match s {
-                semantic::nodes::Statement::Variable(s) => {
+                nodes::Statement::Variable(s) => {
                     let typ = s.init.type_of();
                     types.insert(
                         s.id.name.clone(),
@@ -227,11 +231,11 @@ fn pkg_types(pkg: &semantic::nodes::Package) -> HashMap<String, PolyType> {
                         },
                     );
                 }
-                semantic::nodes::Statement::Builtin(s) => {
+                nodes::Statement::Builtin(s) => {
                     types.insert(s.id.name.clone(), s.typ_expr.clone());
                 }
-                semantic::nodes::Statement::Option(s) => {
-                    if let semantic::nodes::Assignment::Variable(v) = &s.assignment {
+                nodes::Statement::Option(s) => {
+                    if let nodes::Assignment::Variable(v) = &s.assignment {
                         let typ = v.init.type_of();
                         types.insert(
                             v.id.name.clone(),
@@ -248,6 +252,16 @@ fn pkg_types(pkg: &semantic::nodes::Package) -> HashMap<String, PolyType> {
         }
     }
     types
+}
+
+fn comments_to_string(comments: &[ast::Comment]) -> String {
+    let mut s = String::new();
+    if !comments.is_empty() {
+        for c in comments {
+            s.push_str(c.text.as_str().strip_prefix("//").unwrap());
+        }
+    }
+    comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
 }
 
 fn compute_file_dependencies(root: &str) -> Vec<String> {
