@@ -62,14 +62,14 @@ any example code into the InfluxDB data explorer and run it with no modification
 Any sample data used in a code example should come from an `array.from()` call in
 the example code itself, rather than being represented as a markdown- or html-formatted table.
 
-For the first iteration on this project, code examples will not be processed any 
-differently from the other markdown in the description by the parser. Future
-iterations may add extra features to make code examples more interactive.
+Future iterations on this project may add extra functionality around code examples
+(for instance, allowing users to run them interactively on the docs site). For now,
+they will just be treated as plain markdown.
 
 ### Documenting functions
 
 Documentation for Flux functions consists of a short headline, a detailed description,
-and list of the function's parameters.
+and a list of the function's parameters.
 
 #### Headline
 
@@ -250,12 +250,13 @@ The first line of a doc comment for a flux option should start with the name of
 the option, followed by a brief explanation of what the option is, or how it is
 used.
 
+Follow the headline with a blank line comment.
+
 #### Description
 
-This section contains a detailed explanation of the how the option can be used,
-in a Flux query, and will make up the bulk of the long-form docs. This section
-should follow the same formatting rules as the `Description` section described
-under the `Documenting Packages` heading earlier in this document.
+This section contains a detailed explanation of the how the option can be used
+in a Flux query, and should follow the same formatting rules as the `Description`
+section described under the `Documenting Packages` heading earlier in this document.
 
 #### Example
 
