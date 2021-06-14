@@ -120,7 +120,7 @@ fn generate_docs(
             name: pkg.package,
             doc,
             values,
-            packages,
+            //packages,
         })
     } else {
         let name = path.last().unwrap().clone();
@@ -129,7 +129,7 @@ fn generate_docs(
             name,
             doc: "".to_string(),
             values: vec![],
-            packages,
+            //packages,
         })
     }
 }

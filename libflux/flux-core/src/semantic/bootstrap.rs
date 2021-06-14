@@ -1,6 +1,6 @@
 //! Flux start-up.
 
-use std::collections::HashMap;
+//use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
 use std::io;
@@ -36,23 +36,31 @@ pub struct Error {
     pub msg: String,
 }
 
-// DocPackage represents the documentation for a package and its sub packages
+/// DocPackage represents the documentation for a package and its sub packages
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DocPackage {
+    /// the path to the documentation package
     pub path: String,
+    /// the name of the comments package?
     pub name: String,
+    /// the doc
     pub doc: String,
+    /// the values of the comments
     pub values: Vec<DocValue>,
 }
 
-// DocValue represents the documentation for a single value within a package.
-// Values include options, builtins or any variable assignment within the top level scope of a
-// package.
+/// DocValue represents the documentation for a single value within a package.
+/// Values include options, builtins or any variable assignment within the top level scope of a
+/// package.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DocValue {
+    /// the path to the package
     pub pkgpath: String,
+    /// the name of the package
     pub name: String,
+    /// the doc
     pub doc: String,
+    /// the type of the comments
     pub typ: String,
 }
 
@@ -117,8 +125,8 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>,
     Ok((prelude, importer, f, rerun_if_changed, files))
 }
 
-// new stdlib docs function
-pub fn stdlib_docs(lib: &PolyTypeMap, files: &AstFileMap) -> Result<Vec<DocPackage>, Error> {
+/// new stdlib docs function
+pub fn stdlib_docs(lib: &PolyTypeMap, files: &AstFileMap) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
     // initialize DocPackage vector
     // run through stdlib and parse all value comments
     //     create and populate a DocValue for each individual
@@ -158,7 +166,7 @@ fn generate_docs(
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(DocPackage {
         path,
-        name: file.package.unwrap().name.name.clone(),
+        name: file.package.clone().unwrap().name.name,
         doc,
         values,
     })
@@ -213,45 +221,6 @@ fn generate_values(
         }
     }
     Ok(values)
-}
-
-fn pkg_types(pkg: &nodes::Package) -> HashMap<String, PolyType> {
-    let mut types: HashMap<String, PolyType> = HashMap::new();
-    for f in &pkg.files {
-        for s in &f.body {
-            match s {
-                nodes::Statement::Variable(s) => {
-                    let typ = s.init.type_of();
-                    types.insert(
-                        s.id.name.clone(),
-                        PolyType {
-                            vars: vec![],
-                            cons: TvarKinds::new(),
-                            expr: typ,
-                        },
-                    );
-                }
-                nodes::Statement::Builtin(s) => {
-                    types.insert(s.id.name.clone(), s.typ_expr.clone());
-                }
-                nodes::Statement::Option(s) => {
-                    if let nodes::Assignment::Variable(v) = &s.assignment {
-                        let typ = v.init.type_of();
-                        types.insert(
-                            v.id.name.clone(),
-                            PolyType {
-                                vars: vec![],
-                                cons: TvarKinds::new(),
-                                expr: typ,
-                            },
-                        );
-                    }
-                }
-                _ => {}
-            }
-        }
-    }
-    types
 }
 
 fn comments_to_string(comments: &[ast::Comment]) -> String {
