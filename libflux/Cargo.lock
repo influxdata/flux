@@ -396,6 +396,7 @@ version = "0.4.0"
 dependencies = [
  "chrono",
  "colored",
+ "comrak",
  "criterion",
  "derivative",
  "derive_more",
