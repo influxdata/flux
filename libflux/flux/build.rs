@@ -3,6 +3,7 @@ extern crate fluxcore;
 use std::{env, fs, io, io::Write, path};
 
 use fluxcore::semantic::bootstrap;
+use fluxcore::semantic::bootstrap::stdlib_docs;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::types as fb;
 use fluxcore::semantic::sub::Substitutable;
@@ -48,7 +49,7 @@ where
 fn main() -> Result<(), Error> {
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
-    let (pre, lib, fresher, files) = bootstrap::infer_stdlib()?;
+    let (pre, lib, fresher, files, fileMap) = bootstrap::infer_stdlib()?;
     for f in files.iter() {
         println!("cargo:rerun-if-changed={}", f);
     }
@@ -77,6 +78,8 @@ fn main() -> Result<(), Error> {
 
     let path = dir.join("fresher.data");
     serialize(fresher, fb::build_fresher, &path)?;
+
+    let new_docs = stdlib_docs(pre, &fileMap);
 
     Ok(())
 }

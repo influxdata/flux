@@ -126,7 +126,7 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>,
 }
 
 /// new stdlib docs function
-pub fn stdlib_docs(lib: &PolyTypeMap, files: &AstFileMap) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
+pub fn stdlib_docs(lib: PolyTypeMap, files: &AstFileMap) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
     // initialize DocPackage vector
     // run through stdlib and parse all value comments
     //     create and populate a DocValue for each individual
@@ -140,7 +140,7 @@ pub fn stdlib_docs(lib: &PolyTypeMap, files: &AstFileMap) -> Result<Vec<DocPacka
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
     for (path,file) in files{
-        let pkg = generate_docs(path.clone(),lib, file)?;
+        let pkg = generate_docs(path.clone(),&lib, file)?;
         docs.push(pkg);
     }
    Ok(docs)
