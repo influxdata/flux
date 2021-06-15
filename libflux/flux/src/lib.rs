@@ -43,6 +43,11 @@ pub fn imports() -> Option<Environment> {
         .unwrap()
         .into()
 }
+///Todo: make a docs.json and then execute the code below
+// pub fn docs() -> Option<Environment> {
+//     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
+//     flatbuffers::get_root::<fb::TypeEnvironment>(buf).into()
+// }
 
 pub fn fresher() -> Fresher {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/fresher.data"));
