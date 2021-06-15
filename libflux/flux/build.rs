@@ -69,6 +69,7 @@ fn main() -> Result<(), Error> {
             });
         }
     }
+    let new_docs = stdlib_docs(&pre, &fileMap);
 
     let path = dir.join("prelude.data");
     serialize(Environment::from(pre), fb::build_env, &path)?;
@@ -78,8 +79,6 @@ fn main() -> Result<(), Error> {
 
     let path = dir.join("fresher.data");
     serialize(fresher, fb::build_fresher, &path)?;
-
-    let new_docs = stdlib_docs(pre, &fileMap);
 
     Ok(())
 }

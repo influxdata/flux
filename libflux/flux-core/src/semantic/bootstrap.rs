@@ -126,7 +126,7 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>,
 }
 
 /// new stdlib docs function
-pub fn stdlib_docs(lib: PolyTypeMap, files: &AstFileMap) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
+pub fn stdlib_docs(lib: &PolyTypeMap, files: &AstFileMap) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
     // initialize DocPackage vector
     // run through stdlib and parse all value comments
     //     create and populate a DocValue for each individual
