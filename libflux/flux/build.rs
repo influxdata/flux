@@ -8,6 +8,8 @@ use fluxcore::semantic::bootstrap::stdlib_docs;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::types as fb;
 use fluxcore::semantic::sub::Substitutable;
+//use serde::{Deserialize, Serialize};
+use serde_json;
 
 #[derive(Debug)]
 struct Error {
@@ -50,7 +52,7 @@ where
 fn main() -> Result<(), Error> {
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
-    let (pre, lib, fresher, files, fileMap) = bootstrap::infer_stdlib()?;
+    let (pre, lib, fresher, files, file_map) = bootstrap::infer_stdlib()?;
     for f in files.iter() {
         println!("cargo:rerun-if-changed={}", f);
     }
@@ -70,8 +72,8 @@ fn main() -> Result<(), Error> {
             });
         }
     }
-    let new_docs = stdlib_docs(&pre, &fileMap);
-    let json_docs = serde_json::to_vec(new_docs);
+    let new_docs = stdlib_docs(&pre, &file_map);
+    let json_docs = serde_json::to_vec(&new_docs);
     let mut file = fs::File::create("json.docs")?;
     file.write_all(json_docs)?;
 
