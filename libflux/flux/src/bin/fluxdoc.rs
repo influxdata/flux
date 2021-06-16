@@ -31,7 +31,7 @@
 //     html: PathBuf,
 // }
 //
-// fn main() -> Result<(), Box<dyn std::error::Error>> {
+//fn main() -> Result<(), Box<dyn std::error::Error>> {
 //     let args = Args::from_args();
 //     let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
 //
@@ -45,7 +45,10 @@
 //         return write_html(&args.html, &pkg);
 //     }
 //     Ok(())
-// }
+ //}
+fn main() {
+    print!("hi");
+}
 //
 // lazy_static! {
 //     static ref TEMPLATES: Tera = {

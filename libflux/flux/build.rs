@@ -72,10 +72,12 @@ fn main() -> Result<(), Error> {
                 msg: format!("found free variables in type of package {}: {}", name, ty),
             });
         }
+
     }
     let new_docs = stdlib_docs(&pre, &file_map).unwrap();
     let json_docs = serde_json::to_vec(&new_docs).unwrap();
-    let mut file = fs::File::create("docs.json")?;
+    let path = dir.join("docs.json");
+    let mut file = fs::File::create(path)?;
     file.write_all(&json_docs)?;
 
     let path = dir.join("prelude.data");

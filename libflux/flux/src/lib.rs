@@ -5,7 +5,7 @@ pub mod wasm;
 extern crate fluxcore;
 extern crate serde_aux;
 
-#[macro_use]
+//#[macro_use]
 extern crate serde_derive;
 pub mod docs;
 
