@@ -2,6 +2,7 @@ extern crate fluxcore;
 
 use std::{env, fs, io, io::Write, path};
 
+
 use fluxcore::semantic::bootstrap;
 use fluxcore::semantic::bootstrap::stdlib_docs;
 use fluxcore::semantic::env::Environment;
@@ -70,6 +71,9 @@ fn main() -> Result<(), Error> {
         }
     }
     let new_docs = stdlib_docs(&pre, &fileMap);
+    let json_docs = serde_json::to_vec(new_docs);
+    let mut file = fs::File::create("json.docs")?;
+    file.write_all(json_docs)?;
 
     let path = dir.join("prelude.data");
     serialize(Environment::from(pre), fb::build_env, &path)?;
