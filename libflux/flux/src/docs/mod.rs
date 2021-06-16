@@ -9,7 +9,7 @@
 // use std::collections::HashMap;
 // use std::fs;
 // use std::path::{Path, PathBuf};
-// 
+//
 // // // DocPackage represents the documentation for a package and its sub packages
 // // #[derive(Debug, Serialize, Deserialize)]
 // // pub struct DocPackage {

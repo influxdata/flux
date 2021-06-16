@@ -170,15 +170,20 @@ fn generate_values(
     pkgpath: &String,
 ) -> Result<Vec<DocValue>, Box<dyn std::error::Error>> {
     let mut values: Vec<DocValue> = Vec::new();
+    //println!("{:?}", types);
     for stmt in &f.body {
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
+                //println!("{}", name);
+                if !types.contains_key(&name){
+                    continue;
+                }
                 let typ = format!("{}", types[&name].normal());
                 values.push(DocValue {
                     pkgpath: pkgpath.to_string(),
-                    name,
+                    name:name.clone(),
                     doc,
                     typ,
                 });
@@ -186,10 +191,13 @@ fn generate_values(
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let name = s.id.name.clone();
+                if !types.contains_key(&name){
+                    continue;
+                }
                 let typ = format!("{}", types[&name].normal());
                 values.push(DocValue {
                     pkgpath: pkgpath.to_string(),
-                    name,
+                    name:name.clone(),
                     doc,
                     typ,
                 });
@@ -198,10 +206,13 @@ fn generate_values(
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
                     let name = v.id.name.clone();
+                    if !types.contains_key(&name){
+                        continue;
+                    }
                     let typ = format!("{}", types[&name].normal());
                     values.push(DocValue {
                         pkgpath: pkgpath.to_string(),
-                        name,
+                        name:name.clone(),
                         doc,
                         typ,
                     });
