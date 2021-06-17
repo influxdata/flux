@@ -29,6 +29,7 @@ use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
+use crate::semantic::bootstrap::DocPackage;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
@@ -44,11 +45,11 @@ pub fn imports() -> Option<Environment> {
         .into()
 }
 ///Todo: make a docs.json and then execute the code below
-pub fn docs() -> Option<Environment> {
+pub fn docs() -> Vec<DocPackage> {
     println!("CREATING A BUFFER FROM DOCS -->");
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
     println!("RETURNING FROM DOCS -->");
-    flatbuffers::get_root::<fb::TypeEnvironment>(buf).into()
+    serde_json::from_slice(buf).unwrap()
 }
 
 pub fn fresher() -> Fresher {
@@ -1122,8 +1123,10 @@ from(bucket: v.bucket)
     #[test]
     fn ensure_docs() {
         println!("WE ARE TESTING THE DOCS -->");
-        let d = docs().unwrap();
+        let d = docs();
         println!("DOCS ARE STORED -->");
         println!("{:?}", d);
+        //assert_eq!(d[],
+        //);
     }
 }
