@@ -2,7 +2,6 @@ package universe
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"regexp"
 	"sort"
@@ -200,7 +199,7 @@ func (t *histogramTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 			})
 			if idx >= len(t.spec.Bins) {
 				// Greater than highest bin, or not found
-				return fmt.Errorf("found value greater than any bin, %d %d %f %f", idx, len(t.spec.Bins), v, t.spec.Bins[len(t.spec.Bins)-1])
+				return errors.Newf(codes.OutOfRange, "found value greater than any bin, %d %d %f %f", idx, len(t.spec.Bins), v, t.spec.Bins[len(t.spec.Bins)-1])
 			}
 			// Increment counter
 			counts[idx]++
