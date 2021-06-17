@@ -45,7 +45,9 @@ pub fn imports() -> Option<Environment> {
 }
 ///Todo: make a docs.json and then execute the code below
 pub fn docs() -> Option<Environment> {
+    println!("CREATING A BUFFER FROM DOCS -->");
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
+    println!("RETURNING FROM DOCS -->");
     flatbuffers::get_root::<fb::TypeEnvironment>(buf).into()
 }
 
@@ -589,6 +591,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
+    use crate::docs;
     use crate::parser;
     use crate::{analyze, find_var_type, flux_ast_get_error, merge_packages};
     use fluxcore::ast;
@@ -1114,5 +1117,13 @@ from(bucket: v.bucket)
                 }
             }
         }
+    }
+
+    #[test]
+    fn ensure_docs() {
+        println!("WE ARE TESTING THE DOCS -->");
+        let d = docs().unwrap();
+        println!("DOCS ARE STORED -->");
+        println!("{:?}", d);
     }
 }
