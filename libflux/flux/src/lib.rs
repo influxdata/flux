@@ -46,9 +46,7 @@ pub fn imports() -> Option<Environment> {
 }
 ///Todo: make a docs.json and then execute the code below
 pub fn docs() -> Vec<DocPackage> {
-    println!("CREATING A BUFFER FROM DOCS -->");
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
-    println!("RETURNING FROM DOCS -->");
     serde_json::from_slice(buf).unwrap()
 }
 
@@ -1122,10 +1120,10 @@ from(bucket: v.bucket)
 
     #[test]
     fn ensure_docs() {
-        println!("WE ARE TESTING THE DOCS -->");
         let d = docs();
-        println!("DOCS ARE STORED -->");
-        println!("{:?}", d);
+        //println!("{:?}", d);
+        println!("{:?}", d[19]); // the csv DocPackage location
+        println!{"{:?}", d[19].name};
         //assert_eq!(d[],
         //);
     }
