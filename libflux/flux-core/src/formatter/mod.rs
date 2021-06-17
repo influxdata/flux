@@ -790,6 +790,10 @@ impl Formatter {
         }
     }
 
+    // XXX: rockstar (17 Jun 2021) - This clippy lint erroneously flags this
+    // function with lint. It's allowed here, for now.
+    // See https://github.com/rust-lang/rust-clippy/issues/7369
+    #[allow(clippy::branches_sharing_code)]
     fn format_node_with_parens(&mut self, node: &Node) {
         if has_parens(node) {
             // If the AST already has parens here do not double add them
