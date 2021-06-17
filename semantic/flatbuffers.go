@@ -383,7 +383,7 @@ func fromFBOperator(o fbsemantic.Operator) (ast.OperatorKind, error) {
 	}
 }
 
-func fromFBLogicalOperator(o fbsemantic.Operator) (ast.LogicalOperatorKind, error) {
+func fromFBLogicalOperator(o fbsemantic.LogicalOperator) (ast.LogicalOperatorKind, error) {
 	switch o {
 	case fbsemantic.LogicalOperatorAndOperator:
 		return ast.AndOperator, nil
@@ -592,7 +592,7 @@ func (p *FunctionParameter) FromBuf(fb *fbsemantic.FunctionParameter) error {
 }
 
 type fbTyper interface {
-	TypType() byte
+	TypType() fbsemantic.MonoType
 	Typ(obj *flatbuffers.Table) bool
 }
 

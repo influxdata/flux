@@ -18,6 +18,8 @@ use semantic_generated::fbsemantic;
 extern crate chrono;
 use chrono::Duration as ChronoDuration;
 
+const UNKNOWNVARIANTNAME: &str = "UNKNOWNSEMANTIC";
+
 /// Serializes a [`semantic::nodes::Package`].
 pub fn serialize(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, usize), String> {
     let mut v = new_serializing_visitor_with_capacity(1024);
@@ -27,7 +29,7 @@ pub fn serialize(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, us
 
 fn new_serializing_visitor_with_capacity<'a>(_capacity: usize) -> SerializingVisitor<'a> {
     SerializingVisitor {
-        inner: Rc::new(RefCell::new(SerializingVisitorState::new_with_capacity(
+        inner: Rc::new(RefCell::new(SerializingVisitorState::with_capacity(
             _capacity,
         ))),
     }
@@ -936,10 +938,10 @@ struct SerializingVisitorState<'a> {
 }
 
 impl<'a> SerializingVisitorState<'a> {
-    fn new_with_capacity(capacity: usize) -> SerializingVisitorState<'a> {
+    fn with_capacity(capacity: usize) -> SerializingVisitorState<'a> {
         SerializingVisitorState {
             err: None,
-            builder: flatbuffers::FlatBufferBuilder::new_with_capacity(capacity),
+            builder: flatbuffers::FlatBufferBuilder::with_capacity(capacity),
             package: None,
             package_clause: None,
             import_decls: Vec::new(),
@@ -973,8 +975,8 @@ impl<'a> SerializingVisitorState<'a> {
                 } else {
                     self.err = Some(format!(
                         "expected {} on expr stack, got {}",
-                        fbsemantic::enum_name_expression(kind),
-                        fbsemantic::enum_name_expression(e)
+                        kind.variant_name().unwrap_or(UNKNOWNVARIANTNAME),
+                        e.variant_name().unwrap_or(UNKNOWNVARIANTNAME)
                     ));
                     None
                 }

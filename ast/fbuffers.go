@@ -167,7 +167,7 @@ func newFBTable(f unionTableWriterFn, base *BaseNode) *flatbuffers.Table {
 	return t
 }
 
-func DecodeMonoType(t *flatbuffers.Table, ty byte) MonoType {
+func DecodeMonoType(t *flatbuffers.Table, ty fbast.MonoType) MonoType {
 	switch ty {
 	case fbast.MonoTypeNamedType:
 		b := new(fbast.NamedType)

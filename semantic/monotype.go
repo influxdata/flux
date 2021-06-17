@@ -526,7 +526,7 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
-		return strings.ToLower(fbsemantic.EnumNamesType[byte(b)])
+		return strings.ToLower(fbsemantic.EnumNamesType[b])
 	case Var:
 		i, err := mt.VarNum()
 		if err != nil {

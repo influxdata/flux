@@ -107,7 +107,7 @@ re !~ /foo/
 }
 
 fn compare_semantic_fb(semantic_pkg: &semantic::nodes::Package, fb: &[u8]) -> Result<(), String> {
-    let fb_pkg = fbsemantic::get_root_as_package(fb);
+    let fb_pkg = fbsemantic::root_as_package(fb).unwrap();
     compare_pkg_fb(semantic_pkg, &fb_pkg)?;
     Ok(())
 }
@@ -237,7 +237,7 @@ fn compare_stmts(
         }
         (semantic_stmt, fb_ty) => {
             let semantic_stmt_ty = semantic::walk::Node::from_stmt(semantic_stmt);
-            let fb_ty = fbsemantic::enum_name_statement(fb_ty);
+            let fb_ty = fb_ty.variant_name().unwrap();
             Err(String::from(format!(
                 "wrong statement type; semantic = {}, fb = {}",
                 semantic_stmt_ty, fb_ty
@@ -602,7 +602,7 @@ fn compare_exprs(
         }
         (semantic_expr, fb_expr_ty) => {
             let semantic_expr_ty = semantic::walk::Node::from_expr(semantic_expr);
-            let fb_ty = fbsemantic::enum_name_expression(fb_expr_ty);
+            let fb_ty = fb_expr_ty.variant_name().unwrap();
             Err(String::from(format!(
                 "wrong expr type; semantic = {} {}, fb = {}",
                 semantic_expr_ty,
@@ -960,12 +960,14 @@ fn semantic_operator(fb_op: fbsemantic::Operator) -> ast::Operator {
         fbsemantic::Operator::RegexpMatchOperator => ast::Operator::RegexpMatchOperator,
         fbsemantic::Operator::NotRegexpMatchOperator => ast::Operator::NotRegexpMatchOperator,
         fbsemantic::Operator::InvalidOperator => ast::Operator::InvalidOperator,
+        _ => unreachable!("Unknown fbsemantic::Operator"),
     }
 }
 
 fn semantic_logical_operator(lo: &fbsemantic::LogicalOperator) -> ast::LogicalOperator {
-    match lo {
+    match *lo {
         fbsemantic::LogicalOperator::AndOperator => ast::LogicalOperator::AndOperator,
         fbsemantic::LogicalOperator::OrOperator => ast::LogicalOperator::OrOperator,
+        _ => unreachable!("Unknown fbsemantic::LogicalOperator"),
     }
 }

@@ -25,7 +25,7 @@ require (
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
-	github.com/google/flatbuffers v1.11.0
+	github.com/google/flatbuffers v2.0.0+incompatible
 	github.com/google/go-cmp v0.5.4
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

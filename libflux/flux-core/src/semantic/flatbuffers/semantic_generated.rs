@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::mem;
 
 extern crate flatbuffers;
-use self::flatbuffers::EndianScalar;
+use self::flatbuffers::{EndianScalar, Follow};
 
 #[allow(unused_imports, dead_code)]
 pub mod fbsemantic {
@@ -13,57 +13,24 @@ pub mod fbsemantic {
     use std::mem;
 
     extern crate flatbuffers;
-    use self::flatbuffers::EndianScalar;
+    use self::flatbuffers::{EndianScalar, Follow};
 
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_MONO_TYPE: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_MONO_TYPE: u8 = 6;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
     #[allow(non_camel_case_types)]
-    #[repr(u8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum MonoType {
-        NONE = 0,
-        Basic = 1,
-        Var = 2,
-        Arr = 3,
-        Record = 4,
-        Fun = 5,
-        Dict = 6,
-    }
-
-    const ENUM_MIN_MONO_TYPE: u8 = 0;
-    const ENUM_MAX_MONO_TYPE: u8 = 6;
-
-    impl<'a> flatbuffers::Follow<'a> for MonoType {
-        type Inner = Self;
-        #[inline]
-        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
-        }
-    }
-
-    impl flatbuffers::EndianScalar for MonoType {
-        #[inline]
-        fn to_little_endian(self) -> Self {
-            let n = u8::to_le(self as u8);
-            let p = &n as *const u8 as *const MonoType;
-            unsafe { *p }
-        }
-        #[inline]
-        fn from_little_endian(self) -> Self {
-            let n = u8::from_le(self as u8);
-            let p = &n as *const u8 as *const MonoType;
-            unsafe { *p }
-        }
-    }
-
-    impl flatbuffers::Push for MonoType {
-        type Output = MonoType;
-        #[inline]
-        fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<MonoType>(dst, *self);
-        }
-    }
-
-    #[allow(non_camel_case_types)]
-    const ENUM_VALUES_MONO_TYPE: [MonoType; 7] = [
+    pub const ENUM_VALUES_MONO_TYPE: [MonoType; 7] = [
         MonoType::NONE,
         MonoType::Basic,
         MonoType::Var,
@@ -73,67 +40,116 @@ pub mod fbsemantic {
         MonoType::Dict,
     ];
 
-    #[allow(non_camel_case_types)]
-    const ENUM_NAMES_MONO_TYPE: [&'static str; 7] =
-        ["NONE", "Basic", "Var", "Arr", "Record", "Fun", "Dict"];
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct MonoType(pub u8);
+    #[allow(non_upper_case_globals)]
+    impl MonoType {
+        pub const NONE: Self = Self(0);
+        pub const Basic: Self = Self(1);
+        pub const Var: Self = Self(2);
+        pub const Arr: Self = Self(3);
+        pub const Record: Self = Self(4);
+        pub const Fun: Self = Self(5);
+        pub const Dict: Self = Self(6);
 
-    pub fn enum_name_mono_type(e: MonoType) -> &'static str {
-        let index = e as u8;
-        ENUM_NAMES_MONO_TYPE[index as usize]
+        pub const ENUM_MIN: u8 = 0;
+        pub const ENUM_MAX: u8 = 6;
+        pub const ENUM_VALUES: &'static [Self] = &[
+            Self::NONE,
+            Self::Basic,
+            Self::Var,
+            Self::Arr,
+            Self::Record,
+            Self::Fun,
+            Self::Dict,
+        ];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::NONE => Some("NONE"),
+                Self::Basic => Some("Basic"),
+                Self::Var => Some("Var"),
+                Self::Arr => Some("Arr"),
+                Self::Record => Some("Record"),
+                Self::Fun => Some("Fun"),
+                Self::Dict => Some("Dict"),
+                _ => None,
+            }
+        }
     }
-
-    pub struct MonoTypeUnionTableOffset {}
-    #[allow(non_camel_case_types)]
-    #[repr(u8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum Type {
-        Bool = 0,
-        Int = 1,
-        Uint = 2,
-        Float = 3,
-        String = 4,
-        Duration = 5,
-        Time = 6,
-        Regexp = 7,
-        Bytes = 8,
+    impl std::fmt::Debug for MonoType {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
     }
-
-    const ENUM_MIN_TYPE: u8 = 0;
-    const ENUM_MAX_TYPE: u8 = 8;
-
-    impl<'a> flatbuffers::Follow<'a> for Type {
+    impl<'a> flatbuffers::Follow<'a> for MonoType {
         type Inner = Self;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
+            Self(b)
         }
     }
 
-    impl flatbuffers::EndianScalar for Type {
-        #[inline]
-        fn to_little_endian(self) -> Self {
-            let n = u8::to_le(self as u8);
-            let p = &n as *const u8 as *const Type;
-            unsafe { *p }
-        }
-        #[inline]
-        fn from_little_endian(self) -> Self {
-            let n = u8::from_le(self as u8);
-            let p = &n as *const u8 as *const Type;
-            unsafe { *p }
-        }
-    }
-
-    impl flatbuffers::Push for Type {
-        type Output = Type;
+    impl flatbuffers::Push for MonoType {
+        type Output = MonoType;
         #[inline]
         fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<Type>(dst, *self);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
+    impl flatbuffers::EndianScalar for MonoType {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = u8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = u8::from_le(self.0);
+            Self(b)
+        }
+    }
+
+    impl<'a> flatbuffers::Verifiable for MonoType {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            u8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for MonoType {}
+    pub struct MonoTypeUnionTableOffset {}
+
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_TYPE: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_TYPE: u8 = 8;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_TYPE: [Type; 9] = [
+    pub const ENUM_VALUES_TYPE: [Type; 9] = [
         Type::Bool,
         Type::Int,
         Type::Uint,
@@ -145,69 +161,120 @@ pub mod fbsemantic {
         Type::Bytes,
     ];
 
-    #[allow(non_camel_case_types)]
-    const ENUM_NAMES_TYPE: [&'static str; 9] = [
-        "Bool", "Int", "Uint", "Float", "String", "Duration", "Time", "Regexp", "Bytes",
-    ];
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct Type(pub u8);
+    #[allow(non_upper_case_globals)]
+    impl Type {
+        pub const Bool: Self = Self(0);
+        pub const Int: Self = Self(1);
+        pub const Uint: Self = Self(2);
+        pub const Float: Self = Self(3);
+        pub const String: Self = Self(4);
+        pub const Duration: Self = Self(5);
+        pub const Time: Self = Self(6);
+        pub const Regexp: Self = Self(7);
+        pub const Bytes: Self = Self(8);
 
-    pub fn enum_name_type(e: Type) -> &'static str {
-        let index = e as u8;
-        ENUM_NAMES_TYPE[index as usize]
+        pub const ENUM_MIN: u8 = 0;
+        pub const ENUM_MAX: u8 = 8;
+        pub const ENUM_VALUES: &'static [Self] = &[
+            Self::Bool,
+            Self::Int,
+            Self::Uint,
+            Self::Float,
+            Self::String,
+            Self::Duration,
+            Self::Time,
+            Self::Regexp,
+            Self::Bytes,
+        ];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::Bool => Some("Bool"),
+                Self::Int => Some("Int"),
+                Self::Uint => Some("Uint"),
+                Self::Float => Some("Float"),
+                Self::String => Some("String"),
+                Self::Duration => Some("Duration"),
+                Self::Time => Some("Time"),
+                Self::Regexp => Some("Regexp"),
+                Self::Bytes => Some("Bytes"),
+                _ => None,
+            }
+        }
     }
-
-    #[allow(non_camel_case_types)]
-    #[repr(u8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum Kind {
-        Addable = 0,
-        Subtractable = 1,
-        Divisible = 2,
-        Numeric = 3,
-        Comparable = 4,
-        Equatable = 5,
-        Nullable = 6,
-        Record = 7,
-        Negatable = 8,
-        Timeable = 9,
-        Stringable = 10,
+    impl std::fmt::Debug for Type {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
     }
-
-    const ENUM_MIN_KIND: u8 = 0;
-    const ENUM_MAX_KIND: u8 = 10;
-
-    impl<'a> flatbuffers::Follow<'a> for Kind {
+    impl<'a> flatbuffers::Follow<'a> for Type {
         type Inner = Self;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
+            Self(b)
         }
     }
 
-    impl flatbuffers::EndianScalar for Kind {
-        #[inline]
-        fn to_little_endian(self) -> Self {
-            let n = u8::to_le(self as u8);
-            let p = &n as *const u8 as *const Kind;
-            unsafe { *p }
-        }
-        #[inline]
-        fn from_little_endian(self) -> Self {
-            let n = u8::from_le(self as u8);
-            let p = &n as *const u8 as *const Kind;
-            unsafe { *p }
-        }
-    }
-
-    impl flatbuffers::Push for Kind {
-        type Output = Kind;
+    impl flatbuffers::Push for Type {
+        type Output = Type;
         #[inline]
         fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<Kind>(dst, *self);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
+    impl flatbuffers::EndianScalar for Type {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = u8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = u8::from_le(self.0);
+            Self(b)
+        }
+    }
+
+    impl<'a> flatbuffers::Verifiable for Type {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            u8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for Type {}
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_KIND: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_KIND: u8 = 10;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_KIND: [Kind; 11] = [
+    pub const ENUM_VALUES_KIND: [Kind; 11] = [
         Kind::Addable,
         Kind::Subtractable,
         Kind::Divisible,
@@ -221,76 +288,126 @@ pub mod fbsemantic {
         Kind::Stringable,
     ];
 
-    #[allow(non_camel_case_types)]
-    const ENUM_NAMES_KIND: [&'static str; 11] = [
-        "Addable",
-        "Subtractable",
-        "Divisible",
-        "Numeric",
-        "Comparable",
-        "Equatable",
-        "Nullable",
-        "Record",
-        "Negatable",
-        "Timeable",
-        "Stringable",
-    ];
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct Kind(pub u8);
+    #[allow(non_upper_case_globals)]
+    impl Kind {
+        pub const Addable: Self = Self(0);
+        pub const Subtractable: Self = Self(1);
+        pub const Divisible: Self = Self(2);
+        pub const Numeric: Self = Self(3);
+        pub const Comparable: Self = Self(4);
+        pub const Equatable: Self = Self(5);
+        pub const Nullable: Self = Self(6);
+        pub const Record: Self = Self(7);
+        pub const Negatable: Self = Self(8);
+        pub const Timeable: Self = Self(9);
+        pub const Stringable: Self = Self(10);
 
-    pub fn enum_name_kind(e: Kind) -> &'static str {
-        let index = e as u8;
-        ENUM_NAMES_KIND[index as usize]
+        pub const ENUM_MIN: u8 = 0;
+        pub const ENUM_MAX: u8 = 10;
+        pub const ENUM_VALUES: &'static [Self] = &[
+            Self::Addable,
+            Self::Subtractable,
+            Self::Divisible,
+            Self::Numeric,
+            Self::Comparable,
+            Self::Equatable,
+            Self::Nullable,
+            Self::Record,
+            Self::Negatable,
+            Self::Timeable,
+            Self::Stringable,
+        ];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::Addable => Some("Addable"),
+                Self::Subtractable => Some("Subtractable"),
+                Self::Divisible => Some("Divisible"),
+                Self::Numeric => Some("Numeric"),
+                Self::Comparable => Some("Comparable"),
+                Self::Equatable => Some("Equatable"),
+                Self::Nullable => Some("Nullable"),
+                Self::Record => Some("Record"),
+                Self::Negatable => Some("Negatable"),
+                Self::Timeable => Some("Timeable"),
+                Self::Stringable => Some("Stringable"),
+                _ => None,
+            }
+        }
     }
-
-    #[allow(non_camel_case_types)]
-    #[repr(u8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum Statement {
-        NONE = 0,
-        OptionStatement = 1,
-        BuiltinStatement = 2,
-        TestStatement = 3,
-        ExpressionStatement = 4,
-        NativeVariableAssignment = 5,
-        MemberAssignment = 6,
-        ReturnStatement = 7,
+    impl std::fmt::Debug for Kind {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
     }
-
-    const ENUM_MIN_STATEMENT: u8 = 0;
-    const ENUM_MAX_STATEMENT: u8 = 7;
-
-    impl<'a> flatbuffers::Follow<'a> for Statement {
+    impl<'a> flatbuffers::Follow<'a> for Kind {
         type Inner = Self;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
+            Self(b)
         }
     }
 
-    impl flatbuffers::EndianScalar for Statement {
-        #[inline]
-        fn to_little_endian(self) -> Self {
-            let n = u8::to_le(self as u8);
-            let p = &n as *const u8 as *const Statement;
-            unsafe { *p }
-        }
-        #[inline]
-        fn from_little_endian(self) -> Self {
-            let n = u8::from_le(self as u8);
-            let p = &n as *const u8 as *const Statement;
-            unsafe { *p }
-        }
-    }
-
-    impl flatbuffers::Push for Statement {
-        type Output = Statement;
+    impl flatbuffers::Push for Kind {
+        type Output = Kind;
         #[inline]
         fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<Statement>(dst, *self);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
+    impl flatbuffers::EndianScalar for Kind {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = u8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = u8::from_le(self.0);
+            Self(b)
+        }
+    }
+
+    impl<'a> flatbuffers::Verifiable for Kind {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            u8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for Kind {}
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_STATEMENT: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_STATEMENT: u8 = 7;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_STATEMENT: [Statement; 8] = [
+    pub const ENUM_VALUES_STATEMENT: [Statement; 8] = [
         Statement::NONE,
         Statement::OptionStatement,
         Statement::BuiltinStatement,
@@ -301,56 +418,165 @@ pub mod fbsemantic {
         Statement::ReturnStatement,
     ];
 
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct Statement(pub u8);
+    #[allow(non_upper_case_globals)]
+    impl Statement {
+        pub const NONE: Self = Self(0);
+        pub const OptionStatement: Self = Self(1);
+        pub const BuiltinStatement: Self = Self(2);
+        pub const TestStatement: Self = Self(3);
+        pub const ExpressionStatement: Self = Self(4);
+        pub const NativeVariableAssignment: Self = Self(5);
+        pub const MemberAssignment: Self = Self(6);
+        pub const ReturnStatement: Self = Self(7);
+
+        pub const ENUM_MIN: u8 = 0;
+        pub const ENUM_MAX: u8 = 7;
+        pub const ENUM_VALUES: &'static [Self] = &[
+            Self::NONE,
+            Self::OptionStatement,
+            Self::BuiltinStatement,
+            Self::TestStatement,
+            Self::ExpressionStatement,
+            Self::NativeVariableAssignment,
+            Self::MemberAssignment,
+            Self::ReturnStatement,
+        ];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::NONE => Some("NONE"),
+                Self::OptionStatement => Some("OptionStatement"),
+                Self::BuiltinStatement => Some("BuiltinStatement"),
+                Self::TestStatement => Some("TestStatement"),
+                Self::ExpressionStatement => Some("ExpressionStatement"),
+                Self::NativeVariableAssignment => Some("NativeVariableAssignment"),
+                Self::MemberAssignment => Some("MemberAssignment"),
+                Self::ReturnStatement => Some("ReturnStatement"),
+                _ => None,
+            }
+        }
+    }
+    impl std::fmt::Debug for Statement {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
+    }
+    impl<'a> flatbuffers::Follow<'a> for Statement {
+        type Inner = Self;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
+            Self(b)
+        }
+    }
+
+    impl flatbuffers::Push for Statement {
+        type Output = Statement;
+        #[inline]
+        fn push(&self, dst: &mut [u8], _rest: &[u8]) {
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
+        }
+    }
+
+    impl flatbuffers::EndianScalar for Statement {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = u8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = u8::from_le(self.0);
+            Self(b)
+        }
+    }
+
+    impl<'a> flatbuffers::Verifiable for Statement {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            u8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for Statement {}
+    pub struct StatementUnionTableOffset {}
+
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_ASSIGNMENT: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_ASSIGNMENT: u8 = 2;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_STATEMENT: [&'static str; 8] = [
-        "NONE",
-        "OptionStatement",
-        "BuiltinStatement",
-        "TestStatement",
-        "ExpressionStatement",
-        "NativeVariableAssignment",
-        "MemberAssignment",
-        "ReturnStatement",
+    pub const ENUM_VALUES_ASSIGNMENT: [Assignment; 3] = [
+        Assignment::NONE,
+        Assignment::MemberAssignment,
+        Assignment::NativeVariableAssignment,
     ];
 
-    pub fn enum_name_statement(e: Statement) -> &'static str {
-        let index = e as u8;
-        ENUM_NAMES_STATEMENT[index as usize]
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct Assignment(pub u8);
+    #[allow(non_upper_case_globals)]
+    impl Assignment {
+        pub const NONE: Self = Self(0);
+        pub const MemberAssignment: Self = Self(1);
+        pub const NativeVariableAssignment: Self = Self(2);
+
+        pub const ENUM_MIN: u8 = 0;
+        pub const ENUM_MAX: u8 = 2;
+        pub const ENUM_VALUES: &'static [Self] = &[
+            Self::NONE,
+            Self::MemberAssignment,
+            Self::NativeVariableAssignment,
+        ];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::NONE => Some("NONE"),
+                Self::MemberAssignment => Some("MemberAssignment"),
+                Self::NativeVariableAssignment => Some("NativeVariableAssignment"),
+                _ => None,
+            }
+        }
     }
-
-    pub struct StatementUnionTableOffset {}
-    #[allow(non_camel_case_types)]
-    #[repr(u8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum Assignment {
-        NONE = 0,
-        MemberAssignment = 1,
-        NativeVariableAssignment = 2,
+    impl std::fmt::Debug for Assignment {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
     }
-
-    const ENUM_MIN_ASSIGNMENT: u8 = 0;
-    const ENUM_MAX_ASSIGNMENT: u8 = 2;
-
     impl<'a> flatbuffers::Follow<'a> for Assignment {
         type Inner = Self;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
-        }
-    }
-
-    impl flatbuffers::EndianScalar for Assignment {
-        #[inline]
-        fn to_little_endian(self) -> Self {
-            let n = u8::to_le(self as u8);
-            let p = &n as *const u8 as *const Assignment;
-            unsafe { *p }
-        }
-        #[inline]
-        fn from_little_endian(self) -> Self {
-            let n = u8::from_le(self as u8);
-            let p = &n as *const u8 as *const Assignment;
-            unsafe { *p }
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
+            Self(b)
         }
     }
 
@@ -358,91 +584,56 @@ pub mod fbsemantic {
         type Output = Assignment;
         #[inline]
         fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<Assignment>(dst, *self);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
-    #[allow(non_camel_case_types)]
-    const ENUM_VALUES_ASSIGNMENT: [Assignment; 3] = [
-        Assignment::NONE,
-        Assignment::MemberAssignment,
-        Assignment::NativeVariableAssignment,
-    ];
-
-    #[allow(non_camel_case_types)]
-    const ENUM_NAMES_ASSIGNMENT: [&'static str; 3] =
-        ["NONE", "MemberAssignment", "NativeVariableAssignment"];
-
-    pub fn enum_name_assignment(e: Assignment) -> &'static str {
-        let index = e as u8;
-        ENUM_NAMES_ASSIGNMENT[index as usize]
-    }
-
-    pub struct AssignmentUnionTableOffset {}
-    #[allow(non_camel_case_types)]
-    #[repr(u8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum Expression {
-        NONE = 0,
-        StringExpression = 1,
-        ArrayExpression = 2,
-        DictExpression = 3,
-        FunctionExpression = 4,
-        BinaryExpression = 5,
-        CallExpression = 6,
-        ConditionalExpression = 7,
-        IdentifierExpression = 8,
-        LogicalExpression = 9,
-        MemberExpression = 10,
-        IndexExpression = 11,
-        ObjectExpression = 12,
-        UnaryExpression = 13,
-        BooleanLiteral = 14,
-        DateTimeLiteral = 15,
-        DurationLiteral = 16,
-        FloatLiteral = 17,
-        IntegerLiteral = 18,
-        StringLiteral = 19,
-        RegexpLiteral = 20,
-        UnsignedIntegerLiteral = 21,
-    }
-
-    const ENUM_MIN_EXPRESSION: u8 = 0;
-    const ENUM_MAX_EXPRESSION: u8 = 21;
-
-    impl<'a> flatbuffers::Follow<'a> for Expression {
-        type Inner = Self;
-        #[inline]
-        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
-        }
-    }
-
-    impl flatbuffers::EndianScalar for Expression {
+    impl flatbuffers::EndianScalar for Assignment {
         #[inline]
         fn to_little_endian(self) -> Self {
-            let n = u8::to_le(self as u8);
-            let p = &n as *const u8 as *const Expression;
-            unsafe { *p }
+            let b = u8::to_le(self.0);
+            Self(b)
         }
         #[inline]
+        #[allow(clippy::wrong_self_convention)]
         fn from_little_endian(self) -> Self {
-            let n = u8::from_le(self as u8);
-            let p = &n as *const u8 as *const Expression;
-            unsafe { *p }
+            let b = u8::from_le(self.0);
+            Self(b)
         }
     }
 
-    impl flatbuffers::Push for Expression {
-        type Output = Expression;
+    impl<'a> flatbuffers::Verifiable for Assignment {
         #[inline]
-        fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<Expression>(dst, *self);
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            u8::run_verifier(v, pos)
         }
     }
 
+    impl flatbuffers::SimpleToVerifyInSlice for Assignment {}
+    pub struct AssignmentUnionTableOffset {}
+
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_EXPRESSION: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_EXPRESSION: u8 = 21;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_EXPRESSION: [Expression; 22] = [
+    pub const ENUM_VALUES_EXPRESSION: [Expression; 22] = [
         Expression::NONE,
         Expression::StringExpression,
         Expression::ArrayExpression,
@@ -467,101 +658,161 @@ pub mod fbsemantic {
         Expression::UnsignedIntegerLiteral,
     ];
 
-    #[allow(non_camel_case_types)]
-    const ENUM_NAMES_EXPRESSION: [&'static str; 22] = [
-        "NONE",
-        "StringExpression",
-        "ArrayExpression",
-        "DictExpression",
-        "FunctionExpression",
-        "BinaryExpression",
-        "CallExpression",
-        "ConditionalExpression",
-        "IdentifierExpression",
-        "LogicalExpression",
-        "MemberExpression",
-        "IndexExpression",
-        "ObjectExpression",
-        "UnaryExpression",
-        "BooleanLiteral",
-        "DateTimeLiteral",
-        "DurationLiteral",
-        "FloatLiteral",
-        "IntegerLiteral",
-        "StringLiteral",
-        "RegexpLiteral",
-        "UnsignedIntegerLiteral",
-    ];
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct Expression(pub u8);
+    #[allow(non_upper_case_globals)]
+    impl Expression {
+        pub const NONE: Self = Self(0);
+        pub const StringExpression: Self = Self(1);
+        pub const ArrayExpression: Self = Self(2);
+        pub const DictExpression: Self = Self(3);
+        pub const FunctionExpression: Self = Self(4);
+        pub const BinaryExpression: Self = Self(5);
+        pub const CallExpression: Self = Self(6);
+        pub const ConditionalExpression: Self = Self(7);
+        pub const IdentifierExpression: Self = Self(8);
+        pub const LogicalExpression: Self = Self(9);
+        pub const MemberExpression: Self = Self(10);
+        pub const IndexExpression: Self = Self(11);
+        pub const ObjectExpression: Self = Self(12);
+        pub const UnaryExpression: Self = Self(13);
+        pub const BooleanLiteral: Self = Self(14);
+        pub const DateTimeLiteral: Self = Self(15);
+        pub const DurationLiteral: Self = Self(16);
+        pub const FloatLiteral: Self = Self(17);
+        pub const IntegerLiteral: Self = Self(18);
+        pub const StringLiteral: Self = Self(19);
+        pub const RegexpLiteral: Self = Self(20);
+        pub const UnsignedIntegerLiteral: Self = Self(21);
 
-    pub fn enum_name_expression(e: Expression) -> &'static str {
-        let index = e as u8;
-        ENUM_NAMES_EXPRESSION[index as usize]
+        pub const ENUM_MIN: u8 = 0;
+        pub const ENUM_MAX: u8 = 21;
+        pub const ENUM_VALUES: &'static [Self] = &[
+            Self::NONE,
+            Self::StringExpression,
+            Self::ArrayExpression,
+            Self::DictExpression,
+            Self::FunctionExpression,
+            Self::BinaryExpression,
+            Self::CallExpression,
+            Self::ConditionalExpression,
+            Self::IdentifierExpression,
+            Self::LogicalExpression,
+            Self::MemberExpression,
+            Self::IndexExpression,
+            Self::ObjectExpression,
+            Self::UnaryExpression,
+            Self::BooleanLiteral,
+            Self::DateTimeLiteral,
+            Self::DurationLiteral,
+            Self::FloatLiteral,
+            Self::IntegerLiteral,
+            Self::StringLiteral,
+            Self::RegexpLiteral,
+            Self::UnsignedIntegerLiteral,
+        ];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::NONE => Some("NONE"),
+                Self::StringExpression => Some("StringExpression"),
+                Self::ArrayExpression => Some("ArrayExpression"),
+                Self::DictExpression => Some("DictExpression"),
+                Self::FunctionExpression => Some("FunctionExpression"),
+                Self::BinaryExpression => Some("BinaryExpression"),
+                Self::CallExpression => Some("CallExpression"),
+                Self::ConditionalExpression => Some("ConditionalExpression"),
+                Self::IdentifierExpression => Some("IdentifierExpression"),
+                Self::LogicalExpression => Some("LogicalExpression"),
+                Self::MemberExpression => Some("MemberExpression"),
+                Self::IndexExpression => Some("IndexExpression"),
+                Self::ObjectExpression => Some("ObjectExpression"),
+                Self::UnaryExpression => Some("UnaryExpression"),
+                Self::BooleanLiteral => Some("BooleanLiteral"),
+                Self::DateTimeLiteral => Some("DateTimeLiteral"),
+                Self::DurationLiteral => Some("DurationLiteral"),
+                Self::FloatLiteral => Some("FloatLiteral"),
+                Self::IntegerLiteral => Some("IntegerLiteral"),
+                Self::StringLiteral => Some("StringLiteral"),
+                Self::RegexpLiteral => Some("RegexpLiteral"),
+                Self::UnsignedIntegerLiteral => Some("UnsignedIntegerLiteral"),
+                _ => None,
+            }
+        }
     }
-
-    pub struct ExpressionUnionTableOffset {}
-    #[allow(non_camel_case_types)]
-    #[repr(i8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum Operator {
-        MultiplicationOperator = 0,
-        DivisionOperator = 1,
-        ModuloOperator = 2,
-        PowerOperator = 3,
-        AdditionOperator = 4,
-        SubtractionOperator = 5,
-        LessThanEqualOperator = 6,
-        LessThanOperator = 7,
-        GreaterThanEqualOperator = 8,
-        GreaterThanOperator = 9,
-        StartsWithOperator = 10,
-        InOperator = 11,
-        NotOperator = 12,
-        ExistsOperator = 13,
-        NotEmptyOperator = 14,
-        EmptyOperator = 15,
-        EqualOperator = 16,
-        NotEqualOperator = 17,
-        RegexpMatchOperator = 18,
-        NotRegexpMatchOperator = 19,
-        InvalidOperator = 20,
+    impl std::fmt::Debug for Expression {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
     }
-
-    const ENUM_MIN_OPERATOR: i8 = 0;
-    const ENUM_MAX_OPERATOR: i8 = 20;
-
-    impl<'a> flatbuffers::Follow<'a> for Operator {
+    impl<'a> flatbuffers::Follow<'a> for Expression {
         type Inner = Self;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
+            let b = unsafe { flatbuffers::read_scalar_at::<u8>(buf, loc) };
+            Self(b)
         }
     }
 
-    impl flatbuffers::EndianScalar for Operator {
-        #[inline]
-        fn to_little_endian(self) -> Self {
-            let n = i8::to_le(self as i8);
-            let p = &n as *const i8 as *const Operator;
-            unsafe { *p }
-        }
-        #[inline]
-        fn from_little_endian(self) -> Self {
-            let n = i8::from_le(self as i8);
-            let p = &n as *const i8 as *const Operator;
-            unsafe { *p }
-        }
-    }
-
-    impl flatbuffers::Push for Operator {
-        type Output = Operator;
+    impl flatbuffers::Push for Expression {
+        type Output = Expression;
         #[inline]
         fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<Operator>(dst, *self);
+            unsafe {
+                flatbuffers::emplace_scalar::<u8>(dst, self.0);
+            }
         }
     }
 
+    impl flatbuffers::EndianScalar for Expression {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = u8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = u8::from_le(self.0);
+            Self(b)
+        }
+    }
+
+    impl<'a> flatbuffers::Verifiable for Expression {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            u8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for Expression {}
+    pub struct ExpressionUnionTableOffset {}
+
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_OPERATOR: i8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_OPERATOR: i8 = 20;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_OPERATOR: [Operator; 21] = [
+    pub const ENUM_VALUES_OPERATOR: [Operator; 21] = [
         Operator::MultiplicationOperator,
         Operator::DivisionOperator,
         Operator::ModuloOperator,
@@ -585,67 +836,193 @@ pub mod fbsemantic {
         Operator::InvalidOperator,
     ];
 
-    #[allow(non_camel_case_types)]
-    const ENUM_NAMES_OPERATOR: [&'static str; 21] = [
-        "MultiplicationOperator",
-        "DivisionOperator",
-        "ModuloOperator",
-        "PowerOperator",
-        "AdditionOperator",
-        "SubtractionOperator",
-        "LessThanEqualOperator",
-        "LessThanOperator",
-        "GreaterThanEqualOperator",
-        "GreaterThanOperator",
-        "StartsWithOperator",
-        "InOperator",
-        "NotOperator",
-        "ExistsOperator",
-        "NotEmptyOperator",
-        "EmptyOperator",
-        "EqualOperator",
-        "NotEqualOperator",
-        "RegexpMatchOperator",
-        "NotRegexpMatchOperator",
-        "InvalidOperator",
-    ];
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct Operator(pub i8);
+    #[allow(non_upper_case_globals)]
+    impl Operator {
+        pub const MultiplicationOperator: Self = Self(0);
+        pub const DivisionOperator: Self = Self(1);
+        pub const ModuloOperator: Self = Self(2);
+        pub const PowerOperator: Self = Self(3);
+        pub const AdditionOperator: Self = Self(4);
+        pub const SubtractionOperator: Self = Self(5);
+        pub const LessThanEqualOperator: Self = Self(6);
+        pub const LessThanOperator: Self = Self(7);
+        pub const GreaterThanEqualOperator: Self = Self(8);
+        pub const GreaterThanOperator: Self = Self(9);
+        pub const StartsWithOperator: Self = Self(10);
+        pub const InOperator: Self = Self(11);
+        pub const NotOperator: Self = Self(12);
+        pub const ExistsOperator: Self = Self(13);
+        pub const NotEmptyOperator: Self = Self(14);
+        pub const EmptyOperator: Self = Self(15);
+        pub const EqualOperator: Self = Self(16);
+        pub const NotEqualOperator: Self = Self(17);
+        pub const RegexpMatchOperator: Self = Self(18);
+        pub const NotRegexpMatchOperator: Self = Self(19);
+        pub const InvalidOperator: Self = Self(20);
 
-    pub fn enum_name_operator(e: Operator) -> &'static str {
-        let index = e as i8;
-        ENUM_NAMES_OPERATOR[index as usize]
+        pub const ENUM_MIN: i8 = 0;
+        pub const ENUM_MAX: i8 = 20;
+        pub const ENUM_VALUES: &'static [Self] = &[
+            Self::MultiplicationOperator,
+            Self::DivisionOperator,
+            Self::ModuloOperator,
+            Self::PowerOperator,
+            Self::AdditionOperator,
+            Self::SubtractionOperator,
+            Self::LessThanEqualOperator,
+            Self::LessThanOperator,
+            Self::GreaterThanEqualOperator,
+            Self::GreaterThanOperator,
+            Self::StartsWithOperator,
+            Self::InOperator,
+            Self::NotOperator,
+            Self::ExistsOperator,
+            Self::NotEmptyOperator,
+            Self::EmptyOperator,
+            Self::EqualOperator,
+            Self::NotEqualOperator,
+            Self::RegexpMatchOperator,
+            Self::NotRegexpMatchOperator,
+            Self::InvalidOperator,
+        ];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::MultiplicationOperator => Some("MultiplicationOperator"),
+                Self::DivisionOperator => Some("DivisionOperator"),
+                Self::ModuloOperator => Some("ModuloOperator"),
+                Self::PowerOperator => Some("PowerOperator"),
+                Self::AdditionOperator => Some("AdditionOperator"),
+                Self::SubtractionOperator => Some("SubtractionOperator"),
+                Self::LessThanEqualOperator => Some("LessThanEqualOperator"),
+                Self::LessThanOperator => Some("LessThanOperator"),
+                Self::GreaterThanEqualOperator => Some("GreaterThanEqualOperator"),
+                Self::GreaterThanOperator => Some("GreaterThanOperator"),
+                Self::StartsWithOperator => Some("StartsWithOperator"),
+                Self::InOperator => Some("InOperator"),
+                Self::NotOperator => Some("NotOperator"),
+                Self::ExistsOperator => Some("ExistsOperator"),
+                Self::NotEmptyOperator => Some("NotEmptyOperator"),
+                Self::EmptyOperator => Some("EmptyOperator"),
+                Self::EqualOperator => Some("EqualOperator"),
+                Self::NotEqualOperator => Some("NotEqualOperator"),
+                Self::RegexpMatchOperator => Some("RegexpMatchOperator"),
+                Self::NotRegexpMatchOperator => Some("NotRegexpMatchOperator"),
+                Self::InvalidOperator => Some("InvalidOperator"),
+                _ => None,
+            }
+        }
+    }
+    impl std::fmt::Debug for Operator {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
+    }
+    impl<'a> flatbuffers::Follow<'a> for Operator {
+        type Inner = Self;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            let b = unsafe { flatbuffers::read_scalar_at::<i8>(buf, loc) };
+            Self(b)
+        }
     }
 
-    #[allow(non_camel_case_types)]
-    #[repr(i8)]
-    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
-    pub enum LogicalOperator {
-        AndOperator = 0,
-        OrOperator = 1,
+    impl flatbuffers::Push for Operator {
+        type Output = Operator;
+        #[inline]
+        fn push(&self, dst: &mut [u8], _rest: &[u8]) {
+            unsafe {
+                flatbuffers::emplace_scalar::<i8>(dst, self.0);
+            }
+        }
     }
 
-    const ENUM_MIN_LOGICAL_OPERATOR: i8 = 0;
-    const ENUM_MAX_LOGICAL_OPERATOR: i8 = 1;
+    impl flatbuffers::EndianScalar for Operator {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = i8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = i8::from_le(self.0);
+            Self(b)
+        }
+    }
 
+    impl<'a> flatbuffers::Verifiable for Operator {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            i8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for Operator {}
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_LOGICAL_OPERATOR: i8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_LOGICAL_OPERATOR: i8 = 1;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    #[allow(non_camel_case_types)]
+    pub const ENUM_VALUES_LOGICAL_OPERATOR: [LogicalOperator; 2] =
+        [LogicalOperator::AndOperator, LogicalOperator::OrOperator];
+
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct LogicalOperator(pub i8);
+    #[allow(non_upper_case_globals)]
+    impl LogicalOperator {
+        pub const AndOperator: Self = Self(0);
+        pub const OrOperator: Self = Self(1);
+
+        pub const ENUM_MIN: i8 = 0;
+        pub const ENUM_MAX: i8 = 1;
+        pub const ENUM_VALUES: &'static [Self] = &[Self::AndOperator, Self::OrOperator];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::AndOperator => Some("AndOperator"),
+                Self::OrOperator => Some("OrOperator"),
+                _ => None,
+            }
+        }
+    }
+    impl std::fmt::Debug for LogicalOperator {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
+    }
     impl<'a> flatbuffers::Follow<'a> for LogicalOperator {
         type Inner = Self;
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            flatbuffers::read_scalar_at::<Self>(buf, loc)
-        }
-    }
-
-    impl flatbuffers::EndianScalar for LogicalOperator {
-        #[inline]
-        fn to_little_endian(self) -> Self {
-            let n = i8::to_le(self as i8);
-            let p = &n as *const i8 as *const LogicalOperator;
-            unsafe { *p }
-        }
-        #[inline]
-        fn from_little_endian(self) -> Self {
-            let n = i8::from_le(self as i8);
-            let p = &n as *const i8 as *const LogicalOperator;
-            unsafe { *p }
+            let b = unsafe { flatbuffers::read_scalar_at::<i8>(buf, loc) };
+            Self(b)
         }
     }
 
@@ -653,29 +1030,57 @@ pub mod fbsemantic {
         type Output = LogicalOperator;
         #[inline]
         fn push(&self, dst: &mut [u8], _rest: &[u8]) {
-            flatbuffers::emplace_scalar::<LogicalOperator>(dst, *self);
+            unsafe {
+                flatbuffers::emplace_scalar::<i8>(dst, self.0);
+            }
         }
     }
 
-    #[allow(non_camel_case_types)]
-    const ENUM_VALUES_LOGICAL_OPERATOR: [LogicalOperator; 2] =
-        [LogicalOperator::AndOperator, LogicalOperator::OrOperator];
-
-    #[allow(non_camel_case_types)]
-    const ENUM_NAMES_LOGICAL_OPERATOR: [&'static str; 2] = ["AndOperator", "OrOperator"];
-
-    pub fn enum_name_logical_operator(e: LogicalOperator) -> &'static str {
-        let index = e as i8;
-        ENUM_NAMES_LOGICAL_OPERATOR[index as usize]
+    impl flatbuffers::EndianScalar for LogicalOperator {
+        #[inline]
+        fn to_little_endian(self) -> Self {
+            let b = i8::to_le(self.0);
+            Self(b)
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(self) -> Self {
+            let b = i8::from_le(self.0);
+            Self(b)
+        }
     }
 
+    impl<'a> flatbuffers::Verifiable for LogicalOperator {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            i8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for LogicalOperator {}
     // struct Position, aligned to 4
-    #[repr(C, align(4))]
-    #[derive(Clone, Copy, Debug, PartialEq)]
-    pub struct Position {
-        line_: i32,
-        column_: i32,
-    } // pub struct Position
+    #[repr(transparent)]
+    #[derive(Clone, Copy, PartialEq)]
+    pub struct Position(pub [u8; 8]);
+    impl Default for Position {
+        fn default() -> Self {
+            Self([0; 8])
+        }
+    }
+    impl std::fmt::Debug for Position {
+        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+            f.debug_struct("Position")
+                .field("line", &self.line())
+                .field("column", &self.column())
+                .finish()
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for Position {}
     impl flatbuffers::SafeSliceAccess for Position {}
     impl<'a> flatbuffers::Follow<'a> for Position {
         type Inner = &'a Position;
@@ -713,23 +1118,76 @@ pub mod fbsemantic {
         }
     }
 
-    impl Position {
-        pub fn new<'a>(_line: i32, _column: i32) -> Self {
-            Position {
-                line_: _line.to_little_endian(),
-                column_: _column.to_little_endian(),
+    impl<'a> flatbuffers::Verifiable for Position {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.in_buffer::<Self>(pos)
+        }
+    }
+    impl<'a> Position {
+        #[allow(clippy::too_many_arguments)]
+        pub fn new(line: i32, column: i32) -> Self {
+            let mut s = Self([0; 8]);
+            s.set_line(line);
+            s.set_column(column);
+            s
+        }
+
+        pub fn line(&self) -> i32 {
+            let mut mem = core::mem::MaybeUninit::<i32>::uninit();
+            unsafe {
+                core::ptr::copy_nonoverlapping(
+                    self.0[0..].as_ptr(),
+                    mem.as_mut_ptr() as *mut u8,
+                    core::mem::size_of::<i32>(),
+                );
+                mem.assume_init()
+            }
+            .from_little_endian()
+        }
+
+        pub fn set_line(&mut self, x: i32) {
+            let x_le = x.to_little_endian();
+            unsafe {
+                core::ptr::copy_nonoverlapping(
+                    &x_le as *const i32 as *const u8,
+                    self.0[0..].as_mut_ptr(),
+                    core::mem::size_of::<i32>(),
+                );
             }
         }
-        pub fn line<'a>(&'a self) -> i32 {
-            self.line_.from_little_endian()
+
+        pub fn column(&self) -> i32 {
+            let mut mem = core::mem::MaybeUninit::<i32>::uninit();
+            unsafe {
+                core::ptr::copy_nonoverlapping(
+                    self.0[4..].as_ptr(),
+                    mem.as_mut_ptr() as *mut u8,
+                    core::mem::size_of::<i32>(),
+                );
+                mem.assume_init()
+            }
+            .from_little_endian()
         }
-        pub fn column<'a>(&'a self) -> i32 {
-            self.column_.from_little_endian()
+
+        pub fn set_column(&mut self, x: i32) {
+            let x_le = x.to_little_endian();
+            unsafe {
+                core::ptr::copy_nonoverlapping(
+                    &x_le as *const i32 as *const u8,
+                    self.0[4..].as_mut_ptr(),
+                    core::mem::size_of::<i32>(),
+                );
+            }
         }
     }
 
     pub enum FresherOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Fresher<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -740,7 +1198,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -768,6 +1226,19 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for Fresher<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<u64>(&"u", Self::VT_U, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct FresherArgs {
         pub u: u64,
     }
@@ -801,8 +1272,15 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Fresher<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Fresher");
+            ds.field("u", &self.u());
+            ds.finish()
+        }
+    }
     pub enum TypeEnvironmentOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct TypeEnvironment<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -813,7 +1291,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -843,11 +1321,26 @@ pub mod fbsemantic {
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<TypeAssignment<'a>>>>
         {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<TypeAssignment<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<TypeAssignment>>,
             >>(TypeEnvironment::VT_ASSIGNMENTS, None)
         }
     }
 
+    impl flatbuffers::Verifiable for TypeEnvironment<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<TypeAssignment>>,
+                >>(&"assignments", Self::VT_ASSIGNMENTS, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct TypeEnvironmentArgs<'a> {
         pub assignments: Option<
             flatbuffers::WIPOffset<
@@ -895,8 +1388,15 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for TypeEnvironment<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("TypeEnvironment");
+            ds.field("assignments", &self.assignments());
+            ds.finish()
+        }
+    }
     pub enum TypeAssignmentOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct TypeAssignment<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -907,7 +1407,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -943,10 +1443,24 @@ pub mod fbsemantic {
         #[inline]
         pub fn ty(&self) -> Option<PolyType<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<PolyType<'a>>>(TypeAssignment::VT_TY, None)
+                .get::<flatbuffers::ForwardsUOffset<PolyType>>(TypeAssignment::VT_TY, None)
         }
     }
 
+    impl flatbuffers::Verifiable for TypeAssignment<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"id", Self::VT_ID, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<PolyType>>(&"ty", Self::VT_TY, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct TypeAssignmentArgs<'a> {
         pub id: Option<flatbuffers::WIPOffset<&'a str>>,
         pub ty: Option<flatbuffers::WIPOffset<PolyType<'a>>>,
@@ -989,8 +1503,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for TypeAssignment<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("TypeAssignment");
+            ds.field("id", &self.id());
+            ds.field("ty", &self.ty());
+            ds.finish()
+        }
+    }
     pub enum MonoTypeHolderOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct MonoTypeHolder<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -1001,7 +1523,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -1045,7 +1567,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -1055,7 +1577,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -1065,7 +1587,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -1075,7 +1597,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -1085,7 +1607,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -1095,13 +1617,65 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for MonoTypeHolder<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_union::<MonoType, _>(
+                    &"typ_type",
+                    Self::VT_TYP_TYPE,
+                    &"typ",
+                    Self::VT_TYP,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct MonoTypeHolderArgs {
         pub typ_type: MonoType,
         pub typ: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
@@ -1147,8 +1721,81 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for MonoTypeHolder<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("MonoTypeHolder");
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum VarOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Var<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -1159,7 +1806,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -1187,6 +1834,19 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for Var<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<u64>(&"i", Self::VT_I, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct VarArgs {
         pub i: u64,
     }
@@ -1220,8 +1880,15 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Var<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Var");
+            ds.field("i", &self.i());
+            ds.finish()
+        }
+    }
     pub enum BasicOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Basic<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -1232,7 +1899,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -1262,6 +1929,19 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for Basic<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<Type>(&"t", Self::VT_T, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct BasicArgs {
         pub t: Type,
     }
@@ -1295,8 +1975,15 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Basic<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Basic");
+            ds.field("t", &self.t());
+            ds.finish()
+        }
+    }
     pub enum ArrOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Arr<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -1307,7 +1994,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -1348,7 +2035,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_basic(&self) -> Option<Basic<'a>> {
             if self.t_type() == MonoType::Basic {
-                self.t().map(|u| Basic::init_from_table(u))
+                self.t().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -1358,7 +2045,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_var(&self) -> Option<Var<'a>> {
             if self.t_type() == MonoType::Var {
-                self.t().map(|u| Var::init_from_table(u))
+                self.t().map(Var::init_from_table)
             } else {
                 None
             }
@@ -1368,7 +2055,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_arr(&self) -> Option<Arr<'a>> {
             if self.t_type() == MonoType::Arr {
-                self.t().map(|u| Arr::init_from_table(u))
+                self.t().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -1378,7 +2065,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_record(&self) -> Option<Record<'a>> {
             if self.t_type() == MonoType::Record {
-                self.t().map(|u| Record::init_from_table(u))
+                self.t().map(Record::init_from_table)
             } else {
                 None
             }
@@ -1388,7 +2075,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_fun(&self) -> Option<Fun<'a>> {
             if self.t_type() == MonoType::Fun {
-                self.t().map(|u| Fun::init_from_table(u))
+                self.t().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -1398,13 +2085,65 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_dict(&self) -> Option<Dict<'a>> {
             if self.t_type() == MonoType::Dict {
-                self.t().map(|u| Dict::init_from_table(u))
+                self.t().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for Arr<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_union::<MonoType, _>(
+                    &"t_type",
+                    Self::VT_T_TYPE,
+                    &"t",
+                    Self::VT_T,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct ArrArgs {
         pub t_type: MonoType,
         pub t: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
@@ -1448,8 +2187,81 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Arr<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Arr");
+            ds.field("t_type", &self.t_type());
+            match self.t_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.t_as_basic() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.t_as_var() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.t_as_arr() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.t_as_record() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.t_as_fun() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.t_as_dict() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("t", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum RecordOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Record<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -1460,7 +2272,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -1493,16 +2305,36 @@ pub mod fbsemantic {
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Prop<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Prop<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Prop>>,
             >>(Record::VT_PROPS, None)
         }
         #[inline]
         pub fn extends(&self) -> Option<Var<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Var<'a>>>(Record::VT_EXTENDS, None)
+                .get::<flatbuffers::ForwardsUOffset<Var>>(Record::VT_EXTENDS, None)
         }
     }
 
+    impl flatbuffers::Verifiable for Record<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Prop>>,
+                >>(&"props", Self::VT_PROPS, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<Var>>(
+                    &"extends",
+                    Self::VT_EXTENDS,
+                    false,
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct RecordArgs<'a> {
         pub props: Option<
             flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Prop<'a>>>>,
@@ -1553,8 +2385,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Record<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Record");
+            ds.field("props", &self.props());
+            ds.field("extends", &self.extends());
+            ds.finish()
+        }
+    }
     pub enum FunOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Fun<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -1565,7 +2405,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -1600,7 +2440,7 @@ pub mod fbsemantic {
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Argument<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Argument<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Argument>>,
             >>(Fun::VT_ARGS, None)
         }
         #[inline]
@@ -1618,7 +2458,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn retn_as_basic(&self) -> Option<Basic<'a>> {
             if self.retn_type() == MonoType::Basic {
-                self.retn().map(|u| Basic::init_from_table(u))
+                self.retn().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -1628,7 +2468,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn retn_as_var(&self) -> Option<Var<'a>> {
             if self.retn_type() == MonoType::Var {
-                self.retn().map(|u| Var::init_from_table(u))
+                self.retn().map(Var::init_from_table)
             } else {
                 None
             }
@@ -1638,7 +2478,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn retn_as_arr(&self) -> Option<Arr<'a>> {
             if self.retn_type() == MonoType::Arr {
-                self.retn().map(|u| Arr::init_from_table(u))
+                self.retn().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -1648,7 +2488,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn retn_as_record(&self) -> Option<Record<'a>> {
             if self.retn_type() == MonoType::Record {
-                self.retn().map(|u| Record::init_from_table(u))
+                self.retn().map(Record::init_from_table)
             } else {
                 None
             }
@@ -1658,7 +2498,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn retn_as_fun(&self) -> Option<Fun<'a>> {
             if self.retn_type() == MonoType::Fun {
-                self.retn().map(|u| Fun::init_from_table(u))
+                self.retn().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -1668,13 +2508,68 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn retn_as_dict(&self) -> Option<Dict<'a>> {
             if self.retn_type() == MonoType::Dict {
-                self.retn().map(|u| Dict::init_from_table(u))
+                self.retn().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for Fun<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Argument>>,
+                >>(&"args", Self::VT_ARGS, false)?
+                .visit_union::<MonoType, _>(
+                    &"retn_type",
+                    Self::VT_RETN_TYPE,
+                    &"retn",
+                    Self::VT_RETN,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct FunArgs<'a> {
         pub args: Option<
             flatbuffers::WIPOffset<
@@ -1734,8 +2629,82 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Fun<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Fun");
+            ds.field("args", &self.args());
+            ds.field("retn_type", &self.retn_type());
+            match self.retn_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.retn_as_basic() {
+                        ds.field("retn", &x)
+                    } else {
+                        ds.field(
+                            "retn",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.retn_as_var() {
+                        ds.field("retn", &x)
+                    } else {
+                        ds.field(
+                            "retn",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.retn_as_arr() {
+                        ds.field("retn", &x)
+                    } else {
+                        ds.field(
+                            "retn",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.retn_as_record() {
+                        ds.field("retn", &x)
+                    } else {
+                        ds.field(
+                            "retn",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.retn_as_fun() {
+                        ds.field("retn", &x)
+                    } else {
+                        ds.field(
+                            "retn",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.retn_as_dict() {
+                        ds.field("retn", &x)
+                    } else {
+                        ds.field(
+                            "retn",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("retn", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum DictOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Dict<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -1746,7 +2715,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -1804,7 +2773,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn k_as_basic(&self) -> Option<Basic<'a>> {
             if self.k_type() == MonoType::Basic {
-                self.k().map(|u| Basic::init_from_table(u))
+                self.k().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -1814,7 +2783,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn k_as_var(&self) -> Option<Var<'a>> {
             if self.k_type() == MonoType::Var {
-                self.k().map(|u| Var::init_from_table(u))
+                self.k().map(Var::init_from_table)
             } else {
                 None
             }
@@ -1824,7 +2793,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn k_as_arr(&self) -> Option<Arr<'a>> {
             if self.k_type() == MonoType::Arr {
-                self.k().map(|u| Arr::init_from_table(u))
+                self.k().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -1834,7 +2803,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn k_as_record(&self) -> Option<Record<'a>> {
             if self.k_type() == MonoType::Record {
-                self.k().map(|u| Record::init_from_table(u))
+                self.k().map(Record::init_from_table)
             } else {
                 None
             }
@@ -1844,7 +2813,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn k_as_fun(&self) -> Option<Fun<'a>> {
             if self.k_type() == MonoType::Fun {
-                self.k().map(|u| Fun::init_from_table(u))
+                self.k().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -1854,7 +2823,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn k_as_dict(&self) -> Option<Dict<'a>> {
             if self.k_type() == MonoType::Dict {
-                self.k().map(|u| Dict::init_from_table(u))
+                self.k().map(Dict::init_from_table)
             } else {
                 None
             }
@@ -1864,7 +2833,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_basic(&self) -> Option<Basic<'a>> {
             if self.v_type() == MonoType::Basic {
-                self.v().map(|u| Basic::init_from_table(u))
+                self.v().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -1874,7 +2843,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_var(&self) -> Option<Var<'a>> {
             if self.v_type() == MonoType::Var {
-                self.v().map(|u| Var::init_from_table(u))
+                self.v().map(Var::init_from_table)
             } else {
                 None
             }
@@ -1884,7 +2853,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_arr(&self) -> Option<Arr<'a>> {
             if self.v_type() == MonoType::Arr {
-                self.v().map(|u| Arr::init_from_table(u))
+                self.v().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -1894,7 +2863,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_record(&self) -> Option<Record<'a>> {
             if self.v_type() == MonoType::Record {
-                self.v().map(|u| Record::init_from_table(u))
+                self.v().map(Record::init_from_table)
             } else {
                 None
             }
@@ -1904,7 +2873,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_fun(&self) -> Option<Fun<'a>> {
             if self.v_type() == MonoType::Fun {
-                self.v().map(|u| Fun::init_from_table(u))
+                self.v().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -1914,13 +2883,105 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_dict(&self) -> Option<Dict<'a>> {
             if self.v_type() == MonoType::Dict {
-                self.v().map(|u| Dict::init_from_table(u))
+                self.v().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for Dict<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_union::<MonoType, _>(
+                    &"k_type",
+                    Self::VT_K_TYPE,
+                    &"k",
+                    Self::VT_K,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .visit_union::<MonoType, _>(
+                    &"v_type",
+                    Self::VT_V_TYPE,
+                    &"v",
+                    Self::VT_V,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct DictArgs {
         pub k_type: MonoType,
         pub k: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
@@ -1978,8 +3039,148 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Dict<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Dict");
+            ds.field("k_type", &self.k_type());
+            match self.k_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.k_as_basic() {
+                        ds.field("k", &x)
+                    } else {
+                        ds.field(
+                            "k",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.k_as_var() {
+                        ds.field("k", &x)
+                    } else {
+                        ds.field(
+                            "k",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.k_as_arr() {
+                        ds.field("k", &x)
+                    } else {
+                        ds.field(
+                            "k",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.k_as_record() {
+                        ds.field("k", &x)
+                    } else {
+                        ds.field(
+                            "k",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.k_as_fun() {
+                        ds.field("k", &x)
+                    } else {
+                        ds.field(
+                            "k",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.k_as_dict() {
+                        ds.field("k", &x)
+                    } else {
+                        ds.field(
+                            "k",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("k", &x)
+                }
+            };
+            ds.field("v_type", &self.v_type());
+            match self.v_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.v_as_basic() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.v_as_var() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.v_as_arr() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.v_as_record() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.v_as_fun() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.v_as_dict() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("v", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum ArgumentOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Argument<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -1990,7 +3191,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -2056,7 +3257,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_basic(&self) -> Option<Basic<'a>> {
             if self.t_type() == MonoType::Basic {
-                self.t().map(|u| Basic::init_from_table(u))
+                self.t().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -2066,7 +3267,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_var(&self) -> Option<Var<'a>> {
             if self.t_type() == MonoType::Var {
-                self.t().map(|u| Var::init_from_table(u))
+                self.t().map(Var::init_from_table)
             } else {
                 None
             }
@@ -2076,7 +3277,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_arr(&self) -> Option<Arr<'a>> {
             if self.t_type() == MonoType::Arr {
-                self.t().map(|u| Arr::init_from_table(u))
+                self.t().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -2086,7 +3287,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_record(&self) -> Option<Record<'a>> {
             if self.t_type() == MonoType::Record {
-                self.t().map(|u| Record::init_from_table(u))
+                self.t().map(Record::init_from_table)
             } else {
                 None
             }
@@ -2096,7 +3297,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_fun(&self) -> Option<Fun<'a>> {
             if self.t_type() == MonoType::Fun {
-                self.t().map(|u| Fun::init_from_table(u))
+                self.t().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -2106,13 +3307,68 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn t_as_dict(&self) -> Option<Dict<'a>> {
             if self.t_type() == MonoType::Dict {
-                self.t().map(|u| Dict::init_from_table(u))
+                self.t().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for Argument<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"name", Self::VT_NAME, false)?
+                .visit_union::<MonoType, _>(
+                    &"t_type",
+                    Self::VT_T_TYPE,
+                    &"t",
+                    Self::VT_T,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .visit_field::<bool>(&"pipe", Self::VT_PIPE, false)?
+                .visit_field::<bool>(&"optional", Self::VT_OPTIONAL, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct ArgumentArgs<'a> {
         pub name: Option<flatbuffers::WIPOffset<&'a str>>,
         pub t_type: MonoType,
@@ -2176,8 +3432,84 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Argument<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Argument");
+            ds.field("name", &self.name());
+            ds.field("t_type", &self.t_type());
+            match self.t_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.t_as_basic() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.t_as_var() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.t_as_arr() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.t_as_record() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.t_as_fun() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.t_as_dict() {
+                        ds.field("t", &x)
+                    } else {
+                        ds.field(
+                            "t",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("t", &x)
+                }
+            };
+            ds.field("pipe", &self.pipe());
+            ds.field("optional", &self.optional());
+            ds.finish()
+        }
+    }
     pub enum PropOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Prop<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -2188,7 +3520,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -2238,7 +3570,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_basic(&self) -> Option<Basic<'a>> {
             if self.v_type() == MonoType::Basic {
-                self.v().map(|u| Basic::init_from_table(u))
+                self.v().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -2248,7 +3580,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_var(&self) -> Option<Var<'a>> {
             if self.v_type() == MonoType::Var {
-                self.v().map(|u| Var::init_from_table(u))
+                self.v().map(Var::init_from_table)
             } else {
                 None
             }
@@ -2258,7 +3590,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_arr(&self) -> Option<Arr<'a>> {
             if self.v_type() == MonoType::Arr {
-                self.v().map(|u| Arr::init_from_table(u))
+                self.v().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -2268,7 +3600,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_record(&self) -> Option<Record<'a>> {
             if self.v_type() == MonoType::Record {
-                self.v().map(|u| Record::init_from_table(u))
+                self.v().map(Record::init_from_table)
             } else {
                 None
             }
@@ -2278,7 +3610,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_fun(&self) -> Option<Fun<'a>> {
             if self.v_type() == MonoType::Fun {
-                self.v().map(|u| Fun::init_from_table(u))
+                self.v().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -2288,13 +3620,66 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn v_as_dict(&self) -> Option<Dict<'a>> {
             if self.v_type() == MonoType::Dict {
-                self.v().map(|u| Dict::init_from_table(u))
+                self.v().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for Prop<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"k", Self::VT_K, false)?
+                .visit_union::<MonoType, _>(
+                    &"v_type",
+                    Self::VT_V_TYPE,
+                    &"v",
+                    Self::VT_V,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct PropArgs<'a> {
         pub k: Option<flatbuffers::WIPOffset<&'a str>>,
         pub v_type: MonoType,
@@ -2345,8 +3730,82 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Prop<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Prop");
+            ds.field("k", &self.k());
+            ds.field("v_type", &self.v_type());
+            match self.v_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.v_as_basic() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.v_as_var() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.v_as_arr() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.v_as_record() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.v_as_fun() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.v_as_dict() {
+                        ds.field("v", &x)
+                    } else {
+                        ds.field(
+                            "v",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("v", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum PolyTypeOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct PolyType<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -2357,7 +3816,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -2396,7 +3855,7 @@ pub mod fbsemantic {
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Var<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Var<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Var>>,
             >>(PolyType::VT_VARS, None)
         }
         #[inline]
@@ -2404,7 +3863,7 @@ pub mod fbsemantic {
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Constraint<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Constraint<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Constraint>>,
             >>(PolyType::VT_CONS, None)
         }
         #[inline]
@@ -2425,7 +3884,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expr_as_basic(&self) -> Option<Basic<'a>> {
             if self.expr_type() == MonoType::Basic {
-                self.expr().map(|u| Basic::init_from_table(u))
+                self.expr().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -2435,7 +3894,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expr_as_var(&self) -> Option<Var<'a>> {
             if self.expr_type() == MonoType::Var {
-                self.expr().map(|u| Var::init_from_table(u))
+                self.expr().map(Var::init_from_table)
             } else {
                 None
             }
@@ -2445,7 +3904,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expr_as_arr(&self) -> Option<Arr<'a>> {
             if self.expr_type() == MonoType::Arr {
-                self.expr().map(|u| Arr::init_from_table(u))
+                self.expr().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -2455,7 +3914,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expr_as_record(&self) -> Option<Record<'a>> {
             if self.expr_type() == MonoType::Record {
-                self.expr().map(|u| Record::init_from_table(u))
+                self.expr().map(Record::init_from_table)
             } else {
                 None
             }
@@ -2465,7 +3924,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expr_as_fun(&self) -> Option<Fun<'a>> {
             if self.expr_type() == MonoType::Fun {
-                self.expr().map(|u| Fun::init_from_table(u))
+                self.expr().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -2475,13 +3934,71 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expr_as_dict(&self) -> Option<Dict<'a>> {
             if self.expr_type() == MonoType::Dict {
-                self.expr().map(|u| Dict::init_from_table(u))
+                self.expr().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for PolyType<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Var>>,
+                >>(&"vars", Self::VT_VARS, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Constraint>>,
+                >>(&"cons", Self::VT_CONS, false)?
+                .visit_union::<MonoType, _>(
+                    &"expr_type",
+                    Self::VT_EXPR_TYPE,
+                    &"expr",
+                    Self::VT_EXPR,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct PolyTypeArgs<'a> {
         pub vars: Option<
             flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Var<'a>>>>,
@@ -2555,8 +4072,83 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for PolyType<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("PolyType");
+            ds.field("vars", &self.vars());
+            ds.field("cons", &self.cons());
+            ds.field("expr_type", &self.expr_type());
+            match self.expr_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.expr_as_basic() {
+                        ds.field("expr", &x)
+                    } else {
+                        ds.field(
+                            "expr",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.expr_as_var() {
+                        ds.field("expr", &x)
+                    } else {
+                        ds.field(
+                            "expr",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.expr_as_arr() {
+                        ds.field("expr", &x)
+                    } else {
+                        ds.field(
+                            "expr",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.expr_as_record() {
+                        ds.field("expr", &x)
+                    } else {
+                        ds.field(
+                            "expr",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.expr_as_fun() {
+                        ds.field("expr", &x)
+                    } else {
+                        ds.field(
+                            "expr",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.expr_as_dict() {
+                        ds.field("expr", &x)
+                    } else {
+                        ds.field(
+                            "expr",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("expr", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum ConstraintOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Constraint<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -2567,7 +4159,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -2596,7 +4188,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn tvar(&self) -> Option<Var<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Var<'a>>>(Constraint::VT_TVAR, None)
+                .get::<flatbuffers::ForwardsUOffset<Var>>(Constraint::VT_TVAR, None)
         }
         #[inline]
         pub fn kind(&self) -> Kind {
@@ -2606,6 +4198,20 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for Constraint<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<Var>>(&"tvar", Self::VT_TVAR, false)?
+                .visit_field::<Kind>(&"kind", Self::VT_KIND, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct ConstraintArgs<'a> {
         pub tvar: Option<flatbuffers::WIPOffset<Var<'a>>>,
         pub kind: Kind,
@@ -2649,8 +4255,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Constraint<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Constraint");
+            ds.field("tvar", &self.tvar());
+            ds.field("kind", &self.kind());
+            ds.finish()
+        }
+    }
     pub enum PackageOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Package<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -2661,7 +4275,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -2696,7 +4310,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(Package::VT_LOC, None)
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(Package::VT_LOC, None)
         }
         #[inline]
         pub fn package(&self) -> Option<&'a str> {
@@ -2708,11 +4322,36 @@ pub mod fbsemantic {
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<File<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<File<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<File>>,
             >>(Package::VT_FILES, None)
         }
     }
 
+    impl flatbuffers::Verifiable for Package<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(
+                    &"package",
+                    Self::VT_PACKAGE,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<File>>,
+                >>(&"files", Self::VT_FILES, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct PackageArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub package: Option<flatbuffers::WIPOffset<&'a str>>,
@@ -2770,8 +4409,17 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Package<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Package");
+            ds.field("loc", &self.loc());
+            ds.field("package", &self.package());
+            ds.field("files", &self.files());
+            ds.finish()
+        }
+    }
     pub enum FileOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct File<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -2782,7 +4430,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -2821,12 +4469,12 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(File::VT_LOC, None)
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(File::VT_LOC, None)
         }
         #[inline]
         pub fn package(&self) -> Option<PackageClause<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<PackageClause<'a>>>(File::VT_PACKAGE, None)
+                .get::<flatbuffers::ForwardsUOffset<PackageClause>>(File::VT_PACKAGE, None)
         }
         #[inline]
         pub fn imports(
@@ -2834,7 +4482,7 @@ pub mod fbsemantic {
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<ImportDeclaration<'a>>>>
         {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<ImportDeclaration<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<ImportDeclaration>>,
             >>(File::VT_IMPORTS, None)
         }
         #[inline]
@@ -2843,11 +4491,39 @@ pub mod fbsemantic {
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>>
         {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedStatement>>,
             >>(File::VT_BODY, None)
         }
     }
 
+    impl flatbuffers::Verifiable for File<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<PackageClause>>(
+                    &"package",
+                    Self::VT_PACKAGE,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<ImportDeclaration>>,
+                >>(&"imports", Self::VT_IMPORTS, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<WrappedStatement>>,
+                >>(&"body", Self::VT_BODY, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct FileArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub package: Option<flatbuffers::WIPOffset<PackageClause<'a>>>,
@@ -2926,8 +4602,18 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for File<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("File");
+            ds.field("loc", &self.loc());
+            ds.field("package", &self.package());
+            ds.field("imports", &self.imports());
+            ds.field("body", &self.body());
+            ds.finish()
+        }
+    }
     pub enum PackageClauseOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct PackageClause<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -2938,7 +4624,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -2969,18 +4655,37 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    PackageClause::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(PackageClause::VT_LOC, None)
         }
         #[inline]
         pub fn name(&self) -> Option<Identifier<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(PackageClause::VT_NAME, None)
+                .get::<flatbuffers::ForwardsUOffset<Identifier>>(PackageClause::VT_NAME, None)
         }
     }
 
+    impl flatbuffers::Verifiable for PackageClause<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<Identifier>>(
+                    &"name",
+                    Self::VT_NAME,
+                    false,
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct PackageClauseArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub name: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
@@ -3032,8 +4737,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for PackageClause<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("PackageClause");
+            ds.field("loc", &self.loc());
+            ds.field("name", &self.name());
+            ds.finish()
+        }
+    }
     pub enum ImportDeclarationOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct ImportDeclaration<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -3044,7 +4757,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -3079,7 +4792,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     ImportDeclaration::VT_LOC,
                     None,
                 )
@@ -3087,21 +4800,45 @@ pub mod fbsemantic {
         #[inline]
         pub fn alias(&self) -> Option<Identifier<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(
-                    ImportDeclaration::VT_ALIAS,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<Identifier>>(ImportDeclaration::VT_ALIAS, None)
         }
         #[inline]
         pub fn path(&self) -> Option<StringLiteral<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<StringLiteral<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<StringLiteral>>(
                     ImportDeclaration::VT_PATH,
                     None,
                 )
         }
     }
 
+    impl flatbuffers::Verifiable for ImportDeclaration<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<Identifier>>(
+                    &"alias",
+                    Self::VT_ALIAS,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<StringLiteral>>(
+                    &"path",
+                    Self::VT_PATH,
+                    false,
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct ImportDeclarationArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub alias: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
@@ -3163,8 +4900,17 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for ImportDeclaration<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("ImportDeclaration");
+            ds.field("loc", &self.loc());
+            ds.field("alias", &self.alias());
+            ds.field("path", &self.path());
+            ds.finish()
+        }
+    }
     pub enum SourceLocationOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct SourceLocation<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -3175,7 +4921,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -3231,6 +4977,26 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for SourceLocation<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"file", Self::VT_FILE, false)?
+                .visit_field::<Position>(&"start", Self::VT_START, false)?
+                .visit_field::<Position>(&"end", Self::VT_END, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(
+                    &"source",
+                    Self::VT_SOURCE,
+                    false,
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct SourceLocationArgs<'a> {
         pub file: Option<flatbuffers::WIPOffset<&'a str>>,
         pub start: Option<&'a Position>,
@@ -3259,12 +5025,12 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(SourceLocation::VT_FILE, file);
         }
         #[inline]
-        pub fn add_start(&mut self, start: &'b Position) {
+        pub fn add_start(&mut self, start: &Position) {
             self.fbb_
                 .push_slot_always::<&Position>(SourceLocation::VT_START, start);
         }
         #[inline]
-        pub fn add_end(&mut self, end: &'b Position) {
+        pub fn add_end(&mut self, end: &Position) {
             self.fbb_
                 .push_slot_always::<&Position>(SourceLocation::VT_END, end);
         }
@@ -3290,8 +5056,18 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for SourceLocation<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("SourceLocation");
+            ds.field("file", &self.file());
+            ds.field("start", &self.start());
+            ds.field("end", &self.end());
+            ds.field("source", &self.source());
+            ds.finish()
+        }
+    }
     pub enum WrappedStatementOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct WrappedStatement<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -3302,7 +5078,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -3346,8 +5122,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn statement_as_option_statement(&self) -> Option<OptionStatement<'a>> {
             if self.statement_type() == Statement::OptionStatement {
-                self.statement()
-                    .map(|u| OptionStatement::init_from_table(u))
+                self.statement().map(OptionStatement::init_from_table)
             } else {
                 None
             }
@@ -3357,8 +5132,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn statement_as_builtin_statement(&self) -> Option<BuiltinStatement<'a>> {
             if self.statement_type() == Statement::BuiltinStatement {
-                self.statement()
-                    .map(|u| BuiltinStatement::init_from_table(u))
+                self.statement().map(BuiltinStatement::init_from_table)
             } else {
                 None
             }
@@ -3368,7 +5142,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn statement_as_test_statement(&self) -> Option<TestStatement<'a>> {
             if self.statement_type() == Statement::TestStatement {
-                self.statement().map(|u| TestStatement::init_from_table(u))
+                self.statement().map(TestStatement::init_from_table)
             } else {
                 None
             }
@@ -3378,8 +5152,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn statement_as_expression_statement(&self) -> Option<ExpressionStatement<'a>> {
             if self.statement_type() == Statement::ExpressionStatement {
-                self.statement()
-                    .map(|u| ExpressionStatement::init_from_table(u))
+                self.statement().map(ExpressionStatement::init_from_table)
             } else {
                 None
             }
@@ -3392,7 +5165,7 @@ pub mod fbsemantic {
         ) -> Option<NativeVariableAssignment<'a>> {
             if self.statement_type() == Statement::NativeVariableAssignment {
                 self.statement()
-                    .map(|u| NativeVariableAssignment::init_from_table(u))
+                    .map(NativeVariableAssignment::init_from_table)
             } else {
                 None
             }
@@ -3402,8 +5175,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn statement_as_member_assignment(&self) -> Option<MemberAssignment<'a>> {
             if self.statement_type() == Statement::MemberAssignment {
-                self.statement()
-                    .map(|u| MemberAssignment::init_from_table(u))
+                self.statement().map(MemberAssignment::init_from_table)
             } else {
                 None
             }
@@ -3413,14 +5185,37 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn statement_as_return_statement(&self) -> Option<ReturnStatement<'a>> {
             if self.statement_type() == Statement::ReturnStatement {
-                self.statement()
-                    .map(|u| ReturnStatement::init_from_table(u))
+                self.statement().map(ReturnStatement::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for WrappedStatement<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_union::<Statement, _>(&"statement_type", Self::VT_STATEMENT_TYPE, &"statement", Self::VT_STATEMENT, false, |key, v, pos| {
+        match key {
+          Statement::OptionStatement => v.verify_union_variant::<flatbuffers::ForwardsUOffset<OptionStatement>>("Statement::OptionStatement", pos),
+          Statement::BuiltinStatement => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BuiltinStatement>>("Statement::BuiltinStatement", pos),
+          Statement::TestStatement => v.verify_union_variant::<flatbuffers::ForwardsUOffset<TestStatement>>("Statement::TestStatement", pos),
+          Statement::ExpressionStatement => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ExpressionStatement>>("Statement::ExpressionStatement", pos),
+          Statement::NativeVariableAssignment => v.verify_union_variant::<flatbuffers::ForwardsUOffset<NativeVariableAssignment>>("Statement::NativeVariableAssignment", pos),
+          Statement::MemberAssignment => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberAssignment>>("Statement::MemberAssignment", pos),
+          Statement::ReturnStatement => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ReturnStatement>>("Statement::ReturnStatement", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct WrappedStatementArgs {
         pub statement_type: Statement,
         pub statement: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
@@ -3474,8 +5269,91 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for WrappedStatement<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("WrappedStatement");
+            ds.field("statement_type", &self.statement_type());
+            match self.statement_type() {
+                Statement::OptionStatement => {
+                    if let Some(x) = self.statement_as_option_statement() {
+                        ds.field("statement", &x)
+                    } else {
+                        ds.field(
+                            "statement",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Statement::BuiltinStatement => {
+                    if let Some(x) = self.statement_as_builtin_statement() {
+                        ds.field("statement", &x)
+                    } else {
+                        ds.field(
+                            "statement",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Statement::TestStatement => {
+                    if let Some(x) = self.statement_as_test_statement() {
+                        ds.field("statement", &x)
+                    } else {
+                        ds.field(
+                            "statement",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Statement::ExpressionStatement => {
+                    if let Some(x) = self.statement_as_expression_statement() {
+                        ds.field("statement", &x)
+                    } else {
+                        ds.field(
+                            "statement",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Statement::NativeVariableAssignment => {
+                    if let Some(x) = self.statement_as_native_variable_assignment() {
+                        ds.field("statement", &x)
+                    } else {
+                        ds.field(
+                            "statement",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Statement::MemberAssignment => {
+                    if let Some(x) = self.statement_as_member_assignment() {
+                        ds.field("statement", &x)
+                    } else {
+                        ds.field(
+                            "statement",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Statement::ReturnStatement => {
+                    if let Some(x) = self.statement_as_return_statement() {
+                        ds.field("statement", &x)
+                    } else {
+                        ds.field(
+                            "statement",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("statement", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum OptionStatementOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct OptionStatement<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -3486,7 +5364,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -3519,10 +5397,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    OptionStatement::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(OptionStatement::VT_LOC, None)
         }
         #[inline]
         pub fn assignment_type(&self) -> Assignment {
@@ -3542,8 +5417,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn assignment_as_member_assignment(&self) -> Option<MemberAssignment<'a>> {
             if self.assignment_type() == Assignment::MemberAssignment {
-                self.assignment()
-                    .map(|u| MemberAssignment::init_from_table(u))
+                self.assignment().map(MemberAssignment::init_from_table)
             } else {
                 None
             }
@@ -3556,13 +5430,33 @@ pub mod fbsemantic {
         ) -> Option<NativeVariableAssignment<'a>> {
             if self.assignment_type() == Assignment::NativeVariableAssignment {
                 self.assignment()
-                    .map(|u| NativeVariableAssignment::init_from_table(u))
+                    .map(NativeVariableAssignment::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for OptionStatement<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_union::<Assignment, _>(&"assignment_type", Self::VT_ASSIGNMENT_TYPE, &"assignment", Self::VT_ASSIGNMENT, false, |key, v, pos| {
+        match key {
+          Assignment::MemberAssignment => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberAssignment>>("Assignment::MemberAssignment", pos),
+          Assignment::NativeVariableAssignment => v.verify_union_variant::<flatbuffers::ForwardsUOffset<NativeVariableAssignment>>("Assignment::NativeVariableAssignment", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct OptionStatementArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub assignment_type: Assignment,
@@ -3626,8 +5520,42 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for OptionStatement<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("OptionStatement");
+            ds.field("loc", &self.loc());
+            ds.field("assignment_type", &self.assignment_type());
+            match self.assignment_type() {
+                Assignment::MemberAssignment => {
+                    if let Some(x) = self.assignment_as_member_assignment() {
+                        ds.field("assignment", &x)
+                    } else {
+                        ds.field(
+                            "assignment",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Assignment::NativeVariableAssignment => {
+                    if let Some(x) = self.assignment_as_native_variable_assignment() {
+                        ds.field("assignment", &x)
+                    } else {
+                        ds.field(
+                            "assignment",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("assignment", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum BuiltinStatementOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct BuiltinStatement<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -3638,7 +5566,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -3669,18 +5597,33 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    BuiltinStatement::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(BuiltinStatement::VT_LOC, None)
         }
         #[inline]
         pub fn id(&self) -> Option<Identifier<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(BuiltinStatement::VT_ID, None)
+                .get::<flatbuffers::ForwardsUOffset<Identifier>>(BuiltinStatement::VT_ID, None)
         }
     }
 
+    impl flatbuffers::Verifiable for BuiltinStatement<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<Identifier>>(&"id", Self::VT_ID, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct BuiltinStatementArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub id: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
@@ -3732,8 +5675,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for BuiltinStatement<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("BuiltinStatement");
+            ds.field("loc", &self.loc());
+            ds.field("id", &self.id());
+            ds.finish()
+        }
+    }
     pub enum TestStatementOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct TestStatement<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -3744,7 +5695,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -3775,21 +5726,40 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    TestStatement::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(TestStatement::VT_LOC, None)
         }
         #[inline]
         pub fn assignment(&self) -> Option<NativeVariableAssignment<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<NativeVariableAssignment<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<NativeVariableAssignment>>(
                     TestStatement::VT_ASSIGNMENT,
                     None,
                 )
         }
     }
 
+    impl flatbuffers::Verifiable for TestStatement<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<NativeVariableAssignment>>(
+                    &"assignment",
+                    Self::VT_ASSIGNMENT,
+                    false,
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct TestStatementArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub assignment: Option<flatbuffers::WIPOffset<NativeVariableAssignment<'a>>>,
@@ -3844,8 +5814,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for TestStatement<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("TestStatement");
+            ds.field("loc", &self.loc());
+            ds.field("assignment", &self.assignment());
+            ds.finish()
+        }
+    }
     pub enum ExpressionStatementOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct ExpressionStatement<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -3856,7 +5834,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -3889,7 +5867,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     ExpressionStatement::VT_LOC,
                     None,
                 )
@@ -3915,8 +5893,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.expression_type() == Expression::StringExpression {
-                self.expression()
-                    .map(|u| StringExpression::init_from_table(u))
+                self.expression().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -3926,8 +5903,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.expression_type() == Expression::ArrayExpression {
-                self.expression()
-                    .map(|u| ArrayExpression::init_from_table(u))
+                self.expression().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -3937,8 +5913,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.expression_type() == Expression::DictExpression {
-                self.expression()
-                    .map(|u| DictExpression::init_from_table(u))
+                self.expression().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -3948,8 +5923,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.expression_type() == Expression::FunctionExpression {
-                self.expression()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.expression().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -3959,8 +5933,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.expression_type() == Expression::BinaryExpression {
-                self.expression()
-                    .map(|u| BinaryExpression::init_from_table(u))
+                self.expression().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -3970,8 +5943,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.expression_type() == Expression::CallExpression {
-                self.expression()
-                    .map(|u| CallExpression::init_from_table(u))
+                self.expression().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -3982,7 +5954,7 @@ pub mod fbsemantic {
         pub fn expression_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.expression_type() == Expression::ConditionalExpression {
                 self.expression()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                    .map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -3992,8 +5964,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.expression_type() == Expression::IdentifierExpression {
-                self.expression()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.expression().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -4003,8 +5974,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.expression_type() == Expression::LogicalExpression {
-                self.expression()
-                    .map(|u| LogicalExpression::init_from_table(u))
+                self.expression().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -4014,8 +5984,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.expression_type() == Expression::MemberExpression {
-                self.expression()
-                    .map(|u| MemberExpression::init_from_table(u))
+                self.expression().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -4025,8 +5994,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.expression_type() == Expression::IndexExpression {
-                self.expression()
-                    .map(|u| IndexExpression::init_from_table(u))
+                self.expression().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -4036,8 +6004,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.expression_type() == Expression::ObjectExpression {
-                self.expression()
-                    .map(|u| ObjectExpression::init_from_table(u))
+                self.expression().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -4047,8 +6014,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.expression_type() == Expression::UnaryExpression {
-                self.expression()
-                    .map(|u| UnaryExpression::init_from_table(u))
+                self.expression().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -4058,8 +6024,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.expression_type() == Expression::BooleanLiteral {
-                self.expression()
-                    .map(|u| BooleanLiteral::init_from_table(u))
+                self.expression().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -4069,8 +6034,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.expression_type() == Expression::DateTimeLiteral {
-                self.expression()
-                    .map(|u| DateTimeLiteral::init_from_table(u))
+                self.expression().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -4080,8 +6044,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.expression_type() == Expression::DurationLiteral {
-                self.expression()
-                    .map(|u| DurationLiteral::init_from_table(u))
+                self.expression().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -4091,7 +6054,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.expression_type() == Expression::FloatLiteral {
-                self.expression().map(|u| FloatLiteral::init_from_table(u))
+                self.expression().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -4101,8 +6064,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.expression_type() == Expression::IntegerLiteral {
-                self.expression()
-                    .map(|u| IntegerLiteral::init_from_table(u))
+                self.expression().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -4112,7 +6074,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.expression_type() == Expression::StringLiteral {
-                self.expression().map(|u| StringLiteral::init_from_table(u))
+                self.expression().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -4122,7 +6084,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.expression_type() == Expression::RegexpLiteral {
-                self.expression().map(|u| RegexpLiteral::init_from_table(u))
+                self.expression().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -4133,13 +6095,52 @@ pub mod fbsemantic {
         pub fn expression_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.expression_type() == Expression::UnsignedIntegerLiteral {
                 self.expression()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                    .map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for ExpressionStatement<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_union::<Expression, _>(&"expression_type", Self::VT_EXPRESSION_TYPE, &"expression", Self::VT_EXPRESSION, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct ExpressionStatementArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub expression_type: Expression,
@@ -4203,8 +6204,232 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for ExpressionStatement<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("ExpressionStatement");
+            ds.field("loc", &self.loc());
+            ds.field("expression_type", &self.expression_type());
+            match self.expression_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.expression_as_string_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.expression_as_array_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.expression_as_dict_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.expression_as_function_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.expression_as_binary_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.expression_as_call_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.expression_as_conditional_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.expression_as_identifier_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.expression_as_logical_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.expression_as_member_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.expression_as_index_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.expression_as_object_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.expression_as_unary_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.expression_as_boolean_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.expression_as_date_time_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.expression_as_duration_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.expression_as_float_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.expression_as_integer_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.expression_as_string_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.expression_as_regexp_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.expression_as_unsigned_integer_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("expression", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum ReturnStatementOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct ReturnStatement<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -4215,7 +6440,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -4248,10 +6473,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    ReturnStatement::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(ReturnStatement::VT_LOC, None)
         }
         #[inline]
         pub fn argument_type(&self) -> Expression {
@@ -4271,8 +6493,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.argument_type() == Expression::StringExpression {
-                self.argument()
-                    .map(|u| StringExpression::init_from_table(u))
+                self.argument().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -4282,7 +6503,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.argument_type() == Expression::ArrayExpression {
-                self.argument().map(|u| ArrayExpression::init_from_table(u))
+                self.argument().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -4292,7 +6513,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.argument_type() == Expression::DictExpression {
-                self.argument().map(|u| DictExpression::init_from_table(u))
+                self.argument().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -4302,8 +6523,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.argument_type() == Expression::FunctionExpression {
-                self.argument()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.argument().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -4313,8 +6533,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.argument_type() == Expression::BinaryExpression {
-                self.argument()
-                    .map(|u| BinaryExpression::init_from_table(u))
+                self.argument().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -4324,7 +6543,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.argument_type() == Expression::CallExpression {
-                self.argument().map(|u| CallExpression::init_from_table(u))
+                self.argument().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -4334,8 +6553,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.argument_type() == Expression::ConditionalExpression {
-                self.argument()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.argument().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -4345,8 +6563,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.argument_type() == Expression::IdentifierExpression {
-                self.argument()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.argument().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -4356,8 +6573,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.argument_type() == Expression::LogicalExpression {
-                self.argument()
-                    .map(|u| LogicalExpression::init_from_table(u))
+                self.argument().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -4367,8 +6583,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.argument_type() == Expression::MemberExpression {
-                self.argument()
-                    .map(|u| MemberExpression::init_from_table(u))
+                self.argument().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -4378,7 +6593,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.argument_type() == Expression::IndexExpression {
-                self.argument().map(|u| IndexExpression::init_from_table(u))
+                self.argument().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -4388,8 +6603,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.argument_type() == Expression::ObjectExpression {
-                self.argument()
-                    .map(|u| ObjectExpression::init_from_table(u))
+                self.argument().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -4399,7 +6613,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.argument_type() == Expression::UnaryExpression {
-                self.argument().map(|u| UnaryExpression::init_from_table(u))
+                self.argument().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -4409,7 +6623,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.argument_type() == Expression::BooleanLiteral {
-                self.argument().map(|u| BooleanLiteral::init_from_table(u))
+                self.argument().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -4419,7 +6633,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.argument_type() == Expression::DateTimeLiteral {
-                self.argument().map(|u| DateTimeLiteral::init_from_table(u))
+                self.argument().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -4429,7 +6643,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.argument_type() == Expression::DurationLiteral {
-                self.argument().map(|u| DurationLiteral::init_from_table(u))
+                self.argument().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -4439,7 +6653,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.argument_type() == Expression::FloatLiteral {
-                self.argument().map(|u| FloatLiteral::init_from_table(u))
+                self.argument().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -4449,7 +6663,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.argument_type() == Expression::IntegerLiteral {
-                self.argument().map(|u| IntegerLiteral::init_from_table(u))
+                self.argument().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -4459,7 +6673,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.argument_type() == Expression::StringLiteral {
-                self.argument().map(|u| StringLiteral::init_from_table(u))
+                self.argument().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -4469,7 +6683,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.argument_type() == Expression::RegexpLiteral {
-                self.argument().map(|u| RegexpLiteral::init_from_table(u))
+                self.argument().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -4479,14 +6693,52 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.argument_type() == Expression::UnsignedIntegerLiteral {
-                self.argument()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.argument().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for ReturnStatement<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_union::<Expression, _>(&"argument_type", Self::VT_ARGUMENT_TYPE, &"argument", Self::VT_ARGUMENT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct ReturnStatementArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub argument_type: Expression,
@@ -4550,8 +6802,232 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for ReturnStatement<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("ReturnStatement");
+            ds.field("loc", &self.loc());
+            ds.field("argument_type", &self.argument_type());
+            match self.argument_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.argument_as_string_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.argument_as_array_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.argument_as_dict_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.argument_as_function_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.argument_as_binary_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.argument_as_call_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.argument_as_conditional_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.argument_as_identifier_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.argument_as_logical_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.argument_as_member_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.argument_as_index_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.argument_as_object_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.argument_as_unary_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.argument_as_boolean_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.argument_as_date_time_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.argument_as_duration_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.argument_as_float_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.argument_as_integer_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.argument_as_string_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.argument_as_regexp_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.argument_as_unsigned_integer_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("argument", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum NativeVariableAssignmentOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct NativeVariableAssignment<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -4562,7 +7038,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -4603,18 +7079,17 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     NativeVariableAssignment::VT_LOC,
                     None,
                 )
         }
         #[inline]
         pub fn identifier(&self) -> Option<Identifier<'a>> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(
-                    NativeVariableAssignment::VT_IDENTIFIER,
-                    None,
-                )
+            self._tab.get::<flatbuffers::ForwardsUOffset<Identifier>>(
+                NativeVariableAssignment::VT_IDENTIFIER,
+                None,
+            )
         }
         #[inline]
         pub fn init__type(&self) -> Expression {
@@ -4635,7 +7110,7 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn typ(&self) -> Option<PolyType<'a>> {
-            self._tab.get::<flatbuffers::ForwardsUOffset<PolyType<'a>>>(
+            self._tab.get::<flatbuffers::ForwardsUOffset<PolyType>>(
                 NativeVariableAssignment::VT_TYP,
                 None,
             )
@@ -4644,7 +7119,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.init__type() == Expression::StringExpression {
-                self.init_().map(|u| StringExpression::init_from_table(u))
+                self.init_().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -4654,7 +7129,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.init__type() == Expression::ArrayExpression {
-                self.init_().map(|u| ArrayExpression::init_from_table(u))
+                self.init_().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -4664,7 +7139,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.init__type() == Expression::DictExpression {
-                self.init_().map(|u| DictExpression::init_from_table(u))
+                self.init_().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -4674,7 +7149,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.init__type() == Expression::FunctionExpression {
-                self.init_().map(|u| FunctionExpression::init_from_table(u))
+                self.init_().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -4684,7 +7159,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.init__type() == Expression::BinaryExpression {
-                self.init_().map(|u| BinaryExpression::init_from_table(u))
+                self.init_().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -4694,7 +7169,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.init__type() == Expression::CallExpression {
-                self.init_().map(|u| CallExpression::init_from_table(u))
+                self.init_().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -4704,8 +7179,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.init__type() == Expression::ConditionalExpression {
-                self.init_()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.init_().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -4715,8 +7189,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.init__type() == Expression::IdentifierExpression {
-                self.init_()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.init_().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -4726,7 +7199,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.init__type() == Expression::LogicalExpression {
-                self.init_().map(|u| LogicalExpression::init_from_table(u))
+                self.init_().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -4736,7 +7209,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.init__type() == Expression::MemberExpression {
-                self.init_().map(|u| MemberExpression::init_from_table(u))
+                self.init_().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -4746,7 +7219,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.init__type() == Expression::IndexExpression {
-                self.init_().map(|u| IndexExpression::init_from_table(u))
+                self.init_().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -4756,7 +7229,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.init__type() == Expression::ObjectExpression {
-                self.init_().map(|u| ObjectExpression::init_from_table(u))
+                self.init_().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -4766,7 +7239,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.init__type() == Expression::UnaryExpression {
-                self.init_().map(|u| UnaryExpression::init_from_table(u))
+                self.init_().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -4776,7 +7249,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.init__type() == Expression::BooleanLiteral {
-                self.init_().map(|u| BooleanLiteral::init_from_table(u))
+                self.init_().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -4786,7 +7259,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.init__type() == Expression::DateTimeLiteral {
-                self.init_().map(|u| DateTimeLiteral::init_from_table(u))
+                self.init_().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -4796,7 +7269,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.init__type() == Expression::DurationLiteral {
-                self.init_().map(|u| DurationLiteral::init_from_table(u))
+                self.init_().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -4806,7 +7279,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.init__type() == Expression::FloatLiteral {
-                self.init_().map(|u| FloatLiteral::init_from_table(u))
+                self.init_().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -4816,7 +7289,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.init__type() == Expression::IntegerLiteral {
-                self.init_().map(|u| IntegerLiteral::init_from_table(u))
+                self.init_().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -4826,7 +7299,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.init__type() == Expression::StringLiteral {
-                self.init_().map(|u| StringLiteral::init_from_table(u))
+                self.init_().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -4836,7 +7309,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.init__type() == Expression::RegexpLiteral {
-                self.init_().map(|u| RegexpLiteral::init_from_table(u))
+                self.init_().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -4846,14 +7319,54 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.init__type() == Expression::UnsignedIntegerLiteral {
-                self.init_()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.init_().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for NativeVariableAssignment<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<Identifier>>(&"identifier", Self::VT_IDENTIFIER, false)?
+     .visit_union::<Expression, _>(&"init__type", Self::VT_INIT__TYPE, &"init_", Self::VT_INIT_, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_field::<flatbuffers::ForwardsUOffset<PolyType>>(&"typ", Self::VT_TYP, false)?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct NativeVariableAssignmentArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub identifier: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
@@ -4934,8 +7447,234 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for NativeVariableAssignment<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("NativeVariableAssignment");
+            ds.field("loc", &self.loc());
+            ds.field("identifier", &self.identifier());
+            ds.field("init__type", &self.init__type());
+            match self.init__type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.init__as_string_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.init__as_array_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.init__as_dict_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.init__as_function_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.init__as_binary_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.init__as_call_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.init__as_conditional_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.init__as_identifier_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.init__as_logical_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.init__as_member_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.init__as_index_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.init__as_object_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.init__as_unary_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.init__as_boolean_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.init__as_date_time_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.init__as_duration_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.init__as_float_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.init__as_integer_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.init__as_string_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.init__as_regexp_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.init__as_unsigned_integer_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("init_", &x)
+                }
+            };
+            ds.field("typ", &self.typ());
+            ds.finish()
+        }
+    }
     pub enum MemberAssignmentOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct MemberAssignment<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -4946,7 +7685,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -4983,15 +7722,12 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    MemberAssignment::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(MemberAssignment::VT_LOC, None)
         }
         #[inline]
         pub fn member(&self) -> Option<MemberExpression<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<MemberExpression<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<MemberExpression>>(
                     MemberAssignment::VT_MEMBER,
                     None,
                 )
@@ -5014,7 +7750,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.init__type() == Expression::StringExpression {
-                self.init_().map(|u| StringExpression::init_from_table(u))
+                self.init_().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -5024,7 +7760,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.init__type() == Expression::ArrayExpression {
-                self.init_().map(|u| ArrayExpression::init_from_table(u))
+                self.init_().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -5034,7 +7770,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.init__type() == Expression::DictExpression {
-                self.init_().map(|u| DictExpression::init_from_table(u))
+                self.init_().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -5044,7 +7780,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.init__type() == Expression::FunctionExpression {
-                self.init_().map(|u| FunctionExpression::init_from_table(u))
+                self.init_().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -5054,7 +7790,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.init__type() == Expression::BinaryExpression {
-                self.init_().map(|u| BinaryExpression::init_from_table(u))
+                self.init_().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -5064,7 +7800,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.init__type() == Expression::CallExpression {
-                self.init_().map(|u| CallExpression::init_from_table(u))
+                self.init_().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -5074,8 +7810,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.init__type() == Expression::ConditionalExpression {
-                self.init_()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.init_().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -5085,8 +7820,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.init__type() == Expression::IdentifierExpression {
-                self.init_()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.init_().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -5096,7 +7830,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.init__type() == Expression::LogicalExpression {
-                self.init_().map(|u| LogicalExpression::init_from_table(u))
+                self.init_().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -5106,7 +7840,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.init__type() == Expression::MemberExpression {
-                self.init_().map(|u| MemberExpression::init_from_table(u))
+                self.init_().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -5116,7 +7850,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.init__type() == Expression::IndexExpression {
-                self.init_().map(|u| IndexExpression::init_from_table(u))
+                self.init_().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -5126,7 +7860,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.init__type() == Expression::ObjectExpression {
-                self.init_().map(|u| ObjectExpression::init_from_table(u))
+                self.init_().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -5136,7 +7870,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.init__type() == Expression::UnaryExpression {
-                self.init_().map(|u| UnaryExpression::init_from_table(u))
+                self.init_().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -5146,7 +7880,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.init__type() == Expression::BooleanLiteral {
-                self.init_().map(|u| BooleanLiteral::init_from_table(u))
+                self.init_().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -5156,7 +7890,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.init__type() == Expression::DateTimeLiteral {
-                self.init_().map(|u| DateTimeLiteral::init_from_table(u))
+                self.init_().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -5166,7 +7900,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.init__type() == Expression::DurationLiteral {
-                self.init_().map(|u| DurationLiteral::init_from_table(u))
+                self.init_().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -5176,7 +7910,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.init__type() == Expression::FloatLiteral {
-                self.init_().map(|u| FloatLiteral::init_from_table(u))
+                self.init_().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -5186,7 +7920,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.init__type() == Expression::IntegerLiteral {
-                self.init_().map(|u| IntegerLiteral::init_from_table(u))
+                self.init_().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -5196,7 +7930,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.init__type() == Expression::StringLiteral {
-                self.init_().map(|u| StringLiteral::init_from_table(u))
+                self.init_().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -5206,7 +7940,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.init__type() == Expression::RegexpLiteral {
-                self.init_().map(|u| RegexpLiteral::init_from_table(u))
+                self.init_().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -5216,14 +7950,53 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn init__as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.init__type() == Expression::UnsignedIntegerLiteral {
-                self.init_()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.init_().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for MemberAssignment<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<MemberExpression>>(&"member", Self::VT_MEMBER, false)?
+     .visit_union::<Expression, _>(&"init__type", Self::VT_INIT__TYPE, &"init_", Self::VT_INIT_, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct MemberAssignmentArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub member: Option<flatbuffers::WIPOffset<MemberExpression<'a>>>,
@@ -5292,8 +8065,233 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for MemberAssignment<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("MemberAssignment");
+            ds.field("loc", &self.loc());
+            ds.field("member", &self.member());
+            ds.field("init__type", &self.init__type());
+            match self.init__type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.init__as_string_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.init__as_array_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.init__as_dict_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.init__as_function_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.init__as_binary_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.init__as_call_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.init__as_conditional_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.init__as_identifier_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.init__as_logical_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.init__as_member_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.init__as_index_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.init__as_object_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.init__as_unary_expression() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.init__as_boolean_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.init__as_date_time_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.init__as_duration_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.init__as_float_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.init__as_integer_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.init__as_string_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.init__as_regexp_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.init__as_unsigned_integer_literal() {
+                        ds.field("init_", &x)
+                    } else {
+                        ds.field(
+                            "init_",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("init_", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum WrappedExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct WrappedExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -5304,7 +8302,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -5351,8 +8349,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.expression_type() == Expression::StringExpression {
-                self.expression()
-                    .map(|u| StringExpression::init_from_table(u))
+                self.expression().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -5362,8 +8359,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.expression_type() == Expression::ArrayExpression {
-                self.expression()
-                    .map(|u| ArrayExpression::init_from_table(u))
+                self.expression().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -5373,8 +8369,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.expression_type() == Expression::DictExpression {
-                self.expression()
-                    .map(|u| DictExpression::init_from_table(u))
+                self.expression().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -5384,8 +8379,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.expression_type() == Expression::FunctionExpression {
-                self.expression()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.expression().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -5395,8 +8389,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.expression_type() == Expression::BinaryExpression {
-                self.expression()
-                    .map(|u| BinaryExpression::init_from_table(u))
+                self.expression().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -5406,8 +8399,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.expression_type() == Expression::CallExpression {
-                self.expression()
-                    .map(|u| CallExpression::init_from_table(u))
+                self.expression().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -5418,7 +8410,7 @@ pub mod fbsemantic {
         pub fn expression_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.expression_type() == Expression::ConditionalExpression {
                 self.expression()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                    .map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -5428,8 +8420,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.expression_type() == Expression::IdentifierExpression {
-                self.expression()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.expression().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -5439,8 +8430,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.expression_type() == Expression::LogicalExpression {
-                self.expression()
-                    .map(|u| LogicalExpression::init_from_table(u))
+                self.expression().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -5450,8 +8440,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.expression_type() == Expression::MemberExpression {
-                self.expression()
-                    .map(|u| MemberExpression::init_from_table(u))
+                self.expression().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -5461,8 +8450,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.expression_type() == Expression::IndexExpression {
-                self.expression()
-                    .map(|u| IndexExpression::init_from_table(u))
+                self.expression().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -5472,8 +8460,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.expression_type() == Expression::ObjectExpression {
-                self.expression()
-                    .map(|u| ObjectExpression::init_from_table(u))
+                self.expression().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -5483,8 +8470,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.expression_type() == Expression::UnaryExpression {
-                self.expression()
-                    .map(|u| UnaryExpression::init_from_table(u))
+                self.expression().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -5494,8 +8480,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.expression_type() == Expression::BooleanLiteral {
-                self.expression()
-                    .map(|u| BooleanLiteral::init_from_table(u))
+                self.expression().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -5505,8 +8490,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.expression_type() == Expression::DateTimeLiteral {
-                self.expression()
-                    .map(|u| DateTimeLiteral::init_from_table(u))
+                self.expression().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -5516,8 +8500,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.expression_type() == Expression::DurationLiteral {
-                self.expression()
-                    .map(|u| DurationLiteral::init_from_table(u))
+                self.expression().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -5527,7 +8510,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.expression_type() == Expression::FloatLiteral {
-                self.expression().map(|u| FloatLiteral::init_from_table(u))
+                self.expression().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -5537,8 +8520,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.expression_type() == Expression::IntegerLiteral {
-                self.expression()
-                    .map(|u| IntegerLiteral::init_from_table(u))
+                self.expression().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -5548,7 +8530,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.expression_type() == Expression::StringLiteral {
-                self.expression().map(|u| StringLiteral::init_from_table(u))
+                self.expression().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -5558,7 +8540,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn expression_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.expression_type() == Expression::RegexpLiteral {
-                self.expression().map(|u| RegexpLiteral::init_from_table(u))
+                self.expression().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -5569,13 +8551,51 @@ pub mod fbsemantic {
         pub fn expression_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.expression_type() == Expression::UnsignedIntegerLiteral {
                 self.expression()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                    .map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for WrappedExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_union::<Expression, _>(&"expression_type", Self::VT_EXPRESSION_TYPE, &"expression", Self::VT_EXPRESSION, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct WrappedExpressionArgs {
         pub expression_type: Expression,
         pub expression: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
@@ -5629,8 +8649,231 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for WrappedExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("WrappedExpression");
+            ds.field("expression_type", &self.expression_type());
+            match self.expression_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.expression_as_string_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.expression_as_array_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.expression_as_dict_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.expression_as_function_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.expression_as_binary_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.expression_as_call_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.expression_as_conditional_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.expression_as_identifier_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.expression_as_logical_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.expression_as_member_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.expression_as_index_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.expression_as_object_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.expression_as_unary_expression() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.expression_as_boolean_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.expression_as_date_time_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.expression_as_duration_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.expression_as_float_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.expression_as_integer_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.expression_as_string_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.expression_as_regexp_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.expression_as_unsigned_integer_literal() {
+                        ds.field("expression", &x)
+                    } else {
+                        ds.field(
+                            "expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("expression", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum StringExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct StringExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -5641,7 +8884,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -5672,10 +8915,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    StringExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(StringExpression::VT_LOC, None)
         }
         #[inline]
         pub fn parts(
@@ -5683,11 +8923,31 @@ pub mod fbsemantic {
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<StringExpressionPart<'a>>>>
         {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<StringExpressionPart<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<StringExpressionPart>>,
             >>(StringExpression::VT_PARTS, None)
         }
     }
 
+    impl flatbuffers::Verifiable for StringExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<StringExpressionPart>>,
+                >>(&"parts", Self::VT_PARTS, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct StringExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub parts: Option<
@@ -5745,8 +9005,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for StringExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("StringExpression");
+            ds.field("loc", &self.loc());
+            ds.field("parts", &self.parts());
+            ds.finish()
+        }
+    }
     pub enum StringExpressionPartOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct StringExpressionPart<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -5757,7 +9025,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -5794,7 +9062,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     StringExpressionPart::VT_LOC,
                     None,
                 )
@@ -5828,7 +9096,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.interpolated_expression_type() == Expression::StringExpression {
                 self.interpolated_expression()
-                    .map(|u| StringExpression::init_from_table(u))
+                    .map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -5839,7 +9107,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.interpolated_expression_type() == Expression::ArrayExpression {
                 self.interpolated_expression()
-                    .map(|u| ArrayExpression::init_from_table(u))
+                    .map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -5850,7 +9118,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.interpolated_expression_type() == Expression::DictExpression {
                 self.interpolated_expression()
-                    .map(|u| DictExpression::init_from_table(u))
+                    .map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -5863,7 +9131,7 @@ pub mod fbsemantic {
         ) -> Option<FunctionExpression<'a>> {
             if self.interpolated_expression_type() == Expression::FunctionExpression {
                 self.interpolated_expression()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                    .map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -5874,7 +9142,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.interpolated_expression_type() == Expression::BinaryExpression {
                 self.interpolated_expression()
-                    .map(|u| BinaryExpression::init_from_table(u))
+                    .map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -5885,7 +9153,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.interpolated_expression_type() == Expression::CallExpression {
                 self.interpolated_expression()
-                    .map(|u| CallExpression::init_from_table(u))
+                    .map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -5898,7 +9166,7 @@ pub mod fbsemantic {
         ) -> Option<ConditionalExpression<'a>> {
             if self.interpolated_expression_type() == Expression::ConditionalExpression {
                 self.interpolated_expression()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                    .map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -5911,7 +9179,7 @@ pub mod fbsemantic {
         ) -> Option<IdentifierExpression<'a>> {
             if self.interpolated_expression_type() == Expression::IdentifierExpression {
                 self.interpolated_expression()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                    .map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -5924,7 +9192,7 @@ pub mod fbsemantic {
         ) -> Option<LogicalExpression<'a>> {
             if self.interpolated_expression_type() == Expression::LogicalExpression {
                 self.interpolated_expression()
-                    .map(|u| LogicalExpression::init_from_table(u))
+                    .map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -5935,7 +9203,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.interpolated_expression_type() == Expression::MemberExpression {
                 self.interpolated_expression()
-                    .map(|u| MemberExpression::init_from_table(u))
+                    .map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -5946,7 +9214,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.interpolated_expression_type() == Expression::IndexExpression {
                 self.interpolated_expression()
-                    .map(|u| IndexExpression::init_from_table(u))
+                    .map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -5957,7 +9225,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.interpolated_expression_type() == Expression::ObjectExpression {
                 self.interpolated_expression()
-                    .map(|u| ObjectExpression::init_from_table(u))
+                    .map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -5968,7 +9236,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.interpolated_expression_type() == Expression::UnaryExpression {
                 self.interpolated_expression()
-                    .map(|u| UnaryExpression::init_from_table(u))
+                    .map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -5979,7 +9247,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.interpolated_expression_type() == Expression::BooleanLiteral {
                 self.interpolated_expression()
-                    .map(|u| BooleanLiteral::init_from_table(u))
+                    .map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -5990,7 +9258,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.interpolated_expression_type() == Expression::DateTimeLiteral {
                 self.interpolated_expression()
-                    .map(|u| DateTimeLiteral::init_from_table(u))
+                    .map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -6001,7 +9269,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.interpolated_expression_type() == Expression::DurationLiteral {
                 self.interpolated_expression()
-                    .map(|u| DurationLiteral::init_from_table(u))
+                    .map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -6012,7 +9280,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.interpolated_expression_type() == Expression::FloatLiteral {
                 self.interpolated_expression()
-                    .map(|u| FloatLiteral::init_from_table(u))
+                    .map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -6023,7 +9291,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.interpolated_expression_type() == Expression::IntegerLiteral {
                 self.interpolated_expression()
-                    .map(|u| IntegerLiteral::init_from_table(u))
+                    .map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -6034,7 +9302,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.interpolated_expression_type() == Expression::StringLiteral {
                 self.interpolated_expression()
-                    .map(|u| StringLiteral::init_from_table(u))
+                    .map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -6045,7 +9313,7 @@ pub mod fbsemantic {
         pub fn interpolated_expression_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.interpolated_expression_type() == Expression::RegexpLiteral {
                 self.interpolated_expression()
-                    .map(|u| RegexpLiteral::init_from_table(u))
+                    .map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -6058,13 +9326,53 @@ pub mod fbsemantic {
         ) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.interpolated_expression_type() == Expression::UnsignedIntegerLiteral {
                 self.interpolated_expression()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                    .map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for StringExpressionPart<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"text_value", Self::VT_TEXT_VALUE, false)?
+     .visit_union::<Expression, _>(&"interpolated_expression_type", Self::VT_INTERPOLATED_EXPRESSION_TYPE, &"interpolated_expression", Self::VT_INTERPOLATED_EXPRESSION, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct StringExpressionPartArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub text_value: Option<flatbuffers::WIPOffset<&'a str>>,
@@ -6140,8 +9448,236 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for StringExpressionPart<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("StringExpressionPart");
+            ds.field("loc", &self.loc());
+            ds.field("text_value", &self.text_value());
+            ds.field(
+                "interpolated_expression_type",
+                &self.interpolated_expression_type(),
+            );
+            match self.interpolated_expression_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.interpolated_expression_as_string_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.interpolated_expression_as_array_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.interpolated_expression_as_dict_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.interpolated_expression_as_function_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.interpolated_expression_as_binary_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.interpolated_expression_as_call_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.interpolated_expression_as_conditional_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.interpolated_expression_as_identifier_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.interpolated_expression_as_logical_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.interpolated_expression_as_member_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.interpolated_expression_as_index_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.interpolated_expression_as_object_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.interpolated_expression_as_unary_expression() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.interpolated_expression_as_boolean_literal() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.interpolated_expression_as_date_time_literal() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.interpolated_expression_as_duration_literal() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.interpolated_expression_as_float_literal() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.interpolated_expression_as_integer_literal() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.interpolated_expression_as_string_literal() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.interpolated_expression_as_regexp_literal() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.interpolated_expression_as_unsigned_integer_literal() {
+                        ds.field("interpolated_expression", &x)
+                    } else {
+                        ds.field(
+                            "interpolated_expression",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("interpolated_expression", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum ArrayExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct ArrayExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -6152,7 +9688,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -6189,10 +9725,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    ArrayExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(ArrayExpression::VT_LOC, None)
         }
         #[inline]
         pub fn elements(
@@ -6200,7 +9733,7 @@ pub mod fbsemantic {
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedExpression<'a>>>>
         {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<WrappedExpression<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedExpression>>,
             >>(ArrayExpression::VT_ELEMENTS, None)
         }
         #[inline]
@@ -6221,7 +9754,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -6231,7 +9764,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -6241,7 +9774,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -6251,7 +9784,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -6261,7 +9794,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -6271,13 +9804,73 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for ArrayExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<WrappedExpression>>,
+                >>(&"elements", Self::VT_ELEMENTS, false)?
+                .visit_union::<MonoType, _>(
+                    &"typ_type",
+                    Self::VT_TYP_TYPE,
+                    &"typ",
+                    Self::VT_TYP,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct ArrayExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub elements: Option<
@@ -6351,8 +9944,83 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for ArrayExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("ArrayExpression");
+            ds.field("loc", &self.loc());
+            ds.field("elements", &self.elements());
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum DictExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct DictExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -6363,7 +10031,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -6400,17 +10068,14 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    DictExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(DictExpression::VT_LOC, None)
         }
         #[inline]
         pub fn elements(
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<DictItem<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<DictItem<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<DictItem>>,
             >>(DictExpression::VT_ELEMENTS, None)
         }
         #[inline]
@@ -6431,7 +10096,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -6441,7 +10106,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -6451,7 +10116,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -6461,7 +10126,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -6471,7 +10136,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -6481,13 +10146,73 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for DictExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<DictItem>>,
+                >>(&"elements", Self::VT_ELEMENTS, false)?
+                .visit_union::<MonoType, _>(
+                    &"typ_type",
+                    Self::VT_TYP_TYPE,
+                    &"typ",
+                    Self::VT_TYP,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct DictExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub elements: Option<
@@ -6561,8 +10286,83 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for DictExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("DictExpression");
+            ds.field("loc", &self.loc());
+            ds.field("elements", &self.elements());
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum DictItemOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct DictItem<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -6573,7 +10373,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -6631,7 +10431,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.key_type() == Expression::StringExpression {
-                self.key().map(|u| StringExpression::init_from_table(u))
+                self.key().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -6641,7 +10441,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.key_type() == Expression::ArrayExpression {
-                self.key().map(|u| ArrayExpression::init_from_table(u))
+                self.key().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -6651,7 +10451,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.key_type() == Expression::DictExpression {
-                self.key().map(|u| DictExpression::init_from_table(u))
+                self.key().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -6661,7 +10461,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.key_type() == Expression::FunctionExpression {
-                self.key().map(|u| FunctionExpression::init_from_table(u))
+                self.key().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -6671,7 +10471,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.key_type() == Expression::BinaryExpression {
-                self.key().map(|u| BinaryExpression::init_from_table(u))
+                self.key().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -6681,7 +10481,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.key_type() == Expression::CallExpression {
-                self.key().map(|u| CallExpression::init_from_table(u))
+                self.key().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -6691,8 +10491,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.key_type() == Expression::ConditionalExpression {
-                self.key()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.key().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -6702,7 +10501,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.key_type() == Expression::IdentifierExpression {
-                self.key().map(|u| IdentifierExpression::init_from_table(u))
+                self.key().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -6712,7 +10511,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.key_type() == Expression::LogicalExpression {
-                self.key().map(|u| LogicalExpression::init_from_table(u))
+                self.key().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -6722,7 +10521,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.key_type() == Expression::MemberExpression {
-                self.key().map(|u| MemberExpression::init_from_table(u))
+                self.key().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -6732,7 +10531,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.key_type() == Expression::IndexExpression {
-                self.key().map(|u| IndexExpression::init_from_table(u))
+                self.key().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -6742,7 +10541,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.key_type() == Expression::ObjectExpression {
-                self.key().map(|u| ObjectExpression::init_from_table(u))
+                self.key().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -6752,7 +10551,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.key_type() == Expression::UnaryExpression {
-                self.key().map(|u| UnaryExpression::init_from_table(u))
+                self.key().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -6762,7 +10561,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.key_type() == Expression::BooleanLiteral {
-                self.key().map(|u| BooleanLiteral::init_from_table(u))
+                self.key().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -6772,7 +10571,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.key_type() == Expression::DateTimeLiteral {
-                self.key().map(|u| DateTimeLiteral::init_from_table(u))
+                self.key().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -6782,7 +10581,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.key_type() == Expression::DurationLiteral {
-                self.key().map(|u| DurationLiteral::init_from_table(u))
+                self.key().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -6792,7 +10591,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.key_type() == Expression::FloatLiteral {
-                self.key().map(|u| FloatLiteral::init_from_table(u))
+                self.key().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -6802,7 +10601,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.key_type() == Expression::IntegerLiteral {
-                self.key().map(|u| IntegerLiteral::init_from_table(u))
+                self.key().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -6812,7 +10611,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.key_type() == Expression::StringLiteral {
-                self.key().map(|u| StringLiteral::init_from_table(u))
+                self.key().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -6822,7 +10621,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.key_type() == Expression::RegexpLiteral {
-                self.key().map(|u| RegexpLiteral::init_from_table(u))
+                self.key().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -6832,8 +10631,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn key_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.key_type() == Expression::UnsignedIntegerLiteral {
-                self.key()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.key().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -6843,7 +10641,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.val_type() == Expression::StringExpression {
-                self.val().map(|u| StringExpression::init_from_table(u))
+                self.val().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -6853,7 +10651,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.val_type() == Expression::ArrayExpression {
-                self.val().map(|u| ArrayExpression::init_from_table(u))
+                self.val().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -6863,7 +10661,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.val_type() == Expression::DictExpression {
-                self.val().map(|u| DictExpression::init_from_table(u))
+                self.val().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -6873,7 +10671,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.val_type() == Expression::FunctionExpression {
-                self.val().map(|u| FunctionExpression::init_from_table(u))
+                self.val().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -6883,7 +10681,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.val_type() == Expression::BinaryExpression {
-                self.val().map(|u| BinaryExpression::init_from_table(u))
+                self.val().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -6893,7 +10691,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.val_type() == Expression::CallExpression {
-                self.val().map(|u| CallExpression::init_from_table(u))
+                self.val().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -6903,8 +10701,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.val_type() == Expression::ConditionalExpression {
-                self.val()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.val().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -6914,7 +10711,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.val_type() == Expression::IdentifierExpression {
-                self.val().map(|u| IdentifierExpression::init_from_table(u))
+                self.val().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -6924,7 +10721,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.val_type() == Expression::LogicalExpression {
-                self.val().map(|u| LogicalExpression::init_from_table(u))
+                self.val().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -6934,7 +10731,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.val_type() == Expression::MemberExpression {
-                self.val().map(|u| MemberExpression::init_from_table(u))
+                self.val().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -6944,7 +10741,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.val_type() == Expression::IndexExpression {
-                self.val().map(|u| IndexExpression::init_from_table(u))
+                self.val().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -6954,7 +10751,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.val_type() == Expression::ObjectExpression {
-                self.val().map(|u| ObjectExpression::init_from_table(u))
+                self.val().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -6964,7 +10761,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.val_type() == Expression::UnaryExpression {
-                self.val().map(|u| UnaryExpression::init_from_table(u))
+                self.val().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -6974,7 +10771,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.val_type() == Expression::BooleanLiteral {
-                self.val().map(|u| BooleanLiteral::init_from_table(u))
+                self.val().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -6984,7 +10781,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.val_type() == Expression::DateTimeLiteral {
-                self.val().map(|u| DateTimeLiteral::init_from_table(u))
+                self.val().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -6994,7 +10791,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.val_type() == Expression::DurationLiteral {
-                self.val().map(|u| DurationLiteral::init_from_table(u))
+                self.val().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -7004,7 +10801,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.val_type() == Expression::FloatLiteral {
-                self.val().map(|u| FloatLiteral::init_from_table(u))
+                self.val().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -7014,7 +10811,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.val_type() == Expression::IntegerLiteral {
-                self.val().map(|u| IntegerLiteral::init_from_table(u))
+                self.val().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -7024,7 +10821,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.val_type() == Expression::StringLiteral {
-                self.val().map(|u| StringLiteral::init_from_table(u))
+                self.val().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -7034,7 +10831,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.val_type() == Expression::RegexpLiteral {
-                self.val().map(|u| RegexpLiteral::init_from_table(u))
+                self.val().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -7044,14 +10841,77 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn val_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.val_type() == Expression::UnsignedIntegerLiteral {
-                self.val()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.val().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for DictItem<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_union::<Expression, _>(&"key_type", Self::VT_KEY_TYPE, &"key", Self::VT_KEY, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<Expression, _>(&"val_type", Self::VT_VAL_TYPE, &"val", Self::VT_VAL, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct DictItemArgs {
         pub key_type: Expression,
         pub key: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
@@ -7109,8 +10969,448 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for DictItem<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("DictItem");
+            ds.field("key_type", &self.key_type());
+            match self.key_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.key_as_string_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.key_as_array_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.key_as_dict_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.key_as_function_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.key_as_binary_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.key_as_call_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.key_as_conditional_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.key_as_identifier_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.key_as_logical_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.key_as_member_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.key_as_index_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.key_as_object_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.key_as_unary_expression() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.key_as_boolean_literal() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.key_as_date_time_literal() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.key_as_duration_literal() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.key_as_float_literal() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.key_as_integer_literal() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.key_as_string_literal() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.key_as_regexp_literal() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.key_as_unsigned_integer_literal() {
+                        ds.field("key", &x)
+                    } else {
+                        ds.field(
+                            "key",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("key", &x)
+                }
+            };
+            ds.field("val_type", &self.val_type());
+            match self.val_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.val_as_string_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.val_as_array_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.val_as_dict_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.val_as_function_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.val_as_binary_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.val_as_call_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.val_as_conditional_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.val_as_identifier_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.val_as_logical_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.val_as_member_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.val_as_index_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.val_as_object_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.val_as_unary_expression() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.val_as_boolean_literal() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.val_as_date_time_literal() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.val_as_duration_literal() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.val_as_float_literal() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.val_as_integer_literal() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.val_as_string_literal() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.val_as_regexp_literal() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.val_as_unsigned_integer_literal() {
+                        ds.field("val", &x)
+                    } else {
+                        ds.field(
+                            "val",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("val", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum FunctionExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct FunctionExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -7121,7 +11421,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -7162,7 +11462,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     FunctionExpression::VT_LOC,
                     None,
                 )
@@ -7173,13 +11473,13 @@ pub mod fbsemantic {
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<FunctionParameter<'a>>>>
         {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<FunctionParameter<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<FunctionParameter>>,
             >>(FunctionExpression::VT_PARAMS, None)
         }
         #[inline]
         pub fn body(&self) -> Option<Block<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Block<'a>>>(FunctionExpression::VT_BODY, None)
+                .get::<flatbuffers::ForwardsUOffset<Block>>(FunctionExpression::VT_BODY, None)
         }
         #[inline]
         pub fn typ_type(&self) -> MonoType {
@@ -7199,7 +11499,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -7209,7 +11509,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -7219,7 +11519,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -7229,7 +11529,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -7239,7 +11539,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -7249,13 +11549,74 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for FunctionExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<FunctionParameter>>,
+                >>(&"params", Self::VT_PARAMS, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<Block>>(&"body", Self::VT_BODY, false)?
+                .visit_union::<MonoType, _>(
+                    &"typ_type",
+                    Self::VT_TYP_TYPE,
+                    &"typ",
+                    Self::VT_TYP,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct FunctionExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub params: Option<
@@ -7341,8 +11702,84 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for FunctionExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("FunctionExpression");
+            ds.field("loc", &self.loc());
+            ds.field("params", &self.params());
+            ds.field("body", &self.body());
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum FunctionParameterOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct FunctionParameter<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -7353,7 +11790,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -7392,7 +11829,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     FunctionParameter::VT_LOC,
                     None,
                 )
@@ -7406,10 +11843,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn key(&self) -> Option<Identifier<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(
-                    FunctionParameter::VT_KEY,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<Identifier>>(FunctionParameter::VT_KEY, None)
         }
         #[inline]
         pub fn default_type(&self) -> Expression {
@@ -7429,7 +11863,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.default_type() == Expression::StringExpression {
-                self.default().map(|u| StringExpression::init_from_table(u))
+                self.default().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -7439,7 +11873,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.default_type() == Expression::ArrayExpression {
-                self.default().map(|u| ArrayExpression::init_from_table(u))
+                self.default().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -7449,7 +11883,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.default_type() == Expression::DictExpression {
-                self.default().map(|u| DictExpression::init_from_table(u))
+                self.default().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -7459,8 +11893,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.default_type() == Expression::FunctionExpression {
-                self.default()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.default().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -7470,7 +11903,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.default_type() == Expression::BinaryExpression {
-                self.default().map(|u| BinaryExpression::init_from_table(u))
+                self.default().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -7480,7 +11913,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.default_type() == Expression::CallExpression {
-                self.default().map(|u| CallExpression::init_from_table(u))
+                self.default().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -7490,8 +11923,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.default_type() == Expression::ConditionalExpression {
-                self.default()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.default().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -7501,8 +11933,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.default_type() == Expression::IdentifierExpression {
-                self.default()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.default().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -7512,8 +11943,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.default_type() == Expression::LogicalExpression {
-                self.default()
-                    .map(|u| LogicalExpression::init_from_table(u))
+                self.default().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -7523,7 +11953,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.default_type() == Expression::MemberExpression {
-                self.default().map(|u| MemberExpression::init_from_table(u))
+                self.default().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -7533,7 +11963,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.default_type() == Expression::IndexExpression {
-                self.default().map(|u| IndexExpression::init_from_table(u))
+                self.default().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -7543,7 +11973,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.default_type() == Expression::ObjectExpression {
-                self.default().map(|u| ObjectExpression::init_from_table(u))
+                self.default().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -7553,7 +11983,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.default_type() == Expression::UnaryExpression {
-                self.default().map(|u| UnaryExpression::init_from_table(u))
+                self.default().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -7563,7 +11993,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.default_type() == Expression::BooleanLiteral {
-                self.default().map(|u| BooleanLiteral::init_from_table(u))
+                self.default().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -7573,7 +12003,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.default_type() == Expression::DateTimeLiteral {
-                self.default().map(|u| DateTimeLiteral::init_from_table(u))
+                self.default().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -7583,7 +12013,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.default_type() == Expression::DurationLiteral {
-                self.default().map(|u| DurationLiteral::init_from_table(u))
+                self.default().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -7593,7 +12023,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.default_type() == Expression::FloatLiteral {
-                self.default().map(|u| FloatLiteral::init_from_table(u))
+                self.default().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -7603,7 +12033,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.default_type() == Expression::IntegerLiteral {
-                self.default().map(|u| IntegerLiteral::init_from_table(u))
+                self.default().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -7613,7 +12043,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.default_type() == Expression::StringLiteral {
-                self.default().map(|u| StringLiteral::init_from_table(u))
+                self.default().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -7623,7 +12053,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.default_type() == Expression::RegexpLiteral {
-                self.default().map(|u| RegexpLiteral::init_from_table(u))
+                self.default().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -7633,14 +12063,54 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn default_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.default_type() == Expression::UnsignedIntegerLiteral {
-                self.default()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.default().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for FunctionParameter<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_field::<bool>(&"is_pipe", Self::VT_IS_PIPE, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<Identifier>>(&"key", Self::VT_KEY, false)?
+     .visit_union::<Expression, _>(&"default_type", Self::VT_DEFAULT_TYPE, &"default", Self::VT_DEFAULT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct FunctionParameterArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub is_pipe: bool,
@@ -7721,8 +12191,234 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for FunctionParameter<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("FunctionParameter");
+            ds.field("loc", &self.loc());
+            ds.field("is_pipe", &self.is_pipe());
+            ds.field("key", &self.key());
+            ds.field("default_type", &self.default_type());
+            match self.default_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.default_as_string_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.default_as_array_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.default_as_dict_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.default_as_function_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.default_as_binary_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.default_as_call_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.default_as_conditional_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.default_as_identifier_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.default_as_logical_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.default_as_member_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.default_as_index_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.default_as_object_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.default_as_unary_expression() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.default_as_boolean_literal() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.default_as_date_time_literal() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.default_as_duration_literal() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.default_as_float_literal() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.default_as_integer_literal() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.default_as_string_literal() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.default_as_regexp_literal() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.default_as_unsigned_integer_literal() {
+                        ds.field("default", &x)
+                    } else {
+                        ds.field(
+                            "default",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("default", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum BlockOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Block<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -7733,7 +12429,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -7764,7 +12460,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(Block::VT_LOC, None)
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(Block::VT_LOC, None)
         }
         #[inline]
         pub fn body(
@@ -7772,11 +12468,31 @@ pub mod fbsemantic {
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>>
         {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<WrappedStatement<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<WrappedStatement>>,
             >>(Block::VT_BODY, None)
         }
     }
 
+    impl flatbuffers::Verifiable for Block<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<WrappedStatement>>,
+                >>(&"body", Self::VT_BODY, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct BlockArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub body: Option<
@@ -7829,8 +12545,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Block<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Block");
+            ds.field("loc", &self.loc());
+            ds.field("body", &self.body());
+            ds.finish()
+        }
+    }
     pub enum BinaryExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct BinaryExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -7841,7 +12565,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -7888,10 +12612,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    BinaryExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(BinaryExpression::VT_LOC, None)
         }
         #[inline]
         pub fn operator(&self) -> Operator {
@@ -7948,7 +12669,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.left_type() == Expression::StringExpression {
-                self.left().map(|u| StringExpression::init_from_table(u))
+                self.left().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -7958,7 +12679,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.left_type() == Expression::ArrayExpression {
-                self.left().map(|u| ArrayExpression::init_from_table(u))
+                self.left().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -7968,7 +12689,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.left_type() == Expression::DictExpression {
-                self.left().map(|u| DictExpression::init_from_table(u))
+                self.left().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -7978,7 +12699,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.left_type() == Expression::FunctionExpression {
-                self.left().map(|u| FunctionExpression::init_from_table(u))
+                self.left().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -7988,7 +12709,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.left_type() == Expression::BinaryExpression {
-                self.left().map(|u| BinaryExpression::init_from_table(u))
+                self.left().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -7998,7 +12719,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.left_type() == Expression::CallExpression {
-                self.left().map(|u| CallExpression::init_from_table(u))
+                self.left().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -8008,8 +12729,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.left_type() == Expression::ConditionalExpression {
-                self.left()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.left().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -8019,8 +12739,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.left_type() == Expression::IdentifierExpression {
-                self.left()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.left().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -8030,7 +12749,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.left_type() == Expression::LogicalExpression {
-                self.left().map(|u| LogicalExpression::init_from_table(u))
+                self.left().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -8040,7 +12759,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.left_type() == Expression::MemberExpression {
-                self.left().map(|u| MemberExpression::init_from_table(u))
+                self.left().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -8050,7 +12769,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.left_type() == Expression::IndexExpression {
-                self.left().map(|u| IndexExpression::init_from_table(u))
+                self.left().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -8060,7 +12779,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.left_type() == Expression::ObjectExpression {
-                self.left().map(|u| ObjectExpression::init_from_table(u))
+                self.left().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -8070,7 +12789,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.left_type() == Expression::UnaryExpression {
-                self.left().map(|u| UnaryExpression::init_from_table(u))
+                self.left().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -8080,7 +12799,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.left_type() == Expression::BooleanLiteral {
-                self.left().map(|u| BooleanLiteral::init_from_table(u))
+                self.left().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -8090,7 +12809,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.left_type() == Expression::DateTimeLiteral {
-                self.left().map(|u| DateTimeLiteral::init_from_table(u))
+                self.left().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -8100,7 +12819,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.left_type() == Expression::DurationLiteral {
-                self.left().map(|u| DurationLiteral::init_from_table(u))
+                self.left().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -8110,7 +12829,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.left_type() == Expression::FloatLiteral {
-                self.left().map(|u| FloatLiteral::init_from_table(u))
+                self.left().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -8120,7 +12839,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.left_type() == Expression::IntegerLiteral {
-                self.left().map(|u| IntegerLiteral::init_from_table(u))
+                self.left().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -8130,7 +12849,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.left_type() == Expression::StringLiteral {
-                self.left().map(|u| StringLiteral::init_from_table(u))
+                self.left().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -8140,7 +12859,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.left_type() == Expression::RegexpLiteral {
-                self.left().map(|u| RegexpLiteral::init_from_table(u))
+                self.left().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -8150,8 +12869,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.left_type() == Expression::UnsignedIntegerLiteral {
-                self.left()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.left().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -8161,7 +12879,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.right_type() == Expression::StringExpression {
-                self.right().map(|u| StringExpression::init_from_table(u))
+                self.right().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -8171,7 +12889,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.right_type() == Expression::ArrayExpression {
-                self.right().map(|u| ArrayExpression::init_from_table(u))
+                self.right().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -8181,7 +12899,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.right_type() == Expression::DictExpression {
-                self.right().map(|u| DictExpression::init_from_table(u))
+                self.right().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -8191,7 +12909,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.right_type() == Expression::FunctionExpression {
-                self.right().map(|u| FunctionExpression::init_from_table(u))
+                self.right().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -8201,7 +12919,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.right_type() == Expression::BinaryExpression {
-                self.right().map(|u| BinaryExpression::init_from_table(u))
+                self.right().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -8211,7 +12929,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.right_type() == Expression::CallExpression {
-                self.right().map(|u| CallExpression::init_from_table(u))
+                self.right().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -8221,8 +12939,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.right_type() == Expression::ConditionalExpression {
-                self.right()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.right().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -8232,8 +12949,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.right_type() == Expression::IdentifierExpression {
-                self.right()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.right().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -8243,7 +12959,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.right_type() == Expression::LogicalExpression {
-                self.right().map(|u| LogicalExpression::init_from_table(u))
+                self.right().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -8253,7 +12969,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.right_type() == Expression::MemberExpression {
-                self.right().map(|u| MemberExpression::init_from_table(u))
+                self.right().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -8263,7 +12979,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.right_type() == Expression::IndexExpression {
-                self.right().map(|u| IndexExpression::init_from_table(u))
+                self.right().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -8273,7 +12989,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.right_type() == Expression::ObjectExpression {
-                self.right().map(|u| ObjectExpression::init_from_table(u))
+                self.right().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -8283,7 +12999,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.right_type() == Expression::UnaryExpression {
-                self.right().map(|u| UnaryExpression::init_from_table(u))
+                self.right().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -8293,7 +13009,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.right_type() == Expression::BooleanLiteral {
-                self.right().map(|u| BooleanLiteral::init_from_table(u))
+                self.right().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -8303,7 +13019,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.right_type() == Expression::DateTimeLiteral {
-                self.right().map(|u| DateTimeLiteral::init_from_table(u))
+                self.right().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -8313,7 +13029,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.right_type() == Expression::DurationLiteral {
-                self.right().map(|u| DurationLiteral::init_from_table(u))
+                self.right().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -8323,7 +13039,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.right_type() == Expression::FloatLiteral {
-                self.right().map(|u| FloatLiteral::init_from_table(u))
+                self.right().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -8333,7 +13049,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.right_type() == Expression::IntegerLiteral {
-                self.right().map(|u| IntegerLiteral::init_from_table(u))
+                self.right().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -8343,7 +13059,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.right_type() == Expression::StringLiteral {
-                self.right().map(|u| StringLiteral::init_from_table(u))
+                self.right().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -8353,7 +13069,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.right_type() == Expression::RegexpLiteral {
-                self.right().map(|u| RegexpLiteral::init_from_table(u))
+                self.right().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -8363,8 +13079,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.right_type() == Expression::UnsignedIntegerLiteral {
-                self.right()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.right().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -8374,7 +13089,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -8384,7 +13099,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -8394,7 +13109,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -8404,7 +13119,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -8414,7 +13129,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -8424,13 +13139,90 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for BinaryExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_field::<Operator>(&"operator", Self::VT_OPERATOR, false)?
+     .visit_union::<Expression, _>(&"left_type", Self::VT_LEFT_TYPE, &"left", Self::VT_LEFT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<Expression, _>(&"right_type", Self::VT_RIGHT_TYPE, &"right", Self::VT_RIGHT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<MonoType, _>(&"typ_type", Self::VT_TYP_TYPE, &"typ", Self::VT_TYP, false, |key, v, pos| {
+        match key {
+          MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
+          MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
+          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
+          MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
+          MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct BinaryExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub operator: Operator,
@@ -8533,8 +13325,517 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for BinaryExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("BinaryExpression");
+            ds.field("loc", &self.loc());
+            ds.field("operator", &self.operator());
+            ds.field("left_type", &self.left_type());
+            match self.left_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.left_as_string_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.left_as_array_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.left_as_dict_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.left_as_function_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.left_as_binary_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.left_as_call_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.left_as_conditional_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.left_as_identifier_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.left_as_logical_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.left_as_member_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.left_as_index_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.left_as_object_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.left_as_unary_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.left_as_boolean_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.left_as_date_time_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.left_as_duration_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.left_as_float_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.left_as_integer_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.left_as_string_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.left_as_regexp_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.left_as_unsigned_integer_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("left", &x)
+                }
+            };
+            ds.field("right_type", &self.right_type());
+            match self.right_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.right_as_string_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.right_as_array_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.right_as_dict_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.right_as_function_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.right_as_binary_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.right_as_call_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.right_as_conditional_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.right_as_identifier_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.right_as_logical_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.right_as_member_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.right_as_index_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.right_as_object_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.right_as_unary_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.right_as_boolean_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.right_as_date_time_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.right_as_duration_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.right_as_float_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.right_as_integer_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.right_as_string_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.right_as_regexp_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.right_as_unsigned_integer_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("right", &x)
+                }
+            };
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum CallExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct CallExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -8545,7 +13846,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -8594,10 +13895,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    CallExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(CallExpression::VT_LOC, None)
         }
         #[inline]
         pub fn callee_type(&self) -> Expression {
@@ -8618,7 +13916,7 @@ pub mod fbsemantic {
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Property<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Property<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Property>>,
             >>(CallExpression::VT_ARGUMENTS, None)
         }
         #[inline]
@@ -8653,7 +13951,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.callee_type() == Expression::StringExpression {
-                self.callee().map(|u| StringExpression::init_from_table(u))
+                self.callee().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -8663,7 +13961,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.callee_type() == Expression::ArrayExpression {
-                self.callee().map(|u| ArrayExpression::init_from_table(u))
+                self.callee().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -8673,7 +13971,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.callee_type() == Expression::DictExpression {
-                self.callee().map(|u| DictExpression::init_from_table(u))
+                self.callee().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -8683,8 +13981,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.callee_type() == Expression::FunctionExpression {
-                self.callee()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.callee().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -8694,7 +13991,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.callee_type() == Expression::BinaryExpression {
-                self.callee().map(|u| BinaryExpression::init_from_table(u))
+                self.callee().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -8704,7 +14001,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.callee_type() == Expression::CallExpression {
-                self.callee().map(|u| CallExpression::init_from_table(u))
+                self.callee().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -8714,8 +14011,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.callee_type() == Expression::ConditionalExpression {
-                self.callee()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.callee().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -8725,8 +14021,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.callee_type() == Expression::IdentifierExpression {
-                self.callee()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.callee().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -8736,7 +14031,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.callee_type() == Expression::LogicalExpression {
-                self.callee().map(|u| LogicalExpression::init_from_table(u))
+                self.callee().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -8746,7 +14041,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.callee_type() == Expression::MemberExpression {
-                self.callee().map(|u| MemberExpression::init_from_table(u))
+                self.callee().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -8756,7 +14051,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.callee_type() == Expression::IndexExpression {
-                self.callee().map(|u| IndexExpression::init_from_table(u))
+                self.callee().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -8766,7 +14061,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.callee_type() == Expression::ObjectExpression {
-                self.callee().map(|u| ObjectExpression::init_from_table(u))
+                self.callee().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -8776,7 +14071,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.callee_type() == Expression::UnaryExpression {
-                self.callee().map(|u| UnaryExpression::init_from_table(u))
+                self.callee().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -8786,7 +14081,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.callee_type() == Expression::BooleanLiteral {
-                self.callee().map(|u| BooleanLiteral::init_from_table(u))
+                self.callee().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -8796,7 +14091,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.callee_type() == Expression::DateTimeLiteral {
-                self.callee().map(|u| DateTimeLiteral::init_from_table(u))
+                self.callee().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -8806,7 +14101,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.callee_type() == Expression::DurationLiteral {
-                self.callee().map(|u| DurationLiteral::init_from_table(u))
+                self.callee().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -8816,7 +14111,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.callee_type() == Expression::FloatLiteral {
-                self.callee().map(|u| FloatLiteral::init_from_table(u))
+                self.callee().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -8826,7 +14121,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.callee_type() == Expression::IntegerLiteral {
-                self.callee().map(|u| IntegerLiteral::init_from_table(u))
+                self.callee().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -8836,7 +14131,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.callee_type() == Expression::StringLiteral {
-                self.callee().map(|u| StringLiteral::init_from_table(u))
+                self.callee().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -8846,7 +14141,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.callee_type() == Expression::RegexpLiteral {
-                self.callee().map(|u| RegexpLiteral::init_from_table(u))
+                self.callee().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -8856,8 +14151,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn callee_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.callee_type() == Expression::UnsignedIntegerLiteral {
-                self.callee()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.callee().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -8867,7 +14161,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.pipe_type() == Expression::StringExpression {
-                self.pipe().map(|u| StringExpression::init_from_table(u))
+                self.pipe().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -8877,7 +14171,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.pipe_type() == Expression::ArrayExpression {
-                self.pipe().map(|u| ArrayExpression::init_from_table(u))
+                self.pipe().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -8887,7 +14181,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.pipe_type() == Expression::DictExpression {
-                self.pipe().map(|u| DictExpression::init_from_table(u))
+                self.pipe().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -8897,7 +14191,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.pipe_type() == Expression::FunctionExpression {
-                self.pipe().map(|u| FunctionExpression::init_from_table(u))
+                self.pipe().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -8907,7 +14201,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.pipe_type() == Expression::BinaryExpression {
-                self.pipe().map(|u| BinaryExpression::init_from_table(u))
+                self.pipe().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -8917,7 +14211,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.pipe_type() == Expression::CallExpression {
-                self.pipe().map(|u| CallExpression::init_from_table(u))
+                self.pipe().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -8927,8 +14221,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.pipe_type() == Expression::ConditionalExpression {
-                self.pipe()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.pipe().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -8938,8 +14231,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.pipe_type() == Expression::IdentifierExpression {
-                self.pipe()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.pipe().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -8949,7 +14241,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.pipe_type() == Expression::LogicalExpression {
-                self.pipe().map(|u| LogicalExpression::init_from_table(u))
+                self.pipe().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -8959,7 +14251,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.pipe_type() == Expression::MemberExpression {
-                self.pipe().map(|u| MemberExpression::init_from_table(u))
+                self.pipe().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -8969,7 +14261,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.pipe_type() == Expression::IndexExpression {
-                self.pipe().map(|u| IndexExpression::init_from_table(u))
+                self.pipe().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -8979,7 +14271,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.pipe_type() == Expression::ObjectExpression {
-                self.pipe().map(|u| ObjectExpression::init_from_table(u))
+                self.pipe().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -8989,7 +14281,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.pipe_type() == Expression::UnaryExpression {
-                self.pipe().map(|u| UnaryExpression::init_from_table(u))
+                self.pipe().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -8999,7 +14291,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.pipe_type() == Expression::BooleanLiteral {
-                self.pipe().map(|u| BooleanLiteral::init_from_table(u))
+                self.pipe().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -9009,7 +14301,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.pipe_type() == Expression::DateTimeLiteral {
-                self.pipe().map(|u| DateTimeLiteral::init_from_table(u))
+                self.pipe().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -9019,7 +14311,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.pipe_type() == Expression::DurationLiteral {
-                self.pipe().map(|u| DurationLiteral::init_from_table(u))
+                self.pipe().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -9029,7 +14321,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.pipe_type() == Expression::FloatLiteral {
-                self.pipe().map(|u| FloatLiteral::init_from_table(u))
+                self.pipe().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -9039,7 +14331,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.pipe_type() == Expression::IntegerLiteral {
-                self.pipe().map(|u| IntegerLiteral::init_from_table(u))
+                self.pipe().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -9049,7 +14341,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.pipe_type() == Expression::StringLiteral {
-                self.pipe().map(|u| StringLiteral::init_from_table(u))
+                self.pipe().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -9059,7 +14351,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.pipe_type() == Expression::RegexpLiteral {
-                self.pipe().map(|u| RegexpLiteral::init_from_table(u))
+                self.pipe().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -9069,8 +14361,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn pipe_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.pipe_type() == Expression::UnsignedIntegerLiteral {
-                self.pipe()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.pipe().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -9080,7 +14371,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -9090,7 +14381,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -9100,7 +14391,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -9110,7 +14401,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -9120,7 +14411,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -9130,13 +14421,90 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for CallExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_union::<Expression, _>(&"callee_type", Self::VT_CALLEE_TYPE, &"callee", Self::VT_CALLEE, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Property>>>>(&"arguments", Self::VT_ARGUMENTS, false)?
+     .visit_union::<Expression, _>(&"pipe_type", Self::VT_PIPE_TYPE, &"pipe", Self::VT_PIPE, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<MonoType, _>(&"typ_type", Self::VT_TYP_TYPE, &"typ", Self::VT_TYP, false, |key, v, pos| {
+        match key {
+          MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
+          MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
+          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
+          MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
+          MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct CallExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub callee_type: Expression,
@@ -9244,8 +14612,517 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for CallExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("CallExpression");
+            ds.field("loc", &self.loc());
+            ds.field("callee_type", &self.callee_type());
+            match self.callee_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.callee_as_string_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.callee_as_array_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.callee_as_dict_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.callee_as_function_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.callee_as_binary_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.callee_as_call_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.callee_as_conditional_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.callee_as_identifier_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.callee_as_logical_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.callee_as_member_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.callee_as_index_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.callee_as_object_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.callee_as_unary_expression() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.callee_as_boolean_literal() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.callee_as_date_time_literal() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.callee_as_duration_literal() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.callee_as_float_literal() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.callee_as_integer_literal() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.callee_as_string_literal() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.callee_as_regexp_literal() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.callee_as_unsigned_integer_literal() {
+                        ds.field("callee", &x)
+                    } else {
+                        ds.field(
+                            "callee",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("callee", &x)
+                }
+            };
+            ds.field("arguments", &self.arguments());
+            ds.field("pipe_type", &self.pipe_type());
+            match self.pipe_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.pipe_as_string_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.pipe_as_array_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.pipe_as_dict_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.pipe_as_function_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.pipe_as_binary_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.pipe_as_call_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.pipe_as_conditional_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.pipe_as_identifier_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.pipe_as_logical_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.pipe_as_member_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.pipe_as_index_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.pipe_as_object_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.pipe_as_unary_expression() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.pipe_as_boolean_literal() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.pipe_as_date_time_literal() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.pipe_as_duration_literal() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.pipe_as_float_literal() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.pipe_as_integer_literal() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.pipe_as_string_literal() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.pipe_as_regexp_literal() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.pipe_as_unsigned_integer_literal() {
+                        ds.field("pipe", &x)
+                    } else {
+                        ds.field(
+                            "pipe",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("pipe", &x)
+                }
+            };
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum ConditionalExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct ConditionalExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -9256,7 +15133,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -9301,7 +15178,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     ConditionalExpression::VT_LOC,
                     None,
                 )
@@ -9358,7 +15235,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.test_type() == Expression::StringExpression {
-                self.test().map(|u| StringExpression::init_from_table(u))
+                self.test().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -9368,7 +15245,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.test_type() == Expression::ArrayExpression {
-                self.test().map(|u| ArrayExpression::init_from_table(u))
+                self.test().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -9378,7 +15255,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.test_type() == Expression::DictExpression {
-                self.test().map(|u| DictExpression::init_from_table(u))
+                self.test().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -9388,7 +15265,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.test_type() == Expression::FunctionExpression {
-                self.test().map(|u| FunctionExpression::init_from_table(u))
+                self.test().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -9398,7 +15275,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.test_type() == Expression::BinaryExpression {
-                self.test().map(|u| BinaryExpression::init_from_table(u))
+                self.test().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -9408,7 +15285,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.test_type() == Expression::CallExpression {
-                self.test().map(|u| CallExpression::init_from_table(u))
+                self.test().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -9418,8 +15295,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.test_type() == Expression::ConditionalExpression {
-                self.test()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.test().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -9429,8 +15305,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.test_type() == Expression::IdentifierExpression {
-                self.test()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.test().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -9440,7 +15315,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.test_type() == Expression::LogicalExpression {
-                self.test().map(|u| LogicalExpression::init_from_table(u))
+                self.test().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -9450,7 +15325,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.test_type() == Expression::MemberExpression {
-                self.test().map(|u| MemberExpression::init_from_table(u))
+                self.test().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -9460,7 +15335,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.test_type() == Expression::IndexExpression {
-                self.test().map(|u| IndexExpression::init_from_table(u))
+                self.test().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -9470,7 +15345,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.test_type() == Expression::ObjectExpression {
-                self.test().map(|u| ObjectExpression::init_from_table(u))
+                self.test().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -9480,7 +15355,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.test_type() == Expression::UnaryExpression {
-                self.test().map(|u| UnaryExpression::init_from_table(u))
+                self.test().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -9490,7 +15365,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.test_type() == Expression::BooleanLiteral {
-                self.test().map(|u| BooleanLiteral::init_from_table(u))
+                self.test().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -9500,7 +15375,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.test_type() == Expression::DateTimeLiteral {
-                self.test().map(|u| DateTimeLiteral::init_from_table(u))
+                self.test().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -9510,7 +15385,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.test_type() == Expression::DurationLiteral {
-                self.test().map(|u| DurationLiteral::init_from_table(u))
+                self.test().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -9520,7 +15395,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.test_type() == Expression::FloatLiteral {
-                self.test().map(|u| FloatLiteral::init_from_table(u))
+                self.test().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -9530,7 +15405,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.test_type() == Expression::IntegerLiteral {
-                self.test().map(|u| IntegerLiteral::init_from_table(u))
+                self.test().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -9540,7 +15415,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.test_type() == Expression::StringLiteral {
-                self.test().map(|u| StringLiteral::init_from_table(u))
+                self.test().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -9550,7 +15425,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.test_type() == Expression::RegexpLiteral {
-                self.test().map(|u| RegexpLiteral::init_from_table(u))
+                self.test().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -9560,8 +15435,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn test_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.test_type() == Expression::UnsignedIntegerLiteral {
-                self.test()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.test().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -9571,8 +15445,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.alternate_type() == Expression::StringExpression {
-                self.alternate()
-                    .map(|u| StringExpression::init_from_table(u))
+                self.alternate().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -9582,8 +15455,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.alternate_type() == Expression::ArrayExpression {
-                self.alternate()
-                    .map(|u| ArrayExpression::init_from_table(u))
+                self.alternate().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -9593,7 +15465,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.alternate_type() == Expression::DictExpression {
-                self.alternate().map(|u| DictExpression::init_from_table(u))
+                self.alternate().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -9603,8 +15475,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.alternate_type() == Expression::FunctionExpression {
-                self.alternate()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.alternate().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -9614,8 +15485,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.alternate_type() == Expression::BinaryExpression {
-                self.alternate()
-                    .map(|u| BinaryExpression::init_from_table(u))
+                self.alternate().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -9625,7 +15495,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.alternate_type() == Expression::CallExpression {
-                self.alternate().map(|u| CallExpression::init_from_table(u))
+                self.alternate().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -9635,8 +15505,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.alternate_type() == Expression::ConditionalExpression {
-                self.alternate()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.alternate().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -9646,8 +15515,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.alternate_type() == Expression::IdentifierExpression {
-                self.alternate()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.alternate().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -9657,8 +15525,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.alternate_type() == Expression::LogicalExpression {
-                self.alternate()
-                    .map(|u| LogicalExpression::init_from_table(u))
+                self.alternate().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -9668,8 +15535,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.alternate_type() == Expression::MemberExpression {
-                self.alternate()
-                    .map(|u| MemberExpression::init_from_table(u))
+                self.alternate().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -9679,8 +15545,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.alternate_type() == Expression::IndexExpression {
-                self.alternate()
-                    .map(|u| IndexExpression::init_from_table(u))
+                self.alternate().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -9690,8 +15555,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.alternate_type() == Expression::ObjectExpression {
-                self.alternate()
-                    .map(|u| ObjectExpression::init_from_table(u))
+                self.alternate().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -9701,8 +15565,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.alternate_type() == Expression::UnaryExpression {
-                self.alternate()
-                    .map(|u| UnaryExpression::init_from_table(u))
+                self.alternate().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -9712,7 +15575,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.alternate_type() == Expression::BooleanLiteral {
-                self.alternate().map(|u| BooleanLiteral::init_from_table(u))
+                self.alternate().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -9722,8 +15585,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.alternate_type() == Expression::DateTimeLiteral {
-                self.alternate()
-                    .map(|u| DateTimeLiteral::init_from_table(u))
+                self.alternate().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -9733,8 +15595,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.alternate_type() == Expression::DurationLiteral {
-                self.alternate()
-                    .map(|u| DurationLiteral::init_from_table(u))
+                self.alternate().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -9744,7 +15605,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.alternate_type() == Expression::FloatLiteral {
-                self.alternate().map(|u| FloatLiteral::init_from_table(u))
+                self.alternate().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -9754,7 +15615,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.alternate_type() == Expression::IntegerLiteral {
-                self.alternate().map(|u| IntegerLiteral::init_from_table(u))
+                self.alternate().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -9764,7 +15625,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.alternate_type() == Expression::StringLiteral {
-                self.alternate().map(|u| StringLiteral::init_from_table(u))
+                self.alternate().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -9774,7 +15635,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn alternate_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.alternate_type() == Expression::RegexpLiteral {
-                self.alternate().map(|u| RegexpLiteral::init_from_table(u))
+                self.alternate().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -9785,7 +15646,7 @@ pub mod fbsemantic {
         pub fn alternate_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.alternate_type() == Expression::UnsignedIntegerLiteral {
                 self.alternate()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                    .map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -9795,8 +15656,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.consequent_type() == Expression::StringExpression {
-                self.consequent()
-                    .map(|u| StringExpression::init_from_table(u))
+                self.consequent().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -9806,8 +15666,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.consequent_type() == Expression::ArrayExpression {
-                self.consequent()
-                    .map(|u| ArrayExpression::init_from_table(u))
+                self.consequent().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -9817,8 +15676,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.consequent_type() == Expression::DictExpression {
-                self.consequent()
-                    .map(|u| DictExpression::init_from_table(u))
+                self.consequent().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -9828,8 +15686,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.consequent_type() == Expression::FunctionExpression {
-                self.consequent()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.consequent().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -9839,8 +15696,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.consequent_type() == Expression::BinaryExpression {
-                self.consequent()
-                    .map(|u| BinaryExpression::init_from_table(u))
+                self.consequent().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -9850,8 +15706,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.consequent_type() == Expression::CallExpression {
-                self.consequent()
-                    .map(|u| CallExpression::init_from_table(u))
+                self.consequent().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -9862,7 +15717,7 @@ pub mod fbsemantic {
         pub fn consequent_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.consequent_type() == Expression::ConditionalExpression {
                 self.consequent()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                    .map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -9872,8 +15727,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.consequent_type() == Expression::IdentifierExpression {
-                self.consequent()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.consequent().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -9883,8 +15737,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.consequent_type() == Expression::LogicalExpression {
-                self.consequent()
-                    .map(|u| LogicalExpression::init_from_table(u))
+                self.consequent().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -9894,8 +15747,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.consequent_type() == Expression::MemberExpression {
-                self.consequent()
-                    .map(|u| MemberExpression::init_from_table(u))
+                self.consequent().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -9905,8 +15757,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.consequent_type() == Expression::IndexExpression {
-                self.consequent()
-                    .map(|u| IndexExpression::init_from_table(u))
+                self.consequent().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -9916,8 +15767,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.consequent_type() == Expression::ObjectExpression {
-                self.consequent()
-                    .map(|u| ObjectExpression::init_from_table(u))
+                self.consequent().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -9927,8 +15777,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.consequent_type() == Expression::UnaryExpression {
-                self.consequent()
-                    .map(|u| UnaryExpression::init_from_table(u))
+                self.consequent().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -9938,8 +15787,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.consequent_type() == Expression::BooleanLiteral {
-                self.consequent()
-                    .map(|u| BooleanLiteral::init_from_table(u))
+                self.consequent().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -9949,8 +15797,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.consequent_type() == Expression::DateTimeLiteral {
-                self.consequent()
-                    .map(|u| DateTimeLiteral::init_from_table(u))
+                self.consequent().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -9960,8 +15807,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.consequent_type() == Expression::DurationLiteral {
-                self.consequent()
-                    .map(|u| DurationLiteral::init_from_table(u))
+                self.consequent().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -9971,7 +15817,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.consequent_type() == Expression::FloatLiteral {
-                self.consequent().map(|u| FloatLiteral::init_from_table(u))
+                self.consequent().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -9981,8 +15827,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.consequent_type() == Expression::IntegerLiteral {
-                self.consequent()
-                    .map(|u| IntegerLiteral::init_from_table(u))
+                self.consequent().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -9992,7 +15837,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.consequent_type() == Expression::StringLiteral {
-                self.consequent().map(|u| StringLiteral::init_from_table(u))
+                self.consequent().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -10002,7 +15847,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn consequent_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.consequent_type() == Expression::RegexpLiteral {
-                self.consequent().map(|u| RegexpLiteral::init_from_table(u))
+                self.consequent().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -10013,13 +15858,104 @@ pub mod fbsemantic {
         pub fn consequent_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.consequent_type() == Expression::UnsignedIntegerLiteral {
                 self.consequent()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                    .map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for ConditionalExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_union::<Expression, _>(&"test_type", Self::VT_TEST_TYPE, &"test", Self::VT_TEST, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<Expression, _>(&"alternate_type", Self::VT_ALTERNATE_TYPE, &"alternate", Self::VT_ALTERNATE, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<Expression, _>(&"consequent_type", Self::VT_CONSEQUENT_TYPE, &"consequent", Self::VT_CONSEQUENT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct ConditionalExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub test_type: Expression,
@@ -10124,8 +16060,666 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for ConditionalExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("ConditionalExpression");
+            ds.field("loc", &self.loc());
+            ds.field("test_type", &self.test_type());
+            match self.test_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.test_as_string_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.test_as_array_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.test_as_dict_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.test_as_function_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.test_as_binary_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.test_as_call_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.test_as_conditional_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.test_as_identifier_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.test_as_logical_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.test_as_member_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.test_as_index_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.test_as_object_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.test_as_unary_expression() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.test_as_boolean_literal() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.test_as_date_time_literal() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.test_as_duration_literal() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.test_as_float_literal() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.test_as_integer_literal() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.test_as_string_literal() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.test_as_regexp_literal() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.test_as_unsigned_integer_literal() {
+                        ds.field("test", &x)
+                    } else {
+                        ds.field(
+                            "test",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("test", &x)
+                }
+            };
+            ds.field("alternate_type", &self.alternate_type());
+            match self.alternate_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.alternate_as_string_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.alternate_as_array_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.alternate_as_dict_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.alternate_as_function_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.alternate_as_binary_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.alternate_as_call_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.alternate_as_conditional_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.alternate_as_identifier_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.alternate_as_logical_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.alternate_as_member_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.alternate_as_index_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.alternate_as_object_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.alternate_as_unary_expression() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.alternate_as_boolean_literal() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.alternate_as_date_time_literal() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.alternate_as_duration_literal() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.alternate_as_float_literal() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.alternate_as_integer_literal() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.alternate_as_string_literal() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.alternate_as_regexp_literal() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.alternate_as_unsigned_integer_literal() {
+                        ds.field("alternate", &x)
+                    } else {
+                        ds.field(
+                            "alternate",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("alternate", &x)
+                }
+            };
+            ds.field("consequent_type", &self.consequent_type());
+            match self.consequent_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.consequent_as_string_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.consequent_as_array_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.consequent_as_dict_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.consequent_as_function_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.consequent_as_binary_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.consequent_as_call_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.consequent_as_conditional_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.consequent_as_identifier_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.consequent_as_logical_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.consequent_as_member_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.consequent_as_index_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.consequent_as_object_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.consequent_as_unary_expression() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.consequent_as_boolean_literal() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.consequent_as_date_time_literal() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.consequent_as_duration_literal() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.consequent_as_float_literal() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.consequent_as_integer_literal() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.consequent_as_string_literal() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.consequent_as_regexp_literal() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.consequent_as_unsigned_integer_literal() {
+                        ds.field("consequent", &x)
+                    } else {
+                        ds.field(
+                            "consequent",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("consequent", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum LogicalExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct LogicalExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -10136,7 +16730,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -10177,7 +16771,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     LogicalExpression::VT_LOC,
                     None,
                 )
@@ -10223,7 +16817,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.left_type() == Expression::StringExpression {
-                self.left().map(|u| StringExpression::init_from_table(u))
+                self.left().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -10233,7 +16827,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.left_type() == Expression::ArrayExpression {
-                self.left().map(|u| ArrayExpression::init_from_table(u))
+                self.left().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -10243,7 +16837,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.left_type() == Expression::DictExpression {
-                self.left().map(|u| DictExpression::init_from_table(u))
+                self.left().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -10253,7 +16847,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.left_type() == Expression::FunctionExpression {
-                self.left().map(|u| FunctionExpression::init_from_table(u))
+                self.left().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -10263,7 +16857,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.left_type() == Expression::BinaryExpression {
-                self.left().map(|u| BinaryExpression::init_from_table(u))
+                self.left().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -10273,7 +16867,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.left_type() == Expression::CallExpression {
-                self.left().map(|u| CallExpression::init_from_table(u))
+                self.left().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -10283,8 +16877,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.left_type() == Expression::ConditionalExpression {
-                self.left()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.left().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -10294,8 +16887,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.left_type() == Expression::IdentifierExpression {
-                self.left()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.left().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -10305,7 +16897,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.left_type() == Expression::LogicalExpression {
-                self.left().map(|u| LogicalExpression::init_from_table(u))
+                self.left().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -10315,7 +16907,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.left_type() == Expression::MemberExpression {
-                self.left().map(|u| MemberExpression::init_from_table(u))
+                self.left().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -10325,7 +16917,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.left_type() == Expression::IndexExpression {
-                self.left().map(|u| IndexExpression::init_from_table(u))
+                self.left().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -10335,7 +16927,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.left_type() == Expression::ObjectExpression {
-                self.left().map(|u| ObjectExpression::init_from_table(u))
+                self.left().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -10345,7 +16937,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.left_type() == Expression::UnaryExpression {
-                self.left().map(|u| UnaryExpression::init_from_table(u))
+                self.left().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -10355,7 +16947,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.left_type() == Expression::BooleanLiteral {
-                self.left().map(|u| BooleanLiteral::init_from_table(u))
+                self.left().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -10365,7 +16957,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.left_type() == Expression::DateTimeLiteral {
-                self.left().map(|u| DateTimeLiteral::init_from_table(u))
+                self.left().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -10375,7 +16967,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.left_type() == Expression::DurationLiteral {
-                self.left().map(|u| DurationLiteral::init_from_table(u))
+                self.left().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -10385,7 +16977,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.left_type() == Expression::FloatLiteral {
-                self.left().map(|u| FloatLiteral::init_from_table(u))
+                self.left().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -10395,7 +16987,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.left_type() == Expression::IntegerLiteral {
-                self.left().map(|u| IntegerLiteral::init_from_table(u))
+                self.left().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -10405,7 +16997,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.left_type() == Expression::StringLiteral {
-                self.left().map(|u| StringLiteral::init_from_table(u))
+                self.left().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -10415,7 +17007,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.left_type() == Expression::RegexpLiteral {
-                self.left().map(|u| RegexpLiteral::init_from_table(u))
+                self.left().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -10425,8 +17017,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn left_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.left_type() == Expression::UnsignedIntegerLiteral {
-                self.left()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.left().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -10436,7 +17027,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.right_type() == Expression::StringExpression {
-                self.right().map(|u| StringExpression::init_from_table(u))
+                self.right().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -10446,7 +17037,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.right_type() == Expression::ArrayExpression {
-                self.right().map(|u| ArrayExpression::init_from_table(u))
+                self.right().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -10456,7 +17047,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.right_type() == Expression::DictExpression {
-                self.right().map(|u| DictExpression::init_from_table(u))
+                self.right().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -10466,7 +17057,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.right_type() == Expression::FunctionExpression {
-                self.right().map(|u| FunctionExpression::init_from_table(u))
+                self.right().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -10476,7 +17067,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.right_type() == Expression::BinaryExpression {
-                self.right().map(|u| BinaryExpression::init_from_table(u))
+                self.right().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -10486,7 +17077,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.right_type() == Expression::CallExpression {
-                self.right().map(|u| CallExpression::init_from_table(u))
+                self.right().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -10496,8 +17087,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.right_type() == Expression::ConditionalExpression {
-                self.right()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.right().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -10507,8 +17097,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.right_type() == Expression::IdentifierExpression {
-                self.right()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.right().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -10518,7 +17107,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.right_type() == Expression::LogicalExpression {
-                self.right().map(|u| LogicalExpression::init_from_table(u))
+                self.right().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -10528,7 +17117,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.right_type() == Expression::MemberExpression {
-                self.right().map(|u| MemberExpression::init_from_table(u))
+                self.right().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -10538,7 +17127,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.right_type() == Expression::IndexExpression {
-                self.right().map(|u| IndexExpression::init_from_table(u))
+                self.right().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -10548,7 +17137,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.right_type() == Expression::ObjectExpression {
-                self.right().map(|u| ObjectExpression::init_from_table(u))
+                self.right().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -10558,7 +17147,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.right_type() == Expression::UnaryExpression {
-                self.right().map(|u| UnaryExpression::init_from_table(u))
+                self.right().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -10568,7 +17157,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.right_type() == Expression::BooleanLiteral {
-                self.right().map(|u| BooleanLiteral::init_from_table(u))
+                self.right().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -10578,7 +17167,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.right_type() == Expression::DateTimeLiteral {
-                self.right().map(|u| DateTimeLiteral::init_from_table(u))
+                self.right().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -10588,7 +17177,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.right_type() == Expression::DurationLiteral {
-                self.right().map(|u| DurationLiteral::init_from_table(u))
+                self.right().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -10598,7 +17187,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.right_type() == Expression::FloatLiteral {
-                self.right().map(|u| FloatLiteral::init_from_table(u))
+                self.right().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -10608,7 +17197,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.right_type() == Expression::IntegerLiteral {
-                self.right().map(|u| IntegerLiteral::init_from_table(u))
+                self.right().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -10618,7 +17207,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.right_type() == Expression::StringLiteral {
-                self.right().map(|u| StringLiteral::init_from_table(u))
+                self.right().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -10628,7 +17217,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.right_type() == Expression::RegexpLiteral {
-                self.right().map(|u| RegexpLiteral::init_from_table(u))
+                self.right().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -10638,14 +17227,79 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn right_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.right_type() == Expression::UnsignedIntegerLiteral {
-                self.right()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.right().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for LogicalExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_field::<LogicalOperator>(&"operator", Self::VT_OPERATOR, false)?
+     .visit_union::<Expression, _>(&"left_type", Self::VT_LEFT_TYPE, &"left", Self::VT_LEFT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<Expression, _>(&"right_type", Self::VT_RIGHT_TYPE, &"right", Self::VT_RIGHT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct LogicalExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub operator: LogicalOperator,
@@ -10731,8 +17385,450 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for LogicalExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("LogicalExpression");
+            ds.field("loc", &self.loc());
+            ds.field("operator", &self.operator());
+            ds.field("left_type", &self.left_type());
+            match self.left_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.left_as_string_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.left_as_array_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.left_as_dict_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.left_as_function_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.left_as_binary_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.left_as_call_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.left_as_conditional_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.left_as_identifier_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.left_as_logical_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.left_as_member_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.left_as_index_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.left_as_object_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.left_as_unary_expression() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.left_as_boolean_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.left_as_date_time_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.left_as_duration_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.left_as_float_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.left_as_integer_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.left_as_string_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.left_as_regexp_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.left_as_unsigned_integer_literal() {
+                        ds.field("left", &x)
+                    } else {
+                        ds.field(
+                            "left",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("left", &x)
+                }
+            };
+            ds.field("right_type", &self.right_type());
+            match self.right_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.right_as_string_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.right_as_array_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.right_as_dict_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.right_as_function_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.right_as_binary_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.right_as_call_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.right_as_conditional_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.right_as_identifier_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.right_as_logical_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.right_as_member_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.right_as_index_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.right_as_object_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.right_as_unary_expression() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.right_as_boolean_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.right_as_date_time_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.right_as_duration_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.right_as_float_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.right_as_integer_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.right_as_string_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.right_as_regexp_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.right_as_unsigned_integer_literal() {
+                        ds.field("right", &x)
+                    } else {
+                        ds.field(
+                            "right",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("right", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum MemberExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct MemberExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -10743,7 +17839,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -10786,10 +17882,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    MemberExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(MemberExpression::VT_LOC, None)
         }
         #[inline]
         pub fn object_type(&self) -> Expression {
@@ -10828,7 +17921,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.object_type() == Expression::StringExpression {
-                self.object().map(|u| StringExpression::init_from_table(u))
+                self.object().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -10838,7 +17931,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.object_type() == Expression::ArrayExpression {
-                self.object().map(|u| ArrayExpression::init_from_table(u))
+                self.object().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -10848,7 +17941,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.object_type() == Expression::DictExpression {
-                self.object().map(|u| DictExpression::init_from_table(u))
+                self.object().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -10858,8 +17951,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.object_type() == Expression::FunctionExpression {
-                self.object()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.object().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -10869,7 +17961,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.object_type() == Expression::BinaryExpression {
-                self.object().map(|u| BinaryExpression::init_from_table(u))
+                self.object().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -10879,7 +17971,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.object_type() == Expression::CallExpression {
-                self.object().map(|u| CallExpression::init_from_table(u))
+                self.object().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -10889,8 +17981,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.object_type() == Expression::ConditionalExpression {
-                self.object()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.object().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -10900,8 +17991,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.object_type() == Expression::IdentifierExpression {
-                self.object()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.object().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -10911,7 +18001,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.object_type() == Expression::LogicalExpression {
-                self.object().map(|u| LogicalExpression::init_from_table(u))
+                self.object().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -10921,7 +18011,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.object_type() == Expression::MemberExpression {
-                self.object().map(|u| MemberExpression::init_from_table(u))
+                self.object().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -10931,7 +18021,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.object_type() == Expression::IndexExpression {
-                self.object().map(|u| IndexExpression::init_from_table(u))
+                self.object().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -10941,7 +18031,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.object_type() == Expression::ObjectExpression {
-                self.object().map(|u| ObjectExpression::init_from_table(u))
+                self.object().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -10951,7 +18041,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.object_type() == Expression::UnaryExpression {
-                self.object().map(|u| UnaryExpression::init_from_table(u))
+                self.object().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -10961,7 +18051,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.object_type() == Expression::BooleanLiteral {
-                self.object().map(|u| BooleanLiteral::init_from_table(u))
+                self.object().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -10971,7 +18061,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.object_type() == Expression::DateTimeLiteral {
-                self.object().map(|u| DateTimeLiteral::init_from_table(u))
+                self.object().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -10981,7 +18071,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.object_type() == Expression::DurationLiteral {
-                self.object().map(|u| DurationLiteral::init_from_table(u))
+                self.object().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -10991,7 +18081,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.object_type() == Expression::FloatLiteral {
-                self.object().map(|u| FloatLiteral::init_from_table(u))
+                self.object().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -11001,7 +18091,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.object_type() == Expression::IntegerLiteral {
-                self.object().map(|u| IntegerLiteral::init_from_table(u))
+                self.object().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -11011,7 +18101,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.object_type() == Expression::StringLiteral {
-                self.object().map(|u| StringLiteral::init_from_table(u))
+                self.object().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -11021,7 +18111,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.object_type() == Expression::RegexpLiteral {
-                self.object().map(|u| RegexpLiteral::init_from_table(u))
+                self.object().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -11031,8 +18121,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn object_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.object_type() == Expression::UnsignedIntegerLiteral {
-                self.object()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.object().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -11042,7 +18131,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -11052,7 +18141,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -11062,7 +18151,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -11072,7 +18161,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -11082,7 +18171,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -11092,13 +18181,64 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for MemberExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_union::<Expression, _>(&"object_type", Self::VT_OBJECT_TYPE, &"object", Self::VT_OBJECT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"property", Self::VT_PROPERTY, false)?
+     .visit_union::<MonoType, _>(&"typ_type", Self::VT_TYP_TYPE, &"typ", Self::VT_TYP, false, |key, v, pos| {
+        match key {
+          MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
+          MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
+          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
+          MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
+          MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct MemberExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub object_type: Expression,
@@ -11183,8 +18323,300 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for MemberExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("MemberExpression");
+            ds.field("loc", &self.loc());
+            ds.field("object_type", &self.object_type());
+            match self.object_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.object_as_string_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.object_as_array_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.object_as_dict_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.object_as_function_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.object_as_binary_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.object_as_call_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.object_as_conditional_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.object_as_identifier_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.object_as_logical_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.object_as_member_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.object_as_index_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.object_as_object_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.object_as_unary_expression() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.object_as_boolean_literal() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.object_as_date_time_literal() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.object_as_duration_literal() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.object_as_float_literal() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.object_as_integer_literal() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.object_as_string_literal() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.object_as_regexp_literal() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.object_as_unsigned_integer_literal() {
+                        ds.field("object", &x)
+                    } else {
+                        ds.field(
+                            "object",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("object", &x)
+                }
+            };
+            ds.field("property", &self.property());
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum IndexExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct IndexExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -11195,7 +18627,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -11240,10 +18672,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    IndexExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(IndexExpression::VT_LOC, None)
         }
         #[inline]
         pub fn array_type(&self) -> Expression {
@@ -11291,7 +18720,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.array_type() == Expression::StringExpression {
-                self.array().map(|u| StringExpression::init_from_table(u))
+                self.array().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -11301,7 +18730,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.array_type() == Expression::ArrayExpression {
-                self.array().map(|u| ArrayExpression::init_from_table(u))
+                self.array().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -11311,7 +18740,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.array_type() == Expression::DictExpression {
-                self.array().map(|u| DictExpression::init_from_table(u))
+                self.array().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -11321,7 +18750,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.array_type() == Expression::FunctionExpression {
-                self.array().map(|u| FunctionExpression::init_from_table(u))
+                self.array().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -11331,7 +18760,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.array_type() == Expression::BinaryExpression {
-                self.array().map(|u| BinaryExpression::init_from_table(u))
+                self.array().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -11341,7 +18770,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.array_type() == Expression::CallExpression {
-                self.array().map(|u| CallExpression::init_from_table(u))
+                self.array().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -11351,8 +18780,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.array_type() == Expression::ConditionalExpression {
-                self.array()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.array().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -11362,8 +18790,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.array_type() == Expression::IdentifierExpression {
-                self.array()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.array().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -11373,7 +18800,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.array_type() == Expression::LogicalExpression {
-                self.array().map(|u| LogicalExpression::init_from_table(u))
+                self.array().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -11383,7 +18810,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.array_type() == Expression::MemberExpression {
-                self.array().map(|u| MemberExpression::init_from_table(u))
+                self.array().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -11393,7 +18820,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.array_type() == Expression::IndexExpression {
-                self.array().map(|u| IndexExpression::init_from_table(u))
+                self.array().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -11403,7 +18830,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.array_type() == Expression::ObjectExpression {
-                self.array().map(|u| ObjectExpression::init_from_table(u))
+                self.array().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -11413,7 +18840,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.array_type() == Expression::UnaryExpression {
-                self.array().map(|u| UnaryExpression::init_from_table(u))
+                self.array().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -11423,7 +18850,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.array_type() == Expression::BooleanLiteral {
-                self.array().map(|u| BooleanLiteral::init_from_table(u))
+                self.array().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -11433,7 +18860,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.array_type() == Expression::DateTimeLiteral {
-                self.array().map(|u| DateTimeLiteral::init_from_table(u))
+                self.array().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -11443,7 +18870,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.array_type() == Expression::DurationLiteral {
-                self.array().map(|u| DurationLiteral::init_from_table(u))
+                self.array().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -11453,7 +18880,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.array_type() == Expression::FloatLiteral {
-                self.array().map(|u| FloatLiteral::init_from_table(u))
+                self.array().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -11463,7 +18890,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.array_type() == Expression::IntegerLiteral {
-                self.array().map(|u| IntegerLiteral::init_from_table(u))
+                self.array().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -11473,7 +18900,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.array_type() == Expression::StringLiteral {
-                self.array().map(|u| StringLiteral::init_from_table(u))
+                self.array().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -11483,7 +18910,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.array_type() == Expression::RegexpLiteral {
-                self.array().map(|u| RegexpLiteral::init_from_table(u))
+                self.array().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -11493,8 +18920,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn array_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.array_type() == Expression::UnsignedIntegerLiteral {
-                self.array()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.array().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -11504,7 +18930,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.index_type() == Expression::StringExpression {
-                self.index().map(|u| StringExpression::init_from_table(u))
+                self.index().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -11514,7 +18940,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.index_type() == Expression::ArrayExpression {
-                self.index().map(|u| ArrayExpression::init_from_table(u))
+                self.index().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -11524,7 +18950,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.index_type() == Expression::DictExpression {
-                self.index().map(|u| DictExpression::init_from_table(u))
+                self.index().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -11534,7 +18960,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.index_type() == Expression::FunctionExpression {
-                self.index().map(|u| FunctionExpression::init_from_table(u))
+                self.index().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -11544,7 +18970,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.index_type() == Expression::BinaryExpression {
-                self.index().map(|u| BinaryExpression::init_from_table(u))
+                self.index().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -11554,7 +18980,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.index_type() == Expression::CallExpression {
-                self.index().map(|u| CallExpression::init_from_table(u))
+                self.index().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -11564,8 +18990,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.index_type() == Expression::ConditionalExpression {
-                self.index()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.index().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -11575,8 +19000,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.index_type() == Expression::IdentifierExpression {
-                self.index()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.index().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -11586,7 +19010,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.index_type() == Expression::LogicalExpression {
-                self.index().map(|u| LogicalExpression::init_from_table(u))
+                self.index().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -11596,7 +19020,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.index_type() == Expression::MemberExpression {
-                self.index().map(|u| MemberExpression::init_from_table(u))
+                self.index().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -11606,7 +19030,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.index_type() == Expression::IndexExpression {
-                self.index().map(|u| IndexExpression::init_from_table(u))
+                self.index().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -11616,7 +19040,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.index_type() == Expression::ObjectExpression {
-                self.index().map(|u| ObjectExpression::init_from_table(u))
+                self.index().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -11626,7 +19050,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.index_type() == Expression::UnaryExpression {
-                self.index().map(|u| UnaryExpression::init_from_table(u))
+                self.index().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -11636,7 +19060,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.index_type() == Expression::BooleanLiteral {
-                self.index().map(|u| BooleanLiteral::init_from_table(u))
+                self.index().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -11646,7 +19070,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.index_type() == Expression::DateTimeLiteral {
-                self.index().map(|u| DateTimeLiteral::init_from_table(u))
+                self.index().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -11656,7 +19080,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.index_type() == Expression::DurationLiteral {
-                self.index().map(|u| DurationLiteral::init_from_table(u))
+                self.index().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -11666,7 +19090,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.index_type() == Expression::FloatLiteral {
-                self.index().map(|u| FloatLiteral::init_from_table(u))
+                self.index().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -11676,7 +19100,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.index_type() == Expression::IntegerLiteral {
-                self.index().map(|u| IntegerLiteral::init_from_table(u))
+                self.index().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -11686,7 +19110,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.index_type() == Expression::StringLiteral {
-                self.index().map(|u| StringLiteral::init_from_table(u))
+                self.index().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -11696,7 +19120,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.index_type() == Expression::RegexpLiteral {
-                self.index().map(|u| RegexpLiteral::init_from_table(u))
+                self.index().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -11706,8 +19130,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn index_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.index_type() == Expression::UnsignedIntegerLiteral {
-                self.index()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.index().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -11717,7 +19140,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -11727,7 +19150,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -11737,7 +19160,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -11747,7 +19170,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -11757,7 +19180,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -11767,13 +19190,89 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for IndexExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_union::<Expression, _>(&"array_type", Self::VT_ARRAY_TYPE, &"array", Self::VT_ARRAY, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<Expression, _>(&"index_type", Self::VT_INDEX_TYPE, &"index", Self::VT_INDEX, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<MonoType, _>(&"typ_type", Self::VT_TYP_TYPE, &"typ", Self::VT_TYP, false, |key, v, pos| {
+        match key {
+          MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
+          MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
+          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
+          MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
+          MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct IndexExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub array_type: Expression,
@@ -11863,8 +19362,516 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for IndexExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("IndexExpression");
+            ds.field("loc", &self.loc());
+            ds.field("array_type", &self.array_type());
+            match self.array_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.array_as_string_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.array_as_array_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.array_as_dict_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.array_as_function_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.array_as_binary_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.array_as_call_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.array_as_conditional_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.array_as_identifier_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.array_as_logical_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.array_as_member_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.array_as_index_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.array_as_object_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.array_as_unary_expression() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.array_as_boolean_literal() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.array_as_date_time_literal() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.array_as_duration_literal() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.array_as_float_literal() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.array_as_integer_literal() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.array_as_string_literal() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.array_as_regexp_literal() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.array_as_unsigned_integer_literal() {
+                        ds.field("array", &x)
+                    } else {
+                        ds.field(
+                            "array",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("array", &x)
+                }
+            };
+            ds.field("index_type", &self.index_type());
+            match self.index_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.index_as_string_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.index_as_array_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.index_as_dict_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.index_as_function_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.index_as_binary_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.index_as_call_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.index_as_conditional_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.index_as_identifier_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.index_as_logical_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.index_as_member_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.index_as_index_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.index_as_object_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.index_as_unary_expression() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.index_as_boolean_literal() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.index_as_date_time_literal() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.index_as_duration_literal() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.index_as_float_literal() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.index_as_integer_literal() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.index_as_string_literal() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.index_as_regexp_literal() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.index_as_unsigned_integer_literal() {
+                        ds.field("index", &x)
+                    } else {
+                        ds.field(
+                            "index",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("index", &x)
+                }
+            };
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum ObjectExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct ObjectExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -11875,7 +19882,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -11916,15 +19923,12 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    ObjectExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(ObjectExpression::VT_LOC, None)
         }
         #[inline]
         pub fn with(&self) -> Option<IdentifierExpression<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<IdentifierExpression<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<IdentifierExpression>>(
                     ObjectExpression::VT_WITH,
                     None,
                 )
@@ -11934,7 +19938,7 @@ pub mod fbsemantic {
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Property<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Property<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Property>>,
             >>(ObjectExpression::VT_PROPERTIES, None)
         }
         #[inline]
@@ -11955,7 +19959,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -11965,7 +19969,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -11975,7 +19979,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -11985,7 +19989,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -11995,7 +19999,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -12005,13 +20009,78 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for ObjectExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<IdentifierExpression>>(
+                    &"with",
+                    Self::VT_WITH,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Property>>,
+                >>(&"properties", Self::VT_PROPERTIES, false)?
+                .visit_union::<MonoType, _>(
+                    &"typ_type",
+                    Self::VT_TYP_TYPE,
+                    &"typ",
+                    Self::VT_TYP,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct ObjectExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub with: Option<flatbuffers::WIPOffset<IdentifierExpression<'a>>>,
@@ -12098,8 +20167,84 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for ObjectExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("ObjectExpression");
+            ds.field("loc", &self.loc());
+            ds.field("with", &self.with());
+            ds.field("properties", &self.properties());
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum UnaryExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct UnaryExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -12110,7 +20255,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -12151,10 +20296,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    UnaryExpression::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(UnaryExpression::VT_LOC, None)
         }
         #[inline]
         pub fn operator(&self) -> Operator {
@@ -12197,8 +20339,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.argument_type() == Expression::StringExpression {
-                self.argument()
-                    .map(|u| StringExpression::init_from_table(u))
+                self.argument().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -12208,7 +20349,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.argument_type() == Expression::ArrayExpression {
-                self.argument().map(|u| ArrayExpression::init_from_table(u))
+                self.argument().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -12218,7 +20359,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.argument_type() == Expression::DictExpression {
-                self.argument().map(|u| DictExpression::init_from_table(u))
+                self.argument().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -12228,8 +20369,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.argument_type() == Expression::FunctionExpression {
-                self.argument()
-                    .map(|u| FunctionExpression::init_from_table(u))
+                self.argument().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -12239,8 +20379,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.argument_type() == Expression::BinaryExpression {
-                self.argument()
-                    .map(|u| BinaryExpression::init_from_table(u))
+                self.argument().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -12250,7 +20389,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.argument_type() == Expression::CallExpression {
-                self.argument().map(|u| CallExpression::init_from_table(u))
+                self.argument().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -12260,8 +20399,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.argument_type() == Expression::ConditionalExpression {
-                self.argument()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.argument().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -12271,8 +20409,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.argument_type() == Expression::IdentifierExpression {
-                self.argument()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.argument().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -12282,8 +20419,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.argument_type() == Expression::LogicalExpression {
-                self.argument()
-                    .map(|u| LogicalExpression::init_from_table(u))
+                self.argument().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -12293,8 +20429,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.argument_type() == Expression::MemberExpression {
-                self.argument()
-                    .map(|u| MemberExpression::init_from_table(u))
+                self.argument().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -12304,7 +20439,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.argument_type() == Expression::IndexExpression {
-                self.argument().map(|u| IndexExpression::init_from_table(u))
+                self.argument().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -12314,8 +20449,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.argument_type() == Expression::ObjectExpression {
-                self.argument()
-                    .map(|u| ObjectExpression::init_from_table(u))
+                self.argument().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -12325,7 +20459,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.argument_type() == Expression::UnaryExpression {
-                self.argument().map(|u| UnaryExpression::init_from_table(u))
+                self.argument().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -12335,7 +20469,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.argument_type() == Expression::BooleanLiteral {
-                self.argument().map(|u| BooleanLiteral::init_from_table(u))
+                self.argument().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -12345,7 +20479,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.argument_type() == Expression::DateTimeLiteral {
-                self.argument().map(|u| DateTimeLiteral::init_from_table(u))
+                self.argument().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -12355,7 +20489,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.argument_type() == Expression::DurationLiteral {
-                self.argument().map(|u| DurationLiteral::init_from_table(u))
+                self.argument().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -12365,7 +20499,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.argument_type() == Expression::FloatLiteral {
-                self.argument().map(|u| FloatLiteral::init_from_table(u))
+                self.argument().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -12375,7 +20509,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.argument_type() == Expression::IntegerLiteral {
-                self.argument().map(|u| IntegerLiteral::init_from_table(u))
+                self.argument().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -12385,7 +20519,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.argument_type() == Expression::StringLiteral {
-                self.argument().map(|u| StringLiteral::init_from_table(u))
+                self.argument().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -12395,7 +20529,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.argument_type() == Expression::RegexpLiteral {
-                self.argument().map(|u| RegexpLiteral::init_from_table(u))
+                self.argument().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -12405,8 +20539,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn argument_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.argument_type() == Expression::UnsignedIntegerLiteral {
-                self.argument()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.argument().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -12416,7 +20549,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -12426,7 +20559,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -12436,7 +20569,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -12446,7 +20579,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -12456,7 +20589,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -12466,13 +20599,64 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for UnaryExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_field::<Operator>(&"operator", Self::VT_OPERATOR, false)?
+     .visit_union::<Expression, _>(&"argument_type", Self::VT_ARGUMENT_TYPE, &"argument", Self::VT_ARGUMENT, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .visit_union::<MonoType, _>(&"typ_type", Self::VT_TYP_TYPE, &"typ", Self::VT_TYP, false, |key, v, pos| {
+        match key {
+          MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
+          MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
+          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
+          MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
+          MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
+          MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct UnaryExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub operator: Operator,
@@ -12560,8 +20744,300 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for UnaryExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("UnaryExpression");
+            ds.field("loc", &self.loc());
+            ds.field("operator", &self.operator());
+            ds.field("argument_type", &self.argument_type());
+            match self.argument_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.argument_as_string_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.argument_as_array_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.argument_as_dict_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.argument_as_function_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.argument_as_binary_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.argument_as_call_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.argument_as_conditional_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.argument_as_identifier_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.argument_as_logical_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.argument_as_member_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.argument_as_index_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.argument_as_object_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.argument_as_unary_expression() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.argument_as_boolean_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.argument_as_date_time_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.argument_as_duration_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.argument_as_float_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.argument_as_integer_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.argument_as_string_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.argument_as_regexp_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.argument_as_unsigned_integer_literal() {
+                        ds.field("argument", &x)
+                    } else {
+                        ds.field(
+                            "argument",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("argument", &x)
+                }
+            };
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum PropertyOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Property<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -12572,7 +21048,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -12609,12 +21085,12 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(Property::VT_LOC, None)
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(Property::VT_LOC, None)
         }
         #[inline]
         pub fn key(&self) -> Option<Identifier<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(Property::VT_KEY, None)
+                .get::<flatbuffers::ForwardsUOffset<Identifier>>(Property::VT_KEY, None)
         }
         #[inline]
         pub fn value_type(&self) -> Expression {
@@ -12634,7 +21110,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_string_expression(&self) -> Option<StringExpression<'a>> {
             if self.value_type() == Expression::StringExpression {
-                self.value().map(|u| StringExpression::init_from_table(u))
+                self.value().map(StringExpression::init_from_table)
             } else {
                 None
             }
@@ -12644,7 +21120,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.value_type() == Expression::ArrayExpression {
-                self.value().map(|u| ArrayExpression::init_from_table(u))
+                self.value().map(ArrayExpression::init_from_table)
             } else {
                 None
             }
@@ -12654,7 +21130,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_dict_expression(&self) -> Option<DictExpression<'a>> {
             if self.value_type() == Expression::DictExpression {
-                self.value().map(|u| DictExpression::init_from_table(u))
+                self.value().map(DictExpression::init_from_table)
             } else {
                 None
             }
@@ -12664,7 +21140,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.value_type() == Expression::FunctionExpression {
-                self.value().map(|u| FunctionExpression::init_from_table(u))
+                self.value().map(FunctionExpression::init_from_table)
             } else {
                 None
             }
@@ -12674,7 +21150,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
             if self.value_type() == Expression::BinaryExpression {
-                self.value().map(|u| BinaryExpression::init_from_table(u))
+                self.value().map(BinaryExpression::init_from_table)
             } else {
                 None
             }
@@ -12684,7 +21160,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_call_expression(&self) -> Option<CallExpression<'a>> {
             if self.value_type() == Expression::CallExpression {
-                self.value().map(|u| CallExpression::init_from_table(u))
+                self.value().map(CallExpression::init_from_table)
             } else {
                 None
             }
@@ -12694,8 +21170,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
             if self.value_type() == Expression::ConditionalExpression {
-                self.value()
-                    .map(|u| ConditionalExpression::init_from_table(u))
+                self.value().map(ConditionalExpression::init_from_table)
             } else {
                 None
             }
@@ -12705,8 +21180,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
             if self.value_type() == Expression::IdentifierExpression {
-                self.value()
-                    .map(|u| IdentifierExpression::init_from_table(u))
+                self.value().map(IdentifierExpression::init_from_table)
             } else {
                 None
             }
@@ -12716,7 +21190,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
             if self.value_type() == Expression::LogicalExpression {
-                self.value().map(|u| LogicalExpression::init_from_table(u))
+                self.value().map(LogicalExpression::init_from_table)
             } else {
                 None
             }
@@ -12726,7 +21200,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_member_expression(&self) -> Option<MemberExpression<'a>> {
             if self.value_type() == Expression::MemberExpression {
-                self.value().map(|u| MemberExpression::init_from_table(u))
+                self.value().map(MemberExpression::init_from_table)
             } else {
                 None
             }
@@ -12736,7 +21210,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_index_expression(&self) -> Option<IndexExpression<'a>> {
             if self.value_type() == Expression::IndexExpression {
-                self.value().map(|u| IndexExpression::init_from_table(u))
+                self.value().map(IndexExpression::init_from_table)
             } else {
                 None
             }
@@ -12746,7 +21220,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
             if self.value_type() == Expression::ObjectExpression {
-                self.value().map(|u| ObjectExpression::init_from_table(u))
+                self.value().map(ObjectExpression::init_from_table)
             } else {
                 None
             }
@@ -12756,7 +21230,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
             if self.value_type() == Expression::UnaryExpression {
-                self.value().map(|u| UnaryExpression::init_from_table(u))
+                self.value().map(UnaryExpression::init_from_table)
             } else {
                 None
             }
@@ -12766,7 +21240,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
             if self.value_type() == Expression::BooleanLiteral {
-                self.value().map(|u| BooleanLiteral::init_from_table(u))
+                self.value().map(BooleanLiteral::init_from_table)
             } else {
                 None
             }
@@ -12776,7 +21250,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
             if self.value_type() == Expression::DateTimeLiteral {
-                self.value().map(|u| DateTimeLiteral::init_from_table(u))
+                self.value().map(DateTimeLiteral::init_from_table)
             } else {
                 None
             }
@@ -12786,7 +21260,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
             if self.value_type() == Expression::DurationLiteral {
-                self.value().map(|u| DurationLiteral::init_from_table(u))
+                self.value().map(DurationLiteral::init_from_table)
             } else {
                 None
             }
@@ -12796,7 +21270,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
             if self.value_type() == Expression::FloatLiteral {
-                self.value().map(|u| FloatLiteral::init_from_table(u))
+                self.value().map(FloatLiteral::init_from_table)
             } else {
                 None
             }
@@ -12806,7 +21280,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.value_type() == Expression::IntegerLiteral {
-                self.value().map(|u| IntegerLiteral::init_from_table(u))
+                self.value().map(IntegerLiteral::init_from_table)
             } else {
                 None
             }
@@ -12816,7 +21290,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.value_type() == Expression::StringLiteral {
-                self.value().map(|u| StringLiteral::init_from_table(u))
+                self.value().map(StringLiteral::init_from_table)
             } else {
                 None
             }
@@ -12826,7 +21300,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
             if self.value_type() == Expression::RegexpLiteral {
-                self.value().map(|u| RegexpLiteral::init_from_table(u))
+                self.value().map(RegexpLiteral::init_from_table)
             } else {
                 None
             }
@@ -12836,14 +21310,53 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn value_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
             if self.value_type() == Expression::UnsignedIntegerLiteral {
-                self.value()
-                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+                self.value().map(UnsignedIntegerLiteral::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for Property<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<Identifier>>(&"key", Self::VT_KEY, false)?
+     .visit_union::<Expression, _>(&"value_type", Self::VT_VALUE_TYPE, &"value", Self::VT_VALUE, false, |key, v, pos| {
+        match key {
+          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
+          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
+          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
+          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
+          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
+          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
+          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
+          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
+          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
+          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
+          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
+          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
+          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
+          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
+          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
+          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
+          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
+          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
+          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
+          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
+          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
+            Ok(())
+        }
+    }
     pub struct PropertyArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub key: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
@@ -12904,8 +21417,233 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Property<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Property");
+            ds.field("loc", &self.loc());
+            ds.field("key", &self.key());
+            ds.field("value_type", &self.value_type());
+            match self.value_type() {
+                Expression::StringExpression => {
+                    if let Some(x) = self.value_as_string_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ArrayExpression => {
+                    if let Some(x) = self.value_as_array_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DictExpression => {
+                    if let Some(x) = self.value_as_dict_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FunctionExpression => {
+                    if let Some(x) = self.value_as_function_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BinaryExpression => {
+                    if let Some(x) = self.value_as_binary_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::CallExpression => {
+                    if let Some(x) = self.value_as_call_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ConditionalExpression => {
+                    if let Some(x) = self.value_as_conditional_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IdentifierExpression => {
+                    if let Some(x) = self.value_as_identifier_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::LogicalExpression => {
+                    if let Some(x) = self.value_as_logical_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::MemberExpression => {
+                    if let Some(x) = self.value_as_member_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IndexExpression => {
+                    if let Some(x) = self.value_as_index_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::ObjectExpression => {
+                    if let Some(x) = self.value_as_object_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnaryExpression => {
+                    if let Some(x) = self.value_as_unary_expression() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::BooleanLiteral => {
+                    if let Some(x) = self.value_as_boolean_literal() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DateTimeLiteral => {
+                    if let Some(x) = self.value_as_date_time_literal() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::DurationLiteral => {
+                    if let Some(x) = self.value_as_duration_literal() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::FloatLiteral => {
+                    if let Some(x) = self.value_as_float_literal() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::IntegerLiteral => {
+                    if let Some(x) = self.value_as_integer_literal() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::StringLiteral => {
+                    if let Some(x) = self.value_as_string_literal() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::RegexpLiteral => {
+                    if let Some(x) = self.value_as_regexp_literal() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                Expression::UnsignedIntegerLiteral => {
+                    if let Some(x) = self.value_as_unsigned_integer_literal() {
+                        ds.field("value", &x)
+                    } else {
+                        ds.field(
+                            "value",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("value", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum IdentifierExpressionOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct IdentifierExpression<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -12916,7 +21654,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -12953,7 +21691,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     IdentifierExpression::VT_LOC,
                     None,
                 )
@@ -12981,7 +21719,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
             if self.typ_type() == MonoType::Basic {
-                self.typ().map(|u| Basic::init_from_table(u))
+                self.typ().map(Basic::init_from_table)
             } else {
                 None
             }
@@ -12991,7 +21729,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_var(&self) -> Option<Var<'a>> {
             if self.typ_type() == MonoType::Var {
-                self.typ().map(|u| Var::init_from_table(u))
+                self.typ().map(Var::init_from_table)
             } else {
                 None
             }
@@ -13001,7 +21739,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
             if self.typ_type() == MonoType::Arr {
-                self.typ().map(|u| Arr::init_from_table(u))
+                self.typ().map(Arr::init_from_table)
             } else {
                 None
             }
@@ -13011,7 +21749,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_record(&self) -> Option<Record<'a>> {
             if self.typ_type() == MonoType::Record {
-                self.typ().map(|u| Record::init_from_table(u))
+                self.typ().map(Record::init_from_table)
             } else {
                 None
             }
@@ -13021,7 +21759,7 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
-                self.typ().map(|u| Fun::init_from_table(u))
+                self.typ().map(Fun::init_from_table)
             } else {
                 None
             }
@@ -13031,13 +21769,71 @@ pub mod fbsemantic {
         #[allow(non_snake_case)]
         pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
             if self.typ_type() == MonoType::Dict {
-                self.typ().map(|u| Dict::init_from_table(u))
+                self.typ().map(Dict::init_from_table)
             } else {
                 None
             }
         }
     }
 
+    impl flatbuffers::Verifiable for IdentifierExpression<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"name", Self::VT_NAME, false)?
+                .visit_union::<MonoType, _>(
+                    &"typ_type",
+                    Self::VT_TYP_TYPE,
+                    &"typ",
+                    Self::VT_TYP,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct IdentifierExpressionArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub name: Option<flatbuffers::WIPOffset<&'a str>>,
@@ -13103,8 +21899,83 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for IdentifierExpression<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("IdentifierExpression");
+            ds.field("loc", &self.loc());
+            ds.field("name", &self.name());
+            ds.field("typ_type", &self.typ_type());
+            match self.typ_type() {
+                MonoType::Basic => {
+                    if let Some(x) = self.typ_as_basic() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Var => {
+                    if let Some(x) = self.typ_as_var() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Arr => {
+                    if let Some(x) = self.typ_as_arr() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Record => {
+                    if let Some(x) = self.typ_as_record() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Fun => {
+                    if let Some(x) = self.typ_as_fun() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                MonoType::Dict => {
+                    if let Some(x) = self.typ_as_dict() {
+                        ds.field("typ", &x)
+                    } else {
+                        ds.field(
+                            "typ",
+                            &"InvalidFlatbuffer: Union discriminant does not match value.",
+                        )
+                    }
+                }
+                _ => {
+                    let x: Option<()> = None;
+                    ds.field("typ", &x)
+                }
+            };
+            ds.finish()
+        }
+    }
     pub enum IdentifierOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Identifier<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13115,7 +21986,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13146,7 +22017,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(Identifier::VT_LOC, None)
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(Identifier::VT_LOC, None)
         }
         #[inline]
         pub fn name(&self) -> Option<&'a str> {
@@ -13155,6 +22026,24 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for Identifier<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"name", Self::VT_NAME, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct IdentifierArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub name: Option<flatbuffers::WIPOffset<&'a str>>,
@@ -13201,8 +22090,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Identifier<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Identifier");
+            ds.field("loc", &self.loc());
+            ds.field("name", &self.name());
+            ds.finish()
+        }
+    }
     pub enum BooleanLiteralOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct BooleanLiteral<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13213,7 +22110,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13242,10 +22139,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    BooleanLiteral::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(BooleanLiteral::VT_LOC, None)
         }
         #[inline]
         pub fn value(&self) -> bool {
@@ -13255,6 +22149,24 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for BooleanLiteral<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<bool>(&"value", Self::VT_VALUE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct BooleanLiteralArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub value: bool,
@@ -13303,8 +22215,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for BooleanLiteral<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("BooleanLiteral");
+            ds.field("loc", &self.loc());
+            ds.field("value", &self.value());
+            ds.finish()
+        }
+    }
     pub enum DateTimeLiteralOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct DateTimeLiteral<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13315,7 +22235,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13346,18 +22266,33 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    DateTimeLiteral::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(DateTimeLiteral::VT_LOC, None)
         }
         #[inline]
         pub fn value(&self) -> Option<Time<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<Time<'a>>>(DateTimeLiteral::VT_VALUE, None)
+                .get::<flatbuffers::ForwardsUOffset<Time>>(DateTimeLiteral::VT_VALUE, None)
         }
     }
 
+    impl flatbuffers::Verifiable for DateTimeLiteral<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<Time>>(&"value", Self::VT_VALUE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct DateTimeLiteralArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub value: Option<flatbuffers::WIPOffset<Time<'a>>>,
@@ -13406,8 +22341,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for DateTimeLiteral<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("DateTimeLiteral");
+            ds.field("loc", &self.loc());
+            ds.field("value", &self.value());
+            ds.finish()
+        }
+    }
     pub enum TimeOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Time<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13418,7 +22361,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13458,6 +22401,21 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for Time<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<i64>(&"secs", Self::VT_SECS, false)?
+                .visit_field::<u32>(&"nsecs", Self::VT_NSECS, false)?
+                .visit_field::<i32>(&"offset", Self::VT_OFFSET, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct TimeArgs {
         pub secs: i64,
         pub nsecs: u32,
@@ -13505,8 +22463,17 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Time<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Time");
+            ds.field("secs", &self.secs());
+            ds.field("nsecs", &self.nsecs());
+            ds.field("offset", &self.offset());
+            ds.finish()
+        }
+    }
     pub enum DurationOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct Duration<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13517,7 +22484,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13561,6 +22528,21 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for Duration<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<i64>(&"months", Self::VT_MONTHS, false)?
+                .visit_field::<i64>(&"nanoseconds", Self::VT_NANOSECONDS, false)?
+                .visit_field::<bool>(&"negative", Self::VT_NEGATIVE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct DurationArgs {
         pub months: i64,
         pub nanoseconds: i64,
@@ -13610,8 +22592,17 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for Duration<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Duration");
+            ds.field("months", &self.months());
+            ds.field("nanoseconds", &self.nanoseconds());
+            ds.field("negative", &self.negative());
+            ds.finish()
+        }
+    }
     pub enum DurationLiteralOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct DurationLiteral<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13622,7 +22613,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13653,21 +22644,38 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    DurationLiteral::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(DurationLiteral::VT_LOC, None)
         }
         #[inline]
         pub fn value(
             &self,
         ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Duration<'a>>>> {
             self._tab.get::<flatbuffers::ForwardsUOffset<
-                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Duration<'a>>>,
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Duration>>,
             >>(DurationLiteral::VT_VALUE, None)
         }
     }
 
+    impl flatbuffers::Verifiable for DurationLiteral<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<Duration>>,
+                >>(&"value", Self::VT_VALUE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct DurationLiteralArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub value: Option<
@@ -13725,8 +22733,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for DurationLiteral<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("DurationLiteral");
+            ds.field("loc", &self.loc());
+            ds.field("value", &self.value());
+            ds.finish()
+        }
+    }
     pub enum IntegerLiteralOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct IntegerLiteral<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13737,7 +22753,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13766,10 +22782,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    IntegerLiteral::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(IntegerLiteral::VT_LOC, None)
         }
         #[inline]
         pub fn value(&self) -> i64 {
@@ -13779,6 +22792,24 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for IntegerLiteral<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<i64>(&"value", Self::VT_VALUE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct IntegerLiteralArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub value: i64,
@@ -13827,8 +22858,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for IntegerLiteral<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("IntegerLiteral");
+            ds.field("loc", &self.loc());
+            ds.field("value", &self.value());
+            ds.finish()
+        }
+    }
     pub enum FloatLiteralOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct FloatLiteral<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13839,7 +22878,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13868,7 +22907,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(FloatLiteral::VT_LOC, None)
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(FloatLiteral::VT_LOC, None)
         }
         #[inline]
         pub fn value(&self) -> f64 {
@@ -13878,6 +22917,24 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for FloatLiteral<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<f64>(&"value", Self::VT_VALUE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct FloatLiteralArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub value: f64,
@@ -13926,8 +22983,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for FloatLiteral<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("FloatLiteral");
+            ds.field("loc", &self.loc());
+            ds.field("value", &self.value());
+            ds.finish()
+        }
+    }
     pub enum RegexpLiteralOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct RegexpLiteral<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -13938,7 +23003,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -13969,10 +23034,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    RegexpLiteral::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(RegexpLiteral::VT_LOC, None)
         }
         #[inline]
         pub fn value(&self) -> Option<&'a str> {
@@ -13981,6 +23043,24 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for RegexpLiteral<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"value", Self::VT_VALUE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct RegexpLiteralArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub value: Option<flatbuffers::WIPOffset<&'a str>>,
@@ -14029,8 +23109,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for RegexpLiteral<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("RegexpLiteral");
+            ds.field("loc", &self.loc());
+            ds.field("value", &self.value());
+            ds.finish()
+        }
+    }
     pub enum StringLiteralOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct StringLiteral<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -14041,7 +23129,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -14072,10 +23160,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    StringLiteral::VT_LOC,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(StringLiteral::VT_LOC, None)
         }
         #[inline]
         pub fn value(&self) -> Option<&'a str> {
@@ -14084,6 +23169,24 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for StringLiteral<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"value", Self::VT_VALUE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct StringLiteralArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub value: Option<flatbuffers::WIPOffset<&'a str>>,
@@ -14132,8 +23235,16 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for StringLiteral<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("StringLiteral");
+            ds.field("loc", &self.loc());
+            ds.field("value", &self.value());
+            ds.finish()
+        }
+    }
     pub enum UnsignedIntegerLiteralOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
+    #[derive(Copy, Clone, PartialEq)]
 
     pub struct UnsignedIntegerLiteral<'a> {
         pub _tab: flatbuffers::Table<'a>,
@@ -14144,7 +23255,7 @@ pub mod fbsemantic {
         #[inline]
         fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
+                _tab: flatbuffers::Table { buf, loc },
             }
         }
     }
@@ -14173,7 +23284,7 @@ pub mod fbsemantic {
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation>>(
                     UnsignedIntegerLiteral::VT_LOC,
                     None,
                 )
@@ -14186,6 +23297,24 @@ pub mod fbsemantic {
         }
     }
 
+    impl flatbuffers::Verifiable for UnsignedIntegerLiteral<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<u64>(&"value", Self::VT_VALUE, false)?
+                .finish();
+            Ok(())
+        }
+    }
     pub struct UnsignedIntegerLiteralArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub value: u64,
@@ -14234,16 +23363,88 @@ pub mod fbsemantic {
         }
     }
 
+    impl std::fmt::Debug for UnsignedIntegerLiteral<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("UnsignedIntegerLiteral");
+            ds.field("loc", &self.loc());
+            ds.field("value", &self.value());
+            ds.finish()
+        }
+    }
     #[inline]
+    #[deprecated(since = "2.0.0", note = "Deprecated in favor of `root_as...` methods.")]
     pub fn get_root_as_package<'a>(buf: &'a [u8]) -> Package<'a> {
-        flatbuffers::get_root::<Package<'a>>(buf)
+        unsafe { flatbuffers::root_unchecked::<Package<'a>>(buf) }
     }
 
     #[inline]
+    #[deprecated(since = "2.0.0", note = "Deprecated in favor of `root_as...` methods.")]
     pub fn get_size_prefixed_root_as_package<'a>(buf: &'a [u8]) -> Package<'a> {
-        flatbuffers::get_size_prefixed_root::<Package<'a>>(buf)
+        unsafe { flatbuffers::size_prefixed_root_unchecked::<Package<'a>>(buf) }
     }
 
+    #[inline]
+    /// Verifies that a buffer of bytes contains a `Package`
+    /// and returns it.
+    /// Note that verification is still experimental and may not
+    /// catch every error, or be maximally performant. For the
+    /// previous, unchecked, behavior use
+    /// `root_as_package_unchecked`.
+    pub fn root_as_package(buf: &[u8]) -> Result<Package, flatbuffers::InvalidFlatbuffer> {
+        flatbuffers::root::<Package>(buf)
+    }
+    #[inline]
+    /// Verifies that a buffer of bytes contains a size prefixed
+    /// `Package` and returns it.
+    /// Note that verification is still experimental and may not
+    /// catch every error, or be maximally performant. For the
+    /// previous, unchecked, behavior use
+    /// `size_prefixed_root_as_package_unchecked`.
+    pub fn size_prefixed_root_as_package(
+        buf: &[u8],
+    ) -> Result<Package, flatbuffers::InvalidFlatbuffer> {
+        flatbuffers::size_prefixed_root::<Package>(buf)
+    }
+    #[inline]
+    /// Verifies, with the given options, that a buffer of bytes
+    /// contains a `Package` and returns it.
+    /// Note that verification is still experimental and may not
+    /// catch every error, or be maximally performant. For the
+    /// previous, unchecked, behavior use
+    /// `root_as_package_unchecked`.
+    pub fn root_as_package_with_opts<'b, 'o>(
+        opts: &'o flatbuffers::VerifierOptions,
+        buf: &'b [u8],
+    ) -> Result<Package<'b>, flatbuffers::InvalidFlatbuffer> {
+        flatbuffers::root_with_opts::<Package<'b>>(opts, buf)
+    }
+    #[inline]
+    /// Verifies, with the given verifier options, that a buffer of
+    /// bytes contains a size prefixed `Package` and returns
+    /// it. Note that verification is still experimental and may not
+    /// catch every error, or be maximally performant. For the
+    /// previous, unchecked, behavior use
+    /// `root_as_package_unchecked`.
+    pub fn size_prefixed_root_as_package_with_opts<'b, 'o>(
+        opts: &'o flatbuffers::VerifierOptions,
+        buf: &'b [u8],
+    ) -> Result<Package<'b>, flatbuffers::InvalidFlatbuffer> {
+        flatbuffers::size_prefixed_root_with_opts::<Package<'b>>(opts, buf)
+    }
+    #[inline]
+    /// Assumes, without verification, that a buffer of bytes contains a Package and returns it.
+    /// # Safety
+    /// Callers must trust the given bytes do indeed contain a valid `Package`.
+    pub unsafe fn root_as_package_unchecked(buf: &[u8]) -> Package {
+        flatbuffers::root_unchecked::<Package>(buf)
+    }
+    #[inline]
+    /// Assumes, without verification, that a buffer of bytes contains a size prefixed Package and returns it.
+    /// # Safety
+    /// Callers must trust the given bytes do indeed contain a valid size prefixed `Package`.
+    pub unsafe fn size_prefixed_root_as_package_unchecked(buf: &[u8]) -> Package {
+        flatbuffers::size_prefixed_root_unchecked::<Package>(buf)
+    }
     #[inline]
     pub fn finish_package_buffer<'a, 'b>(
         fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
