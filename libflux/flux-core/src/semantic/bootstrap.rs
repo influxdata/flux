@@ -169,7 +169,7 @@ fn generate_docs(
 fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
-    pkgpath: &String,
+    pkgpath: &str,
 ) -> Result<Vec<DocValue>, Box<dyn std::error::Error>> {
     let mut values: Vec<DocValue> = Vec::new();
     //println!("{:?}", types);
