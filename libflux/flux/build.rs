@@ -2,7 +2,6 @@ extern crate fluxcore;
 
 use std::{env, fs, io, io::Write, path};
 
-
 use fluxcore::semantic::bootstrap;
 //use fluxcore::semantic::bootstrap::DocPackage;
 use fluxcore::semantic::bootstrap::stdlib_docs;
@@ -72,7 +71,6 @@ fn main() -> Result<(), Error> {
                 msg: format!("found free variables in type of package {}: {}", name, ty),
             });
         }
-
     }
     let new_docs = stdlib_docs(&pre, &file_map).unwrap();
     let json_docs = serde_json::to_vec(&new_docs).unwrap();

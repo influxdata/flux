@@ -112,7 +112,8 @@ impl From<&str> for Error {
 /// Infers the types of the standard library returning two [`PolyTypeMap`]s, one for the prelude
 /// and one for the standard library, as well as a type variable [`Fresher`].
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>, AstFileMap), Error> {
+pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>, AstFileMap), Error>
+{
     let mut f = Fresher::default();
 
     let dir = "../../stdlib";
@@ -126,14 +127,17 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>,
 }
 
 /// new stdlib docs function
-pub fn stdlib_docs(lib: &PolyTypeMap, files: &AstFileMap) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
+pub fn stdlib_docs(
+    lib: &PolyTypeMap,
+    files: &AstFileMap,
+) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
-    for (path,file) in files{
-        let pkg = generate_docs(path.clone(),&lib, file)?;
+    for (path, file) in files {
+        let pkg = generate_docs(path.clone(), &lib, file)?;
         docs.push(pkg);
     }
-   Ok(docs)
+    Ok(docs)
 }
 
 // Generates the docs by parsing the sources and checking type inference.
@@ -142,7 +146,6 @@ fn generate_docs(
     types: &PolyTypeMap,
     file: &ast::File,
 ) -> Result<DocPackage, Box<dyn std::error::Error>> {
-
     // construct the package documentation
     // use type inference to determine types of all values
     //let sem_pkg = analyze(pkg.clone())?;
@@ -160,7 +163,6 @@ fn generate_docs(
         doc,
         values,
     })
-
 }
 
 // Generates docs for the values in a given source file.
@@ -177,13 +179,13 @@ fn generate_values(
                 let doc = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
                 //println!("{}", name);
-                if !types.contains_key(&name){
+                if !types.contains_key(&name) {
                     continue;
                 }
                 let typ = format!("{}", types[&name].normal());
                 values.push(DocValue {
                     pkgpath: pkgpath.to_string(),
-                    name:name.clone(),
+                    name: name.clone(),
                     doc,
                     typ,
                 });
@@ -191,13 +193,13 @@ fn generate_values(
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let name = s.id.name.clone();
-                if !types.contains_key(&name){
+                if !types.contains_key(&name) {
                     continue;
                 }
                 let typ = format!("{}", types[&name].normal());
                 values.push(DocValue {
                     pkgpath: pkgpath.to_string(),
-                    name:name.clone(),
+                    name: name.clone(),
                     doc,
                     typ,
                 });
@@ -206,13 +208,13 @@ fn generate_values(
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
                     let name = v.id.name.clone();
-                    if !types.contains_key(&name){
+                    if !types.contains_key(&name) {
                         continue;
                     }
                     let typ = format!("{}", types[&name].normal());
                     values.push(DocValue {
                         pkgpath: pkgpath.to_string(),
-                        name:name.clone(),
+                        name: name.clone(),
                         doc,
                         typ,
                     });
