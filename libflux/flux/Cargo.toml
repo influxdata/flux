@@ -63,8 +63,3 @@ harness = false
 [[bench]]
 name = "formatter"
 harness = false
-
-[[bin]]
-name = "fluxdoc"
-test = false
-bench = false

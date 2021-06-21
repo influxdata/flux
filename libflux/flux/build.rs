@@ -8,8 +8,6 @@ use fluxcore::semantic::bootstrap::stdlib_docs;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::types as fb;
 use fluxcore::semantic::sub::Substitutable;
-//use serde::{Deserialize, Serialize};
-//use serde_json;
 
 #[derive(Debug)]
 struct Error {
