@@ -1,10 +1,11 @@
-# Flux Doc Comments
+# Flux doc comments
 
-In the interest of establishing a single source of authority for Flux documentation,
+## Project background and goals
+
+In order to establish a single source for Flux documentation,
 Flux will soon support doc comments in `stdlib`. Work is underway to integrate the
 documentation generated from doc comments into the `flux` crate, and expose them
-as JSON data for broader consumption. This document defines the details of how
-Flux doc comments should be written and formatted.
+as JSON data for broader consumption.
 
 The end goals of this project are as follows:
 
@@ -13,39 +14,41 @@ The end goals of this project are as follows:
 2. Expose documentation via the the Flux Language Server Protocol.
 3. Use the docs to generate a static site that will become the new home of the official Flux documentation.
 
-## Design Considerations
+This document defines how Flux doc comments should be written and formatted.
 
-The generated Flux docs will need to support different formats for different consumers.
-As an example, the Flux LSP and the InfluxDB UI will need to produce a condensed 
+## Writing Flux doc comments
+
+A Flux doc comment is any uninterrupted series of line comments immediately preceding
+one of the following:
+
+- [package clause](#packages)
+- [package value (assignment or builtin statement)](#package-values)
+- [function declaration](#functions)
+- [option declaration](#options)
+
+Flux doc comments support Markdown formatting in accordance with the
+[CommonMark specification](https://spec.commonmark.org/0.29/).
+
+### Headlines and descriptions
+
+Flux docs need to support different formats for different consumers.
+For example, the Flux LSP and the InfluxDB UI will need to produce a condensed
 version of the documentation for any given identifier in the Flux standard library.
-In contrast, the official docs site will need to present much more detailed information
+In contrast, the docs site will need to present more detailed information
 to readers. Consumers should be able to decide which format they want to use by
 selecting only the parts of the docs that are required for their use case.
 
-To allow for this, Flux doc comments are formatted so that the doc comment parser
-can easily distinguish the short-form content from the long-form content. In most
-cases throughout this document, these will be referred to as the "headline" and
-the "description", respectively.
+To allow for this, Flux doc comments consist of a _headline_ and a _description_.
+A description may contain one or more _code examples_.
 
-## Writing Flux Doc Comments
-
-Flux will treat any uninterrupted series of line comments immediately preceding
-an assignment statement, builtin statement, package clause, or option declaration, as a doc comment.
-
-Flux doc comments support markdown formatting in accordance with the 
-[CommonMark specification](https://spec.commonmark.org/0.29/).
-
-### Documenting Packages
-
-The documentation for a Flux package consists of a short headline, and a description,
-which may contain one or more code examples.
+### Packages
 
 #### Headline
 
 This is a one-sentence description of the package. The beginning of the sentence
 should read `Package <package-name> provides...`, and should be on its own line.
 
-Follow the headline with a blank line comment.
+There must be a blank line comment between the headline and description.
 
 #### Description
 
@@ -53,20 +56,20 @@ This section provides a detailed description of the package and its
 contents.
 
 If the package provides any constants that require documentation, that documentation
-should be included here. Otherwise, constants will just be listed by name in the 
+should be included here. Otherwise, constants are listed by name in the
 generated package documentation, with no further elaboration.
 
-Any code examples should be contained in a markdown-formatted code block, and may be
+Code examples should be contained in a Markdown-formatted code block, and may be
 included anywhere in the description. Readers should be able to copy and paste any
 any example code into the InfluxDB data explorer and run it with no modifications.
 Any sample data used in a code example should come from an `array.from()` call in
-the example code itself, rather than being represented as a markdown- or html-formatted table.
+the example code itself, rather than being represented as a Markdown- or html-formatted table.
 
-Future iterations on this project may add extra functionality around code examples
-(for instance, allowing users to run them interactively on the docs site). For now,
-they will just be treated as plain markdown.
+> Future iterations on this project may add extra functionality around code examples
+> (for instance, allowing users to run them interactively on the docs site). For now,
+> they will just be treated as plain Markdown.
 
-### Documenting package values
+### Package values
 
 Packages expose values via assignment statements and builtin statements.
 These values should be documented with a headline and optional description.
@@ -83,7 +86,7 @@ Follow the headline with a blank line comment.
 
 _Example:_
 
-Here's what the doc comment might look like for the pi constant in the math package.
+Here's what the doc comment might look like for the pi constant in the `math` package.
 
 ```
 // pi is a floating point representation of the mathematical constant pi.
@@ -92,17 +95,16 @@ builtin pi : float
 
 #### Description
 
-This section follows the same guidelines as those outlined in the `Description` section
-under the `Documenting Packages` heading earlier in this document.
+Package value descriptions are the same as [package descriptions](#description) above.
 
 _Example:_
 
-Here's what the doc comment might look like for the hypothetical constant forty-two from the math package.
+Here's what the doc comment might look like for a fictional constant `fortyTwo` from the math package.
 
 ```
 // fortyTwo is the integer 42.
 //
-// The constant fortyTwo can be used to deteremine the answer to import questions
+// The constant fortyTwo can be used to deteremine the answer to important questions.
 //
 // ```
 // import "math"
@@ -113,7 +115,7 @@ Here's what the doc comment might look like for the hypothetical constant forty-
 fortyTwo = 42
 ```
 
-### Documenting functions
+### Functions
 
 When a package exposes a value that is a function we want to include additional information
 about the function's parameters. Documentation for Flux functions consists of a short headline, a detailed description,
@@ -137,8 +139,7 @@ _Example:_
 
 #### Description
 
-This section follows the same guidelines as those outlined in the `Description` section
-under the `Documenting Packages` heading earlier in this document,
+Function descriptions are formatted the same as [package descriptions](#description) above,
 with the exception that every function description should include documentation
 for the function's parameters.
 
@@ -149,23 +150,23 @@ Every function description should include at least one code example.
 Documentation for function parameters is required, but it can appear anywhere in
 the function description.
 
-The parameters should be organized into a markdown-formatted unordered list, and
-should be immediately preceded by a markdown H2 header entitled `Parameters`.
+The parameters should be organized into a Markdown-formatted unordered list, and
+should be immediately preceded by a Markdown H2 header, `## Parameters`.
 Each list item should start with the name of the parameter as it appears in the
-function signature, followed by a brief, one-line description. Each list item
+function signature, followed by a brief one-line description. Each list item
 should read as a complete sentence, and should be properly punctuated.
 
 The parameters in the list should be ordered exactly as they are in the function
-signature, and no parameter should be omitted.
+signature. No parameter should be omitted.
 
 While the top-level list item for each parameter is limited to a short, one-line
-description, the parameter list may include extra markdown content after each list item.
+description, the parameter list may include extra Markdown content after each list item.
 Much like the distinction between a headline and a full description outlined
-earlier in this document, it can be helpful to think of the top-level list item 
+earlier in this document, it can be helpful to think of the top-level list item
 as a condensed description fit for short-form docs, and the notes that come after
 each list item as a more detailed explanation for use in long-form docs.
 
-Only the top-level list items are required in the parameter list. The extra notes
+Only top-level list items are required in the parameter list. Extra notes
 for each parameter are optional, and may be omitted.
 
 See the [`lists`](https://spec.commonmark.org/0.29/#lists) section in the CommonMark spec for specifics on supported formatting in the parameter list.
@@ -205,20 +206,20 @@ Here's what a parameter list might look like for the `aggregateWindow` function.
 // - tables is a stream of input tables.
 ```
 
-#### Other Information
+#### Other information
 
 There are other details about Flux functions that we will want to document, like
 the full type signature of each function, and which of the parameters are required.
-That information can be found in the function signature, and does not need be 
+That information can be found in the function signature, and does not need be
 included in the doc comment.
 
-#### Example
+#### Example function documentation
 
 Here's an example of a full doc comment for the `join` function.
 
 ```
-// join merges two input streams based on columns with equal values. 
-// 
+// join merges two input streams based on columns with equal values.
+//
 // Null values are not considered equal when comparing column
 // values. The resulting schema is the union of the input schemas. The resulting
 // group key is the union of the input group keys.
@@ -226,7 +227,7 @@ Here's an example of a full doc comment for the `join` function.
 // ## Parameters
 // - `tables` is a stream of tables
 // - `method` is the method to use when joining
-//    
+//
 //    Currently, this function only supports inner joins.
 //    Performaing an inner join will require both input
 //    tables to match their columns based on the `on` parameter.
@@ -234,7 +235,7 @@ Here's an example of a full doc comment for the `join` function.
 // - `on` is a list of column names on which to join.
 //
 // ## Joining two tables
-// 
+//
 // ```
 // import "array"
 //
@@ -263,7 +264,7 @@ Here's an example of a full doc comment for the `join` function.
 // ## Output schema of a joined table
 //
 // The column schema of the output stream is the union
-// of the input schemas. It is also the same for the 
+// of the input schemas. It is also the same for the
 // output group key. Columns are renamed using the pattern
 // `<column>_<table>` to prevent ambiguity in joined tables.
 //
@@ -290,7 +291,7 @@ Here's an example of a full doc comment for the `join` function.
 // ```
 ```
 
-### Documenting Flux Options
+### Options
 
 #### Headline
 
@@ -303,8 +304,8 @@ Follow the headline with a blank line comment.
 #### Description
 
 This section contains a detailed explanation of the how the option can be used
-in a Flux query, and should follow the same formatting rules as the `Description`
-section described under the `Documenting Packages` heading earlier in this document.
+in a Flux query, and should follow the same formatting rules as the 
+[package descriptions](#description) above.
 
 #### Example
 
@@ -321,7 +322,7 @@ the `profiler` package.
 // ## Enabling the profilers
 //
 // Add the following lines to your flux query to see profiler results in the output.
-// 
+//
 // ```
 // import "profiler"
 // option profiler.enabledProfilers = ["query", "operator"]
@@ -329,9 +330,10 @@ the `profiler` package.
 option enabledProfilers = [""]
 ```
 
-### Docs as Rust Data Structures
+### Doc comments as Rust types
 
-The goal for this project is parse the new docs into rust data structures
+<!-- How is this goal related to the three goals above? -->
+Another goal for this project is to parse doc comments into Rust types
 that we can then serialize into JSON for broader consumption.
 
 Below is a proposal for how to define those data structures.
