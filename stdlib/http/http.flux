@@ -1,14 +1,65 @@
 package http
 
+//The Flux HTTP package provides functions for transferring data using the HTTP protocol.
+//
 
-import "experimental"
+// Post submits an HTTP post request to the specified URL with headers and data
+// and returns the HTTP Status Code
+//
+// ## Parameters
+//
+// - `url` is the URL to post to
+// - `headers` are the headers to include with the Post request
+//
+//      Header keys with special characters:
+//      Wrap header keys that contain special characters in double quotes ("").
+//
+// - `data` is the data body to include with the Post request
+//
+// ## Send the last reported status to a URL
+//
+// ```
+// import "json"
+// import "http"
+//
+// lastReported =
+//  from(bucket: "example-bucket")
+//    |> range(start: -1m)
+//    |> filter(fn: (r) => r._measurement == "statuses")
+//    |> last()
+//    |> findColumn(fn: (key) => true, column: "_level")
+//
+//  http.post(
+//  url: "http://myawsomeurl.com/api/notify",
+//  headers: {
+//    Authorization: "Bearer mySuPerSecRetTokEn",
+//    "Content-type": "application/json"
+//  },
+//  data: json.encode(v: lastReported[0])
+// )
+//
+// ```
+//
+// The http.basicAuth() function returns a Base64-encoded basic authentication header
+// using a specified username and password combination.
+//
+// ## Parameters
+//
+// - `u` is the username to use in the basic authentication header.
+// - `p` is the password to use in the basic authentication header.
+//
+## Set a basic authentication header in an HTTP POST request
+//
+// ```
+// import "json"
+//
+// from(bucket: "example-bucket")
+//   |> range(start: -1h)
+//   |> map(fn: (r) => ({
+//       r with _value: json.encode(v: r._value)
+//   }))
+// ```
 
-// Post submits an HTTP post request to the specified URL with headers and data.
-// The HTTP status code is returned.
-builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
-
-// basicAuth will take a username/password combination and return the authorization
-// header value.
 builtin basicAuth : (u: string, p: string) => string
 
 // PathEscape escapes the string so it can be safely placed inside a URL path segment

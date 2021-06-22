@@ -1,6 +1,6 @@
 package pagerduty
 
-
+// The Flux PagerDuty package provides functions for sending data to PagerDuty.
 import "http"
 import "json"
 import "strings"
