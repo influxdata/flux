@@ -1,6 +1,5 @@
 //! Flux start-up.
 
-//use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
 use std::io;
@@ -8,7 +7,6 @@ use std::path::{Path, PathBuf};
 
 use crate::ast;
 use crate::parser;
-//use crate::parser::Parser;
 use crate::semantic::convert::convert_file;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;

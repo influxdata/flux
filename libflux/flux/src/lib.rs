@@ -5,7 +5,6 @@ pub mod wasm;
 extern crate fluxcore;
 extern crate serde_aux;
 
-//#[macro_use]
 extern crate serde_derive;
 
 use fluxcore::parser::Parser;
@@ -43,7 +42,6 @@ pub fn imports() -> Option<Environment> {
         .unwrap()
         .into()
 }
-///Todo: make a docs.json and then execute the code below
 pub fn docs() -> Vec<DocPackage> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
     serde_json::from_slice(buf).unwrap()
@@ -1124,11 +1122,5 @@ from(bucket: v.bucket)
         let want = r#"DocPackage { path: "csv", name: "csv", doc: "<p>CSV provides an API for working with <a href=\"https://github.com/influxdata/flux/blob/master/docs/SPEC.md#csv\">annotated CSV</a> files.</p>\n", values: [DocValue { pkgpath: "csv", name: "from", doc: "<p>From parses an annotated CSV and produces a stream of tables.</p>\n", typ: "(?bucket:string, ?bucketID:string, ?host:string, ?org:string, ?orgID:string, ?token:string) => [{A with _value:B, _time:time, _measurement:string, _field:string}]" }] }"#;
         let got = format!("{:?}", d[19]); // the csv DocPackage location
         assert_eq!(want, got);
-        //println!("{:?}", d[20].values);
-        //for i in 1..68{
-        //println!("{:?}", d[i].name);
-        // };
-        //assert_eq!(d[],
-        //);
     }
 }
