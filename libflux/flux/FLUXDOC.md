@@ -30,7 +30,7 @@ the "description", respectively.
 ## Writing Flux Doc Comments
 
 Flux will treat any uninterrupted series of line comments immediately preceding
-a function definition, package clause, or option declaration, as a doc comment.
+an assignment statement, builtin statement, package clause, or option declaration, as a doc comment.
 
 Flux doc comments support markdown formatting in accordance with the 
 [CommonMark specification](https://spec.commonmark.org/0.29/).
@@ -66,9 +66,57 @@ Future iterations on this project may add extra functionality around code exampl
 (for instance, allowing users to run them interactively on the docs site). For now,
 they will just be treated as plain markdown.
 
+### Documenting package values
+
+Packages expose values via assignment statements and builtin statements.
+These values should be documented with a headline and optional description.
+
+#### Headline
+
+Documentation for values should begin with the headline: a one-line description
+of the value that begins with the value name. The value name should be
+written exactly as it appears in the assignment statement, and should be followed
+by a brief explanation of the purpose of the value or how it can be used. The entire
+headline should read as one complete sentence.
+
+Follow the headline with a blank line comment.
+
+_Example:_
+
+Here's what the doc comment might look like for the pi constant in the math package.
+
+```
+// pi is a floating point representation of the mathematical constant pi.
+builtin pi : float
+```
+
+#### Description
+
+This section follows the same guidelines as those outlined in the `Description` section
+under the `Documenting Packages` heading earlier in this document.
+
+_Example:_
+
+Here's what the doc comment might look like for the hypothetical constant forty-two from the math package.
+
+```
+// fortyTwo is the integer 42.
+//
+// The constant fortyTwo can be used to deteremine the answer to import questions
+//
+// ```
+// import "math"
+//
+// question = (answer) => answer
+// question(answer: math.fortyTwo)
+// ```
+fortyTwo = 42
+```
+
 ### Documenting functions
 
-Documentation for Flux functions consists of a short headline, a detailed description,
+When a package exposes a value that is a function we want to include additional information
+about the function's parameters. Documentation for Flux functions consists of a short headline, a detailed description,
 and a list of the function's parameters.
 
 #### Headline
@@ -261,7 +309,7 @@ section described under the `Documenting Packages` heading earlier in this docum
 #### Example
 
 Here's what a doc comment might look like for the `enabledProfilers` option in
-the `profiler` packge.
+the `profiler` package.
 ```
 // enabledProfilers sets a list of profilers that should be enabled during execution.
 //
@@ -289,34 +337,43 @@ that we can then serialize into JSON for broader consumption.
 Below is a proposal for how to define those data structures.
 
 ```rust
+// Doc represents a documentation for Flux source code.
 enum Doc {
+// Package represents documentation for an entire Flux package.
 	Package(Box<PackageDoc>),
+    // Value represents documentation for a value exposed from a package.
+	Value(Box<ValueDoc>),
+    // Builtin represents documentation for a builtin value exposed from a package.
+	Builtin(Box<ValueDoc>),
+    // Option represents documentation for a option value exposed from a package.
+	Option(Box<ValueDoc>),
+    // Function represents documentation for a function value exposed from a package.
 	Function(Box<FunctionDoc>),
-	Opt(Box<OptionDoc>),
 }
 
 struct PackageDoc {
 	name: String,
 	headline: String,
-	description: String,
+	description: Option<String>,
 	members: HashMap<String, Doc>,
 }
 
-struct OptionDoc {
+struct ValueDoc {
 	name: String,
 	headline: String,
-	description: String,
+	description: Option<String>,
+	flux_type: String,
 }
 
 struct FunctionDoc {
 	name: String,
 	headline: String,
 	description: String,
-	parameters: Vec<Parameter>,
+	parameters: Vec<ParameterDoc>,
 	flux_type: String,
 }
 
-struct Parameter {
+struct ParameterDoc {
 	name: String,
 	headline: String,
 	description: Option<String>,
