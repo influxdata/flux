@@ -1,6 +1,5 @@
 package pagerduty_test
 
-
 import "array"
 import "pagerduty"
 import "testing"
@@ -35,7 +34,6 @@ default_tc = (start, stop) => {
         ]
     )
         |> group(columns: ["_measurement", "_field", "_level", "host"])
-
     return testing.diff(got, want)
 }
 
