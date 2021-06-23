@@ -1,7 +1,7 @@
 package array
 
 
-// from constructs a table from an array of ercords
+// from constructs a table from an array of records
 //
 // Each record in the array is converted into an output row or record. All
 // records must have the same keys and data types.
