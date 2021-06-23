@@ -218,7 +218,6 @@ builtin atan2 : (x: float, y: float) => float
 // math.atanh(x: <-1) // Returns NaN
 // math.atanh(x: >1)  // Returns NaN
 // math.atanh(x: NaN) // Returns NaN
-
 // ```
 builtin atanh : (x: float) => float
 
