@@ -3,7 +3,6 @@ extern crate fluxcore;
 use std::{env, fs, io, io::Write, path};
 
 use fluxcore::semantic::bootstrap;
-//use fluxcore::semantic::bootstrap::DocPackage;
 use fluxcore::semantic::bootstrap::stdlib_docs;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::types as fb;
