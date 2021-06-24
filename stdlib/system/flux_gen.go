@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   4,
+					Line:   13,
 				},
 				File:   "system.flux",
-				Source: "package system\n\n\nbuiltin time",
+				Source: "package system\n\n\n// time is a function that returns the current system time\n//\n// ## Example\n// ```\n// import \"system\"\n//\n// data\n//   |> set(key: \"processed_at\", value: string(v: system.time() ))\n// ```\nbuiltin time",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -36,18 +36,18 @@ var pkgAST = &ast.Package{
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// time is a function that returns the current system time\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"system\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> set(key: \"processed_at\", value: string(v: system.time() ))\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   4,
+						Line:   13,
 					},
 					File:   "system.flux",
 					Source: "builtin time",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   13,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   4,
+							Line:   13,
 						},
 						File:   "system.flux",
 						Source: "time",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   13,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 26,
-							Line:   4,
+							Line:   13,
 						},
 						File:   "system.flux",
 						Source: "() => time",
 						Start: ast.Position{
 							Column: 16,
-							Line:   4,
+							Line:   13,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   4,
+								Line:   13,
 							},
 							File:   "system.flux",
 							Source: "() => time",
 							Start: ast.Position{
 								Column: 16,
-								Line:   4,
+								Line:   13,
 							},
 						},
 					},
@@ -114,13 +114,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   4,
+									Line:   13,
 								},
 								File:   "system.flux",
 								Source: "time",
 								Start: ast.Position{
 									Column: 22,
-									Line:   4,
+									Line:   13,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   4,
+										Line:   13,
 									},
 									File:   "system.flux",
 									Source: "time",
 									Start: ast.Position{
 										Column: 22,
-										Line:   4,
+										Line:   13,
 									},
 								},
 							},
