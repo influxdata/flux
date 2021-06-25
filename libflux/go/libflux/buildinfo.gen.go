@@ -243,7 +243,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/schema/show_tag_values_empty_test.flux":             "93baa172562c75ed21bc6eb1780341844233ccac3cb09d09ed0c18c81b988c95",
 	"stdlib/influxdata/influxdb/schema/show_tag_values_test.flux":                   "1c0f7b42dbfd86ce00eff863ed8c66d15a735127e37ca9fd8a86ec14fe8c5555",
 	"stdlib/influxdata/influxdb/schema/show_tag_values_with_pred_test.flux":         "ec643b6c1b149c18a9a17a6025245a80e8fb076dfd38acd65558d4c879358d4f",
-	"stdlib/influxdata/influxdb/secrets/secrets.flux":                               "8c75eba50e5df0ec49f3968d3f1ec00ef935e353b7335a1f054562535fc32544",
+	"stdlib/influxdata/influxdb/secrets/secrets.flux":                               "746aca8140ddd7aeff642fc60ece110545dfc31f38567fc6745aa2e419dcc4a3",
 	"stdlib/influxdata/influxdb/secrets/secrets_test.flux":                          "89d900a77a9754100794bb26af41df3d830815463e45b0ef659ade44dc1269e6",
 	"stdlib/influxdata/influxdb/tasks/last_success_duration_no_option_test.flux":    "87a10b9ac635e16940ce5820bc100272984804b23ca4666195fe210644e48aae",
 	"stdlib/influxdata/influxdb/tasks/last_success_duration_option_test.flux":       "8754fd8fbf39bcfff4b33ab0b182217f0d3ef8406ff09146f0872d1d6df64621",
@@ -263,8 +263,13 @@ var sourceHashes = map[string]string{
 	"stdlib/interpolate/interpolate_test.flux":                                      "3e5963a5176e17f7dc2eb7f69c9485bb635793e8e93469d6d9ee569aaa30d492",
 	"stdlib/json/json.flux":                                                         "339deb47e6275f47786948c070063d9787cdeb95e37ced3c44d6be93d352009a",
 	"stdlib/kafka/kafka.flux":                                                       "214fb699bcde2db9ecb9a6673bf9f29c481ec51306bcf6316cec23324431ea3d",
+<<<<<<< HEAD
 	"stdlib/math/math.flux":                                                         "2eaf5f7e986ba142fc9aea6df2909da2baceea3bf9c746fa08777f0980d21a82",
 	"stdlib/pagerduty/pagerduty.flux":                                               "ea8f481ed8766ca6355a505b2b90cf3e55954bfe0dfa8850a8a13eabdee24544",
+=======
+	"stdlib/math/math.flux":                                                         "66e94140d5dedfd69446b55d275be8d391be982fb926f06cd0faa5174c1b5ff1",
+	"stdlib/pagerduty/pagerduty.flux":                                               "2243db0ced078978ccbeeecc4a3cdb947c77c961e2c9089208d36c384ea4cd11",
+>>>>>>> f8ad6027 (docs: added influxdb secrets docs)
 	"stdlib/pagerduty/pagerduty_test.flux":                                          "d8f9bd6ffe2de7af4270aa51a2adbaeb77405bc52310fb3fc4f77090362b77c4",
 	"stdlib/planner/aggregate_window_max_eval_test.flux":                            "7993881ef948aad5039e3534bd05964e008cefe14c6259152fbc36dca8b3d902",
 	"stdlib/planner/aggregate_window_max_push_test.flux":                            "98f872b4fc07261f85fb8c52f75198a6af73626cd7b7db68ae098d005e1ece60",
