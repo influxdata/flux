@@ -251,7 +251,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/tasks/last_success_without_option_test.flux":        "10f8e40dbf3185315511bc445c4a3a461cb22dc8bf3279b05ce2362a89a819f8",
 	"stdlib/influxdata/influxdb/tasks/tasks.flux":                                   "63a9ab3a73baefcbb7d18a6ef8d783950c6c65b612316d68215970274e4e4a0a",
 	"stdlib/influxdata/influxdb/to_test.flux":                                       "68259c515b4f6df55e45ab1902723b8215a139d9033f00fee7f616a024705e4e",
-	"stdlib/influxdata/influxdb/v1/v1.flux":                                         "e9bef3db7a27eb60599ffe4e1fba98fb94a521c79a34c474f54bf91da2a73c6f",
+	"stdlib/influxdata/influxdb/v1/v1.flux":                                         "3c887cf8c8ad1a70030abe7f2e5c93cb8fb85250c8d14f201c842860d9bf6100",
 	"stdlib/internal/debug/debug.flux":                                              "6b9dfb6f1f751079f1c4082399c43ced81dedef0ea0580a11a1568cc9c00e13a",
 	"stdlib/internal/debug/debug_test.flux":                                         "ba5dcde99aed4aa788255157d52e4e6261a61f2752d3e17fe6138e3c38087226",
 	"stdlib/internal/gen/gen.flux":                                                  "9af35dba81d7cc0215204b1f9a9d8ee541dd54909e4038d8c0007e8f80860b79",
@@ -263,8 +263,13 @@ var sourceHashes = map[string]string{
 	"stdlib/interpolate/interpolate_test.flux":                                      "3e5963a5176e17f7dc2eb7f69c9485bb635793e8e93469d6d9ee569aaa30d492",
 	"stdlib/json/json.flux":                                                         "3fe957f73bed7ff5b49fcae5f7b82853ebb2ff74e3eed2af8a2eb1f546df88fe",
 	"stdlib/kafka/kafka.flux":                                                       "214fb699bcde2db9ecb9a6673bf9f29c481ec51306bcf6316cec23324431ea3d",
+<<<<<<< HEAD
 	"stdlib/math/math.flux":                                                         "e361f11096aec55df6f82e7658b93952445d18e400305089da4dec945dd0f9bc",
 	"stdlib/pagerduty/pagerduty.flux":                                               "ea8f481ed8766ca6355a505b2b90cf3e55954bfe0dfa8850a8a13eabdee24544",
+=======
+	"stdlib/math/math.flux":                                                         "66e94140d5dedfd69446b55d275be8d391be982fb926f06cd0faa5174c1b5ff1",
+	"stdlib/pagerduty/pagerduty.flux":                                               "2243db0ced078978ccbeeecc4a3cdb947c77c961e2c9089208d36c384ea4cd11",
+>>>>>>> 89697067 (docs: added v1 docs)
 	"stdlib/pagerduty/pagerduty_test.flux":                                          "d8f9bd6ffe2de7af4270aa51a2adbaeb77405bc52310fb3fc4f77090362b77c4",
 	"stdlib/planner/aggregate_window_max_eval_test.flux":                            "7993881ef948aad5039e3534bd05964e008cefe14c6259152fbc36dca8b3d902",
 	"stdlib/planner/aggregate_window_max_push_test.flux":                            "98f872b4fc07261f85fb8c52f75198a6af73626cd7b7db68ae098d005e1ece60",
