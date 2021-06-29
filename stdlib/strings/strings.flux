@@ -1,11 +1,13 @@
 package strings
 
-// The Flux string package provides functions to manipulate UTF-8 encoded strings.
+
+// The Flux strings package provides functions to manipulate UTF-8 encoded strings.
 //
 //
 // Transformation functions:
 //
-// - builtin title : (v: string) => string
+builtin title : (v: string) => string
+
 //
 // The strings.title() function converts a string to title case.
 //
@@ -21,7 +23,8 @@ package strings
 //  data
 //      |> map(fn: (r) => ({ r with pageTitle: strings.title(v: r.pageTitle) }))
 //
-// builtin toUpper : (v: string) => string
+builtin toUpper : (v: string) => string
+
 //
 // The strings.toUpper() function converts a string to uppercase.
 //
@@ -47,7 +50,8 @@ package strings
 //      - strings.toUpper(v: str) // Returns Ǳ
 //      - strings.toTitle(v: str) // Returns ǲ
 //
-// builtin toLower : (v: string) => string
+builtin toLower : (v: string) => string
+
 //
 // The strings.toLower() function converts a string to lowercase.
 //
@@ -67,7 +71,8 @@ package strings
 //    )
 // ```
 //
-// builtin trim : (v: string, cutset: string) => string
+builtin trim : (v: string, cutset: string) => string
+
 //
 // The strings.trim() function removes leading and trailing characters specified in the cutset from a string.
 //
@@ -90,7 +95,8 @@ package strings
 //     })
 //   )
 //
-// builtin trimPrefix : (v: string, prefix: string) => string
+builtin trimPrefix : (v: string, prefix: string) => string
+
 //
 // The strings.trimPrefix() function removes a prefix from a string. Strings that do not start with the prefix are returned unchanged.
 //
@@ -112,7 +118,8 @@ package strings
 //   )
 // ```
 //
-// builtin trimSpace : (v: string) => string
+builtin trimSpace : (v: string) => string
+
 //
 // The strings.trimSpace() function removes leading and trailing spaces from a string.
 //
@@ -128,7 +135,8 @@ package strings
 // data
 //   |> map(fn: (r) => ({ r with userInput: strings.trimSpace(v: r.userInput) }))
 // ```
-// builtin trimSuffix : (v: string, suffix: string) => string
+builtin trimSuffix : (v: string, suffix: string) => string
+
 //
 // The The strings.trimSuffix() function removes a suffix from a string. Strings that do not end with the suffix are returned unchanged.
 //
@@ -150,7 +158,8 @@ package strings
 //   )
 // ```
 //
-// builtin trimRight : (v: string, cutset: string) => string
+builtin trimRight : (v: string, cutset: string) => string
+
 //
 // The strings.trimRight() function removes trailing characters specified in the cutset from a string.
 //
@@ -174,7 +183,8 @@ package strings
 //   )
 // ```
 //
-// builtin trimLeft : (v: string, cutset: string) => string
+builtin trimLeft : (v: string, cutset: string) => string
+
 //
 // The strings.trimLeft() function removes specified leading characters from a string.
 //
@@ -196,7 +206,8 @@ package strings
 //   )
 // ```
 //
-// builtin toTitle : (v: string) => string
+builtin toTitle : (v: string) => string
+
 //
 // The strings.toTitle() function converts all characters in a string to title case.
 //
@@ -213,7 +224,8 @@ package strings
 //   |> map(fn: (r) => ({ r with pageTitle: strings.toTitle(v: r.pageTitle) }))
 // ```
 //
-// builtin hasPrefix : (v: string, prefix: string) => bool
+builtin hasPrefix : (v: string, prefix: string) => bool
+
 //
 // The strings.hasPrefix() function indicates if a string begins with a specified prefix.
 //
@@ -231,7 +243,8 @@ package strings
 //   |> filter(fn:(r) => strings.hasPrefix(v: r.metric, prefix: "int_" ))
 // ```
 //
-// builtin hasSuffix : (v: string, suffix: string) => bool
+builtin hasSuffix : (v: string, suffix: string) => bool
+
 //
 // The strings.hasSuffix() function indicates if a string ends with a specified suffix.
 //
@@ -249,7 +262,8 @@ package strings
 //   |> filter(fn:(r) => strings.hasSuffix(v: r.metric, suffix: "_count" ))
 // ```
 //
-// builtin containsStr : (v: string, substr: string) => bool
+builtin containsStr : (v: string, substr: string) => bool
+
 //
 // The strings.containsStr() function reports whether a string contains a specified substring.
 //
@@ -271,7 +285,8 @@ package strings
 //   )
 // ```
 //
-// builtin containsAny : (v: string, chars: string) => bool
+builtin containsAny : (v: string, chars: string) => bool
+
 //
 // The strings.containsAny() function reports whether a specified string contains characters from another string.
 //
@@ -293,7 +308,8 @@ package strings
 //   )
 // ```
 //
-// builtin equalFold : (v: string, t: string) => bool
+builtin equalFold : (v: string, t: string) => bool
+
 //
 // The strings.equalFold() function reports whether two UTF-8 strings are equal under Unicode case-folding.
 //
@@ -317,7 +333,8 @@ package strings
 //   )
 // ```
 //
-// builtin compare : (v: string, t: string) => int
+builtin compare : (v: string, t: string) => int
+
 //
 // The strings.compare() function compares the lexicographical order of two strings.
 //
@@ -345,7 +362,8 @@ package strings
 //   )
 // ```
 //
-// builtin countStr : (v: string, substr: string) => int
+builtin countStr : (v: string, substr: string) => int
+
 //
 //The strings.countStr() function counts the number of non-overlapping instances of a substring appears in a string.
 //
@@ -371,7 +389,8 @@ package strings
 //   )
 // ```
 //
-// builtin index : (v: string, substr: string) => int
+builtin index : (v: string, substr: string) => int
+
 //
 // The strings.index() function returns the index of the first instance of a substring in a string. If the substring is not present, it returns -1.
 //
@@ -393,7 +412,8 @@ package strings
 //   )
 // ```
 //
-// builtin indexAny : (v: string, chars: string) => int
+builtin indexAny : (v: string, chars: string) => int
+
 //
 // The strings.indexAny() function returns the index of the first instance of specified characters in a string. If none of the specified characters are present, it returns -1.
 //
@@ -415,7 +435,8 @@ package strings
 //   )
 // ```
 //
-// builtin lastIndex : (v: string, substr: string) => int
+builtin lastIndex : (v: string, substr: string) => int
+
 //
 // The strings.lastIndex() function returns the index of the last instance of a substring in a string. If the substring is not present, the function returns -1.
 //
@@ -437,7 +458,8 @@ package strings
 //   )
 // ```
 //
-// builtin lastIndexAny : (v: string, chars: string) => int
+builtin lastIndexAny : (v: string, chars: string) => int
+
 //
 // The strings.lastIndexAny() function returns the index of the last instance of any specified characters in a string. If none of the specified characters are present, the function returns -1.
 //
@@ -459,7 +481,8 @@ package strings
 //   )
 // ```
 //
-// builtin isDigit : (v: string) => bool
+builtin isDigit : (v: string) => bool
+
 //
 // The strings.isDigit() function tests if a single-character string is a digit (0-9).
 //
@@ -476,7 +499,8 @@ package strings
 //   |> filter(fn: (r) => strings.isDigit(v: r.serverRef))
 // ```
 //
-// builtin isLetter : (v: string) => bool
+builtin isLetter : (v: string) => bool
+
 //
 // The strings.isLetter() function tests if a single character string is a letter (a-z, A-Z).
 //
@@ -493,7 +517,8 @@ package strings
 //   |> filter(fn: (r) => strings.isLetter(v: r.serverRef))
 // ```
 //
-// builtin isLower : (v: string) => bool
+builtin isLower : (v: string) => bool
+
 //
 // The strings.isLower() function tests if a single-character string is lowercase.
 //
@@ -510,7 +535,8 @@ package strings
 //   |> filter(fn: (r) => strings.isLower(v: r.host))
 // ```
 //
-// builtin isUpper : (v: string) => bool
+builtin isUpper : (v: string) => bool
+
 //
 // The strings.isUpper() function tests if a single character string is uppercase.
 //
@@ -527,7 +553,8 @@ package strings
 //   |> filter(fn: (r) => strings.isUpper(v: r.host))
 // ```
 //
-// builtin repeat : (v: string, i: int) => string
+builtin repeat : (v: string, i: int) => string
+
 //
 // The strings.repeat() function returns a string consisting of i copies of a specified string.
 //
@@ -550,7 +577,8 @@ package strings
 //   )
 // ```
 //
-// builtin replace : (v: string, t: string, u: string, i: int) => string
+builtin replace : (v: string, t: string, u: string, i: int) => string
+
 //
 // The strings.replace() function replaces the first i non-overlapping instances of a substring with a specified replacement.
 //
@@ -574,7 +602,8 @@ package strings
 //   )
 // ```
 //
-// builtin replaceAll : (v: string, t: string, u: string) => string
+builtin replaceAll : (v: string, t: string, u: string) => string
+
 //
 // The strings.replaceAll() function replaces all non-overlapping instances of a substring with a specified replacement.
 //
@@ -597,7 +626,8 @@ package strings
 //   )
 // ```
 //
-// builtin split : (v: string, t: string) => [string]
+builtin split : (v: string, t: string) => [string]
+
 //
 // The strings.split() function splits a string on a specified separator and returns an array of substrings.
 //
@@ -615,7 +645,8 @@ package strings
 //   |> map (fn:(r) => strings.split(v: r.searchTags, t: ","))
 // ```
 //
-// builtin splitAfter : (v: string, t: string) => [string]
+builtin splitAfter : (v: string, t: string) => [string]
+
 //
 // The strings.splitAfter() function splits a string after a specified separator and returns an array of substrings. Split substrings include the separator, t.
 //
@@ -633,7 +664,8 @@ package strings
 //    |> map (fn:(r) => strings.splitAfter(v: r.searchTags, t: ","))
 // ```
 //
-// builtin splitN : (v: string, t: string, n: int) => [string]
+builtin splitN : (v: string, t: string, n: int) => [string]
+
 //
 // The strings.splitN() function splits a string on a specified separator and returns an array of i substrings.
 //
@@ -654,7 +686,8 @@ package strings
 //    |> map (fn:(r) => strings.splitN(v: r.searchTags, t: ","))
 // ```
 //
-// builtin splitAfterN : (v: string, t: string, i: int) => [string]
+builtin splitAfterN : (v: string, t: string, i: int) => [string]
+
 //
 // The strings.splitAfterN() function splits a string after a specified separator and returns an array of i substrings. Split substrings include the separator t.
 //
@@ -675,7 +708,8 @@ package strings
 //    |> map (fn:(r) => strings.splitAfterN(v: r.searchTags, t: ","))
 // ```
 //
-// builtin joinStr : (arr: [string], v: string) => string
+builtin joinStr : (arr: [string], v: string) => string
+
 //
 // The strings.joinStr() function concatenates elements of a string array into a single string using a specified separator.
 //
@@ -694,7 +728,8 @@ package strings
 // strings.joinStr(arr: searchTags, v: ","))
 // ```
 //
-// builtin strlen : (v: string) => int
+builtin strlen : (v: string) => int
+
 //
 // The strings.strlen() function returns the length of a string. String length is determined by the number of UTF code points a string contains.
 //
@@ -724,7 +759,7 @@ package strings
 //   )
 // ```
 //
-// builtin substring : (v: string, start: int, end: int) => string
+builtin substring : (v: string, start: int, end: int) => string
 //
 // The strings.substring() function returns a substring based on start and end parameters. These parameters are represent indices of UTF code points in the string.
 //
