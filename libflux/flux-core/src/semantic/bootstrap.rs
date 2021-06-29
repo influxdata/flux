@@ -34,6 +34,34 @@ pub struct Error {
     pub msg: String,
 }
 
+/// DocPackage represents the documentation for a package and its sub packages
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocPackage {
+    /// the path to the documentation package
+    pub path: String,
+    /// the name of the comments package?
+    pub name: String,
+    /// the doc
+    pub doc: String,
+    /// the values of the comments
+    pub values: Vec<DocValue>,
+}
+
+/// DocValue represents the documentation for a single value within a package.
+/// Values include options, builtins or any variable assignment within the top level scope of a
+/// package.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocValue {
+    /// the path to the package
+    pub pkgpath: String,
+    /// the name of the package
+    pub name: String,
+    /// the doc
+    pub doc: String,
+    /// the type of the comments
+    pub typ: String,
+}
+
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Error {
         Error {
@@ -82,7 +110,8 @@ impl From<&str> for Error {
 /// Infers the types of the standard library returning two [`PolyTypeMap`]s, one for the prelude
 /// and one for the standard library, as well as a type variable [`Fresher`].
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
+pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>, AstFileMap), Error>
+{
     let mut f = Fresher::default();
 
     let dir = "../../stdlib";
@@ -92,7 +121,117 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>)
     let (prelude, importer) = infer_pre(&mut f, &files)?;
     let importer = infer_std(&mut f, &files, prelude.clone(), importer)?;
 
-    Ok((prelude, importer, f, rerun_if_changed))
+    Ok((prelude, importer, f, rerun_if_changed, files))
+}
+
+/// new stdlib docs function
+pub fn stdlib_docs(
+    lib: &PolyTypeMap,
+    files: &AstFileMap,
+) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
+    //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
+    let mut docs = Vec::new();
+    for (path, file) in files {
+        let pkg = generate_docs(path.clone(), &lib, file)?;
+        docs.push(pkg);
+    }
+    Ok(docs)
+}
+
+// Generates the docs by parsing the sources and checking type inference.
+fn generate_docs(
+    path: String,
+    types: &PolyTypeMap,
+    file: &ast::File,
+) -> Result<DocPackage, Box<dyn std::error::Error>> {
+    // construct the package documentation
+    // use type inference to determine types of all values
+    //let sem_pkg = analyze(pkg.clone())?;
+    //let types = pkg_types(&sem_pkg);
+
+    let mut doc = String::new();
+    let values = generate_values(&file, &types, &path)?;
+    if let Some(comment) = &file.package {
+        doc = comments_to_string(&comment.base.comments);
+    }
+    //TODO check if package name exists and if it doesn't throw an error message
+    Ok(DocPackage {
+        path,
+        name: file.package.clone().unwrap().name.name,
+        doc,
+        values,
+    })
+}
+
+// Generates docs for the values in a given source file.
+fn generate_values(
+    f: &ast::File,
+    types: &PolyTypeMap,
+    pkgpath: &str,
+) -> Result<Vec<DocValue>, Box<dyn std::error::Error>> {
+    let mut values: Vec<DocValue> = Vec::new();
+    //println!("{:?}", types);
+    for stmt in &f.body {
+        match stmt {
+            ast::Statement::Variable(s) => {
+                let doc = comments_to_string(&s.id.base.comments);
+                let name = s.id.name.clone();
+                //println!("{}", name);
+                if !types.contains_key(&name) {
+                    continue;
+                }
+                let typ = format!("{}", types[&name].normal());
+                values.push(DocValue {
+                    pkgpath: pkgpath.to_string(),
+                    name: name.clone(),
+                    doc,
+                    typ,
+                });
+            }
+            ast::Statement::Builtin(s) => {
+                let doc = comments_to_string(&s.base.comments);
+                let name = s.id.name.clone();
+                if !types.contains_key(&name) {
+                    continue;
+                }
+                let typ = format!("{}", types[&name].normal());
+                values.push(DocValue {
+                    pkgpath: pkgpath.to_string(),
+                    name: name.clone(),
+                    doc,
+                    typ,
+                });
+            }
+            ast::Statement::Option(s) => {
+                if let ast::Assignment::Variable(v) = &s.assignment {
+                    let doc = comments_to_string(&s.base.comments);
+                    let name = v.id.name.clone();
+                    if !types.contains_key(&name) {
+                        continue;
+                    }
+                    let typ = format!("{}", types[&name].normal());
+                    values.push(DocValue {
+                        pkgpath: pkgpath.to_string(),
+                        name: name.clone(),
+                        doc,
+                        typ,
+                    });
+                }
+            }
+            _ => {}
+        }
+    }
+    Ok(values)
+}
+
+fn comments_to_string(comments: &[ast::Comment]) -> String {
+    let mut s = String::new();
+    if !comments.is_empty() {
+        for c in comments {
+            s.push_str(c.text.as_str().strip_prefix("//").unwrap());
+        }
+    }
+    comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
 }
 
 fn compute_file_dependencies(root: &str) -> Vec<String> {

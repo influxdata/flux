@@ -5,9 +5,7 @@ pub mod wasm;
 extern crate fluxcore;
 extern crate serde_aux;
 
-#[macro_use]
 extern crate serde_derive;
-pub mod docs;
 
 use fluxcore::parser::Parser;
 use fluxcore::semantic::check;
@@ -24,8 +22,10 @@ pub use fluxcore::scanner;
 pub use fluxcore::semantic;
 pub use fluxcore::*;
 
+use crate::semantic::bootstrap::DocPackage;
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
+use inflate::inflate_bytes;
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
@@ -42,6 +42,11 @@ pub fn imports() -> Option<Environment> {
     flatbuffers::root::<fb::TypeEnvironment>(buf)
         .unwrap()
         .into()
+}
+
+pub fn docs() -> Vec<DocPackage> {
+    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
+    serde_json::from_slice(&inflate_bytes(buf).unwrap()).unwrap()
 }
 
 pub fn fresher() -> Fresher {
@@ -584,6 +589,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
+    use crate::docs;
     use crate::parser;
     use crate::{analyze, find_var_type, flux_ast_get_error, merge_packages};
     use fluxcore::ast;
@@ -1109,5 +1115,15 @@ from(bucket: v.bucket)
                 }
             }
         }
+    }
+
+    #[test]
+    //Testing the CSV package's docs
+    fn ensure_docs() {
+        let d = docs();
+        let want = r#"DocPackage { path: "csv", name: "csv", doc: "<p>CSV provides an API for working with <a href=\"https://github.com/influxdata/flux/blob/master/docs/SPEC.md#csv\">annotated CSV</a> files.</p>\n", values: [DocValue { pkgpath: "csv", name: "from", doc: "<p>From parses an annotated CSV and produces a stream of tables.</p>\n", typ: "(?bucket:string, ?bucketID:string, ?host:string, ?org:string, ?orgID:string, ?token:string) => [{A with _value:B, _time:time, _measurement:string, _field:string}]" }] }"#;
+        println!("GETTING:: {:?}", d[19]);
+        let got = format!("{:?}", d[19]); // the csv DocPackage location
+        assert_eq!(want, got);
     }
 }
