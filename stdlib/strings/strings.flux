@@ -7,7 +7,7 @@ package strings
 //
 // ## Parameters
 //
-// - `V` is the string value to convert.
+// - `v` is the string value to convert.
 //
 // ## Convert all values of a column to title case
 //
@@ -24,7 +24,7 @@ builtin title : (v: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string value to convert.
+// - `v` is the string value to convert.
 //
 // ## Convert all values of a column to upper case
 //
@@ -51,7 +51,7 @@ builtin toUpper : (v: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string value to convert.
+// - `v` is the string value to convert.
 //
 // ## Convert all values of a column to lower case
 //
@@ -72,7 +72,7 @@ builtin toLower : (v: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string to remove characters from.
+// - `v` is the string to remove characters from.
 // - `cutset` is the  leading and trailing characters to remove from the string.
 //
 //      Only characters that match the cutset string exactly are trimmed.
@@ -96,7 +96,7 @@ builtin trim : (v: string, cutset: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string to trim
+// - `v` is the string to trim
 // - `prefix` is the prefix to remove
 //
 // ## Trim leading and trailing periods from all values in a column
@@ -119,7 +119,7 @@ builtin trimPrefix : (v: string, prefix: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string to remove spaces from
+// - `v` is the string to remove spaces from
 //
 // ## Trim leading and trailing spaces from all values in a column
 //
@@ -136,7 +136,7 @@ builtin trimSpace : (v: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string to trim
+// - `v` is the string to trim
 // - `suffix` is the suffix to remove.
 //
 // ## Remove a suffix from all values in a column
@@ -159,7 +159,7 @@ builtin trimSuffix : (v: string, suffix: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string to to remove characters from
+// - `v` is the string to to remove characters from
 // - `cutset` is the trailing characters to trim from the string.
 //
 //      Only characters that match the cutset string exactly are trimmed.
@@ -184,7 +184,7 @@ builtin trimRight : (v: string, cutset: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string to to remove characters from
+// - `v` is the string to to remove characters from
 // - `cutset` is the trailing characters to trim from the string.
 //
 // ## Trim leading periods from all values in a column
@@ -207,7 +207,7 @@ builtin trimLeft : (v: string, cutset: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string value to convert.
+// - `v` is the string value to convert.
 //
 // ## Convert characters in a string to title case
 //
@@ -225,7 +225,7 @@ builtin toTitle : (v: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string value to search.
+// - `v` is the string value to search.
 // - `prefix` is the string prefix to search for.
 //
 // ## Filter based on the presence of a prefix in a column value
@@ -244,7 +244,7 @@ builtin hasPrefix : (v: string, prefix: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the string value to search.
+// - `v` is the string value to search.
 // - `prefix` is the string suffix to search for.
 //
 // ## Filter based on the presence of a suffix in a column value
@@ -263,7 +263,7 @@ builtin hasSuffix : (v: string, suffix: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the string value to search
+// - `v` is the string value to search
 // - `substr` is the substring value to search for
 //
 // ## Report if a string contains a specific substring
@@ -286,7 +286,7 @@ builtin containsStr : (v: string, substr: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the string value to search
+// - `v` is the string value to search
 // - `chars` is the character to search for
 //
 // ## Report if a string contains specific characters
@@ -309,7 +309,7 @@ builtin containsAny : (v: string, chars: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the string value to compare
+// - `v` is the string value to compare
 // - `t` is the string value to compare against
 //
 // ## Ignore case when testing if two strings are the same
@@ -340,7 +340,7 @@ builtin equalFold : (v: string, t: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the string value to compare
+// - `v` is the string value to compare
 // - `t` is the string value to compare against
 //
 // ## Compare the lexicographical order of column values
@@ -363,7 +363,7 @@ builtin compare : (v: string, t: string) => int
 //
 // ## Parameters
 //
-// - `V` is the string value to search
+// - `v` is the string value to search
 // - `substr` is the substr value to count
 //
 //      The function counts only non-overlapping instances of substr. For example:
@@ -390,7 +390,7 @@ builtin countStr : (v: string, substr: string) => int
 //
 // ## Parameters
 //
-// - `V` is the string value to search
+// - `v` is the string value to search
 // - `substr` is the substring to search for
 //
 // ## Find the first occurrence of a substring
@@ -413,7 +413,7 @@ builtin index : (v: string, substr: string) => int
 //
 // ## Parameters
 //
-// - `V` is the string value to search
+// - `v` is the string value to search
 // - `chars` are the chars to search for
 //
 // ## Find the first occurrence of characters from a string
@@ -436,7 +436,7 @@ builtin indexAny : (v: string, chars: string) => int
 //
 // ## Parameters
 //
-// - `V` is the string value to search
+// - `v` is the string value to search
 // - `substr` is the substring to search for
 //
 // ## Find the last occurrence of a substring
@@ -459,7 +459,7 @@ builtin lastIndex : (v: string, substr: string) => int
 //
 // ## Parameters
 //
-// - `V` is the string value to search
+// - `v` is the string value to search
 // - `chars` are the characters to search for
 //
 // ## Find the last occurrence of characters from a string
@@ -482,7 +482,7 @@ builtin lastIndexAny : (v: string, chars: string) => int
 //
 // ## Parameters
 //
-// - `V` is the single-character string to test.
+// - `v` is the single-character string to test.
 //
 // ## Filter by columns with digits as values
 //
@@ -500,7 +500,7 @@ builtin isDigit : (v: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the single-character string to test.
+// - `v` is the single-character string to test.
 //
 // ## Filter by columns with digits as values
 //
@@ -518,7 +518,7 @@ builtin isLetter : (v: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the single-character string value to test.
+// - `v` is the single-character string value to test.
 //
 // ## Filter by columns with single-letter lowercase values
 //
@@ -536,7 +536,7 @@ builtin isLower : (v: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the single-character string value to test.
+// - `v` is the single-character string value to test.
 //
 // ## Filter by columns with single-letter uppercase values
 //
@@ -554,7 +554,7 @@ builtin isUpper : (v: string) => bool
 //
 // ## Parameters
 //
-// - `V` is the string value to repeat.
+// - `v` is the string value to repeat.
 // - `i` is the number of times to repeat v.
 //
 // ## Repeat a string based on existing columns
@@ -578,7 +578,7 @@ builtin repeat : (v: string, i: int) => string
 //
 // ## Parameters
 //
-// - `V` is the string value to search.
+// - `v` is the string value to search.
 // - `t` is the substring value to replace.
 // - `u` is the replacement for i instances of t.
 // - `i` is the number of non-overlapping t matches to replace.
@@ -603,7 +603,7 @@ builtin replace : (v: string, t: string, u: string, i: int) => string
 //
 // ## Parameters
 //
-// - `V` is the string value to search.
+// - `v` is the string value to search.
 // - `t` is the substring to replace.
 // - `u` is the replacement for all instances of t.
 //
@@ -627,7 +627,7 @@ builtin replaceAll : (v: string, t: string, u: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string value to split.
+// - `v` is the string value to split.
 // - `t` is the string value that acts as the separator.
 //
 // ## Split a string into an array of substrings
@@ -646,7 +646,7 @@ builtin split : (v: string, t: string) => [string]
 //
 // ## Parameters
 //
-// - `V` is the string value to split.
+// - `v` is the string value to split.
 // - `t` is the string value that acts as the separator.
 //
 // ## Split a string into an array of substrings
@@ -665,7 +665,7 @@ builtin splitAfter : (v: string, t: string) => [string]
 //
 // ## Parameters
 //
-// - `V` is the string value to split.
+// - `v` is the string value to split.
 // - `t` is the string value that acts as the separator.
 // - `i` is the maximum number of split substrings to return. -1 returns all matching substrings.
 //
@@ -687,7 +687,7 @@ builtin splitN : (v: string, t: string, n: int) => [string]
 //
 // ## Parameters
 //
-// - `V` is the string value to split.
+// - `v` is the string value to split.
 // - `t` is the string value that acts as the separator.
 // - `i` is the maximum number of split substrings to return. -1 returns all matching substrings.
 //
@@ -729,7 +729,7 @@ builtin joinStr : (arr: [string], v: string) => string
 //
 // ## Parameters
 //
-// - `V` is the string value to measure.
+// - `v` is the string value to measure.
 //
 // ## Filter based on string value length
 //
