@@ -26,7 +26,9 @@ type ScheduleFunc func(ctx context.Context, throughput int)
 
 // poolDispatcher implements Dispatcher using a pool of goroutines.
 type poolDispatcher struct {
-	work chan ScheduleFunc
+	work   *ring
+	ready  chan struct{}
+	workMu sync.Mutex
 
 	throughput int
 
@@ -43,7 +45,8 @@ type poolDispatcher struct {
 func newPoolDispatcher(throughput int, logger *zap.Logger) *poolDispatcher {
 	return &poolDispatcher{
 		throughput: throughput,
-		work:       make(chan ScheduleFunc, 100),
+		work:       newRing(100),
+		ready:      make(chan struct{}, 1),
 		closing:    make(chan struct{}),
 		errC:       make(chan error, 1),
 		logger:     logger.With(zap.String("component", "dispatcher")),
@@ -51,9 +54,19 @@ func newPoolDispatcher(throughput int, logger *zap.Logger) *poolDispatcher {
 }
 
 func (d *poolDispatcher) Schedule(fn ScheduleFunc) {
+	d.workMu.Lock()
+	defer d.workMu.Unlock()
+
+	// Schedule the work and then report to the channel that there
+	// is available work to unblock the worker scheduler thread.
+	d.work.Append(fn)
 	select {
-	case d.work <- fn:
-	case <-d.closing:
+	case d.ready <- struct{}{}:
+		// The ready channel should have a buffer of 1.
+		// Work being present is a binary yes or no.
+		// If we say yes multiple times, we only need to read it once
+		// in the outermost run loop.
+	default:
 	}
 }
 
@@ -105,7 +118,7 @@ func (d *poolDispatcher) setErr(err error) {
 	}
 }
 
-//Stop the dispatcher.
+// Stop the dispatcher.
 func (d *poolDispatcher) Stop() error {
 	// Check if this is the first time invoking this method.
 	d.mu.Lock()
@@ -129,6 +142,8 @@ func (d *poolDispatcher) Stop() error {
 // run is the logic executed by each worker goroutine in the pool.
 func (d *poolDispatcher) run(ctx context.Context) {
 	for {
+		// This loop waits for any work to be present in the queue
+		// or for the dispatcher to be closed or the context canceled.
 		select {
 		case <-ctx.Done():
 			// Immediately return, do not process any more work
@@ -136,8 +151,44 @@ func (d *poolDispatcher) run(ctx context.Context) {
 		case <-d.closing:
 			// We are done, nothing left to do.
 			return
-		case fn := <-d.work:
-			fn(ctx, d.throughput)
+		case <-d.ready:
+			// Work is in the queue. Continue to pull work
+			// from the queue until there is none left or
+			// we are supposed to stop for one of the other
+			// reasons stated above.
+			d.doWork(ctx)
+		}
+	}
+}
+
+// doWork will continue pulling work from the work queue
+// and running the scheduled functions until the context is canceled,
+// the dispatcher is closed, or there is no more work in the queue.
+func (d *poolDispatcher) doWork(ctx context.Context) {
+	for {
+		var fn ScheduleFunc
+		d.workMu.Lock()
+		if next := d.work.Next(); next != nil {
+			fn = next.(ScheduleFunc)
+		}
+		d.workMu.Unlock()
+
+		if fn == nil {
+			// No work anymore. Return to the top level loop
+			// which will wait until new work has been appended.
+			return
+		}
+		fn(ctx, d.throughput)
+
+		// Check to see if the context was canceled or
+		// the dispatcher was closed. This allows us to exit
+		// even if we have not pulled off all of the available work.
+		select {
+		case <-ctx.Done():
+			return
+		case <-d.closing:
+			return
+		default:
 		}
 	}
 }
