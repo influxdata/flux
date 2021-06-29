@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   40,
+					Line:   41,
 				},
 				File:   "array.flux",
-				Source: "package array\n\n\n// from constructs a table from an array of records.\n//\n// Each record in the array is converted into an output row or record. All\n// records must have the same keys and data types.\n//\n// ## Parameters\n// - `rows` is the array of records to construct a table with.\n//\n// ## Build an arbitrary table\n//\n// ```\n// import \"array\"\n//\n// rows = [\n//   {foo: \"bar\", baz: 21.2},\n//   {foo: \"bar\", baz: 23.8}\n// ]\n//\n// array.from(rows: rows)\n// ```\n//\n// ## Union custom rows with query results\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n// import \"array\"\n//\n// tags = v1.tagValues(\n//   bucket: \"example-bucket\",\n//   tag: \"host\"\n// )\n//\n// wildcard_tag = array.from(rows: [{_value: \"*\"}])\n//\n// union(tables: [tags, wildcard_tag])\n// ```\nbuiltin from",
+				Source: "package array\n\n\n// Flux Array package provides functions for building tables from flux arrays.\n// from constructs a table from an array of records.\n//\n// Each record in the array is converted into an output row or record. All\n// records must have the same keys and data types.\n//\n// ## Parameters\n// - `rows` is the array of records to construct a table with.\n//\n// ## Build an arbitrary table\n//\n// ```\n// import \"array\"\n//\n// rows = [\n//   {foo: \"bar\", baz: 21.2},\n//   {foo: \"bar\", baz: 23.8}\n// ]\n//\n// array.from(rows: rows)\n// ```\n//\n// ## Union custom rows with query results\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n// import \"array\"\n//\n// tags = v1.tagValues(\n//   bucket: \"example-bucket\",\n//   tag: \"host\"\n// )\n//\n// wildcard_tag = array.from(rows: [{_value: \"*\"}])\n//\n// union(tables: [tags, wildcard_tag])\n// ```\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -36,18 +36,18 @@ var pkgAST = &ast.Package{
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// from constructs a table from an array of records.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Each record in the array is converted into an output row or record. All\n"}, ast.Comment{Text: "// records must have the same keys and data types.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `rows` is the array of records to construct a table with.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Build an arbitrary table\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"array\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// rows = [\n"}, ast.Comment{Text: "//   {foo: \"bar\", baz: 21.2},\n"}, ast.Comment{Text: "//   {foo: \"bar\", baz: 23.8}\n"}, ast.Comment{Text: "// ]\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// array.from(rows: rows)\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Union custom rows with query results\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "// import \"array\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// tags = v1.tagValues(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   tag: \"host\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// wildcard_tag = array.from(rows: [{_value: \"*\"}])\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// union(tables: [tags, wildcard_tag])\n"}, ast.Comment{Text: "// ```\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Flux Array package provides functions for building tables from flux arrays.\n"}, ast.Comment{Text: "// from constructs a table from an array of records.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Each record in the array is converted into an output row or record. All\n"}, ast.Comment{Text: "// records must have the same keys and data types.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `rows` is the array of records to construct a table with.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Build an arbitrary table\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"array\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// rows = [\n"}, ast.Comment{Text: "//   {foo: \"bar\", baz: 21.2},\n"}, ast.Comment{Text: "//   {foo: \"bar\", baz: 23.8}\n"}, ast.Comment{Text: "// ]\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// array.from(rows: rows)\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Union custom rows with query results\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "// import \"array\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// tags = v1.tagValues(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   tag: \"host\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// wildcard_tag = array.from(rows: [{_value: \"*\"}])\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// union(tables: [tags, wildcard_tag])\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   40,
+						Line:   41,
 					},
 					File:   "array.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   40,
+						Line:   41,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   40,
+							Line:   41,
 						},
 						File:   "array.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
-							Line:   40,
+							Line:   41,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 50,
-							Line:   40,
+							Line:   41,
 						},
 						File:   "array.flux",
 						Source: "(rows: [A]) => [A] where A: Record",
 						Start: ast.Position{
 							Column: 16,
-							Line:   40,
+							Line:   41,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   40,
+								Line:   41,
 							},
 							File:   "array.flux",
 							Source: "A: Record",
 							Start: ast.Position{
 								Column: 41,
-								Line:   40,
+								Line:   41,
 							},
 						},
 					},
@@ -112,13 +112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   40,
+									Line:   41,
 								},
 								File:   "array.flux",
 								Source: "Record",
 								Start: ast.Position{
 									Column: 44,
-									Line:   40,
+									Line:   41,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   40,
+									Line:   41,
 								},
 								File:   "array.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 41,
-									Line:   40,
+									Line:   41,
 								},
 							},
 						},
@@ -151,13 +151,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   40,
+								Line:   41,
 							},
 							File:   "array.flux",
 							Source: "(rows: [A]) => [A]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   40,
+								Line:   41,
 							},
 						},
 					},
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   40,
+									Line:   41,
 								},
 								File:   "array.flux",
 								Source: "rows: [A]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   40,
+									Line:   41,
 								},
 							},
 						},
@@ -186,13 +186,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   40,
+										Line:   41,
 									},
 									File:   "array.flux",
 									Source: "rows",
 									Start: ast.Position{
 										Column: 17,
-										Line:   40,
+										Line:   41,
 									},
 								},
 							},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   40,
+										Line:   41,
 									},
 									File:   "array.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 23,
-										Line:   40,
+										Line:   41,
 									},
 								},
 							},
@@ -222,13 +222,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   40,
+											Line:   41,
 										},
 										File:   "array.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 24,
-											Line:   40,
+											Line:   41,
 										},
 									},
 								},
@@ -239,13 +239,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   40,
+												Line:   41,
 											},
 											File:   "array.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 24,
-												Line:   40,
+												Line:   41,
 											},
 										},
 									},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   40,
+									Line:   41,
 								},
 								File:   "array.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 31,
-									Line:   40,
+									Line:   41,
 								},
 							},
 						},
@@ -278,13 +278,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   40,
+										Line:   41,
 									},
 									File:   "array.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 32,
-										Line:   40,
+										Line:   41,
 									},
 								},
 							},
@@ -295,13 +295,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   40,
+											Line:   41,
 										},
 										File:   "array.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 32,
-											Line:   40,
+											Line:   41,
 										},
 									},
 								},

@@ -1,6 +1,7 @@
 package array
 
 
+// Flux Array package provides functions for building tables from flux arrays.
 // from constructs a table from an array of records.
 //
 // Each record in the array is converted into an output row or record. All
