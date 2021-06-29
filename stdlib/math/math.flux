@@ -1,6 +1,8 @@
 package math
 
 
+// Flux math package provides basic constants and mathematical functions
+// on floating point numbers.
 builtin pi : float
 builtin e : float
 builtin phi : float
