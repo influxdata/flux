@@ -230,111 +230,117 @@ func (t *distinctTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 			switch col.Type {
 			case flux.TBool:
 				if cr.Bools(j).IsNull(i) {
-					if !nullDistinct {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullDistinct = true
+					if nullDistinct {
+						continue
 					}
-					continue
-				}
-				v := cr.Bools(j).Value(i)
-				if boolDistinct[v] {
-					continue
-				}
-				boolDistinct[v] = true
-				if err := builder.AppendBool(colIdx, v); err != nil {
-					return err
+					if err := builder.AppendNil(colIdx); err != nil {
+						return err
+					}
+					nullDistinct = true
+				} else {
+					v := cr.Bools(j).Value(i)
+					if boolDistinct[v] {
+						continue
+					}
+					boolDistinct[v] = true
+					if err := builder.AppendBool(colIdx, v); err != nil {
+						return err
+					}
 				}
 			case flux.TInt:
 				if cr.Ints(j).IsNull(i) {
-					if !nullDistinct {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullDistinct = true
+					if nullDistinct {
+						continue
 					}
-					continue
-				}
-				v := cr.Ints(j).Value(i)
-				if intDistinct[v] {
-					continue
-				}
-				intDistinct[v] = true
-				if err := builder.AppendInt(colIdx, v); err != nil {
-					return err
+					if err := builder.AppendNil(colIdx); err != nil {
+						return err
+					}
+					nullDistinct = true
+				} else {
+					v := cr.Ints(j).Value(i)
+					if intDistinct[v] {
+						continue
+					}
+					intDistinct[v] = true
+					if err := builder.AppendInt(colIdx, v); err != nil {
+						return err
+					}
 				}
 			case flux.TUInt:
 				if cr.UInts(j).IsNull(i) {
-					if !nullDistinct {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullDistinct = true
+					if nullDistinct {
+						continue
 					}
-					continue
-				}
-				v := cr.UInts(j).Value(i)
-				if uintDistinct[v] {
-					continue
-				}
-				uintDistinct[v] = true
-				if err := builder.AppendUInt(colIdx, v); err != nil {
-					return err
+					if err := builder.AppendNil(colIdx); err != nil {
+						return err
+					}
+					nullDistinct = true
+				} else {
+					v := cr.UInts(j).Value(i)
+					if uintDistinct[v] {
+						continue
+					}
+					uintDistinct[v] = true
+					if err := builder.AppendUInt(colIdx, v); err != nil {
+						return err
+					}
 				}
 			case flux.TFloat:
 				if cr.Floats(j).IsNull(i) {
-					if !nullDistinct {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullDistinct = true
+					if nullDistinct {
+						continue
 					}
-					continue
-				}
-				v := cr.Floats(j).Value(i)
-				if floatDistinct[v] {
-					continue
-				}
-				floatDistinct[v] = true
-				if err := builder.AppendFloat(colIdx, v); err != nil {
-					return err
+					if err := builder.AppendNil(colIdx); err != nil {
+						return err
+					}
+					nullDistinct = true
+				} else {
+					v := cr.Floats(j).Value(i)
+					if floatDistinct[v] {
+						continue
+					}
+					floatDistinct[v] = true
+					if err := builder.AppendFloat(colIdx, v); err != nil {
+						return err
+					}
 				}
 			case flux.TString:
 				if cr.Strings(j).IsNull(i) {
-					if !nullDistinct {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullDistinct = true
+					if nullDistinct {
+						continue
 					}
-					continue
-				}
-				v := cr.Strings(j).ValueString(i)
-				if stringDistinct[v] {
-					continue
-				}
-				stringDistinct[v] = true
-				if err := builder.AppendString(colIdx, v); err != nil {
-					return err
+					if err := builder.AppendNil(colIdx); err != nil {
+						return err
+					}
+					nullDistinct = true
+				} else {
+					v := cr.Strings(j).ValueString(i)
+					if stringDistinct[v] {
+						continue
+					}
+					stringDistinct[v] = true
+					if err := builder.AppendString(colIdx, v); err != nil {
+						return err
+					}
 				}
 			case flux.TTime:
 				if cr.Times(j).IsNull(i) {
-					if !nullDistinct {
-						if err := builder.AppendNil(colIdx); err != nil {
-							return err
-						}
-						nullDistinct = true
+					if nullDistinct {
+						continue
 					}
-					continue
-				}
-				v := values.Time(cr.Times(j).Value(i))
-				if timeDistinct[v] {
-					continue
-				}
-				timeDistinct[v] = true
-				if err := builder.AppendTime(colIdx, v); err != nil {
-					return err
+					if err := builder.AppendNil(colIdx); err != nil {
+						return err
+					}
+					nullDistinct = true
+				} else {
+					v := values.Time(cr.Times(j).Value(i))
+					if timeDistinct[v] {
+						continue
+					}
+					timeDistinct[v] = true
+					if err := builder.AppendTime(colIdx, v); err != nil {
+						return err
+					}
 				}
 			}
 
