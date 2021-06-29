@@ -2,9 +2,9 @@
 package strings
 
 
-// Transformation functions:
+// Transformation functions
 //
-// The strings.title() function converts a string to title case.
+// title converts a string to title case.
 //
 // ## Parameters
 //
@@ -21,7 +21,7 @@ package strings
 builtin title : (v: string) => string
 
 //
-// The strings.toUpper() function converts a string to uppercase.
+// toUpper converts a string to uppercase.
 //
 // ## Parameters
 //
@@ -48,7 +48,7 @@ builtin title : (v: string) => string
 builtin toUpper : (v: string) => string
 
 //
-// The strings.toLower() function converts a string to lowercase.
+// toLower converts a string to lowercase.
 //
 // ## Parameters
 //
@@ -69,7 +69,7 @@ builtin toUpper : (v: string) => string
 builtin toLower : (v: string) => string
 
 //
-// The strings.trim() function removes leading and trailing characters specified in the cutset from a string.
+// trim removes leading and trailing characters specified in the cutset from a string.
 //
 // ## Parameters
 //
@@ -93,7 +93,7 @@ builtin toLower : (v: string) => string
 builtin trim : (v: string, cutset: string) => string
 
 //
-// The strings.trimPrefix() function removes a prefix from a string. Strings that do not start with the prefix are returned unchanged.
+// trimPrefix removes a prefix from a string. Strings that do not start with the prefix are returned unchanged.
 //
 // ## Parameters
 //
@@ -116,7 +116,7 @@ builtin trim : (v: string, cutset: string) => string
 builtin trimPrefix : (v: string, prefix: string) => string
 
 //
-// The strings.trimSpace() function removes leading and trailing spaces from a string.
+// trimSpace removes leading and trailing spaces from a string.
 //
 // ## Parameters
 //
@@ -130,10 +130,10 @@ builtin trimPrefix : (v: string, prefix: string) => string
 // data
 //   |> map(fn: (r) => ({ r with userInput: strings.trimSpace(v: r.userInput) }))
 // ```
-builtin trimSuffix : (v: string, suffix: string) => string
+builtin trimSpace : (v: string) => string
 
 //
-// The The strings.trimSuffix() function removes a suffix from a string. Strings that do not end with the suffix are returned unchanged.
+// The trimSuffix removes a suffix from a string. Strings that do not end with the suffix are returned unchanged.
 //
 // ## Parameters
 //
@@ -153,10 +153,10 @@ builtin trimSuffix : (v: string, suffix: string) => string
 //   )
 // ```
 //
-builtin trimSpace : (v: string) => string
+builtin trimSuffix : (v: string, suffix: string) => string
 
 //
-// The strings.trimRight() function removes trailing characters specified in the cutset from a string.
+// trimRight removes trailing characters specified in the cutset from a string.
 //
 // ## Parameters
 //
@@ -181,7 +181,7 @@ builtin trimSpace : (v: string) => string
 builtin trimRight : (v: string, cutset: string) => string
 
 //
-// The strings.trimLeft() function removes specified leading characters from a string.
+// trimLeft removes specified leading characters from a string.
 //
 // ## Parameters
 //
@@ -204,7 +204,7 @@ builtin trimRight : (v: string, cutset: string) => string
 builtin trimLeft : (v: string, cutset: string) => string
 
 //
-// The strings.toTitle() function converts all characters in a string to title case.
+// toTitle converts all characters in a string to title case.
 //
 // ## Parameters
 //
@@ -219,10 +219,10 @@ builtin trimLeft : (v: string, cutset: string) => string
 //   |> map(fn: (r) => ({ r with pageTitle: strings.toTitle(v: r.pageTitle) }))
 // ```
 //
-builtin hasPrefix : (v: string, prefix: string) => bool
+builtin toTitle : (v: string) => string
 
 //
-// The strings.hasPrefix() function indicates if a string begins with a specified prefix.
+// hasPrefix indicates if a string begins with a specified prefix.
 //
 // ## Parameters
 //
@@ -238,10 +238,10 @@ builtin hasPrefix : (v: string, prefix: string) => bool
 //   |> filter(fn:(r) => strings.hasPrefix(v: r.metric, prefix: "int_" ))
 // ```
 //
-builtin toTitle : (v: string) => string
+builtin hasPrefix : (v: string, prefix: string) => bool
 
 //
-// The strings.hasSuffix() function indicates if a string ends with a specified suffix.
+// hasSuffix indicates if a string ends with a specified suffix.
 //
 // ## Parameters
 //
@@ -260,7 +260,7 @@ builtin toTitle : (v: string) => string
 builtin hasSuffix : (v: string, suffix: string) => bool
 
 //
-// The strings.containsStr() function reports whether a string contains a specified substring.
+// containsStr reports whether a string contains a specified substring.
 //
 // ## Parameters
 //
@@ -283,7 +283,7 @@ builtin hasSuffix : (v: string, suffix: string) => bool
 builtin containsStr : (v: string, substr: string) => bool
 
 //
-// The strings.containsAny() function reports whether a specified string contains characters from another string.
+// containsAny reports whether a specified string contains characters from another string.
 //
 // ## Parameters
 //
@@ -306,7 +306,7 @@ builtin containsStr : (v: string, substr: string) => bool
 builtin containsAny : (v: string, chars: string) => bool
 
 //
-// The strings.equalFold() function reports whether two UTF-8 strings are equal under Unicode case-folding.
+// equalFold reports whether two UTF-8 strings are equal under Unicode case-folding.
 //
 // ## Parameters
 //
@@ -331,7 +331,7 @@ builtin containsAny : (v: string, chars: string) => bool
 builtin equalFold : (v: string, t: string) => bool
 
 //
-// The strings.compare() function compares the lexicographical order of two strings.
+// compare compares the lexicographical order of two strings.
 //
 //      Return values
 //      Comparison	Return value
@@ -360,7 +360,7 @@ builtin equalFold : (v: string, t: string) => bool
 builtin compare : (v: string, t: string) => int
 
 //
-//The strings.countStr() function counts the number of non-overlapping instances of a substring appears in a string.
+//countStr counts the number of non-overlapping instances of a substring appears in a string.
 //
 // ## Parameters
 //
@@ -387,7 +387,7 @@ builtin compare : (v: string, t: string) => int
 builtin countStr : (v: string, substr: string) => int
 
 //
-// The strings.index() function returns the index of the first instance of a substring in a string. If the substring is not present, it returns -1.
+// index returns the index of the first instance of a substring in a string. If the substring is not present, it returns -1.
 //
 // ## Parameters
 //
@@ -410,7 +410,7 @@ builtin countStr : (v: string, substr: string) => int
 builtin index : (v: string, substr: string) => int
 
 //
-// The strings.indexAny() function returns the index of the first instance of specified characters in a string. If none of the specified characters are present, it returns -1.
+// indexAny returns the index of the first instance of specified characters in a string. If none of the specified characters are present, it returns -1.
 //
 // ## Parameters
 //
@@ -433,7 +433,7 @@ builtin index : (v: string, substr: string) => int
 builtin indexAny : (v: string, chars: string) => int
 
 //
-// The strings.lastIndex() function returns the index of the last instance of a substring in a string. If the substring is not present, the function returns -1.
+// lastIndex returns the index of the last instance of a substring in a string. If the substring is not present, the function returns -1.
 //
 // ## Parameters
 //
@@ -456,7 +456,7 @@ builtin indexAny : (v: string, chars: string) => int
 builtin lastIndex : (v: string, substr: string) => int
 
 //
-// The strings.lastIndexAny() function returns the index of the last instance of any specified characters in a string. If none of the specified characters are present, the function returns -1.
+// lastIndexAny returns the index of the last instance of any specified characters in a string. If none of the specified characters are present, the function returns -1.
 //
 // ## Parameters
 //
@@ -479,7 +479,7 @@ builtin lastIndex : (v: string, substr: string) => int
 builtin lastIndexAny : (v: string, chars: string) => int
 
 //
-// The strings.isDigit() function tests if a single-character string is a digit (0-9).
+// isDigit tests if a single-character string is a digit (0-9).
 //
 // ## Parameters
 //
@@ -497,7 +497,7 @@ builtin lastIndexAny : (v: string, chars: string) => int
 builtin isDigit : (v: string) => bool
 
 //
-// The strings.isLetter() function tests if a single character string is a letter (a-z, A-Z).
+// isLetter tests if a single character string is a letter (a-z, A-Z).
 //
 // ## Parameters
 //
@@ -515,7 +515,7 @@ builtin isDigit : (v: string) => bool
 builtin isLetter : (v: string) => bool
 
 //
-// The strings.isLower() function tests if a single-character string is lowercase.
+// isLower tests if a single-character string is lowercase.
 //
 // ## Parameters
 //
@@ -533,7 +533,7 @@ builtin isLetter : (v: string) => bool
 builtin isLower : (v: string) => bool
 
 //
-// The strings.isUpper() function tests if a single character string is uppercase.
+// isUpper tests if a single character string is uppercase.
 //
 // ## Parameters
 //
@@ -551,7 +551,7 @@ builtin isLower : (v: string) => bool
 builtin isUpper : (v: string) => bool
 
 //
-// The strings.repeat() function returns a string consisting of i copies of a specified string.
+// repeat returns a string consisting of i copies of a specified string.
 //
 // ## Parameters
 //
@@ -575,7 +575,7 @@ builtin isUpper : (v: string) => bool
 builtin repeat : (v: string, i: int) => string
 
 //
-// The strings.replace() function replaces the first i non-overlapping instances of a substring with a specified replacement.
+// replace replaces the first i non-overlapping instances of a substring with a specified replacement.
 //
 // ## Parameters
 //
@@ -600,7 +600,7 @@ builtin repeat : (v: string, i: int) => string
 builtin replace : (v: string, t: string, u: string, i: int) => string
 
 //
-// The strings.replaceAll() function replaces all non-overlapping instances of a substring with a specified replacement.
+// replaceAll replaces all non-overlapping instances of a substring with a specified replacement.
 //
 // ## Parameters
 //
@@ -624,7 +624,7 @@ builtin replace : (v: string, t: string, u: string, i: int) => string
 builtin replaceAll : (v: string, t: string, u: string) => string
 
 //
-// The strings.split() function splits a string on a specified separator and returns an array of substrings.
+// split splits a string on a specified separator and returns an array of substrings.
 //
 // ## Parameters
 //
@@ -643,7 +643,7 @@ builtin replaceAll : (v: string, t: string, u: string) => string
 builtin split : (v: string, t: string) => [string]
 
 //
-// The strings.splitAfter() function splits a string after a specified separator and returns an array of substrings. Split substrings include the separator, t.
+// splitAfter splits a string after a specified separator and returns an array of substrings. Split substrings include the separator, t.
 //
 // ## Parameters
 //
@@ -662,7 +662,7 @@ builtin split : (v: string, t: string) => [string]
 builtin splitAfter : (v: string, t: string) => [string]
 
 //
-// The strings.splitN() function splits a string on a specified separator and returns an array of i substrings.
+// splitN splits a string on a specified separator and returns an array of i substrings.
 //
 // ## Parameters
 //
@@ -684,7 +684,7 @@ builtin splitAfter : (v: string, t: string) => [string]
 builtin splitN : (v: string, t: string, n: int) => [string]
 
 //
-// The strings.splitAfterN() function splits a string after a specified separator and returns an array of i substrings. Split substrings include the separator t.
+// splitAfterN splits a string after a specified separator and returns an array of i substrings. Split substrings include the separator t.
 //
 // ## Parameters
 //
@@ -706,7 +706,7 @@ builtin splitN : (v: string, t: string, n: int) => [string]
 builtin splitAfterN : (v: string, t: string, i: int) => [string]
 
 //
-// The strings.joinStr() function concatenates elements of a string array into a single string using a specified separator.
+// joinStr concatenates elements of a string array into a single string using a specified separator.
 //
 // ## Parameters
 //
@@ -726,7 +726,7 @@ builtin splitAfterN : (v: string, t: string, i: int) => [string]
 builtin joinStr : (arr: [string], v: string) => string
 
 //
-// The strings.strlen() function returns the length of a string. String length is determined by the number of UTF code points a string contains.
+// strlen returns the length of a string. String length is determined by the number of UTF code points a string contains.
 //
 // ## Parameters
 //
@@ -757,7 +757,7 @@ builtin joinStr : (arr: [string], v: string) => string
 builtin strlen : (v: string) => int
 
 //
-// The strings.substring() function returns a substring based on start and end parameters. These parameters are represent indices of UTF code points in the string.
+// substring returns a substring based on start and end parameters. These parameters are represent indices of UTF code points in the string.
 //
 // ## Parameters
 //
