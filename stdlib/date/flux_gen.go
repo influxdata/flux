@@ -24,13 +24,13 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 14,
-					Line:   450,
+					Line:   451,
 				},
 				File:   "date.flux",
 				Source: "package date\n\n\n// second is a function that returns the second of a specified time. Results\n//  range from [0 - 59].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the second of a time value\n// ```\n// import \"date\"\n//\n// date.second(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the second of a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.second(t: -50s)\n// ```\nbuiltin second : (t: T) => int where T: Timeable\n\n// minute is a function that returns the minute of a specified time. Results\n//  range from [0 - 59].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//    Use an absolute time, relative duration, or integer. durations are\n//    relative to `now()`.\n//\n// ## Return the minute of a time value\n// ```\n// import \"date\"\n//\n// date.minute(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the minute of a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.minute(t: -45m)\n// ```\nbuiltin minute : (t: T) => int where T: Timeable\n\n// hour is a function that returns the hour of a specified time. Results\n//  range from [0 - 23].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the hour of a time value\n// ```\n// import \"date\"\n//\n// date.hour(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the hour of a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.hour(t: -8h)\n// ```\nbuiltin hour : (t: T) => int where T: Timeable\n\n// weekDay is a function that returns the day of the week for a specified time.\n//  Results range from [0 - 6].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the day of the week for a time value\n// ```\n// import \"date\"\n//\n// date.weekDay(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the day of the week for a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.weekDay(t: -84h)\n// ```\nbuiltin weekDay : (t: T) => int where T: Timeable\n\n// monthDay is a function that returns the day of the month for a specified\n//  time. Results range from [1 - 31].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the day of the month for a time value\n// ```\n// import \"date\"\n//\n// date.monthDay(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the day of the month for a relative duration\n// ```\n// import \"date\"\n//\n//option now = () => 2020-02-11T12:21:03.293534940Z\n//\n//date.monthDay(t: -8d)\n// ```\nbuiltin monthDay : (t: T) => int where T: Timeable\n\n// yearDay is a function that returns the day of the year for a specified time\n//  Results can include leap days and range from [ 1 - 366].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the day of the year for a time value\n// ```\n// import \"date\"\n//\n//date.yearDay(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the day of the year for a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.yearDay(t: -1mo)\n// ```\nbuiltin yearDay : (t: T) => int where T: Timeable\n\n// month is a function that returns the month of a specified time.\n//  Results range from [1 - 12].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the month of a time value\n// ```\n// import \"date\"\n//\n//date.month(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Retrun the month of a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.month(t: -3mo)\n// ```\nbuiltin month : (t: T) => int where T: Timeable\n\n// year is a function that returns the year of a specified time\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the year for a time value\n// ```\n// import \"date\"\n//\n//date.year(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the year for a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.year(t: -14y)\n// ```\nbuiltin year : (t: T) => int where T: Timeable\n\n// week is a function that returns the ISO week of the year for a specified time.\n//  Results range from [1 - 53].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`. \n//\n// ## Return the week of the year\n// ```\n// import \"date\"\n//\n// date.week(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the week of the year using a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.week(t: -12d)\n// ```\nbuiltin week : (t: T) => int where T: Timeable\n\n// Quarter returns the quarter for a specified time. Results range \n//  from [1-4].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the quarter for a time value\n// ```\n// import \"date\"\n//\n// date.quarter(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the quarter for a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.quarter(t: -7mo)\n// ```\nbuiltin quarter : (t: T) => int where T: Timeable\n\n// Millisecond returns the milliseconds for a specified time.\n//  Results range from [0-999].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the millisecond of the time value\n// ```\n// import \"date\"\n//\n// date.millisecond(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the millisecond of a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.millisecond(t: -150ms)\n// ```\nbuiltin millisecond : (t: T) => int where T: Timeable\n\n// Microsecond returns the microseconds for a specified time.\n//  Results range from [0-999999].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the microsecond of a time value\n// ```\n// import \"date\"\n//\n// date.microsecond(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the microsecond of a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.microsecond(t: -1890us)\n// ```\nbuiltin microsecond : (t: T) => int where T: Timeable\n\n// Nanosecond returns the nanoseconds for a specified time.\n// Results range from [0-999999999].\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// ## Return the nanosecond for a time value\n// ```\n// import \"date\"\n//\n// date.nanosecond(t: 2020-02-11T12:21:03.293534940Z)\n// ```\n//\n// ## Return the nanosecond for a relative duration\n// ```\n// import \"date\"\n//\n// option now = () => 2020-02-11T12:21:03.293534940Z\n//\n// date.nanosecond(t: -2111984ns)\n// ```\nbuiltin nanosecond : (t: T) => int where T: Timeable\n\n// Truncate returns a time truncated to the specified duration unit.\n//\n// ## Parameters\n// - `t` is the time to operate on.\n//\n//   Use an absolute time, relative duration, or integer. durations are\n//   relative to `now()`.\n//\n// - `unit` is the unit of time to truncate to\n//\n//   Only use 1 and the unit of time to specify the unit. For example:\n//   1s, 1m, 1h.\n//\n// ## Example\n// ```\n// import \"date\"\n//\n// date.truncate(\n//   t: 2019-07-17T12:05:21.012Z\n//   unit: 1s\n// )\n// ```\n//\n// ## Truncate time values\n// ```\n// import \"date\"\n//\n// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1s)\n// // Returns 2019-06-03T13:59:01.000000000Z\n//\n// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1m)\n// // Returns 2019-06-03T13:59:00.000000000Z\n//\n// date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1h)\n// // Returns 2019-06-03T13:00:00.000000000Z\n// ```\n//\n// ## Truncate time values using durations\n// ```\n// import \"date\"\n//\n// option now = () => 2020-01-01T00:00:30.500000000Z\n//\n// date.truncate(t: -30s, unit: 1s)\n// // Returns 2019-12-31T23:59:30.000000000Z\n//\n// date.truncate(t: -1m, unit: 1m)\n// // Returns 2019-12-31T23:59:00.000000000Z\n//\n// date.truncate(t: -1h, unit: 1h)\n// // Returns 2019-12-31T23:00:00.000000000Z\n// ```\nbuiltin truncate : (t: T, unit: duration) => time where T: Timeable\n\n// Sunday is a constant that represents Sunday as a day of the week\nSunday = 0\n\n// Monday is a constant that represents Monday as a day of the week.\nMonday = 1\n\n// Tuesday is a constant that represents Tuesday as a day of the week.\nTuesday = 2\n\n// Wednesday is a constant that represents Wednesday as a day of the week.\nWednesday = 3\n\n// Thursday is a constant that represents Thursday as a day of the week.\nThursday = 4\n\n// Friday is a constant that represents Friday as a day of the week.\nFriday = 5\n\n// Saturday is a constant that represents Saturday as a day of the week.\nSaturday = 6\n\n// January is a constant that represents the month of January.\nJanuary = 1\n\n// February is a constant that represents the month of February.\nFebruary = 2\n\n// March is a constant that represents the month of March.\nMarch = 3\n\n// April is a constant that represents the month of April.\nApril = 4\n\n// May is a constant that represents the month of May.\nMay = 5\n\n// June is a constant that represents the month of June.\nJune = 6\n\n// July is a constant that represents the month of July.\nJuly = 7\n\n// August is a constant that represents the month of August.\nAugust = 8\n\n// September is a constant that represents the month of September.\nSeptember = 9\n\n// October is a constant that represents the month of October.\nOctober = 10\n\n// November is a constant that represents the month of November.\nNovember = 11\n\n// December is a constant that represents the month of December.\nDecember = 12",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   2,
 				},
 			},
 		},
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   28,
+						Line:   29,
 					},
 					File:   "date.flux",
 					Source: "builtin second",
 					Start: ast.Position{
 						Column: 1,
-						Line:   28,
+						Line:   29,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   28,
+							Line:   29,
 						},
 						File:   "date.flux",
 						Source: "second",
 						Start: ast.Position{
 							Column: 9,
-							Line:   28,
+							Line:   29,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 49,
-							Line:   28,
+							Line:   29,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 18,
-							Line:   28,
+							Line:   29,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 49,
-								Line:   28,
+								Line:   29,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 38,
-								Line:   28,
+								Line:   29,
 							},
 						},
 					},
@@ -112,13 +112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   28,
+									Line:   29,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 41,
-									Line:   28,
+									Line:   29,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   28,
+									Line:   29,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 38,
-									Line:   28,
+									Line:   29,
 								},
 							},
 						},
@@ -151,13 +151,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   28,
+								Line:   29,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 18,
-								Line:   28,
+								Line:   29,
 							},
 						},
 					},
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   28,
+									Line:   29,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 19,
-									Line:   28,
+									Line:   29,
 								},
 							},
 						},
@@ -186,13 +186,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   28,
+										Line:   29,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 19,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   28,
+										Line:   29,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 22,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -222,13 +222,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   28,
+											Line:   29,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 22,
-											Line:   28,
+											Line:   29,
 										},
 									},
 								},
@@ -243,13 +243,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   28,
+									Line:   29,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 28,
-									Line:   28,
+									Line:   29,
 								},
 							},
 						},
@@ -260,13 +260,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   28,
+										Line:   29,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 28,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -282,13 +282,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   54,
+						Line:   55,
 					},
 					File:   "date.flux",
 					Source: "builtin minute",
 					Start: ast.Position{
 						Column: 1,
-						Line:   54,
+						Line:   55,
 					},
 				},
 			},
@@ -300,13 +300,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   54,
+							Line:   55,
 						},
 						File:   "date.flux",
 						Source: "minute",
 						Start: ast.Position{
 							Column: 9,
-							Line:   54,
+							Line:   55,
 						},
 					},
 				},
@@ -319,13 +319,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 49,
-							Line:   54,
+							Line:   55,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 18,
-							Line:   54,
+							Line:   55,
 						},
 					},
 				},
@@ -336,13 +336,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 49,
-								Line:   54,
+								Line:   55,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 38,
-								Line:   54,
+								Line:   55,
 							},
 						},
 					},
@@ -353,13 +353,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   54,
+									Line:   55,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 41,
-									Line:   54,
+									Line:   55,
 								},
 							},
 						},
@@ -372,13 +372,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   54,
+									Line:   55,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 38,
-									Line:   54,
+									Line:   55,
 								},
 							},
 						},
@@ -392,13 +392,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   54,
+								Line:   55,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 18,
-								Line:   54,
+								Line:   55,
 							},
 						},
 					},
@@ -409,13 +409,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   54,
+									Line:   55,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 19,
-									Line:   54,
+									Line:   55,
 								},
 							},
 						},
@@ -427,13 +427,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   54,
+										Line:   55,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 19,
-										Line:   54,
+										Line:   55,
 									},
 								},
 							},
@@ -446,13 +446,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   54,
+										Line:   55,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 22,
-										Line:   54,
+										Line:   55,
 									},
 								},
 							},
@@ -463,13 +463,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   54,
+											Line:   55,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 22,
-											Line:   54,
+											Line:   55,
 										},
 									},
 								},
@@ -484,13 +484,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   54,
+									Line:   55,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 28,
-									Line:   54,
+									Line:   55,
 								},
 							},
 						},
@@ -501,13 +501,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   54,
+										Line:   55,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 28,
-										Line:   54,
+										Line:   55,
 									},
 								},
 							},
@@ -523,13 +523,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   80,
+						Line:   81,
 					},
 					File:   "date.flux",
 					Source: "builtin hour",
 					Start: ast.Position{
 						Column: 1,
-						Line:   80,
+						Line:   81,
 					},
 				},
 			},
@@ -541,13 +541,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   80,
+							Line:   81,
 						},
 						File:   "date.flux",
 						Source: "hour",
 						Start: ast.Position{
 							Column: 9,
-							Line:   80,
+							Line:   81,
 						},
 					},
 				},
@@ -560,13 +560,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 47,
-							Line:   80,
+							Line:   81,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 16,
-							Line:   80,
+							Line:   81,
 						},
 					},
 				},
@@ -577,13 +577,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 47,
-								Line:   80,
+								Line:   81,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 36,
-								Line:   80,
+								Line:   81,
 							},
 						},
 					},
@@ -594,13 +594,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   80,
+									Line:   81,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 39,
-									Line:   80,
+									Line:   81,
 								},
 							},
 						},
@@ -613,13 +613,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   80,
+									Line:   81,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 36,
-									Line:   80,
+									Line:   81,
 								},
 							},
 						},
@@ -633,13 +633,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   80,
+								Line:   81,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 16,
-								Line:   80,
+								Line:   81,
 							},
 						},
 					},
@@ -650,13 +650,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   80,
+									Line:   81,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 17,
-									Line:   80,
+									Line:   81,
 								},
 							},
 						},
@@ -668,13 +668,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   80,
+										Line:   81,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 17,
-										Line:   80,
+										Line:   81,
 									},
 								},
 							},
@@ -687,13 +687,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   80,
+										Line:   81,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 20,
-										Line:   80,
+										Line:   81,
 									},
 								},
 							},
@@ -704,13 +704,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   80,
+											Line:   81,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 20,
-											Line:   80,
+											Line:   81,
 										},
 									},
 								},
@@ -725,13 +725,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   80,
+									Line:   81,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 26,
-									Line:   80,
+									Line:   81,
 								},
 							},
 						},
@@ -742,13 +742,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   80,
+										Line:   81,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 26,
-										Line:   80,
+										Line:   81,
 									},
 								},
 							},
@@ -764,13 +764,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   106,
+						Line:   107,
 					},
 					File:   "date.flux",
 					Source: "builtin weekDay",
 					Start: ast.Position{
 						Column: 1,
-						Line:   106,
+						Line:   107,
 					},
 				},
 			},
@@ -782,13 +782,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   106,
+							Line:   107,
 						},
 						File:   "date.flux",
 						Source: "weekDay",
 						Start: ast.Position{
 							Column: 9,
-							Line:   106,
+							Line:   107,
 						},
 					},
 				},
@@ -801,13 +801,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 50,
-							Line:   106,
+							Line:   107,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 19,
-							Line:   106,
+							Line:   107,
 						},
 					},
 				},
@@ -818,13 +818,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   106,
+								Line:   107,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 39,
-								Line:   106,
+								Line:   107,
 							},
 						},
 					},
@@ -835,13 +835,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   106,
+									Line:   107,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 42,
-									Line:   106,
+									Line:   107,
 								},
 							},
 						},
@@ -854,13 +854,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   106,
+									Line:   107,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 39,
-									Line:   106,
+									Line:   107,
 								},
 							},
 						},
@@ -874,13 +874,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   106,
+								Line:   107,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 19,
-								Line:   106,
+								Line:   107,
 							},
 						},
 					},
@@ -891,13 +891,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   106,
+									Line:   107,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 20,
-									Line:   106,
+									Line:   107,
 								},
 							},
 						},
@@ -909,13 +909,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   106,
+										Line:   107,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 20,
-										Line:   106,
+										Line:   107,
 									},
 								},
 							},
@@ -928,13 +928,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   106,
+										Line:   107,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 23,
-										Line:   106,
+										Line:   107,
 									},
 								},
 							},
@@ -945,13 +945,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   106,
+											Line:   107,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 23,
-											Line:   106,
+											Line:   107,
 										},
 									},
 								},
@@ -966,13 +966,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   106,
+									Line:   107,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 29,
-									Line:   106,
+									Line:   107,
 								},
 							},
 						},
@@ -983,13 +983,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   106,
+										Line:   107,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 29,
-										Line:   106,
+										Line:   107,
 									},
 								},
 							},
@@ -1005,13 +1005,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   132,
+						Line:   133,
 					},
 					File:   "date.flux",
 					Source: "builtin monthDay",
 					Start: ast.Position{
 						Column: 1,
-						Line:   132,
+						Line:   133,
 					},
 				},
 			},
@@ -1023,13 +1023,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   132,
+							Line:   133,
 						},
 						File:   "date.flux",
 						Source: "monthDay",
 						Start: ast.Position{
 							Column: 9,
-							Line:   132,
+							Line:   133,
 						},
 					},
 				},
@@ -1042,13 +1042,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   132,
+							Line:   133,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 20,
-							Line:   132,
+							Line:   133,
 						},
 					},
 				},
@@ -1059,13 +1059,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   132,
+								Line:   133,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 40,
-								Line:   132,
+								Line:   133,
 							},
 						},
 					},
@@ -1076,13 +1076,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   132,
+									Line:   133,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 43,
-									Line:   132,
+									Line:   133,
 								},
 							},
 						},
@@ -1095,13 +1095,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
-									Line:   132,
+									Line:   133,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 40,
-									Line:   132,
+									Line:   133,
 								},
 							},
 						},
@@ -1115,13 +1115,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
-								Line:   132,
+								Line:   133,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 20,
-								Line:   132,
+								Line:   133,
 							},
 						},
 					},
@@ -1132,13 +1132,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   132,
+									Line:   133,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 21,
-									Line:   132,
+									Line:   133,
 								},
 							},
 						},
@@ -1150,13 +1150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   132,
+										Line:   133,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 21,
-										Line:   132,
+										Line:   133,
 									},
 								},
 							},
@@ -1169,13 +1169,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   132,
+										Line:   133,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 24,
-										Line:   132,
+										Line:   133,
 									},
 								},
 							},
@@ -1186,13 +1186,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   132,
+											Line:   133,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 24,
-											Line:   132,
+											Line:   133,
 										},
 									},
 								},
@@ -1207,13 +1207,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   132,
+									Line:   133,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 30,
-									Line:   132,
+									Line:   133,
 								},
 							},
 						},
@@ -1224,13 +1224,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   132,
+										Line:   133,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 30,
-										Line:   132,
+										Line:   133,
 									},
 								},
 							},
@@ -1246,13 +1246,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   158,
+						Line:   159,
 					},
 					File:   "date.flux",
 					Source: "builtin yearDay",
 					Start: ast.Position{
 						Column: 1,
-						Line:   158,
+						Line:   159,
 					},
 				},
 			},
@@ -1264,13 +1264,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   158,
+							Line:   159,
 						},
 						File:   "date.flux",
 						Source: "yearDay",
 						Start: ast.Position{
 							Column: 9,
-							Line:   158,
+							Line:   159,
 						},
 					},
 				},
@@ -1283,13 +1283,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 50,
-							Line:   158,
+							Line:   159,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 19,
-							Line:   158,
+							Line:   159,
 						},
 					},
 				},
@@ -1300,13 +1300,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   158,
+								Line:   159,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 39,
-								Line:   158,
+								Line:   159,
 							},
 						},
 					},
@@ -1317,13 +1317,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   158,
+									Line:   159,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 42,
-									Line:   158,
+									Line:   159,
 								},
 							},
 						},
@@ -1336,13 +1336,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   158,
+									Line:   159,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 39,
-									Line:   158,
+									Line:   159,
 								},
 							},
 						},
@@ -1356,13 +1356,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   158,
+								Line:   159,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 19,
-								Line:   158,
+								Line:   159,
 							},
 						},
 					},
@@ -1373,13 +1373,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   158,
+									Line:   159,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 20,
-									Line:   158,
+									Line:   159,
 								},
 							},
 						},
@@ -1391,13 +1391,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   158,
+										Line:   159,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 20,
-										Line:   158,
+										Line:   159,
 									},
 								},
 							},
@@ -1410,13 +1410,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   158,
+										Line:   159,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 23,
-										Line:   158,
+										Line:   159,
 									},
 								},
 							},
@@ -1427,13 +1427,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   158,
+											Line:   159,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 23,
-											Line:   158,
+											Line:   159,
 										},
 									},
 								},
@@ -1448,13 +1448,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   158,
+									Line:   159,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 29,
-									Line:   158,
+									Line:   159,
 								},
 							},
 						},
@@ -1465,13 +1465,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   158,
+										Line:   159,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 29,
-										Line:   158,
+										Line:   159,
 									},
 								},
 							},
@@ -1487,13 +1487,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   184,
+						Line:   185,
 					},
 					File:   "date.flux",
 					Source: "builtin month",
 					Start: ast.Position{
 						Column: 1,
-						Line:   184,
+						Line:   185,
 					},
 				},
 			},
@@ -1505,13 +1505,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   184,
+							Line:   185,
 						},
 						File:   "date.flux",
 						Source: "month",
 						Start: ast.Position{
 							Column: 9,
-							Line:   184,
+							Line:   185,
 						},
 					},
 				},
@@ -1524,13 +1524,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 48,
-							Line:   184,
+							Line:   185,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 17,
-							Line:   184,
+							Line:   185,
 						},
 					},
 				},
@@ -1541,13 +1541,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 48,
-								Line:   184,
+								Line:   185,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 37,
-								Line:   184,
+								Line:   185,
 							},
 						},
 					},
@@ -1558,13 +1558,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   184,
+									Line:   185,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 40,
-									Line:   184,
+									Line:   185,
 								},
 							},
 						},
@@ -1577,13 +1577,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   184,
+									Line:   185,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 37,
-									Line:   184,
+									Line:   185,
 								},
 							},
 						},
@@ -1597,13 +1597,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   184,
+								Line:   185,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 17,
-								Line:   184,
+								Line:   185,
 							},
 						},
 					},
@@ -1614,13 +1614,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   184,
+									Line:   185,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 18,
-									Line:   184,
+									Line:   185,
 								},
 							},
 						},
@@ -1632,13 +1632,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   184,
+										Line:   185,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 18,
-										Line:   184,
+										Line:   185,
 									},
 								},
 							},
@@ -1651,13 +1651,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   184,
+										Line:   185,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 21,
-										Line:   184,
+										Line:   185,
 									},
 								},
 							},
@@ -1668,13 +1668,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   184,
+											Line:   185,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 21,
-											Line:   184,
+											Line:   185,
 										},
 									},
 								},
@@ -1689,13 +1689,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   184,
+									Line:   185,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 27,
-									Line:   184,
+									Line:   185,
 								},
 							},
 						},
@@ -1706,13 +1706,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   184,
+										Line:   185,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 27,
-										Line:   184,
+										Line:   185,
 									},
 								},
 							},
@@ -1728,13 +1728,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   209,
+						Line:   210,
 					},
 					File:   "date.flux",
 					Source: "builtin year",
 					Start: ast.Position{
 						Column: 1,
-						Line:   209,
+						Line:   210,
 					},
 				},
 			},
@@ -1746,13 +1746,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   209,
+							Line:   210,
 						},
 						File:   "date.flux",
 						Source: "year",
 						Start: ast.Position{
 							Column: 9,
-							Line:   209,
+							Line:   210,
 						},
 					},
 				},
@@ -1765,13 +1765,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 47,
-							Line:   209,
+							Line:   210,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 16,
-							Line:   209,
+							Line:   210,
 						},
 					},
 				},
@@ -1782,13 +1782,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 47,
-								Line:   209,
+								Line:   210,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 36,
-								Line:   209,
+								Line:   210,
 							},
 						},
 					},
@@ -1799,13 +1799,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   209,
+									Line:   210,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 39,
-									Line:   209,
+									Line:   210,
 								},
 							},
 						},
@@ -1818,13 +1818,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   209,
+									Line:   210,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 36,
-									Line:   209,
+									Line:   210,
 								},
 							},
 						},
@@ -1838,13 +1838,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   209,
+								Line:   210,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 16,
-								Line:   209,
+								Line:   210,
 							},
 						},
 					},
@@ -1855,13 +1855,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   209,
+									Line:   210,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 17,
-									Line:   209,
+									Line:   210,
 								},
 							},
 						},
@@ -1873,13 +1873,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   209,
+										Line:   210,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 17,
-										Line:   209,
+										Line:   210,
 									},
 								},
 							},
@@ -1892,13 +1892,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   209,
+										Line:   210,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 20,
-										Line:   209,
+										Line:   210,
 									},
 								},
 							},
@@ -1909,13 +1909,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   209,
+											Line:   210,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 20,
-											Line:   209,
+											Line:   210,
 										},
 									},
 								},
@@ -1930,13 +1930,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   209,
+									Line:   210,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 26,
-									Line:   209,
+									Line:   210,
 								},
 							},
 						},
@@ -1947,13 +1947,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   209,
+										Line:   210,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 26,
-										Line:   209,
+										Line:   210,
 									},
 								},
 							},
@@ -1969,13 +1969,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   235,
+						Line:   236,
 					},
 					File:   "date.flux",
 					Source: "builtin week",
 					Start: ast.Position{
 						Column: 1,
-						Line:   235,
+						Line:   236,
 					},
 				},
 			},
@@ -1987,13 +1987,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   235,
+							Line:   236,
 						},
 						File:   "date.flux",
 						Source: "week",
 						Start: ast.Position{
 							Column: 9,
-							Line:   235,
+							Line:   236,
 						},
 					},
 				},
@@ -2006,13 +2006,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 47,
-							Line:   235,
+							Line:   236,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 16,
-							Line:   235,
+							Line:   236,
 						},
 					},
 				},
@@ -2023,13 +2023,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 47,
-								Line:   235,
+								Line:   236,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 36,
-								Line:   235,
+								Line:   236,
 							},
 						},
 					},
@@ -2040,13 +2040,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   235,
+									Line:   236,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 39,
-									Line:   235,
+									Line:   236,
 								},
 							},
 						},
@@ -2059,13 +2059,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   235,
+									Line:   236,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 36,
-									Line:   235,
+									Line:   236,
 								},
 							},
 						},
@@ -2079,13 +2079,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   235,
+								Line:   236,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 16,
-								Line:   235,
+								Line:   236,
 							},
 						},
 					},
@@ -2096,13 +2096,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   235,
+									Line:   236,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 17,
-									Line:   235,
+									Line:   236,
 								},
 							},
 						},
@@ -2114,13 +2114,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   235,
+										Line:   236,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 17,
-										Line:   235,
+										Line:   236,
 									},
 								},
 							},
@@ -2133,13 +2133,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   235,
+										Line:   236,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 20,
-										Line:   235,
+										Line:   236,
 									},
 								},
 							},
@@ -2150,13 +2150,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   235,
+											Line:   236,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 20,
-											Line:   235,
+											Line:   236,
 										},
 									},
 								},
@@ -2171,13 +2171,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   235,
+									Line:   236,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 26,
-									Line:   235,
+									Line:   236,
 								},
 							},
 						},
@@ -2188,13 +2188,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   235,
+										Line:   236,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 26,
-										Line:   235,
+										Line:   236,
 									},
 								},
 							},
@@ -2210,13 +2210,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   261,
+						Line:   262,
 					},
 					File:   "date.flux",
 					Source: "builtin quarter",
 					Start: ast.Position{
 						Column: 1,
-						Line:   261,
+						Line:   262,
 					},
 				},
 			},
@@ -2228,13 +2228,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   261,
+							Line:   262,
 						},
 						File:   "date.flux",
 						Source: "quarter",
 						Start: ast.Position{
 							Column: 9,
-							Line:   261,
+							Line:   262,
 						},
 					},
 				},
@@ -2247,13 +2247,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 50,
-							Line:   261,
+							Line:   262,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 19,
-							Line:   261,
+							Line:   262,
 						},
 					},
 				},
@@ -2264,13 +2264,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   261,
+								Line:   262,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 39,
-								Line:   261,
+								Line:   262,
 							},
 						},
 					},
@@ -2281,13 +2281,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   261,
+									Line:   262,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 42,
-									Line:   261,
+									Line:   262,
 								},
 							},
 						},
@@ -2300,13 +2300,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   261,
+									Line:   262,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 39,
-									Line:   261,
+									Line:   262,
 								},
 							},
 						},
@@ -2320,13 +2320,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   261,
+								Line:   262,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 19,
-								Line:   261,
+								Line:   262,
 							},
 						},
 					},
@@ -2337,13 +2337,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   261,
+									Line:   262,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 20,
-									Line:   261,
+									Line:   262,
 								},
 							},
 						},
@@ -2355,13 +2355,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   261,
+										Line:   262,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 20,
-										Line:   261,
+										Line:   262,
 									},
 								},
 							},
@@ -2374,13 +2374,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   261,
+										Line:   262,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 23,
-										Line:   261,
+										Line:   262,
 									},
 								},
 							},
@@ -2391,13 +2391,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   261,
+											Line:   262,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 23,
-											Line:   261,
+											Line:   262,
 										},
 									},
 								},
@@ -2412,13 +2412,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   261,
+									Line:   262,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 29,
-									Line:   261,
+									Line:   262,
 								},
 							},
 						},
@@ -2429,13 +2429,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   261,
+										Line:   262,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 29,
-										Line:   261,
+										Line:   262,
 									},
 								},
 							},
@@ -2451,13 +2451,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   287,
+						Line:   288,
 					},
 					File:   "date.flux",
 					Source: "builtin millisecond",
 					Start: ast.Position{
 						Column: 1,
-						Line:   287,
+						Line:   288,
 					},
 				},
 			},
@@ -2469,13 +2469,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   287,
+							Line:   288,
 						},
 						File:   "date.flux",
 						Source: "millisecond",
 						Start: ast.Position{
 							Column: 9,
-							Line:   287,
+							Line:   288,
 						},
 					},
 				},
@@ -2488,13 +2488,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
-							Line:   287,
+							Line:   288,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 23,
-							Line:   287,
+							Line:   288,
 						},
 					},
 				},
@@ -2505,13 +2505,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   287,
+								Line:   288,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 43,
-								Line:   287,
+								Line:   288,
 							},
 						},
 					},
@@ -2522,13 +2522,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   287,
+									Line:   288,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 46,
-									Line:   287,
+									Line:   288,
 								},
 							},
 						},
@@ -2541,13 +2541,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   287,
+									Line:   288,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 43,
-									Line:   287,
+									Line:   288,
 								},
 							},
 						},
@@ -2561,13 +2561,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
-								Line:   287,
+								Line:   288,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 23,
-								Line:   287,
+								Line:   288,
 							},
 						},
 					},
@@ -2578,13 +2578,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   287,
+									Line:   288,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 24,
-									Line:   287,
+									Line:   288,
 								},
 							},
 						},
@@ -2596,13 +2596,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   287,
+										Line:   288,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 24,
-										Line:   287,
+										Line:   288,
 									},
 								},
 							},
@@ -2615,13 +2615,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   287,
+										Line:   288,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 27,
-										Line:   287,
+										Line:   288,
 									},
 								},
 							},
@@ -2632,13 +2632,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   287,
+											Line:   288,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 27,
-											Line:   287,
+											Line:   288,
 										},
 									},
 								},
@@ -2653,13 +2653,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   287,
+									Line:   288,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 33,
-									Line:   287,
+									Line:   288,
 								},
 							},
 						},
@@ -2670,13 +2670,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   287,
+										Line:   288,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 33,
-										Line:   287,
+										Line:   288,
 									},
 								},
 							},
@@ -2692,13 +2692,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   313,
+						Line:   314,
 					},
 					File:   "date.flux",
 					Source: "builtin microsecond",
 					Start: ast.Position{
 						Column: 1,
-						Line:   313,
+						Line:   314,
 					},
 				},
 			},
@@ -2710,13 +2710,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   313,
+							Line:   314,
 						},
 						File:   "date.flux",
 						Source: "microsecond",
 						Start: ast.Position{
 							Column: 9,
-							Line:   313,
+							Line:   314,
 						},
 					},
 				},
@@ -2729,13 +2729,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
-							Line:   313,
+							Line:   314,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 23,
-							Line:   313,
+							Line:   314,
 						},
 					},
 				},
@@ -2746,13 +2746,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   313,
+								Line:   314,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 43,
-								Line:   313,
+								Line:   314,
 							},
 						},
 					},
@@ -2763,13 +2763,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   313,
+									Line:   314,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 46,
-									Line:   313,
+									Line:   314,
 								},
 							},
 						},
@@ -2782,13 +2782,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   313,
+									Line:   314,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 43,
-									Line:   313,
+									Line:   314,
 								},
 							},
 						},
@@ -2802,13 +2802,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
-								Line:   313,
+								Line:   314,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 23,
-								Line:   313,
+								Line:   314,
 							},
 						},
 					},
@@ -2819,13 +2819,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   313,
+									Line:   314,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 24,
-									Line:   313,
+									Line:   314,
 								},
 							},
 						},
@@ -2837,13 +2837,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   313,
+										Line:   314,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 24,
-										Line:   313,
+										Line:   314,
 									},
 								},
 							},
@@ -2856,13 +2856,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   313,
+										Line:   314,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 27,
-										Line:   313,
+										Line:   314,
 									},
 								},
 							},
@@ -2873,13 +2873,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   313,
+											Line:   314,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 27,
-											Line:   313,
+											Line:   314,
 										},
 									},
 								},
@@ -2894,13 +2894,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   313,
+									Line:   314,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 33,
-									Line:   313,
+									Line:   314,
 								},
 							},
 						},
@@ -2911,13 +2911,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   313,
+										Line:   314,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 33,
-										Line:   313,
+										Line:   314,
 									},
 								},
 							},
@@ -2933,13 +2933,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   339,
+						Line:   340,
 					},
 					File:   "date.flux",
 					Source: "builtin nanosecond",
 					Start: ast.Position{
 						Column: 1,
-						Line:   339,
+						Line:   340,
 					},
 				},
 			},
@@ -2951,13 +2951,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   339,
+							Line:   340,
 						},
 						File:   "date.flux",
 						Source: "nanosecond",
 						Start: ast.Position{
 							Column: 9,
-							Line:   339,
+							Line:   340,
 						},
 					},
 				},
@@ -2970,13 +2970,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 53,
-							Line:   339,
+							Line:   340,
 						},
 						File:   "date.flux",
 						Source: "(t: T) => int where T: Timeable",
 						Start: ast.Position{
 							Column: 22,
-							Line:   339,
+							Line:   340,
 						},
 					},
 				},
@@ -2987,13 +2987,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 53,
-								Line:   339,
+								Line:   340,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 42,
-								Line:   339,
+								Line:   340,
 							},
 						},
 					},
@@ -3004,13 +3004,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   339,
+									Line:   340,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 45,
-									Line:   339,
+									Line:   340,
 								},
 							},
 						},
@@ -3023,13 +3023,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   339,
+									Line:   340,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 42,
-									Line:   339,
+									Line:   340,
 								},
 							},
 						},
@@ -3043,13 +3043,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   339,
+								Line:   340,
 							},
 							File:   "date.flux",
 							Source: "(t: T) => int",
 							Start: ast.Position{
 								Column: 22,
-								Line:   339,
+								Line:   340,
 							},
 						},
 					},
@@ -3060,13 +3060,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   339,
+									Line:   340,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 23,
-									Line:   339,
+									Line:   340,
 								},
 							},
 						},
@@ -3078,13 +3078,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   339,
+										Line:   340,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 23,
-										Line:   339,
+										Line:   340,
 									},
 								},
 							},
@@ -3097,13 +3097,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   339,
+										Line:   340,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 26,
-										Line:   339,
+										Line:   340,
 									},
 								},
 							},
@@ -3114,13 +3114,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   339,
+											Line:   340,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 26,
-											Line:   339,
+											Line:   340,
 										},
 									},
 								},
@@ -3135,13 +3135,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   339,
+									Line:   340,
 								},
 								File:   "date.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 32,
-									Line:   339,
+									Line:   340,
 								},
 							},
 						},
@@ -3152,13 +3152,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   339,
+										Line:   340,
 									},
 									File:   "date.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 32,
-										Line:   339,
+										Line:   340,
 									},
 								},
 							},
@@ -3174,13 +3174,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   393,
+						Line:   394,
 					},
 					File:   "date.flux",
 					Source: "builtin truncate",
 					Start: ast.Position{
 						Column: 1,
-						Line:   393,
+						Line:   394,
 					},
 				},
 			},
@@ -3192,13 +3192,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   393,
+							Line:   394,
 						},
 						File:   "date.flux",
 						Source: "truncate",
 						Start: ast.Position{
 							Column: 9,
-							Line:   393,
+							Line:   394,
 						},
 					},
 				},
@@ -3211,13 +3211,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 68,
-							Line:   393,
+							Line:   394,
 						},
 						File:   "date.flux",
 						Source: "(t: T, unit: duration) => time where T: Timeable",
 						Start: ast.Position{
 							Column: 20,
-							Line:   393,
+							Line:   394,
 						},
 					},
 				},
@@ -3228,13 +3228,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 68,
-								Line:   393,
+								Line:   394,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
 								Column: 57,
-								Line:   393,
+								Line:   394,
 							},
 						},
 					},
@@ -3245,13 +3245,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 68,
-									Line:   393,
+									Line:   394,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 60,
-									Line:   393,
+									Line:   394,
 								},
 							},
 						},
@@ -3264,13 +3264,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   393,
+									Line:   394,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 57,
-									Line:   393,
+									Line:   394,
 								},
 							},
 						},
@@ -3284,13 +3284,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   393,
+								Line:   394,
 							},
 							File:   "date.flux",
 							Source: "(t: T, unit: duration) => time",
 							Start: ast.Position{
 								Column: 20,
-								Line:   393,
+								Line:   394,
 							},
 						},
 					},
@@ -3301,13 +3301,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   393,
+									Line:   394,
 								},
 								File:   "date.flux",
 								Source: "t: T",
 								Start: ast.Position{
 									Column: 21,
-									Line:   393,
+									Line:   394,
 								},
 							},
 						},
@@ -3319,13 +3319,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   393,
+										Line:   394,
 									},
 									File:   "date.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 21,
-										Line:   393,
+										Line:   394,
 									},
 								},
 							},
@@ -3338,13 +3338,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   393,
+										Line:   394,
 									},
 									File:   "date.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 24,
-										Line:   393,
+										Line:   394,
 									},
 								},
 							},
@@ -3355,13 +3355,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   393,
+											Line:   394,
 										},
 										File:   "date.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 24,
-											Line:   393,
+											Line:   394,
 										},
 									},
 								},
@@ -3375,13 +3375,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
-									Line:   393,
+									Line:   394,
 								},
 								File:   "date.flux",
 								Source: "unit: duration",
 								Start: ast.Position{
 									Column: 27,
-									Line:   393,
+									Line:   394,
 								},
 							},
 						},
@@ -3393,13 +3393,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   393,
+										Line:   394,
 									},
 									File:   "date.flux",
 									Source: "unit",
 									Start: ast.Position{
 										Column: 27,
-										Line:   393,
+										Line:   394,
 									},
 								},
 							},
@@ -3412,13 +3412,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   393,
+										Line:   394,
 									},
 									File:   "date.flux",
 									Source: "duration",
 									Start: ast.Position{
 										Column: 33,
-										Line:   393,
+										Line:   394,
 									},
 								},
 							},
@@ -3429,13 +3429,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 41,
-											Line:   393,
+											Line:   394,
 										},
 										File:   "date.flux",
 										Source: "duration",
 										Start: ast.Position{
 											Column: 33,
-											Line:   393,
+											Line:   394,
 										},
 									},
 								},
@@ -3450,13 +3450,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   393,
+									Line:   394,
 								},
 								File:   "date.flux",
 								Source: "time",
 								Start: ast.Position{
 									Column: 46,
-									Line:   393,
+									Line:   394,
 								},
 							},
 						},
@@ -3467,13 +3467,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 50,
-										Line:   393,
+										Line:   394,
 									},
 									File:   "date.flux",
 									Source: "time",
 									Start: ast.Position{
 										Column: 46,
-										Line:   393,
+										Line:   394,
 									},
 								},
 							},
@@ -3489,13 +3489,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   396,
+						Line:   397,
 					},
 					File:   "date.flux",
 					Source: "Sunday = 0",
 					Start: ast.Position{
 						Column: 1,
-						Line:   396,
+						Line:   397,
 					},
 				},
 			},
@@ -3506,13 +3506,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   396,
+							Line:   397,
 						},
 						File:   "date.flux",
 						Source: "Sunday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   396,
+							Line:   397,
 						},
 					},
 				},
@@ -3525,13 +3525,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   396,
+							Line:   397,
 						},
 						File:   "date.flux",
 						Source: "0",
 						Start: ast.Position{
 							Column: 10,
-							Line:   396,
+							Line:   397,
 						},
 					},
 				},
@@ -3544,13 +3544,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   399,
+						Line:   400,
 					},
 					File:   "date.flux",
 					Source: "Monday = 1",
 					Start: ast.Position{
 						Column: 1,
-						Line:   399,
+						Line:   400,
 					},
 				},
 			},
@@ -3561,13 +3561,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   399,
+							Line:   400,
 						},
 						File:   "date.flux",
 						Source: "Monday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   399,
+							Line:   400,
 						},
 					},
 				},
@@ -3580,13 +3580,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   399,
+							Line:   400,
 						},
 						File:   "date.flux",
 						Source: "1",
 						Start: ast.Position{
 							Column: 10,
-							Line:   399,
+							Line:   400,
 						},
 					},
 				},
@@ -3599,13 +3599,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   402,
+						Line:   403,
 					},
 					File:   "date.flux",
 					Source: "Tuesday = 2",
 					Start: ast.Position{
 						Column: 1,
-						Line:   402,
+						Line:   403,
 					},
 				},
 			},
@@ -3616,13 +3616,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   402,
+							Line:   403,
 						},
 						File:   "date.flux",
 						Source: "Tuesday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   402,
+							Line:   403,
 						},
 					},
 				},
@@ -3635,13 +3635,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   402,
+							Line:   403,
 						},
 						File:   "date.flux",
 						Source: "2",
 						Start: ast.Position{
 							Column: 11,
-							Line:   402,
+							Line:   403,
 						},
 					},
 				},
@@ -3654,13 +3654,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   405,
+						Line:   406,
 					},
 					File:   "date.flux",
 					Source: "Wednesday = 3",
 					Start: ast.Position{
 						Column: 1,
-						Line:   405,
+						Line:   406,
 					},
 				},
 			},
@@ -3671,13 +3671,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   405,
+							Line:   406,
 						},
 						File:   "date.flux",
 						Source: "Wednesday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   405,
+							Line:   406,
 						},
 					},
 				},
@@ -3690,13 +3690,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   405,
+							Line:   406,
 						},
 						File:   "date.flux",
 						Source: "3",
 						Start: ast.Position{
 							Column: 13,
-							Line:   405,
+							Line:   406,
 						},
 					},
 				},
@@ -3709,13 +3709,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   408,
+						Line:   409,
 					},
 					File:   "date.flux",
 					Source: "Thursday = 4",
 					Start: ast.Position{
 						Column: 1,
-						Line:   408,
+						Line:   409,
 					},
 				},
 			},
@@ -3726,13 +3726,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   408,
+							Line:   409,
 						},
 						File:   "date.flux",
 						Source: "Thursday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   408,
+							Line:   409,
 						},
 					},
 				},
@@ -3745,13 +3745,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   408,
+							Line:   409,
 						},
 						File:   "date.flux",
 						Source: "4",
 						Start: ast.Position{
 							Column: 12,
-							Line:   408,
+							Line:   409,
 						},
 					},
 				},
@@ -3764,13 +3764,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   411,
+						Line:   412,
 					},
 					File:   "date.flux",
 					Source: "Friday = 5",
 					Start: ast.Position{
 						Column: 1,
-						Line:   411,
+						Line:   412,
 					},
 				},
 			},
@@ -3781,13 +3781,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   411,
+							Line:   412,
 						},
 						File:   "date.flux",
 						Source: "Friday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   411,
+							Line:   412,
 						},
 					},
 				},
@@ -3800,13 +3800,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   411,
+							Line:   412,
 						},
 						File:   "date.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 10,
-							Line:   411,
+							Line:   412,
 						},
 					},
 				},
@@ -3819,13 +3819,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   414,
+						Line:   415,
 					},
 					File:   "date.flux",
 					Source: "Saturday = 6",
 					Start: ast.Position{
 						Column: 1,
-						Line:   414,
+						Line:   415,
 					},
 				},
 			},
@@ -3836,13 +3836,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   414,
+							Line:   415,
 						},
 						File:   "date.flux",
 						Source: "Saturday",
 						Start: ast.Position{
 							Column: 1,
-							Line:   414,
+							Line:   415,
 						},
 					},
 				},
@@ -3855,13 +3855,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   414,
+							Line:   415,
 						},
 						File:   "date.flux",
 						Source: "6",
 						Start: ast.Position{
 							Column: 12,
-							Line:   414,
+							Line:   415,
 						},
 					},
 				},
@@ -3874,13 +3874,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   417,
+						Line:   418,
 					},
 					File:   "date.flux",
 					Source: "January = 1",
 					Start: ast.Position{
 						Column: 1,
-						Line:   417,
+						Line:   418,
 					},
 				},
 			},
@@ -3891,13 +3891,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   417,
+							Line:   418,
 						},
 						File:   "date.flux",
 						Source: "January",
 						Start: ast.Position{
 							Column: 1,
-							Line:   417,
+							Line:   418,
 						},
 					},
 				},
@@ -3910,13 +3910,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   417,
+							Line:   418,
 						},
 						File:   "date.flux",
 						Source: "1",
 						Start: ast.Position{
 							Column: 11,
-							Line:   417,
+							Line:   418,
 						},
 					},
 				},
@@ -3929,13 +3929,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   420,
+						Line:   421,
 					},
 					File:   "date.flux",
 					Source: "February = 2",
 					Start: ast.Position{
 						Column: 1,
-						Line:   420,
+						Line:   421,
 					},
 				},
 			},
@@ -3946,13 +3946,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   420,
+							Line:   421,
 						},
 						File:   "date.flux",
 						Source: "February",
 						Start: ast.Position{
 							Column: 1,
-							Line:   420,
+							Line:   421,
 						},
 					},
 				},
@@ -3965,13 +3965,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   420,
+							Line:   421,
 						},
 						File:   "date.flux",
 						Source: "2",
 						Start: ast.Position{
 							Column: 12,
-							Line:   420,
+							Line:   421,
 						},
 					},
 				},
@@ -3984,13 +3984,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 10,
-						Line:   423,
+						Line:   424,
 					},
 					File:   "date.flux",
 					Source: "March = 3",
 					Start: ast.Position{
 						Column: 1,
-						Line:   423,
+						Line:   424,
 					},
 				},
 			},
@@ -4001,13 +4001,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   423,
+							Line:   424,
 						},
 						File:   "date.flux",
 						Source: "March",
 						Start: ast.Position{
 							Column: 1,
-							Line:   423,
+							Line:   424,
 						},
 					},
 				},
@@ -4020,13 +4020,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   423,
+							Line:   424,
 						},
 						File:   "date.flux",
 						Source: "3",
 						Start: ast.Position{
 							Column: 9,
-							Line:   423,
+							Line:   424,
 						},
 					},
 				},
@@ -4039,13 +4039,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 10,
-						Line:   426,
+						Line:   427,
 					},
 					File:   "date.flux",
 					Source: "April = 4",
 					Start: ast.Position{
 						Column: 1,
-						Line:   426,
+						Line:   427,
 					},
 				},
 			},
@@ -4056,13 +4056,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   426,
+							Line:   427,
 						},
 						File:   "date.flux",
 						Source: "April",
 						Start: ast.Position{
 							Column: 1,
-							Line:   426,
+							Line:   427,
 						},
 					},
 				},
@@ -4075,13 +4075,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   426,
+							Line:   427,
 						},
 						File:   "date.flux",
 						Source: "4",
 						Start: ast.Position{
 							Column: 9,
-							Line:   426,
+							Line:   427,
 						},
 					},
 				},
@@ -4094,13 +4094,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 8,
-						Line:   429,
+						Line:   430,
 					},
 					File:   "date.flux",
 					Source: "May = 5",
 					Start: ast.Position{
 						Column: 1,
-						Line:   429,
+						Line:   430,
 					},
 				},
 			},
@@ -4111,13 +4111,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   429,
+							Line:   430,
 						},
 						File:   "date.flux",
 						Source: "May",
 						Start: ast.Position{
 							Column: 1,
-							Line:   429,
+							Line:   430,
 						},
 					},
 				},
@@ -4130,13 +4130,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   429,
+							Line:   430,
 						},
 						File:   "date.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 7,
-							Line:   429,
+							Line:   430,
 						},
 					},
 				},
@@ -4149,13 +4149,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 9,
-						Line:   432,
+						Line:   433,
 					},
 					File:   "date.flux",
 					Source: "June = 6",
 					Start: ast.Position{
 						Column: 1,
-						Line:   432,
+						Line:   433,
 					},
 				},
 			},
@@ -4166,13 +4166,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   432,
+							Line:   433,
 						},
 						File:   "date.flux",
 						Source: "June",
 						Start: ast.Position{
 							Column: 1,
-							Line:   432,
+							Line:   433,
 						},
 					},
 				},
@@ -4185,13 +4185,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   432,
+							Line:   433,
 						},
 						File:   "date.flux",
 						Source: "6",
 						Start: ast.Position{
 							Column: 8,
-							Line:   432,
+							Line:   433,
 						},
 					},
 				},
@@ -4204,13 +4204,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 9,
-						Line:   435,
+						Line:   436,
 					},
 					File:   "date.flux",
 					Source: "July = 7",
 					Start: ast.Position{
 						Column: 1,
-						Line:   435,
+						Line:   436,
 					},
 				},
 			},
@@ -4221,13 +4221,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   435,
+							Line:   436,
 						},
 						File:   "date.flux",
 						Source: "July",
 						Start: ast.Position{
 							Column: 1,
-							Line:   435,
+							Line:   436,
 						},
 					},
 				},
@@ -4240,13 +4240,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   435,
+							Line:   436,
 						},
 						File:   "date.flux",
 						Source: "7",
 						Start: ast.Position{
 							Column: 8,
-							Line:   435,
+							Line:   436,
 						},
 					},
 				},
@@ -4259,13 +4259,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   438,
+						Line:   439,
 					},
 					File:   "date.flux",
 					Source: "August = 8",
 					Start: ast.Position{
 						Column: 1,
-						Line:   438,
+						Line:   439,
 					},
 				},
 			},
@@ -4276,13 +4276,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   438,
+							Line:   439,
 						},
 						File:   "date.flux",
 						Source: "August",
 						Start: ast.Position{
 							Column: 1,
-							Line:   438,
+							Line:   439,
 						},
 					},
 				},
@@ -4295,13 +4295,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   438,
+							Line:   439,
 						},
 						File:   "date.flux",
 						Source: "8",
 						Start: ast.Position{
 							Column: 10,
-							Line:   438,
+							Line:   439,
 						},
 					},
 				},
@@ -4314,13 +4314,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   441,
+						Line:   442,
 					},
 					File:   "date.flux",
 					Source: "September = 9",
 					Start: ast.Position{
 						Column: 1,
-						Line:   441,
+						Line:   442,
 					},
 				},
 			},
@@ -4331,13 +4331,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   441,
+							Line:   442,
 						},
 						File:   "date.flux",
 						Source: "September",
 						Start: ast.Position{
 							Column: 1,
-							Line:   441,
+							Line:   442,
 						},
 					},
 				},
@@ -4350,13 +4350,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   441,
+							Line:   442,
 						},
 						File:   "date.flux",
 						Source: "9",
 						Start: ast.Position{
 							Column: 13,
-							Line:   441,
+							Line:   442,
 						},
 					},
 				},
@@ -4369,13 +4369,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   444,
+						Line:   445,
 					},
 					File:   "date.flux",
 					Source: "October = 10",
 					Start: ast.Position{
 						Column: 1,
-						Line:   444,
+						Line:   445,
 					},
 				},
 			},
@@ -4386,13 +4386,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   444,
+							Line:   445,
 						},
 						File:   "date.flux",
 						Source: "October",
 						Start: ast.Position{
 							Column: 1,
-							Line:   444,
+							Line:   445,
 						},
 					},
 				},
@@ -4405,13 +4405,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   444,
+							Line:   445,
 						},
 						File:   "date.flux",
 						Source: "10",
 						Start: ast.Position{
 							Column: 11,
-							Line:   444,
+							Line:   445,
 						},
 					},
 				},
@@ -4424,13 +4424,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   447,
+						Line:   448,
 					},
 					File:   "date.flux",
 					Source: "November = 11",
 					Start: ast.Position{
 						Column: 1,
-						Line:   447,
+						Line:   448,
 					},
 				},
 			},
@@ -4441,13 +4441,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   447,
+							Line:   448,
 						},
 						File:   "date.flux",
 						Source: "November",
 						Start: ast.Position{
 							Column: 1,
-							Line:   447,
+							Line:   448,
 						},
 					},
 				},
@@ -4460,13 +4460,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   447,
+							Line:   448,
 						},
 						File:   "date.flux",
 						Source: "11",
 						Start: ast.Position{
 							Column: 12,
-							Line:   447,
+							Line:   448,
 						},
 					},
 				},
@@ -4479,13 +4479,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   450,
+						Line:   451,
 					},
 					File:   "date.flux",
 					Source: "December = 12",
 					Start: ast.Position{
 						Column: 1,
-						Line:   450,
+						Line:   451,
 					},
 				},
 			},
@@ -4496,13 +4496,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   450,
+							Line:   451,
 						},
 						File:   "date.flux",
 						Source: "December",
 						Start: ast.Position{
 							Column: 1,
-							Line:   450,
+							Line:   451,
 						},
 					},
 				},
@@ -4515,13 +4515,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   450,
+							Line:   451,
 						},
 						File:   "date.flux",
 						Source: "12",
 						Start: ast.Position{
 							Column: 12,
-							Line:   450,
+							Line:   451,
 						},
 					},
 				},
@@ -4534,18 +4534,18 @@ var pkgAST = &ast.Package{
 		Name:     "date.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Flux date package provides date and time constants and functions.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   1,
+						Line:   2,
 					},
 					File:   "date.flux",
 					Source: "package date",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   2,
 					},
 				},
 			},
@@ -4556,13 +4556,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   1,
+							Line:   2,
 						},
 						File:   "date.flux",
 						Source: "date",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   2,
 						},
 					},
 				},
