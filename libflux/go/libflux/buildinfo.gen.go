@@ -60,20 +60,8 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/walk/test_utils.rs":                             "ffec273fc2e54c640ba5f2ce5c1faa1516a3d98b1365d6f4cab762f582102650",
 	"libflux/flux-core/src/semantic/walk/walk_mut.rs":                               "845e0b706c90fd84b1f7ef08ab85d86a5af24392d7973415ed6d1c778a67e012",
 	"libflux/flux-core/tests/analyze_test.rs":                                       "537fcf7722f940794646d5916e3484262769fd90a7fa5e74e8095fb732136be6",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-	"libflux/flux/Cargo.toml":                                                       "8275ea00b53d2825ae65cf85c0f6ba9c1df1135ad6615d762796538256d74085",
-	"libflux/flux/FLUXDOC.md":                                                       "dc1f872a0fbb7537f7e274caea2eb8015ef589e54fd17ac6c398c6c46371bd5a",
-=======
-	"libflux/flux/Cargo.toml":                                                       "afcec239f415e1676e92c8201b97c943041bb864fe5f4b8c92e5fc819cbf6dd8",
->>>>>>> 58f0dda3 (chore: fmt and generate)
-=======
-	"libflux/flux/Cargo.toml":                                                       "3c29ff7e71e9a0d8cecc8f894633aed1378706eea833413c49644a6e71a659c3",
->>>>>>> cb51bca5 (refactor: removed unused code)
-=======
 	"libflux/flux/Cargo.toml":                                                       "0bbfc9053c0334992c5630656bc3f3a4f0352a629fe2aa1e45d3156e9e45c747",
->>>>>>> bfa257a5 (feat: compress docs)
+	"libflux/flux/FLUXDOC.md":                                                       "dc1f872a0fbb7537f7e274caea2eb8015ef589e54fd17ac6c398c6c46371bd5a",
 	"libflux/flux/benches/basic.rs":                                                 "f6b1d133a4edaa38b0ab6e2b63de1bbd62a489e39b77c62d0df6fa8e5462da0e",
 	"libflux/flux/benches/builtins.rs":                                              "625b3de708d49a3cb758f331a01f41805ac59d22bbadfee417922504f2d5797e",
 	"libflux/flux/benches/everything.flux":                                          "39134841113ac5e8437e29c5ac379f54a9bef8d84ef761799e6ffefcee2cb9b4",
