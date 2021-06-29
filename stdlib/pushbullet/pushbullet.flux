@@ -1,4 +1,4 @@
-// The Pushbullet package provides functions for sending data to Pushbullet.
+// The pushbullet package provides functions for sending data to Pushbullet.
 package pushbullet
 
 
@@ -7,7 +7,7 @@ import "json"
 
 option defaultURL = "https://api.pushbullet.com/v2/pushes"
 
-// The pushbullet.pushData() function sends a push notification to the Pushbullet API.
+// pushData() sends a push notification to the Pushbullet API.
 //
 // ## Parameters
 //
@@ -53,7 +53,7 @@ pushData = (url=defaultURL, token="", data) => {
     return http.post(headers: headers, url: url, data: enc)
 }
 
-// The pushbullet.pushNote() function sends a push notification of type note to the Pushbullet API.
+// pushNote() sends a push notification of type note to the Pushbullet API.
 //
 // ## Parameters
 //
@@ -97,7 +97,7 @@ pushNote = (url=defaultURL, token="", title, text) => {
     return pushData(token: token, url: url, data: data)
 }
 
-// The pushbullet.endpoint() function creates the endpoint for the Pushbullet API and sends a notification of type note.
+// endpoint() creates the endpoint for the Pushbullet API and sends a notification of type note.
 //
 // ## Parameters
 //
