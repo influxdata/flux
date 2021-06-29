@@ -8,24 +8,25 @@ package csv
 // Each record in the table represents a single point in the series.
 //
 // ## Parameters
-// - `csv` is CSV data
+// - `csv` is CSV data.
 //
 //   Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.
 //
-// - `file` if the file path of the CSV file to query
+// - `file` if the file path of the CSV file to query.
 //
 //   The path can be absolute or relative. If relative, it is relative to the working
 //   directory of the `fluxd` process. The CSV file must exist in the same file
 //   system running the `fluxd` process.
 //
-// - `mode` is the CSV parsing mode. Default is annotations
+// - `mode` is the CSV parsing mode. Default is annotations.
 //
 //   Available annotation modes:
-//    annotations: Use CSV notations to determine column data types
+//    annotations: Use CSV notations to determine column data types.
 //    raw: Parse all columns as strings and use the first row as the header row
 //    and all subsequent rows as data.
 //
 // ## Query anotated CSV data from file
+//
 // ```
 // import "csv"
 //
@@ -33,6 +34,7 @@ package csv
 // ```
 //
 // ## Query raw data from CSV file
+//
 // ```
 // import "csv"
 //
@@ -43,6 +45,7 @@ package csv
 // ```
 //
 // ## Query an annotated CSV string
+//
 // ```
 // import "csv"
 //
@@ -57,6 +60,7 @@ package csv
 // "
 //
 // csv.from(csv: csvData)
+//
 // ```
 //
 // ## Query a raw CSV string
