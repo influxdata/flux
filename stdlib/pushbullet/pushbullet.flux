@@ -7,7 +7,7 @@ import "json"
 
 option defaultURL = "https://api.pushbullet.com/v2/pushes"
 
-// pushData() sends a push notification to the Pushbullet API.
+// pushData sends a push notification to the Pushbullet API.
 //
 // ## Parameters
 //
@@ -53,7 +53,7 @@ pushData = (url=defaultURL, token="", data) => {
     return http.post(headers: headers, url: url, data: enc)
 }
 
-// pushNote() sends a push notification of type note to the Pushbullet API.
+// pushNote sends a push notification of type note to the Pushbullet API.
 //
 // ## Parameters
 //
@@ -97,7 +97,7 @@ pushNote = (url=defaultURL, token="", title, text) => {
     return pushData(token: token, url: url, data: data)
 }
 
-// endpoint() creates the endpoint for the Pushbullet API and sends a notification of type note.
+// endpoint creates the endpoint for the Pushbullet API and sends a notification of type note.
 //
 // ## Parameters
 //
