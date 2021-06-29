@@ -1,28 +1,38 @@
+// Flux SQL package provides tools for working with data in SQL
+// databases such as:
+// - Amazon Athena
+// - Google BigQuery
+// - Microsoft SQL Server
+// - MySQL
+// - PostgreSQL
+// - Snowflake
+// - SQLite
 package sql
 
 
-// from is a function that retrieves data from a SQL data source
+// from is a function that retrieves data from a SQL data source.
 //
 // ## Parameters
-// - `driverName` is the driver used to connect to the SQL database
+// - `driverName` is the driver used to connect to the SQL database.
 //
 //   The following drivers are available:
-//   awsathena
-//   bigquery
-//   mysql
-//   postgres
-//   snowflake
-//   sqlite3 - Does not work with InfluxDB OSS or InfluxDB Cloud
-//   sqlserver, mssql
+//    - awsathena
+//    - bigquery
+//    - mysql
+//    - postgres
+//    - snowflake
+//    - sqlite3 - Does not work with InfluxDB OSS or InfluxDB Cloud
+//    - sqlserver, mssql
 //
 // - `dataSourceName` is the data source name (DNS) or connection string used
-//   to connect to the SQL database
+//   to connect to the SQL database.
 //
 //   The string's form and structure depend on the driver used.
 //
-// - `query` is the query to run against the SQL database
+// - `query` is the query to run against the SQL database.
 //
 // ## Driver dataSourceName examples
+//
 // ```
 // # Amazon Athena Driver DSN
 // s3://myorgqueryresults/?accessID=AKIAJLO3F...&region=us-west-1&secretAccessKey=NnQ7MUMp9PYZsmD47c%2BSsXGOFsd%2F...
@@ -54,6 +64,7 @@ package sql
 // ```
 //
 // ## Query a MySQL database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -69,6 +80,7 @@ package sql
 // ```
 //
 // ## Query a Postgres database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -84,6 +96,7 @@ package sql
 // ```
 //
 // ## Query a Snowflake database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -100,6 +113,7 @@ package sql
 // ```
 //
 // ## Query a SQLite database
+//
 // ```
 // import "sql"
 //
@@ -114,6 +128,7 @@ package sql
 // source on your local filesystem.
 //
 // ## Query an Amazon Athena database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -141,6 +156,7 @@ package sql
 // - missingAsEmptyString - replace missing data with empty strings
 //
 // ## Query a SQL Server database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -187,6 +203,7 @@ package sql
 // ```
 //
 // ## Query a BigQuery database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -221,25 +238,25 @@ package sql
 // ```
 builtin from : (driverName: string, dataSourceName: string, query: string) => [A]
 
-// to is a function that writes data to an SQL database
+// to is a function that writes data to an SQL database.
 //
 // ## Parameters
-// - `driverName` is the driver used to connect to the SQL database
+// - `driverName` is the driver used to connect to the SQL database.
 //
 //   The following drivers are available:
-//   bigquery
-//   mysql
-//   postgres
-//   snowflake
-//   sqlite3 - Does not work with InfluxDB OSS or InfluxDB Cloud
-//   sqlserver, mssql
+//    - bigquery
+//    - mysql
+//    - postgres
+//    - snowflake
+//    - sqlite3 - Does not work with InfluxDB OSS or InfluxDB Cloud
+//    - sqlserver, mssql
 //
-// sql.to does not support Amazon Athena
+// sql.to does not support Amazon Athena.
 //
 // - `dataSourceName` is the data source name (DNS) or connection string used
-//   to connect to the SQL database
+//   to connect to the SQL database.
 //
-// - `table` is the destination table
+// - `table` is the destination table.
 //
 // - `batchSize` is the number of parameters or columns that can be queued within
 //   each call to Exec. Defaults to 10000.
@@ -247,6 +264,7 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 //   If writing to SQLite database, set the batchSize to 999 or less.
 //
 // ## Driver dataSourceName examples
+//
 // ```
 // # Postgres Driver DSN
 // postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full
@@ -271,7 +289,9 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 // bigquery://projectid/?param1=value&param2=value
 // bigquery://projectid/location?param1=value&param2=value
 // ```
+//
 // ## Write data to a MySQL database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -287,6 +307,7 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 // ```
 //
 // ## Write data to a Postgres database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -302,6 +323,7 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 // ```
 //
 // ## Write data to a snowflake database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -318,6 +340,7 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 // ```
 //
 // ## Write data to an SQLite database
+//
 // ```
 // import "sql"
 //
@@ -332,6 +355,7 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 // to write to an SQLite data source on your local filesystem.
 //
 // ## Write data to a SQL Server database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
@@ -381,6 +405,7 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 // ```
 //
 // ## Write to a BigQuery database
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
