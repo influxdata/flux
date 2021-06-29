@@ -1,13 +1,16 @@
+// Flux InfluxDB Secrets package provides functions and tools for working
+// with sensitive secrets managed by InfluxDB.
 package secrets
 
 
 // get is a function that retrieves a secret from the InfluxDB
-//  secret store
+//  secret store.
 //
 // ## Parameters
-// - `key` is the secret key to retrieve
+// - `key` is the secret key to retrieve.
 //
 // ## Example
+//
 // ```
 // import "influxdata/influxdb/secrets"
 //
@@ -15,6 +18,7 @@ package secrets
 // ```
 //
 // ## Populate sensitive credentials with secrets
+//
 // ```
 // import "sql"
 // import "influxdata/influxdb/secrets"
