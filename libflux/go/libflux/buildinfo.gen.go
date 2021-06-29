@@ -74,7 +74,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux/templates/package.html":                                           "635e1d638ad1a430f3894ff0a458572ca3c4dc6b9cec2c57fe771443849e1402",
 	"libflux/flux/templates/value.html":                                             "2af699af2535f83635acbc75c92d2ee941c2335350fc7e82ceb2dccf479360bf",
 	"libflux/include/influxdata/flux.h":                                             "9e057fd9abf8eafe6e9589941d198d9977a50a562a959cae35f25847e415e1d3",
-	"stdlib/array/array.flux":                                                       "a39ca0be5ace289e004f96d996d111e1e2e5e4c54494b016246fc60acb0ab5d2",
+	"stdlib/array/array.flux":                                                       "d4ce3e8f13a18bbb44ce4728fbf1798ce30d5fb5464c0df6f61e526187965a5f",
 	"stdlib/array/from_group_test.flux":                                             "aef4800416e47fe41329531a243865e5570df6c3070e22b81e0612bde91638a9",
 	"stdlib/array/from_test.flux":                                                   "fd3b11ff0ae463ce012275036874bff1cacbadddb1836635c3543e9808110b5e",
 	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/bayes_test.flux":            "358c5d320a801994f411c0ff5424f2302231586e2c856a5ed5858c6e7d4fbb56",
