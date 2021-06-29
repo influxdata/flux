@@ -111,7 +111,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/tomhollingworth/events/duration.flux":                           "f3f45369e4ae6888285ace1980fecb5f1ce32851bf8c8bd11a15f5b34ba11f28",
 	"stdlib/contrib/tomhollingworth/events/duration_test.flux":                      "c819d173ebb9ebe7b972ffe35ed00766d43638437806b0b7c96f3326394e0bbc",
 	"stdlib/contrib/tomhollingworth/events/duration_with_stop_test.flux":            "a8bb67d9c1dda6dd3d4d56095251e4cea01f393910145f74b5ef4d95febc0345",
-	"stdlib/csv/csv.flux":                                                           "9b55457bbe5644a9342b29590d250074026ee3518370bb293b6832eed54a89bf",
+	"stdlib/csv/csv.flux":                                                           "af2eeb2123edd48fab5ea6f8b15b8833290d0435587d847adcbf6394f579efe2",
 	"stdlib/csv/csv_test.flux":                                                      "f5a9adc0936c4b8779cb1dfe4fc823a85d70306b62bdcadd6dd14cd46b7485bc",
 	"stdlib/date/date.flux":                                                         "b147cb4440e8e66b535c6020ccf637e40526457eeb54a3258095870410c0809f",
 	"stdlib/date/hour_duration_test.flux":                                           "8790700f07b9c0b0cb9b50b660199471e330aad12522b1bcde76b6f9b5d51142",

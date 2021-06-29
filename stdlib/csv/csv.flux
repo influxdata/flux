@@ -1,4 +1,4 @@
-// CSV provides an API for working with [annotated CSV](https://github.com/influxdata/flux/blob/master/docs/SPEC.md#csv) files.
+// CSV provides tools for working with [annotated CSV](https://github.com/influxdata/flux/blob/master/docs/SPEC.md#csv) files.
 package csv
 
 
