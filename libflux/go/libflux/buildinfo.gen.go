@@ -141,7 +141,7 @@ var sourceHashes = map[string]string{
 	"stdlib/date/year_day_time_test.flux":                                           "9348ef55089bf351c0104a4d924aa45b64f1c9d0109deceef94837a74203558c",
 	"stdlib/date/year_duration_test.flux":                                           "c8f4038524aa6c4fc77a31e41d20f5973b5913562dd9c3877e692e16260c0ade",
 	"stdlib/date/year_time_test.flux":                                               "37e9663f63485dac2f3215dd30387fec1f3f287a9a5fd64b013f53fc9f349db6",
-	"stdlib/dict/dict.flux":                                                         "c8da64bd7be8964c49528c0686f05961b13e915c8433e03ff6d270941e2b1327",
+	"stdlib/dict/dict.flux":                                                         "9ea7e9aea663e655d8f1ce0130830ecb05d7092370eca305824674024dfd3447",
 	"stdlib/dict/dict_insert_remove_test.flux":                                      "1986d4677df4f72532f47fed6f009d71a3ee9fdc4302662210f6b5405acd87ff",
 	"stdlib/dict/dict_lit_lambda_test.flux":                                         "196220dd9ee726c44d17a93ea194ad52413574aaa54622efbd44282a48f0a170",
 	"stdlib/dict/dict_lit_test.flux":                                                "a50151d9613ea9622b23d8f9292ee97e4464938457584c1acf70c2bcbc67a825",

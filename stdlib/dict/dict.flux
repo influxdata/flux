@@ -1,3 +1,4 @@
+// Flux dictionary package provides functions for interacting with dictionary types.
 package dict
 
 
@@ -5,9 +6,10 @@ package dict
 //  with key and value properties.
 //
 // ## Parameters
-// - `pairs` is the list of records, each containing key and value properties
+// - `pairs` is the list of records, each containing key and value properties.
 //
 // ## Create a dictionary from a list of records
+//
 // ```
 // import "dict"
 //
@@ -28,14 +30,15 @@ builtin fromList : (pairs: [{key: K, value: V}]) => [K:V] where K: Comparable
 //  dictionary or a default value if the key does not exist.
 //
 // ## Parameters
-// - `dict` is the dictionary to return a value from
-// - `key` is the key to return from the dictionary
+// - `dict` is the dictionary to return a value from.
+// - `key` is the key to return from the dictionary.
 // - `default` is the default value to return if the key does not
-//   exist in the dictionary
+//   exist in the dictionary.
 //
 //   Must be the same type as values in the dictionary.
 //
 // ## Return a property of a dictionary
+//
 // ```
 // import "dict"
 //
@@ -57,16 +60,17 @@ builtin get : (dict: [K:V], key: K, default: V) => V where K: Comparable
 //  the existing value.
 //
 // ## Parameters
-// - `dict` is the dictionary to update
-// - `key` is the key to insert into the dictionary
+// - `dict` is the dictionary to update.
+// - `key` is the key to insert into the dictionary.
 //
 //   Must be the same type as the existing keys in the dictionary.
 //
-// - `default` is the value to insert into the dictionary
+// - `default` is the value to insert into the dictionary.
 //
 //   Must be the same type as the existing values in the dictionary. 
 //
 // ## Insert a new key-value pair into the a dictionary
+//
 // ```
 // import "dict"
 //
@@ -83,6 +87,7 @@ builtin get : (dict: [K:V], key: K, default: V) => V where K: Comparable
 // ```
 //
 // ## Overwrite an existing key-value pair in a dictionary
+//
 // ```
 // import "dict"
 //
@@ -103,12 +108,13 @@ builtin insert : (dict: [K:V], key: K, value: V) => [K:V] where K: Comparable
 //  returns an updated dictionary. 
 //
 // ## Parameters
-// - `dict` is the dictionary to remove the key-value pair from
-// - `key` is the key to remove from the dictionary
+// - `dict` is the dictionary to remove the key-value pair from.
+// - `key` is the key to remove from the dictionary.
 //
 //   Must be the same type as existing keys in the dictionary.
 //
 // ## Remove a property from a dictionary
+//
 // ```
 // import "dict"
 //
