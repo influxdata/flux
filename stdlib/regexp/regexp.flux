@@ -1,3 +1,5 @@
+// Flux regular expressions package includes functions that provide enhanced
+// regular expression functionality.
 package regexp
 
 
@@ -6,9 +8,10 @@ package regexp
 //  match against text.
 //
 // ## Parameters
-// - `v` is the string value to parse into regular expression
+// - `v` is the string value to parse into regular expression.
 //
 // ## Example
+//
 // ```
 // import "regexp"
 //
@@ -17,6 +20,7 @@ package regexp
 // ```
 //
 // ## Use a string value as a regular expression
+//
 // ```
 // import "regexp"
 //
@@ -42,6 +46,7 @@ builtin compile : (v: string) => regexp
 //   to escape
 //
 // ## Example
+//
 // ```
 // import "regexp"
 //
@@ -50,6 +55,7 @@ builtin compile : (v: string) => regexp
 // ```
 //
 // ## Escape regular expression meta characters in column values
+//
 // ```
 // import "regexp"
 //
@@ -67,10 +73,11 @@ builtin quoteMeta : (v: string) => string
 //  match in a string.
 //
 // ## Parameters
-// - `r` is the regular expression used to search v
-// - `v` is the string value to search
+// - `r` is the regular expression used to search v.
+// - `v` is the string value to search.
 //
 // ## Example
+//
 // ```
 // import "regexp"
 //
@@ -79,6 +86,7 @@ builtin quoteMeta : (v: string) => string
 // ```
 //
 // ## Find the first regular expression match in each row
+//
 // ```
 // import "regexp"
 //
@@ -98,10 +106,11 @@ builtin findString : (r: regexp, v: string) => string
 //  expression match in a string.
 //
 // ## Parameters
-// - 'r' is the regular expression used to search v
-// - `v` is the string value to search
+// - 'r' is the regular expression used to search v.
+// - `v` is the string value to search.
 //
 // ## Example
+//
 // ```
 // import "regexp"
 //
@@ -110,6 +119,7 @@ builtin findString : (r: regexp, v: string) => string
 // ```
 //
 // ## Index the bounds of first regular expression match in each row
+//
 // ```
 // import "regexp"
 //
@@ -131,17 +141,20 @@ builtin findStringIndex : (r: regexp, v: string) => [int]
 //  match to a regular expression.
 //
 // ## Parameters
-// - `r` is the regular expression used to search v
-// - `v` is the string value to search
+// - `r` is the regular expression used to search v.
+// - `v` is the string value to search.
 //
 // ## Example
+//
 // ```
 // import "regexp"
 //
 // regexp.matchRegexpString(r: /(gopher){2}/, v: "gophergophergopher")
 // // Returns true
 // ```
+//
 // ## Filter by columns that contain matches to a regular expression
+//
 // ```
 // import "regexp"
 //
@@ -156,14 +169,15 @@ builtin findStringIndex : (r: regexp, v: string) => [int]
 builtin matchRegexpString : (r: regexp, v: string) => bool
 
 // replaceAllString is a function that replaces all reguar expression matches
-//  in a string with a specified replacement
+//  in a string with a specified replacement.
 //
 // ## Parameters
-// - `r` is the regular expression used to search v
-// - `v` is the string value to search
-// - `t` is the replacement for matches to r
+// - `r` is the regular expression used to search v.
+// - `v` is the string value to search.
+// - `t` is the replacement for matches to r.
 //
 // ## Example
+//
 // ```
 // import "regexp"
 //
@@ -172,6 +186,7 @@ builtin matchRegexpString : (r: regexp, v: string) => bool
 // ```
 //
 // ## Replace regular expression matches in string column values
+//
 // ```
 // import "regexp"
 //
@@ -193,13 +208,14 @@ builtin replaceAllString : (r: regexp, v: string, t: string) => string
 //  between matches.
 //
 // ## Parameters
-// - `r` is the regular expression used to search v
-// - `v` is the string value to be searched
-// - `i` is the maximum number of substrings to return
+// - `r` is the regular expression used to search v.
+// - `v` is the string value to be searched.
+// - `i` is the maximum number of substrings to return.
 //
-//   -1 returns all matching substrings
+//   -1 returns all matching substrings.
 //
 // ## Example
+//
 // ```
 // import "regexp"
 //
@@ -212,9 +228,10 @@ builtin splitRegexp : (r: regexp, v: string, i: int) => [string]
 //  a regular expression.
 //
 // ## Parameters
-// - `r` is the regular expression object to convert to a string
+// - `r` is the regular expression object to convert to a string.
 //
 // ## Example
+//
 // ```
 // import "regexp"
 //
@@ -223,6 +240,7 @@ builtin splitRegexp : (r: regexp, v: string, i: int) => [string]
 // ```
 //
 // ## Convert regular expressions into strings in each row
+//
 // ```
 // import "regexp"
 //

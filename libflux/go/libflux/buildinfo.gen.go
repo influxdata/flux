@@ -314,8 +314,12 @@ var sourceHashes = map[string]string{
 	"stdlib/regexp/regexp.flux":                                                     "4f077aa5ee105eb1167cdc3fe46ca4f13500cd22d712156e44b51598b6b7df9d",
 =======
 	"stdlib/pushbullet/pushbullet.flux":                                             "e6f04612918297feaacbfad2fdaf993c42d35c3e69803d04c63e348253510a84",
+<<<<<<< HEAD
 	"stdlib/regexp/regexp.flux":                                                     "3134a72334334727abde87594e26335fc7a1f7d9ca614c5cbf6185a462078cce",
 >>>>>>> ad00ffb9 (docs: added regexp docs)
+=======
+	"stdlib/regexp/regexp.flux":                                                     "e5caf06d2f2df570246e75080de1b774d872cbe1f1147d87495fd51bb9dc06fc",
+>>>>>>> d2f07b0c (docs: clean docs)
 	"stdlib/regexp/replaceAllString_test.flux":                                      "e1628e446aad247c1c8a2cfa353ddabdf7e2e8593e1889a689550d5e83e0fde7",
 	"stdlib/runtime/runtime.flux":                                                   "d9ad6c2327cf025de4ef46e5b2dbba596da9e5a90fb3d10a3f9cae254e4f0866",
 	"stdlib/slack/slack.flux":                                                       "c2a40f74a1b9d7843e927b24f02d3fc5acfa74ed80f999a61ffe51e110b79db3",
