@@ -2,7 +2,6 @@
 package strings
 
 
-// Transformation functions
 //
 // title converts a string to title case.
 //
