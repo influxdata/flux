@@ -12,6 +12,7 @@ package date
 //   relative to `now()`.
 //
 // ## Return the second of a time value
+//
 // ```
 // import "date"
 //
@@ -19,6 +20,7 @@ package date
 // ```
 //
 // ## Return the second of a relative duration
+//
 // ```
 // import "date"
 //
@@ -38,6 +40,7 @@ builtin second : (t: T) => int where T: Timeable
 //    relative to `now()`.
 //
 // ## Return the minute of a time value
+//
 // ```
 // import "date"
 //
@@ -45,6 +48,7 @@ builtin second : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the minute of a relative duration
+//
 // ```
 // import "date"
 //
@@ -64,6 +68,7 @@ builtin minute : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the hour of a time value
+//
 // ```
 // import "date"
 //
@@ -71,6 +76,7 @@ builtin minute : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the hour of a relative duration
+//
 // ```
 // import "date"
 //
@@ -90,6 +96,7 @@ builtin hour : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the day of the week for a time value
+//
 // ```
 // import "date"
 //
@@ -97,6 +104,7 @@ builtin hour : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the day of the week for a relative duration
+//
 // ```
 // import "date"
 //
@@ -116,6 +124,7 @@ builtin weekDay : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the day of the month for a time value
+//
 // ```
 // import "date"
 //
@@ -123,6 +132,7 @@ builtin weekDay : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the day of the month for a relative duration
+//
 // ```
 // import "date"
 //
@@ -142,6 +152,7 @@ builtin monthDay : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the day of the year for a time value
+//
 // ```
 // import "date"
 //
@@ -149,6 +160,7 @@ builtin monthDay : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the day of the year for a relative duration
+//
 // ```
 // import "date"
 //
@@ -168,6 +180,7 @@ builtin yearDay : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the month of a time value
+//
 // ```
 // import "date"
 //
@@ -175,6 +188,7 @@ builtin yearDay : (t: T) => int where T: Timeable
 // ```
 //
 // ## Retrun the month of a relative duration
+//
 // ```
 // import "date"
 //
@@ -184,7 +198,7 @@ builtin yearDay : (t: T) => int where T: Timeable
 // ```
 builtin month : (t: T) => int where T: Timeable
 
-// year is a function that returns the year of a specified time
+// year is a function that returns the year of a specified time.
 //
 // ## Parameters
 // - `t` is the time to operate on.
@@ -193,6 +207,7 @@ builtin month : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the year for a time value
+//
 // ```
 // import "date"
 //
@@ -200,6 +215,7 @@ builtin month : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the year for a relative duration
+//
 // ```
 // import "date"
 //
@@ -219,6 +235,7 @@ builtin year : (t: T) => int where T: Timeable
 //   relative to `now()`. 
 //
 // ## Return the week of the year
+//
 // ```
 // import "date"
 //
@@ -226,6 +243,7 @@ builtin year : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the week of the year using a relative duration
+//
 // ```
 // import "date"
 //
@@ -245,6 +263,7 @@ builtin week : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the quarter for a time value
+//
 // ```
 // import "date"
 //
@@ -252,6 +271,7 @@ builtin week : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the quarter for a relative duration
+//
 // ```
 // import "date"
 //
@@ -271,6 +291,7 @@ builtin quarter : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the millisecond of the time value
+//
 // ```
 // import "date"
 //
@@ -278,6 +299,7 @@ builtin quarter : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the millisecond of a relative duration
+//
 // ```
 // import "date"
 //
@@ -297,6 +319,7 @@ builtin millisecond : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the microsecond of a time value
+//
 // ```
 // import "date"
 //
@@ -304,6 +327,7 @@ builtin millisecond : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the microsecond of a relative duration
+//
 // ```
 // import "date"
 //
@@ -323,6 +347,7 @@ builtin microsecond : (t: T) => int where T: Timeable
 //   relative to `now()`.
 //
 // ## Return the nanosecond for a time value
+//
 // ```
 // import "date"
 //
@@ -330,6 +355,7 @@ builtin microsecond : (t: T) => int where T: Timeable
 // ```
 //
 // ## Return the nanosecond for a relative duration
+//
 // ```
 // import "date"
 //
@@ -353,6 +379,7 @@ builtin nanosecond : (t: T) => int where T: Timeable
 //   1s, 1m, 1h.
 //
 // ## Example
+//
 // ```
 // import "date"
 //
@@ -363,6 +390,7 @@ builtin nanosecond : (t: T) => int where T: Timeable
 // ```
 //
 // ## Truncate time values
+//
 // ```
 // import "date"
 //
@@ -377,6 +405,7 @@ builtin nanosecond : (t: T) => int where T: Timeable
 // ```
 //
 // ## Truncate time values using durations
+//
 // ```
 // import "date"
 //
