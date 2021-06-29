@@ -2,7 +2,6 @@
 package strings
 
 
-//
 // title converts a string to title case.
 //
 // ## Parameters
@@ -19,7 +18,6 @@ package strings
 //
 builtin title : (v: string) => string
 
-//
 // toUpper converts a string to uppercase.
 //
 // ## Parameters
@@ -46,7 +44,6 @@ builtin title : (v: string) => string
 //
 builtin toUpper : (v: string) => string
 
-//
 // toLower converts a string to lowercase.
 //
 // ## Parameters
@@ -67,7 +64,6 @@ builtin toUpper : (v: string) => string
 //
 builtin toLower : (v: string) => string
 
-//
 // trim removes leading and trailing characters specified in the cutset from a string.
 //
 // ## Parameters
@@ -91,7 +87,6 @@ builtin toLower : (v: string) => string
 //
 builtin trim : (v: string, cutset: string) => string
 
-//
 // trimPrefix removes a prefix from a string. Strings that do not start with the prefix are returned unchanged.
 //
 // ## Parameters
@@ -114,7 +109,6 @@ builtin trim : (v: string, cutset: string) => string
 //
 builtin trimPrefix : (v: string, prefix: string) => string
 
-//
 // trimSpace removes leading and trailing spaces from a string.
 //
 // ## Parameters
@@ -131,7 +125,6 @@ builtin trimPrefix : (v: string, prefix: string) => string
 // ```
 builtin trimSpace : (v: string) => string
 
-//
 // The trimSuffix removes a suffix from a string. Strings that do not end with the suffix are returned unchanged.
 //
 // ## Parameters
@@ -154,7 +147,6 @@ builtin trimSpace : (v: string) => string
 //
 builtin trimSuffix : (v: string, suffix: string) => string
 
-//
 // trimRight removes trailing characters specified in the cutset from a string.
 //
 // ## Parameters
@@ -179,7 +171,6 @@ builtin trimSuffix : (v: string, suffix: string) => string
 //
 builtin trimRight : (v: string, cutset: string) => string
 
-//
 // trimLeft removes specified leading characters from a string.
 //
 // ## Parameters
@@ -202,7 +193,6 @@ builtin trimRight : (v: string, cutset: string) => string
 //
 builtin trimLeft : (v: string, cutset: string) => string
 
-//
 // toTitle converts all characters in a string to title case.
 //
 // ## Parameters
@@ -220,7 +210,6 @@ builtin trimLeft : (v: string, cutset: string) => string
 //
 builtin toTitle : (v: string) => string
 
-//
 // hasPrefix indicates if a string begins with a specified prefix.
 //
 // ## Parameters
@@ -239,7 +228,6 @@ builtin toTitle : (v: string) => string
 //
 builtin hasPrefix : (v: string, prefix: string) => bool
 
-//
 // hasSuffix indicates if a string ends with a specified suffix.
 //
 // ## Parameters
@@ -258,7 +246,6 @@ builtin hasPrefix : (v: string, prefix: string) => bool
 //
 builtin hasSuffix : (v: string, suffix: string) => bool
 
-//
 // containsStr reports whether a string contains a specified substring.
 //
 // ## Parameters
@@ -281,7 +268,6 @@ builtin hasSuffix : (v: string, suffix: string) => bool
 //
 builtin containsStr : (v: string, substr: string) => bool
 
-//
 // containsAny reports whether a specified string contains characters from another string.
 //
 // ## Parameters
@@ -304,7 +290,6 @@ builtin containsStr : (v: string, substr: string) => bool
 //
 builtin containsAny : (v: string, chars: string) => bool
 
-//
 // equalFold reports whether two UTF-8 strings are equal under Unicode case-folding.
 //
 // ## Parameters
@@ -329,7 +314,6 @@ builtin containsAny : (v: string, chars: string) => bool
 //
 builtin equalFold : (v: string, t: string) => bool
 
-//
 // compare compares the lexicographical order of two strings.
 //
 //      Return values
@@ -358,7 +342,6 @@ builtin equalFold : (v: string, t: string) => bool
 //
 builtin compare : (v: string, t: string) => int
 
-//
 //countStr counts the number of non-overlapping instances of a substring appears in a string.
 //
 // ## Parameters
@@ -385,7 +368,6 @@ builtin compare : (v: string, t: string) => int
 //
 builtin countStr : (v: string, substr: string) => int
 
-//
 // index returns the index of the first instance of a substring in a string. If the substring is not present, it returns -1.
 //
 // ## Parameters
@@ -408,7 +390,6 @@ builtin countStr : (v: string, substr: string) => int
 //
 builtin index : (v: string, substr: string) => int
 
-//
 // indexAny returns the index of the first instance of specified characters in a string. If none of the specified characters are present, it returns -1.
 //
 // ## Parameters
@@ -431,7 +412,6 @@ builtin index : (v: string, substr: string) => int
 //
 builtin indexAny : (v: string, chars: string) => int
 
-//
 // lastIndex returns the index of the last instance of a substring in a string. If the substring is not present, the function returns -1.
 //
 // ## Parameters
@@ -454,7 +434,6 @@ builtin indexAny : (v: string, chars: string) => int
 //
 builtin lastIndex : (v: string, substr: string) => int
 
-//
 // lastIndexAny returns the index of the last instance of any specified characters in a string. If none of the specified characters are present, the function returns -1.
 //
 // ## Parameters
@@ -477,7 +456,6 @@ builtin lastIndex : (v: string, substr: string) => int
 //
 builtin lastIndexAny : (v: string, chars: string) => int
 
-//
 // isDigit tests if a single-character string is a digit (0-9).
 //
 // ## Parameters
@@ -495,7 +473,6 @@ builtin lastIndexAny : (v: string, chars: string) => int
 //
 builtin isDigit : (v: string) => bool
 
-//
 // isLetter tests if a single character string is a letter (a-z, A-Z).
 //
 // ## Parameters
@@ -513,7 +490,6 @@ builtin isDigit : (v: string) => bool
 //
 builtin isLetter : (v: string) => bool
 
-//
 // isLower tests if a single-character string is lowercase.
 //
 // ## Parameters
@@ -531,7 +507,6 @@ builtin isLetter : (v: string) => bool
 //
 builtin isLower : (v: string) => bool
 
-//
 // isUpper tests if a single character string is uppercase.
 //
 // ## Parameters
@@ -549,7 +524,6 @@ builtin isLower : (v: string) => bool
 //
 builtin isUpper : (v: string) => bool
 
-//
 // repeat returns a string consisting of i copies of a specified string.
 //
 // ## Parameters
@@ -573,7 +547,6 @@ builtin isUpper : (v: string) => bool
 //
 builtin repeat : (v: string, i: int) => string
 
-//
 // replace replaces the first i non-overlapping instances of a substring with a specified replacement.
 //
 // ## Parameters
@@ -598,7 +571,6 @@ builtin repeat : (v: string, i: int) => string
 //
 builtin replace : (v: string, t: string, u: string, i: int) => string
 
-//
 // replaceAll replaces all non-overlapping instances of a substring with a specified replacement.
 //
 // ## Parameters
@@ -622,7 +594,6 @@ builtin replace : (v: string, t: string, u: string, i: int) => string
 //
 builtin replaceAll : (v: string, t: string, u: string) => string
 
-//
 // split splits a string on a specified separator and returns an array of substrings.
 //
 // ## Parameters
@@ -641,7 +612,6 @@ builtin replaceAll : (v: string, t: string, u: string) => string
 //
 builtin split : (v: string, t: string) => [string]
 
-//
 // splitAfter splits a string after a specified separator and returns an array of substrings. Split substrings include the separator, t.
 //
 // ## Parameters
@@ -660,7 +630,6 @@ builtin split : (v: string, t: string) => [string]
 //
 builtin splitAfter : (v: string, t: string) => [string]
 
-//
 // splitN splits a string on a specified separator and returns an array of i substrings.
 //
 // ## Parameters
@@ -682,7 +651,6 @@ builtin splitAfter : (v: string, t: string) => [string]
 //
 builtin splitN : (v: string, t: string, n: int) => [string]
 
-//
 // splitAfterN splits a string after a specified separator and returns an array of i substrings. Split substrings include the separator t.
 //
 // ## Parameters
@@ -704,7 +672,6 @@ builtin splitN : (v: string, t: string, n: int) => [string]
 //
 builtin splitAfterN : (v: string, t: string, i: int) => [string]
 
-//
 // joinStr concatenates elements of a string array into a single string using a specified separator.
 //
 // ## Parameters
@@ -724,7 +691,6 @@ builtin splitAfterN : (v: string, t: string, i: int) => [string]
 //
 builtin joinStr : (arr: [string], v: string) => string
 
-//
 // strlen returns the length of a string. String length is determined by the number of UTF code points a string contains.
 //
 // ## Parameters
@@ -755,7 +721,6 @@ builtin joinStr : (arr: [string], v: string) => string
 //
 builtin strlen : (v: string) => int
 
-//
 // substring returns a substring based on start and end parameters. These parameters are represent indices of UTF code points in the string.
 //
 // ## Parameters
