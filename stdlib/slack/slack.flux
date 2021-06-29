@@ -1,13 +1,15 @@
+// The slack package provides functions for sending data to Slack. Import the slack package:
 package slack
 
-// The Flux Slack package provides functions for sending data to Slack. Import the slack package:
-//
-// builtin validateColorString : (color: string) => string
-//
-//
-// option defaultURL = "https://slack.com/api/chat.postMessage"
-//
-// The slack.message() function sends a single message to a Slack channel.
+
+import "http"
+import "json"
+
+builtin validateColorString : (color: string) => string
+
+option defaultURL = "https://slack.com/api/chat.postMessage"
+
+// message sends a single message to a Slack channel.
 // The function works with either with the chat.postMessage API or with a Slack webhook.
 //
 // ## Parameters
@@ -66,7 +68,30 @@ package slack
 // )
 // ```
 //
-// The slack.endpoint() function sends a message to Slack that includes output data.
+message = (
+        url=defaultURL,
+        token="",
+        channel,
+        text,
+        color,
+) => {
+    attachments = [
+        {color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]},
+    ]
+    data = {
+        channel: channel,
+        attachments: attachments,
+    }
+    headers = {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/json",
+    }
+    enc = json.encode(v: data)
+
+    return http.post(headers: headers, url: url, data: enc)
+}
+
+// endpoint sends a message to Slack that includes output data.
 //
 // ## Parameters
 //
@@ -97,3 +122,21 @@ package slack
 //    })
 //   )()
 // ```
+endpoint = (url=defaultURL, token="") => (mapFn) => (tables=<-) => tables
+    |> map(
+        fn: (r) => {
+            obj = mapFn(r: r)
+
+            return {r with
+                _sent: string(
+                    v: 2 == message(
+                        url: url,
+                        token: token,
+                        channel: obj.channel,
+                        text: obj.text,
+                        color: obj.color,
+                    ) / 100,
+                ),
+            }
+        },
+    )
