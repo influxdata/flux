@@ -1,9 +1,7 @@
+// The strings package provides functions to manipulate UTF-8 encoded strings.
 package strings
 
 
-// The Flux strings package provides functions to manipulate UTF-8 encoded strings.
-//
-//
 // Transformation functions:
 //
 builtin title : (v: string) => string
