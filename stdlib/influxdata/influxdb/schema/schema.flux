@@ -2,7 +2,7 @@
 package schema
 
 
-// fieldsAsCols() is a special application of the pivot() function that pivots
+// fieldsAsCols is a special application of the pivot() function that pivots
 // on _field and _time columns to aligns fields within each input table that have the same timestamp.
 //
 // ## Examples
@@ -19,7 +19,7 @@ package schema
 fieldsAsCols = (tables=<-) => tables
     |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 
-// tagValues() returns a list of unique values for a given tag. The return value is always a single table with a single column, _value.
+// tagValues returns a list of unique values for a given tag. The return value is always a single table with a single column, _value.
 //
 // ## Parameters
 // - `bucket` is the bucket to return unique tag values from.
@@ -47,7 +47,7 @@ tagValues = (bucket, tag, predicate=(r) => true, start=-30d) => from(bucket: buc
     |> group()
     |> distinct(column: tag)
 
-// tagKeys() returns a list of tag keys for all series that match the predicate. The return value is always a single table with a single column, _value.
+// tagKeys returns a list of tag keys for all series that match the predicate. The return value is always a single table with a single column, _value.
 //
 // ## Parameters
 // - `bucket` is the bucket to return tag keys from.
@@ -73,7 +73,7 @@ tagKeys = (bucket, predicate=(r) => true, start=-30d) => from(bucket: bucket)
     |> keep(columns: ["_value"])
     |> distinct()
 
-// measurementTagValues() returns a list of tag values for a specific measurement. The return value is always a single table with a single column, _value.
+// measurementTagValues returns a list of tag values for a specific measurement. The return value is always a single table with a single column, _value.
 //
 // ## Parameters
 // - `bucket` is the bucket to return tag values from for a specific measurement.
@@ -91,7 +91,7 @@ measurementTagValues = (bucket, measurement, tag) => tagValues(bucket: bucket, t
 //
 measurementTagKeys = (bucket, measurement) => tagKeys(bucket: bucket, predicate: (r) => r._measurement == measurement)
 
-// fieldKeys() returns field keys in a bucket. The return value is always a single table with a single column, _value.
+// fieldKeys returns field keys in a bucket. The return value is always a single table with a single column, _value.
 //
 // ## Parameters
 // - `bucket` is the bucket to list field keys from.
@@ -112,7 +112,7 @@ measurementTagKeys = (bucket, measurement) => tagKeys(bucket: bucket, predicate:
 //
 fieldKeys = (bucket, predicate=(r) => true, start=-30d) => tagValues(bucket: bucket, tag: "_field", predicate: predicate, start: start)
 
-// measurementFieldKeys() returns a list of fields in a measurement.
+// measurementFieldKeys returns a list of fields in a measurement.
 // The return value is always a single table with a single column, "_value".
 //
 // ## Parameters
@@ -135,7 +135,7 @@ fieldKeys = (bucket, predicate=(r) => true, start=-30d) => tagValues(bucket: buc
 //
 measurementFieldKeys = (bucket, measurement, start=-30d) => fieldKeys(bucket: bucket, predicate: (r) => r._measurement == measurement, start: start)
 
-// measurements() returns a list of measurements in a specific bucket.
+// measurements returns a list of measurements in a specific bucket.
 // The return value is always a single table with a single column, _value.
 //
 // ## Parameters
