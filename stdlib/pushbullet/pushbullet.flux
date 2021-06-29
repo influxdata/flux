@@ -1,7 +1,12 @@
-// package pushbullet
-//
-// The Flux Pushbullet package provides functions for sending data to Pushbullet.
-//
+// The Pushbullet package provides functions for sending data to Pushbullet.
+package pushbullet
+
+
+import "http"
+import "json"
+
+option defaultURL = "https://api.pushbullet.com/v2/pushes"
+
 // The pushbullet.pushData() function sends a push notification to the Pushbullet API.
 //
 // ## Parameters
@@ -38,6 +43,16 @@
 // )
 // ```
 //
+pushData = (url=defaultURL, token="", data) => {
+    headers = {
+        "Access-Token": token,
+        "Content-Type": "application/json",
+    }
+    enc = json.encode(v: data)
+
+    return http.post(headers: headers, url: url, data: enc)
+}
+
 // The pushbullet.pushNote() function sends a push notification of type note to the Pushbullet API.
 //
 // ## Parameters
@@ -72,7 +87,16 @@
 //   }
 // )
 // ```
-//
+pushNote = (url=defaultURL, token="", title, text) => {
+    data = {
+        type: "note",
+        title: title,
+        body: text,
+    }
+
+    return pushData(token: token, url: url, data: data)
+}
+
 // The pushbullet.endpoint() function creates the endpoint for the Pushbullet API and sends a notification of type note.
 //
 // ## Parameters
@@ -105,5 +129,20 @@
 //   )()
 // ```
 //
+endpoint = (url=defaultURL, token="") => (mapFn) => (tables=<-) => tables
+    |> map(
+        fn: (r) => {
+            obj = mapFn(r: r)
 
-
+            return {r with
+                _sent: string(
+                    v: 2 == pushNote(
+                        url: url,
+                        token: token,
+                        title: obj.title,
+                        text: obj.text,
+                    ) / 100,
+                ),
+            }
+        },
+    )
