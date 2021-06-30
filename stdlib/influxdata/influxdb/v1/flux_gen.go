@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 35,
-					Line:   238,
+					Line:   247,
 				},
 				File:   "v1.flux",
-				Source: "package v1\n\n\nimport \"influxdata/influxdb/schema\"\n\n// Json parses an InfluxDB 1.x json result into a table stream.\nbuiltin json : (?json: string, ?file: string) => [A] where A: Record\n\n// databases is a function that returns a list of a database in\n//  an InfluxDB 1.7+ instances.\n//\n// Output includes the following columns:\n// - databaseName: Database name (string)\n// - retentionPolicy: Retention policy name (string)\n// - retentionPeriod: Retention period in nanoseconds (integer)\n// - default: Default retention policy for database (boolean)\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.database()\n// ```\nbuiltin databases : (\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{\n    organizationID: string,\n    databaseName: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n    default: bool,\n    bucketID: string,\n}]\n\n// fieldsAsCols is a function that is a special application of the pivot()\n//  function that pivots on _field and _time columns to align fields within\n//  each input table that have the same timestamp, and ressemble InfluxDB 1.x\n//  query output.\n//\n// Deprecated: See influxdata/influxdata/schema.fieldsAsCols\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// from(bucket:\"example-bucket\")\n//   |> range(start: -1h)\n//   |> filter(fn: (r) => r._measurement == \"cpu\")\n//   |> v1.fieldsAsCols()\n//   |> keep(columns: [\"_time\", \"cpu\", \"usage_idle\", \"usage_user\"])\n// ```\nfieldsAsCols = schema.fieldsAsCols\n\n// tagValues is a function that returns a list of unique values for a\n//  given tag.\n//\n//  The return value is always a single table with a single column _value.\n//\n// Deprecated: See influxdata/influxdata/schema.tagValues\n//\n// ## Parameters\n// - `bucket` is the bucket to return unique tag values from\n// - `tag` is the tag to return unique values from\n// - `predicate` is the predecate function that filters tag values\n//\n//   Defaults to (r) => true.\n//\n// - `start` is the oldest time to include in results.\n//\n//   Defaults to -30d. Relative start times are defined using negative\n//   durations. Negative durations are relative to now. Absolute start\n//   times are defined using time values.\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.tagValues(\n//   bucket: \"my-bucket\",\n//   tag: \"host\",\n// )\n// ```\ntagValues = schema.tagValues\n\n// measurementTagValues is a function that returns a list of tag values for\n//  a specified measurement.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.measurementTagValues\n//\n// ## Parameters\n// - `bucket` is the bucket to return tag values from a specific measurement\n// - `measurement` is the measurement to return tag values from\n// - `tag` is the tag to return all unique values from\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.measurementTagValues(\n//   bucket: \"example-bucket\",\n//   measurement: \"cpu\",\n//   tag: \"host\"\n// )\n// ```\nmeasurementTagValues = schema.measurementTagValues\n\n// tagKeys is a function that returns a list of tag keys for all series that\n//  match the predicate.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.tagKeys\n//\n// ## Parameters\n// - `bucket` is the bucket to return tag keys from\n// - `predicate` is the predicate function that filters tag keys\n//\n//   Defaults to (r) => true.\n//\n// - `start` is the oldest time to include in the results\n//\n//   Defaults to -30d. Relative start times are defined using negative durations.\n//   Absolute start times are defined using time values.\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.tagKeys(\n//   bucket: \"example-bucket\",\n//   predicate: (r) => true,\n//   start: -30d\n// )\n// ```\ntagKeys = schema.tagKeys\n\n// measurementTagKeys is a function that returns a list of tag keys for a specific\n//  measurement.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.measurementTagKeys\n//\n// ## Parameters\n// - `bucket` is the bucket to return the tag keys from a specific measurement\n// - `measurement` is the measurement to return tag key from\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.measurementTagKeys(\n//   bucket: \"example-bucket\",\n//   measurement: \"cpu\"\n// )\n// ```\nmeasurementTagKeys = schema.measurementTagKeys\n\n// fieldKeys is the function the returns field keys in a bucket.\n//\n//  The return value is always a single table with a single\n//  column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.fieldKeys\n//\n// ## Parameters\n// - `bucket` is the bucket to list field keys from\n// - `predicate` is the predicate function that filters field keys.\n//\n//   Defaults to (r) => true\n//\n// - `start` is the oldest time to include in results\n//\n//   defaults to -30d. Relative start times are defined using negative\n//   durations are relative to now. Absolute start times are defined\n//   using time values.\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.fieldKeys(\n//   bucket: \"example-bucket\",\n//   predicate: (r) => true,\n//   start: -30d\n// )\n// ```\nfieldKeys = schema.fieldKeys\n\n// measurementFieldKeys is a function that returns a list of fields in a measurements.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.measurementFieldKeys\n//\n// ## Parameters\n// - `bucket` is the bucket to retrieve field keys from\n// - `measurement` is the measurement to list field keys from\n// - `start` is is the oldest time to include in results\n//\n//   Defaults to -30d. Relative start times are defined using negative durations. Negative\n//   durations are relative to now. Absolute start times are defined using time values.\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.measurementFieldKeys(\n//   bucket: \"example-bucket\",\n//   measurement: \"example-measurement\",\n//   start: -30d\n// )\n// ```\nmeasurementFieldKeys = schema.measurementFieldKeys\n\n// measurements is a function that returns a list of measurements in a specific bucket.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.measurements\n//\n// ## Parameters\n// - `bucket` is the bucket to recieves measurements from\n//\n// ## Example\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.measurements(bucket: \"example-bucket\")\n// ```\nmeasurements = schema.measurements",
+				Source: "package v1\n\n\nimport \"influxdata/influxdb/schema\"\n\n// Json parses an InfluxDB 1.x json result into a table stream.\nbuiltin json : (?json: string, ?file: string) => [A] where A: Record\n\n// databases is a function that returns a list of a database in\n//  an InfluxDB 1.7+ instances.\n//\n// Output includes the following columns:\n// - databaseName: Database name (string)\n// - retentionPolicy: Retention policy name (string)\n// - retentionPeriod: Retention period in nanoseconds (integer)\n// - default: Default retention policy for database (boolean)\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.database()\n// ```\nbuiltin databases : (\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{\n    organizationID: string,\n    databaseName: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n    default: bool,\n    bucketID: string,\n}]\n\n// fieldsAsCols is a function that is a special application of the pivot()\n//  function that pivots on _field and _time columns to align fields within\n//  each input table that have the same timestamp, and ressemble InfluxDB 1.x\n//  query output.\n//\n// Deprecated: See influxdata/influxdata/schema.fieldsAsCols.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// from(bucket:\"example-bucket\")\n//   |> range(start: -1h)\n//   |> filter(fn: (r) => r._measurement == \"cpu\")\n//   |> v1.fieldsAsCols()\n//   |> keep(columns: [\"_time\", \"cpu\", \"usage_idle\", \"usage_user\"])\n// ```\nfieldsAsCols = schema.fieldsAsCols\n\n// tagValues is a function that returns a list of unique values for a\n//  given tag.\n//\n//  The return value is always a single table with a single column _value.\n//\n// Deprecated: See influxdata/influxdata/schema.tagValues.\n//\n// ## Parameters\n// - `bucket` is the bucket to return unique tag values from.\n// - `tag` is the tag to return unique values from.\n// - `predicate` is the predecate function that filters tag values.\n//\n//   Defaults to (r) => true.\n//\n// - `start` is the oldest time to include in results.\n//\n//   Defaults to -30d. Relative start times are defined using negative\n//   durations. Negative durations are relative to now. Absolute start\n//   times are defined using time values.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.tagValues(\n//   bucket: \"my-bucket\",\n//   tag: \"host\",\n// )\n// ```\ntagValues = schema.tagValues\n\n// measurementTagValues is a function that returns a list of tag values for\n//  a specified measurement.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.measurementTagValues.\n//\n// ## Parameters\n// - `bucket` is the bucket to return tag values from a specific measurement.\n// - `measurement` is the measurement to return tag values from.\n// - `tag` is the tag to return all unique values from.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.measurementTagValues(\n//   bucket: \"example-bucket\",\n//   measurement: \"cpu\",\n//   tag: \"host\"\n// )\n// ```\nmeasurementTagValues = schema.measurementTagValues\n\n// tagKeys is a function that returns a list of tag keys for all series that\n//  match the predicate.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.tagKeys.\n//\n// ## Parameters\n// - `bucket` is the bucket to return tag keys from.\n// - `predicate` is the predicate function that filters tag keys.\n//\n//   Defaults to (r) => true.\n//\n// - `start` is the oldest time to include in the results.\n//\n//   Defaults to -30d. Relative start times are defined using negative durations.\n//   Absolute start times are defined using time values.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.tagKeys(\n//   bucket: \"example-bucket\",\n//   predicate: (r) => true,\n//   start: -30d\n// )\n// ```\ntagKeys = schema.tagKeys\n\n// measurementTagKeys is a function that returns a list of tag keys for a specific\n//  measurement.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.measurementTagKeys.\n//\n// ## Parameters\n// - `bucket` is the bucket to return the tag keys from a specific measurement.\n// - `measurement` is the measurement to return tag key from.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.measurementTagKeys(\n//   bucket: \"example-bucket\",\n//   measurement: \"cpu\"\n// )\n// ```\nmeasurementTagKeys = schema.measurementTagKeys\n\n// fieldKeys is the function the returns field keys in a bucket.\n//\n//  The return value is always a single table with a single\n//  column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.fieldKeys.\n//\n// ## Parameters\n// - `bucket` is the bucket to list field keys from.\n// - `predicate` is the predicate function that filters field keys.\n//\n//   Defaults to (r) => true.\n//\n// - `start` is the oldest time to include in results.\n//\n//   defaults to -30d. Relative start times are defined using negative\n//   durations are relative to now. Absolute start times are defined\n//   using time values.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.fieldKeys(\n//   bucket: \"example-bucket\",\n//   predicate: (r) => true,\n//   start: -30d\n// )\n// ```\nfieldKeys = schema.fieldKeys\n\n// measurementFieldKeys is a function that returns a list of fields in a measurements.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.measurementFieldKeys.\n//\n// ## Parameters\n// - `bucket` is the bucket to retrieve field keys from.\n// - `measurement` is the measurement to list field keys from.\n// - `start` is is the oldest time to include in results.\n//\n//   Defaults to -30d. Relative start times are defined using negative durations. Negative\n//   durations are relative to now. Absolute start times are defined using time values.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.measurementFieldKeys(\n//   bucket: \"example-bucket\",\n//   measurement: \"example-measurement\",\n//   start: -30d\n// )\n// ```\nmeasurementFieldKeys = schema.measurementFieldKeys\n\n// measurements is a function that returns a list of measurements in a specific bucket.\n//\n//  The return value is always a single table with a single column, _value.\n//\n// Deprecated: See influxdata/influxdata/schema.measurements.\n//\n// ## Parameters\n// - `bucket` is the bucket to recieves measurements from.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/v1\"\n//\n// v1.measurements(bucket: \"example-bucket\")\n// ```\nmeasurements = schema.measurements",
 				Start: ast.Position{
 					Column: 1,
 					Line:   3,
@@ -369,18 +369,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// databases is a function that returns a list of a database in\n"}, ast.Comment{Text: "//  an InfluxDB 1.7+ instances.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Output includes the following columns:\n"}, ast.Comment{Text: "// - databaseName: Database name (string)\n"}, ast.Comment{Text: "// - retentionPolicy: Retention policy name (string)\n"}, ast.Comment{Text: "// - retentionPeriod: Retention period in nanoseconds (integer)\n"}, ast.Comment{Text: "// - default: Default retention policy for database (boolean)\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.database()\n"}, ast.Comment{Text: "// ```\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// databases is a function that returns a list of a database in\n"}, ast.Comment{Text: "//  an InfluxDB 1.7+ instances.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Output includes the following columns:\n"}, ast.Comment{Text: "// - databaseName: Database name (string)\n"}, ast.Comment{Text: "// - retentionPolicy: Retention policy name (string)\n"}, ast.Comment{Text: "// - retentionPeriod: Retention period in nanoseconds (integer)\n"}, ast.Comment{Text: "// - default: Default retention policy for database (boolean)\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.database()\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "v1.flux",
 					Source: "builtin databases",
 					Start: ast.Position{
 						Column: 1,
-						Line:   26,
+						Line:   27,
 					},
 				},
 			},
@@ -392,13 +392,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "v1.flux",
 						Source: "databases",
 						Start: ast.Position{
 							Column: 9,
-							Line:   26,
+							Line:   27,
 						},
 					},
 				},
@@ -411,13 +411,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   38,
+							Line:   39,
 						},
 						File:   "v1.flux",
 						Source: "(\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{\n    organizationID: string,\n    databaseName: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n    default: bool,\n    bucketID: string,\n}]",
 						Start: ast.Position{
 							Column: 21,
-							Line:   26,
+							Line:   27,
 						},
 					},
 				},
@@ -429,13 +429,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   38,
+								Line:   39,
 							},
 							File:   "v1.flux",
 							Source: "(\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{\n    organizationID: string,\n    databaseName: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n    default: bool,\n    bucketID: string,\n}]",
 							Start: ast.Position{
 								Column: 21,
-								Line:   26,
+								Line:   27,
 							},
 						},
 					},
@@ -446,13 +446,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   27,
+									Line:   28,
 								},
 								File:   "v1.flux",
 								Source: "?org: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   27,
+									Line:   28,
 								},
 							},
 						},
@@ -464,13 +464,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   27,
+										Line:   28,
 									},
 									File:   "v1.flux",
 									Source: "org",
 									Start: ast.Position{
 										Column: 6,
-										Line:   27,
+										Line:   28,
 									},
 								},
 							},
@@ -483,13 +483,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 17,
-										Line:   27,
+										Line:   28,
 									},
 									File:   "v1.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 11,
-										Line:   27,
+										Line:   28,
 									},
 								},
 							},
@@ -500,13 +500,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 17,
-											Line:   27,
+											Line:   28,
 										},
 										File:   "v1.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 11,
-											Line:   27,
+											Line:   28,
 										},
 									},
 								},
@@ -520,13 +520,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   28,
+									Line:   29,
 								},
 								File:   "v1.flux",
 								Source: "?orgID: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   28,
+									Line:   29,
 								},
 							},
 						},
@@ -538,13 +538,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   28,
+										Line:   29,
 									},
 									File:   "v1.flux",
 									Source: "orgID",
 									Start: ast.Position{
 										Column: 6,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -557,13 +557,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   28,
+										Line:   29,
 									},
 									File:   "v1.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 13,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -574,13 +574,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   28,
+											Line:   29,
 										},
 										File:   "v1.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 13,
-											Line:   28,
+											Line:   29,
 										},
 									},
 								},
@@ -594,13 +594,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   29,
+									Line:   30,
 								},
 								File:   "v1.flux",
 								Source: "?host: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   29,
+									Line:   30,
 								},
 							},
 						},
@@ -612,13 +612,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   29,
+										Line:   30,
 									},
 									File:   "v1.flux",
 									Source: "host",
 									Start: ast.Position{
 										Column: 6,
-										Line:   29,
+										Line:   30,
 									},
 								},
 							},
@@ -631,13 +631,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   29,
+										Line:   30,
 									},
 									File:   "v1.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 12,
-										Line:   29,
+										Line:   30,
 									},
 								},
 							},
@@ -648,13 +648,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   29,
+											Line:   30,
 										},
 										File:   "v1.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 12,
-											Line:   29,
+											Line:   30,
 										},
 									},
 								},
@@ -668,13 +668,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   30,
+									Line:   31,
 								},
 								File:   "v1.flux",
 								Source: "?token: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   30,
+									Line:   31,
 								},
 							},
 						},
@@ -686,13 +686,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   30,
+										Line:   31,
 									},
 									File:   "v1.flux",
 									Source: "token",
 									Start: ast.Position{
 										Column: 6,
-										Line:   30,
+										Line:   31,
 									},
 								},
 							},
@@ -705,13 +705,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   30,
+										Line:   31,
 									},
 									File:   "v1.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 13,
-										Line:   30,
+										Line:   31,
 									},
 								},
 							},
@@ -722,13 +722,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   30,
+											Line:   31,
 										},
 										File:   "v1.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 13,
-											Line:   30,
+											Line:   31,
 										},
 									},
 								},
@@ -743,13 +743,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   38,
+									Line:   39,
 								},
 								File:   "v1.flux",
 								Source: "[{\n    organizationID: string,\n    databaseName: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n    default: bool,\n    bucketID: string,\n}]",
 								Start: ast.Position{
 									Column: 6,
-									Line:   31,
+									Line:   32,
 								},
 							},
 						},
@@ -760,13 +760,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   38,
+										Line:   39,
 									},
 									File:   "v1.flux",
 									Source: "{\n    organizationID: string,\n    databaseName: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n    default: bool,\n    bucketID: string,\n}",
 									Start: ast.Position{
 										Column: 7,
-										Line:   31,
+										Line:   32,
 									},
 								},
 							},
@@ -777,13 +777,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   32,
+											Line:   33,
 										},
 										File:   "v1.flux",
 										Source: "organizationID: string",
 										Start: ast.Position{
 											Column: 5,
-											Line:   32,
+											Line:   33,
 										},
 									},
 								},
@@ -794,13 +794,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   32,
+												Line:   33,
 											},
 											File:   "v1.flux",
 											Source: "organizationID",
 											Start: ast.Position{
 												Column: 5,
-												Line:   32,
+												Line:   33,
 											},
 										},
 									},
@@ -813,13 +813,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   32,
+												Line:   33,
 											},
 											File:   "v1.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 21,
-												Line:   32,
+												Line:   33,
 											},
 										},
 									},
@@ -830,13 +830,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
-													Line:   32,
+													Line:   33,
 												},
 												File:   "v1.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 21,
-													Line:   32,
+													Line:   33,
 												},
 											},
 										},
@@ -850,13 +850,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   33,
+											Line:   34,
 										},
 										File:   "v1.flux",
 										Source: "databaseName: string",
 										Start: ast.Position{
 											Column: 5,
-											Line:   33,
+											Line:   34,
 										},
 									},
 								},
@@ -867,13 +867,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   33,
+												Line:   34,
 											},
 											File:   "v1.flux",
 											Source: "databaseName",
 											Start: ast.Position{
 												Column: 5,
-												Line:   33,
+												Line:   34,
 											},
 										},
 									},
@@ -886,13 +886,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   33,
+												Line:   34,
 											},
 											File:   "v1.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 19,
-												Line:   33,
+												Line:   34,
 											},
 										},
 									},
@@ -903,13 +903,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   33,
+													Line:   34,
 												},
 												File:   "v1.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 19,
-													Line:   33,
+													Line:   34,
 												},
 											},
 										},
@@ -923,13 +923,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   34,
+											Line:   35,
 										},
 										File:   "v1.flux",
 										Source: "retentionPolicy: string",
 										Start: ast.Position{
 											Column: 5,
-											Line:   34,
+											Line:   35,
 										},
 									},
 								},
@@ -940,13 +940,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   34,
+												Line:   35,
 											},
 											File:   "v1.flux",
 											Source: "retentionPolicy",
 											Start: ast.Position{
 												Column: 5,
-												Line:   34,
+												Line:   35,
 											},
 										},
 									},
@@ -959,13 +959,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   34,
+												Line:   35,
 											},
 											File:   "v1.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 22,
-												Line:   34,
+												Line:   35,
 											},
 										},
 									},
@@ -976,13 +976,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   34,
+													Line:   35,
 												},
 												File:   "v1.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 22,
-													Line:   34,
+													Line:   35,
 												},
 											},
 										},
@@ -996,13 +996,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   35,
+											Line:   36,
 										},
 										File:   "v1.flux",
 										Source: "retentionPeriod: int",
 										Start: ast.Position{
 											Column: 5,
-											Line:   35,
+											Line:   36,
 										},
 									},
 								},
@@ -1013,13 +1013,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   35,
+												Line:   36,
 											},
 											File:   "v1.flux",
 											Source: "retentionPeriod",
 											Start: ast.Position{
 												Column: 5,
-												Line:   35,
+												Line:   36,
 											},
 										},
 									},
@@ -1032,13 +1032,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   35,
+												Line:   36,
 											},
 											File:   "v1.flux",
 											Source: "int",
 											Start: ast.Position{
 												Column: 22,
-												Line:   35,
+												Line:   36,
 											},
 										},
 									},
@@ -1049,13 +1049,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   35,
+													Line:   36,
 												},
 												File:   "v1.flux",
 												Source: "int",
 												Start: ast.Position{
 													Column: 22,
-													Line:   35,
+													Line:   36,
 												},
 											},
 										},
@@ -1069,13 +1069,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   36,
+											Line:   37,
 										},
 										File:   "v1.flux",
 										Source: "default: bool",
 										Start: ast.Position{
 											Column: 5,
-											Line:   36,
+											Line:   37,
 										},
 									},
 								},
@@ -1086,13 +1086,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   36,
+												Line:   37,
 											},
 											File:   "v1.flux",
 											Source: "default",
 											Start: ast.Position{
 												Column: 5,
-												Line:   36,
+												Line:   37,
 											},
 										},
 									},
@@ -1105,13 +1105,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   36,
+												Line:   37,
 											},
 											File:   "v1.flux",
 											Source: "bool",
 											Start: ast.Position{
 												Column: 14,
-												Line:   36,
+												Line:   37,
 											},
 										},
 									},
@@ -1122,13 +1122,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   36,
+													Line:   37,
 												},
 												File:   "v1.flux",
 												Source: "bool",
 												Start: ast.Position{
 													Column: 14,
-													Line:   36,
+													Line:   37,
 												},
 											},
 										},
@@ -1142,13 +1142,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   37,
+											Line:   38,
 										},
 										File:   "v1.flux",
 										Source: "bucketID: string",
 										Start: ast.Position{
 											Column: 5,
-											Line:   37,
+											Line:   38,
 										},
 									},
 								},
@@ -1159,13 +1159,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   37,
+												Line:   38,
 											},
 											File:   "v1.flux",
 											Source: "bucketID",
 											Start: ast.Position{
 												Column: 5,
-												Line:   37,
+												Line:   38,
 											},
 										},
 									},
@@ -1178,13 +1178,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   37,
+												Line:   38,
 											},
 											File:   "v1.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 15,
-												Line:   37,
+												Line:   38,
 											},
 										},
 									},
@@ -1195,13 +1195,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   37,
+													Line:   38,
 												},
 												File:   "v1.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 15,
-													Line:   37,
+													Line:   38,
 												},
 											},
 										},
@@ -1221,30 +1221,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   57,
+						Line:   59,
 					},
 					File:   "v1.flux",
 					Source: "fieldsAsCols = schema.fieldsAsCols",
 					Start: ast.Position{
 						Column: 1,
-						Line:   57,
+						Line:   59,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// fieldsAsCols is a function that is a special application of the pivot()\n"}, ast.Comment{Text: "//  function that pivots on _field and _time columns to align fields within\n"}, ast.Comment{Text: "//  each input table that have the same timestamp, and ressemble InfluxDB 1.x\n"}, ast.Comment{Text: "//  query output.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.fieldsAsCols\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// from(bucket:\"example-bucket\")\n"}, ast.Comment{Text: "//   |> range(start: -1h)\n"}, ast.Comment{Text: "//   |> filter(fn: (r) => r._measurement == \"cpu\")\n"}, ast.Comment{Text: "//   |> v1.fieldsAsCols()\n"}, ast.Comment{Text: "//   |> keep(columns: [\"_time\", \"cpu\", \"usage_idle\", \"usage_user\"])\n"}, ast.Comment{Text: "// ```\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// fieldsAsCols is a function that is a special application of the pivot()\n"}, ast.Comment{Text: "//  function that pivots on _field and _time columns to align fields within\n"}, ast.Comment{Text: "//  each input table that have the same timestamp, and ressemble InfluxDB 1.x\n"}, ast.Comment{Text: "//  query output.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.fieldsAsCols.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// from(bucket:\"example-bucket\")\n"}, ast.Comment{Text: "//   |> range(start: -1h)\n"}, ast.Comment{Text: "//   |> filter(fn: (r) => r._measurement == \"cpu\")\n"}, ast.Comment{Text: "//   |> v1.fieldsAsCols()\n"}, ast.Comment{Text: "//   |> keep(columns: [\"_time\", \"cpu\", \"usage_idle\", \"usage_user\"])\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   57,
+							Line:   59,
 						},
 						File:   "v1.flux",
 						Source: "fieldsAsCols",
 						Start: ast.Position{
 							Column: 1,
-							Line:   57,
+							Line:   59,
 						},
 					},
 				},
@@ -1257,13 +1257,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   57,
+							Line:   59,
 						},
 						File:   "v1.flux",
 						Source: "schema.fieldsAsCols",
 						Start: ast.Position{
 							Column: 16,
-							Line:   57,
+							Line:   59,
 						},
 					},
 				},
@@ -1275,13 +1275,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   57,
+								Line:   59,
 							},
 							File:   "v1.flux",
 							Source: "schema",
 							Start: ast.Position{
 								Column: 16,
-								Line:   57,
+								Line:   59,
 							},
 						},
 					},
@@ -1294,13 +1294,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   57,
+								Line:   59,
 							},
 							File:   "v1.flux",
 							Source: "fieldsAsCols",
 							Start: ast.Position{
 								Column: 23,
-								Line:   57,
+								Line:   59,
 							},
 						},
 					},
@@ -1315,30 +1315,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 29,
-						Line:   88,
+						Line:   91,
 					},
 					File:   "v1.flux",
 					Source: "tagValues = schema.tagValues",
 					Start: ast.Position{
 						Column: 1,
-						Line:   88,
+						Line:   91,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// tagValues is a function that returns a list of unique values for a\n"}, ast.Comment{Text: "//  given tag.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.tagValues\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to return unique tag values from\n"}, ast.Comment{Text: "// - `tag` is the tag to return unique values from\n"}, ast.Comment{Text: "// - `predicate` is the predecate function that filters tag values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to (r) => true.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `start` is the oldest time to include in results.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to -30d. Relative start times are defined using negative\n"}, ast.Comment{Text: "//   durations. Negative durations are relative to now. Absolute start\n"}, ast.Comment{Text: "//   times are defined using time values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.tagValues(\n"}, ast.Comment{Text: "//   bucket: \"my-bucket\",\n"}, ast.Comment{Text: "//   tag: \"host\",\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// tagValues is a function that returns a list of unique values for a\n"}, ast.Comment{Text: "//  given tag.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.tagValues.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to return unique tag values from.\n"}, ast.Comment{Text: "// - `tag` is the tag to return unique values from.\n"}, ast.Comment{Text: "// - `predicate` is the predecate function that filters tag values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to (r) => true.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `start` is the oldest time to include in results.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to -30d. Relative start times are defined using negative\n"}, ast.Comment{Text: "//   durations. Negative durations are relative to now. Absolute start\n"}, ast.Comment{Text: "//   times are defined using time values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.tagValues(\n"}, ast.Comment{Text: "//   bucket: \"my-bucket\",\n"}, ast.Comment{Text: "//   tag: \"host\",\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   88,
+							Line:   91,
 						},
 						File:   "v1.flux",
 						Source: "tagValues",
 						Start: ast.Position{
 							Column: 1,
-							Line:   88,
+							Line:   91,
 						},
 					},
 				},
@@ -1351,13 +1351,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 29,
-							Line:   88,
+							Line:   91,
 						},
 						File:   "v1.flux",
 						Source: "schema.tagValues",
 						Start: ast.Position{
 							Column: 13,
-							Line:   88,
+							Line:   91,
 						},
 					},
 				},
@@ -1369,13 +1369,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   88,
+								Line:   91,
 							},
 							File:   "v1.flux",
 							Source: "schema",
 							Start: ast.Position{
 								Column: 13,
-								Line:   88,
+								Line:   91,
 							},
 						},
 					},
@@ -1388,13 +1388,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   88,
+								Line:   91,
 							},
 							File:   "v1.flux",
 							Source: "tagValues",
 							Start: ast.Position{
 								Column: 20,
-								Line:   88,
+								Line:   91,
 							},
 						},
 					},
@@ -1409,30 +1409,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 51,
-						Line:   112,
+						Line:   116,
 					},
 					File:   "v1.flux",
 					Source: "measurementTagValues = schema.measurementTagValues",
 					Start: ast.Position{
 						Column: 1,
-						Line:   112,
+						Line:   116,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// measurementTagValues is a function that returns a list of tag values for\n"}, ast.Comment{Text: "//  a specified measurement.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.measurementTagValues\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to return tag values from a specific measurement\n"}, ast.Comment{Text: "// - `measurement` is the measurement to return tag values from\n"}, ast.Comment{Text: "// - `tag` is the tag to return all unique values from\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.measurementTagValues(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   measurement: \"cpu\",\n"}, ast.Comment{Text: "//   tag: \"host\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// measurementTagValues is a function that returns a list of tag values for\n"}, ast.Comment{Text: "//  a specified measurement.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.measurementTagValues.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to return tag values from a specific measurement.\n"}, ast.Comment{Text: "// - `measurement` is the measurement to return tag values from.\n"}, ast.Comment{Text: "// - `tag` is the tag to return all unique values from.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.measurementTagValues(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   measurement: \"cpu\",\n"}, ast.Comment{Text: "//   tag: \"host\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   112,
+							Line:   116,
 						},
 						File:   "v1.flux",
 						Source: "measurementTagValues",
 						Start: ast.Position{
 							Column: 1,
-							Line:   112,
+							Line:   116,
 						},
 					},
 				},
@@ -1445,13 +1445,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   112,
+							Line:   116,
 						},
 						File:   "v1.flux",
 						Source: "schema.measurementTagValues",
 						Start: ast.Position{
 							Column: 24,
-							Line:   112,
+							Line:   116,
 						},
 					},
 				},
@@ -1463,13 +1463,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   112,
+								Line:   116,
 							},
 							File:   "v1.flux",
 							Source: "schema",
 							Start: ast.Position{
 								Column: 24,
-								Line:   112,
+								Line:   116,
 							},
 						},
 					},
@@ -1482,13 +1482,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   112,
+								Line:   116,
 							},
 							File:   "v1.flux",
 							Source: "measurementTagValues",
 							Start: ast.Position{
 								Column: 31,
-								Line:   112,
+								Line:   116,
 							},
 						},
 					},
@@ -1503,30 +1503,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   142,
+						Line:   147,
 					},
 					File:   "v1.flux",
 					Source: "tagKeys = schema.tagKeys",
 					Start: ast.Position{
 						Column: 1,
-						Line:   142,
+						Line:   147,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// tagKeys is a function that returns a list of tag keys for all series that\n"}, ast.Comment{Text: "//  match the predicate.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.tagKeys\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to return tag keys from\n"}, ast.Comment{Text: "// - `predicate` is the predicate function that filters tag keys\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to (r) => true.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `start` is the oldest time to include in the results\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to -30d. Relative start times are defined using negative durations.\n"}, ast.Comment{Text: "//   Absolute start times are defined using time values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.tagKeys(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   predicate: (r) => true,\n"}, ast.Comment{Text: "//   start: -30d\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// tagKeys is a function that returns a list of tag keys for all series that\n"}, ast.Comment{Text: "//  match the predicate.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.tagKeys.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to return tag keys from.\n"}, ast.Comment{Text: "// - `predicate` is the predicate function that filters tag keys.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to (r) => true.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `start` is the oldest time to include in the results.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to -30d. Relative start times are defined using negative durations.\n"}, ast.Comment{Text: "//   Absolute start times are defined using time values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.tagKeys(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   predicate: (r) => true,\n"}, ast.Comment{Text: "//   start: -30d\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   142,
+							Line:   147,
 						},
 						File:   "v1.flux",
 						Source: "tagKeys",
 						Start: ast.Position{
 							Column: 1,
-							Line:   142,
+							Line:   147,
 						},
 					},
 				},
@@ -1539,13 +1539,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   142,
+							Line:   147,
 						},
 						File:   "v1.flux",
 						Source: "schema.tagKeys",
 						Start: ast.Position{
 							Column: 11,
-							Line:   142,
+							Line:   147,
 						},
 					},
 				},
@@ -1557,13 +1557,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   142,
+								Line:   147,
 							},
 							File:   "v1.flux",
 							Source: "schema",
 							Start: ast.Position{
 								Column: 11,
-								Line:   142,
+								Line:   147,
 							},
 						},
 					},
@@ -1576,13 +1576,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   142,
+								Line:   147,
 							},
 							File:   "v1.flux",
 							Source: "tagKeys",
 							Start: ast.Position{
 								Column: 18,
-								Line:   142,
+								Line:   147,
 							},
 						},
 					},
@@ -1597,30 +1597,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 47,
-						Line:   164,
+						Line:   170,
 					},
 					File:   "v1.flux",
 					Source: "measurementTagKeys = schema.measurementTagKeys",
 					Start: ast.Position{
 						Column: 1,
-						Line:   164,
+						Line:   170,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// measurementTagKeys is a function that returns a list of tag keys for a specific\n"}, ast.Comment{Text: "//  measurement.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.measurementTagKeys\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to return the tag keys from a specific measurement\n"}, ast.Comment{Text: "// - `measurement` is the measurement to return tag key from\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.measurementTagKeys(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   measurement: \"cpu\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// measurementTagKeys is a function that returns a list of tag keys for a specific\n"}, ast.Comment{Text: "//  measurement.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.measurementTagKeys.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to return the tag keys from a specific measurement.\n"}, ast.Comment{Text: "// - `measurement` is the measurement to return tag key from.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.measurementTagKeys(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   measurement: \"cpu\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   164,
+							Line:   170,
 						},
 						File:   "v1.flux",
 						Source: "measurementTagKeys",
 						Start: ast.Position{
 							Column: 1,
-							Line:   164,
+							Line:   170,
 						},
 					},
 				},
@@ -1633,13 +1633,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 47,
-							Line:   164,
+							Line:   170,
 						},
 						File:   "v1.flux",
 						Source: "schema.measurementTagKeys",
 						Start: ast.Position{
 							Column: 22,
-							Line:   164,
+							Line:   170,
 						},
 					},
 				},
@@ -1651,13 +1651,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
-								Line:   164,
+								Line:   170,
 							},
 							File:   "v1.flux",
 							Source: "schema",
 							Start: ast.Position{
 								Column: 22,
-								Line:   164,
+								Line:   170,
 							},
 						},
 					},
@@ -1670,13 +1670,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 47,
-								Line:   164,
+								Line:   170,
 							},
 							File:   "v1.flux",
 							Source: "measurementTagKeys",
 							Start: ast.Position{
 								Column: 29,
-								Line:   164,
+								Line:   170,
 							},
 						},
 					},
@@ -1691,30 +1691,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 29,
-						Line:   195,
+						Line:   202,
 					},
 					File:   "v1.flux",
 					Source: "fieldKeys = schema.fieldKeys",
 					Start: ast.Position{
 						Column: 1,
-						Line:   195,
+						Line:   202,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// fieldKeys is the function the returns field keys in a bucket.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single\n"}, ast.Comment{Text: "//  column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.fieldKeys\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to list field keys from\n"}, ast.Comment{Text: "// - `predicate` is the predicate function that filters field keys.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to (r) => true\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `start` is the oldest time to include in results\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   defaults to -30d. Relative start times are defined using negative\n"}, ast.Comment{Text: "//   durations are relative to now. Absolute start times are defined\n"}, ast.Comment{Text: "//   using time values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.fieldKeys(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   predicate: (r) => true,\n"}, ast.Comment{Text: "//   start: -30d\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// fieldKeys is the function the returns field keys in a bucket.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single\n"}, ast.Comment{Text: "//  column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.fieldKeys.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to list field keys from.\n"}, ast.Comment{Text: "// - `predicate` is the predicate function that filters field keys.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to (r) => true.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `start` is the oldest time to include in results.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   defaults to -30d. Relative start times are defined using negative\n"}, ast.Comment{Text: "//   durations are relative to now. Absolute start times are defined\n"}, ast.Comment{Text: "//   using time values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.fieldKeys(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   predicate: (r) => true,\n"}, ast.Comment{Text: "//   start: -30d\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   195,
+							Line:   202,
 						},
 						File:   "v1.flux",
 						Source: "fieldKeys",
 						Start: ast.Position{
 							Column: 1,
-							Line:   195,
+							Line:   202,
 						},
 					},
 				},
@@ -1727,13 +1727,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 29,
-							Line:   195,
+							Line:   202,
 						},
 						File:   "v1.flux",
 						Source: "schema.fieldKeys",
 						Start: ast.Position{
 							Column: 13,
-							Line:   195,
+							Line:   202,
 						},
 					},
 				},
@@ -1745,13 +1745,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   195,
+								Line:   202,
 							},
 							File:   "v1.flux",
 							Source: "schema",
 							Start: ast.Position{
 								Column: 13,
-								Line:   195,
+								Line:   202,
 							},
 						},
 					},
@@ -1764,13 +1764,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   195,
+								Line:   202,
 							},
 							File:   "v1.flux",
 							Source: "fieldKeys",
 							Start: ast.Position{
 								Column: 20,
-								Line:   195,
+								Line:   202,
 							},
 						},
 					},
@@ -1785,30 +1785,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 51,
-						Line:   221,
+						Line:   229,
 					},
 					File:   "v1.flux",
 					Source: "measurementFieldKeys = schema.measurementFieldKeys",
 					Start: ast.Position{
 						Column: 1,
-						Line:   221,
+						Line:   229,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// measurementFieldKeys is a function that returns a list of fields in a measurements.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.measurementFieldKeys\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to retrieve field keys from\n"}, ast.Comment{Text: "// - `measurement` is the measurement to list field keys from\n"}, ast.Comment{Text: "// - `start` is is the oldest time to include in results\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to -30d. Relative start times are defined using negative durations. Negative\n"}, ast.Comment{Text: "//   durations are relative to now. Absolute start times are defined using time values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.measurementFieldKeys(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   measurement: \"example-measurement\",\n"}, ast.Comment{Text: "//   start: -30d\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// measurementFieldKeys is a function that returns a list of fields in a measurements.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.measurementFieldKeys.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to retrieve field keys from.\n"}, ast.Comment{Text: "// - `measurement` is the measurement to list field keys from.\n"}, ast.Comment{Text: "// - `start` is is the oldest time to include in results.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   Defaults to -30d. Relative start times are defined using negative durations. Negative\n"}, ast.Comment{Text: "//   durations are relative to now. Absolute start times are defined using time values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.measurementFieldKeys(\n"}, ast.Comment{Text: "//   bucket: \"example-bucket\",\n"}, ast.Comment{Text: "//   measurement: \"example-measurement\",\n"}, ast.Comment{Text: "//   start: -30d\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   221,
+							Line:   229,
 						},
 						File:   "v1.flux",
 						Source: "measurementFieldKeys",
 						Start: ast.Position{
 							Column: 1,
-							Line:   221,
+							Line:   229,
 						},
 					},
 				},
@@ -1821,13 +1821,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   221,
+							Line:   229,
 						},
 						File:   "v1.flux",
 						Source: "schema.measurementFieldKeys",
 						Start: ast.Position{
 							Column: 24,
-							Line:   221,
+							Line:   229,
 						},
 					},
 				},
@@ -1839,13 +1839,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   221,
+								Line:   229,
 							},
 							File:   "v1.flux",
 							Source: "schema",
 							Start: ast.Position{
 								Column: 24,
-								Line:   221,
+								Line:   229,
 							},
 						},
 					},
@@ -1858,13 +1858,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   221,
+								Line:   229,
 							},
 							File:   "v1.flux",
 							Source: "measurementFieldKeys",
 							Start: ast.Position{
 								Column: 31,
-								Line:   221,
+								Line:   229,
 							},
 						},
 					},
@@ -1879,30 +1879,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   238,
+						Line:   247,
 					},
 					File:   "v1.flux",
 					Source: "measurements = schema.measurements",
 					Start: ast.Position{
 						Column: 1,
-						Line:   238,
+						Line:   247,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// measurements is a function that returns a list of measurements in a specific bucket.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.measurements\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to recieves measurements from\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.measurements(bucket: \"example-bucket\")\n"}, ast.Comment{Text: "// ```\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// measurements is a function that returns a list of measurements in a specific bucket.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  The return value is always a single table with a single column, _value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Deprecated: See influxdata/influxdata/schema.measurements.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `bucket` is the bucket to recieves measurements from.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/v1\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// v1.measurements(bucket: \"example-bucket\")\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   238,
+							Line:   247,
 						},
 						File:   "v1.flux",
 						Source: "measurements",
 						Start: ast.Position{
 							Column: 1,
-							Line:   238,
+							Line:   247,
 						},
 					},
 				},
@@ -1915,13 +1915,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   238,
+							Line:   247,
 						},
 						File:   "v1.flux",
 						Source: "schema.measurements",
 						Start: ast.Position{
 							Column: 16,
-							Line:   238,
+							Line:   247,
 						},
 					},
 				},
@@ -1933,13 +1933,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   238,
+								Line:   247,
 							},
 							File:   "v1.flux",
 							Source: "schema",
 							Start: ast.Position{
 								Column: 16,
-								Line:   238,
+								Line:   247,
 							},
 						},
 					},
@@ -1952,13 +1952,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   238,
+								Line:   247,
 							},
 							File:   "v1.flux",
 							Source: "measurements",
 							Start: ast.Position{
 								Column: 23,
-								Line:   238,
+								Line:   247,
 							},
 						},
 					},
@@ -2010,7 +2010,7 @@ var pkgAST = &ast.Package{
 		Name:     "v1.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// V1 provides an API for working with an InfluxDB 1 instance\n"}, ast.Comment{Text: "// >NOTE: Must functions in this package are now deprecated see influxdata/influxdb/schema.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Flux V1 provides an API for working with an InfluxDB v1.x instance.\n"}, ast.Comment{Text: "// >NOTE: Must functions in this package are now deprecated see influxdata/influxdb/schema.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
