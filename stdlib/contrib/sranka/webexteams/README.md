@@ -32,7 +32,7 @@ Basic Example:
 
 ## webexteams.endpoint 
 
-`endpoint` function creates a factory function that accepts a mapping function `mapFn` and creates a target function for pipeline `|>` that sends messages from table rows. The `mapFn` accepts a table row and returns an object with `roomId`, `personId`, `text` and `markdown` properties as defined in the `webexteams.message` function arguments. Arguments:
+`endpoint` function creates a factory function that accepts a mapping function `mapFn` and creates a target function for pipeline `|>` that sends messages from table rows. The `mapFn` accepts a table row and returns an object with `roomId`, `text` and `markdown` properties as defined in the `webexteams.message` function arguments. Arguments:
 
 | Name     | Type   | Description                                                       |
 | ----     | ----   | -----------                                                       |
@@ -55,7 +55,6 @@ Basic Example:
       |> tableFind(fn: (key) => true)
       |> webexteams.endpoint(token: token)(mapFn: (r) => ({
               roomId: "Y2lzY2.....",
-              personId: "",
               text: "",
               markdown: "Great Scott! Disk usage is: **${r.status}**.", 
             })
