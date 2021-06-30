@@ -1,4 +1,4 @@
-// The influxdb package provides functions for analyzing InfluxDB metadata.
+// Package influxdb provides functions for analyzing InfluxDB metadata.
 package influxdb
 
 

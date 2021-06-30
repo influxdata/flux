@@ -4286,7 +4286,7 @@ var pkgAST = &ast.Package{
 		Name:     "influxdb.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// The influxdb package provides functions for analyzing InfluxDB metadata.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package influxdb provides functions for analyzing InfluxDB metadata.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

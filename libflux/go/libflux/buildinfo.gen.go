@@ -217,7 +217,7 @@ var sourceHashes = map[string]string{
 	"stdlib/http/http.flux":                                                         "79c3ed2a2de753cda156fab13fc5b89fd7a725a3914c4a0fb441964bac63abef",
 	"stdlib/http/http_endpoint_test.flux":                                           "4c7b8c80e3ecc0143c0bd3b554470c5c0d47b7109dfc5eb6d699872c0293c428",
 	"stdlib/http/http_path_encode_endpoint_test.flux":                               "c1586a07e9ef4d57a50b688d8fb07909493e798be2b5124a3a20d659fbcf607a",
-	"stdlib/influxdata/influxdb/influxdb.flux":                                      "bab5f1f34fed4b20229c7efa1f9f8da12fce95370626c5afe558b54c38837bd8",
+	"stdlib/influxdata/influxdb/influxdb.flux":                                      "493a34ea763fd889decb08537736be69bcf19457c50500a805e6b6c4aab99c33",
 	"stdlib/influxdata/influxdb/monitor/check_test.flux":                            "a63adf3ed9a5e3e8ad83b4478e8a39d31f2bbaf5005ea0bbb84b301aa1325950",
 	"stdlib/influxdata/influxdb/monitor/deadman_add_test.flux":                      "dab8f711f5673ec836e6b0bfb451500998d4a963e1e066c4c5a937eb7897d20e",
 	"stdlib/influxdata/influxdb/monitor/deadman_sub_test.flux":                      "68a38adc0989b573656ec4dce762181b127d65c8b150d22b0683ac01bc5cad7c",
