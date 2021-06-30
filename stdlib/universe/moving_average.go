@@ -313,6 +313,7 @@ func (t *movingAverageTransformation) doNumeric(vs *moving_average.ArrayContaine
 		} else {
 			t.window[bj][int64(t.i[bj])%t.n] = nil
 		}
+		t.i[bj]++
 
 		if int64(t.i[bj]) == t.n && !t.periodReached[bj] {
 			t.periodReached[bj] = true
@@ -330,13 +331,11 @@ func (t *movingAverageTransformation) doNumeric(vs *moving_average.ArrayContaine
 			}
 		}
 
-		next := t.window[bj][int64(t.i[bj]+1)%t.n]
+		next := t.window[bj][int64(t.i[bj])%t.n]
 		if next != nil {
 			*sum -= next.(float64)
 			t.count[bj]--
 		}
-
-		t.i[bj]++
 	}
 
 	return nil
