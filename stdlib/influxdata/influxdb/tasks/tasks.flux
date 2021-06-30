@@ -24,6 +24,7 @@ builtin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timea
 //   successfully run.
 //
 // ## Example
+//
 // ```
 // import "influxdata/influxdb/tasks"
 //
@@ -31,6 +32,7 @@ builtin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timea
 // ```
 //
 // ## Query data since the last successful task run
+//
 // ```
 // import "influxdata/influxdb/tasks"
 //
