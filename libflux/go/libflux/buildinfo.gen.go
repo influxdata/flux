@@ -433,7 +433,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/difference_one_value_test.flux":                                "6f5f880761c17009657bac235a0d42ae16042d4013a5a8043186a04cbc910920",
 	"stdlib/universe/difference_panic_test.flux":                                    "630c44cab83bfec0911844816f90bd944c70de52f24b9841faf200864f568be0",
 	"stdlib/universe/difference_test.flux":                                          "badb73954fe9832ced4ed474322671e38a8c6e9f17e750f78ec23d5dd6c3303d",
-	"stdlib/universe/distinct_test.flux":                                            "d3feb392b0734e1edf42b815e8177b4a864cac0a5bdef35cb29881cff40ec3c4",
+	"stdlib/universe/distinct_test.flux":                                            "e784b93ba8e702e828dcd0bb5c4047d0c5147c2557f2221a6d98e0411ebaf75e",
 	"stdlib/universe/double_exponential_moving_average_test.flux":                   "01f4a233dff2148bc8e0b431299b89bac3fa219581e8946c772808568509fbc5",
 	"stdlib/universe/drop_after_rename_test.flux":                                   "d1d9fb2ab9bfc51eed0010ca229f10456e82cbf1a170d5658f854c1dbe94b89e",
 	"stdlib/universe/drop_before_rename_test.flux":                                  "a5d5d645effa9754566eaf1c49adb652fe7df9a3dd143c737290bb9ad03e473b",

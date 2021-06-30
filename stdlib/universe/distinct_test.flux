@@ -30,7 +30,6 @@ testcase normal {
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 ",
     )
-        |> testing.load()
         |> t_distinct()
 
     want = csv.from(
@@ -73,7 +72,6 @@ testcase nulls {
 ,,1,2018-05-22T19:54:16Z,,io_time,diskio,host.local,disk2
 ",
     )
-        |> testing.load()
         |> t_distinct()
 
     want = csv.from(
