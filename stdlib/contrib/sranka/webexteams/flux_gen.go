@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 6,
-					Line:   61,
+					Line:   58,
 				},
 				File:   "webexteams.flux",
-				Source: "package webexteams\n\n\nimport \"http\"\nimport \"json\"\n\n\n\n// `message` sends a single message to Webex Teams as described in [Webex Message API](https://developer.webex.com/docs/api/v1/messages/create-a-message). \n// `url` - string - base URL of Webex API endpoint without a trailing slash, \"https://webexapis.com\" by default.\n// `token` - string - [Webex API access token](https://developer.webex.com/docs/api/getting-started).\n// `roomId` - string - The room ID of the message, required.\n// `text` - string - the message, in plain text.\n// `markdown` - string - the message, in markdown format as explained in https://developer.webex.com/docs/api/basics\nmessage = (\n        url = \"https://webexapis.com\",\n        token,\n        roomId,\n        text,\n        markdown,\n) => {\n    data = {\n        text: text,\n        markdown: markdown,\n        roomId: roomId,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Bearer \" + token,\n    }\n\n    content = json.encode(v: data)\n    return http.post(headers: headers, url: url + \"/v1/messages\", data: content)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send message to Webex teams for each table row.\n// `url` - string - base URL of Webex API endpoint without a trailing slash, \"https://webexapis.com\" by default.\n// `token` - string - [Webex API access token](https://developer.webex.com/docs/api/getting-started).\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `roomId`, `text` and `markdown` properties  as defined in the `message` function arguments.\nendpoint = (\n        url = \"https://webexapis.com\",\n        token,\n) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package webexteams\n\nimport \"http\"\nimport \"json\"\n\n// `message` sends a single message to Webex Teams as described in [Webex Message API](https://developer.webex.com/docs/api/v1/messages/create-a-message). \n// `url` - string - base URL of Webex API endpoint without a trailing slash, \"https://webexapis.com\" by default.\n// `token` - string - [Webex API access token](https://developer.webex.com/docs/api/getting-started).\n// `roomId` - string - The room ID of the message, required.\n// `text` - string - the message, in plain text.\n// `markdown` - string - the message, in markdown format as explained in https://developer.webex.com/docs/api/basics\nmessage = (\n        url = \"https://webexapis.com\",\n        token,\n        roomId,\n        text,\n        markdown,\n) => {\n    data = {\n        text: text,\n        markdown: markdown,\n        roomId: roomId,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Bearer \" + token,\n    }\n\n    content = json.encode(v: data)\n    return http.post(headers: headers, url: url + \"/v1/messages\", data: content)\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send message to Webex teams for each table row.\n// `url` - string - base URL of Webex API endpoint without a trailing slash, \"https://webexapis.com\" by default.\n// `token` - string - [Webex API access token](https://developer.webex.com/docs/api/getting-started).\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `roomId`, `text` and `markdown` properties  as defined in the `message` function arguments.\nendpoint = (\n        url = \"https://webexapis.com\",\n        token,\n) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   34,
+						Line:   31,
 					},
 					File:   "webexteams.flux",
 					Source: "message = (\n        url = \"https://webexapis.com\",\n        token,\n        roomId,\n        text,\n        markdown,\n) => {\n    data = {\n        text: text,\n        markdown: markdown,\n        roomId: roomId,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Bearer \" + token,\n    }\n\n    content = json.encode(v: data)\n    return http.post(headers: headers, url: url + \"/v1/messages\", data: content)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   12,
 					},
 				},
 			},
@@ -58,13 +58,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   15,
+							Line:   12,
 						},
 						File:   "webexteams.flux",
 						Source: "message",
 						Start: ast.Position{
 							Column: 1,
-							Line:   15,
+							Line:   12,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   34,
+							Line:   31,
 						},
 						File:   "webexteams.flux",
 						Source: "(\n        url = \"https://webexapis.com\",\n        token,\n        roomId,\n        text,\n        markdown,\n) => {\n    data = {\n        text: text,\n        markdown: markdown,\n        roomId: roomId,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Bearer \" + token,\n    }\n\n    content = json.encode(v: data)\n    return http.post(headers: headers, url: url + \"/v1/messages\", data: content)\n}",
 						Start: ast.Position{
 							Column: 11,
-							Line:   15,
+							Line:   12,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   34,
+								Line:   31,
 							},
 							File:   "webexteams.flux",
 							Source: "{\n    data = {\n        text: text,\n        markdown: markdown,\n        roomId: roomId,\n    }\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Bearer \" + token,\n    }\n\n    content = json.encode(v: data)\n    return http.post(headers: headers, url: url + \"/v1/messages\", data: content)\n}",
 							Start: ast.Position{
 								Column: 6,
-								Line:   21,
+								Line:   18,
 							},
 						},
 					},
@@ -112,13 +112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   26,
+									Line:   23,
 								},
 								File:   "webexteams.flux",
 								Source: "data = {\n        text: text,\n        markdown: markdown,\n        roomId: roomId,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   22,
+									Line:   19,
 								},
 							},
 						},
@@ -129,13 +129,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   22,
+										Line:   19,
 									},
 									File:   "webexteams.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 5,
-										Line:   22,
+										Line:   19,
 									},
 								},
 							},
@@ -148,13 +148,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   26,
+										Line:   23,
 									},
 									File:   "webexteams.flux",
 									Source: "{\n        text: text,\n        markdown: markdown,\n        roomId: roomId,\n    }",
 									Start: ast.Position{
 										Column: 12,
-										Line:   22,
+										Line:   19,
 									},
 								},
 							},
@@ -166,13 +166,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   23,
+											Line:   20,
 										},
 										File:   "webexteams.flux",
 										Source: "text: text",
 										Start: ast.Position{
 											Column: 9,
-											Line:   23,
+											Line:   20,
 										},
 									},
 								},
@@ -184,13 +184,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   23,
+												Line:   20,
 											},
 											File:   "webexteams.flux",
 											Source: "text",
 											Start: ast.Position{
 												Column: 9,
-												Line:   23,
+												Line:   20,
 											},
 										},
 									},
@@ -204,13 +204,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   23,
+												Line:   20,
 											},
 											File:   "webexteams.flux",
 											Source: "text",
 											Start: ast.Position{
 												Column: 15,
-												Line:   23,
+												Line:   20,
 											},
 										},
 									},
@@ -223,13 +223,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   24,
+											Line:   21,
 										},
 										File:   "webexteams.flux",
 										Source: "markdown: markdown",
 										Start: ast.Position{
 											Column: 9,
-											Line:   24,
+											Line:   21,
 										},
 									},
 								},
@@ -241,13 +241,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   24,
+												Line:   21,
 											},
 											File:   "webexteams.flux",
 											Source: "markdown",
 											Start: ast.Position{
 												Column: 9,
-												Line:   24,
+												Line:   21,
 											},
 										},
 									},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   24,
+												Line:   21,
 											},
 											File:   "webexteams.flux",
 											Source: "markdown",
 											Start: ast.Position{
 												Column: 19,
-												Line:   24,
+												Line:   21,
 											},
 										},
 									},
@@ -280,13 +280,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   25,
+											Line:   22,
 										},
 										File:   "webexteams.flux",
 										Source: "roomId: roomId",
 										Start: ast.Position{
 											Column: 9,
-											Line:   25,
+											Line:   22,
 										},
 									},
 								},
@@ -298,13 +298,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   25,
+												Line:   22,
 											},
 											File:   "webexteams.flux",
 											Source: "roomId",
 											Start: ast.Position{
 												Column: 9,
-												Line:   25,
+												Line:   22,
 											},
 										},
 									},
@@ -318,13 +318,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   25,
+												Line:   22,
 											},
 											File:   "webexteams.flux",
 											Source: "roomId",
 											Start: ast.Position{
 												Column: 17,
-												Line:   25,
+												Line:   22,
 											},
 										},
 									},
@@ -341,13 +341,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   30,
+									Line:   27,
 								},
 								File:   "webexteams.flux",
 								Source: "headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Bearer \" + token,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   27,
+									Line:   24,
 								},
 							},
 						},
@@ -358,13 +358,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   27,
+										Line:   24,
 									},
 									File:   "webexteams.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   27,
+										Line:   24,
 									},
 								},
 							},
@@ -377,13 +377,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   30,
+										Line:   27,
 									},
 									File:   "webexteams.flux",
 									Source: "{\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"Bearer \" + token,\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   27,
+										Line:   24,
 									},
 								},
 							},
@@ -395,13 +395,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   28,
+											Line:   25,
 										},
 										File:   "webexteams.flux",
 										Source: "\"Content-Type\": \"application/json; charset=utf-8\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   28,
+											Line:   25,
 										},
 									},
 								},
@@ -413,13 +413,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   28,
+												Line:   25,
 											},
 											File:   "webexteams.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   28,
+												Line:   25,
 											},
 										},
 									},
@@ -433,13 +433,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   28,
+												Line:   25,
 											},
 											File:   "webexteams.flux",
 											Source: "\"application/json; charset=utf-8\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   28,
+												Line:   25,
 											},
 										},
 									},
@@ -452,13 +452,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   29,
+											Line:   26,
 										},
 										File:   "webexteams.flux",
 										Source: "\"Authorization\": \"Bearer \" + token",
 										Start: ast.Position{
 											Column: 9,
-											Line:   29,
+											Line:   26,
 										},
 									},
 								},
@@ -470,13 +470,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   29,
+												Line:   26,
 											},
 											File:   "webexteams.flux",
 											Source: "\"Authorization\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   29,
+												Line:   26,
 											},
 										},
 									},
@@ -490,13 +490,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   29,
+												Line:   26,
 											},
 											File:   "webexteams.flux",
 											Source: "\"Bearer \" + token",
 											Start: ast.Position{
 												Column: 26,
-												Line:   29,
+												Line:   26,
 											},
 										},
 									},
@@ -507,13 +507,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
-													Line:   29,
+													Line:   26,
 												},
 												File:   "webexteams.flux",
 												Source: "\"Bearer \"",
 												Start: ast.Position{
 													Column: 26,
-													Line:   29,
+													Line:   26,
 												},
 											},
 										},
@@ -527,13 +527,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   29,
+													Line:   26,
 												},
 												File:   "webexteams.flux",
 												Source: "token",
 												Start: ast.Position{
 													Column: 38,
-													Line:   29,
+													Line:   26,
 												},
 											},
 										},
@@ -551,13 +551,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   32,
+									Line:   29,
 								},
 								File:   "webexteams.flux",
 								Source: "content = json.encode(v: data)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   32,
+									Line:   29,
 								},
 							},
 						},
@@ -568,13 +568,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   32,
+										Line:   29,
 									},
 									File:   "webexteams.flux",
 									Source: "content",
 									Start: ast.Position{
 										Column: 5,
-										Line:   32,
+										Line:   29,
 									},
 								},
 							},
@@ -588,13 +588,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   32,
+											Line:   29,
 										},
 										File:   "webexteams.flux",
 										Source: "v: data",
 										Start: ast.Position{
 											Column: 27,
-											Line:   32,
+											Line:   29,
 										},
 									},
 								},
@@ -606,13 +606,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   32,
+												Line:   29,
 											},
 											File:   "webexteams.flux",
 											Source: "v: data",
 											Start: ast.Position{
 												Column: 27,
-												Line:   32,
+												Line:   29,
 											},
 										},
 									},
@@ -624,13 +624,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   32,
+													Line:   29,
 												},
 												File:   "webexteams.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 27,
-													Line:   32,
+													Line:   29,
 												},
 											},
 										},
@@ -644,13 +644,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   32,
+													Line:   29,
 												},
 												File:   "webexteams.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 30,
-													Line:   32,
+													Line:   29,
 												},
 											},
 										},
@@ -666,13 +666,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   32,
+										Line:   29,
 									},
 									File:   "webexteams.flux",
 									Source: "json.encode(v: data)",
 									Start: ast.Position{
 										Column: 15,
-										Line:   32,
+										Line:   29,
 									},
 								},
 							},
@@ -683,13 +683,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   32,
+											Line:   29,
 										},
 										File:   "webexteams.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 15,
-											Line:   32,
+											Line:   29,
 										},
 									},
 								},
@@ -701,13 +701,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   32,
+												Line:   29,
 											},
 											File:   "webexteams.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 15,
-												Line:   32,
+												Line:   29,
 											},
 										},
 									},
@@ -720,13 +720,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   32,
+												Line:   29,
 											},
 											File:   "webexteams.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 20,
-												Line:   32,
+												Line:   29,
 											},
 										},
 									},
@@ -746,13 +746,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
-											Line:   33,
+											Line:   30,
 										},
 										File:   "webexteams.flux",
 										Source: "headers: headers, url: url + \"/v1/messages\", data: content",
 										Start: ast.Position{
 											Column: 22,
-											Line:   33,
+											Line:   30,
 										},
 									},
 								},
@@ -764,13 +764,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   33,
+												Line:   30,
 											},
 											File:   "webexteams.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   33,
+												Line:   30,
 											},
 										},
 									},
@@ -782,13 +782,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   33,
+													Line:   30,
 												},
 												File:   "webexteams.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   33,
+													Line:   30,
 												},
 											},
 										},
@@ -802,13 +802,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   33,
+													Line:   30,
 												},
 												File:   "webexteams.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   33,
+													Line:   30,
 												},
 											},
 										},
@@ -821,13 +821,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 65,
-												Line:   33,
+												Line:   30,
 											},
 											File:   "webexteams.flux",
 											Source: "url: url + \"/v1/messages\"",
 											Start: ast.Position{
 												Column: 40,
-												Line:   33,
+												Line:   30,
 											},
 										},
 									},
@@ -839,13 +839,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   33,
+													Line:   30,
 												},
 												File:   "webexteams.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   33,
+													Line:   30,
 												},
 											},
 										},
@@ -859,13 +859,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   33,
+													Line:   30,
 												},
 												File:   "webexteams.flux",
 												Source: "url + \"/v1/messages\"",
 												Start: ast.Position{
 													Column: 45,
-													Line:   33,
+													Line:   30,
 												},
 											},
 										},
@@ -876,13 +876,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
-														Line:   33,
+														Line:   30,
 													},
 													File:   "webexteams.flux",
 													Source: "url",
 													Start: ast.Position{
 														Column: 45,
-														Line:   33,
+														Line:   30,
 													},
 												},
 											},
@@ -896,13 +896,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 65,
-														Line:   33,
+														Line:   30,
 													},
 													File:   "webexteams.flux",
 													Source: "\"/v1/messages\"",
 													Start: ast.Position{
 														Column: 51,
-														Line:   33,
+														Line:   30,
 													},
 												},
 											},
@@ -916,13 +916,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 80,
-												Line:   33,
+												Line:   30,
 											},
 											File:   "webexteams.flux",
 											Source: "data: content",
 											Start: ast.Position{
 												Column: 67,
-												Line:   33,
+												Line:   30,
 											},
 										},
 									},
@@ -934,13 +934,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 71,
-													Line:   33,
+													Line:   30,
 												},
 												File:   "webexteams.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 67,
-													Line:   33,
+													Line:   30,
 												},
 											},
 										},
@@ -954,13 +954,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
-													Line:   33,
+													Line:   30,
 												},
 												File:   "webexteams.flux",
 												Source: "content",
 												Start: ast.Position{
 													Column: 73,
-													Line:   33,
+													Line:   30,
 												},
 											},
 										},
@@ -976,13 +976,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 81,
-										Line:   33,
+										Line:   30,
 									},
 									File:   "webexteams.flux",
 									Source: "http.post(headers: headers, url: url + \"/v1/messages\", data: content)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   33,
+										Line:   30,
 									},
 								},
 							},
@@ -993,13 +993,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   33,
+											Line:   30,
 										},
 										File:   "webexteams.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   33,
+											Line:   30,
 										},
 									},
 								},
@@ -1011,13 +1011,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   33,
+												Line:   30,
 											},
 											File:   "webexteams.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   33,
+												Line:   30,
 											},
 										},
 									},
@@ -1030,13 +1030,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   33,
+												Line:   30,
 											},
 											File:   "webexteams.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   33,
+												Line:   30,
 											},
 										},
 									},
@@ -1053,13 +1053,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 81,
-									Line:   33,
+									Line:   30,
 								},
 								File:   "webexteams.flux",
 								Source: "return http.post(headers: headers, url: url + \"/v1/messages\", data: content)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   33,
+									Line:   30,
 								},
 							},
 						},
@@ -1075,13 +1075,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   16,
+								Line:   13,
 							},
 							File:   "webexteams.flux",
 							Source: "url = \"https://webexapis.com\"",
 							Start: ast.Position{
 								Column: 9,
-								Line:   16,
+								Line:   13,
 							},
 						},
 					},
@@ -1093,13 +1093,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   16,
+									Line:   13,
 								},
 								File:   "webexteams.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 9,
-									Line:   16,
+									Line:   13,
 								},
 							},
 						},
@@ -1113,13 +1113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   16,
+									Line:   13,
 								},
 								File:   "webexteams.flux",
 								Source: "\"https://webexapis.com\"",
 								Start: ast.Position{
 									Column: 15,
-									Line:   16,
+									Line:   13,
 								},
 							},
 						},
@@ -1132,13 +1132,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   17,
+								Line:   14,
 							},
 							File:   "webexteams.flux",
 							Source: "token",
 							Start: ast.Position{
 								Column: 9,
-								Line:   17,
+								Line:   14,
 							},
 						},
 					},
@@ -1150,13 +1150,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   17,
+									Line:   14,
 								},
 								File:   "webexteams.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 9,
-									Line:   17,
+									Line:   14,
 								},
 							},
 						},
@@ -1171,13 +1171,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   18,
+								Line:   15,
 							},
 							File:   "webexteams.flux",
 							Source: "roomId",
 							Start: ast.Position{
 								Column: 9,
-								Line:   18,
+								Line:   15,
 							},
 						},
 					},
@@ -1189,13 +1189,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   18,
+									Line:   15,
 								},
 								File:   "webexteams.flux",
 								Source: "roomId",
 								Start: ast.Position{
 									Column: 9,
-									Line:   18,
+									Line:   15,
 								},
 							},
 						},
@@ -1210,13 +1210,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
-								Line:   19,
+								Line:   16,
 							},
 							File:   "webexteams.flux",
 							Source: "text",
 							Start: ast.Position{
 								Column: 9,
-								Line:   19,
+								Line:   16,
 							},
 						},
 					},
@@ -1228,13 +1228,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   19,
+									Line:   16,
 								},
 								File:   "webexteams.flux",
 								Source: "text",
 								Start: ast.Position{
 									Column: 9,
-									Line:   19,
+									Line:   16,
 								},
 							},
 						},
@@ -1249,13 +1249,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   20,
+								Line:   17,
 							},
 							File:   "webexteams.flux",
 							Source: "markdown",
 							Start: ast.Position{
 								Column: 9,
-								Line:   20,
+								Line:   17,
 							},
 						},
 					},
@@ -1267,13 +1267,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   20,
+									Line:   17,
 								},
 								File:   "webexteams.flux",
 								Source: "markdown",
 								Start: ast.Position{
 									Column: 9,
-									Line:   20,
+									Line:   17,
 								},
 							},
 						},
@@ -1291,13 +1291,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 6,
-						Line:   61,
+						Line:   58,
 					},
 					File:   "webexteams.flux",
 					Source: "endpoint = (\n        url = \"https://webexapis.com\",\n        token,\n) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   41,
+						Line:   38,
 					},
 				},
 			},
@@ -1308,13 +1308,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   41,
+							Line:   38,
 						},
 						File:   "webexteams.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   41,
+							Line:   38,
 						},
 					},
 				},
@@ -1328,13 +1328,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   61,
+							Line:   58,
 						},
 						File:   "webexteams.flux",
 						Source: "(\n        url = \"https://webexapis.com\",\n        token,\n) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   41,
+							Line:   38,
 						},
 					},
 				},
@@ -1346,13 +1346,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 6,
-								Line:   61,
+								Line:   58,
 							},
 							File:   "webexteams.flux",
 							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
 								Column: 6,
-								Line:   44,
+								Line:   41,
 							},
 						},
 					},
@@ -1364,13 +1364,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   61,
+									Line:   58,
 								},
 								File:   "webexteams.flux",
 								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
 									Column: 17,
-									Line:   44,
+									Line:   41,
 								},
 							},
 						},
@@ -1382,13 +1382,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 38,
-											Line:   44,
+											Line:   41,
 										},
 										File:   "webexteams.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 32,
-											Line:   44,
+											Line:   41,
 										},
 									},
 								},
@@ -1400,13 +1400,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   61,
+										Line:   58,
 									},
 									File:   "webexteams.flux",
 									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
 										Column: 32,
-										Line:   44,
+										Line:   41,
 									},
 								},
 							},
@@ -1418,13 +1418,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   60,
+												Line:   57,
 											},
 											File:   "webexteams.flux",
 											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
 												Column: 9,
-												Line:   46,
+												Line:   43,
 											},
 										},
 									},
@@ -1436,13 +1436,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   60,
+													Line:   57,
 												},
 												File:   "webexteams.flux",
 												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
 													Column: 9,
-													Line:   46,
+													Line:   43,
 												},
 											},
 										},
@@ -1454,13 +1454,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   46,
+														Line:   43,
 													},
 													File:   "webexteams.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 9,
-														Line:   46,
+														Line:   43,
 													},
 												},
 											},
@@ -1475,13 +1475,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 10,
-														Line:   60,
+														Line:   57,
 													},
 													File:   "webexteams.flux",
 													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
 														Column: 13,
-														Line:   46,
+														Line:   43,
 													},
 												},
 											},
@@ -1492,13 +1492,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 10,
-															Line:   60,
+															Line:   57,
 														},
 														File:   "webexteams.flux",
 														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
 															Column: 20,
-															Line:   46,
+															Line:   43,
 														},
 													},
 												},
@@ -1509,13 +1509,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   47,
+																Line:   44,
 															},
 															File:   "webexteams.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 13,
-																Line:   47,
+																Line:   44,
 															},
 														},
 													},
@@ -1526,13 +1526,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 16,
-																	Line:   47,
+																	Line:   44,
 																},
 																File:   "webexteams.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   47,
+																	Line:   44,
 																},
 															},
 														},
@@ -1546,13 +1546,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 29,
-																		Line:   47,
+																		Line:   44,
 																	},
 																	File:   "webexteams.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   47,
+																		Line:   44,
 																	},
 																},
 															},
@@ -1564,13 +1564,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 29,
-																			Line:   47,
+																			Line:   44,
 																		},
 																		File:   "webexteams.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 25,
-																			Line:   47,
+																			Line:   44,
 																		},
 																	},
 																},
@@ -1582,13 +1582,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 26,
-																				Line:   47,
+																				Line:   44,
 																			},
 																			File:   "webexteams.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 25,
-																				Line:   47,
+																				Line:   44,
 																			},
 																		},
 																	},
@@ -1602,13 +1602,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 29,
-																				Line:   47,
+																				Line:   44,
 																			},
 																			File:   "webexteams.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 28,
-																				Line:   47,
+																				Line:   44,
 																			},
 																		},
 																	},
@@ -1624,13 +1624,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   47,
+																	Line:   44,
 																},
 																File:   "webexteams.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   47,
+																	Line:   44,
 																},
 															},
 														},
@@ -1641,13 +1641,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 24,
-																		Line:   47,
+																		Line:   44,
 																	},
 																	File:   "webexteams.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 19,
-																		Line:   47,
+																		Line:   44,
 																	},
 																},
 															},
@@ -1664,13 +1664,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 14,
-																	Line:   59,
+																	Line:   56,
 																},
 																File:   "webexteams.flux",
 																Source: "{r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   49,
+																	Line:   46,
 																},
 															},
 														},
@@ -1682,13 +1682,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 18,
-																		Line:   58,
+																		Line:   55,
 																	},
 																	File:   "webexteams.flux",
 																	Source: "_sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                )",
 																	Start: ast.Position{
 																		Column: 17,
-																		Line:   50,
+																		Line:   47,
 																	},
 																},
 															},
@@ -1700,13 +1700,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 22,
-																			Line:   50,
+																			Line:   47,
 																		},
 																		File:   "webexteams.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 17,
-																			Line:   50,
+																			Line:   47,
 																		},
 																	},
 																},
@@ -1721,13 +1721,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 28,
-																				Line:   57,
+																				Line:   54,
 																			},
 																			File:   "webexteams.flux",
 																			Source: "v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100",
 																			Start: ast.Position{
 																				Column: 21,
-																				Line:   51,
+																				Line:   48,
 																			},
 																		},
 																	},
@@ -1739,13 +1739,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   57,
+																					Line:   54,
 																				},
 																				File:   "webexteams.flux",
 																				Source: "v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100",
 																				Start: ast.Position{
 																					Column: 21,
-																					Line:   51,
+																					Line:   48,
 																				},
 																			},
 																		},
@@ -1757,13 +1757,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 22,
-																						Line:   51,
+																						Line:   48,
 																					},
 																					File:   "webexteams.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   51,
+																						Line:   48,
 																					},
 																				},
 																			},
@@ -1777,13 +1777,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 28,
-																						Line:   57,
+																						Line:   54,
 																					},
 																					File:   "webexteams.flux",
 																					Source: "2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100",
 																					Start: ast.Position{
 																						Column: 24,
-																						Line:   51,
+																						Line:   48,
 																					},
 																				},
 																			},
@@ -1794,13 +1794,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 25,
-																							Line:   51,
+																							Line:   48,
 																						},
 																						File:   "webexteams.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 24,
-																							Line:   51,
+																							Line:   48,
 																						},
 																					},
 																				},
@@ -1814,13 +1814,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 28,
-																							Line:   57,
+																							Line:   54,
 																						},
 																						File:   "webexteams.flux",
 																						Source: "message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100",
 																						Start: ast.Position{
 																							Column: 29,
-																							Line:   51,
+																							Line:   48,
 																						},
 																					},
 																				},
@@ -1832,13 +1832,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 47,
-																									Line:   56,
+																									Line:   53,
 																								},
 																								File:   "webexteams.flux",
 																								Source: "url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown",
 																								Start: ast.Position{
 																									Column: 25,
-																									Line:   52,
+																									Line:   49,
 																								},
 																							},
 																						},
@@ -1850,13 +1850,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 33,
-																										Line:   52,
+																										Line:   49,
 																									},
 																									File:   "webexteams.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   52,
+																										Line:   49,
 																									},
 																								},
 																							},
@@ -1868,13 +1868,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 28,
-																											Line:   52,
+																											Line:   49,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   52,
+																											Line:   49,
 																										},
 																									},
 																								},
@@ -1888,13 +1888,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   52,
+																											Line:   49,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 30,
-																											Line:   52,
+																											Line:   49,
 																										},
 																									},
 																								},
@@ -1907,13 +1907,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 37,
-																										Line:   53,
+																										Line:   50,
 																									},
 																									File:   "webexteams.flux",
 																									Source: "token: token",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   53,
+																										Line:   50,
 																									},
 																								},
 																							},
@@ -1925,13 +1925,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 30,
-																											Line:   53,
+																											Line:   50,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   53,
+																											Line:   50,
 																										},
 																									},
 																								},
@@ -1945,13 +1945,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 37,
-																											Line:   53,
+																											Line:   50,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 32,
-																											Line:   53,
+																											Line:   50,
 																										},
 																									},
 																								},
@@ -1964,13 +1964,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 43,
-																										Line:   54,
+																										Line:   51,
 																									},
 																									File:   "webexteams.flux",
 																									Source: "roomId: obj.roomId",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   54,
+																										Line:   51,
 																									},
 																								},
 																							},
@@ -1982,13 +1982,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   54,
+																											Line:   51,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "roomId",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   54,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2002,13 +2002,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 43,
-																											Line:   54,
+																											Line:   51,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "obj.roomId",
 																										Start: ast.Position{
 																											Column: 33,
-																											Line:   54,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2020,13 +2020,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 36,
-																												Line:   54,
+																												Line:   51,
 																											},
 																											File:   "webexteams.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 33,
-																												Line:   54,
+																												Line:   51,
 																											},
 																										},
 																									},
@@ -2039,13 +2039,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 43,
-																												Line:   54,
+																												Line:   51,
 																											},
 																											File:   "webexteams.flux",
 																											Source: "roomId",
 																											Start: ast.Position{
 																												Column: 37,
-																												Line:   54,
+																												Line:   51,
 																											},
 																										},
 																									},
@@ -2060,13 +2060,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 39,
-																										Line:   55,
+																										Line:   52,
 																									},
 																									File:   "webexteams.flux",
 																									Source: "text: obj.text",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   55,
+																										Line:   52,
 																									},
 																								},
 																							},
@@ -2078,13 +2078,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   55,
+																											Line:   52,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "text",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   55,
+																											Line:   52,
 																										},
 																									},
 																								},
@@ -2098,13 +2098,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 39,
-																											Line:   55,
+																											Line:   52,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "obj.text",
 																										Start: ast.Position{
 																											Column: 31,
-																											Line:   55,
+																											Line:   52,
 																										},
 																									},
 																								},
@@ -2116,13 +2116,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 34,
-																												Line:   55,
+																												Line:   52,
 																											},
 																											File:   "webexteams.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 31,
-																												Line:   55,
+																												Line:   52,
 																											},
 																										},
 																									},
@@ -2135,13 +2135,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   55,
+																												Line:   52,
 																											},
 																											File:   "webexteams.flux",
 																											Source: "text",
 																											Start: ast.Position{
 																												Column: 35,
-																												Line:   55,
+																												Line:   52,
 																											},
 																										},
 																									},
@@ -2156,13 +2156,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 47,
-																										Line:   56,
+																										Line:   53,
 																									},
 																									File:   "webexteams.flux",
 																									Source: "markdown: obj.markdown",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   56,
+																										Line:   53,
 																									},
 																								},
 																							},
@@ -2174,13 +2174,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   56,
+																											Line:   53,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "markdown",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   56,
+																											Line:   53,
 																										},
 																									},
 																								},
@@ -2194,13 +2194,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 47,
-																											Line:   56,
+																											Line:   53,
 																										},
 																										File:   "webexteams.flux",
 																										Source: "obj.markdown",
 																										Start: ast.Position{
 																											Column: 35,
-																											Line:   56,
+																											Line:   53,
 																										},
 																									},
 																								},
@@ -2212,13 +2212,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 38,
-																												Line:   56,
+																												Line:   53,
 																											},
 																											File:   "webexteams.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 35,
-																												Line:   56,
+																												Line:   53,
 																											},
 																										},
 																									},
@@ -2231,13 +2231,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 47,
-																												Line:   56,
+																												Line:   53,
 																											},
 																											File:   "webexteams.flux",
 																											Source: "markdown",
 																											Start: ast.Position{
 																												Column: 39,
-																												Line:   56,
+																												Line:   53,
 																											},
 																										},
 																									},
@@ -2255,13 +2255,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 22,
-																								Line:   57,
+																								Line:   54,
 																							},
 																							File:   "webexteams.flux",
 																							Source: "message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    )",
 																							Start: ast.Position{
 																								Column: 29,
-																								Line:   51,
+																								Line:   48,
 																							},
 																						},
 																					},
@@ -2272,13 +2272,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 36,
-																									Line:   51,
+																									Line:   48,
 																								},
 																								File:   "webexteams.flux",
 																								Source: "message",
 																								Start: ast.Position{
 																									Column: 29,
-																									Line:   51,
+																									Line:   48,
 																								},
 																							},
 																						},
@@ -2295,13 +2295,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 28,
-																								Line:   57,
+																								Line:   54,
 																							},
 																							File:   "webexteams.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 25,
-																								Line:   57,
+																								Line:   54,
 																							},
 																						},
 																					},
@@ -2319,13 +2319,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   58,
+																			Line:   55,
 																		},
 																		File:   "webexteams.flux",
 																		Source: "string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                )",
 																		Start: ast.Position{
 																			Column: 24,
-																			Line:   50,
+																			Line:   47,
 																		},
 																	},
 																},
@@ -2336,13 +2336,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   50,
+																				Line:   47,
 																			},
 																			File:   "webexteams.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   50,
+																				Line:   47,
 																			},
 																		},
 																	},
@@ -2360,13 +2360,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 22,
-																		Line:   49,
+																		Line:   46,
 																	},
 																	File:   "webexteams.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 21,
-																		Line:   49,
+																		Line:   46,
 																	},
 																},
 															},
@@ -2379,13 +2379,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 14,
-																Line:   59,
+																Line:   56,
 															},
 															File:   "webexteams.flux",
 															Source: "return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
 																Column: 13,
-																Line:   49,
+																Line:   46,
 															},
 														},
 													},
@@ -2401,13 +2401,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   46,
+															Line:   43,
 														},
 														File:   "webexteams.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   46,
+															Line:   43,
 														},
 													},
 												},
@@ -2419,13 +2419,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   46,
+																Line:   43,
 															},
 															File:   "webexteams.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   46,
+																Line:   43,
 															},
 														},
 													},
@@ -2446,13 +2446,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   61,
+											Line:   58,
 										},
 										File:   "webexteams.flux",
 										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        token: token,\n                        roomId: obj.roomId,\n                        text: obj.text,\n                        markdown: obj.markdown,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   45,
+											Line:   42,
 										},
 									},
 								},
@@ -2463,13 +2463,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   45,
+												Line:   42,
 											},
 											File:   "webexteams.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   45,
+												Line:   42,
 											},
 										},
 									},
@@ -2487,13 +2487,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   44,
+										Line:   41,
 									},
 									File:   "webexteams.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 18,
-										Line:   44,
+										Line:   41,
 									},
 								},
 							},
@@ -2505,13 +2505,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   44,
+											Line:   41,
 										},
 										File:   "webexteams.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 18,
-											Line:   44,
+											Line:   41,
 										},
 									},
 								},
@@ -2524,13 +2524,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   44,
+										Line:   41,
 									},
 									File:   "webexteams.flux",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 25,
-										Line:   44,
+										Line:   41,
 									},
 								},
 							}},
@@ -2545,13 +2545,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   44,
+									Line:   41,
 								},
 								File:   "webexteams.flux",
 								Source: "mapFn",
 								Start: ast.Position{
 									Column: 7,
-									Line:   44,
+									Line:   41,
 								},
 							},
 						},
@@ -2563,13 +2563,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   44,
+										Line:   41,
 									},
 									File:   "webexteams.flux",
 									Source: "mapFn",
 									Start: ast.Position{
 										Column: 7,
-										Line:   44,
+										Line:   41,
 									},
 								},
 							},
@@ -2588,13 +2588,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   42,
+								Line:   39,
 							},
 							File:   "webexteams.flux",
 							Source: "url = \"https://webexapis.com\"",
 							Start: ast.Position{
 								Column: 9,
-								Line:   42,
+								Line:   39,
 							},
 						},
 					},
@@ -2606,13 +2606,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   42,
+									Line:   39,
 								},
 								File:   "webexteams.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 9,
-									Line:   42,
+									Line:   39,
 								},
 							},
 						},
@@ -2626,13 +2626,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   42,
+									Line:   39,
 								},
 								File:   "webexteams.flux",
 								Source: "\"https://webexapis.com\"",
 								Start: ast.Position{
 									Column: 15,
-									Line:   42,
+									Line:   39,
 								},
 							},
 						},
@@ -2645,13 +2645,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   43,
+								Line:   40,
 							},
 							File:   "webexteams.flux",
 							Source: "token",
 							Start: ast.Position{
 								Column: 9,
-								Line:   43,
+								Line:   40,
 							},
 						},
 					},
@@ -2663,13 +2663,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   43,
+									Line:   40,
 								},
 								File:   "webexteams.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 9,
-									Line:   43,
+									Line:   40,
 								},
 							},
 						},
@@ -2690,13 +2690,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   4,
+						Line:   3,
 					},
 					File:   "webexteams.flux",
 					Source: "import \"http\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   3,
 					},
 				},
 			},
@@ -2707,13 +2707,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   4,
+							Line:   3,
 						},
 						File:   "webexteams.flux",
 						Source: "\"http\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   3,
 						},
 					},
 				},
@@ -2727,13 +2727,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   5,
+						Line:   4,
 					},
 					File:   "webexteams.flux",
 					Source: "import \"json\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   4,
 					},
 				},
 			},
@@ -2744,13 +2744,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   5,
+							Line:   4,
 						},
 						File:   "webexteams.flux",
 						Source: "\"json\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   4,
 						},
 					},
 				},
