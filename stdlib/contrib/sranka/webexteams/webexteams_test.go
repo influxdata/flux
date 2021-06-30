@@ -43,6 +43,7 @@ func TestEndpoint(t *testing.T) {
 	s := NewServer(t)
 	defer s.Close()
 
+	url := s.URL // use "https://webexapis.com" for real e2e and verify manually
 	roomId := "Y2lzY29zcGFyazovL3VybjpURUFNOmV1LWNlbnRyYWwtMV9rL1JPT00vZWZiYjU0NzAtZDk3My0xMWViLTk4NGYtMGI5OGY0MTJiMzZm"
 	token := "YjcwN2ZjYTgtMDMzYi00NTE5LWJjMjMtN2U4Y2E4MWI0NTk3Y2FjZmMyZWQtNzg3_PE93_ed3fff69-a996-4e21-b5af-0dc3ad437459"
 
@@ -71,7 +72,7 @@ func TestEndpoint(t *testing.T) {
 			fluxString := `import "csv"
 import "contrib/sranka/webexteams"
 
-url = "` + s.URL + `"
+url = "` + url + `"
 token = "` + token + `"
 
 endpoint = webexteams.endpoint(url:url,token:token)(mapFn: (r) => {
