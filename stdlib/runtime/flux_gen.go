@@ -24,30 +24,30 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 16,
-					Line:   4,
+					Line:   6,
 				},
 				File:   "runtime.flux",
-				Source: "package runtime\n\n\nbuiltin version",
+				Source: "package runtime\n\n\n// version returns the current Flux version.\nbuiltin version",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   2,
 				},
 			},
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// version returns the current Flux version.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   4,
+						Line:   6,
 					},
 					File:   "runtime.flux",
 					Source: "builtin version",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   6,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   4,
+							Line:   6,
 						},
 						File:   "runtime.flux",
 						Source: "version",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   6,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 31,
-							Line:   4,
+							Line:   6,
 						},
 						File:   "runtime.flux",
 						Source: "() => string",
 						Start: ast.Position{
 							Column: 19,
-							Line:   4,
+							Line:   6,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   4,
+								Line:   6,
 							},
 							File:   "runtime.flux",
 							Source: "() => string",
 							Start: ast.Position{
 								Column: 19,
-								Line:   4,
+								Line:   6,
 							},
 						},
 					},
@@ -114,13 +114,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   4,
+									Line:   6,
 								},
 								File:   "runtime.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 25,
-									Line:   4,
+									Line:   6,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   4,
+										Line:   6,
 									},
 									File:   "runtime.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   4,
+										Line:   6,
 									},
 								},
 							},
@@ -153,18 +153,18 @@ var pkgAST = &ast.Package{
 		Name:     "runtime.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// The runtime package includes functions that provide information about the current Flux runtime.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   1,
+						Line:   2,
 					},
 					File:   "runtime.flux",
 					Source: "package runtime",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   2,
 					},
 				},
 			},
@@ -175,13 +175,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   1,
+							Line:   2,
 						},
 						File:   "runtime.flux",
 						Source: "runtime",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   2,
 						},
 					},
 				},
