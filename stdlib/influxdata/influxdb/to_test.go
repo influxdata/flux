@@ -16,7 +16,6 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb/internal"
 	"github.com/influxdata/flux/values/valuestest"
 	protocol "github.com/influxdata/line-protocol"
 )
@@ -34,8 +33,8 @@ func (t *pointsWriter) Write(metric ...protocol.Metric) error {
 	return nil
 }
 
-func rowMetric(m string, tags [][2]string, fields [][2]interface{}, ts time.Time) *internal.RowMetric {
-	metric := &internal.RowMetric{
+func rowMetric(m string, tags [][2]string, fields [][2]interface{}, ts time.Time) *influxdb.RowMetric {
+	metric := &influxdb.RowMetric{
 		NameStr: m,
 		Tags:    make([]*protocol.Tag, 0, len(tags)),
 		Fields:  make([]*protocol.Field, 0, len(fields)),
@@ -772,7 +771,7 @@ func TestTo_Process(t *testing.T) {
 				},
 			)
 			for _, m := range writer.writes {
-				rm := m.(*internal.RowMetric)
+				rm := m.(*influxdb.RowMetric)
 				sort.Slice(rm.Fields, func(i, j int) bool {
 					return rm.Fields[i].Key < rm.Fields[j].Key
 				})

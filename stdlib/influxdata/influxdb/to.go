@@ -15,7 +15,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb/internal"
 	"github.com/influxdata/flux/values"
 	lp "github.com/influxdata/line-protocol"
 	"github.com/opentracing/opentracing-go"
@@ -23,6 +22,8 @@ import (
 
 // ToKind is the kind for the `to` flux function
 const ToKind = "to"
+
+type Writer = influxdb.Writer
 
 func init() {
 	toSignature := runtime.MustLookupBuiltinType("influxdata/influxdb", "to")
@@ -231,7 +232,7 @@ func writeTableToAPI(ctx context.Context, t *ToTransformation, tbl flux.Table) (
 
 	outer:
 		for i := 0; i < er.Len(); i++ {
-			metric := &internal.RowMetric{
+			metric := &RowMetric{
 				Tags: make([]*lp.Tag, 0, len(spec.TagColumns)),
 			}
 
