@@ -116,6 +116,21 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
         |> experimental.group(mode: "extend", columns: ["_level"])
 }
 
+// Notify will call the endpoint and log the results.
+notify = (tables=<-, endpoint, data) => tables
+    |> experimental.set(o: data)
+    |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data))
+    |> map(
+        fn: (r) => ({r with
+            _measurement: "notifications",
+            _status_timestamp: int(v: r._time),
+            _time: now(),
+        }),
+    )
+    |> endpoint()
+    |> experimental.group(mode: "extend", columns: ["_sent"])
+    |> log()
+
 // stateChangesOnly takes a stream of tables that contains a _level column
 // and returns a stream of tables where each record represents a state change.
 //

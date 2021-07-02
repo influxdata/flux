@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   289,
+					Line:   304,
 				},
 				File:   "monitor.flux",
-				Source: "package monitor\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\nimport \"influxdata/influxdb\"\n\nbucket = \"_monitoring\"\n\n// Write persists the check statuses\noption write = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// Log records notification events\noption log = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// logs retrieves notification events stored in the notifications measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `start` is the earliest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `stop` is the latest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `fn` is a single argument predicate function that evaluates true or false.\n//\n//      Records or rows (r) that evaluate to true are included in output tables.\n//      Records that evaluate to null or false are not included in output tables.\n//\n// ## Query notification events from the last hour\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.logs(start: -2h, fn: (r) => true)\n// ```\n//\nlogs = (start, stop=now(), fn) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"notifications\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// from retrieves check statuses stored in the statuses measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `start` is the earliest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `stop` is the latest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `fn` is a single argument predicate function that evaluates true or false.\n//\n//      Records or rows (r) that evaluate to true are included in output tables.\n//      Records that evaluate to null or false are not included in output tables.\n//\n// ## View critical check statuses from the last hour\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.from(\n//  start: -1h,\n//  fn: (r) => r._level == \"crit\"\n// )\n// ```\n//\nfrom = (start, stop=now(), fn=(r) => true) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"statuses\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// levels describing the result of a check\nlevelOK = \"ok\"\nlevelInfo = \"info\"\nlevelWarn = \"warn\"\nlevelCrit = \"crit\"\nlevelUnknown = \"unknown\"\n_stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// stateChangesOnly takes a stream of tables that contains a _level column\n// and returns a stream of tables where each record represents a state change.\n//\n// ## Return records representing state changes\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.from(start: -1h)\n//  |> monitor.stateChangesOnly()\n//\n// ```\n//\nstateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// stateChanges detects state changes in a stream of data with a _level column and outputs records that change from fromLevel to toLevel.\n//\n// ## Parameters\n// - `fromLevel` is the level to detect a change from. Defaults to \"any\".\n// - `toLevel` is the level to detect a change to. The function output records that change to this level\n//\n// ## Detect when the state changes to critical\n// ```\n// monitor.from(start: -1h)\n//    |> monitor.stateChanges(toLevel: \"crit\")\n// ```\n//\nstateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}\n\n// deadman detects when a group stops reporting data.\n// It takes a stream of tables and reports if groups have been observed since time t.\n//\n//      monitor.deadman() retains the most recent row from each input table and adds a dead column.\n//      If a record appears after time t, monitor.deadman() sets dead to false. Otherwise, dead is set to true.\n//\n// ## Parameters\n// - `t` is the time threshold for the deadman check.\n//\n// ## Detect if a host hasn’t reported in the last five minutes\n// ```\n// import \"influxdata/influxdb/monitor\"\n// import \"experimental\"\n//\n// from(bucket: \"example-bucket\")\n//   |> range(start: -10m)\n//   |> group(columns: [\"host\"])\n//   |> monitor.deadman(t: experimental.subDuration(d: 5m, from: now() ))\n// ```\n//\ndeadman = (t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))\n\n// check checks input data and assigns a level (ok, info, warn, or crit) to each row based on predicate functions.\n//\n//      monitor.check() stores statuses in the _level column and writes results to the statuses measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `crit` is the predicate function that determines crit status. Default is (r) => false.\n// - `warn` is the predicate function that determines warn status. Default is (r) => false.\n// - `info` is the predicate function that determines info status. Default is (r) => false.\n// - `ok` is the predicate function that determines ok status. Default is (r) => false.\n// - `messagefn` is the predicate function that constructs a message to append to each row. The message is stored in the _message column.\n// - `data` is meta data used to identify this check.\n//\n// ## Monitor disk usage\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// from(bucket: \"telegraf\")\n//   |> range(start: -1h)\n//   |> filter(fn: (r) =>\n//       r._measurement == \"disk\" and\n//       r._field == \"used_percent\"\n//   )\n//   |> group(columns: [\"_measurement\"])\n//   |> monitor.check(\n//     crit: (r) => r._value > 90.0,\n//     warn: (r) => r._value > 80.0,\n//     info: (r) => r._value > 70.0,\n//     ok:   (r) => r._value <= 60.0,\n//     messageFn: (r) =>\n//       if r._level == \"crit\" then \"Critical alert!! Disk usage is at ${r._value}%!\"\n//       else if r._level == \"warn\" then \"Warning! Disk usage is at ${r._value}%.\"\n//       else if r._level == \"info\" then \"Disk usage is at ${r._value}%.\"\n//       else \"Things are looking good.\",\n//     data: {\n//       _check_name: \"Disk Utilization (Used Percentage)\",\n//       _check_id: \"disk_used_percent\",\n//       _type: \"threshold\",\n//       tags: {}\n//     }\n//   )\n// ```\n//\ncheck = (\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
+				Source: "package monitor\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\nimport \"influxdata/influxdb\"\n\nbucket = \"_monitoring\"\n\n// Write persists the check statuses\noption write = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// Log records notification events\noption log = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// logs retrieves notification events stored in the notifications measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `start` is the earliest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `stop` is the latest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `fn` is a single argument predicate function that evaluates true or false.\n//\n//      Records or rows (r) that evaluate to true are included in output tables.\n//      Records that evaluate to null or false are not included in output tables.\n//\n// ## Query notification events from the last hour\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.logs(start: -2h, fn: (r) => true)\n// ```\n//\nlogs = (start, stop=now(), fn) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"notifications\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// from retrieves check statuses stored in the statuses measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `start` is the earliest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `stop` is the latest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `fn` is a single argument predicate function that evaluates true or false.\n//\n//      Records or rows (r) that evaluate to true are included in output tables.\n//      Records that evaluate to null or false are not included in output tables.\n//\n// ## View critical check statuses from the last hour\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.from(\n//  start: -1h,\n//  fn: (r) => r._level == \"crit\"\n// )\n// ```\n//\nfrom = (start, stop=now(), fn=(r) => true) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"statuses\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// levels describing the result of a check\nlevelOK = \"ok\"\nlevelInfo = \"info\"\nlevelWarn = \"warn\"\nlevelCrit = \"crit\"\nlevelUnknown = \"unknown\"\n_stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// Notify will call the endpoint and log the results.\nnotify = (tables=<-, endpoint, data) => tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])\n    |> log()\n\n// stateChangesOnly takes a stream of tables that contains a _level column\n// and returns a stream of tables where each record represents a state change.\n//\n// ## Return records representing state changes\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.from(start: -1h)\n//  |> monitor.stateChangesOnly()\n//\n// ```\n//\nstateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// stateChanges detects state changes in a stream of data with a _level column and outputs records that change from fromLevel to toLevel.\n//\n// ## Parameters\n// - `fromLevel` is the level to detect a change from. Defaults to \"any\".\n// - `toLevel` is the level to detect a change to. The function output records that change to this level\n//\n// ## Detect when the state changes to critical\n// ```\n// monitor.from(start: -1h)\n//    |> monitor.stateChanges(toLevel: \"crit\")\n// ```\n//\nstateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}\n\n// deadman detects when a group stops reporting data.\n// It takes a stream of tables and reports if groups have been observed since time t.\n//\n//      monitor.deadman() retains the most recent row from each input table and adds a dead column.\n//      If a record appears after time t, monitor.deadman() sets dead to false. Otherwise, dead is set to true.\n//\n// ## Parameters\n// - `t` is the time threshold for the deadman check.\n//\n// ## Detect if a host hasn’t reported in the last five minutes\n// ```\n// import \"influxdata/influxdb/monitor\"\n// import \"experimental\"\n//\n// from(bucket: \"example-bucket\")\n//   |> range(start: -10m)\n//   |> group(columns: [\"host\"])\n//   |> monitor.deadman(t: experimental.subDuration(d: 5m, from: now() ))\n// ```\n//\ndeadman = (t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))\n\n// check checks input data and assigns a level (ok, info, warn, or crit) to each row based on predicate functions.\n//\n//      monitor.check() stores statuses in the _level column and writes results to the statuses measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `crit` is the predicate function that determines crit status. Default is (r) => false.\n// - `warn` is the predicate function that determines warn status. Default is (r) => false.\n// - `info` is the predicate function that determines info status. Default is (r) => false.\n// - `ok` is the predicate function that determines ok status. Default is (r) => false.\n// - `messagefn` is the predicate function that constructs a message to append to each row. The message is stored in the _message column.\n// - `data` is meta data used to identify this check.\n//\n// ## Monitor disk usage\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// from(bucket: \"telegraf\")\n//   |> range(start: -1h)\n//   |> filter(fn: (r) =>\n//       r._measurement == \"disk\" and\n//       r._field == \"used_percent\"\n//   )\n//   |> group(columns: [\"_measurement\"])\n//   |> monitor.check(\n//     crit: (r) => r._value > 90.0,\n//     warn: (r) => r._value > 80.0,\n//     info: (r) => r._value > 70.0,\n//     ok:   (r) => r._value <= 60.0,\n//     messageFn: (r) =>\n//       if r._level == \"crit\" then \"Critical alert!! Disk usage is at ${r._value}%!\"\n//       else if r._level == \"warn\" then \"Warning! Disk usage is at ${r._value}%.\"\n//       else if r._level == \"info\" then \"Disk usage is at ${r._value}%.\"\n//       else \"Things are looking good.\",\n//     data: {\n//       _check_name: \"Disk Utilization (Used Percentage)\",\n//       _check_id: \"disk_used_percent\",\n//       _type: \"threshold\",\n//       tags: {}\n//     }\n//   )\n// ```\n//\ncheck = (\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -6796,4040 +6796,51 @@ var pkgAST = &ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 2,
-						Line:   155,
+						Column: 13,
+						Line:   132,
 					},
 					File:   "monitor.flux",
-					Source: "stateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+					Source: "notify = (tables=<-, endpoint, data) => tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])\n    |> log()",
 					Start: ast.Position{
 						Column: 1,
-						Line:   131,
+						Line:   120,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// stateChangesOnly takes a stream of tables that contains a _level column\n"}, ast.Comment{Text: "// and returns a stream of tables where each record represents a state change.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Return records representing state changes\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/monitor\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// monitor.from(start: -1h)\n"}, ast.Comment{Text: "//  |> monitor.stateChangesOnly()\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// Notify will call the endpoint and log the results.\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 17,
-							Line:   131,
+							Column: 7,
+							Line:   120,
 						},
 						File:   "monitor.flux",
-						Source: "stateChangesOnly",
+						Source: "notify",
 						Start: ast.Position{
 							Column: 1,
-							Line:   131,
+							Line:   120,
 						},
 					},
 				},
-				Name: "stateChangesOnly",
+				Name: "notify",
 			},
 			Init: &ast.FunctionExpression{
 				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
-					Errors:   nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 2,
-							Line:   155,
-						},
-						File:   "monitor.flux",
-						Source: "(tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
-						Start: ast.Position{
-							Column: 20,
-							Line:   131,
-						},
-					},
-				},
-				Body: &ast.Block{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 2,
-								Line:   155,
-							},
-							File:   "monitor.flux",
-							Source: "{\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
-							Start: ast.Position{
-								Column: 35,
-								Line:   131,
-							},
-						},
-					},
-					Body: []ast.Statement{&ast.ReturnStatement{
-						Argument: &ast.PipeExpression{
-							Argument: &ast.PipeExpression{
-								Argument: &ast.PipeExpression{
-									Argument: &ast.PipeExpression{
-										Argument: &ast.PipeExpression{
-											Argument: &ast.PipeExpression{
-												Argument: &ast.PipeExpression{
-													Argument: &ast.PipeExpression{
-														Argument: &ast.PipeExpression{
-															Argument: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 18,
-																			Line:   132,
-																		},
-																		File:   "monitor.flux",
-																		Source: "tables",
-																		Start: ast.Position{
-																			Column: 12,
-																			Line:   132,
-																		},
-																	},
-																},
-																Name: "tables",
-															},
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 10,
-																		Line:   146,
-																	},
-																	File:   "monitor.flux",
-																	Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )",
-																	Start: ast.Position{
-																		Column: 12,
-																		Line:   132,
-																	},
-																},
-															},
-															Call: &ast.CallExpression{
-																Arguments: []ast.Expression{&ast.ObjectExpression{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 15,
-																				Line:   145,
-																			},
-																			File:   "monitor.flux",
-																			Source: "fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            })",
-																			Start: ast.Position{
-																				Column: 13,
-																				Line:   134,
-																			},
-																		},
-																	},
-																	Lbrace: nil,
-																	Properties: []*ast.Property{&ast.Property{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 15,
-																					Line:   145,
-																				},
-																				File:   "monitor.flux",
-																				Source: "fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            })",
-																				Start: ast.Position{
-																					Column: 13,
-																					Line:   134,
-																				},
-																			},
-																		},
-																		Comma: nil,
-																		Key: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 15,
-																						Line:   134,
-																					},
-																					File:   "monitor.flux",
-																					Source: "fn",
-																					Start: ast.Position{
-																						Column: 13,
-																						Line:   134,
-																					},
-																				},
-																			},
-																			Name: "fn",
-																		},
-																		Separator: nil,
-																		Value: &ast.FunctionExpression{
-																			Arrow: nil,
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 15,
-																						Line:   145,
-																					},
-																					File:   "monitor.flux",
-																					Source: "(r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            })",
-																					Start: ast.Position{
-																						Column: 17,
-																						Line:   134,
-																					},
-																				},
-																			},
-																			Body: &ast.ParenExpression{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 15,
-																							Line:   145,
-																						},
-																						File:   "monitor.flux",
-																						Source: "({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            })",
-																						Start: ast.Position{
-																							Column: 24,
-																							Line:   134,
-																						},
-																					},
-																				},
-																				Expression: &ast.ObjectExpression{
-																					BaseNode: ast.BaseNode{
-																						Comments: nil,
-																						Errors:   nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 14,
-																								Line:   145,
-																							},
-																							File:   "monitor.flux",
-																							Source: "{r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }",
-																							Start: ast.Position{
-																								Column: 25,
-																								Line:   134,
-																							},
-																						},
-																					},
-																					Lbrace: nil,
-																					Properties: []*ast.Property{&ast.Property{
-																						BaseNode: ast.BaseNode{
-																							Comments: nil,
-																							Errors:   nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 22,
-																									Line:   144,
-																								},
-																								File:   "monitor.flux",
-																								Source: "level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0",
-																								Start: ast.Position{
-																									Column: 17,
-																									Line:   135,
-																								},
-																							},
-																						},
-																						Comma: nil,
-																						Key: &ast.Identifier{
-																							BaseNode: ast.BaseNode{
-																								Comments: nil,
-																								Errors:   nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 28,
-																										Line:   135,
-																									},
-																									File:   "monitor.flux",
-																									Source: "level_value",
-																									Start: ast.Position{
-																										Column: 17,
-																										Line:   135,
-																									},
-																								},
-																							},
-																							Name: "level_value",
-																						},
-																						Separator: nil,
-																						Value: &ast.ConditionalExpression{
-																							Alternate: &ast.ConditionalExpression{
-																								Alternate: &ast.ConditionalExpression{
-																									Alternate: &ast.ConditionalExpression{
-																										Alternate: &ast.IntegerLiteral{
-																											BaseNode: ast.BaseNode{
-																												Comments: nil,
-																												Errors:   nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 22,
-																														Line:   144,
-																													},
-																													File:   "monitor.flux",
-																													Source: "0",
-																													Start: ast.Position{
-																														Column: 21,
-																														Line:   144,
-																													},
-																												},
-																											},
-																											Value: int64(0),
-																										},
-																										BaseNode: ast.BaseNode{
-																											Comments: nil,
-																											Errors:   nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 22,
-																													Line:   144,
-																												},
-																												File:   "monitor.flux",
-																												Source: "if r._level == levelOK then\n                    1\n                else\n                    0",
-																												Start: ast.Position{
-																													Column: 22,
-																													Line:   141,
-																												},
-																											},
-																										},
-																										Consequent: &ast.IntegerLiteral{
-																											BaseNode: ast.BaseNode{
-																												Comments: nil,
-																												Errors:   nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 22,
-																														Line:   142,
-																													},
-																													File:   "monitor.flux",
-																													Source: "1",
-																													Start: ast.Position{
-																														Column: 21,
-																														Line:   142,
-																													},
-																												},
-																											},
-																											Value: int64(1),
-																										},
-																										Test: &ast.BinaryExpression{
-																											BaseNode: ast.BaseNode{
-																												Comments: nil,
-																												Errors:   nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 44,
-																														Line:   141,
-																													},
-																													File:   "monitor.flux",
-																													Source: "r._level == levelOK",
-																													Start: ast.Position{
-																														Column: 25,
-																														Line:   141,
-																													},
-																												},
-																											},
-																											Left: &ast.MemberExpression{
-																												BaseNode: ast.BaseNode{
-																													Comments: nil,
-																													Errors:   nil,
-																													Loc: &ast.SourceLocation{
-																														End: ast.Position{
-																															Column: 33,
-																															Line:   141,
-																														},
-																														File:   "monitor.flux",
-																														Source: "r._level",
-																														Start: ast.Position{
-																															Column: 25,
-																															Line:   141,
-																														},
-																													},
-																												},
-																												Lbrack: nil,
-																												Object: &ast.Identifier{
-																													BaseNode: ast.BaseNode{
-																														Comments: nil,
-																														Errors:   nil,
-																														Loc: &ast.SourceLocation{
-																															End: ast.Position{
-																																Column: 26,
-																																Line:   141,
-																															},
-																															File:   "monitor.flux",
-																															Source: "r",
-																															Start: ast.Position{
-																																Column: 25,
-																																Line:   141,
-																															},
-																														},
-																													},
-																													Name: "r",
-																												},
-																												Property: &ast.Identifier{
-																													BaseNode: ast.BaseNode{
-																														Comments: nil,
-																														Errors:   nil,
-																														Loc: &ast.SourceLocation{
-																															End: ast.Position{
-																																Column: 33,
-																																Line:   141,
-																															},
-																															File:   "monitor.flux",
-																															Source: "_level",
-																															Start: ast.Position{
-																																Column: 27,
-																																Line:   141,
-																															},
-																														},
-																													},
-																													Name: "_level",
-																												},
-																												Rbrack: nil,
-																											},
-																											Operator: 17,
-																											Right: &ast.Identifier{
-																												BaseNode: ast.BaseNode{
-																													Comments: nil,
-																													Errors:   nil,
-																													Loc: &ast.SourceLocation{
-																														End: ast.Position{
-																															Column: 44,
-																															Line:   141,
-																														},
-																														File:   "monitor.flux",
-																														Source: "levelOK",
-																														Start: ast.Position{
-																															Column: 37,
-																															Line:   141,
-																														},
-																													},
-																												},
-																												Name: "levelOK",
-																											},
-																										},
-																										Tk_else: nil,
-																										Tk_if:   nil,
-																										Tk_then: nil,
-																									},
-																									BaseNode: ast.BaseNode{
-																										Comments: nil,
-																										Errors:   nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 22,
-																												Line:   144,
-																											},
-																											File:   "monitor.flux",
-																											Source: "if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0",
-																											Start: ast.Position{
-																												Column: 22,
-																												Line:   139,
-																											},
-																										},
-																									},
-																									Consequent: &ast.IntegerLiteral{
-																										BaseNode: ast.BaseNode{
-																											Comments: nil,
-																											Errors:   nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 22,
-																													Line:   140,
-																												},
-																												File:   "monitor.flux",
-																												Source: "2",
-																												Start: ast.Position{
-																													Column: 21,
-																													Line:   140,
-																												},
-																											},
-																										},
-																										Value: int64(2),
-																									},
-																									Test: &ast.BinaryExpression{
-																										BaseNode: ast.BaseNode{
-																											Comments: nil,
-																											Errors:   nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 46,
-																													Line:   139,
-																												},
-																												File:   "monitor.flux",
-																												Source: "r._level == levelInfo",
-																												Start: ast.Position{
-																													Column: 25,
-																													Line:   139,
-																												},
-																											},
-																										},
-																										Left: &ast.MemberExpression{
-																											BaseNode: ast.BaseNode{
-																												Comments: nil,
-																												Errors:   nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 33,
-																														Line:   139,
-																													},
-																													File:   "monitor.flux",
-																													Source: "r._level",
-																													Start: ast.Position{
-																														Column: 25,
-																														Line:   139,
-																													},
-																												},
-																											},
-																											Lbrack: nil,
-																											Object: &ast.Identifier{
-																												BaseNode: ast.BaseNode{
-																													Comments: nil,
-																													Errors:   nil,
-																													Loc: &ast.SourceLocation{
-																														End: ast.Position{
-																															Column: 26,
-																															Line:   139,
-																														},
-																														File:   "monitor.flux",
-																														Source: "r",
-																														Start: ast.Position{
-																															Column: 25,
-																															Line:   139,
-																														},
-																													},
-																												},
-																												Name: "r",
-																											},
-																											Property: &ast.Identifier{
-																												BaseNode: ast.BaseNode{
-																													Comments: nil,
-																													Errors:   nil,
-																													Loc: &ast.SourceLocation{
-																														End: ast.Position{
-																															Column: 33,
-																															Line:   139,
-																														},
-																														File:   "monitor.flux",
-																														Source: "_level",
-																														Start: ast.Position{
-																															Column: 27,
-																															Line:   139,
-																														},
-																													},
-																												},
-																												Name: "_level",
-																											},
-																											Rbrack: nil,
-																										},
-																										Operator: 17,
-																										Right: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Comments: nil,
-																												Errors:   nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 46,
-																														Line:   139,
-																													},
-																													File:   "monitor.flux",
-																													Source: "levelInfo",
-																													Start: ast.Position{
-																														Column: 37,
-																														Line:   139,
-																													},
-																												},
-																											},
-																											Name: "levelInfo",
-																										},
-																									},
-																									Tk_else: nil,
-																									Tk_if:   nil,
-																									Tk_then: nil,
-																								},
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 22,
-																											Line:   144,
-																										},
-																										File:   "monitor.flux",
-																										Source: "if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0",
-																										Start: ast.Position{
-																											Column: 22,
-																											Line:   137,
-																										},
-																									},
-																								},
-																								Consequent: &ast.IntegerLiteral{
-																									BaseNode: ast.BaseNode{
-																										Comments: nil,
-																										Errors:   nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 22,
-																												Line:   138,
-																											},
-																											File:   "monitor.flux",
-																											Source: "3",
-																											Start: ast.Position{
-																												Column: 21,
-																												Line:   138,
-																											},
-																										},
-																									},
-																									Value: int64(3),
-																								},
-																								Test: &ast.BinaryExpression{
-																									BaseNode: ast.BaseNode{
-																										Comments: nil,
-																										Errors:   nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 46,
-																												Line:   137,
-																											},
-																											File:   "monitor.flux",
-																											Source: "r._level == levelWarn",
-																											Start: ast.Position{
-																												Column: 25,
-																												Line:   137,
-																											},
-																										},
-																									},
-																									Left: &ast.MemberExpression{
-																										BaseNode: ast.BaseNode{
-																											Comments: nil,
-																											Errors:   nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 33,
-																													Line:   137,
-																												},
-																												File:   "monitor.flux",
-																												Source: "r._level",
-																												Start: ast.Position{
-																													Column: 25,
-																													Line:   137,
-																												},
-																											},
-																										},
-																										Lbrack: nil,
-																										Object: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Comments: nil,
-																												Errors:   nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 26,
-																														Line:   137,
-																													},
-																													File:   "monitor.flux",
-																													Source: "r",
-																													Start: ast.Position{
-																														Column: 25,
-																														Line:   137,
-																													},
-																												},
-																											},
-																											Name: "r",
-																										},
-																										Property: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Comments: nil,
-																												Errors:   nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 33,
-																														Line:   137,
-																													},
-																													File:   "monitor.flux",
-																													Source: "_level",
-																													Start: ast.Position{
-																														Column: 27,
-																														Line:   137,
-																													},
-																												},
-																											},
-																											Name: "_level",
-																										},
-																										Rbrack: nil,
-																									},
-																									Operator: 17,
-																									Right: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Comments: nil,
-																											Errors:   nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 46,
-																													Line:   137,
-																												},
-																												File:   "monitor.flux",
-																												Source: "levelWarn",
-																												Start: ast.Position{
-																													Column: 37,
-																													Line:   137,
-																												},
-																											},
-																										},
-																										Name: "levelWarn",
-																									},
-																								},
-																								Tk_else: nil,
-																								Tk_if:   nil,
-																								Tk_then: nil,
-																							},
-																							BaseNode: ast.BaseNode{
-																								Comments: nil,
-																								Errors:   nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 22,
-																										Line:   144,
-																									},
-																									File:   "monitor.flux",
-																									Source: "if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0",
-																									Start: ast.Position{
-																										Column: 30,
-																										Line:   135,
-																									},
-																								},
-																							},
-																							Consequent: &ast.IntegerLiteral{
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 22,
-																											Line:   136,
-																										},
-																										File:   "monitor.flux",
-																										Source: "4",
-																										Start: ast.Position{
-																											Column: 21,
-																											Line:   136,
-																										},
-																									},
-																								},
-																								Value: int64(4),
-																							},
-																							Test: &ast.BinaryExpression{
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 54,
-																											Line:   135,
-																										},
-																										File:   "monitor.flux",
-																										Source: "r._level == levelCrit",
-																										Start: ast.Position{
-																											Column: 33,
-																											Line:   135,
-																										},
-																									},
-																								},
-																								Left: &ast.MemberExpression{
-																									BaseNode: ast.BaseNode{
-																										Comments: nil,
-																										Errors:   nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 41,
-																												Line:   135,
-																											},
-																											File:   "monitor.flux",
-																											Source: "r._level",
-																											Start: ast.Position{
-																												Column: 33,
-																												Line:   135,
-																											},
-																										},
-																									},
-																									Lbrack: nil,
-																									Object: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Comments: nil,
-																											Errors:   nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 34,
-																													Line:   135,
-																												},
-																												File:   "monitor.flux",
-																												Source: "r",
-																												Start: ast.Position{
-																													Column: 33,
-																													Line:   135,
-																												},
-																											},
-																										},
-																										Name: "r",
-																									},
-																									Property: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Comments: nil,
-																											Errors:   nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 41,
-																													Line:   135,
-																												},
-																												File:   "monitor.flux",
-																												Source: "_level",
-																												Start: ast.Position{
-																													Column: 35,
-																													Line:   135,
-																												},
-																											},
-																										},
-																										Name: "_level",
-																									},
-																									Rbrack: nil,
-																								},
-																								Operator: 17,
-																								Right: &ast.Identifier{
-																									BaseNode: ast.BaseNode{
-																										Comments: nil,
-																										Errors:   nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 54,
-																												Line:   135,
-																											},
-																											File:   "monitor.flux",
-																											Source: "levelCrit",
-																											Start: ast.Position{
-																												Column: 45,
-																												Line:   135,
-																											},
-																										},
-																									},
-																									Name: "levelCrit",
-																								},
-																							},
-																							Tk_else: nil,
-																							Tk_if:   nil,
-																							Tk_then: nil,
-																						},
-																					}},
-																					Rbrace: nil,
-																					With: &ast.Identifier{
-																						BaseNode: ast.BaseNode{
-																							Comments: nil,
-																							Errors:   nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 27,
-																									Line:   134,
-																								},
-																								File:   "monitor.flux",
-																								Source: "r",
-																								Start: ast.Position{
-																									Column: 26,
-																									Line:   134,
-																								},
-																							},
-																						},
-																						Name: "r",
-																					},
-																				},
-																				Lparen: nil,
-																				Rparen: nil,
-																			},
-																			Lparen: nil,
-																			Params: []*ast.Property{&ast.Property{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 19,
-																							Line:   134,
-																						},
-																						File:   "monitor.flux",
-																						Source: "r",
-																						Start: ast.Position{
-																							Column: 18,
-																							Line:   134,
-																						},
-																					},
-																				},
-																				Comma: nil,
-																				Key: &ast.Identifier{
-																					BaseNode: ast.BaseNode{
-																						Comments: nil,
-																						Errors:   nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 19,
-																								Line:   134,
-																							},
-																							File:   "monitor.flux",
-																							Source: "r",
-																							Start: ast.Position{
-																								Column: 18,
-																								Line:   134,
-																							},
-																						},
-																					},
-																					Name: "r",
-																				},
-																				Separator: nil,
-																				Value:     nil,
-																			}},
-																			Rparan: nil,
-																		},
-																	}},
-																	Rbrace: nil,
-																	With:   nil,
-																}},
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 10,
-																			Line:   146,
-																		},
-																		File:   "monitor.flux",
-																		Source: "map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )",
-																		Start: ast.Position{
-																			Column: 12,
-																			Line:   133,
-																		},
-																	},
-																},
-																Callee: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 15,
-																				Line:   133,
-																			},
-																			File:   "monitor.flux",
-																			Source: "map",
-																			Start: ast.Position{
-																				Column: 12,
-																				Line:   133,
-																			},
-																		},
-																	},
-																	Name: "map",
-																},
-																Lparen: nil,
-																Rparen: nil,
-															},
-														},
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 65,
-																	Line:   147,
-																},
-																File:   "monitor.flux",
-																Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")",
-																Start: ast.Position{
-																	Column: 12,
-																	Line:   132,
-																},
-															},
-														},
-														Call: &ast.CallExpression{
-															Arguments: []ast.Expression{&ast.ObjectExpression{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 64,
-																			Line:   147,
-																		},
-																		File:   "monitor.flux",
-																		Source: "column: \"_level\", as: \"____temp_level____\"",
-																		Start: ast.Position{
-																			Column: 22,
-																			Line:   147,
-																		},
-																	},
-																},
-																Lbrace: nil,
-																Properties: []*ast.Property{&ast.Property{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 38,
-																				Line:   147,
-																			},
-																			File:   "monitor.flux",
-																			Source: "column: \"_level\"",
-																			Start: ast.Position{
-																				Column: 22,
-																				Line:   147,
-																			},
-																		},
-																	},
-																	Comma: nil,
-																	Key: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 28,
-																					Line:   147,
-																				},
-																				File:   "monitor.flux",
-																				Source: "column",
-																				Start: ast.Position{
-																					Column: 22,
-																					Line:   147,
-																				},
-																			},
-																		},
-																		Name: "column",
-																	},
-																	Separator: nil,
-																	Value: &ast.StringLiteral{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 38,
-																					Line:   147,
-																				},
-																				File:   "monitor.flux",
-																				Source: "\"_level\"",
-																				Start: ast.Position{
-																					Column: 30,
-																					Line:   147,
-																				},
-																			},
-																		},
-																		Value: "_level",
-																	},
-																}, &ast.Property{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 64,
-																				Line:   147,
-																			},
-																			File:   "monitor.flux",
-																			Source: "as: \"____temp_level____\"",
-																			Start: ast.Position{
-																				Column: 40,
-																				Line:   147,
-																			},
-																		},
-																	},
-																	Comma: nil,
-																	Key: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 42,
-																					Line:   147,
-																				},
-																				File:   "monitor.flux",
-																				Source: "as",
-																				Start: ast.Position{
-																					Column: 40,
-																					Line:   147,
-																				},
-																			},
-																		},
-																		Name: "as",
-																	},
-																	Separator: nil,
-																	Value: &ast.StringLiteral{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 64,
-																					Line:   147,
-																				},
-																				File:   "monitor.flux",
-																				Source: "\"____temp_level____\"",
-																				Start: ast.Position{
-																					Column: 44,
-																					Line:   147,
-																				},
-																			},
-																		},
-																		Value: "____temp_level____",
-																	},
-																}},
-																Rbrace: nil,
-																With:   nil,
-															}},
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 65,
-																		Line:   147,
-																	},
-																	File:   "monitor.flux",
-																	Source: "duplicate(column: \"_level\", as: \"____temp_level____\")",
-																	Start: ast.Position{
-																		Column: 12,
-																		Line:   147,
-																	},
-																},
-															},
-															Callee: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 21,
-																			Line:   147,
-																		},
-																		File:   "monitor.flux",
-																		Source: "duplicate",
-																		Start: ast.Position{
-																			Column: 12,
-																			Line:   147,
-																		},
-																	},
-																},
-																Name: "duplicate",
-															},
-															Lparen: nil,
-															Rparen: nil,
-														},
-													},
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 37,
-																Line:   148,
-															},
-															File:   "monitor.flux",
-															Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])",
-															Start: ast.Position{
-																Column: 12,
-																Line:   132,
-															},
-														},
-													},
-													Call: &ast.CallExpression{
-														Arguments: []ast.Expression{&ast.ObjectExpression{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 36,
-																		Line:   148,
-																	},
-																	File:   "monitor.flux",
-																	Source: "columns: [\"_level\"]",
-																	Start: ast.Position{
-																		Column: 17,
-																		Line:   148,
-																	},
-																},
-															},
-															Lbrace: nil,
-															Properties: []*ast.Property{&ast.Property{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 36,
-																			Line:   148,
-																		},
-																		File:   "monitor.flux",
-																		Source: "columns: [\"_level\"]",
-																		Start: ast.Position{
-																			Column: 17,
-																			Line:   148,
-																		},
-																	},
-																},
-																Comma: nil,
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 24,
-																				Line:   148,
-																			},
-																			File:   "monitor.flux",
-																			Source: "columns",
-																			Start: ast.Position{
-																				Column: 17,
-																				Line:   148,
-																			},
-																		},
-																	},
-																	Name: "columns",
-																},
-																Separator: nil,
-																Value: &ast.ArrayExpression{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 36,
-																				Line:   148,
-																			},
-																			File:   "monitor.flux",
-																			Source: "[\"_level\"]",
-																			Start: ast.Position{
-																				Column: 26,
-																				Line:   148,
-																			},
-																		},
-																	},
-																	Elements: []ast.Expression{&ast.StringLiteral{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 35,
-																					Line:   148,
-																				},
-																				File:   "monitor.flux",
-																				Source: "\"_level\"",
-																				Start: ast.Position{
-																					Column: 27,
-																					Line:   148,
-																				},
-																			},
-																		},
-																		Value: "_level",
-																	}},
-																	Lbrack: nil,
-																	Rbrack: nil,
-																},
-															}},
-															Rbrace: nil,
-															With:   nil,
-														}},
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 37,
-																	Line:   148,
-																},
-																File:   "monitor.flux",
-																Source: "drop(columns: [\"_level\"])",
-																Start: ast.Position{
-																	Column: 12,
-																	Line:   148,
-																},
-															},
-														},
-														Callee: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 16,
-																		Line:   148,
-																	},
-																	File:   "monitor.flux",
-																	Source: "drop",
-																	Start: ast.Position{
-																		Column: 12,
-																		Line:   148,
-																	},
-																},
-															},
-															Name: "drop",
-														},
-														Lparen: nil,
-														Rparen: nil,
-													},
-												},
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 61,
-															Line:   149,
-														},
-														File:   "monitor.flux",
-														Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})",
-														Start: ast.Position{
-															Column: 12,
-															Line:   132,
-														},
-													},
-												},
-												Call: &ast.CallExpression{
-													Arguments: []ast.Expression{&ast.ObjectExpression{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 60,
-																	Line:   149,
-																},
-																File:   "monitor.flux",
-																Source: "columns: {\"____temp_level____\": \"_level\"}",
-																Start: ast.Position{
-																	Column: 19,
-																	Line:   149,
-																},
-															},
-														},
-														Lbrace: nil,
-														Properties: []*ast.Property{&ast.Property{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 60,
-																		Line:   149,
-																	},
-																	File:   "monitor.flux",
-																	Source: "columns: {\"____temp_level____\": \"_level\"}",
-																	Start: ast.Position{
-																		Column: 19,
-																		Line:   149,
-																	},
-																},
-															},
-															Comma: nil,
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 26,
-																			Line:   149,
-																		},
-																		File:   "monitor.flux",
-																		Source: "columns",
-																		Start: ast.Position{
-																			Column: 19,
-																			Line:   149,
-																		},
-																	},
-																},
-																Name: "columns",
-															},
-															Separator: nil,
-															Value: &ast.ObjectExpression{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 60,
-																			Line:   149,
-																		},
-																		File:   "monitor.flux",
-																		Source: "{\"____temp_level____\": \"_level\"}",
-																		Start: ast.Position{
-																			Column: 28,
-																			Line:   149,
-																		},
-																	},
-																},
-																Lbrace: nil,
-																Properties: []*ast.Property{&ast.Property{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 59,
-																				Line:   149,
-																			},
-																			File:   "monitor.flux",
-																			Source: "\"____temp_level____\": \"_level\"",
-																			Start: ast.Position{
-																				Column: 29,
-																				Line:   149,
-																			},
-																		},
-																	},
-																	Comma: nil,
-																	Key: &ast.StringLiteral{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 49,
-																					Line:   149,
-																				},
-																				File:   "monitor.flux",
-																				Source: "\"____temp_level____\"",
-																				Start: ast.Position{
-																					Column: 29,
-																					Line:   149,
-																				},
-																			},
-																		},
-																		Value: "____temp_level____",
-																	},
-																	Separator: nil,
-																	Value: &ast.StringLiteral{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 59,
-																					Line:   149,
-																				},
-																				File:   "monitor.flux",
-																				Source: "\"_level\"",
-																				Start: ast.Position{
-																					Column: 51,
-																					Line:   149,
-																				},
-																			},
-																		},
-																		Value: "_level",
-																	},
-																}},
-																Rbrace: nil,
-																With:   nil,
-															},
-														}},
-														Rbrace: nil,
-														With:   nil,
-													}},
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 61,
-																Line:   149,
-															},
-															File:   "monitor.flux",
-															Source: "rename(columns: {\"____temp_level____\": \"_level\"})",
-															Start: ast.Position{
-																Column: 12,
-																Line:   149,
-															},
-														},
-													},
-													Callee: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 18,
-																	Line:   149,
-																},
-																File:   "monitor.flux",
-																Source: "rename",
-																Start: ast.Position{
-																	Column: 12,
-																	Line:   149,
-																},
-															},
-														},
-														Name: "rename",
-													},
-													Lparen: nil,
-													Rparen: nil,
-												},
-											},
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 61,
-														Line:   150,
-													},
-													File:   "monitor.flux",
-													Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)",
-													Start: ast.Position{
-														Column: 12,
-														Line:   132,
-													},
-												},
-											},
-											Call: &ast.CallExpression{
-												Arguments: []ast.Expression{&ast.ObjectExpression{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 60,
-																Line:   150,
-															},
-															File:   "monitor.flux",
-															Source: "columns: [\"_source_timestamp\"], desc: false",
-															Start: ast.Position{
-																Column: 17,
-																Line:   150,
-															},
-														},
-													},
-													Lbrace: nil,
-													Properties: []*ast.Property{&ast.Property{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 47,
-																	Line:   150,
-																},
-																File:   "monitor.flux",
-																Source: "columns: [\"_source_timestamp\"]",
-																Start: ast.Position{
-																	Column: 17,
-																	Line:   150,
-																},
-															},
-														},
-														Comma: nil,
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 24,
-																		Line:   150,
-																	},
-																	File:   "monitor.flux",
-																	Source: "columns",
-																	Start: ast.Position{
-																		Column: 17,
-																		Line:   150,
-																	},
-																},
-															},
-															Name: "columns",
-														},
-														Separator: nil,
-														Value: &ast.ArrayExpression{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 47,
-																		Line:   150,
-																	},
-																	File:   "monitor.flux",
-																	Source: "[\"_source_timestamp\"]",
-																	Start: ast.Position{
-																		Column: 26,
-																		Line:   150,
-																	},
-																},
-															},
-															Elements: []ast.Expression{&ast.StringLiteral{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 46,
-																			Line:   150,
-																		},
-																		File:   "monitor.flux",
-																		Source: "\"_source_timestamp\"",
-																		Start: ast.Position{
-																			Column: 27,
-																			Line:   150,
-																		},
-																	},
-																},
-																Value: "_source_timestamp",
-															}},
-															Lbrack: nil,
-															Rbrack: nil,
-														},
-													}, &ast.Property{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 60,
-																	Line:   150,
-																},
-																File:   "monitor.flux",
-																Source: "desc: false",
-																Start: ast.Position{
-																	Column: 49,
-																	Line:   150,
-																},
-															},
-														},
-														Comma: nil,
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 53,
-																		Line:   150,
-																	},
-																	File:   "monitor.flux",
-																	Source: "desc",
-																	Start: ast.Position{
-																		Column: 49,
-																		Line:   150,
-																	},
-																},
-															},
-															Name: "desc",
-														},
-														Separator: nil,
-														Value: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 60,
-																		Line:   150,
-																	},
-																	File:   "monitor.flux",
-																	Source: "false",
-																	Start: ast.Position{
-																		Column: 55,
-																		Line:   150,
-																	},
-																},
-															},
-															Name: "false",
-														},
-													}},
-													Rbrace: nil,
-													With:   nil,
-												}},
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 61,
-															Line:   150,
-														},
-														File:   "monitor.flux",
-														Source: "sort(columns: [\"_source_timestamp\"], desc: false)",
-														Start: ast.Position{
-															Column: 12,
-															Line:   150,
-														},
-													},
-												},
-												Callee: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 16,
-																Line:   150,
-															},
-															File:   "monitor.flux",
-															Source: "sort",
-															Start: ast.Position{
-																Column: 12,
-																Line:   150,
-															},
-														},
-													},
-													Name: "sort",
-												},
-												Lparen: nil,
-												Rparen: nil,
-											},
-										},
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 48,
-													Line:   151,
-												},
-												File:   "monitor.flux",
-												Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])",
-												Start: ast.Position{
-													Column: 12,
-													Line:   132,
-												},
-											},
-										},
-										Call: &ast.CallExpression{
-											Arguments: []ast.Expression{&ast.ObjectExpression{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 47,
-															Line:   151,
-														},
-														File:   "monitor.flux",
-														Source: "columns: [\"level_value\"]",
-														Start: ast.Position{
-															Column: 23,
-															Line:   151,
-														},
-													},
-												},
-												Lbrace: nil,
-												Properties: []*ast.Property{&ast.Property{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 47,
-																Line:   151,
-															},
-															File:   "monitor.flux",
-															Source: "columns: [\"level_value\"]",
-															Start: ast.Position{
-																Column: 23,
-																Line:   151,
-															},
-														},
-													},
-													Comma: nil,
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 30,
-																	Line:   151,
-																},
-																File:   "monitor.flux",
-																Source: "columns",
-																Start: ast.Position{
-																	Column: 23,
-																	Line:   151,
-																},
-															},
-														},
-														Name: "columns",
-													},
-													Separator: nil,
-													Value: &ast.ArrayExpression{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 47,
-																	Line:   151,
-																},
-																File:   "monitor.flux",
-																Source: "[\"level_value\"]",
-																Start: ast.Position{
-																	Column: 32,
-																	Line:   151,
-																},
-															},
-														},
-														Elements: []ast.Expression{&ast.StringLiteral{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 46,
-																		Line:   151,
-																	},
-																	File:   "monitor.flux",
-																	Source: "\"level_value\"",
-																	Start: ast.Position{
-																		Column: 33,
-																		Line:   151,
-																	},
-																},
-															},
-															Value: "level_value",
-														}},
-														Lbrack: nil,
-														Rbrack: nil,
-													},
-												}},
-												Rbrace: nil,
-												With:   nil,
-											}},
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 48,
-														Line:   151,
-													},
-													File:   "monitor.flux",
-													Source: "difference(columns: [\"level_value\"])",
-													Start: ast.Position{
-														Column: 12,
-														Line:   151,
-													},
-												},
-											},
-											Callee: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 22,
-															Line:   151,
-														},
-														File:   "monitor.flux",
-														Source: "difference",
-														Start: ast.Position{
-															Column: 12,
-															Line:   151,
-														},
-													},
-												},
-												Name: "difference",
-											},
-											Lparen: nil,
-											Rparen: nil,
-										},
-									},
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 49,
-												Line:   152,
-											},
-											File:   "monitor.flux",
-											Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)",
-											Start: ast.Position{
-												Column: 12,
-												Line:   132,
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 48,
-														Line:   152,
-													},
-													File:   "monitor.flux",
-													Source: "fn: (r) => r.level_value != 0",
-													Start: ast.Position{
-														Column: 19,
-														Line:   152,
-													},
-												},
-											},
-											Lbrace: nil,
-											Properties: []*ast.Property{&ast.Property{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 48,
-															Line:   152,
-														},
-														File:   "monitor.flux",
-														Source: "fn: (r) => r.level_value != 0",
-														Start: ast.Position{
-															Column: 19,
-															Line:   152,
-														},
-													},
-												},
-												Comma: nil,
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 21,
-																Line:   152,
-															},
-															File:   "monitor.flux",
-															Source: "fn",
-															Start: ast.Position{
-																Column: 19,
-																Line:   152,
-															},
-														},
-													},
-													Name: "fn",
-												},
-												Separator: nil,
-												Value: &ast.FunctionExpression{
-													Arrow: nil,
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 48,
-																Line:   152,
-															},
-															File:   "monitor.flux",
-															Source: "(r) => r.level_value != 0",
-															Start: ast.Position{
-																Column: 23,
-																Line:   152,
-															},
-														},
-													},
-													Body: &ast.BinaryExpression{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 48,
-																	Line:   152,
-																},
-																File:   "monitor.flux",
-																Source: "r.level_value != 0",
-																Start: ast.Position{
-																	Column: 30,
-																	Line:   152,
-																},
-															},
-														},
-														Left: &ast.MemberExpression{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 43,
-																		Line:   152,
-																	},
-																	File:   "monitor.flux",
-																	Source: "r.level_value",
-																	Start: ast.Position{
-																		Column: 30,
-																		Line:   152,
-																	},
-																},
-															},
-															Lbrack: nil,
-															Object: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 31,
-																			Line:   152,
-																		},
-																		File:   "monitor.flux",
-																		Source: "r",
-																		Start: ast.Position{
-																			Column: 30,
-																			Line:   152,
-																		},
-																	},
-																},
-																Name: "r",
-															},
-															Property: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 43,
-																			Line:   152,
-																		},
-																		File:   "monitor.flux",
-																		Source: "level_value",
-																		Start: ast.Position{
-																			Column: 32,
-																			Line:   152,
-																		},
-																	},
-																},
-																Name: "level_value",
-															},
-															Rbrack: nil,
-														},
-														Operator: 18,
-														Right: &ast.IntegerLiteral{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 48,
-																		Line:   152,
-																	},
-																	File:   "monitor.flux",
-																	Source: "0",
-																	Start: ast.Position{
-																		Column: 47,
-																		Line:   152,
-																	},
-																},
-															},
-															Value: int64(0),
-														},
-													},
-													Lparen: nil,
-													Params: []*ast.Property{&ast.Property{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 25,
-																	Line:   152,
-																},
-																File:   "monitor.flux",
-																Source: "r",
-																Start: ast.Position{
-																	Column: 24,
-																	Line:   152,
-																},
-															},
-														},
-														Comma: nil,
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 25,
-																		Line:   152,
-																	},
-																	File:   "monitor.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 24,
-																		Line:   152,
-																	},
-																},
-															},
-															Name: "r",
-														},
-														Separator: nil,
-														Value:     nil,
-													}},
-													Rparan: nil,
-												},
-											}},
-											Rbrace: nil,
-											With:   nil,
-										}},
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 49,
-													Line:   152,
-												},
-												File:   "monitor.flux",
-												Source: "filter(fn: (r) => r.level_value != 0)",
-												Start: ast.Position{
-													Column: 12,
-													Line:   152,
-												},
-											},
-										},
-										Callee: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 18,
-														Line:   152,
-													},
-													File:   "monitor.flux",
-													Source: "filter",
-													Start: ast.Position{
-														Column: 12,
-														Line:   152,
-													},
-												},
-											},
-											Name: "filter",
-										},
-										Lparen: nil,
-										Rparen: nil,
-									},
-								},
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 42,
-											Line:   153,
-										},
-										File:   "monitor.flux",
-										Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])",
-										Start: ast.Position{
-											Column: 12,
-											Line:   132,
-										},
-									},
-								},
-								Call: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 41,
-													Line:   153,
-												},
-												File:   "monitor.flux",
-												Source: "columns: [\"level_value\"]",
-												Start: ast.Position{
-													Column: 17,
-													Line:   153,
-												},
-											},
-										},
-										Lbrace: nil,
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 41,
-														Line:   153,
-													},
-													File:   "monitor.flux",
-													Source: "columns: [\"level_value\"]",
-													Start: ast.Position{
-														Column: 17,
-														Line:   153,
-													},
-												},
-											},
-											Comma: nil,
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 24,
-															Line:   153,
-														},
-														File:   "monitor.flux",
-														Source: "columns",
-														Start: ast.Position{
-															Column: 17,
-															Line:   153,
-														},
-													},
-												},
-												Name: "columns",
-											},
-											Separator: nil,
-											Value: &ast.ArrayExpression{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 41,
-															Line:   153,
-														},
-														File:   "monitor.flux",
-														Source: "[\"level_value\"]",
-														Start: ast.Position{
-															Column: 26,
-															Line:   153,
-														},
-													},
-												},
-												Elements: []ast.Expression{&ast.StringLiteral{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 40,
-																Line:   153,
-															},
-															File:   "monitor.flux",
-															Source: "\"level_value\"",
-															Start: ast.Position{
-																Column: 27,
-																Line:   153,
-															},
-														},
-													},
-													Value: "level_value",
-												}},
-												Lbrack: nil,
-												Rbrack: nil,
-											},
-										}},
-										Rbrace: nil,
-										With:   nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 42,
-												Line:   153,
-											},
-											File:   "monitor.flux",
-											Source: "drop(columns: [\"level_value\"])",
-											Start: ast.Position{
-												Column: 12,
-												Line:   153,
-											},
-										},
-									},
-									Callee: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 16,
-													Line:   153,
-												},
-												File:   "monitor.flux",
-												Source: "drop",
-												Start: ast.Position{
-													Column: 12,
-													Line:   153,
-												},
-											},
-										},
-										Name: "drop",
-									},
-									Lparen: nil,
-									Rparen: nil,
-								},
-							},
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 67,
-										Line:   154,
-									},
-									File:   "monitor.flux",
-									Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
-									Start: ast.Position{
-										Column: 12,
-										Line:   132,
-									},
-								},
-							},
-							Call: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 66,
-												Line:   154,
-											},
-											File:   "monitor.flux",
-											Source: "mode: \"extend\", columns: [\"_level\"]",
-											Start: ast.Position{
-												Column: 31,
-												Line:   154,
-											},
-										},
-									},
-									Lbrace: nil,
-									Properties: []*ast.Property{&ast.Property{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 45,
-													Line:   154,
-												},
-												File:   "monitor.flux",
-												Source: "mode: \"extend\"",
-												Start: ast.Position{
-													Column: 31,
-													Line:   154,
-												},
-											},
-										},
-										Comma: nil,
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 35,
-														Line:   154,
-													},
-													File:   "monitor.flux",
-													Source: "mode",
-													Start: ast.Position{
-														Column: 31,
-														Line:   154,
-													},
-												},
-											},
-											Name: "mode",
-										},
-										Separator: nil,
-										Value: &ast.StringLiteral{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 45,
-														Line:   154,
-													},
-													File:   "monitor.flux",
-													Source: "\"extend\"",
-													Start: ast.Position{
-														Column: 37,
-														Line:   154,
-													},
-												},
-											},
-											Value: "extend",
-										},
-									}, &ast.Property{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 66,
-													Line:   154,
-												},
-												File:   "monitor.flux",
-												Source: "columns: [\"_level\"]",
-												Start: ast.Position{
-													Column: 47,
-													Line:   154,
-												},
-											},
-										},
-										Comma: nil,
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 54,
-														Line:   154,
-													},
-													File:   "monitor.flux",
-													Source: "columns",
-													Start: ast.Position{
-														Column: 47,
-														Line:   154,
-													},
-												},
-											},
-											Name: "columns",
-										},
-										Separator: nil,
-										Value: &ast.ArrayExpression{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 66,
-														Line:   154,
-													},
-													File:   "monitor.flux",
-													Source: "[\"_level\"]",
-													Start: ast.Position{
-														Column: 56,
-														Line:   154,
-													},
-												},
-											},
-											Elements: []ast.Expression{&ast.StringLiteral{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 65,
-															Line:   154,
-														},
-														File:   "monitor.flux",
-														Source: "\"_level\"",
-														Start: ast.Position{
-															Column: 57,
-															Line:   154,
-														},
-													},
-												},
-												Value: "_level",
-											}},
-											Lbrack: nil,
-											Rbrack: nil,
-										},
-									}},
-									Rbrace: nil,
-									With:   nil,
-								}},
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 67,
-											Line:   154,
-										},
-										File:   "monitor.flux",
-										Source: "experimental.group(mode: \"extend\", columns: [\"_level\"])",
-										Start: ast.Position{
-											Column: 12,
-											Line:   154,
-										},
-									},
-								},
-								Callee: &ast.MemberExpression{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 30,
-												Line:   154,
-											},
-											File:   "monitor.flux",
-											Source: "experimental.group",
-											Start: ast.Position{
-												Column: 12,
-												Line:   154,
-											},
-										},
-									},
-									Lbrack: nil,
-									Object: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 24,
-													Line:   154,
-												},
-												File:   "monitor.flux",
-												Source: "experimental",
-												Start: ast.Position{
-													Column: 12,
-													Line:   154,
-												},
-											},
-										},
-										Name: "experimental",
-									},
-									Property: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 30,
-													Line:   154,
-												},
-												File:   "monitor.flux",
-												Source: "group",
-												Start: ast.Position{
-													Column: 25,
-													Line:   154,
-												},
-											},
-										},
-										Name: "group",
-									},
-									Rbrack: nil,
-								},
-								Lparen: nil,
-								Rparen: nil,
-							},
-						},
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 67,
-									Line:   154,
-								},
-								File:   "monitor.flux",
-								Source: "return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
-								Start: ast.Position{
-									Column: 5,
-									Line:   132,
-								},
-							},
-						},
-					}},
-					Lbrace: nil,
-					Rbrace: nil,
-				},
-				Lparen: nil,
-				Params: []*ast.Property{&ast.Property{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 30,
-								Line:   131,
-							},
-							File:   "monitor.flux",
-							Source: "tables=<-",
-							Start: ast.Position{
-								Column: 21,
-								Line:   131,
-							},
-						},
-					},
-					Comma: nil,
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 27,
-									Line:   131,
-								},
-								File:   "monitor.flux",
-								Source: "tables",
-								Start: ast.Position{
-									Column: 21,
-									Line:   131,
-								},
-							},
-						},
-						Name: "tables",
-					},
-					Separator: nil,
-					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 30,
-								Line:   131,
-							},
-							File:   "monitor.flux",
-							Source: "<-",
-							Start: ast.Position{
-								Column: 28,
-								Line:   131,
-							},
-						},
-					}},
-				}},
-				Rparan: nil,
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Comments: nil,
-				Errors:   nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 2,
-						Line:   174,
-					},
-					File:   "monitor.flux",
-					Source: "stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}",
-					Start: ast.Position{
-						Column: 1,
-						Line:   169,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// stateChanges detects state changes in a stream of data with a _level column and outputs records that change from fromLevel to toLevel.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `fromLevel` is the level to detect a change from. Defaults to \"any\".\n"}, ast.Comment{Text: "// - `toLevel` is the level to detect a change to. The function output records that change to this level\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Detect when the state changes to critical\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// monitor.from(start: -1h)\n"}, ast.Comment{Text: "//    |> monitor.stateChanges(toLevel: \"crit\")\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   169,
+							Line:   132,
 						},
 						File:   "monitor.flux",
-						Source: "stateChanges",
+						Source: "(tables=<-, endpoint, data) => tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])\n    |> log()",
 						Start: ast.Position{
-							Column: 1,
-							Line:   169,
-						},
-					},
-				},
-				Name: "stateChanges",
-			},
-			Init: &ast.FunctionExpression{
-				Arrow: nil,
-				BaseNode: ast.BaseNode{
-					Comments: nil,
-					Errors:   nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 2,
-							Line:   174,
-						},
-						File:   "monitor.flux",
-						Source: "(fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}",
-						Start: ast.Position{
-							Column: 16,
-							Line:   169,
-						},
-					},
-				},
-				Body: &ast.Block{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 2,
-								Line:   174,
-							},
-							File:   "monitor.flux",
-							Source: "{\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}",
-							Start: ast.Position{
-								Column: 63,
-								Line:   169,
-							},
-						},
-					},
-					Body: []ast.Statement{&ast.ReturnStatement{
-						Argument: &ast.ConditionalExpression{
-							Alternate: &ast.PipeExpression{
-								Argument: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 15,
-												Line:   173,
-											},
-											File:   "monitor.flux",
-											Source: "tables",
-											Start: ast.Position{
-												Column: 9,
-												Line:   173,
-											},
-										},
-									},
-									Name: "tables",
-								},
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 72,
-											Line:   173,
-										},
-										File:   "monitor.flux",
-										Source: "tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)",
-										Start: ast.Position{
-											Column: 9,
-											Line:   173,
-										},
-									},
-								},
-								Call: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 71,
-													Line:   173,
-												},
-												File:   "monitor.flux",
-												Source: "fromLevel: fromLevel, toLevel: toLevel",
-												Start: ast.Position{
-													Column: 33,
-													Line:   173,
-												},
-											},
-										},
-										Lbrace: nil,
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 53,
-														Line:   173,
-													},
-													File:   "monitor.flux",
-													Source: "fromLevel: fromLevel",
-													Start: ast.Position{
-														Column: 33,
-														Line:   173,
-													},
-												},
-											},
-											Comma: nil,
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 42,
-															Line:   173,
-														},
-														File:   "monitor.flux",
-														Source: "fromLevel",
-														Start: ast.Position{
-															Column: 33,
-															Line:   173,
-														},
-													},
-												},
-												Name: "fromLevel",
-											},
-											Separator: nil,
-											Value: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 53,
-															Line:   173,
-														},
-														File:   "monitor.flux",
-														Source: "fromLevel",
-														Start: ast.Position{
-															Column: 44,
-															Line:   173,
-														},
-													},
-												},
-												Name: "fromLevel",
-											},
-										}, &ast.Property{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 71,
-														Line:   173,
-													},
-													File:   "monitor.flux",
-													Source: "toLevel: toLevel",
-													Start: ast.Position{
-														Column: 55,
-														Line:   173,
-													},
-												},
-											},
-											Comma: nil,
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 62,
-															Line:   173,
-														},
-														File:   "monitor.flux",
-														Source: "toLevel",
-														Start: ast.Position{
-															Column: 55,
-															Line:   173,
-														},
-													},
-												},
-												Name: "toLevel",
-											},
-											Separator: nil,
-											Value: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 71,
-															Line:   173,
-														},
-														File:   "monitor.flux",
-														Source: "toLevel",
-														Start: ast.Position{
-															Column: 64,
-															Line:   173,
-														},
-													},
-												},
-												Name: "toLevel",
-											},
-										}},
-										Rbrace: nil,
-										With:   nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 72,
-												Line:   173,
-											},
-											File:   "monitor.flux",
-											Source: "_stateChanges(fromLevel: fromLevel, toLevel: toLevel)",
-											Start: ast.Position{
-												Column: 19,
-												Line:   173,
-											},
-										},
-									},
-									Callee: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 32,
-													Line:   173,
-												},
-												File:   "monitor.flux",
-												Source: "_stateChanges",
-												Start: ast.Position{
-													Column: 19,
-													Line:   173,
-												},
-											},
-										},
-										Name: "_stateChanges",
-									},
-									Lparen: nil,
-									Rparen: nil,
-								},
-							},
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 72,
-										Line:   173,
-									},
-									File:   "monitor.flux",
-									Source: "if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)",
-									Start: ast.Position{
-										Column: 12,
-										Line:   170,
-									},
-								},
-							},
-							Consequent: &ast.PipeExpression{
-								Argument: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 15,
-												Line:   171,
-											},
-											File:   "monitor.flux",
-											Source: "tables",
-											Start: ast.Position{
-												Column: 9,
-												Line:   171,
-											},
-										},
-									},
-									Name: "tables",
-								},
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 37,
-											Line:   171,
-										},
-										File:   "monitor.flux",
-										Source: "tables |> stateChangesOnly()",
-										Start: ast.Position{
-											Column: 9,
-											Line:   171,
-										},
-									},
-								},
-								Call: &ast.CallExpression{
-									Arguments: nil,
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 37,
-												Line:   171,
-											},
-											File:   "monitor.flux",
-											Source: "stateChangesOnly()",
-											Start: ast.Position{
-												Column: 19,
-												Line:   171,
-											},
-										},
-									},
-									Callee: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 35,
-													Line:   171,
-												},
-												File:   "monitor.flux",
-												Source: "stateChangesOnly",
-												Start: ast.Position{
-													Column: 19,
-													Line:   171,
-												},
-											},
-										},
-										Name: "stateChangesOnly",
-									},
-									Lparen: nil,
-									Rparen: nil,
-								},
-							},
-							Test: &ast.LogicalExpression{
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 54,
-											Line:   170,
-										},
-										File:   "monitor.flux",
-										Source: "fromLevel == \"any\" and toLevel == \"any\"",
-										Start: ast.Position{
-											Column: 15,
-											Line:   170,
-										},
-									},
-								},
-								Left: &ast.BinaryExpression{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 33,
-												Line:   170,
-											},
-											File:   "monitor.flux",
-											Source: "fromLevel == \"any\"",
-											Start: ast.Position{
-												Column: 15,
-												Line:   170,
-											},
-										},
-									},
-									Left: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 24,
-													Line:   170,
-												},
-												File:   "monitor.flux",
-												Source: "fromLevel",
-												Start: ast.Position{
-													Column: 15,
-													Line:   170,
-												},
-											},
-										},
-										Name: "fromLevel",
-									},
-									Operator: 17,
-									Right: &ast.StringLiteral{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 33,
-													Line:   170,
-												},
-												File:   "monitor.flux",
-												Source: "\"any\"",
-												Start: ast.Position{
-													Column: 28,
-													Line:   170,
-												},
-											},
-										},
-										Value: "any",
-									},
-								},
-								Operator: 1,
-								Right: &ast.BinaryExpression{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 54,
-												Line:   170,
-											},
-											File:   "monitor.flux",
-											Source: "toLevel == \"any\"",
-											Start: ast.Position{
-												Column: 38,
-												Line:   170,
-											},
-										},
-									},
-									Left: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 45,
-													Line:   170,
-												},
-												File:   "monitor.flux",
-												Source: "toLevel",
-												Start: ast.Position{
-													Column: 38,
-													Line:   170,
-												},
-											},
-										},
-										Name: "toLevel",
-									},
-									Operator: 17,
-									Right: &ast.StringLiteral{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 54,
-													Line:   170,
-												},
-												File:   "monitor.flux",
-												Source: "\"any\"",
-												Start: ast.Position{
-													Column: 49,
-													Line:   170,
-												},
-											},
-										},
-										Value: "any",
-									},
-								},
-							},
-							Tk_else: nil,
-							Tk_if:   nil,
-							Tk_then: nil,
-						},
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 72,
-									Line:   173,
-								},
-								File:   "monitor.flux",
-								Source: "return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)",
-								Start: ast.Position{
-									Column: 5,
-									Line:   170,
-								},
-							},
-						},
-					}},
-					Lbrace: nil,
-					Rbrace: nil,
-				},
-				Lparen: nil,
-				Params: []*ast.Property{&ast.Property{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 32,
-								Line:   169,
-							},
-							File:   "monitor.flux",
-							Source: "fromLevel=\"any\"",
-							Start: ast.Position{
-								Column: 17,
-								Line:   169,
-							},
-						},
-					},
-					Comma: nil,
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 26,
-									Line:   169,
-								},
-								File:   "monitor.flux",
-								Source: "fromLevel",
-								Start: ast.Position{
-									Column: 17,
-									Line:   169,
-								},
-							},
-						},
-						Name: "fromLevel",
-					},
-					Separator: nil,
-					Value: &ast.StringLiteral{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 32,
-									Line:   169,
-								},
-								File:   "monitor.flux",
-								Source: "\"any\"",
-								Start: ast.Position{
-									Column: 27,
-									Line:   169,
-								},
-							},
-						},
-						Value: "any",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 47,
-								Line:   169,
-							},
-							File:   "monitor.flux",
-							Source: "toLevel=\"any\"",
-							Start: ast.Position{
-								Column: 34,
-								Line:   169,
-							},
-						},
-					},
-					Comma: nil,
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 41,
-									Line:   169,
-								},
-								File:   "monitor.flux",
-								Source: "toLevel",
-								Start: ast.Position{
-									Column: 34,
-									Line:   169,
-								},
-							},
-						},
-						Name: "toLevel",
-					},
-					Separator: nil,
-					Value: &ast.StringLiteral{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 47,
-									Line:   169,
-								},
-								File:   "monitor.flux",
-								Source: "\"any\"",
-								Start: ast.Position{
-									Column: 42,
-									Line:   169,
-								},
-							},
-						},
-						Value: "any",
-					},
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 58,
-								Line:   169,
-							},
-							File:   "monitor.flux",
-							Source: "tables=<-",
-							Start: ast.Position{
-								Column: 49,
-								Line:   169,
-							},
-						},
-					},
-					Comma: nil,
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 55,
-									Line:   169,
-								},
-								File:   "monitor.flux",
-								Source: "tables",
-								Start: ast.Position{
-									Column: 49,
-									Line:   169,
-								},
-							},
-						},
-						Name: "tables",
-					},
-					Separator: nil,
-					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 58,
-								Line:   169,
-							},
-							File:   "monitor.flux",
-							Source: "<-",
-							Start: ast.Position{
-								Column: 56,
-								Line:   169,
-							},
-						},
-					}},
-				}},
-				Rparan: nil,
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Comments: nil,
-				Errors:   nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 52,
-						Line:   198,
-					},
-					File:   "monitor.flux",
-					Source: "deadman = (t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))",
-					Start: ast.Position{
-						Column: 1,
-						Line:   196,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// deadman detects when a group stops reporting data.\n"}, ast.Comment{Text: "// It takes a stream of tables and reports if groups have been observed since time t.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      monitor.deadman() retains the most recent row from each input table and adds a dead column.\n"}, ast.Comment{Text: "//      If a record appears after time t, monitor.deadman() sets dead to false. Otherwise, dead is set to true.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `t` is the time threshold for the deadman check.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Detect if a host hasn’t reported in the last five minutes\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/monitor\"\n"}, ast.Comment{Text: "// import \"experimental\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// from(bucket: \"example-bucket\")\n"}, ast.Comment{Text: "//   |> range(start: -10m)\n"}, ast.Comment{Text: "//   |> group(columns: [\"host\"])\n"}, ast.Comment{Text: "//   |> monitor.deadman(t: experimental.subDuration(d: 5m, from: now() ))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
-					Errors:   nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 8,
-							Line:   196,
-						},
-						File:   "monitor.flux",
-						Source: "deadman",
-						Start: ast.Position{
-							Column: 1,
-							Line:   196,
-						},
-					},
-				},
-				Name: "deadman",
-			},
-			Init: &ast.FunctionExpression{
-				Arrow: nil,
-				BaseNode: ast.BaseNode{
-					Comments: nil,
-					Errors:   nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 52,
-							Line:   198,
-						},
-						File:   "monitor.flux",
-						Source: "(t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))",
-						Start: ast.Position{
-							Column: 11,
-							Line:   196,
-						},
-					},
-				},
-				Body: &ast.PipeExpression{
-					Argument: &ast.PipeExpression{
-						Argument: &ast.Identifier{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 35,
-										Line:   196,
-									},
-									File:   "monitor.flux",
-									Source: "tables",
-									Start: ast.Position{
-										Column: 29,
-										Line:   196,
-									},
-								},
-							},
-							Name: "tables",
-						},
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 28,
-									Line:   197,
-								},
-								File:   "monitor.flux",
-								Source: "tables\n    |> max(column: \"_time\")",
-								Start: ast.Position{
-									Column: 29,
-									Line:   196,
-								},
-							},
-						},
-						Call: &ast.CallExpression{
-							Arguments: []ast.Expression{&ast.ObjectExpression{
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 27,
-											Line:   197,
-										},
-										File:   "monitor.flux",
-										Source: "column: \"_time\"",
-										Start: ast.Position{
-											Column: 12,
-											Line:   197,
-										},
-									},
-								},
-								Lbrace: nil,
-								Properties: []*ast.Property{&ast.Property{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 27,
-												Line:   197,
-											},
-											File:   "monitor.flux",
-											Source: "column: \"_time\"",
-											Start: ast.Position{
-												Column: 12,
-												Line:   197,
-											},
-										},
-									},
-									Comma: nil,
-									Key: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 18,
-													Line:   197,
-												},
-												File:   "monitor.flux",
-												Source: "column",
-												Start: ast.Position{
-													Column: 12,
-													Line:   197,
-												},
-											},
-										},
-										Name: "column",
-									},
-									Separator: nil,
-									Value: &ast.StringLiteral{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 27,
-													Line:   197,
-												},
-												File:   "monitor.flux",
-												Source: "\"_time\"",
-												Start: ast.Position{
-													Column: 20,
-													Line:   197,
-												},
-											},
-										},
-										Value: "_time",
-									},
-								}},
-								Rbrace: nil,
-								With:   nil,
-							}},
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 28,
-										Line:   197,
-									},
-									File:   "monitor.flux",
-									Source: "max(column: \"_time\")",
-									Start: ast.Position{
-										Column: 8,
-										Line:   197,
-									},
-								},
-							},
-							Callee: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 11,
-											Line:   197,
-										},
-										File:   "monitor.flux",
-										Source: "max",
-										Start: ast.Position{
-											Column: 8,
-											Line:   197,
-										},
-									},
-								},
-								Name: "max",
-							},
-							Lparen: nil,
-							Rparen: nil,
-						},
-					},
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 52,
-								Line:   198,
-							},
-							File:   "monitor.flux",
-							Source: "tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))",
-							Start: ast.Position{
-								Column: 29,
-								Line:   196,
-							},
-						},
-					},
-					Call: &ast.CallExpression{
-						Arguments: []ast.Expression{&ast.ObjectExpression{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 51,
-										Line:   198,
-									},
-									File:   "monitor.flux",
-									Source: "fn: (r) => ({r with dead: r._time < t})",
-									Start: ast.Position{
-										Column: 12,
-										Line:   198,
-									},
-								},
-							},
-							Lbrace: nil,
-							Properties: []*ast.Property{&ast.Property{
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 51,
-											Line:   198,
-										},
-										File:   "monitor.flux",
-										Source: "fn: (r) => ({r with dead: r._time < t})",
-										Start: ast.Position{
-											Column: 12,
-											Line:   198,
-										},
-									},
-								},
-								Comma: nil,
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 14,
-												Line:   198,
-											},
-											File:   "monitor.flux",
-											Source: "fn",
-											Start: ast.Position{
-												Column: 12,
-												Line:   198,
-											},
-										},
-									},
-									Name: "fn",
-								},
-								Separator: nil,
-								Value: &ast.FunctionExpression{
-									Arrow: nil,
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 51,
-												Line:   198,
-											},
-											File:   "monitor.flux",
-											Source: "(r) => ({r with dead: r._time < t})",
-											Start: ast.Position{
-												Column: 16,
-												Line:   198,
-											},
-										},
-									},
-									Body: &ast.ParenExpression{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 51,
-													Line:   198,
-												},
-												File:   "monitor.flux",
-												Source: "({r with dead: r._time < t})",
-												Start: ast.Position{
-													Column: 23,
-													Line:   198,
-												},
-											},
-										},
-										Expression: &ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 50,
-														Line:   198,
-													},
-													File:   "monitor.flux",
-													Source: "{r with dead: r._time < t}",
-													Start: ast.Position{
-														Column: 24,
-														Line:   198,
-													},
-												},
-											},
-											Lbrace: nil,
-											Properties: []*ast.Property{&ast.Property{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 49,
-															Line:   198,
-														},
-														File:   "monitor.flux",
-														Source: "dead: r._time < t",
-														Start: ast.Position{
-															Column: 32,
-															Line:   198,
-														},
-													},
-												},
-												Comma: nil,
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 36,
-																Line:   198,
-															},
-															File:   "monitor.flux",
-															Source: "dead",
-															Start: ast.Position{
-																Column: 32,
-																Line:   198,
-															},
-														},
-													},
-													Name: "dead",
-												},
-												Separator: nil,
-												Value: &ast.BinaryExpression{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 49,
-																Line:   198,
-															},
-															File:   "monitor.flux",
-															Source: "r._time < t",
-															Start: ast.Position{
-																Column: 38,
-																Line:   198,
-															},
-														},
-													},
-													Left: &ast.MemberExpression{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 45,
-																	Line:   198,
-																},
-																File:   "monitor.flux",
-																Source: "r._time",
-																Start: ast.Position{
-																	Column: 38,
-																	Line:   198,
-																},
-															},
-														},
-														Lbrack: nil,
-														Object: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 39,
-																		Line:   198,
-																	},
-																	File:   "monitor.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 38,
-																		Line:   198,
-																	},
-																},
-															},
-															Name: "r",
-														},
-														Property: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 45,
-																		Line:   198,
-																	},
-																	File:   "monitor.flux",
-																	Source: "_time",
-																	Start: ast.Position{
-																		Column: 40,
-																		Line:   198,
-																	},
-																},
-															},
-															Name: "_time",
-														},
-														Rbrack: nil,
-													},
-													Operator: 8,
-													Right: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 49,
-																	Line:   198,
-																},
-																File:   "monitor.flux",
-																Source: "t",
-																Start: ast.Position{
-																	Column: 48,
-																	Line:   198,
-																},
-															},
-														},
-														Name: "t",
-													},
-												},
-											}},
-											Rbrace: nil,
-											With: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 26,
-															Line:   198,
-														},
-														File:   "monitor.flux",
-														Source: "r",
-														Start: ast.Position{
-															Column: 25,
-															Line:   198,
-														},
-													},
-												},
-												Name: "r",
-											},
-										},
-										Lparen: nil,
-										Rparen: nil,
-									},
-									Lparen: nil,
-									Params: []*ast.Property{&ast.Property{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 18,
-													Line:   198,
-												},
-												File:   "monitor.flux",
-												Source: "r",
-												Start: ast.Position{
-													Column: 17,
-													Line:   198,
-												},
-											},
-										},
-										Comma: nil,
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 18,
-														Line:   198,
-													},
-													File:   "monitor.flux",
-													Source: "r",
-													Start: ast.Position{
-														Column: 17,
-														Line:   198,
-													},
-												},
-											},
-											Name: "r",
-										},
-										Separator: nil,
-										Value:     nil,
-									}},
-									Rparan: nil,
-								},
-							}},
-							Rbrace: nil,
-							With:   nil,
-						}},
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 52,
-									Line:   198,
-								},
-								File:   "monitor.flux",
-								Source: "map(fn: (r) => ({r with dead: r._time < t}))",
-								Start: ast.Position{
-									Column: 8,
-									Line:   198,
-								},
-							},
-						},
-						Callee: &ast.Identifier{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 11,
-										Line:   198,
-									},
-									File:   "monitor.flux",
-									Source: "map",
-									Start: ast.Position{
-										Column: 8,
-										Line:   198,
-									},
-								},
-							},
-							Name: "map",
-						},
-						Lparen: nil,
-						Rparen: nil,
-					},
-				},
-				Lparen: nil,
-				Params: []*ast.Property{&ast.Property{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 13,
-								Line:   196,
-							},
-							File:   "monitor.flux",
-							Source: "t",
-							Start: ast.Position{
-								Column: 12,
-								Line:   196,
-							},
-						},
-					},
-					Comma: nil,
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 13,
-									Line:   196,
-								},
-								File:   "monitor.flux",
-								Source: "t",
-								Start: ast.Position{
-									Column: 12,
-									Line:   196,
-								},
-							},
-						},
-						Name: "t",
-					},
-					Separator: nil,
-					Value:     nil,
-				}, &ast.Property{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 24,
-								Line:   196,
-							},
-							File:   "monitor.flux",
-							Source: "tables=<-",
-							Start: ast.Position{
-								Column: 15,
-								Line:   196,
-							},
-						},
-					},
-					Comma: nil,
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 21,
-									Line:   196,
-								},
-								File:   "monitor.flux",
-								Source: "tables",
-								Start: ast.Position{
-									Column: 15,
-									Line:   196,
-								},
-							},
-						},
-						Name: "tables",
-					},
-					Separator: nil,
-					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 24,
-								Line:   196,
-							},
-							File:   "monitor.flux",
-							Source: "<-",
-							Start: ast.Position{
-								Column: 22,
-								Line:   196,
-							},
-						},
-					}},
-				}},
-				Rparan: nil,
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Comments: nil,
-				Errors:   nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 15,
-						Line:   289,
-					},
-					File:   "monitor.flux",
-					Source: "check = (\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
-					Start: ast.Position{
-						Column: 1,
-						Line:   242,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// check checks input data and assigns a level (ok, info, warn, or crit) to each row based on predicate functions.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      monitor.check() stores statuses in the _level column and writes results to the statuses measurement in the _monitoring bucket.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `crit` is the predicate function that determines crit status. Default is (r) => false.\n"}, ast.Comment{Text: "// - `warn` is the predicate function that determines warn status. Default is (r) => false.\n"}, ast.Comment{Text: "// - `info` is the predicate function that determines info status. Default is (r) => false.\n"}, ast.Comment{Text: "// - `ok` is the predicate function that determines ok status. Default is (r) => false.\n"}, ast.Comment{Text: "// - `messagefn` is the predicate function that constructs a message to append to each row. The message is stored in the _message column.\n"}, ast.Comment{Text: "// - `data` is meta data used to identify this check.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Monitor disk usage\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/monitor\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// from(bucket: \"telegraf\")\n"}, ast.Comment{Text: "//   |> range(start: -1h)\n"}, ast.Comment{Text: "//   |> filter(fn: (r) =>\n"}, ast.Comment{Text: "//       r._measurement == \"disk\" and\n"}, ast.Comment{Text: "//       r._field == \"used_percent\"\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "//   |> group(columns: [\"_measurement\"])\n"}, ast.Comment{Text: "//   |> monitor.check(\n"}, ast.Comment{Text: "//     crit: (r) => r._value > 90.0,\n"}, ast.Comment{Text: "//     warn: (r) => r._value > 80.0,\n"}, ast.Comment{Text: "//     info: (r) => r._value > 70.0,\n"}, ast.Comment{Text: "//     ok:   (r) => r._value <= 60.0,\n"}, ast.Comment{Text: "//     messageFn: (r) =>\n"}, ast.Comment{Text: "//       if r._level == \"crit\" then \"Critical alert!! Disk usage is at ${r._value}%!\"\n"}, ast.Comment{Text: "//       else if r._level == \"warn\" then \"Warning! Disk usage is at ${r._value}%.\"\n"}, ast.Comment{Text: "//       else if r._level == \"info\" then \"Disk usage is at ${r._value}%.\"\n"}, ast.Comment{Text: "//       else \"Things are looking good.\",\n"}, ast.Comment{Text: "//     data: {\n"}, ast.Comment{Text: "//       _check_name: \"Disk Utilization (Used Percentage)\",\n"}, ast.Comment{Text: "//       _check_id: \"disk_used_percent\",\n"}, ast.Comment{Text: "//       _type: \"threshold\",\n"}, ast.Comment{Text: "//       tags: {}\n"}, ast.Comment{Text: "//     }\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
-					Errors:   nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 6,
-							Line:   242,
-						},
-						File:   "monitor.flux",
-						Source: "check",
-						Start: ast.Position{
-							Column: 1,
-							Line:   242,
-						},
-					},
-				},
-				Name: "check",
-			},
-			Init: &ast.FunctionExpression{
-				Arrow: nil,
-				BaseNode: ast.BaseNode{
-					Comments: nil,
-					Errors:   nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 15,
-							Line:   289,
-						},
-						File:   "monitor.flux",
-						Source: "(\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
-						Start: ast.Position{
-							Column: 9,
-							Line:   242,
+							Column: 10,
+							Line:   120,
 						},
 					},
 				},
@@ -10845,14 +6856,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 12,
-														Line:   250,
+														Column: 47,
+														Line:   120,
 													},
 													File:   "monitor.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 6,
-														Line:   250,
+														Column: 41,
+														Line:   120,
 													},
 												},
 											},
@@ -10863,14 +6874,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 38,
-													Line:   251,
+													Column: 33,
+													Line:   121,
 												},
 												File:   "monitor.flux",
-												Source: "tables\n    |> experimental.set(o: data.tags)",
+												Source: "tables\n    |> experimental.set(o: data)",
 												Start: ast.Position{
-													Column: 6,
-													Line:   250,
+													Column: 41,
+													Line:   120,
 												},
 											},
 										},
@@ -10881,14 +6892,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 37,
-															Line:   251,
+															Column: 32,
+															Line:   121,
 														},
 														File:   "monitor.flux",
-														Source: "o: data.tags",
+														Source: "o: data",
 														Start: ast.Position{
 															Column: 25,
-															Line:   251,
+															Line:   121,
 														},
 													},
 												},
@@ -10899,14 +6910,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 37,
-																Line:   251,
+																Column: 32,
+																Line:   121,
 															},
 															File:   "monitor.flux",
-															Source: "o: data.tags",
+															Source: "o: data",
 															Start: ast.Position{
 																Column: 25,
-																Line:   251,
+																Line:   121,
 															},
 														},
 													},
@@ -10918,76 +6929,37 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 26,
-																	Line:   251,
+																	Line:   121,
 																},
 																File:   "monitor.flux",
 																Source: "o",
 																Start: ast.Position{
 																	Column: 25,
-																	Line:   251,
+																	Line:   121,
 																},
 															},
 														},
 														Name: "o",
 													},
 													Separator: nil,
-													Value: &ast.MemberExpression{
+													Value: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 37,
-																	Line:   251,
+																	Column: 32,
+																	Line:   121,
 																},
 																File:   "monitor.flux",
-																Source: "data.tags",
+																Source: "data",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   251,
+																	Line:   121,
 																},
 															},
 														},
-														Lbrack: nil,
-														Object: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 32,
-																		Line:   251,
-																	},
-																	File:   "monitor.flux",
-																	Source: "data",
-																	Start: ast.Position{
-																		Column: 28,
-																		Line:   251,
-																	},
-																},
-															},
-															Name: "data",
-														},
-														Property: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 37,
-																		Line:   251,
-																	},
-																	File:   "monitor.flux",
-																	Source: "tags",
-																	Start: ast.Position{
-																		Column: 33,
-																		Line:   251,
-																	},
-																},
-															},
-															Name: "tags",
-														},
-														Rbrack: nil,
+														Name: "data",
 													},
 												}},
 												Rbrace: nil,
@@ -10998,14 +6970,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 38,
-														Line:   251,
+														Column: 33,
+														Line:   121,
 													},
 													File:   "monitor.flux",
-													Source: "experimental.set(o: data.tags)",
+													Source: "experimental.set(o: data)",
 													Start: ast.Position{
 														Column: 8,
-														Line:   251,
+														Line:   121,
 													},
 												},
 											},
@@ -11016,13 +6988,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   251,
+															Line:   121,
 														},
 														File:   "monitor.flux",
 														Source: "experimental.set",
 														Start: ast.Position{
 															Column: 8,
-															Line:   251,
+															Line:   121,
 														},
 													},
 												},
@@ -11034,13 +7006,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 20,
-																Line:   251,
+																Line:   121,
 															},
 															File:   "monitor.flux",
 															Source: "experimental",
 															Start: ast.Position{
 																Column: 8,
-																Line:   251,
+																Line:   121,
 															},
 														},
 													},
@@ -11053,13 +7025,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 24,
-																Line:   251,
+																Line:   121,
 															},
 															File:   "monitor.flux",
 															Source: "set",
 															Start: ast.Position{
 																Column: 21,
-																Line:   251,
+																Line:   121,
 															},
 														},
 													},
@@ -11076,14 +7048,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 90,
-												Line:   252,
+												Column: 85,
+												Line:   122,
 											},
 											File:   "monitor.flux",
-											Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))",
+											Source: "tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))",
 											Start: ast.Position{
-												Column: 6,
-												Line:   250,
+												Column: 41,
+												Line:   120,
 											},
 										},
 									},
@@ -11094,14 +7066,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 89,
-														Line:   252,
+														Column: 84,
+														Line:   122,
 													},
 													File:   "monitor.flux",
-													Source: "mode: \"extend\", columns: experimental.objectKeys(o: data.tags)",
+													Source: "mode: \"extend\", columns: experimental.objectKeys(o: data)",
 													Start: ast.Position{
 														Column: 27,
-														Line:   252,
+														Line:   122,
 													},
 												},
 											},
@@ -11113,13 +7085,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
-															Line:   252,
+															Line:   122,
 														},
 														File:   "monitor.flux",
 														Source: "mode: \"extend\"",
 														Start: ast.Position{
 															Column: 27,
-															Line:   252,
+															Line:   122,
 														},
 													},
 												},
@@ -11131,13 +7103,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 31,
-																Line:   252,
+																Line:   122,
 															},
 															File:   "monitor.flux",
 															Source: "mode",
 															Start: ast.Position{
 																Column: 27,
-																Line:   252,
+																Line:   122,
 															},
 														},
 													},
@@ -11151,13 +7123,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
-																Line:   252,
+																Line:   122,
 															},
 															File:   "monitor.flux",
 															Source: "\"extend\"",
 															Start: ast.Position{
 																Column: 33,
-																Line:   252,
+																Line:   122,
 															},
 														},
 													},
@@ -11169,14 +7141,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 89,
-															Line:   252,
+															Column: 84,
+															Line:   122,
 														},
 														File:   "monitor.flux",
-														Source: "columns: experimental.objectKeys(o: data.tags)",
+														Source: "columns: experimental.objectKeys(o: data)",
 														Start: ast.Position{
 															Column: 43,
-															Line:   252,
+															Line:   122,
 														},
 													},
 												},
@@ -11188,13 +7160,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
-																Line:   252,
+																Line:   122,
 															},
 															File:   "monitor.flux",
 															Source: "columns",
 															Start: ast.Position{
 																Column: 43,
-																Line:   252,
+																Line:   122,
 															},
 														},
 													},
@@ -11208,14 +7180,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 88,
-																	Line:   252,
+																	Column: 83,
+																	Line:   122,
 																},
 																File:   "monitor.flux",
-																Source: "o: data.tags",
+																Source: "o: data",
 																Start: ast.Position{
 																	Column: 76,
-																	Line:   252,
+																	Line:   122,
 																},
 															},
 														},
@@ -11226,14 +7198,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 88,
-																		Line:   252,
+																		Column: 83,
+																		Line:   122,
 																	},
 																	File:   "monitor.flux",
-																	Source: "o: data.tags",
+																	Source: "o: data",
 																	Start: ast.Position{
 																		Column: 76,
-																		Line:   252,
+																		Line:   122,
 																	},
 																},
 															},
@@ -11245,76 +7217,37 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 77,
-																			Line:   252,
+																			Line:   122,
 																		},
 																		File:   "monitor.flux",
 																		Source: "o",
 																		Start: ast.Position{
 																			Column: 76,
-																			Line:   252,
+																			Line:   122,
 																		},
 																	},
 																},
 																Name: "o",
 															},
 															Separator: nil,
-															Value: &ast.MemberExpression{
+															Value: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 88,
-																			Line:   252,
+																			Column: 83,
+																			Line:   122,
 																		},
 																		File:   "monitor.flux",
-																		Source: "data.tags",
+																		Source: "data",
 																		Start: ast.Position{
 																			Column: 79,
-																			Line:   252,
+																			Line:   122,
 																		},
 																	},
 																},
-																Lbrack: nil,
-																Object: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 83,
-																				Line:   252,
-																			},
-																			File:   "monitor.flux",
-																			Source: "data",
-																			Start: ast.Position{
-																				Column: 79,
-																				Line:   252,
-																			},
-																		},
-																	},
-																	Name: "data",
-																},
-																Property: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 88,
-																				Line:   252,
-																			},
-																			File:   "monitor.flux",
-																			Source: "tags",
-																			Start: ast.Position{
-																				Column: 84,
-																				Line:   252,
-																			},
-																		},
-																	},
-																	Name: "tags",
-																},
-																Rbrack: nil,
+																Name: "data",
 															},
 														}},
 														Rbrace: nil,
@@ -11325,14 +7258,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 89,
-																Line:   252,
+																Column: 84,
+																Line:   122,
 															},
 															File:   "monitor.flux",
-															Source: "experimental.objectKeys(o: data.tags)",
+															Source: "experimental.objectKeys(o: data)",
 															Start: ast.Position{
 																Column: 52,
-																Line:   252,
+																Line:   122,
 															},
 														},
 													},
@@ -11343,13 +7276,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 75,
-																	Line:   252,
+																	Line:   122,
 																},
 																File:   "monitor.flux",
 																Source: "experimental.objectKeys",
 																Start: ast.Position{
 																	Column: 52,
-																	Line:   252,
+																	Line:   122,
 																},
 															},
 														},
@@ -11361,13 +7294,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 64,
-																		Line:   252,
+																		Line:   122,
 																	},
 																	File:   "monitor.flux",
 																	Source: "experimental",
 																	Start: ast.Position{
 																		Column: 52,
-																		Line:   252,
+																		Line:   122,
 																	},
 																},
 															},
@@ -11380,13 +7313,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 75,
-																		Line:   252,
+																		Line:   122,
 																	},
 																	File:   "monitor.flux",
 																	Source: "objectKeys",
 																	Start: ast.Position{
 																		Column: 65,
-																		Line:   252,
+																		Line:   122,
 																	},
 																},
 															},
@@ -11406,14 +7339,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 90,
-													Line:   252,
+													Column: 85,
+													Line:   122,
 												},
 												File:   "monitor.flux",
-												Source: "experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))",
+												Source: "experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))",
 												Start: ast.Position{
 													Column: 8,
-													Line:   252,
+													Line:   122,
 												},
 											},
 										},
@@ -11424,13 +7357,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   252,
+														Line:   122,
 													},
 													File:   "monitor.flux",
 													Source: "experimental.group",
 													Start: ast.Position{
 														Column: 8,
-														Line:   252,
+														Line:   122,
 													},
 												},
 											},
@@ -11442,13 +7375,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   252,
+															Line:   122,
 														},
 														File:   "monitor.flux",
 														Source: "experimental",
 														Start: ast.Position{
 															Column: 8,
-															Line:   252,
+															Line:   122,
 														},
 													},
 												},
@@ -11461,13 +7394,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 26,
-															Line:   252,
+															Line:   122,
 														},
 														File:   "monitor.flux",
 														Source: "group",
 														Start: ast.Position{
 															Column: 21,
-															Line:   252,
+															Line:   122,
 														},
 													},
 												},
@@ -11485,13 +7418,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   273,
+											Line:   129,
 										},
 										File:   "monitor.flux",
-										Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )",
+										Source: "tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )",
 										Start: ast.Position{
-											Column: 6,
-											Line:   250,
+											Column: 41,
+											Line:   120,
 										},
 									},
 								},
@@ -11503,13 +7436,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   272,
+													Line:   128,
 												},
 												File:   "monitor.flux",
-												Source: "fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
+												Source: "fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        })",
 												Start: ast.Position{
 													Column: 9,
-													Line:   254,
+													Line:   124,
 												},
 											},
 										},
@@ -11521,13 +7454,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   272,
+														Line:   128,
 													},
 													File:   "monitor.flux",
-													Source: "fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
+													Source: "fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        })",
 													Start: ast.Position{
 														Column: 9,
-														Line:   254,
+														Line:   124,
 													},
 												},
 											},
@@ -11539,13 +7472,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   254,
+															Line:   124,
 														},
 														File:   "monitor.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 9,
-															Line:   254,
+															Line:   124,
 														},
 													},
 												},
@@ -11560,13 +7493,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   272,
+															Line:   128,
 														},
 														File:   "monitor.flux",
-														Source: "(r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
+														Source: "(r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        })",
 														Start: ast.Position{
 															Column: 13,
-															Line:   254,
+															Line:   124,
 														},
 													},
 												},
@@ -11577,13 +7510,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 11,
-																Line:   272,
+																Line:   128,
 															},
 															File:   "monitor.flux",
-															Source: "({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
+															Source: "({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        })",
 															Start: ast.Position{
 																Column: 20,
-																Line:   254,
+																Line:   124,
 															},
 														},
 													},
@@ -11594,13 +7527,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 10,
-																	Line:   272,
+																	Line:   128,
 																},
 																File:   "monitor.flux",
-																Source: "{r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }",
+																Source: "{r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   254,
+																	Line:   124,
 																},
 															},
 														},
@@ -11611,14 +7544,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 37,
-																		Line:   255,
+																		Column: 42,
+																		Line:   125,
 																	},
 																	File:   "monitor.flux",
-																	Source: "_measurement: \"statuses\"",
+																	Source: "_measurement: \"notifications\"",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   255,
+																		Line:   125,
 																	},
 																},
 															},
@@ -11630,13 +7563,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
-																			Line:   255,
+																			Line:   125,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   255,
+																			Line:   125,
 																		},
 																	},
 																},
@@ -11649,1091 +7582,18 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   255,
+																			Column: 42,
+																			Line:   125,
 																		},
 																		File:   "monitor.flux",
-																		Source: "\"statuses\"",
+																		Source: "\"notifications\"",
 																		Start: ast.Position{
 																			Column: 27,
-																			Line:   255,
+																			Line:   125,
 																		},
 																	},
 																},
-																Value: "statuses",
-															},
-														}, &ast.Property{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 48,
-																		Line:   256,
-																	},
-																	File:   "monitor.flux",
-																	Source: "_source_measurement: r._measurement",
-																	Start: ast.Position{
-																		Column: 13,
-																		Line:   256,
-																	},
-																},
-															},
-															Comma: nil,
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 32,
-																			Line:   256,
-																		},
-																		File:   "monitor.flux",
-																		Source: "_source_measurement",
-																		Start: ast.Position{
-																			Column: 13,
-																			Line:   256,
-																		},
-																	},
-																},
-																Name: "_source_measurement",
-															},
-															Separator: nil,
-															Value: &ast.MemberExpression{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 48,
-																			Line:   256,
-																		},
-																		File:   "monitor.flux",
-																		Source: "r._measurement",
-																		Start: ast.Position{
-																			Column: 34,
-																			Line:   256,
-																		},
-																	},
-																},
-																Lbrack: nil,
-																Object: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 35,
-																				Line:   256,
-																			},
-																			File:   "monitor.flux",
-																			Source: "r",
-																			Start: ast.Position{
-																				Column: 34,
-																				Line:   256,
-																			},
-																		},
-																	},
-																	Name: "r",
-																},
-																Property: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 48,
-																				Line:   256,
-																			},
-																			File:   "monitor.flux",
-																			Source: "_measurement",
-																			Start: ast.Position{
-																				Column: 36,
-																				Line:   256,
-																			},
-																		},
-																	},
-																	Name: "_measurement",
-																},
-																Rbrack: nil,
-															},
-														}, &ast.Property{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 30,
-																		Line:   257,
-																	},
-																	File:   "monitor.flux",
-																	Source: "_type: data._type",
-																	Start: ast.Position{
-																		Column: 13,
-																		Line:   257,
-																	},
-																},
-															},
-															Comma: nil,
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 18,
-																			Line:   257,
-																		},
-																		File:   "monitor.flux",
-																		Source: "_type",
-																		Start: ast.Position{
-																			Column: 13,
-																			Line:   257,
-																		},
-																	},
-																},
-																Name: "_type",
-															},
-															Separator: nil,
-															Value: &ast.MemberExpression{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 30,
-																			Line:   257,
-																		},
-																		File:   "monitor.flux",
-																		Source: "data._type",
-																		Start: ast.Position{
-																			Column: 20,
-																			Line:   257,
-																		},
-																	},
-																},
-																Lbrack: nil,
-																Object: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 24,
-																				Line:   257,
-																			},
-																			File:   "monitor.flux",
-																			Source: "data",
-																			Start: ast.Position{
-																				Column: 20,
-																				Line:   257,
-																			},
-																		},
-																	},
-																	Name: "data",
-																},
-																Property: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 30,
-																				Line:   257,
-																			},
-																			File:   "monitor.flux",
-																			Source: "_type",
-																			Start: ast.Position{
-																				Column: 25,
-																				Line:   257,
-																			},
-																		},
-																	},
-																	Name: "_type",
-																},
-																Rbrack: nil,
-															},
-														}, &ast.Property{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 38,
-																		Line:   258,
-																	},
-																	File:   "monitor.flux",
-																	Source: "_check_id: data._check_id",
-																	Start: ast.Position{
-																		Column: 13,
-																		Line:   258,
-																	},
-																},
-															},
-															Comma: nil,
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 22,
-																			Line:   258,
-																		},
-																		File:   "monitor.flux",
-																		Source: "_check_id",
-																		Start: ast.Position{
-																			Column: 13,
-																			Line:   258,
-																		},
-																	},
-																},
-																Name: "_check_id",
-															},
-															Separator: nil,
-															Value: &ast.MemberExpression{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 38,
-																			Line:   258,
-																		},
-																		File:   "monitor.flux",
-																		Source: "data._check_id",
-																		Start: ast.Position{
-																			Column: 24,
-																			Line:   258,
-																		},
-																	},
-																},
-																Lbrack: nil,
-																Object: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 28,
-																				Line:   258,
-																			},
-																			File:   "monitor.flux",
-																			Source: "data",
-																			Start: ast.Position{
-																				Column: 24,
-																				Line:   258,
-																			},
-																		},
-																	},
-																	Name: "data",
-																},
-																Property: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 38,
-																				Line:   258,
-																			},
-																			File:   "monitor.flux",
-																			Source: "_check_id",
-																			Start: ast.Position{
-																				Column: 29,
-																				Line:   258,
-																			},
-																		},
-																	},
-																	Name: "_check_id",
-																},
-																Rbrack: nil,
-															},
-														}, &ast.Property{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 42,
-																		Line:   259,
-																	},
-																	File:   "monitor.flux",
-																	Source: "_check_name: data._check_name",
-																	Start: ast.Position{
-																		Column: 13,
-																		Line:   259,
-																	},
-																},
-															},
-															Comma: nil,
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 24,
-																			Line:   259,
-																		},
-																		File:   "monitor.flux",
-																		Source: "_check_name",
-																		Start: ast.Position{
-																			Column: 13,
-																			Line:   259,
-																		},
-																	},
-																},
-																Name: "_check_name",
-															},
-															Separator: nil,
-															Value: &ast.MemberExpression{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 42,
-																			Line:   259,
-																		},
-																		File:   "monitor.flux",
-																		Source: "data._check_name",
-																		Start: ast.Position{
-																			Column: 26,
-																			Line:   259,
-																		},
-																	},
-																},
-																Lbrack: nil,
-																Object: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 30,
-																				Line:   259,
-																			},
-																			File:   "monitor.flux",
-																			Source: "data",
-																			Start: ast.Position{
-																				Column: 26,
-																				Line:   259,
-																			},
-																		},
-																	},
-																	Name: "data",
-																},
-																Property: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 42,
-																				Line:   259,
-																			},
-																			File:   "monitor.flux",
-																			Source: "_check_name",
-																			Start: ast.Position{
-																				Column: 31,
-																				Line:   259,
-																			},
-																		},
-																	},
-																	Name: "_check_name",
-																},
-																Rbrack: nil,
-															},
-														}, &ast.Property{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 29,
-																		Line:   269,
-																	},
-																	File:   "monitor.flux",
-																	Source: "_level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
-																	Start: ast.Position{
-																		Column: 13,
-																		Line:   260,
-																	},
-																},
-															},
-															Comma: nil,
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 19,
-																			Line:   260,
-																		},
-																		File:   "monitor.flux",
-																		Source: "_level",
-																		Start: ast.Position{
-																			Column: 13,
-																			Line:   260,
-																		},
-																	},
-																},
-																Name: "_level",
-															},
-															Separator: nil,
-															Value: &ast.ConditionalExpression{
-																Alternate: &ast.ConditionalExpression{
-																	Alternate: &ast.ConditionalExpression{
-																		Alternate: &ast.ConditionalExpression{
-																			Alternate: &ast.Identifier{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 29,
-																							Line:   269,
-																						},
-																						File:   "monitor.flux",
-																						Source: "levelUnknown",
-																						Start: ast.Position{
-																							Column: 17,
-																							Line:   269,
-																						},
-																					},
-																				},
-																				Name: "levelUnknown",
-																			},
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 29,
-																						Line:   269,
-																					},
-																					File:   "monitor.flux",
-																					Source: "if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
-																					Start: ast.Position{
-																						Column: 18,
-																						Line:   266,
-																					},
-																				},
-																			},
-																			Consequent: &ast.Identifier{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 24,
-																							Line:   267,
-																						},
-																						File:   "monitor.flux",
-																						Source: "levelOK",
-																						Start: ast.Position{
-																							Column: 17,
-																							Line:   267,
-																						},
-																					},
-																				},
-																				Name: "levelOK",
-																			},
-																			Test: &ast.CallExpression{
-																				Arguments: []ast.Expression{&ast.ObjectExpression{
-																					BaseNode: ast.BaseNode{
-																						Comments: nil,
-																						Errors:   nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 28,
-																								Line:   266,
-																							},
-																							File:   "monitor.flux",
-																							Source: "r: r",
-																							Start: ast.Position{
-																								Column: 24,
-																								Line:   266,
-																							},
-																						},
-																					},
-																					Lbrace: nil,
-																					Properties: []*ast.Property{&ast.Property{
-																						BaseNode: ast.BaseNode{
-																							Comments: nil,
-																							Errors:   nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 28,
-																									Line:   266,
-																								},
-																								File:   "monitor.flux",
-																								Source: "r: r",
-																								Start: ast.Position{
-																									Column: 24,
-																									Line:   266,
-																								},
-																							},
-																						},
-																						Comma: nil,
-																						Key: &ast.Identifier{
-																							BaseNode: ast.BaseNode{
-																								Comments: nil,
-																								Errors:   nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 25,
-																										Line:   266,
-																									},
-																									File:   "monitor.flux",
-																									Source: "r",
-																									Start: ast.Position{
-																										Column: 24,
-																										Line:   266,
-																									},
-																								},
-																							},
-																							Name: "r",
-																						},
-																						Separator: nil,
-																						Value: &ast.Identifier{
-																							BaseNode: ast.BaseNode{
-																								Comments: nil,
-																								Errors:   nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 28,
-																										Line:   266,
-																									},
-																									File:   "monitor.flux",
-																									Source: "r",
-																									Start: ast.Position{
-																										Column: 27,
-																										Line:   266,
-																									},
-																								},
-																							},
-																							Name: "r",
-																						},
-																					}},
-																					Rbrace: nil,
-																					With:   nil,
-																				}},
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 29,
-																							Line:   266,
-																						},
-																						File:   "monitor.flux",
-																						Source: "ok(r: r)",
-																						Start: ast.Position{
-																							Column: 21,
-																							Line:   266,
-																						},
-																					},
-																				},
-																				Callee: &ast.Identifier{
-																					BaseNode: ast.BaseNode{
-																						Comments: nil,
-																						Errors:   nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 23,
-																								Line:   266,
-																							},
-																							File:   "monitor.flux",
-																							Source: "ok",
-																							Start: ast.Position{
-																								Column: 21,
-																								Line:   266,
-																							},
-																						},
-																					},
-																					Name: "ok",
-																				},
-																				Lparen: nil,
-																				Rparen: nil,
-																			},
-																			Tk_else: nil,
-																			Tk_if:   nil,
-																			Tk_then: nil,
-																		},
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 29,
-																					Line:   269,
-																				},
-																				File:   "monitor.flux",
-																				Source: "if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
-																				Start: ast.Position{
-																					Column: 18,
-																					Line:   264,
-																				},
-																			},
-																		},
-																		Consequent: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 26,
-																						Line:   265,
-																					},
-																					File:   "monitor.flux",
-																					Source: "levelInfo",
-																					Start: ast.Position{
-																						Column: 17,
-																						Line:   265,
-																					},
-																				},
-																			},
-																			Name: "levelInfo",
-																		},
-																		Test: &ast.CallExpression{
-																			Arguments: []ast.Expression{&ast.ObjectExpression{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 30,
-																							Line:   264,
-																						},
-																						File:   "monitor.flux",
-																						Source: "r: r",
-																						Start: ast.Position{
-																							Column: 26,
-																							Line:   264,
-																						},
-																					},
-																				},
-																				Lbrace: nil,
-																				Properties: []*ast.Property{&ast.Property{
-																					BaseNode: ast.BaseNode{
-																						Comments: nil,
-																						Errors:   nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 30,
-																								Line:   264,
-																							},
-																							File:   "monitor.flux",
-																							Source: "r: r",
-																							Start: ast.Position{
-																								Column: 26,
-																								Line:   264,
-																							},
-																						},
-																					},
-																					Comma: nil,
-																					Key: &ast.Identifier{
-																						BaseNode: ast.BaseNode{
-																							Comments: nil,
-																							Errors:   nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 27,
-																									Line:   264,
-																								},
-																								File:   "monitor.flux",
-																								Source: "r",
-																								Start: ast.Position{
-																									Column: 26,
-																									Line:   264,
-																								},
-																							},
-																						},
-																						Name: "r",
-																					},
-																					Separator: nil,
-																					Value: &ast.Identifier{
-																						BaseNode: ast.BaseNode{
-																							Comments: nil,
-																							Errors:   nil,
-																							Loc: &ast.SourceLocation{
-																								End: ast.Position{
-																									Column: 30,
-																									Line:   264,
-																								},
-																								File:   "monitor.flux",
-																								Source: "r",
-																								Start: ast.Position{
-																									Column: 29,
-																									Line:   264,
-																								},
-																							},
-																						},
-																						Name: "r",
-																					},
-																				}},
-																				Rbrace: nil,
-																				With:   nil,
-																			}},
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 31,
-																						Line:   264,
-																					},
-																					File:   "monitor.flux",
-																					Source: "info(r: r)",
-																					Start: ast.Position{
-																						Column: 21,
-																						Line:   264,
-																					},
-																				},
-																			},
-																			Callee: &ast.Identifier{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 25,
-																							Line:   264,
-																						},
-																						File:   "monitor.flux",
-																						Source: "info",
-																						Start: ast.Position{
-																							Column: 21,
-																							Line:   264,
-																						},
-																					},
-																				},
-																				Name: "info",
-																			},
-																			Lparen: nil,
-																			Rparen: nil,
-																		},
-																		Tk_else: nil,
-																		Tk_if:   nil,
-																		Tk_then: nil,
-																	},
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 29,
-																				Line:   269,
-																			},
-																			File:   "monitor.flux",
-																			Source: "if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
-																			Start: ast.Position{
-																				Column: 18,
-																				Line:   262,
-																			},
-																		},
-																	},
-																	Consequent: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 26,
-																					Line:   263,
-																				},
-																				File:   "monitor.flux",
-																				Source: "levelWarn",
-																				Start: ast.Position{
-																					Column: 17,
-																					Line:   263,
-																				},
-																			},
-																		},
-																		Name: "levelWarn",
-																	},
-																	Test: &ast.CallExpression{
-																		Arguments: []ast.Expression{&ast.ObjectExpression{
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 30,
-																						Line:   262,
-																					},
-																					File:   "monitor.flux",
-																					Source: "r: r",
-																					Start: ast.Position{
-																						Column: 26,
-																						Line:   262,
-																					},
-																				},
-																			},
-																			Lbrace: nil,
-																			Properties: []*ast.Property{&ast.Property{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 30,
-																							Line:   262,
-																						},
-																						File:   "monitor.flux",
-																						Source: "r: r",
-																						Start: ast.Position{
-																							Column: 26,
-																							Line:   262,
-																						},
-																					},
-																				},
-																				Comma: nil,
-																				Key: &ast.Identifier{
-																					BaseNode: ast.BaseNode{
-																						Comments: nil,
-																						Errors:   nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 27,
-																								Line:   262,
-																							},
-																							File:   "monitor.flux",
-																							Source: "r",
-																							Start: ast.Position{
-																								Column: 26,
-																								Line:   262,
-																							},
-																						},
-																					},
-																					Name: "r",
-																				},
-																				Separator: nil,
-																				Value: &ast.Identifier{
-																					BaseNode: ast.BaseNode{
-																						Comments: nil,
-																						Errors:   nil,
-																						Loc: &ast.SourceLocation{
-																							End: ast.Position{
-																								Column: 30,
-																								Line:   262,
-																							},
-																							File:   "monitor.flux",
-																							Source: "r",
-																							Start: ast.Position{
-																								Column: 29,
-																								Line:   262,
-																							},
-																						},
-																					},
-																					Name: "r",
-																				},
-																			}},
-																			Rbrace: nil,
-																			With:   nil,
-																		}},
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 31,
-																					Line:   262,
-																				},
-																				File:   "monitor.flux",
-																				Source: "warn(r: r)",
-																				Start: ast.Position{
-																					Column: 21,
-																					Line:   262,
-																				},
-																			},
-																		},
-																		Callee: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 25,
-																						Line:   262,
-																					},
-																					File:   "monitor.flux",
-																					Source: "warn",
-																					Start: ast.Position{
-																						Column: 21,
-																						Line:   262,
-																					},
-																				},
-																			},
-																			Name: "warn",
-																		},
-																		Lparen: nil,
-																		Rparen: nil,
-																	},
-																	Tk_else: nil,
-																	Tk_if:   nil,
-																	Tk_then: nil,
-																},
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 29,
-																			Line:   269,
-																		},
-																		File:   "monitor.flux",
-																		Source: "if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
-																		Start: ast.Position{
-																			Column: 21,
-																			Line:   260,
-																		},
-																	},
-																},
-																Consequent: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 26,
-																				Line:   261,
-																			},
-																			File:   "monitor.flux",
-																			Source: "levelCrit",
-																			Start: ast.Position{
-																				Column: 17,
-																				Line:   261,
-																			},
-																		},
-																	},
-																	Name: "levelCrit",
-																},
-																Test: &ast.CallExpression{
-																	Arguments: []ast.Expression{&ast.ObjectExpression{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 33,
-																					Line:   260,
-																				},
-																				File:   "monitor.flux",
-																				Source: "r: r",
-																				Start: ast.Position{
-																					Column: 29,
-																					Line:   260,
-																				},
-																			},
-																		},
-																		Lbrace: nil,
-																		Properties: []*ast.Property{&ast.Property{
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 33,
-																						Line:   260,
-																					},
-																					File:   "monitor.flux",
-																					Source: "r: r",
-																					Start: ast.Position{
-																						Column: 29,
-																						Line:   260,
-																					},
-																				},
-																			},
-																			Comma: nil,
-																			Key: &ast.Identifier{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 30,
-																							Line:   260,
-																						},
-																						File:   "monitor.flux",
-																						Source: "r",
-																						Start: ast.Position{
-																							Column: 29,
-																							Line:   260,
-																						},
-																					},
-																				},
-																				Name: "r",
-																			},
-																			Separator: nil,
-																			Value: &ast.Identifier{
-																				BaseNode: ast.BaseNode{
-																					Comments: nil,
-																					Errors:   nil,
-																					Loc: &ast.SourceLocation{
-																						End: ast.Position{
-																							Column: 33,
-																							Line:   260,
-																						},
-																						File:   "monitor.flux",
-																						Source: "r",
-																						Start: ast.Position{
-																							Column: 32,
-																							Line:   260,
-																						},
-																					},
-																				},
-																				Name: "r",
-																			},
-																		}},
-																		Rbrace: nil,
-																		With:   nil,
-																	}},
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 34,
-																				Line:   260,
-																			},
-																			File:   "monitor.flux",
-																			Source: "crit(r: r)",
-																			Start: ast.Position{
-																				Column: 24,
-																				Line:   260,
-																			},
-																		},
-																	},
-																	Callee: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 28,
-																					Line:   260,
-																				},
-																				File:   "monitor.flux",
-																				Source: "crit",
-																				Start: ast.Position{
-																					Column: 24,
-																					Line:   260,
-																				},
-																			},
-																		},
-																		Name: "crit",
-																	},
-																	Lparen: nil,
-																	Rparen: nil,
-																},
-																Tk_else: nil,
-																Tk_if:   nil,
-																Tk_then: nil,
+																Value: "notifications",
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
@@ -12742,13 +7602,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 47,
-																		Line:   270,
+																		Line:   126,
 																	},
 																	File:   "monitor.flux",
-																	Source: "_source_timestamp: int(v: r._time)",
+																	Source: "_status_timestamp: int(v: r._time)",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   270,
+																		Line:   126,
 																	},
 																},
 															},
@@ -12760,17 +7620,17 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 30,
-																			Line:   270,
+																			Line:   126,
 																		},
 																		File:   "monitor.flux",
-																		Source: "_source_timestamp",
+																		Source: "_status_timestamp",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   270,
+																			Line:   126,
 																		},
 																	},
 																},
-																Name: "_source_timestamp",
+																Name: "_status_timestamp",
 															},
 															Separator: nil,
 															Value: &ast.CallExpression{
@@ -12781,13 +7641,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 46,
-																				Line:   270,
+																				Line:   126,
 																			},
 																			File:   "monitor.flux",
 																			Source: "v: r._time",
 																			Start: ast.Position{
 																				Column: 36,
-																				Line:   270,
+																				Line:   126,
 																			},
 																		},
 																	},
@@ -12799,13 +7659,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 46,
-																					Line:   270,
+																					Line:   126,
 																				},
 																				File:   "monitor.flux",
 																				Source: "v: r._time",
 																				Start: ast.Position{
 																					Column: 36,
-																					Line:   270,
+																					Line:   126,
 																				},
 																			},
 																		},
@@ -12817,13 +7677,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 37,
-																						Line:   270,
+																						Line:   126,
 																					},
 																					File:   "monitor.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 36,
-																						Line:   270,
+																						Line:   126,
 																					},
 																				},
 																			},
@@ -12837,13 +7697,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 46,
-																						Line:   270,
+																						Line:   126,
 																					},
 																					File:   "monitor.flux",
 																					Source: "r._time",
 																					Start: ast.Position{
 																						Column: 39,
-																						Line:   270,
+																						Line:   126,
 																					},
 																				},
 																			},
@@ -12855,13 +7715,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 40,
-																							Line:   270,
+																							Line:   126,
 																						},
 																						File:   "monitor.flux",
 																						Source: "r",
 																						Start: ast.Position{
 																							Column: 39,
-																							Line:   270,
+																							Line:   126,
 																						},
 																					},
 																				},
@@ -12874,13 +7734,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 46,
-																							Line:   270,
+																							Line:   126,
 																						},
 																						File:   "monitor.flux",
 																						Source: "_time",
 																						Start: ast.Position{
 																							Column: 41,
-																							Line:   270,
+																							Line:   126,
 																						},
 																					},
 																				},
@@ -12898,13 +7758,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 47,
-																			Line:   270,
+																			Line:   126,
 																		},
 																		File:   "monitor.flux",
 																		Source: "int(v: r._time)",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   270,
+																			Line:   126,
 																		},
 																	},
 																},
@@ -12915,13 +7775,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 35,
-																				Line:   270,
+																				Line:   126,
 																			},
 																			File:   "monitor.flux",
 																			Source: "int",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   270,
+																				Line:   126,
 																			},
 																		},
 																	},
@@ -12937,13 +7797,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   271,
+																		Line:   127,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_time: now()",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   271,
+																		Line:   127,
 																	},
 																},
 															},
@@ -12955,13 +7815,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   271,
+																			Line:   127,
 																		},
 																		File:   "monitor.flux",
 																		Source: "_time",
 																		Start: ast.Position{
 																			Column: 13,
-																			Line:   271,
+																			Line:   127,
 																		},
 																	},
 																},
@@ -12976,13 +7836,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
-																			Line:   271,
+																			Line:   127,
 																		},
 																		File:   "monitor.flux",
 																		Source: "now()",
 																		Start: ast.Position{
 																			Column: 20,
-																			Line:   271,
+																			Line:   127,
 																		},
 																	},
 																},
@@ -12993,13 +7853,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 23,
-																				Line:   271,
+																				Line:   127,
 																			},
 																			File:   "monitor.flux",
 																			Source: "now",
 																			Start: ast.Position{
 																				Column: 20,
-																				Line:   271,
+																				Line:   127,
 																			},
 																		},
 																	},
@@ -13017,13 +7877,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 23,
-																		Line:   254,
+																		Line:   124,
 																	},
 																	File:   "monitor.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 22,
-																		Line:   254,
+																		Line:   124,
 																	},
 																},
 															},
@@ -13041,13 +7901,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   254,
+																Line:   124,
 															},
 															File:   "monitor.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   254,
+																Line:   124,
 															},
 														},
 													},
@@ -13059,13 +7919,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 15,
-																	Line:   254,
+																	Line:   124,
 																},
 																File:   "monitor.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 14,
-																	Line:   254,
+																	Line:   124,
 																},
 															},
 														},
@@ -13086,13 +7946,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 6,
-												Line:   273,
+												Line:   129,
 											},
 											File:   "monitor.flux",
-											Source: "map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )",
+											Source: "map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )",
 											Start: ast.Position{
 												Column: 8,
-												Line:   253,
+												Line:   123,
 											},
 										},
 									},
@@ -13103,13 +7963,6843 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   253,
+													Line:   123,
 												},
 												File:   "monitor.flux",
 												Source: "map",
 												Start: ast.Position{
 													Column: 8,
-													Line:   253,
+													Line:   123,
+												},
+											},
+										},
+										Name: "map",
+									},
+									Lparen: nil,
+									Rparen: nil,
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   130,
+									},
+									File:   "monitor.flux",
+									Source: "tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()",
+									Start: ast.Position{
+										Column: 41,
+										Line:   120,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   130,
+										},
+										File:   "monitor.flux",
+										Source: "endpoint()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   130,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   130,
+											},
+											File:   "monitor.flux",
+											Source: "endpoint",
+											Start: ast.Position{
+												Column: 8,
+												Line:   130,
+											},
+										},
+									},
+									Name: "endpoint",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 62,
+									Line:   131,
+								},
+								File:   "monitor.flux",
+								Source: "tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])",
+								Start: ast.Position{
+									Column: 41,
+									Line:   120,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   131,
+										},
+										File:   "monitor.flux",
+										Source: "mode: \"extend\", columns: [\"_sent\"]",
+										Start: ast.Position{
+											Column: 27,
+											Line:   131,
+										},
+									},
+								},
+								Lbrace: nil,
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   131,
+											},
+											File:   "monitor.flux",
+											Source: "mode: \"extend\"",
+											Start: ast.Position{
+												Column: 27,
+												Line:   131,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   131,
+												},
+												File:   "monitor.flux",
+												Source: "mode",
+												Start: ast.Position{
+													Column: 27,
+													Line:   131,
+												},
+											},
+										},
+										Name: "mode",
+									},
+									Separator: nil,
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   131,
+												},
+												File:   "monitor.flux",
+												Source: "\"extend\"",
+												Start: ast.Position{
+													Column: 33,
+													Line:   131,
+												},
+											},
+										},
+										Value: "extend",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   131,
+											},
+											File:   "monitor.flux",
+											Source: "columns: [\"_sent\"]",
+											Start: ast.Position{
+												Column: 43,
+												Line:   131,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 50,
+													Line:   131,
+												},
+												File:   "monitor.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 43,
+													Line:   131,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Separator: nil,
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 61,
+													Line:   131,
+												},
+												File:   "monitor.flux",
+												Source: "[\"_sent\"]",
+												Start: ast.Position{
+													Column: 52,
+													Line:   131,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   131,
+													},
+													File:   "monitor.flux",
+													Source: "\"_sent\"",
+													Start: ast.Position{
+														Column: 53,
+														Line:   131,
+													},
+												},
+											},
+											Value: "_sent",
+										}},
+										Lbrack: nil,
+										Rbrack: nil,
+									},
+								}},
+								Rbrace: nil,
+								With:   nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   131,
+									},
+									File:   "monitor.flux",
+									Source: "experimental.group(mode: \"extend\", columns: [\"_sent\"])",
+									Start: ast.Position{
+										Column: 8,
+										Line:   131,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 26,
+											Line:   131,
+										},
+										File:   "monitor.flux",
+										Source: "experimental.group",
+										Start: ast.Position{
+											Column: 8,
+											Line:   131,
+										},
+									},
+								},
+								Lbrack: nil,
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   131,
+											},
+											File:   "monitor.flux",
+											Source: "experimental",
+											Start: ast.Position{
+												Column: 8,
+												Line:   131,
+											},
+										},
+									},
+									Name: "experimental",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   131,
+											},
+											File:   "monitor.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 21,
+												Line:   131,
+											},
+										},
+									},
+									Name: "group",
+								},
+								Rbrack: nil,
+							},
+							Lparen: nil,
+							Rparen: nil,
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 13,
+								Line:   132,
+							},
+							File:   "monitor.flux",
+							Source: "tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])\n    |> log()",
+							Start: ast.Position{
+								Column: 41,
+								Line:   120,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 13,
+									Line:   132,
+								},
+								File:   "monitor.flux",
+								Source: "log()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   132,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 11,
+										Line:   132,
+									},
+									File:   "monitor.flux",
+									Source: "log",
+									Start: ast.Position{
+										Column: 8,
+										Line:   132,
+									},
+								},
+							},
+							Name: "log",
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   120,
+							},
+							File:   "monitor.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 11,
+								Line:   120,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   120,
+								},
+								File:   "monitor.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 11,
+									Line:   120,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Separator: nil,
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   120,
+							},
+							File:   "monitor.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 18,
+								Line:   120,
+							},
+						},
+					}},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 30,
+								Line:   120,
+							},
+							File:   "monitor.flux",
+							Source: "endpoint",
+							Start: ast.Position{
+								Column: 22,
+								Line:   120,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   120,
+								},
+								File:   "monitor.flux",
+								Source: "endpoint",
+								Start: ast.Position{
+									Column: 22,
+									Line:   120,
+								},
+							},
+						},
+						Name: "endpoint",
+					},
+					Separator: nil,
+					Value:     nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 36,
+								Line:   120,
+							},
+							File:   "monitor.flux",
+							Source: "data",
+							Start: ast.Position{
+								Column: 32,
+								Line:   120,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   120,
+								},
+								File:   "monitor.flux",
+								Source: "data",
+								Start: ast.Position{
+									Column: 32,
+									Line:   120,
+								},
+							},
+						},
+						Name: "data",
+					},
+					Separator: nil,
+					Value:     nil,
+				}},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   170,
+					},
+					File:   "monitor.flux",
+					Source: "stateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   146,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// stateChangesOnly takes a stream of tables that contains a _level column\n"}, ast.Comment{Text: "// and returns a stream of tables where each record represents a state change.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Return records representing state changes\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/monitor\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// monitor.from(start: -1h)\n"}, ast.Comment{Text: "//  |> monitor.stateChangesOnly()\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   146,
+						},
+						File:   "monitor.flux",
+						Source: "stateChangesOnly",
+						Start: ast.Position{
+							Column: 1,
+							Line:   146,
+						},
+					},
+				},
+				Name: "stateChangesOnly",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   170,
+						},
+						File:   "monitor.flux",
+						Source: "(tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+						Start: ast.Position{
+							Column: 20,
+							Line:   146,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   170,
+							},
+							File:   "monitor.flux",
+							Source: "{\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+							Start: ast.Position{
+								Column: 35,
+								Line:   146,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.ReturnStatement{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.PipeExpression{
+											Argument: &ast.PipeExpression{
+												Argument: &ast.PipeExpression{
+													Argument: &ast.PipeExpression{
+														Argument: &ast.PipeExpression{
+															Argument: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 18,
+																			Line:   147,
+																		},
+																		File:   "monitor.flux",
+																		Source: "tables",
+																		Start: ast.Position{
+																			Column: 12,
+																			Line:   147,
+																		},
+																	},
+																},
+																Name: "tables",
+															},
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 10,
+																		Line:   161,
+																	},
+																	File:   "monitor.flux",
+																	Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )",
+																	Start: ast.Position{
+																		Column: 12,
+																		Line:   147,
+																	},
+																},
+															},
+															Call: &ast.CallExpression{
+																Arguments: []ast.Expression{&ast.ObjectExpression{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 15,
+																				Line:   160,
+																			},
+																			File:   "monitor.flux",
+																			Source: "fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            })",
+																			Start: ast.Position{
+																				Column: 13,
+																				Line:   149,
+																			},
+																		},
+																	},
+																	Lbrace: nil,
+																	Properties: []*ast.Property{&ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 15,
+																					Line:   160,
+																				},
+																				File:   "monitor.flux",
+																				Source: "fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            })",
+																				Start: ast.Position{
+																					Column: 13,
+																					Line:   149,
+																				},
+																			},
+																		},
+																		Comma: nil,
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 15,
+																						Line:   149,
+																					},
+																					File:   "monitor.flux",
+																					Source: "fn",
+																					Start: ast.Position{
+																						Column: 13,
+																						Line:   149,
+																					},
+																				},
+																			},
+																			Name: "fn",
+																		},
+																		Separator: nil,
+																		Value: &ast.FunctionExpression{
+																			Arrow: nil,
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 15,
+																						Line:   160,
+																					},
+																					File:   "monitor.flux",
+																					Source: "(r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            })",
+																					Start: ast.Position{
+																						Column: 17,
+																						Line:   149,
+																					},
+																				},
+																			},
+																			Body: &ast.ParenExpression{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 15,
+																							Line:   160,
+																						},
+																						File:   "monitor.flux",
+																						Source: "({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            })",
+																						Start: ast.Position{
+																							Column: 24,
+																							Line:   149,
+																						},
+																					},
+																				},
+																				Expression: &ast.ObjectExpression{
+																					BaseNode: ast.BaseNode{
+																						Comments: nil,
+																						Errors:   nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 14,
+																								Line:   160,
+																							},
+																							File:   "monitor.flux",
+																							Source: "{r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }",
+																							Start: ast.Position{
+																								Column: 25,
+																								Line:   149,
+																							},
+																						},
+																					},
+																					Lbrace: nil,
+																					Properties: []*ast.Property{&ast.Property{
+																						BaseNode: ast.BaseNode{
+																							Comments: nil,
+																							Errors:   nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 22,
+																									Line:   159,
+																								},
+																								File:   "monitor.flux",
+																								Source: "level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0",
+																								Start: ast.Position{
+																									Column: 17,
+																									Line:   150,
+																								},
+																							},
+																						},
+																						Comma: nil,
+																						Key: &ast.Identifier{
+																							BaseNode: ast.BaseNode{
+																								Comments: nil,
+																								Errors:   nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 28,
+																										Line:   150,
+																									},
+																									File:   "monitor.flux",
+																									Source: "level_value",
+																									Start: ast.Position{
+																										Column: 17,
+																										Line:   150,
+																									},
+																								},
+																							},
+																							Name: "level_value",
+																						},
+																						Separator: nil,
+																						Value: &ast.ConditionalExpression{
+																							Alternate: &ast.ConditionalExpression{
+																								Alternate: &ast.ConditionalExpression{
+																									Alternate: &ast.ConditionalExpression{
+																										Alternate: &ast.IntegerLiteral{
+																											BaseNode: ast.BaseNode{
+																												Comments: nil,
+																												Errors:   nil,
+																												Loc: &ast.SourceLocation{
+																													End: ast.Position{
+																														Column: 22,
+																														Line:   159,
+																													},
+																													File:   "monitor.flux",
+																													Source: "0",
+																													Start: ast.Position{
+																														Column: 21,
+																														Line:   159,
+																													},
+																												},
+																											},
+																											Value: int64(0),
+																										},
+																										BaseNode: ast.BaseNode{
+																											Comments: nil,
+																											Errors:   nil,
+																											Loc: &ast.SourceLocation{
+																												End: ast.Position{
+																													Column: 22,
+																													Line:   159,
+																												},
+																												File:   "monitor.flux",
+																												Source: "if r._level == levelOK then\n                    1\n                else\n                    0",
+																												Start: ast.Position{
+																													Column: 22,
+																													Line:   156,
+																												},
+																											},
+																										},
+																										Consequent: &ast.IntegerLiteral{
+																											BaseNode: ast.BaseNode{
+																												Comments: nil,
+																												Errors:   nil,
+																												Loc: &ast.SourceLocation{
+																													End: ast.Position{
+																														Column: 22,
+																														Line:   157,
+																													},
+																													File:   "monitor.flux",
+																													Source: "1",
+																													Start: ast.Position{
+																														Column: 21,
+																														Line:   157,
+																													},
+																												},
+																											},
+																											Value: int64(1),
+																										},
+																										Test: &ast.BinaryExpression{
+																											BaseNode: ast.BaseNode{
+																												Comments: nil,
+																												Errors:   nil,
+																												Loc: &ast.SourceLocation{
+																													End: ast.Position{
+																														Column: 44,
+																														Line:   156,
+																													},
+																													File:   "monitor.flux",
+																													Source: "r._level == levelOK",
+																													Start: ast.Position{
+																														Column: 25,
+																														Line:   156,
+																													},
+																												},
+																											},
+																											Left: &ast.MemberExpression{
+																												BaseNode: ast.BaseNode{
+																													Comments: nil,
+																													Errors:   nil,
+																													Loc: &ast.SourceLocation{
+																														End: ast.Position{
+																															Column: 33,
+																															Line:   156,
+																														},
+																														File:   "monitor.flux",
+																														Source: "r._level",
+																														Start: ast.Position{
+																															Column: 25,
+																															Line:   156,
+																														},
+																													},
+																												},
+																												Lbrack: nil,
+																												Object: &ast.Identifier{
+																													BaseNode: ast.BaseNode{
+																														Comments: nil,
+																														Errors:   nil,
+																														Loc: &ast.SourceLocation{
+																															End: ast.Position{
+																																Column: 26,
+																																Line:   156,
+																															},
+																															File:   "monitor.flux",
+																															Source: "r",
+																															Start: ast.Position{
+																																Column: 25,
+																																Line:   156,
+																															},
+																														},
+																													},
+																													Name: "r",
+																												},
+																												Property: &ast.Identifier{
+																													BaseNode: ast.BaseNode{
+																														Comments: nil,
+																														Errors:   nil,
+																														Loc: &ast.SourceLocation{
+																															End: ast.Position{
+																																Column: 33,
+																																Line:   156,
+																															},
+																															File:   "monitor.flux",
+																															Source: "_level",
+																															Start: ast.Position{
+																																Column: 27,
+																																Line:   156,
+																															},
+																														},
+																													},
+																													Name: "_level",
+																												},
+																												Rbrack: nil,
+																											},
+																											Operator: 17,
+																											Right: &ast.Identifier{
+																												BaseNode: ast.BaseNode{
+																													Comments: nil,
+																													Errors:   nil,
+																													Loc: &ast.SourceLocation{
+																														End: ast.Position{
+																															Column: 44,
+																															Line:   156,
+																														},
+																														File:   "monitor.flux",
+																														Source: "levelOK",
+																														Start: ast.Position{
+																															Column: 37,
+																															Line:   156,
+																														},
+																													},
+																												},
+																												Name: "levelOK",
+																											},
+																										},
+																										Tk_else: nil,
+																										Tk_if:   nil,
+																										Tk_then: nil,
+																									},
+																									BaseNode: ast.BaseNode{
+																										Comments: nil,
+																										Errors:   nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 22,
+																												Line:   159,
+																											},
+																											File:   "monitor.flux",
+																											Source: "if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0",
+																											Start: ast.Position{
+																												Column: 22,
+																												Line:   154,
+																											},
+																										},
+																									},
+																									Consequent: &ast.IntegerLiteral{
+																										BaseNode: ast.BaseNode{
+																											Comments: nil,
+																											Errors:   nil,
+																											Loc: &ast.SourceLocation{
+																												End: ast.Position{
+																													Column: 22,
+																													Line:   155,
+																												},
+																												File:   "monitor.flux",
+																												Source: "2",
+																												Start: ast.Position{
+																													Column: 21,
+																													Line:   155,
+																												},
+																											},
+																										},
+																										Value: int64(2),
+																									},
+																									Test: &ast.BinaryExpression{
+																										BaseNode: ast.BaseNode{
+																											Comments: nil,
+																											Errors:   nil,
+																											Loc: &ast.SourceLocation{
+																												End: ast.Position{
+																													Column: 46,
+																													Line:   154,
+																												},
+																												File:   "monitor.flux",
+																												Source: "r._level == levelInfo",
+																												Start: ast.Position{
+																													Column: 25,
+																													Line:   154,
+																												},
+																											},
+																										},
+																										Left: &ast.MemberExpression{
+																											BaseNode: ast.BaseNode{
+																												Comments: nil,
+																												Errors:   nil,
+																												Loc: &ast.SourceLocation{
+																													End: ast.Position{
+																														Column: 33,
+																														Line:   154,
+																													},
+																													File:   "monitor.flux",
+																													Source: "r._level",
+																													Start: ast.Position{
+																														Column: 25,
+																														Line:   154,
+																													},
+																												},
+																											},
+																											Lbrack: nil,
+																											Object: &ast.Identifier{
+																												BaseNode: ast.BaseNode{
+																													Comments: nil,
+																													Errors:   nil,
+																													Loc: &ast.SourceLocation{
+																														End: ast.Position{
+																															Column: 26,
+																															Line:   154,
+																														},
+																														File:   "monitor.flux",
+																														Source: "r",
+																														Start: ast.Position{
+																															Column: 25,
+																															Line:   154,
+																														},
+																													},
+																												},
+																												Name: "r",
+																											},
+																											Property: &ast.Identifier{
+																												BaseNode: ast.BaseNode{
+																													Comments: nil,
+																													Errors:   nil,
+																													Loc: &ast.SourceLocation{
+																														End: ast.Position{
+																															Column: 33,
+																															Line:   154,
+																														},
+																														File:   "monitor.flux",
+																														Source: "_level",
+																														Start: ast.Position{
+																															Column: 27,
+																															Line:   154,
+																														},
+																													},
+																												},
+																												Name: "_level",
+																											},
+																											Rbrack: nil,
+																										},
+																										Operator: 17,
+																										Right: &ast.Identifier{
+																											BaseNode: ast.BaseNode{
+																												Comments: nil,
+																												Errors:   nil,
+																												Loc: &ast.SourceLocation{
+																													End: ast.Position{
+																														Column: 46,
+																														Line:   154,
+																													},
+																													File:   "monitor.flux",
+																													Source: "levelInfo",
+																													Start: ast.Position{
+																														Column: 37,
+																														Line:   154,
+																													},
+																												},
+																											},
+																											Name: "levelInfo",
+																										},
+																									},
+																									Tk_else: nil,
+																									Tk_if:   nil,
+																									Tk_then: nil,
+																								},
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 22,
+																											Line:   159,
+																										},
+																										File:   "monitor.flux",
+																										Source: "if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0",
+																										Start: ast.Position{
+																											Column: 22,
+																											Line:   152,
+																										},
+																									},
+																								},
+																								Consequent: &ast.IntegerLiteral{
+																									BaseNode: ast.BaseNode{
+																										Comments: nil,
+																										Errors:   nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 22,
+																												Line:   153,
+																											},
+																											File:   "monitor.flux",
+																											Source: "3",
+																											Start: ast.Position{
+																												Column: 21,
+																												Line:   153,
+																											},
+																										},
+																									},
+																									Value: int64(3),
+																								},
+																								Test: &ast.BinaryExpression{
+																									BaseNode: ast.BaseNode{
+																										Comments: nil,
+																										Errors:   nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 46,
+																												Line:   152,
+																											},
+																											File:   "monitor.flux",
+																											Source: "r._level == levelWarn",
+																											Start: ast.Position{
+																												Column: 25,
+																												Line:   152,
+																											},
+																										},
+																									},
+																									Left: &ast.MemberExpression{
+																										BaseNode: ast.BaseNode{
+																											Comments: nil,
+																											Errors:   nil,
+																											Loc: &ast.SourceLocation{
+																												End: ast.Position{
+																													Column: 33,
+																													Line:   152,
+																												},
+																												File:   "monitor.flux",
+																												Source: "r._level",
+																												Start: ast.Position{
+																													Column: 25,
+																													Line:   152,
+																												},
+																											},
+																										},
+																										Lbrack: nil,
+																										Object: &ast.Identifier{
+																											BaseNode: ast.BaseNode{
+																												Comments: nil,
+																												Errors:   nil,
+																												Loc: &ast.SourceLocation{
+																													End: ast.Position{
+																														Column: 26,
+																														Line:   152,
+																													},
+																													File:   "monitor.flux",
+																													Source: "r",
+																													Start: ast.Position{
+																														Column: 25,
+																														Line:   152,
+																													},
+																												},
+																											},
+																											Name: "r",
+																										},
+																										Property: &ast.Identifier{
+																											BaseNode: ast.BaseNode{
+																												Comments: nil,
+																												Errors:   nil,
+																												Loc: &ast.SourceLocation{
+																													End: ast.Position{
+																														Column: 33,
+																														Line:   152,
+																													},
+																													File:   "monitor.flux",
+																													Source: "_level",
+																													Start: ast.Position{
+																														Column: 27,
+																														Line:   152,
+																													},
+																												},
+																											},
+																											Name: "_level",
+																										},
+																										Rbrack: nil,
+																									},
+																									Operator: 17,
+																									Right: &ast.Identifier{
+																										BaseNode: ast.BaseNode{
+																											Comments: nil,
+																											Errors:   nil,
+																											Loc: &ast.SourceLocation{
+																												End: ast.Position{
+																													Column: 46,
+																													Line:   152,
+																												},
+																												File:   "monitor.flux",
+																												Source: "levelWarn",
+																												Start: ast.Position{
+																													Column: 37,
+																													Line:   152,
+																												},
+																											},
+																										},
+																										Name: "levelWarn",
+																									},
+																								},
+																								Tk_else: nil,
+																								Tk_if:   nil,
+																								Tk_then: nil,
+																							},
+																							BaseNode: ast.BaseNode{
+																								Comments: nil,
+																								Errors:   nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 22,
+																										Line:   159,
+																									},
+																									File:   "monitor.flux",
+																									Source: "if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0",
+																									Start: ast.Position{
+																										Column: 30,
+																										Line:   150,
+																									},
+																								},
+																							},
+																							Consequent: &ast.IntegerLiteral{
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 22,
+																											Line:   151,
+																										},
+																										File:   "monitor.flux",
+																										Source: "4",
+																										Start: ast.Position{
+																											Column: 21,
+																											Line:   151,
+																										},
+																									},
+																								},
+																								Value: int64(4),
+																							},
+																							Test: &ast.BinaryExpression{
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 54,
+																											Line:   150,
+																										},
+																										File:   "monitor.flux",
+																										Source: "r._level == levelCrit",
+																										Start: ast.Position{
+																											Column: 33,
+																											Line:   150,
+																										},
+																									},
+																								},
+																								Left: &ast.MemberExpression{
+																									BaseNode: ast.BaseNode{
+																										Comments: nil,
+																										Errors:   nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 41,
+																												Line:   150,
+																											},
+																											File:   "monitor.flux",
+																											Source: "r._level",
+																											Start: ast.Position{
+																												Column: 33,
+																												Line:   150,
+																											},
+																										},
+																									},
+																									Lbrack: nil,
+																									Object: &ast.Identifier{
+																										BaseNode: ast.BaseNode{
+																											Comments: nil,
+																											Errors:   nil,
+																											Loc: &ast.SourceLocation{
+																												End: ast.Position{
+																													Column: 34,
+																													Line:   150,
+																												},
+																												File:   "monitor.flux",
+																												Source: "r",
+																												Start: ast.Position{
+																													Column: 33,
+																													Line:   150,
+																												},
+																											},
+																										},
+																										Name: "r",
+																									},
+																									Property: &ast.Identifier{
+																										BaseNode: ast.BaseNode{
+																											Comments: nil,
+																											Errors:   nil,
+																											Loc: &ast.SourceLocation{
+																												End: ast.Position{
+																													Column: 41,
+																													Line:   150,
+																												},
+																												File:   "monitor.flux",
+																												Source: "_level",
+																												Start: ast.Position{
+																													Column: 35,
+																													Line:   150,
+																												},
+																											},
+																										},
+																										Name: "_level",
+																									},
+																									Rbrack: nil,
+																								},
+																								Operator: 17,
+																								Right: &ast.Identifier{
+																									BaseNode: ast.BaseNode{
+																										Comments: nil,
+																										Errors:   nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 54,
+																												Line:   150,
+																											},
+																											File:   "monitor.flux",
+																											Source: "levelCrit",
+																											Start: ast.Position{
+																												Column: 45,
+																												Line:   150,
+																											},
+																										},
+																									},
+																									Name: "levelCrit",
+																								},
+																							},
+																							Tk_else: nil,
+																							Tk_if:   nil,
+																							Tk_then: nil,
+																						},
+																					}},
+																					Rbrace: nil,
+																					With: &ast.Identifier{
+																						BaseNode: ast.BaseNode{
+																							Comments: nil,
+																							Errors:   nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 27,
+																									Line:   149,
+																								},
+																								File:   "monitor.flux",
+																								Source: "r",
+																								Start: ast.Position{
+																									Column: 26,
+																									Line:   149,
+																								},
+																							},
+																						},
+																						Name: "r",
+																					},
+																				},
+																				Lparen: nil,
+																				Rparen: nil,
+																			},
+																			Lparen: nil,
+																			Params: []*ast.Property{&ast.Property{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 19,
+																							Line:   149,
+																						},
+																						File:   "monitor.flux",
+																						Source: "r",
+																						Start: ast.Position{
+																							Column: 18,
+																							Line:   149,
+																						},
+																					},
+																				},
+																				Comma: nil,
+																				Key: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Comments: nil,
+																						Errors:   nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 19,
+																								Line:   149,
+																							},
+																							File:   "monitor.flux",
+																							Source: "r",
+																							Start: ast.Position{
+																								Column: 18,
+																								Line:   149,
+																							},
+																						},
+																					},
+																					Name: "r",
+																				},
+																				Separator: nil,
+																				Value:     nil,
+																			}},
+																			Rparan: nil,
+																		},
+																	}},
+																	Rbrace: nil,
+																	With:   nil,
+																}},
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 10,
+																			Line:   161,
+																		},
+																		File:   "monitor.flux",
+																		Source: "map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )",
+																		Start: ast.Position{
+																			Column: 12,
+																			Line:   148,
+																		},
+																	},
+																},
+																Callee: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 15,
+																				Line:   148,
+																			},
+																			File:   "monitor.flux",
+																			Source: "map",
+																			Start: ast.Position{
+																				Column: 12,
+																				Line:   148,
+																			},
+																		},
+																	},
+																	Name: "map",
+																},
+																Lparen: nil,
+																Rparen: nil,
+															},
+														},
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 65,
+																	Line:   162,
+																},
+																File:   "monitor.flux",
+																Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")",
+																Start: ast.Position{
+																	Column: 12,
+																	Line:   147,
+																},
+															},
+														},
+														Call: &ast.CallExpression{
+															Arguments: []ast.Expression{&ast.ObjectExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 64,
+																			Line:   162,
+																		},
+																		File:   "monitor.flux",
+																		Source: "column: \"_level\", as: \"____temp_level____\"",
+																		Start: ast.Position{
+																			Column: 22,
+																			Line:   162,
+																		},
+																	},
+																},
+																Lbrace: nil,
+																Properties: []*ast.Property{&ast.Property{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 38,
+																				Line:   162,
+																			},
+																			File:   "monitor.flux",
+																			Source: "column: \"_level\"",
+																			Start: ast.Position{
+																				Column: 22,
+																				Line:   162,
+																			},
+																		},
+																	},
+																	Comma: nil,
+																	Key: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 28,
+																					Line:   162,
+																				},
+																				File:   "monitor.flux",
+																				Source: "column",
+																				Start: ast.Position{
+																					Column: 22,
+																					Line:   162,
+																				},
+																			},
+																		},
+																		Name: "column",
+																	},
+																	Separator: nil,
+																	Value: &ast.StringLiteral{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 38,
+																					Line:   162,
+																				},
+																				File:   "monitor.flux",
+																				Source: "\"_level\"",
+																				Start: ast.Position{
+																					Column: 30,
+																					Line:   162,
+																				},
+																			},
+																		},
+																		Value: "_level",
+																	},
+																}, &ast.Property{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 64,
+																				Line:   162,
+																			},
+																			File:   "monitor.flux",
+																			Source: "as: \"____temp_level____\"",
+																			Start: ast.Position{
+																				Column: 40,
+																				Line:   162,
+																			},
+																		},
+																	},
+																	Comma: nil,
+																	Key: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 42,
+																					Line:   162,
+																				},
+																				File:   "monitor.flux",
+																				Source: "as",
+																				Start: ast.Position{
+																					Column: 40,
+																					Line:   162,
+																				},
+																			},
+																		},
+																		Name: "as",
+																	},
+																	Separator: nil,
+																	Value: &ast.StringLiteral{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 64,
+																					Line:   162,
+																				},
+																				File:   "monitor.flux",
+																				Source: "\"____temp_level____\"",
+																				Start: ast.Position{
+																					Column: 44,
+																					Line:   162,
+																				},
+																			},
+																		},
+																		Value: "____temp_level____",
+																	},
+																}},
+																Rbrace: nil,
+																With:   nil,
+															}},
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 65,
+																		Line:   162,
+																	},
+																	File:   "monitor.flux",
+																	Source: "duplicate(column: \"_level\", as: \"____temp_level____\")",
+																	Start: ast.Position{
+																		Column: 12,
+																		Line:   162,
+																	},
+																},
+															},
+															Callee: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 21,
+																			Line:   162,
+																		},
+																		File:   "monitor.flux",
+																		Source: "duplicate",
+																		Start: ast.Position{
+																			Column: 12,
+																			Line:   162,
+																		},
+																	},
+																},
+																Name: "duplicate",
+															},
+															Lparen: nil,
+															Rparen: nil,
+														},
+													},
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 37,
+																Line:   163,
+															},
+															File:   "monitor.flux",
+															Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])",
+															Start: ast.Position{
+																Column: 12,
+																Line:   147,
+															},
+														},
+													},
+													Call: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 36,
+																		Line:   163,
+																	},
+																	File:   "monitor.flux",
+																	Source: "columns: [\"_level\"]",
+																	Start: ast.Position{
+																		Column: 17,
+																		Line:   163,
+																	},
+																},
+															},
+															Lbrace: nil,
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 36,
+																			Line:   163,
+																		},
+																		File:   "monitor.flux",
+																		Source: "columns: [\"_level\"]",
+																		Start: ast.Position{
+																			Column: 17,
+																			Line:   163,
+																		},
+																	},
+																},
+																Comma: nil,
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 24,
+																				Line:   163,
+																			},
+																			File:   "monitor.flux",
+																			Source: "columns",
+																			Start: ast.Position{
+																				Column: 17,
+																				Line:   163,
+																			},
+																		},
+																	},
+																	Name: "columns",
+																},
+																Separator: nil,
+																Value: &ast.ArrayExpression{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 36,
+																				Line:   163,
+																			},
+																			File:   "monitor.flux",
+																			Source: "[\"_level\"]",
+																			Start: ast.Position{
+																				Column: 26,
+																				Line:   163,
+																			},
+																		},
+																	},
+																	Elements: []ast.Expression{&ast.StringLiteral{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 35,
+																					Line:   163,
+																				},
+																				File:   "monitor.flux",
+																				Source: "\"_level\"",
+																				Start: ast.Position{
+																					Column: 27,
+																					Line:   163,
+																				},
+																			},
+																		},
+																		Value: "_level",
+																	}},
+																	Lbrack: nil,
+																	Rbrack: nil,
+																},
+															}},
+															Rbrace: nil,
+															With:   nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 37,
+																	Line:   163,
+																},
+																File:   "monitor.flux",
+																Source: "drop(columns: [\"_level\"])",
+																Start: ast.Position{
+																	Column: 12,
+																	Line:   163,
+																},
+															},
+														},
+														Callee: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 16,
+																		Line:   163,
+																	},
+																	File:   "monitor.flux",
+																	Source: "drop",
+																	Start: ast.Position{
+																		Column: 12,
+																		Line:   163,
+																	},
+																},
+															},
+															Name: "drop",
+														},
+														Lparen: nil,
+														Rparen: nil,
+													},
+												},
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 61,
+															Line:   164,
+														},
+														File:   "monitor.flux",
+														Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})",
+														Start: ast.Position{
+															Column: 12,
+															Line:   147,
+														},
+													},
+												},
+												Call: &ast.CallExpression{
+													Arguments: []ast.Expression{&ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 60,
+																	Line:   164,
+																},
+																File:   "monitor.flux",
+																Source: "columns: {\"____temp_level____\": \"_level\"}",
+																Start: ast.Position{
+																	Column: 19,
+																	Line:   164,
+																},
+															},
+														},
+														Lbrace: nil,
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 60,
+																		Line:   164,
+																	},
+																	File:   "monitor.flux",
+																	Source: "columns: {\"____temp_level____\": \"_level\"}",
+																	Start: ast.Position{
+																		Column: 19,
+																		Line:   164,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 26,
+																			Line:   164,
+																		},
+																		File:   "monitor.flux",
+																		Source: "columns",
+																		Start: ast.Position{
+																			Column: 19,
+																			Line:   164,
+																		},
+																	},
+																},
+																Name: "columns",
+															},
+															Separator: nil,
+															Value: &ast.ObjectExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 60,
+																			Line:   164,
+																		},
+																		File:   "monitor.flux",
+																		Source: "{\"____temp_level____\": \"_level\"}",
+																		Start: ast.Position{
+																			Column: 28,
+																			Line:   164,
+																		},
+																	},
+																},
+																Lbrace: nil,
+																Properties: []*ast.Property{&ast.Property{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 59,
+																				Line:   164,
+																			},
+																			File:   "monitor.flux",
+																			Source: "\"____temp_level____\": \"_level\"",
+																			Start: ast.Position{
+																				Column: 29,
+																				Line:   164,
+																			},
+																		},
+																	},
+																	Comma: nil,
+																	Key: &ast.StringLiteral{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 49,
+																					Line:   164,
+																				},
+																				File:   "monitor.flux",
+																				Source: "\"____temp_level____\"",
+																				Start: ast.Position{
+																					Column: 29,
+																					Line:   164,
+																				},
+																			},
+																		},
+																		Value: "____temp_level____",
+																	},
+																	Separator: nil,
+																	Value: &ast.StringLiteral{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 59,
+																					Line:   164,
+																				},
+																				File:   "monitor.flux",
+																				Source: "\"_level\"",
+																				Start: ast.Position{
+																					Column: 51,
+																					Line:   164,
+																				},
+																			},
+																		},
+																		Value: "_level",
+																	},
+																}},
+																Rbrace: nil,
+																With:   nil,
+															},
+														}},
+														Rbrace: nil,
+														With:   nil,
+													}},
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 61,
+																Line:   164,
+															},
+															File:   "monitor.flux",
+															Source: "rename(columns: {\"____temp_level____\": \"_level\"})",
+															Start: ast.Position{
+																Column: 12,
+																Line:   164,
+															},
+														},
+													},
+													Callee: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 18,
+																	Line:   164,
+																},
+																File:   "monitor.flux",
+																Source: "rename",
+																Start: ast.Position{
+																	Column: 12,
+																	Line:   164,
+																},
+															},
+														},
+														Name: "rename",
+													},
+													Lparen: nil,
+													Rparen: nil,
+												},
+											},
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   165,
+													},
+													File:   "monitor.flux",
+													Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)",
+													Start: ast.Position{
+														Column: 12,
+														Line:   147,
+													},
+												},
+											},
+											Call: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 60,
+																Line:   165,
+															},
+															File:   "monitor.flux",
+															Source: "columns: [\"_source_timestamp\"], desc: false",
+															Start: ast.Position{
+																Column: 17,
+																Line:   165,
+															},
+														},
+													},
+													Lbrace: nil,
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 47,
+																	Line:   165,
+																},
+																File:   "monitor.flux",
+																Source: "columns: [\"_source_timestamp\"]",
+																Start: ast.Position{
+																	Column: 17,
+																	Line:   165,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 24,
+																		Line:   165,
+																	},
+																	File:   "monitor.flux",
+																	Source: "columns",
+																	Start: ast.Position{
+																		Column: 17,
+																		Line:   165,
+																	},
+																},
+															},
+															Name: "columns",
+														},
+														Separator: nil,
+														Value: &ast.ArrayExpression{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 47,
+																		Line:   165,
+																	},
+																	File:   "monitor.flux",
+																	Source: "[\"_source_timestamp\"]",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   165,
+																	},
+																},
+															},
+															Elements: []ast.Expression{&ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 46,
+																			Line:   165,
+																		},
+																		File:   "monitor.flux",
+																		Source: "\"_source_timestamp\"",
+																		Start: ast.Position{
+																			Column: 27,
+																			Line:   165,
+																		},
+																	},
+																},
+																Value: "_source_timestamp",
+															}},
+															Lbrack: nil,
+															Rbrack: nil,
+														},
+													}, &ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 60,
+																	Line:   165,
+																},
+																File:   "monitor.flux",
+																Source: "desc: false",
+																Start: ast.Position{
+																	Column: 49,
+																	Line:   165,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 53,
+																		Line:   165,
+																	},
+																	File:   "monitor.flux",
+																	Source: "desc",
+																	Start: ast.Position{
+																		Column: 49,
+																		Line:   165,
+																	},
+																},
+															},
+															Name: "desc",
+														},
+														Separator: nil,
+														Value: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 60,
+																		Line:   165,
+																	},
+																	File:   "monitor.flux",
+																	Source: "false",
+																	Start: ast.Position{
+																		Column: 55,
+																		Line:   165,
+																	},
+																},
+															},
+															Name: "false",
+														},
+													}},
+													Rbrace: nil,
+													With:   nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 61,
+															Line:   165,
+														},
+														File:   "monitor.flux",
+														Source: "sort(columns: [\"_source_timestamp\"], desc: false)",
+														Start: ast.Position{
+															Column: 12,
+															Line:   165,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 16,
+																Line:   165,
+															},
+															File:   "monitor.flux",
+															Source: "sort",
+															Start: ast.Position{
+																Column: 12,
+																Line:   165,
+															},
+														},
+													},
+													Name: "sort",
+												},
+												Lparen: nil,
+												Rparen: nil,
+											},
+										},
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   166,
+												},
+												File:   "monitor.flux",
+												Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])",
+												Start: ast.Position{
+													Column: 12,
+													Line:   147,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 47,
+															Line:   166,
+														},
+														File:   "monitor.flux",
+														Source: "columns: [\"level_value\"]",
+														Start: ast.Position{
+															Column: 23,
+															Line:   166,
+														},
+													},
+												},
+												Lbrace: nil,
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 47,
+																Line:   166,
+															},
+															File:   "monitor.flux",
+															Source: "columns: [\"level_value\"]",
+															Start: ast.Position{
+																Column: 23,
+																Line:   166,
+															},
+														},
+													},
+													Comma: nil,
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 30,
+																	Line:   166,
+																},
+																File:   "monitor.flux",
+																Source: "columns",
+																Start: ast.Position{
+																	Column: 23,
+																	Line:   166,
+																},
+															},
+														},
+														Name: "columns",
+													},
+													Separator: nil,
+													Value: &ast.ArrayExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 47,
+																	Line:   166,
+																},
+																File:   "monitor.flux",
+																Source: "[\"level_value\"]",
+																Start: ast.Position{
+																	Column: 32,
+																	Line:   166,
+																},
+															},
+														},
+														Elements: []ast.Expression{&ast.StringLiteral{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 46,
+																		Line:   166,
+																	},
+																	File:   "monitor.flux",
+																	Source: "\"level_value\"",
+																	Start: ast.Position{
+																		Column: 33,
+																		Line:   166,
+																	},
+																},
+															},
+															Value: "level_value",
+														}},
+														Lbrack: nil,
+														Rbrack: nil,
+													},
+												}},
+												Rbrace: nil,
+												With:   nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   166,
+													},
+													File:   "monitor.flux",
+													Source: "difference(columns: [\"level_value\"])",
+													Start: ast.Position{
+														Column: 12,
+														Line:   166,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 22,
+															Line:   166,
+														},
+														File:   "monitor.flux",
+														Source: "difference",
+														Start: ast.Position{
+															Column: 12,
+															Line:   166,
+														},
+													},
+												},
+												Name: "difference",
+											},
+											Lparen: nil,
+											Rparen: nil,
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   167,
+											},
+											File:   "monitor.flux",
+											Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)",
+											Start: ast.Position{
+												Column: 12,
+												Line:   147,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   167,
+													},
+													File:   "monitor.flux",
+													Source: "fn: (r) => r.level_value != 0",
+													Start: ast.Position{
+														Column: 19,
+														Line:   167,
+													},
+												},
+											},
+											Lbrace: nil,
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   167,
+														},
+														File:   "monitor.flux",
+														Source: "fn: (r) => r.level_value != 0",
+														Start: ast.Position{
+															Column: 19,
+															Line:   167,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 21,
+																Line:   167,
+															},
+															File:   "monitor.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 19,
+																Line:   167,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Separator: nil,
+												Value: &ast.FunctionExpression{
+													Arrow: nil,
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   167,
+															},
+															File:   "monitor.flux",
+															Source: "(r) => r.level_value != 0",
+															Start: ast.Position{
+																Column: 23,
+																Line:   167,
+															},
+														},
+													},
+													Body: &ast.BinaryExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 48,
+																	Line:   167,
+																},
+																File:   "monitor.flux",
+																Source: "r.level_value != 0",
+																Start: ast.Position{
+																	Column: 30,
+																	Line:   167,
+																},
+															},
+														},
+														Left: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 43,
+																		Line:   167,
+																	},
+																	File:   "monitor.flux",
+																	Source: "r.level_value",
+																	Start: ast.Position{
+																		Column: 30,
+																		Line:   167,
+																	},
+																},
+															},
+															Lbrack: nil,
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 31,
+																			Line:   167,
+																		},
+																		File:   "monitor.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 30,
+																			Line:   167,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 43,
+																			Line:   167,
+																		},
+																		File:   "monitor.flux",
+																		Source: "level_value",
+																		Start: ast.Position{
+																			Column: 32,
+																			Line:   167,
+																		},
+																	},
+																},
+																Name: "level_value",
+															},
+															Rbrack: nil,
+														},
+														Operator: 18,
+														Right: &ast.IntegerLiteral{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 48,
+																		Line:   167,
+																	},
+																	File:   "monitor.flux",
+																	Source: "0",
+																	Start: ast.Position{
+																		Column: 47,
+																		Line:   167,
+																	},
+																},
+															},
+															Value: int64(0),
+														},
+													},
+													Lparen: nil,
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 25,
+																	Line:   167,
+																},
+																File:   "monitor.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 24,
+																	Line:   167,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   167,
+																	},
+																	File:   "monitor.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   167,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Separator: nil,
+														Value:     nil,
+													}},
+													Rparan: nil,
+												},
+											}},
+											Rbrace: nil,
+											With:   nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   167,
+												},
+												File:   "monitor.flux",
+												Source: "filter(fn: (r) => r.level_value != 0)",
+												Start: ast.Position{
+													Column: 12,
+													Line:   167,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   167,
+													},
+													File:   "monitor.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 12,
+														Line:   167,
+													},
+												},
+											},
+											Name: "filter",
+										},
+										Lparen: nil,
+										Rparen: nil,
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   168,
+										},
+										File:   "monitor.flux",
+										Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])",
+										Start: ast.Position{
+											Column: 12,
+											Line:   147,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   168,
+												},
+												File:   "monitor.flux",
+												Source: "columns: [\"level_value\"]",
+												Start: ast.Position{
+													Column: 17,
+													Line:   168,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   168,
+													},
+													File:   "monitor.flux",
+													Source: "columns: [\"level_value\"]",
+													Start: ast.Position{
+														Column: 17,
+														Line:   168,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   168,
+														},
+														File:   "monitor.flux",
+														Source: "columns",
+														Start: ast.Position{
+															Column: 17,
+															Line:   168,
+														},
+													},
+												},
+												Name: "columns",
+											},
+											Separator: nil,
+											Value: &ast.ArrayExpression{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   168,
+														},
+														File:   "monitor.flux",
+														Source: "[\"level_value\"]",
+														Start: ast.Position{
+															Column: 26,
+															Line:   168,
+														},
+													},
+												},
+												Elements: []ast.Expression{&ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 40,
+																Line:   168,
+															},
+															File:   "monitor.flux",
+															Source: "\"level_value\"",
+															Start: ast.Position{
+																Column: 27,
+																Line:   168,
+															},
+														},
+													},
+													Value: "level_value",
+												}},
+												Lbrack: nil,
+												Rbrack: nil,
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   168,
+											},
+											File:   "monitor.flux",
+											Source: "drop(columns: [\"level_value\"])",
+											Start: ast.Position{
+												Column: 12,
+												Line:   168,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   168,
+												},
+												File:   "monitor.flux",
+												Source: "drop",
+												Start: ast.Position{
+													Column: 12,
+													Line:   168,
+												},
+											},
+										},
+										Name: "drop",
+									},
+									Lparen: nil,
+									Rparen: nil,
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 67,
+										Line:   169,
+									},
+									File:   "monitor.flux",
+									Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
+									Start: ast.Position{
+										Column: 12,
+										Line:   147,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 66,
+												Line:   169,
+											},
+											File:   "monitor.flux",
+											Source: "mode: \"extend\", columns: [\"_level\"]",
+											Start: ast.Position{
+												Column: 31,
+												Line:   169,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   169,
+												},
+												File:   "monitor.flux",
+												Source: "mode: \"extend\"",
+												Start: ast.Position{
+													Column: 31,
+													Line:   169,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 35,
+														Line:   169,
+													},
+													File:   "monitor.flux",
+													Source: "mode",
+													Start: ast.Position{
+														Column: 31,
+														Line:   169,
+													},
+												},
+											},
+											Name: "mode",
+										},
+										Separator: nil,
+										Value: &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   169,
+													},
+													File:   "monitor.flux",
+													Source: "\"extend\"",
+													Start: ast.Position{
+														Column: 37,
+														Line:   169,
+													},
+												},
+											},
+											Value: "extend",
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   169,
+												},
+												File:   "monitor.flux",
+												Source: "columns: [\"_level\"]",
+												Start: ast.Position{
+													Column: 47,
+													Line:   169,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 54,
+														Line:   169,
+													},
+													File:   "monitor.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 47,
+														Line:   169,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Separator: nil,
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   169,
+													},
+													File:   "monitor.flux",
+													Source: "[\"_level\"]",
+													Start: ast.Position{
+														Column: 56,
+														Line:   169,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 65,
+															Line:   169,
+														},
+														File:   "monitor.flux",
+														Source: "\"_level\"",
+														Start: ast.Position{
+															Column: 57,
+															Line:   169,
+														},
+													},
+												},
+												Value: "_level",
+											}},
+											Lbrack: nil,
+											Rbrack: nil,
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 67,
+											Line:   169,
+										},
+										File:   "monitor.flux",
+										Source: "experimental.group(mode: \"extend\", columns: [\"_level\"])",
+										Start: ast.Position{
+											Column: 12,
+											Line:   169,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 30,
+												Line:   169,
+											},
+											File:   "monitor.flux",
+											Source: "experimental.group",
+											Start: ast.Position{
+												Column: 12,
+												Line:   169,
+											},
+										},
+									},
+									Lbrack: nil,
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   169,
+												},
+												File:   "monitor.flux",
+												Source: "experimental",
+												Start: ast.Position{
+													Column: 12,
+													Line:   169,
+												},
+											},
+										},
+										Name: "experimental",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   169,
+												},
+												File:   "monitor.flux",
+												Source: "group",
+												Start: ast.Position{
+													Column: 25,
+													Line:   169,
+												},
+											},
+										},
+										Name: "group",
+									},
+									Rbrack: nil,
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 67,
+									Line:   169,
+								},
+								File:   "monitor.flux",
+								Source: "return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
+								Start: ast.Position{
+									Column: 5,
+									Line:   147,
+								},
+							},
+						},
+					}},
+					Lbrace: nil,
+					Rbrace: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 30,
+								Line:   146,
+							},
+							File:   "monitor.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 21,
+								Line:   146,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 27,
+									Line:   146,
+								},
+								File:   "monitor.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 21,
+									Line:   146,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Separator: nil,
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 30,
+								Line:   146,
+							},
+							File:   "monitor.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 28,
+								Line:   146,
+							},
+						},
+					}},
+				}},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   189,
+					},
+					File:   "monitor.flux",
+					Source: "stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   184,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// stateChanges detects state changes in a stream of data with a _level column and outputs records that change from fromLevel to toLevel.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `fromLevel` is the level to detect a change from. Defaults to \"any\".\n"}, ast.Comment{Text: "// - `toLevel` is the level to detect a change to. The function output records that change to this level\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Detect when the state changes to critical\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// monitor.from(start: -1h)\n"}, ast.Comment{Text: "//    |> monitor.stateChanges(toLevel: \"crit\")\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   184,
+						},
+						File:   "monitor.flux",
+						Source: "stateChanges",
+						Start: ast.Position{
+							Column: 1,
+							Line:   184,
+						},
+					},
+				},
+				Name: "stateChanges",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   189,
+						},
+						File:   "monitor.flux",
+						Source: "(fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}",
+						Start: ast.Position{
+							Column: 16,
+							Line:   184,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   189,
+							},
+							File:   "monitor.flux",
+							Source: "{\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}",
+							Start: ast.Position{
+								Column: 63,
+								Line:   184,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.ReturnStatement{
+						Argument: &ast.ConditionalExpression{
+							Alternate: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   188,
+											},
+											File:   "monitor.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 9,
+												Line:   188,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 72,
+											Line:   188,
+										},
+										File:   "monitor.flux",
+										Source: "tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)",
+										Start: ast.Position{
+											Column: 9,
+											Line:   188,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 71,
+													Line:   188,
+												},
+												File:   "monitor.flux",
+												Source: "fromLevel: fromLevel, toLevel: toLevel",
+												Start: ast.Position{
+													Column: 33,
+													Line:   188,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 53,
+														Line:   188,
+													},
+													File:   "monitor.flux",
+													Source: "fromLevel: fromLevel",
+													Start: ast.Position{
+														Column: 33,
+														Line:   188,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   188,
+														},
+														File:   "monitor.flux",
+														Source: "fromLevel",
+														Start: ast.Position{
+															Column: 33,
+															Line:   188,
+														},
+													},
+												},
+												Name: "fromLevel",
+											},
+											Separator: nil,
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 53,
+															Line:   188,
+														},
+														File:   "monitor.flux",
+														Source: "fromLevel",
+														Start: ast.Position{
+															Column: 44,
+															Line:   188,
+														},
+													},
+												},
+												Name: "fromLevel",
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 71,
+														Line:   188,
+													},
+													File:   "monitor.flux",
+													Source: "toLevel: toLevel",
+													Start: ast.Position{
+														Column: 55,
+														Line:   188,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 62,
+															Line:   188,
+														},
+														File:   "monitor.flux",
+														Source: "toLevel",
+														Start: ast.Position{
+															Column: 55,
+															Line:   188,
+														},
+													},
+												},
+												Name: "toLevel",
+											},
+											Separator: nil,
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 71,
+															Line:   188,
+														},
+														File:   "monitor.flux",
+														Source: "toLevel",
+														Start: ast.Position{
+															Column: 64,
+															Line:   188,
+														},
+													},
+												},
+												Name: "toLevel",
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 72,
+												Line:   188,
+											},
+											File:   "monitor.flux",
+											Source: "_stateChanges(fromLevel: fromLevel, toLevel: toLevel)",
+											Start: ast.Position{
+												Column: 19,
+												Line:   188,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 32,
+													Line:   188,
+												},
+												File:   "monitor.flux",
+												Source: "_stateChanges",
+												Start: ast.Position{
+													Column: 19,
+													Line:   188,
+												},
+											},
+										},
+										Name: "_stateChanges",
+									},
+									Lparen: nil,
+									Rparen: nil,
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 72,
+										Line:   188,
+									},
+									File:   "monitor.flux",
+									Source: "if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)",
+									Start: ast.Position{
+										Column: 12,
+										Line:   185,
+									},
+								},
+							},
+							Consequent: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   186,
+											},
+											File:   "monitor.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 9,
+												Line:   186,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 37,
+											Line:   186,
+										},
+										File:   "monitor.flux",
+										Source: "tables |> stateChangesOnly()",
+										Start: ast.Position{
+											Column: 9,
+											Line:   186,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 37,
+												Line:   186,
+											},
+											File:   "monitor.flux",
+											Source: "stateChangesOnly()",
+											Start: ast.Position{
+												Column: 19,
+												Line:   186,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 35,
+													Line:   186,
+												},
+												File:   "monitor.flux",
+												Source: "stateChangesOnly",
+												Start: ast.Position{
+													Column: 19,
+													Line:   186,
+												},
+											},
+										},
+										Name: "stateChangesOnly",
+									},
+									Lparen: nil,
+									Rparen: nil,
+								},
+							},
+							Test: &ast.LogicalExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 54,
+											Line:   185,
+										},
+										File:   "monitor.flux",
+										Source: "fromLevel == \"any\" and toLevel == \"any\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   185,
+										},
+									},
+								},
+								Left: &ast.BinaryExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   185,
+											},
+											File:   "monitor.flux",
+											Source: "fromLevel == \"any\"",
+											Start: ast.Position{
+												Column: 15,
+												Line:   185,
+											},
+										},
+									},
+									Left: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   185,
+												},
+												File:   "monitor.flux",
+												Source: "fromLevel",
+												Start: ast.Position{
+													Column: 15,
+													Line:   185,
+												},
+											},
+										},
+										Name: "fromLevel",
+									},
+									Operator: 17,
+									Right: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   185,
+												},
+												File:   "monitor.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 28,
+													Line:   185,
+												},
+											},
+										},
+										Value: "any",
+									},
+								},
+								Operator: 1,
+								Right: &ast.BinaryExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 54,
+												Line:   185,
+											},
+											File:   "monitor.flux",
+											Source: "toLevel == \"any\"",
+											Start: ast.Position{
+												Column: 38,
+												Line:   185,
+											},
+										},
+									},
+									Left: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   185,
+												},
+												File:   "monitor.flux",
+												Source: "toLevel",
+												Start: ast.Position{
+													Column: 38,
+													Line:   185,
+												},
+											},
+										},
+										Name: "toLevel",
+									},
+									Operator: 17,
+									Right: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 54,
+													Line:   185,
+												},
+												File:   "monitor.flux",
+												Source: "\"any\"",
+												Start: ast.Position{
+													Column: 49,
+													Line:   185,
+												},
+											},
+										},
+										Value: "any",
+									},
+								},
+							},
+							Tk_else: nil,
+							Tk_if:   nil,
+							Tk_then: nil,
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 72,
+									Line:   188,
+								},
+								File:   "monitor.flux",
+								Source: "return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)",
+								Start: ast.Position{
+									Column: 5,
+									Line:   185,
+								},
+							},
+						},
+					}},
+					Lbrace: nil,
+					Rbrace: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   184,
+							},
+							File:   "monitor.flux",
+							Source: "fromLevel=\"any\"",
+							Start: ast.Position{
+								Column: 17,
+								Line:   184,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   184,
+								},
+								File:   "monitor.flux",
+								Source: "fromLevel",
+								Start: ast.Position{
+									Column: 17,
+									Line:   184,
+								},
+							},
+						},
+						Name: "fromLevel",
+					},
+					Separator: nil,
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   184,
+								},
+								File:   "monitor.flux",
+								Source: "\"any\"",
+								Start: ast.Position{
+									Column: 27,
+									Line:   184,
+								},
+							},
+						},
+						Value: "any",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 47,
+								Line:   184,
+							},
+							File:   "monitor.flux",
+							Source: "toLevel=\"any\"",
+							Start: ast.Position{
+								Column: 34,
+								Line:   184,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   184,
+								},
+								File:   "monitor.flux",
+								Source: "toLevel",
+								Start: ast.Position{
+									Column: 34,
+									Line:   184,
+								},
+							},
+						},
+						Name: "toLevel",
+					},
+					Separator: nil,
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 47,
+									Line:   184,
+								},
+								File:   "monitor.flux",
+								Source: "\"any\"",
+								Start: ast.Position{
+									Column: 42,
+									Line:   184,
+								},
+							},
+						},
+						Value: "any",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 58,
+								Line:   184,
+							},
+							File:   "monitor.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 49,
+								Line:   184,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 55,
+									Line:   184,
+								},
+								File:   "monitor.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 49,
+									Line:   184,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Separator: nil,
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 58,
+								Line:   184,
+							},
+							File:   "monitor.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 56,
+								Line:   184,
+							},
+						},
+					}},
+				}},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 52,
+						Line:   213,
+					},
+					File:   "monitor.flux",
+					Source: "deadman = (t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))",
+					Start: ast.Position{
+						Column: 1,
+						Line:   211,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// deadman detects when a group stops reporting data.\n"}, ast.Comment{Text: "// It takes a stream of tables and reports if groups have been observed since time t.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      monitor.deadman() retains the most recent row from each input table and adds a dead column.\n"}, ast.Comment{Text: "//      If a record appears after time t, monitor.deadman() sets dead to false. Otherwise, dead is set to true.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `t` is the time threshold for the deadman check.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Detect if a host hasn’t reported in the last five minutes\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/monitor\"\n"}, ast.Comment{Text: "// import \"experimental\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// from(bucket: \"example-bucket\")\n"}, ast.Comment{Text: "//   |> range(start: -10m)\n"}, ast.Comment{Text: "//   |> group(columns: [\"host\"])\n"}, ast.Comment{Text: "//   |> monitor.deadman(t: experimental.subDuration(d: 5m, from: now() ))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   211,
+						},
+						File:   "monitor.flux",
+						Source: "deadman",
+						Start: ast.Position{
+							Column: 1,
+							Line:   211,
+						},
+					},
+				},
+				Name: "deadman",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 52,
+							Line:   213,
+						},
+						File:   "monitor.flux",
+						Source: "(t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))",
+						Start: ast.Position{
+							Column: 11,
+							Line:   211,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 35,
+										Line:   211,
+									},
+									File:   "monitor.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 29,
+										Line:   211,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   212,
+								},
+								File:   "monitor.flux",
+								Source: "tables\n    |> max(column: \"_time\")",
+								Start: ast.Position{
+									Column: 29,
+									Line:   211,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   212,
+										},
+										File:   "monitor.flux",
+										Source: "column: \"_time\"",
+										Start: ast.Position{
+											Column: 12,
+											Line:   212,
+										},
+									},
+								},
+								Lbrace: nil,
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 27,
+												Line:   212,
+											},
+											File:   "monitor.flux",
+											Source: "column: \"_time\"",
+											Start: ast.Position{
+												Column: 12,
+												Line:   212,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   212,
+												},
+												File:   "monitor.flux",
+												Source: "column",
+												Start: ast.Position{
+													Column: 12,
+													Line:   212,
+												},
+											},
+										},
+										Name: "column",
+									},
+									Separator: nil,
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 27,
+													Line:   212,
+												},
+												File:   "monitor.flux",
+												Source: "\"_time\"",
+												Start: ast.Position{
+													Column: 20,
+													Line:   212,
+												},
+											},
+										},
+										Value: "_time",
+									},
+								}},
+								Rbrace: nil,
+								With:   nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   212,
+									},
+									File:   "monitor.flux",
+									Source: "max(column: \"_time\")",
+									Start: ast.Position{
+										Column: 8,
+										Line:   212,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   212,
+										},
+										File:   "monitor.flux",
+										Source: "max",
+										Start: ast.Position{
+											Column: 8,
+											Line:   212,
+										},
+									},
+								},
+								Name: "max",
+							},
+							Lparen: nil,
+							Rparen: nil,
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 52,
+								Line:   213,
+							},
+							File:   "monitor.flux",
+							Source: "tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))",
+							Start: ast.Position{
+								Column: 29,
+								Line:   211,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 51,
+										Line:   213,
+									},
+									File:   "monitor.flux",
+									Source: "fn: (r) => ({r with dead: r._time < t})",
+									Start: ast.Position{
+										Column: 12,
+										Line:   213,
+									},
+								},
+							},
+							Lbrace: nil,
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 51,
+											Line:   213,
+										},
+										File:   "monitor.flux",
+										Source: "fn: (r) => ({r with dead: r._time < t})",
+										Start: ast.Position{
+											Column: 12,
+											Line:   213,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   213,
+											},
+											File:   "monitor.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 12,
+												Line:   213,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Separator: nil,
+								Value: &ast.FunctionExpression{
+									Arrow: nil,
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   213,
+											},
+											File:   "monitor.flux",
+											Source: "(r) => ({r with dead: r._time < t})",
+											Start: ast.Position{
+												Column: 16,
+												Line:   213,
+											},
+										},
+									},
+									Body: &ast.ParenExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 51,
+													Line:   213,
+												},
+												File:   "monitor.flux",
+												Source: "({r with dead: r._time < t})",
+												Start: ast.Position{
+													Column: 23,
+													Line:   213,
+												},
+											},
+										},
+										Expression: &ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 50,
+														Line:   213,
+													},
+													File:   "monitor.flux",
+													Source: "{r with dead: r._time < t}",
+													Start: ast.Position{
+														Column: 24,
+														Line:   213,
+													},
+												},
+											},
+											Lbrace: nil,
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 49,
+															Line:   213,
+														},
+														File:   "monitor.flux",
+														Source: "dead: r._time < t",
+														Start: ast.Position{
+															Column: 32,
+															Line:   213,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 36,
+																Line:   213,
+															},
+															File:   "monitor.flux",
+															Source: "dead",
+															Start: ast.Position{
+																Column: 32,
+																Line:   213,
+															},
+														},
+													},
+													Name: "dead",
+												},
+												Separator: nil,
+												Value: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 49,
+																Line:   213,
+															},
+															File:   "monitor.flux",
+															Source: "r._time < t",
+															Start: ast.Position{
+																Column: 38,
+																Line:   213,
+															},
+														},
+													},
+													Left: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 45,
+																	Line:   213,
+																},
+																File:   "monitor.flux",
+																Source: "r._time",
+																Start: ast.Position{
+																	Column: 38,
+																	Line:   213,
+																},
+															},
+														},
+														Lbrack: nil,
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 39,
+																		Line:   213,
+																	},
+																	File:   "monitor.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 38,
+																		Line:   213,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 45,
+																		Line:   213,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_time",
+																	Start: ast.Position{
+																		Column: 40,
+																		Line:   213,
+																	},
+																},
+															},
+															Name: "_time",
+														},
+														Rbrack: nil,
+													},
+													Operator: 8,
+													Right: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 49,
+																	Line:   213,
+																},
+																File:   "monitor.flux",
+																Source: "t",
+																Start: ast.Position{
+																	Column: 48,
+																	Line:   213,
+																},
+															},
+														},
+														Name: "t",
+													},
+												},
+											}},
+											Rbrace: nil,
+											With: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 26,
+															Line:   213,
+														},
+														File:   "monitor.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 25,
+															Line:   213,
+														},
+													},
+												},
+												Name: "r",
+											},
+										},
+										Lparen: nil,
+										Rparen: nil,
+									},
+									Lparen: nil,
+									Params: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   213,
+												},
+												File:   "monitor.flux",
+												Source: "r",
+												Start: ast.Position{
+													Column: 17,
+													Line:   213,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   213,
+													},
+													File:   "monitor.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 17,
+														Line:   213,
+													},
+												},
+											},
+											Name: "r",
+										},
+										Separator: nil,
+										Value:     nil,
+									}},
+									Rparan: nil,
+								},
+							}},
+							Rbrace: nil,
+							With:   nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 52,
+									Line:   213,
+								},
+								File:   "monitor.flux",
+								Source: "map(fn: (r) => ({r with dead: r._time < t}))",
+								Start: ast.Position{
+									Column: 8,
+									Line:   213,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 11,
+										Line:   213,
+									},
+									File:   "monitor.flux",
+									Source: "map",
+									Start: ast.Position{
+										Column: 8,
+										Line:   213,
+									},
+								},
+							},
+							Name: "map",
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 13,
+								Line:   211,
+							},
+							File:   "monitor.flux",
+							Source: "t",
+							Start: ast.Position{
+								Column: 12,
+								Line:   211,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 13,
+									Line:   211,
+								},
+								File:   "monitor.flux",
+								Source: "t",
+								Start: ast.Position{
+									Column: 12,
+									Line:   211,
+								},
+							},
+						},
+						Name: "t",
+					},
+					Separator: nil,
+					Value:     nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   211,
+							},
+							File:   "monitor.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 15,
+								Line:   211,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   211,
+								},
+								File:   "monitor.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 15,
+									Line:   211,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Separator: nil,
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   211,
+							},
+							File:   "monitor.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 22,
+								Line:   211,
+							},
+						},
+					}},
+				}},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   304,
+					},
+					File:   "monitor.flux",
+					Source: "check = (\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   257,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// check checks input data and assigns a level (ok, info, warn, or crit) to each row based on predicate functions.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      monitor.check() stores statuses in the _level column and writes results to the statuses measurement in the _monitoring bucket.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `crit` is the predicate function that determines crit status. Default is (r) => false.\n"}, ast.Comment{Text: "// - `warn` is the predicate function that determines warn status. Default is (r) => false.\n"}, ast.Comment{Text: "// - `info` is the predicate function that determines info status. Default is (r) => false.\n"}, ast.Comment{Text: "// - `ok` is the predicate function that determines ok status. Default is (r) => false.\n"}, ast.Comment{Text: "// - `messagefn` is the predicate function that constructs a message to append to each row. The message is stored in the _message column.\n"}, ast.Comment{Text: "// - `data` is meta data used to identify this check.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Monitor disk usage\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/monitor\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// from(bucket: \"telegraf\")\n"}, ast.Comment{Text: "//   |> range(start: -1h)\n"}, ast.Comment{Text: "//   |> filter(fn: (r) =>\n"}, ast.Comment{Text: "//       r._measurement == \"disk\" and\n"}, ast.Comment{Text: "//       r._field == \"used_percent\"\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "//   |> group(columns: [\"_measurement\"])\n"}, ast.Comment{Text: "//   |> monitor.check(\n"}, ast.Comment{Text: "//     crit: (r) => r._value > 90.0,\n"}, ast.Comment{Text: "//     warn: (r) => r._value > 80.0,\n"}, ast.Comment{Text: "//     info: (r) => r._value > 70.0,\n"}, ast.Comment{Text: "//     ok:   (r) => r._value <= 60.0,\n"}, ast.Comment{Text: "//     messageFn: (r) =>\n"}, ast.Comment{Text: "//       if r._level == \"crit\" then \"Critical alert!! Disk usage is at ${r._value}%!\"\n"}, ast.Comment{Text: "//       else if r._level == \"warn\" then \"Warning! Disk usage is at ${r._value}%.\"\n"}, ast.Comment{Text: "//       else if r._level == \"info\" then \"Disk usage is at ${r._value}%.\"\n"}, ast.Comment{Text: "//       else \"Things are looking good.\",\n"}, ast.Comment{Text: "//     data: {\n"}, ast.Comment{Text: "//       _check_name: \"Disk Utilization (Used Percentage)\",\n"}, ast.Comment{Text: "//       _check_id: \"disk_used_percent\",\n"}, ast.Comment{Text: "//       _type: \"threshold\",\n"}, ast.Comment{Text: "//       tags: {}\n"}, ast.Comment{Text: "//     }\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   257,
+						},
+						File:   "monitor.flux",
+						Source: "check",
+						Start: ast.Position{
+							Column: 1,
+							Line:   257,
+						},
+					},
+				},
+				Name: "check",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   304,
+						},
+						File:   "monitor.flux",
+						Source: "(\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
+						Start: ast.Position{
+							Column: 9,
+							Line:   257,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 12,
+														Line:   265,
+													},
+													File:   "monitor.flux",
+													Source: "tables",
+													Start: ast.Position{
+														Column: 6,
+														Line:   265,
+													},
+												},
+											},
+											Name: "tables",
+										},
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 38,
+													Line:   266,
+												},
+												File:   "monitor.flux",
+												Source: "tables\n    |> experimental.set(o: data.tags)",
+												Start: ast.Position{
+													Column: 6,
+													Line:   265,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   266,
+														},
+														File:   "monitor.flux",
+														Source: "o: data.tags",
+														Start: ast.Position{
+															Column: 25,
+															Line:   266,
+														},
+													},
+												},
+												Lbrace: nil,
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 37,
+																Line:   266,
+															},
+															File:   "monitor.flux",
+															Source: "o: data.tags",
+															Start: ast.Position{
+																Column: 25,
+																Line:   266,
+															},
+														},
+													},
+													Comma: nil,
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 26,
+																	Line:   266,
+																},
+																File:   "monitor.flux",
+																Source: "o",
+																Start: ast.Position{
+																	Column: 25,
+																	Line:   266,
+																},
+															},
+														},
+														Name: "o",
+													},
+													Separator: nil,
+													Value: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 37,
+																	Line:   266,
+																},
+																File:   "monitor.flux",
+																Source: "data.tags",
+																Start: ast.Position{
+																	Column: 28,
+																	Line:   266,
+																},
+															},
+														},
+														Lbrack: nil,
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 32,
+																		Line:   266,
+																	},
+																	File:   "monitor.flux",
+																	Source: "data",
+																	Start: ast.Position{
+																		Column: 28,
+																		Line:   266,
+																	},
+																},
+															},
+															Name: "data",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 37,
+																		Line:   266,
+																	},
+																	File:   "monitor.flux",
+																	Source: "tags",
+																	Start: ast.Position{
+																		Column: 33,
+																		Line:   266,
+																	},
+																},
+															},
+															Name: "tags",
+														},
+														Rbrack: nil,
+													},
+												}},
+												Rbrace: nil,
+												With:   nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 38,
+														Line:   266,
+													},
+													File:   "monitor.flux",
+													Source: "experimental.set(o: data.tags)",
+													Start: ast.Position{
+														Column: 8,
+														Line:   266,
+													},
+												},
+											},
+											Callee: &ast.MemberExpression{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   266,
+														},
+														File:   "monitor.flux",
+														Source: "experimental.set",
+														Start: ast.Position{
+															Column: 8,
+															Line:   266,
+														},
+													},
+												},
+												Lbrack: nil,
+												Object: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 20,
+																Line:   266,
+															},
+															File:   "monitor.flux",
+															Source: "experimental",
+															Start: ast.Position{
+																Column: 8,
+																Line:   266,
+															},
+														},
+													},
+													Name: "experimental",
+												},
+												Property: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 24,
+																Line:   266,
+															},
+															File:   "monitor.flux",
+															Source: "set",
+															Start: ast.Position{
+																Column: 21,
+																Line:   266,
+															},
+														},
+													},
+													Name: "set",
+												},
+												Rbrack: nil,
+											},
+											Lparen: nil,
+											Rparen: nil,
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 90,
+												Line:   267,
+											},
+											File:   "monitor.flux",
+											Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))",
+											Start: ast.Position{
+												Column: 6,
+												Line:   265,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 89,
+														Line:   267,
+													},
+													File:   "monitor.flux",
+													Source: "mode: \"extend\", columns: experimental.objectKeys(o: data.tags)",
+													Start: ast.Position{
+														Column: 27,
+														Line:   267,
+													},
+												},
+											},
+											Lbrace: nil,
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   267,
+														},
+														File:   "monitor.flux",
+														Source: "mode: \"extend\"",
+														Start: ast.Position{
+															Column: 27,
+															Line:   267,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 31,
+																Line:   267,
+															},
+															File:   "monitor.flux",
+															Source: "mode",
+															Start: ast.Position{
+																Column: 27,
+																Line:   267,
+															},
+														},
+													},
+													Name: "mode",
+												},
+												Separator: nil,
+												Value: &ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 41,
+																Line:   267,
+															},
+															File:   "monitor.flux",
+															Source: "\"extend\"",
+															Start: ast.Position{
+																Column: 33,
+																Line:   267,
+															},
+														},
+													},
+													Value: "extend",
+												},
+											}, &ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 89,
+															Line:   267,
+														},
+														File:   "monitor.flux",
+														Source: "columns: experimental.objectKeys(o: data.tags)",
+														Start: ast.Position{
+															Column: 43,
+															Line:   267,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 50,
+																Line:   267,
+															},
+															File:   "monitor.flux",
+															Source: "columns",
+															Start: ast.Position{
+																Column: 43,
+																Line:   267,
+															},
+														},
+													},
+													Name: "columns",
+												},
+												Separator: nil,
+												Value: &ast.CallExpression{
+													Arguments: []ast.Expression{&ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 88,
+																	Line:   267,
+																},
+																File:   "monitor.flux",
+																Source: "o: data.tags",
+																Start: ast.Position{
+																	Column: 76,
+																	Line:   267,
+																},
+															},
+														},
+														Lbrace: nil,
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 88,
+																		Line:   267,
+																	},
+																	File:   "monitor.flux",
+																	Source: "o: data.tags",
+																	Start: ast.Position{
+																		Column: 76,
+																		Line:   267,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 77,
+																			Line:   267,
+																		},
+																		File:   "monitor.flux",
+																		Source: "o",
+																		Start: ast.Position{
+																			Column: 76,
+																			Line:   267,
+																		},
+																	},
+																},
+																Name: "o",
+															},
+															Separator: nil,
+															Value: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 88,
+																			Line:   267,
+																		},
+																		File:   "monitor.flux",
+																		Source: "data.tags",
+																		Start: ast.Position{
+																			Column: 79,
+																			Line:   267,
+																		},
+																	},
+																},
+																Lbrack: nil,
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 83,
+																				Line:   267,
+																			},
+																			File:   "monitor.flux",
+																			Source: "data",
+																			Start: ast.Position{
+																				Column: 79,
+																				Line:   267,
+																			},
+																		},
+																	},
+																	Name: "data",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 88,
+																				Line:   267,
+																			},
+																			File:   "monitor.flux",
+																			Source: "tags",
+																			Start: ast.Position{
+																				Column: 84,
+																				Line:   267,
+																			},
+																		},
+																	},
+																	Name: "tags",
+																},
+																Rbrack: nil,
+															},
+														}},
+														Rbrace: nil,
+														With:   nil,
+													}},
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 89,
+																Line:   267,
+															},
+															File:   "monitor.flux",
+															Source: "experimental.objectKeys(o: data.tags)",
+															Start: ast.Position{
+																Column: 52,
+																Line:   267,
+															},
+														},
+													},
+													Callee: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 75,
+																	Line:   267,
+																},
+																File:   "monitor.flux",
+																Source: "experimental.objectKeys",
+																Start: ast.Position{
+																	Column: 52,
+																	Line:   267,
+																},
+															},
+														},
+														Lbrack: nil,
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 64,
+																		Line:   267,
+																	},
+																	File:   "monitor.flux",
+																	Source: "experimental",
+																	Start: ast.Position{
+																		Column: 52,
+																		Line:   267,
+																	},
+																},
+															},
+															Name: "experimental",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 75,
+																		Line:   267,
+																	},
+																	File:   "monitor.flux",
+																	Source: "objectKeys",
+																	Start: ast.Position{
+																		Column: 65,
+																		Line:   267,
+																	},
+																},
+															},
+															Name: "objectKeys",
+														},
+														Rbrack: nil,
+													},
+													Lparen: nil,
+													Rparen: nil,
+												},
+											}},
+											Rbrace: nil,
+											With:   nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 90,
+													Line:   267,
+												},
+												File:   "monitor.flux",
+												Source: "experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))",
+												Start: ast.Position{
+													Column: 8,
+													Line:   267,
+												},
+											},
+										},
+										Callee: &ast.MemberExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 26,
+														Line:   267,
+													},
+													File:   "monitor.flux",
+													Source: "experimental.group",
+													Start: ast.Position{
+														Column: 8,
+														Line:   267,
+													},
+												},
+											},
+											Lbrack: nil,
+											Object: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 20,
+															Line:   267,
+														},
+														File:   "monitor.flux",
+														Source: "experimental",
+														Start: ast.Position{
+															Column: 8,
+															Line:   267,
+														},
+													},
+												},
+												Name: "experimental",
+											},
+											Property: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 26,
+															Line:   267,
+														},
+														File:   "monitor.flux",
+														Source: "group",
+														Start: ast.Position{
+															Column: 21,
+															Line:   267,
+														},
+													},
+												},
+												Name: "group",
+											},
+											Rbrack: nil,
+										},
+										Lparen: nil,
+										Rparen: nil,
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 6,
+											Line:   288,
+										},
+										File:   "monitor.flux",
+										Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )",
+										Start: ast.Position{
+											Column: 6,
+											Line:   265,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   287,
+												},
+												File:   "monitor.flux",
+												Source: "fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
+												Start: ast.Position{
+													Column: 9,
+													Line:   269,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 11,
+														Line:   287,
+													},
+													File:   "monitor.flux",
+													Source: "fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
+													Start: ast.Position{
+														Column: 9,
+														Line:   269,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 11,
+															Line:   269,
+														},
+														File:   "monitor.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 9,
+															Line:   269,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Separator: nil,
+											Value: &ast.FunctionExpression{
+												Arrow: nil,
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 11,
+															Line:   287,
+														},
+														File:   "monitor.flux",
+														Source: "(r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
+														Start: ast.Position{
+															Column: 13,
+															Line:   269,
+														},
+													},
+												},
+												Body: &ast.ParenExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 11,
+																Line:   287,
+															},
+															File:   "monitor.flux",
+															Source: "({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        })",
+															Start: ast.Position{
+																Column: 20,
+																Line:   269,
+															},
+														},
+													},
+													Expression: &ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 10,
+																	Line:   287,
+																},
+																File:   "monitor.flux",
+																Source: "{r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   269,
+																},
+															},
+														},
+														Lbrace: nil,
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 37,
+																		Line:   270,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_measurement: \"statuses\"",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   270,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 25,
+																			Line:   270,
+																		},
+																		File:   "monitor.flux",
+																		Source: "_measurement",
+																		Start: ast.Position{
+																			Column: 13,
+																			Line:   270,
+																		},
+																	},
+																},
+																Name: "_measurement",
+															},
+															Separator: nil,
+															Value: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 37,
+																			Line:   270,
+																		},
+																		File:   "monitor.flux",
+																		Source: "\"statuses\"",
+																		Start: ast.Position{
+																			Column: 27,
+																			Line:   270,
+																		},
+																	},
+																},
+																Value: "statuses",
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 48,
+																		Line:   271,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_source_measurement: r._measurement",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   271,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 32,
+																			Line:   271,
+																		},
+																		File:   "monitor.flux",
+																		Source: "_source_measurement",
+																		Start: ast.Position{
+																			Column: 13,
+																			Line:   271,
+																		},
+																	},
+																},
+																Name: "_source_measurement",
+															},
+															Separator: nil,
+															Value: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 48,
+																			Line:   271,
+																		},
+																		File:   "monitor.flux",
+																		Source: "r._measurement",
+																		Start: ast.Position{
+																			Column: 34,
+																			Line:   271,
+																		},
+																	},
+																},
+																Lbrack: nil,
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 35,
+																				Line:   271,
+																			},
+																			File:   "monitor.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 34,
+																				Line:   271,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 48,
+																				Line:   271,
+																			},
+																			File:   "monitor.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 36,
+																				Line:   271,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
+																Rbrack: nil,
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 30,
+																		Line:   272,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_type: data._type",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   272,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 18,
+																			Line:   272,
+																		},
+																		File:   "monitor.flux",
+																		Source: "_type",
+																		Start: ast.Position{
+																			Column: 13,
+																			Line:   272,
+																		},
+																	},
+																},
+																Name: "_type",
+															},
+															Separator: nil,
+															Value: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 30,
+																			Line:   272,
+																		},
+																		File:   "monitor.flux",
+																		Source: "data._type",
+																		Start: ast.Position{
+																			Column: 20,
+																			Line:   272,
+																		},
+																	},
+																},
+																Lbrack: nil,
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 24,
+																				Line:   272,
+																			},
+																			File:   "monitor.flux",
+																			Source: "data",
+																			Start: ast.Position{
+																				Column: 20,
+																				Line:   272,
+																			},
+																		},
+																	},
+																	Name: "data",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 30,
+																				Line:   272,
+																			},
+																			File:   "monitor.flux",
+																			Source: "_type",
+																			Start: ast.Position{
+																				Column: 25,
+																				Line:   272,
+																			},
+																		},
+																	},
+																	Name: "_type",
+																},
+																Rbrack: nil,
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 38,
+																		Line:   273,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_check_id: data._check_id",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   273,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 22,
+																			Line:   273,
+																		},
+																		File:   "monitor.flux",
+																		Source: "_check_id",
+																		Start: ast.Position{
+																			Column: 13,
+																			Line:   273,
+																		},
+																	},
+																},
+																Name: "_check_id",
+															},
+															Separator: nil,
+															Value: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 38,
+																			Line:   273,
+																		},
+																		File:   "monitor.flux",
+																		Source: "data._check_id",
+																		Start: ast.Position{
+																			Column: 24,
+																			Line:   273,
+																		},
+																	},
+																},
+																Lbrack: nil,
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 28,
+																				Line:   273,
+																			},
+																			File:   "monitor.flux",
+																			Source: "data",
+																			Start: ast.Position{
+																				Column: 24,
+																				Line:   273,
+																			},
+																		},
+																	},
+																	Name: "data",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 38,
+																				Line:   273,
+																			},
+																			File:   "monitor.flux",
+																			Source: "_check_id",
+																			Start: ast.Position{
+																				Column: 29,
+																				Line:   273,
+																			},
+																		},
+																	},
+																	Name: "_check_id",
+																},
+																Rbrack: nil,
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 42,
+																		Line:   274,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_check_name: data._check_name",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   274,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 24,
+																			Line:   274,
+																		},
+																		File:   "monitor.flux",
+																		Source: "_check_name",
+																		Start: ast.Position{
+																			Column: 13,
+																			Line:   274,
+																		},
+																	},
+																},
+																Name: "_check_name",
+															},
+															Separator: nil,
+															Value: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 42,
+																			Line:   274,
+																		},
+																		File:   "monitor.flux",
+																		Source: "data._check_name",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   274,
+																		},
+																	},
+																},
+																Lbrack: nil,
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 30,
+																				Line:   274,
+																			},
+																			File:   "monitor.flux",
+																			Source: "data",
+																			Start: ast.Position{
+																				Column: 26,
+																				Line:   274,
+																			},
+																		},
+																	},
+																	Name: "data",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 42,
+																				Line:   274,
+																			},
+																			File:   "monitor.flux",
+																			Source: "_check_name",
+																			Start: ast.Position{
+																				Column: 31,
+																				Line:   274,
+																			},
+																		},
+																	},
+																	Name: "_check_name",
+																},
+																Rbrack: nil,
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 29,
+																		Line:   284,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   275,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 19,
+																			Line:   275,
+																		},
+																		File:   "monitor.flux",
+																		Source: "_level",
+																		Start: ast.Position{
+																			Column: 13,
+																			Line:   275,
+																		},
+																	},
+																},
+																Name: "_level",
+															},
+															Separator: nil,
+															Value: &ast.ConditionalExpression{
+																Alternate: &ast.ConditionalExpression{
+																	Alternate: &ast.ConditionalExpression{
+																		Alternate: &ast.ConditionalExpression{
+																			Alternate: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 29,
+																							Line:   284,
+																						},
+																						File:   "monitor.flux",
+																						Source: "levelUnknown",
+																						Start: ast.Position{
+																							Column: 17,
+																							Line:   284,
+																						},
+																					},
+																				},
+																				Name: "levelUnknown",
+																			},
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 29,
+																						Line:   284,
+																					},
+																					File:   "monitor.flux",
+																					Source: "if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
+																					Start: ast.Position{
+																						Column: 18,
+																						Line:   281,
+																					},
+																				},
+																			},
+																			Consequent: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 24,
+																							Line:   282,
+																						},
+																						File:   "monitor.flux",
+																						Source: "levelOK",
+																						Start: ast.Position{
+																							Column: 17,
+																							Line:   282,
+																						},
+																					},
+																				},
+																				Name: "levelOK",
+																			},
+																			Test: &ast.CallExpression{
+																				Arguments: []ast.Expression{&ast.ObjectExpression{
+																					BaseNode: ast.BaseNode{
+																						Comments: nil,
+																						Errors:   nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 28,
+																								Line:   281,
+																							},
+																							File:   "monitor.flux",
+																							Source: "r: r",
+																							Start: ast.Position{
+																								Column: 24,
+																								Line:   281,
+																							},
+																						},
+																					},
+																					Lbrace: nil,
+																					Properties: []*ast.Property{&ast.Property{
+																						BaseNode: ast.BaseNode{
+																							Comments: nil,
+																							Errors:   nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 28,
+																									Line:   281,
+																								},
+																								File:   "monitor.flux",
+																								Source: "r: r",
+																								Start: ast.Position{
+																									Column: 24,
+																									Line:   281,
+																								},
+																							},
+																						},
+																						Comma: nil,
+																						Key: &ast.Identifier{
+																							BaseNode: ast.BaseNode{
+																								Comments: nil,
+																								Errors:   nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 25,
+																										Line:   281,
+																									},
+																									File:   "monitor.flux",
+																									Source: "r",
+																									Start: ast.Position{
+																										Column: 24,
+																										Line:   281,
+																									},
+																								},
+																							},
+																							Name: "r",
+																						},
+																						Separator: nil,
+																						Value: &ast.Identifier{
+																							BaseNode: ast.BaseNode{
+																								Comments: nil,
+																								Errors:   nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 28,
+																										Line:   281,
+																									},
+																									File:   "monitor.flux",
+																									Source: "r",
+																									Start: ast.Position{
+																										Column: 27,
+																										Line:   281,
+																									},
+																								},
+																							},
+																							Name: "r",
+																						},
+																					}},
+																					Rbrace: nil,
+																					With:   nil,
+																				}},
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 29,
+																							Line:   281,
+																						},
+																						File:   "monitor.flux",
+																						Source: "ok(r: r)",
+																						Start: ast.Position{
+																							Column: 21,
+																							Line:   281,
+																						},
+																					},
+																				},
+																				Callee: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Comments: nil,
+																						Errors:   nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 23,
+																								Line:   281,
+																							},
+																							File:   "monitor.flux",
+																							Source: "ok",
+																							Start: ast.Position{
+																								Column: 21,
+																								Line:   281,
+																							},
+																						},
+																					},
+																					Name: "ok",
+																				},
+																				Lparen: nil,
+																				Rparen: nil,
+																			},
+																			Tk_else: nil,
+																			Tk_if:   nil,
+																			Tk_then: nil,
+																		},
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 29,
+																					Line:   284,
+																				},
+																				File:   "monitor.flux",
+																				Source: "if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
+																				Start: ast.Position{
+																					Column: 18,
+																					Line:   279,
+																				},
+																			},
+																		},
+																		Consequent: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 26,
+																						Line:   280,
+																					},
+																					File:   "monitor.flux",
+																					Source: "levelInfo",
+																					Start: ast.Position{
+																						Column: 17,
+																						Line:   280,
+																					},
+																				},
+																			},
+																			Name: "levelInfo",
+																		},
+																		Test: &ast.CallExpression{
+																			Arguments: []ast.Expression{&ast.ObjectExpression{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 30,
+																							Line:   279,
+																						},
+																						File:   "monitor.flux",
+																						Source: "r: r",
+																						Start: ast.Position{
+																							Column: 26,
+																							Line:   279,
+																						},
+																					},
+																				},
+																				Lbrace: nil,
+																				Properties: []*ast.Property{&ast.Property{
+																					BaseNode: ast.BaseNode{
+																						Comments: nil,
+																						Errors:   nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 30,
+																								Line:   279,
+																							},
+																							File:   "monitor.flux",
+																							Source: "r: r",
+																							Start: ast.Position{
+																								Column: 26,
+																								Line:   279,
+																							},
+																						},
+																					},
+																					Comma: nil,
+																					Key: &ast.Identifier{
+																						BaseNode: ast.BaseNode{
+																							Comments: nil,
+																							Errors:   nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 27,
+																									Line:   279,
+																								},
+																								File:   "monitor.flux",
+																								Source: "r",
+																								Start: ast.Position{
+																									Column: 26,
+																									Line:   279,
+																								},
+																							},
+																						},
+																						Name: "r",
+																					},
+																					Separator: nil,
+																					Value: &ast.Identifier{
+																						BaseNode: ast.BaseNode{
+																							Comments: nil,
+																							Errors:   nil,
+																							Loc: &ast.SourceLocation{
+																								End: ast.Position{
+																									Column: 30,
+																									Line:   279,
+																								},
+																								File:   "monitor.flux",
+																								Source: "r",
+																								Start: ast.Position{
+																									Column: 29,
+																									Line:   279,
+																								},
+																							},
+																						},
+																						Name: "r",
+																					},
+																				}},
+																				Rbrace: nil,
+																				With:   nil,
+																			}},
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 31,
+																						Line:   279,
+																					},
+																					File:   "monitor.flux",
+																					Source: "info(r: r)",
+																					Start: ast.Position{
+																						Column: 21,
+																						Line:   279,
+																					},
+																				},
+																			},
+																			Callee: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 25,
+																							Line:   279,
+																						},
+																						File:   "monitor.flux",
+																						Source: "info",
+																						Start: ast.Position{
+																							Column: 21,
+																							Line:   279,
+																						},
+																					},
+																				},
+																				Name: "info",
+																			},
+																			Lparen: nil,
+																			Rparen: nil,
+																		},
+																		Tk_else: nil,
+																		Tk_if:   nil,
+																		Tk_then: nil,
+																	},
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 29,
+																				Line:   284,
+																			},
+																			File:   "monitor.flux",
+																			Source: "if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
+																			Start: ast.Position{
+																				Column: 18,
+																				Line:   277,
+																			},
+																		},
+																	},
+																	Consequent: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 26,
+																					Line:   278,
+																				},
+																				File:   "monitor.flux",
+																				Source: "levelWarn",
+																				Start: ast.Position{
+																					Column: 17,
+																					Line:   278,
+																				},
+																			},
+																		},
+																		Name: "levelWarn",
+																	},
+																	Test: &ast.CallExpression{
+																		Arguments: []ast.Expression{&ast.ObjectExpression{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 30,
+																						Line:   277,
+																					},
+																					File:   "monitor.flux",
+																					Source: "r: r",
+																					Start: ast.Position{
+																						Column: 26,
+																						Line:   277,
+																					},
+																				},
+																			},
+																			Lbrace: nil,
+																			Properties: []*ast.Property{&ast.Property{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 30,
+																							Line:   277,
+																						},
+																						File:   "monitor.flux",
+																						Source: "r: r",
+																						Start: ast.Position{
+																							Column: 26,
+																							Line:   277,
+																						},
+																					},
+																				},
+																				Comma: nil,
+																				Key: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Comments: nil,
+																						Errors:   nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 27,
+																								Line:   277,
+																							},
+																							File:   "monitor.flux",
+																							Source: "r",
+																							Start: ast.Position{
+																								Column: 26,
+																								Line:   277,
+																							},
+																						},
+																					},
+																					Name: "r",
+																				},
+																				Separator: nil,
+																				Value: &ast.Identifier{
+																					BaseNode: ast.BaseNode{
+																						Comments: nil,
+																						Errors:   nil,
+																						Loc: &ast.SourceLocation{
+																							End: ast.Position{
+																								Column: 30,
+																								Line:   277,
+																							},
+																							File:   "monitor.flux",
+																							Source: "r",
+																							Start: ast.Position{
+																								Column: 29,
+																								Line:   277,
+																							},
+																						},
+																					},
+																					Name: "r",
+																				},
+																			}},
+																			Rbrace: nil,
+																			With:   nil,
+																		}},
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 31,
+																					Line:   277,
+																				},
+																				File:   "monitor.flux",
+																				Source: "warn(r: r)",
+																				Start: ast.Position{
+																					Column: 21,
+																					Line:   277,
+																				},
+																			},
+																		},
+																		Callee: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 25,
+																						Line:   277,
+																					},
+																					File:   "monitor.flux",
+																					Source: "warn",
+																					Start: ast.Position{
+																						Column: 21,
+																						Line:   277,
+																					},
+																				},
+																			},
+																			Name: "warn",
+																		},
+																		Lparen: nil,
+																		Rparen: nil,
+																	},
+																	Tk_else: nil,
+																	Tk_if:   nil,
+																	Tk_then: nil,
+																},
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 29,
+																			Line:   284,
+																		},
+																		File:   "monitor.flux",
+																		Source: "if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown",
+																		Start: ast.Position{
+																			Column: 21,
+																			Line:   275,
+																		},
+																	},
+																},
+																Consequent: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 26,
+																				Line:   276,
+																			},
+																			File:   "monitor.flux",
+																			Source: "levelCrit",
+																			Start: ast.Position{
+																				Column: 17,
+																				Line:   276,
+																			},
+																		},
+																	},
+																	Name: "levelCrit",
+																},
+																Test: &ast.CallExpression{
+																	Arguments: []ast.Expression{&ast.ObjectExpression{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 33,
+																					Line:   275,
+																				},
+																				File:   "monitor.flux",
+																				Source: "r: r",
+																				Start: ast.Position{
+																					Column: 29,
+																					Line:   275,
+																				},
+																			},
+																		},
+																		Lbrace: nil,
+																		Properties: []*ast.Property{&ast.Property{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 33,
+																						Line:   275,
+																					},
+																					File:   "monitor.flux",
+																					Source: "r: r",
+																					Start: ast.Position{
+																						Column: 29,
+																						Line:   275,
+																					},
+																				},
+																			},
+																			Comma: nil,
+																			Key: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 30,
+																							Line:   275,
+																						},
+																						File:   "monitor.flux",
+																						Source: "r",
+																						Start: ast.Position{
+																							Column: 29,
+																							Line:   275,
+																						},
+																					},
+																				},
+																				Name: "r",
+																			},
+																			Separator: nil,
+																			Value: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 33,
+																							Line:   275,
+																						},
+																						File:   "monitor.flux",
+																						Source: "r",
+																						Start: ast.Position{
+																							Column: 32,
+																							Line:   275,
+																						},
+																					},
+																				},
+																				Name: "r",
+																			},
+																		}},
+																		Rbrace: nil,
+																		With:   nil,
+																	}},
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 34,
+																				Line:   275,
+																			},
+																			File:   "monitor.flux",
+																			Source: "crit(r: r)",
+																			Start: ast.Position{
+																				Column: 24,
+																				Line:   275,
+																			},
+																		},
+																	},
+																	Callee: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 28,
+																					Line:   275,
+																				},
+																				File:   "monitor.flux",
+																				Source: "crit",
+																				Start: ast.Position{
+																					Column: 24,
+																					Line:   275,
+																				},
+																			},
+																		},
+																		Name: "crit",
+																	},
+																	Lparen: nil,
+																	Rparen: nil,
+																},
+																Tk_else: nil,
+																Tk_if:   nil,
+																Tk_then: nil,
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 47,
+																		Line:   285,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_source_timestamp: int(v: r._time)",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   285,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 30,
+																			Line:   285,
+																		},
+																		File:   "monitor.flux",
+																		Source: "_source_timestamp",
+																		Start: ast.Position{
+																			Column: 13,
+																			Line:   285,
+																		},
+																	},
+																},
+																Name: "_source_timestamp",
+															},
+															Separator: nil,
+															Value: &ast.CallExpression{
+																Arguments: []ast.Expression{&ast.ObjectExpression{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 46,
+																				Line:   285,
+																			},
+																			File:   "monitor.flux",
+																			Source: "v: r._time",
+																			Start: ast.Position{
+																				Column: 36,
+																				Line:   285,
+																			},
+																		},
+																	},
+																	Lbrace: nil,
+																	Properties: []*ast.Property{&ast.Property{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 46,
+																					Line:   285,
+																				},
+																				File:   "monitor.flux",
+																				Source: "v: r._time",
+																				Start: ast.Position{
+																					Column: 36,
+																					Line:   285,
+																				},
+																			},
+																		},
+																		Comma: nil,
+																		Key: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 37,
+																						Line:   285,
+																					},
+																					File:   "monitor.flux",
+																					Source: "v",
+																					Start: ast.Position{
+																						Column: 36,
+																						Line:   285,
+																					},
+																				},
+																			},
+																			Name: "v",
+																		},
+																		Separator: nil,
+																		Value: &ast.MemberExpression{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 46,
+																						Line:   285,
+																					},
+																					File:   "monitor.flux",
+																					Source: "r._time",
+																					Start: ast.Position{
+																						Column: 39,
+																						Line:   285,
+																					},
+																				},
+																			},
+																			Lbrack: nil,
+																			Object: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 40,
+																							Line:   285,
+																						},
+																						File:   "monitor.flux",
+																						Source: "r",
+																						Start: ast.Position{
+																							Column: 39,
+																							Line:   285,
+																						},
+																					},
+																				},
+																				Name: "r",
+																			},
+																			Property: &ast.Identifier{
+																				BaseNode: ast.BaseNode{
+																					Comments: nil,
+																					Errors:   nil,
+																					Loc: &ast.SourceLocation{
+																						End: ast.Position{
+																							Column: 46,
+																							Line:   285,
+																						},
+																						File:   "monitor.flux",
+																						Source: "_time",
+																						Start: ast.Position{
+																							Column: 41,
+																							Line:   285,
+																						},
+																					},
+																				},
+																				Name: "_time",
+																			},
+																			Rbrack: nil,
+																		},
+																	}},
+																	Rbrace: nil,
+																	With:   nil,
+																}},
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 47,
+																			Line:   285,
+																		},
+																		File:   "monitor.flux",
+																		Source: "int(v: r._time)",
+																		Start: ast.Position{
+																			Column: 32,
+																			Line:   285,
+																		},
+																	},
+																},
+																Callee: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 35,
+																				Line:   285,
+																			},
+																			File:   "monitor.flux",
+																			Source: "int",
+																			Start: ast.Position{
+																				Column: 32,
+																				Line:   285,
+																			},
+																		},
+																	},
+																	Name: "int",
+																},
+																Lparen: nil,
+																Rparen: nil,
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   286,
+																	},
+																	File:   "monitor.flux",
+																	Source: "_time: now()",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   286,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 18,
+																			Line:   286,
+																		},
+																		File:   "monitor.flux",
+																		Source: "_time",
+																		Start: ast.Position{
+																			Column: 13,
+																			Line:   286,
+																		},
+																	},
+																},
+																Name: "_time",
+															},
+															Separator: nil,
+															Value: &ast.CallExpression{
+																Arguments: nil,
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 25,
+																			Line:   286,
+																		},
+																		File:   "monitor.flux",
+																		Source: "now()",
+																		Start: ast.Position{
+																			Column: 20,
+																			Line:   286,
+																		},
+																	},
+																},
+																Callee: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 23,
+																				Line:   286,
+																			},
+																			File:   "monitor.flux",
+																			Source: "now",
+																			Start: ast.Position{
+																				Column: 20,
+																				Line:   286,
+																			},
+																		},
+																	},
+																	Name: "now",
+																},
+																Lparen: nil,
+																Rparen: nil,
+															},
+														}},
+														Rbrace: nil,
+														With: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 23,
+																		Line:   269,
+																	},
+																	File:   "monitor.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 22,
+																		Line:   269,
+																	},
+																},
+															},
+															Name: "r",
+														},
+													},
+													Lparen: nil,
+													Rparen: nil,
+												},
+												Lparen: nil,
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 15,
+																Line:   269,
+															},
+															File:   "monitor.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 14,
+																Line:   269,
+															},
+														},
+													},
+													Comma: nil,
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 15,
+																	Line:   269,
+																},
+																File:   "monitor.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   269,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Separator: nil,
+													Value:     nil,
+												}},
+												Rparan: nil,
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 6,
+												Line:   288,
+											},
+											File:   "monitor.flux",
+											Source: "map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )",
+											Start: ast.Position{
+												Column: 8,
+												Line:   268,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   268,
+												},
+												File:   "monitor.flux",
+												Source: "map",
+												Start: ast.Position{
+													Column: 8,
+													Line:   268,
 												},
 											},
 										},
@@ -13125,13 +14815,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   278,
+										Line:   293,
 									},
 									File:   "monitor.flux",
 									Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )",
 									Start: ast.Position{
 										Column: 6,
-										Line:   250,
+										Line:   265,
 									},
 								},
 							},
@@ -13143,13 +14833,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   277,
+												Line:   292,
 											},
 											File:   "monitor.flux",
 											Source: "fn: (r) => ({r with\n            _message: messageFn(r: r),\n        })",
 											Start: ast.Position{
 												Column: 9,
-												Line:   275,
+												Line:   290,
 											},
 										},
 									},
@@ -13161,13 +14851,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   277,
+													Line:   292,
 												},
 												File:   "monitor.flux",
 												Source: "fn: (r) => ({r with\n            _message: messageFn(r: r),\n        })",
 												Start: ast.Position{
 													Column: 9,
-													Line:   275,
+													Line:   290,
 												},
 											},
 										},
@@ -13179,13 +14869,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   275,
+														Line:   290,
 													},
 													File:   "monitor.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 9,
-														Line:   275,
+														Line:   290,
 													},
 												},
 											},
@@ -13200,13 +14890,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   277,
+														Line:   292,
 													},
 													File:   "monitor.flux",
 													Source: "(r) => ({r with\n            _message: messageFn(r: r),\n        })",
 													Start: ast.Position{
 														Column: 13,
-														Line:   275,
+														Line:   290,
 													},
 												},
 											},
@@ -13217,13 +14907,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
-															Line:   277,
+															Line:   292,
 														},
 														File:   "monitor.flux",
 														Source: "({r with\n            _message: messageFn(r: r),\n        })",
 														Start: ast.Position{
 															Column: 20,
-															Line:   275,
+															Line:   290,
 														},
 													},
 												},
@@ -13234,13 +14924,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 10,
-																Line:   277,
+																Line:   292,
 															},
 															File:   "monitor.flux",
 															Source: "{r with\n            _message: messageFn(r: r),\n        }",
 															Start: ast.Position{
 																Column: 21,
-																Line:   275,
+																Line:   290,
 															},
 														},
 													},
@@ -13252,13 +14942,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 38,
-																	Line:   276,
+																	Line:   291,
 																},
 																File:   "monitor.flux",
 																Source: "_message: messageFn(r: r)",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   276,
+																	Line:   291,
 																},
 															},
 														},
@@ -13270,13 +14960,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   276,
+																		Line:   291,
 																	},
 																	File:   "monitor.flux",
 																	Source: "_message",
 																	Start: ast.Position{
 																		Column: 13,
-																		Line:   276,
+																		Line:   291,
 																	},
 																},
 															},
@@ -13291,13 +14981,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   276,
+																			Line:   291,
 																		},
 																		File:   "monitor.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 33,
-																			Line:   276,
+																			Line:   291,
 																		},
 																	},
 																},
@@ -13309,13 +14999,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 37,
-																				Line:   276,
+																				Line:   291,
 																			},
 																			File:   "monitor.flux",
 																			Source: "r: r",
 																			Start: ast.Position{
 																				Column: 33,
-																				Line:   276,
+																				Line:   291,
 																			},
 																		},
 																	},
@@ -13327,13 +15017,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 34,
-																					Line:   276,
+																					Line:   291,
 																				},
 																				File:   "monitor.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 33,
-																					Line:   276,
+																					Line:   291,
 																				},
 																			},
 																		},
@@ -13347,13 +15037,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 37,
-																					Line:   276,
+																					Line:   291,
 																				},
 																				File:   "monitor.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 36,
-																					Line:   276,
+																					Line:   291,
 																				},
 																			},
 																		},
@@ -13369,13 +15059,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 38,
-																		Line:   276,
+																		Line:   291,
 																	},
 																	File:   "monitor.flux",
 																	Source: "messageFn(r: r)",
 																	Start: ast.Position{
 																		Column: 23,
-																		Line:   276,
+																		Line:   291,
 																	},
 																},
 															},
@@ -13386,13 +15076,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 32,
-																			Line:   276,
+																			Line:   291,
 																		},
 																		File:   "monitor.flux",
 																		Source: "messageFn",
 																		Start: ast.Position{
 																			Column: 23,
-																			Line:   276,
+																			Line:   291,
 																		},
 																	},
 																},
@@ -13410,13 +15100,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   275,
+																	Line:   290,
 																},
 																File:   "monitor.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 22,
-																	Line:   275,
+																	Line:   290,
 																},
 															},
 														},
@@ -13434,13 +15124,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   275,
+															Line:   290,
 														},
 														File:   "monitor.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   275,
+															Line:   290,
 														},
 													},
 												},
@@ -13452,13 +15142,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   275,
+																Line:   290,
 															},
 															File:   "monitor.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   275,
+																Line:   290,
 															},
 														},
 													},
@@ -13479,13 +15169,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   278,
+											Line:   293,
 										},
 										File:   "monitor.flux",
 										Source: "map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   274,
+											Line:   289,
 										},
 									},
 								},
@@ -13496,13 +15186,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   274,
+												Line:   289,
 											},
 											File:   "monitor.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   274,
+												Line:   289,
 											},
 										},
 									},
@@ -13518,13 +15208,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   288,
+									Line:   303,
 								},
 								File:   "monitor.flux",
 								Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )",
 								Start: ast.Position{
 									Column: 6,
-									Line:   250,
+									Line:   265,
 								},
 							},
 						},
@@ -13536,13 +15226,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 10,
-											Line:   287,
+											Line:   302,
 										},
 										File:   "monitor.flux",
 										Source: "mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ]",
 										Start: ast.Position{
 											Column: 9,
-											Line:   280,
+											Line:   295,
 										},
 									},
 								},
@@ -13554,13 +15244,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   280,
+												Line:   295,
 											},
 											File:   "monitor.flux",
 											Source: "mode: \"extend\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   280,
+												Line:   295,
 											},
 										},
 									},
@@ -13572,13 +15262,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 13,
-													Line:   280,
+													Line:   295,
 												},
 												File:   "monitor.flux",
 												Source: "mode",
 												Start: ast.Position{
 													Column: 9,
-													Line:   280,
+													Line:   295,
 												},
 											},
 										},
@@ -13592,13 +15282,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   280,
+													Line:   295,
 												},
 												File:   "monitor.flux",
 												Source: "\"extend\"",
 												Start: ast.Position{
 													Column: 15,
-													Line:   280,
+													Line:   295,
 												},
 											},
 										},
@@ -13611,13 +15301,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   287,
+												Line:   302,
 											},
 											File:   "monitor.flux",
 											Source: "columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ]",
 											Start: ast.Position{
 												Column: 9,
-												Line:   281,
+												Line:   296,
 											},
 										},
 									},
@@ -13629,13 +15319,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   281,
+													Line:   296,
 												},
 												File:   "monitor.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 9,
-													Line:   281,
+													Line:   296,
 												},
 											},
 										},
@@ -13649,13 +15339,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   287,
+													Line:   302,
 												},
 												File:   "monitor.flux",
 												Source: "[\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ]",
 												Start: ast.Position{
 													Column: 18,
-													Line:   281,
+													Line:   296,
 												},
 											},
 										},
@@ -13666,13 +15356,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   282,
+														Line:   297,
 													},
 													File:   "monitor.flux",
 													Source: "\"_source_measurement\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   282,
+														Line:   297,
 													},
 												},
 											},
@@ -13684,13 +15374,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   283,
+														Line:   298,
 													},
 													File:   "monitor.flux",
 													Source: "\"_type\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   283,
+														Line:   298,
 													},
 												},
 											},
@@ -13702,13 +15392,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   284,
+														Line:   299,
 													},
 													File:   "monitor.flux",
 													Source: "\"_check_id\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   284,
+														Line:   299,
 													},
 												},
 											},
@@ -13720,13 +15410,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   285,
+														Line:   300,
 													},
 													File:   "monitor.flux",
 													Source: "\"_check_name\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   285,
+														Line:   300,
 													},
 												},
 											},
@@ -13738,13 +15428,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   286,
+														Line:   301,
 													},
 													File:   "monitor.flux",
 													Source: "\"_level\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   286,
+														Line:   301,
 													},
 												},
 											},
@@ -13763,13 +15453,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   288,
+										Line:   303,
 									},
 									File:   "monitor.flux",
 									Source: "experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )",
 									Start: ast.Position{
 										Column: 8,
-										Line:   279,
+										Line:   294,
 									},
 								},
 							},
@@ -13780,13 +15470,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   279,
+											Line:   294,
 										},
 										File:   "monitor.flux",
 										Source: "experimental.group",
 										Start: ast.Position{
 											Column: 8,
-											Line:   279,
+											Line:   294,
 										},
 									},
 								},
@@ -13798,13 +15488,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   279,
+												Line:   294,
 											},
 											File:   "monitor.flux",
 											Source: "experimental",
 											Start: ast.Position{
 												Column: 8,
-												Line:   279,
+												Line:   294,
 											},
 										},
 									},
@@ -13817,13 +15507,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   279,
+												Line:   294,
 											},
 											File:   "monitor.flux",
 											Source: "group",
 											Start: ast.Position{
 												Column: 21,
-												Line:   279,
+												Line:   294,
 											},
 										},
 									},
@@ -13841,13 +15531,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   289,
+								Line:   304,
 							},
 							File:   "monitor.flux",
 							Source: "tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
 							Start: ast.Position{
 								Column: 6,
-								Line:   250,
+								Line:   265,
 							},
 						},
 					},
@@ -13859,13 +15549,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   289,
+									Line:   304,
 								},
 								File:   "monitor.flux",
 								Source: "write()",
 								Start: ast.Position{
 									Column: 8,
-									Line:   289,
+									Line:   304,
 								},
 							},
 						},
@@ -13876,13 +15566,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   289,
+										Line:   304,
 									},
 									File:   "monitor.flux",
 									Source: "write",
 									Start: ast.Position{
 										Column: 8,
-										Line:   289,
+										Line:   304,
 									},
 								},
 							},
@@ -13900,13 +15590,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   243,
+								Line:   258,
 							},
 							File:   "monitor.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 9,
-								Line:   243,
+								Line:   258,
 							},
 						},
 					},
@@ -13918,13 +15608,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   243,
+									Line:   258,
 								},
 								File:   "monitor.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 9,
-									Line:   243,
+									Line:   258,
 								},
 							},
 						},
@@ -13937,13 +15627,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   243,
+								Line:   258,
 							},
 							File:   "monitor.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 16,
-								Line:   243,
+								Line:   258,
 							},
 						},
 					}},
@@ -13954,13 +15644,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
-								Line:   244,
+								Line:   259,
 							},
 							File:   "monitor.flux",
 							Source: "data",
 							Start: ast.Position{
 								Column: 9,
-								Line:   244,
+								Line:   259,
 							},
 						},
 					},
@@ -13972,13 +15662,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   244,
+									Line:   259,
 								},
 								File:   "monitor.flux",
 								Source: "data",
 								Start: ast.Position{
 									Column: 9,
-									Line:   244,
+									Line:   259,
 								},
 							},
 						},
@@ -13993,13 +15683,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   245,
+								Line:   260,
 							},
 							File:   "monitor.flux",
 							Source: "messageFn",
 							Start: ast.Position{
 								Column: 9,
-								Line:   245,
+								Line:   260,
 							},
 						},
 					},
@@ -14011,13 +15701,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   245,
+									Line:   260,
 								},
 								File:   "monitor.flux",
 								Source: "messageFn",
 								Start: ast.Position{
 									Column: 9,
-									Line:   245,
+									Line:   260,
 								},
 							},
 						},
@@ -14032,13 +15722,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   246,
+								Line:   261,
 							},
 							File:   "monitor.flux",
 							Source: "crit=(r) => false",
 							Start: ast.Position{
 								Column: 9,
-								Line:   246,
+								Line:   261,
 							},
 						},
 					},
@@ -14050,13 +15740,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   246,
+									Line:   261,
 								},
 								File:   "monitor.flux",
 								Source: "crit",
 								Start: ast.Position{
 									Column: 9,
-									Line:   246,
+									Line:   261,
 								},
 							},
 						},
@@ -14071,13 +15761,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   246,
+									Line:   261,
 								},
 								File:   "monitor.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
 									Column: 14,
-									Line:   246,
+									Line:   261,
 								},
 							},
 						},
@@ -14088,13 +15778,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   246,
+										Line:   261,
 									},
 									File:   "monitor.flux",
 									Source: "false",
 									Start: ast.Position{
 										Column: 21,
-										Line:   246,
+										Line:   261,
 									},
 								},
 							},
@@ -14108,13 +15798,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   246,
+										Line:   261,
 									},
 									File:   "monitor.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 15,
-										Line:   246,
+										Line:   261,
 									},
 								},
 							},
@@ -14126,13 +15816,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   246,
+											Line:   261,
 										},
 										File:   "monitor.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 15,
-											Line:   246,
+											Line:   261,
 										},
 									},
 								},
@@ -14150,13 +15840,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   247,
+								Line:   262,
 							},
 							File:   "monitor.flux",
 							Source: "warn=(r) => false",
 							Start: ast.Position{
 								Column: 9,
-								Line:   247,
+								Line:   262,
 							},
 						},
 					},
@@ -14168,13 +15858,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   247,
+									Line:   262,
 								},
 								File:   "monitor.flux",
 								Source: "warn",
 								Start: ast.Position{
 									Column: 9,
-									Line:   247,
+									Line:   262,
 								},
 							},
 						},
@@ -14189,13 +15879,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   247,
+									Line:   262,
 								},
 								File:   "monitor.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
 									Column: 14,
-									Line:   247,
+									Line:   262,
 								},
 							},
 						},
@@ -14206,13 +15896,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   247,
+										Line:   262,
 									},
 									File:   "monitor.flux",
 									Source: "false",
 									Start: ast.Position{
 										Column: 21,
-										Line:   247,
+										Line:   262,
 									},
 								},
 							},
@@ -14226,13 +15916,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   247,
+										Line:   262,
 									},
 									File:   "monitor.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 15,
-										Line:   247,
+										Line:   262,
 									},
 								},
 							},
@@ -14244,13 +15934,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   247,
+											Line:   262,
 										},
 										File:   "monitor.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 15,
-											Line:   247,
+											Line:   262,
 										},
 									},
 								},
@@ -14268,13 +15958,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   248,
+								Line:   263,
 							},
 							File:   "monitor.flux",
 							Source: "info=(r) => false",
 							Start: ast.Position{
 								Column: 9,
-								Line:   248,
+								Line:   263,
 							},
 						},
 					},
@@ -14286,13 +15976,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   248,
+									Line:   263,
 								},
 								File:   "monitor.flux",
 								Source: "info",
 								Start: ast.Position{
 									Column: 9,
-									Line:   248,
+									Line:   263,
 								},
 							},
 						},
@@ -14307,13 +15997,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   248,
+									Line:   263,
 								},
 								File:   "monitor.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
 									Column: 14,
-									Line:   248,
+									Line:   263,
 								},
 							},
 						},
@@ -14324,13 +16014,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   248,
+										Line:   263,
 									},
 									File:   "monitor.flux",
 									Source: "false",
 									Start: ast.Position{
 										Column: 21,
-										Line:   248,
+										Line:   263,
 									},
 								},
 							},
@@ -14344,13 +16034,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   248,
+										Line:   263,
 									},
 									File:   "monitor.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 15,
-										Line:   248,
+										Line:   263,
 									},
 								},
 							},
@@ -14362,13 +16052,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   248,
+											Line:   263,
 										},
 										File:   "monitor.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 15,
-											Line:   248,
+											Line:   263,
 										},
 									},
 								},
@@ -14386,13 +16076,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   249,
+								Line:   264,
 							},
 							File:   "monitor.flux",
 							Source: "ok=(r) => true",
 							Start: ast.Position{
 								Column: 9,
-								Line:   249,
+								Line:   264,
 							},
 						},
 					},
@@ -14404,13 +16094,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   249,
+									Line:   264,
 								},
 								File:   "monitor.flux",
 								Source: "ok",
 								Start: ast.Position{
 									Column: 9,
-									Line:   249,
+									Line:   264,
 								},
 							},
 						},
@@ -14425,13 +16115,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   249,
+									Line:   264,
 								},
 								File:   "monitor.flux",
 								Source: "(r) => true",
 								Start: ast.Position{
 									Column: 12,
-									Line:   249,
+									Line:   264,
 								},
 							},
 						},
@@ -14442,13 +16132,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   249,
+										Line:   264,
 									},
 									File:   "monitor.flux",
 									Source: "true",
 									Start: ast.Position{
 										Column: 19,
-										Line:   249,
+										Line:   264,
 									},
 								},
 							},
@@ -14462,13 +16152,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
-										Line:   249,
+										Line:   264,
 									},
 									File:   "monitor.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 13,
-										Line:   249,
+										Line:   264,
 									},
 								},
 							},
@@ -14480,13 +16170,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   249,
+											Line:   264,
 										},
 										File:   "monitor.flux",
 										Source: "r",
 										Start: ast.Position{
 											Column: 13,
-											Line:   249,
+											Line:   264,
 										},
 									},
 								},
