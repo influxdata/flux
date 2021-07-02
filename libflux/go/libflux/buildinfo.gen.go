@@ -263,13 +263,8 @@ var sourceHashes = map[string]string{
 	"stdlib/interpolate/interpolate_test.flux":                                      "3e5963a5176e17f7dc2eb7f69c9485bb635793e8e93469d6d9ee569aaa30d492",
 	"stdlib/json/json.flux":                                                         "339deb47e6275f47786948c070063d9787cdeb95e37ced3c44d6be93d352009a",
 	"stdlib/kafka/kafka.flux":                                                       "214fb699bcde2db9ecb9a6673bf9f29c481ec51306bcf6316cec23324431ea3d",
-<<<<<<< HEAD
 	"stdlib/math/math.flux":                                                         "2eaf5f7e986ba142fc9aea6df2909da2baceea3bf9c746fa08777f0980d21a82",
 	"stdlib/pagerduty/pagerduty.flux":                                               "ea8f481ed8766ca6355a505b2b90cf3e55954bfe0dfa8850a8a13eabdee24544",
-=======
-	"stdlib/math/math.flux":                                                         "66e94140d5dedfd69446b55d275be8d391be982fb926f06cd0faa5174c1b5ff1",
-	"stdlib/pagerduty/pagerduty.flux":                                               "2243db0ced078978ccbeeecc4a3cdb947c77c961e2c9089208d36c384ea4cd11",
->>>>>>> 56bced49 (docs: added influxbd tasks docs)
 	"stdlib/pagerduty/pagerduty_test.flux":                                          "d8f9bd6ffe2de7af4270aa51a2adbaeb77405bc52310fb3fc4f77090362b77c4",
 	"stdlib/planner/aggregate_window_max_eval_test.flux":                            "7993881ef948aad5039e3534bd05964e008cefe14c6259152fbc36dca8b3d902",
 	"stdlib/planner/aggregate_window_max_push_test.flux":                            "98f872b4fc07261f85fb8c52f75198a6af73626cd7b7db68ae098d005e1ece60",
