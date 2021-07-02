@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 64,
-					Line:   21,
+					Line:   48,
 				},
 				File:   "tasks.flux",
-				Source: "package tasks\n\n\n// _zeroTime is a sentinel value for the zero time.\n// This is used to mark that the lastSuccessTime has not been set.\nbuiltin _zeroTime : time\n\n// lastSuccessTime is the last time this task had run successfully.\noption lastSuccessTime = _zeroTime\n\n// _lastSuccess will return the time set on the option lastSuccessTime\n// or it will return the orTime.\nbuiltin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timeable\n\n// lastSuccess will return the last successful time a task ran\n// within an influxdb task. If the task has not successfully run,\n// the orTime will be returned.\nlastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)",
+				Source: "package tasks\n\n\n// _zeroTime is a sentinel value for the zero time.\n// This is used to mark that the lastSuccessTime has not been set.\nbuiltin _zeroTime : time\n\n// lastSuccessTime is the last time this task had run successfully.\noption lastSuccessTime = _zeroTime\n\n// _lastSuccess will return the time set on the option lastSuccessTime\n// or it will return the orTime.\nbuiltin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timeable\n\n// lastSuccess is a function that returns the time of the last successful run\n//  of the InfluxDb task or the value of the orTime parameter if the task\n//  has never successfully run.\n//\n// ## Parameters\n// - `orTime` is the defualt time value returned if the task has never\n//   successfully run.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/tasks\"\n//\n// tasks.lastSuccess(orTime: 2020-01-01T00:00:00Z)\n// ```\n//\n// ## Query data since the last successful task run\n//\n// ```\n// import \"influxdata/influxdb/tasks\"\n//\n// option task = {\n//   name: \"Example task\",\n//   every: 30m\n// }\n//\n// from(bucket: \"example-bucket\")\n//   |> range(start: tasks.lastSuccess(orTime: -task.every))\n//   // ...\n// ```\nlastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   4,
@@ -522,30 +522,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 64,
-						Line:   21,
+						Line:   48,
 					},
 					File:   "tasks.flux",
 					Source: "lastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   21,
+						Line:   48,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// lastSuccess will return the last successful time a task ran\n"}, ast.Comment{Text: "// within an influxdb task. If the task has not successfully run,\n"}, ast.Comment{Text: "// the orTime will be returned.\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// lastSuccess is a function that returns the time of the last successful run\n"}, ast.Comment{Text: "//  of the InfluxDb task or the value of the orTime parameter if the task\n"}, ast.Comment{Text: "//  has never successfully run.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `orTime` is the defualt time value returned if the task has never\n"}, ast.Comment{Text: "//   successfully run.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/tasks\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// tasks.lastSuccess(orTime: 2020-01-01T00:00:00Z)\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Query data since the last successful task run\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/tasks\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// option task = {\n"}, ast.Comment{Text: "//   name: \"Example task\",\n"}, ast.Comment{Text: "//   every: 30m\n"}, ast.Comment{Text: "// }\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// from(bucket: \"example-bucket\")\n"}, ast.Comment{Text: "//   |> range(start: tasks.lastSuccess(orTime: -task.every))\n"}, ast.Comment{Text: "//   // ...\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   21,
+							Line:   48,
 						},
 						File:   "tasks.flux",
 						Source: "lastSuccess",
 						Start: ast.Position{
 							Column: 1,
-							Line:   21,
+							Line:   48,
 						},
 					},
 				},
@@ -559,13 +559,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 64,
-							Line:   21,
+							Line:   48,
 						},
 						File:   "tasks.flux",
 						Source: "(orTime) => _lastSuccess(orTime, lastSuccessTime)",
 						Start: ast.Position{
 							Column: 15,
-							Line:   21,
+							Line:   48,
 						},
 					},
 				},
@@ -577,13 +577,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 63,
-									Line:   21,
+									Line:   48,
 								},
 								File:   "tasks.flux",
 								Source: "orTime, lastSuccessTime",
 								Start: ast.Position{
 									Column: 40,
-									Line:   21,
+									Line:   48,
 								},
 							},
 						},
@@ -595,13 +595,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   21,
+										Line:   48,
 									},
 									File:   "tasks.flux",
 									Source: "orTime",
 									Start: ast.Position{
 										Column: 40,
-										Line:   21,
+										Line:   48,
 									},
 								},
 							},
@@ -613,13 +613,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   21,
+											Line:   48,
 										},
 										File:   "tasks.flux",
 										Source: "orTime",
 										Start: ast.Position{
 											Column: 40,
-											Line:   21,
+											Line:   48,
 										},
 									},
 								},
@@ -634,13 +634,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 63,
-										Line:   21,
+										Line:   48,
 									},
 									File:   "tasks.flux",
 									Source: "lastSuccessTime",
 									Start: ast.Position{
 										Column: 48,
-										Line:   21,
+										Line:   48,
 									},
 								},
 							},
@@ -652,13 +652,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 63,
-											Line:   21,
+											Line:   48,
 										},
 										File:   "tasks.flux",
 										Source: "lastSuccessTime",
 										Start: ast.Position{
 											Column: 48,
-											Line:   21,
+											Line:   48,
 										},
 									},
 								},
@@ -676,13 +676,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 64,
-								Line:   21,
+								Line:   48,
 							},
 							File:   "tasks.flux",
 							Source: "_lastSuccess(orTime, lastSuccessTime)",
 							Start: ast.Position{
 								Column: 27,
-								Line:   21,
+								Line:   48,
 							},
 						},
 					},
@@ -693,13 +693,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   21,
+									Line:   48,
 								},
 								File:   "tasks.flux",
 								Source: "_lastSuccess",
 								Start: ast.Position{
 									Column: 27,
-									Line:   21,
+									Line:   48,
 								},
 							},
 						},
@@ -716,13 +716,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   21,
+								Line:   48,
 							},
 							File:   "tasks.flux",
 							Source: "orTime",
 							Start: ast.Position{
 								Column: 16,
-								Line:   21,
+								Line:   48,
 							},
 						},
 					},
@@ -734,13 +734,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   21,
+									Line:   48,
 								},
 								File:   "tasks.flux",
 								Source: "orTime",
 								Start: ast.Position{
 									Column: 16,
-									Line:   21,
+									Line:   48,
 								},
 							},
 						},
