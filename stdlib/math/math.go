@@ -90,7 +90,8 @@ func init() {
 	runtime.RegisterPackageValue("math", "asin", generateMathFunctionX("asin", math.Asin))
 	runtime.RegisterPackageValue("math", "asinh", generateMathFunctionX("asinh", math.Asinh))
 	runtime.RegisterPackageValue("math", "atan", generateMathFunctionX("atan", math.Atan))
-	runtime.RegisterPackageValue("math", "atan2", generateMathFunctionXY("atan2", math.Atan2))
+	// atan2's args are math.Atan2(y,x) so specify them explicitly
+	runtime.RegisterPackageValue("math", "atan2", generateMathFunctionXY("atan2", math.Atan2, "y", "x"))
 	runtime.RegisterPackageValue("math", "atanh", generateMathFunctionX("atanh", math.Atanh))
 	runtime.RegisterPackageValue("math", "cbrt", generateMathFunctionX("cbrt", math.Cbrt))
 	runtime.RegisterPackageValue("math", "ceil", generateMathFunctionX("ceil", math.Ceil))

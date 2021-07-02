@@ -207,7 +207,7 @@ builtin atan : (x: float) => float
 // math.atan2(y: +Inf, x:x)      // Returns +Pi/2
 // math.atan2(y: -Inf, x:x)      // Returns -Pi/2
 // ```
-builtin atan2 : (x: float, y: float) => float
+builtin atan2 : (y: float, x: float) => float
 
 // atanh is a function that returns the inverse hyperbolic tangent of x.
 //
