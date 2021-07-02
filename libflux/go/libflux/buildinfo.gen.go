@@ -220,7 +220,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/monitor/check_test.flux":                            "a63adf3ed9a5e3e8ad83b4478e8a39d31f2bbaf5005ea0bbb84b301aa1325950",
 	"stdlib/influxdata/influxdb/monitor/deadman_add_test.flux":                      "dab8f711f5673ec836e6b0bfb451500998d4a963e1e066c4c5a937eb7897d20e",
 	"stdlib/influxdata/influxdb/monitor/deadman_sub_test.flux":                      "68a38adc0989b573656ec4dce762181b127d65c8b150d22b0683ac01bc5cad7c",
-	"stdlib/influxdata/influxdb/monitor/monitor.flux":                               "c6c443c3d1d1e32feba4fd3e5cff14fdde552a07aa9ec14aa0d68a2885a790f4",
+	"stdlib/influxdata/influxdb/monitor/monitor.flux":                               "ca0d49c44bc630a9961a0a0db0a500e4695093600e84ec798314b411c486fbda",
 	"stdlib/influxdata/influxdb/monitor/notify_test.flux":                           "1af9476f8d85ff2af16238a79695b4b2805c42757f5880e3940074870e3c31f4",
 	"stdlib/influxdata/influxdb/monitor/state_changes_any_to_any_test.flux":         "43467b488ebd3fd89dc42586835a6ec687fe6354941d7c9eeec841cb056a855c",
 	"stdlib/influxdata/influxdb/monitor/state_changes_big_any_to_any_test.flux":     "e8d232452111fda58dd87d984c7ec82d2e0207136584d0d99187547ba2cc9dca",
