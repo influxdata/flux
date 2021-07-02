@@ -911,7 +911,7 @@ var pkgAST = &ast.Package{
 		Name:     "sql.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Flux SQL package provides tools for working with data in SQL\n"}, ast.Comment{Text: "// databases such as:\n"}, ast.Comment{Text: "// - Amazon Athena\n"}, ast.Comment{Text: "// - Google BigQuery\n"}, ast.Comment{Text: "// - Microsoft SQL Server\n"}, ast.Comment{Text: "// - MySQL\n"}, ast.Comment{Text: "// - PostgreSQL\n"}, ast.Comment{Text: "// - Snowflake\n"}, ast.Comment{Text: "// - SQLite\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package SQL provides tools for working with data in SQL\n"}, ast.Comment{Text: "// databases such as:\n"}, ast.Comment{Text: "// - Amazon Athena\n"}, ast.Comment{Text: "// - Google BigQuery\n"}, ast.Comment{Text: "// - Microsoft SQL Server\n"}, ast.Comment{Text: "// - MySQL\n"}, ast.Comment{Text: "// - PostgreSQL\n"}, ast.Comment{Text: "// - Snowflake\n"}, ast.Comment{Text: "// - SQLite\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

@@ -2313,7 +2313,7 @@ var pkgAST = &ast.Package{
 		Name:     "http.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// The http package provides functions for transferring data using the HTTP protocol.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package http provides functions for transferring data using the HTTP protocol.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

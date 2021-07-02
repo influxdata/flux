@@ -5557,7 +5557,7 @@ var pkgAST = &ast.Package{
 		Name:     "testing.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Flux testing functions test piped-forward data in specific ways and return errors if the tests fail.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package testing functions test piped-forward data in specific ways and return errors if the tests fail.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

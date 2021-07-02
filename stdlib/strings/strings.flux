@@ -1,4 +1,4 @@
-// The strings package provides functions to manipulate UTF-8 encoded strings.
+// Package strings provides functions to manipulate UTF-8 encoded strings.
 package strings
 
 

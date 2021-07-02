@@ -8935,7 +8935,7 @@ var pkgAST = &ast.Package{
 		Name:     "strings.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// The strings package provides functions to manipulate UTF-8 encoded strings.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package strings provides functions to manipulate UTF-8 encoded strings.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

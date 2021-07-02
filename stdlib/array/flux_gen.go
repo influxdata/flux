@@ -318,7 +318,7 @@ var pkgAST = &ast.Package{
 		Name:     "array.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Flux Array package provides functions for building tables from flux arrays.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package array provides functions for building tables from flux arrays.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

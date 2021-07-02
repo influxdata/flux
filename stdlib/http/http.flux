@@ -1,4 +1,4 @@
-// The http package provides functions for transferring data using the HTTP protocol.
+// Package http provides functions for transferring data using the HTTP protocol.
 package http
 
 

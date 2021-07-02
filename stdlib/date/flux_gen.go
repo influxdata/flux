@@ -4534,7 +4534,7 @@ var pkgAST = &ast.Package{
 		Name:     "date.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Flux date package provides date and time constants and functions.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package date provides date and time constants and functions.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

@@ -1,4 +1,4 @@
-// Flux dictionary package provides functions for interacting with dictionary types.
+// Package dictionary provides functions for interacting with dictionary types.
 package dict
 
 

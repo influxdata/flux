@@ -3140,7 +3140,7 @@ var pkgAST = &ast.Package{
 		Name:     "pushbullet.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// The pushbullet package provides functions for sending data to Pushbullet.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package pushbullet provides functions for sending data to Pushbullet.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

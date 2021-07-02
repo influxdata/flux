@@ -227,7 +227,7 @@ var pkgAST = &ast.Package{
 		Name:     "json.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// The json functions provide tools for working with JSON.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package json functions provide tools for working with JSON.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

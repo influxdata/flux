@@ -1852,7 +1852,7 @@ var pkgAST = &ast.Package{
 		Name:     "dict.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Flux dictionary package provides functions for interacting with dictionary types.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package dictionary provides functions for interacting with dictionary types.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

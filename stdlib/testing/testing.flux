@@ -1,4 +1,4 @@
-// Flux testing functions test piped-forward data in specific ways and return errors if the tests fail.
+// Package testing functions test piped-forward data in specific ways and return errors if the tests fail.
 package testing
 
 

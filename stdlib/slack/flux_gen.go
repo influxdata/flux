@@ -3410,7 +3410,7 @@ var pkgAST = &ast.Package{
 		Name:     "slack.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// The slack package provides functions for sending data to Slack.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package slack provides functions for sending data to Slack.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
