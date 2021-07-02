@@ -1,4 +1,4 @@
-// The pushbullet package provides functions for sending data to Pushbullet.
+// Package pushbullet provides functions for sending data to Pushbullet.
 package pushbullet
 
 

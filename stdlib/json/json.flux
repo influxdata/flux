@@ -1,4 +1,4 @@
-// The json functions provide tools for working with JSON.
+// Package json functions provide tools for working with JSON.
 package json
 
 

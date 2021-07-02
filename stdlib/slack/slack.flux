@@ -1,4 +1,4 @@
-// The slack package provides functions for sending data to Slack.
+// Package slack provides functions for sending data to Slack.
 package slack
 
 

@@ -1,4 +1,4 @@
-// The schema package provides functions for exploring your InfluxDB data schema.
+// Package schema provides functions for exploring your InfluxDB data schema.
 package schema
 
 

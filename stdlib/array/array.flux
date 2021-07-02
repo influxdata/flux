@@ -1,4 +1,4 @@
-// Flux Array package provides functions for building tables from flux arrays.
+// Package array provides functions for building tables from flux arrays.
 package array
 
 

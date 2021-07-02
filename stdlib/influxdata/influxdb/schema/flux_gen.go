@@ -4925,7 +4925,7 @@ var pkgAST = &ast.Package{
 		Name:     "schema.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// The schema package provides functions for exploring your InfluxDB data schema.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package schema provides functions for exploring your InfluxDB data schema.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

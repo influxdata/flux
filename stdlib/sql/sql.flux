@@ -1,4 +1,4 @@
-// Flux SQL package provides tools for working with data in SQL
+// Package SQL provides tools for working with data in SQL
 // databases such as:
 // - Amazon Athena
 // - Google BigQuery

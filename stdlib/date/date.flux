@@ -1,4 +1,4 @@
-// Flux date package provides date and time constants and functions.
+// Package date provides date and time constants and functions.
 package date
 
 

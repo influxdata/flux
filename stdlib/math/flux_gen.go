@@ -14651,7 +14651,7 @@ var pkgAST = &ast.Package{
 		Name:     "math.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Flux math package provides basic constants and mathematical functions\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package math provides basic constants and mathematical functions\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
