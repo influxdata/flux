@@ -77,7 +77,7 @@ pub fn get_json_documentation(flux_identifier: String) -> Result<String, Error> 
         // look for the given identifier
         if flux_identifier == i.name {
             // return that doc package
-            Ok(serde_json::to_vec(&i.values))
+            Ok(String::from_utf8( serde_json::to_vec(&i.values).unwrap()).unwrap())
         }
     }
     //return d[flux_identifier];
