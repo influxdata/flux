@@ -24,30 +24,30 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 12,
-					Line:   4,
+					Line:   35,
 				},
 				File:   "secrets.flux",
-				Source: "package secrets\n\n\nbuiltin get",
+				Source: "package secrets\n\n\n// get is a function that retrieves a secret from the InfluxDB\n//  secret store.\n//\n// ## Parameters\n// - `key` is the secret key to retrieve.\n//\n// ## Example\n//\n// ```\n// import \"influxdata/influxdb/secrets\"\n//\n// secrets.get(key: \"KEY_NAME\")\n// ```\n//\n// ## Populate sensitive credentials with secrets\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"POSTGRES_USERNAME\")\n// password = secrets.get(key: \"POSTGRES_PASSWORD\")\n//\n// sql.from(\n//   driverName: \"postgres\",\n//   dataSourceName: \"postgresql://${username}:${password}@localhost\",\n//   query:\"SELECT * FROM example-table\"\n// )\n// ```\nbuiltin get",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   3,
 				},
 			},
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// get is a function that retrieves a secret from the InfluxDB\n"}, ast.Comment{Text: "//  secret store.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `key` is the secret key to retrieve.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// secrets.get(key: \"KEY_NAME\")\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Populate sensitive credentials with secrets\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"POSTGRES_USERNAME\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"POSTGRES_PASSWORD\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.from(\n"}, ast.Comment{Text: "//   driverName: \"postgres\",\n"}, ast.Comment{Text: "//   dataSourceName: \"postgresql://${username}:${password}@localhost\",\n"}, ast.Comment{Text: "//   query:\"SELECT * FROM example-table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   4,
+						Line:   35,
 					},
 					File:   "secrets.flux",
 					Source: "builtin get",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   35,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   4,
+							Line:   35,
 						},
 						File:   "secrets.flux",
 						Source: "get",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   35,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   4,
+							Line:   35,
 						},
 						File:   "secrets.flux",
 						Source: "(key: string) => string",
 						Start: ast.Position{
 							Column: 15,
-							Line:   4,
+							Line:   35,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   4,
+								Line:   35,
 							},
 							File:   "secrets.flux",
 							Source: "(key: string) => string",
 							Start: ast.Position{
 								Column: 15,
-								Line:   4,
+								Line:   35,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   4,
+									Line:   35,
 								},
 								File:   "secrets.flux",
 								Source: "key: string",
 								Start: ast.Position{
 									Column: 16,
-									Line:   4,
+									Line:   35,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   4,
+										Line:   35,
 									},
 									File:   "secrets.flux",
 									Source: "key",
 									Start: ast.Position{
 										Column: 16,
-										Line:   4,
+										Line:   35,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   4,
+										Line:   35,
 									},
 									File:   "secrets.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 21,
-										Line:   4,
+										Line:   35,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   4,
+											Line:   35,
 										},
 										File:   "secrets.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 21,
-											Line:   4,
+											Line:   35,
 										},
 									},
 								},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   4,
+									Line:   35,
 								},
 								File:   "secrets.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 32,
-									Line:   4,
+									Line:   35,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   4,
+										Line:   35,
 									},
 									File:   "secrets.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 32,
-										Line:   4,
+										Line:   35,
 									},
 								},
 							},
@@ -227,18 +227,18 @@ var pkgAST = &ast.Package{
 		Name:     "secrets.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Flux InfluxDB Secrets package provides functions and tools for working\n"}, ast.Comment{Text: "// with sensitive secrets managed by InfluxDB.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   1,
+						Line:   3,
 					},
 					File:   "secrets.flux",
 					Source: "package secrets",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   3,
 					},
 				},
 			},
@@ -249,13 +249,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   1,
+							Line:   3,
 						},
 						File:   "secrets.flux",
 						Source: "secrets",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   3,
 						},
 					},
 				},
