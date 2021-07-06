@@ -152,6 +152,9 @@ build-wasm:
 publish-wasm: clean-wasm build-wasm
 	cd libflux/flux/pkg && npm publish --access public
 
+test-wasm: clean-wasm build-wasm
+	cd libflux/flux && CC=clang AR==llvm-ar wasm-pack test --node
+
 test-valgrind: libflux
 	cd libflux/c && $(MAKE) test-valgrind
 
