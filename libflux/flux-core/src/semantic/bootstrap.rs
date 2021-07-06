@@ -23,6 +23,7 @@ use crate::semantic::types::{
 };
 
 use walkdir::WalkDir;
+use wasm_bindgen::__rt::std::collections::HashMap;
 
 const PRELUDE: [&str; 2] = ["universe", "influxdata/influxdb"];
 
@@ -35,32 +36,76 @@ pub struct Error {
     pub msg: String,
 }
 
-/// DocPackage represents the documentation for a package and its sub packages
+/// Doc represents a documentation for Flux source code.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DocPackage {
-    /// the path to the documentation package
-    pub path: String,
-    /// the name of the comments package?
-    pub name: String,
-    /// the doc
-    pub doc: String,
-    /// the values of the comments
-    pub values: Vec<DocValue>,
+enum Doc {
+    // Package represents documentation for an entire Flux package.
+    Package(Box<PackageDoc>),
+    // Value represents documentation for a value exposed from a package.
+    Value(Box<ValueDoc>),
+    // Builtin represents documentation for a builtin value exposed from a package.
+    Builtin(Box<ValueDoc>),
+    // Option represents documentation for a option value exposed from a package.
+    Option(Box<ValueDoc>),
+    // Function represents documentation for a function value exposed from a package.
+    Function(Box<FunctionDoc>),
 }
 
-/// DocValue represents the documentation for a single value within a package.
+/// PackageDoc represents the documentation for a package and its sub packages
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PackageDoc {
+    /// the name of the comments package?
+    pub name: String,
+    /// the headline of the package
+    pub headline: String,
+    /// the description of the package
+    pub description: Option<String>,
+    /// the members of the package
+    pub members: HashMap<String, Doc>,
+
+}
+
+/// ValueDoc represents the documentation for a single value within a package.
 /// Values include options, builtins or any variable assignment within the top level scope of a
 /// package.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct DocValue {
-    /// the path to the package
-    pub pkgpath: String,
-    /// the name of the package
+pub struct ValueDoc {
+    /// the name of the value
     pub name: String,
-    /// the doc
-    pub doc: String,
-    /// the type of the comments
-    pub typ: String,
+    /// the headline of the value
+    pub headline: String,
+    /// the description of the value
+    pub description: Option<String>,
+    /// the type of the value
+    pub flux_type: String,
+}
+
+/// FunctionDoc represents the documentation for a single Function within a package.
+#[derive(Debug, Serialize, Deserialize)]
+struct FunctionDoc {
+    /// the name of the function
+    name: String,
+    /// the headline of the function
+    headline: String,
+    /// the description of the function
+    description: String,
+    /// the parameters of the function
+    parameters: Vec<ParameterDoc>,
+    /// the type of the function
+    flux_type: String,
+}
+
+/// ParameterDoc represents the documentation for a single parameter within a function.
+#[derive(Debug, Serialize, Deserialize)]
+struct ParameterDoc {
+    /// the name of the parameter
+    name: String,
+    /// the headline of the parameter
+    headline: String,
+    /// the description of the parameter
+    description: Option<String>,
+    /// a boolean indicating if the parameter is required
+    required: bool,
 }
 
 impl From<io::Error> for Error {
@@ -138,11 +183,11 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>,
 pub fn stdlib_docs(
     lib: &PolyTypeMap,
     files: &AstFileMap,
-) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
+) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
-    for (path, file) in files {
-        let pkg = generate_docs(path.clone(), &lib, file)?;
+    for (_path, file) in files {
+        let pkg = generate_docs( &lib, file)?;
         docs.push(pkg);
     }
     Ok(docs)
@@ -150,26 +195,25 @@ pub fn stdlib_docs(
 
 // Generates the docs by parsing the sources and checking type inference.
 fn generate_docs(
-    path: String,
     types: &PolyTypeMap,
     file: &ast::File,
-) -> Result<DocPackage, Box<dyn std::error::Error>> {
+) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
     //let sem_pkg = analyze(pkg.clone())?;
     //let types = pkg_types(&sem_pkg);
 
     let mut doc = String::new();
-    let values = generate_values(&file, &types, &path)?;
+    let values = generate_values(&file, &types)?;
     if let Some(comment) = &file.package {
         doc = comments_to_string(&comment.base.comments);
     }
     //TODO check if package name exists and if it doesn't throw an error message
-    Ok(DocPackage {
-        path,
+    Ok(PackageDoc {
         name: file.package.clone().unwrap().name.name,
-        doc,
-        values,
+        headline: doc,
+        description: None,
+        members: Default::default()
     })
 }
 
@@ -177,9 +221,8 @@ fn generate_docs(
 fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
-    pkgpath: &str,
-) -> Result<Vec<DocValue>, Box<dyn std::error::Error>> {
-    let mut values: Vec<DocValue> = Vec::new();
+) -> Result<Vec<ValueDoc>, Box<dyn std::error::Error>> {
+    let mut values: Vec<ValueDoc> = Vec::new();
     //println!("{:?}", types);
     for stmt in &f.body {
         match stmt {
@@ -191,11 +234,11 @@ fn generate_values(
                     continue;
                 }
                 let typ = format!("{}", types[&name].normal());
-                values.push(DocValue {
-                    pkgpath: pkgpath.to_string(),
+                values.push(ValueDoc {
                     name: name.clone(),
-                    doc,
-                    typ,
+                    headline: doc,
+                    description: None,
+                    flux_type: typ
                 });
             }
             ast::Statement::Builtin(s) => {
@@ -205,11 +248,11 @@ fn generate_values(
                     continue;
                 }
                 let typ = format!("{}", types[&name].normal());
-                values.push(DocValue {
-                    pkgpath: pkgpath.to_string(),
+                values.push(ValueDoc {
                     name: name.clone(),
-                    doc,
-                    typ,
+                    headline: doc,
+                    description: None,
+                    flux_type: typ
                 });
             }
             ast::Statement::Option(s) => {
@@ -220,11 +263,11 @@ fn generate_values(
                         continue;
                     }
                     let typ = format!("{}", types[&name].normal());
-                    values.push(DocValue {
-                        pkgpath: pkgpath.to_string(),
+                    values.push(ValueDoc {
                         name: name.clone(),
-                        doc,
-                        typ,
+                        headline: doc,
+                        description: None,
+                        flux_type: typ
                     });
                 }
             }
