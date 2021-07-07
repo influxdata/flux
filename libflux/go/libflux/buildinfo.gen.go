@@ -282,7 +282,7 @@ var sourceHashes = map[string]string{
 	"stdlib/planner/bare_min_push_test.flux":                                        "1acac982cc0813569449ecf24afa1ea493d1d3dc8ed4f326d30f702ff40d9882",
 	"stdlib/planner/bare_sum_eval_test.flux":                                        "0c1e1267a57d5466f8e6ab20fd969a774058e859e1a9f76a1af6248f83c41cd6",
 	"stdlib/planner/bare_sum_push_test.flux":                                        "4d2d43bcdcf50e99568b89fa40c57de9673bdf90570bbb9ec46dcc7f67b19c90",
-	"stdlib/planner/group_agg_test.flux":                                            "81fdd6739902a3bce1b24acea39d8b02e30c0c59d4f315a4220e52ba990b44a3",
+	"stdlib/planner/group_agg_test.flux":                                            "3f20b928e1c6efd0030041c6d0994a2f9eb09727dd9f226c5d4380360a53b33f",
 	"stdlib/planner/group_agg_uneven_keys_test.flux":                                "f2022ea25d81c30fb7371213a7731164372b7a3c9260d85c9bf9d52673609397",
 	"stdlib/planner/group_count_eval_test.flux":                                     "7b31ca39e4b3591ee92028ef1a4a76debbd9740a0d6a22ee726a5549f31c470d",
 	"stdlib/planner/group_count_push_test.flux":                                     "c00f2e4e1450e8173e51f37e8ea260366eb9003735f66d6cfe889617939f948f",
