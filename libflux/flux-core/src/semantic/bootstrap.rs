@@ -54,7 +54,7 @@ enum Doc {
 /// PackageDoc represents the documentation for a package and its sub packages
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PackageDoc {
-    /// the name of the comments package?
+    /// the name of the comments package
     pub name: String,
     /// the headline of the package
     pub headline: String,
@@ -183,7 +183,7 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>,
 pub fn stdlib_docs(
     lib: &PolyTypeMap,
     files: &AstFileMap,
-) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
+) -> Result<Vec<Doc>, Box<dyn std::error::Error>> {
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
     for (_path, file) in files {
@@ -197,7 +197,7 @@ pub fn stdlib_docs(
 fn generate_docs(
     types: &PolyTypeMap,
     file: &ast::File,
-) -> Result<PackageDoc, Box<dyn std::error::Error>> {
+) -> Result<Doc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
     //let sem_pkg = analyze(pkg.clone())?;
@@ -229,7 +229,6 @@ fn generate_values(
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
-                //println!("{}", name);
                 if !types.contains_key(&name) {
                     continue;
                 }
