@@ -183,7 +183,7 @@ pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>,
 pub fn stdlib_docs(
     lib: &PolyTypeMap,
     files: &AstFileMap,
-) -> Result<Vec<Doc>, Box<dyn std::error::Error>> {
+) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
     for (_path, file) in files {
@@ -197,14 +197,14 @@ pub fn stdlib_docs(
 fn generate_docs(
     types: &PolyTypeMap,
     file: &ast::File,
-) -> Result<Doc, Box<dyn std::error::Error>> {
+) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
     //let sem_pkg = analyze(pkg.clone())?;
     //let types = pkg_types(&sem_pkg);
 
     let mut doc = String::new();
-    let values = generate_values(&file, &types)?;
+    let members = generate_values(&file, &types)?;
     if let Some(comment) = &file.package {
         doc = comments_to_string(&comment.base.comments);
     }
@@ -213,7 +213,7 @@ fn generate_docs(
         name: file.package.clone().unwrap().name.name,
         headline: doc,
         description: None,
-        members: Default::default()
+        members: members
     })
 }
 
@@ -221,10 +221,22 @@ fn generate_docs(
 fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
-) -> Result<Vec<ValueDoc>, Box<dyn std::error::Error>> {
-    let mut values: Vec<ValueDoc> = Vec::new();
+) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
+    let mut members: HashMap<String, Doc> = HashMap::new();
     //println!("{:?}", types);
     for stmt in &f.body {
+        let typ = format!("{}", types[&name].normal());
+        if typ == "Fun"{
+            let function = FunctionDoc {
+                name: name: name.clone(),
+                headline: doc,
+                description: "".to_string(),
+                parameters: vec![],
+                flux_type: typ
+            };
+            members[name.clone()] = Doc::Function(Box::new(function));
+            continue;
+        }
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
@@ -233,12 +245,13 @@ fn generate_values(
                     continue;
                 }
                 let typ = format!("{}", types[&name].normal());
-                values.push(ValueDoc {
+                let variable = ValueDoc {
                     name: name.clone(),
                     headline: doc,
                     description: None,
                     flux_type: typ
-                });
+                };
+                members[name.clone()] = Doc::Value(Box::new(variable));
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
@@ -246,13 +259,13 @@ fn generate_values(
                 if !types.contains_key(&name) {
                     continue;
                 }
-                let typ = format!("{}", types[&name].normal());
-                values.push(ValueDoc {
+                let builtin = ValueDoc {
                     name: name.clone(),
                     headline: doc,
                     description: None,
                     flux_type: typ
-                });
+                };
+                members[name.clone()] = Doc::Value(Box::new(builtin));
             }
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
@@ -261,19 +274,19 @@ fn generate_values(
                     if !types.contains_key(&name) {
                         continue;
                     }
-                    let typ = format!("{}", types[&name].normal());
-                    values.push(ValueDoc {
+                    let option = ValueDoc {
                         name: name.clone(),
                         headline: doc,
                         description: None,
                         flux_type: typ
-                    });
+                    };
+                    members[name.clone()] = Doc::Value(Box::new(option));
                 }
             }
             _ => {}
         }
     }
-    Ok(values)
+    Ok(members)
 }
 
 fn comments_to_string(comments: &[ast::Comment]) -> String {
