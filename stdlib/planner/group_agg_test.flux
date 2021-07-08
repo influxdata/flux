@@ -85,6 +85,26 @@ testcase group_one_tag_filter_field_count {
     testing.diff(got, want) |> yield()
 }
 
+testcase group_two_tag_filter_field_count {
+    want = array.from(
+        rows: [
+            {"t0": "t0v0", "t1": "t1v0", "_value": 3},
+            {"t0": "t0v0", "t1": "t1v1", "_value": 3},
+            {"t0": "t0v1", "t1": "t1v0", "_value": 3},
+            {"t0": "t0v1", "t1": "t1v1", "_value": 3},
+        ],
+    )
+        |> group(columns: ["t0", "t1"])
+    got = testing.load(tables: inData)
+        |> range(start: -100y)
+        |> filter(fn: (r) => r._field == "f0")
+        |> group(columns: ["t0", "t1"])
+        |> count()
+        |> drop(columns: ["_start", "_stop"])
+
+    testing.diff(got, want) |> yield()
+}
+
 // Group + sum tests
 testcase group_one_tag_sum {
     want = array.from(
@@ -127,6 +147,26 @@ testcase group_one_tag_filter_field_sum {
         |> range(start: -100y)
         |> filter(fn: (r) => r._field == "f0")
         |> group(columns: ["t0"])
+        |> sum()
+        |> drop(columns: ["_start", "_stop"])
+
+    testing.diff(got, want) |> yield()
+}
+
+testcase group_two_tag_filter_field_sum {
+    want = array.from(
+        rows: [
+            {"t0": "t0v0", "t1": "t1v0", "_value": 4},
+            {"t0": "t0v0", "t1": "t1v1", "_value": 8},
+            {"t0": "t0v1", "t1": "t1v0", "_value": 5},
+            {"t0": "t0v1", "t1": "t1v1", "_value": 8},
+        ],
+    )
+        |> group(columns: ["t0", "t1"])
+    got = testing.load(tables: inData)
+        |> range(start: -100y)
+        |> filter(fn: (r) => r._field == "f0")
+        |> group(columns: ["t0", "t1"])
         |> sum()
         |> drop(columns: ["_start", "_stop"])
 
