@@ -24,7 +24,6 @@ use crate::semantic::types::{
 
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
-use serde_json::value::Value::Null;
 
 const PRELUDE: [&str; 2] = ["universe", "influxdata/influxdb"];
 
@@ -39,16 +38,16 @@ pub struct Error {
 
 /// Doc represents a documentation for Flux source code.
 #[derive(Debug, Serialize, Deserialize)]
-enum Doc {
-    // Package represents documentation for an entire Flux package.
+pub enum Doc {
+    /// Package represents documentation for an entire Flux package.
     Package(Box<PackageDoc>),
-    // Value represents documentation for a value exposed from a package.
+    /// Value represents documentation for a value exposed from a package.
     Value(Box<ValueDoc>),
-    // Builtin represents documentation for a builtin value exposed from a package.
+    /// Builtin represents documentation for a builtin value exposed from a package.
     Builtin(Box<ValueDoc>),
-    // Option represents documentation for a option value exposed from a package.
+    /// Option represents documentation for a option value exposed from a package.
     Option(Box<ValueDoc>),
-    // Function represents documentation for a function value exposed from a package.
+    /// Function represents documentation for a function value exposed from a package.
     Function(Box<FunctionDoc>),
 }
 
@@ -83,9 +82,9 @@ pub struct ValueDoc {
 
 /// FunctionDoc represents the documentation for a single Function within a package.
 #[derive(Debug, Serialize, Deserialize)]
-struct FunctionDoc {
+pub struct FunctionDoc {
     /// the name of the function
-    name: String,
+    pub name: String,
     /// the headline of the function
     headline: String,
     /// the description of the function
@@ -244,14 +243,15 @@ fn generate_values(
                 let doc = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
                 let typ = format!("{}", types[&name].normal());
+                println!("1");
                 if !types.contains_key(&name) {
                     continue;
                 }
                     match &types[&name].expr {
-                        MonoType::Fun(f) => {
+                        MonoType::Fun(_f) => {
                             // generate function doc
                             let function = generate_function_struct(name.clone(), doc, typ);
-                            members[&name] = Doc::Function(Box::new(function));
+                            members.insert(name.clone(), Doc::Function(Box::new(function)));
                         }
                         _ => {
                             // generate value doc
@@ -261,7 +261,8 @@ fn generate_values(
                                 description: None,
                                 flux_type: typ
                             };
-                            members[&name] = Doc::Value(Box::new(variable));
+                            println!("2");
+                            members.insert(name.clone(), Doc::Value(Box::new(variable)));
                         }
                     }
             }
@@ -276,7 +277,7 @@ fn generate_values(
                         MonoType::Fun(_f) => {
                             // generate function doc
                             let function = generate_function_struct(name.clone(), doc, typ);
-                            members[&name] = Doc::Function(Box::new(function));
+                            members.insert(name.clone(), Doc::Function(Box::new(function)));
                         }
                         _ => {
                             let builtin = ValueDoc {
@@ -285,7 +286,7 @@ fn generate_values(
                                 description: None,
                                 flux_type: typ
                             };
-                            members[&name] = Doc::Value(Box::new(builtin));
+                            members.insert(name.clone(), Doc::Value(Box::new(builtin)));
                         }
                     }
             }
@@ -301,7 +302,7 @@ fn generate_values(
                             MonoType::Fun(_f) => {
                                 // generate function doc
                                 let function = generate_function_struct(name.clone(), doc, typ);
-                                members[&name] = Doc::Function(Box::new(function));
+                                members.insert(name.clone(), Doc::Function(Box::new(function)));
                             }
                             _ => {
                                 let option = ValueDoc {
@@ -310,7 +311,7 @@ fn generate_values(
                                     description: None,
                                     flux_type: typ
                                 };
-                                members[&name] = Doc::Value(Box::new(option));
+                                members.insert(name.clone(), Doc::Value(Box::new(option)));
                             }
                         }
                 }
