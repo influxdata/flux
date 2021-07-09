@@ -222,66 +222,96 @@ fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
 ) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
-    let mut members: HashMap<String, Doc> = HashMap::new();
+    let members: HashMap<String, Doc> = HashMap::new();
     //println!("{:?}", types);
-    for stmt in &f.body {
-        let typ = format!("{}", types[&name].normal());
-        if typ == "Fun"{
-            let function = FunctionDoc {
-                name: name.clone(),
-                headline: doc,
-                description: "".to_string(),
-                parameters: vec![],
-                flux_type: typ
-            };
-            //members.insert(name.clone(), Doc::Function(Box::new(function)));
-            members[name.clone()] = Doc::Function(Box::new(function));
-            continue;
-        }
+    for stmt in &f.body { 
+        // let typ = format!("{}", types[&name].normal());
+        // if let MonoType::Fun(f) == types[&name] {
+        //     let function = FunctionDoc {
+        //         name: name.clone(),
+        //         headline: doc,
+        //         description: "".to_string(),
+        //         parameters: vec![],
+        //         flux_type: typ
+        //     };
+        //     //members.insert(name.clone(), Doc::Function(Box::new(function)));
+        //     members[name.clone()] = Doc::Function(Box::new(function));
+        //     continue;
+        // }
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
-                if !types.contains_key(&name) {
-                    continue;
-                }
                 let typ = format!("{}", types[&name].normal());
-                let variable = ValueDoc {
-                    name: name.clone(),
-                    headline: doc,
-                    description: None,
-                    flux_type: typ
-                };
-                members[&name] = Doc::Value(Box::new(variable));
+                if !types.contains_key(&name) {
+                    match &types[&name].expr {
+                        MonoType::Fun(f) => {
+                            // generate function doc
+                            let function = generate_function_struct(name.clone(), doc, typ);
+                            members[&name] = Doc::Function(Box::new(function));
+                        }
+                        _ => {
+                            // generate value doc
+                            let variable = ValueDoc {
+                                name: name.clone(),
+                                headline: doc,
+                                description: None,
+                                flux_type: typ
+                            };
+                            //members.insert(name.clone(), Doc::Value(Box::new(variable)));
+                            members[&name] = Doc::Value(Box::new(variable));
+                        }
+                    }
+                }
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let name = s.id.name.clone();
+                let typ = format!("{}", types[&name].normal());
                 if !types.contains_key(&name) {
-                    continue;
+                    match &types[&name].expr {
+                        MonoType::Fun(f) => {
+                            // generate function doc
+                            let function = generate_function_struct(name.clone(), doc, typ);
+                            members[&name] = Doc::Function(Box::new(function));
+                        }
+                        _ => {
+                            let builtin = ValueDoc {
+                                name: name.clone(),
+                                headline: doc,
+                                description: None,
+                                flux_type: typ
+                            };
+                            //members.insert(name.clone(), Doc::Value(Box::new(builtin)));
+                            members[&name] = Doc::Value(Box::new(builtin));
+                        }
+                    }
                 }
-                let builtin = ValueDoc {
-                    name: name.clone(),
-                    headline: doc,
-                    description: None,
-                    flux_type: typ
-                };
-                members[&name] = Doc::Value(Box::new(builtin));
             }
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
                     let name = v.id.name.clone();
+                    let typ = format!("{}", types[&name].normal());
                     if !types.contains_key(&name) {
-                        continue;
+                        match &types[&name].expr {
+                            MonoType::Fun(f) => {
+                                // generate function doc
+                                let function = generate_function_struct(name.clone(), doc, typ);
+                                members[&name] = Doc::Function(Box::new(function));
+                            }
+                            _ => {
+                                let option = ValueDoc {
+                                    name: name.clone(),
+                                    headline: doc,
+                                    description: None,
+                                    flux_type: typ
+                                };
+                                //members.insert(name.clone(), Doc::Value(Box::new(option)));
+                                members[&name] = Doc::Value(Box::new(option));
+                            }
+                        }
                     }
-                    let option = ValueDoc {
-                        name: name.clone(),
-                        headline: doc,
-                        description: None,
-                        flux_type: typ
-                    };
-                    members[&name] = Doc::Value(Box::new(option));
                 }
             }
             _ => {}
@@ -298,6 +328,16 @@ fn comments_to_string(comments: &[ast::Comment]) -> String {
         }
     }
     comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
+}
+
+fn generate_function_struct(name: String, doc: String, typ: String) -> FunctionDoc {
+    FunctionDoc {
+        name,
+        headline: doc,
+        description: "".to_string(),
+        parameters: vec![],
+        flux_type: typ
+    }
 }
 
 fn compute_file_dependencies(root: &str) -> Vec<String> {
