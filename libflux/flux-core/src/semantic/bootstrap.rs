@@ -224,20 +224,7 @@ fn generate_values(
 ) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
     let mut members: HashMap<String, Doc> = HashMap::new();
     //println!("{:?}", types);
-    for stmt in &f.body { 
-        // let typ = format!("{}", types[&name].normal());
-        // if let MonoType::Fun(f) == types[&name] {
-        //     let function = FunctionDoc {
-        //         name: name.clone(),
-        //         headline: doc,
-        //         description: "".to_string(),
-        //         parameters: vec![],
-        //         flux_type: typ
-        //     };
-        //     //members.insert(name.clone(), Doc::Function(Box::new(function)));
-        //     members[name.clone()] = Doc::Function(Box::new(function));
-        //     continue;
-        // }
+    for stmt in &f.body {
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
