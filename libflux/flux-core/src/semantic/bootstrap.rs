@@ -228,12 +228,13 @@ fn generate_values(
         let typ = format!("{}", types[&name].normal());
         if typ == "Fun"{
             let function = FunctionDoc {
-                name: name: name.clone(),
+                name: name.clone(),
                 headline: doc,
                 description: "".to_string(),
                 parameters: vec![],
                 flux_type: typ
             };
+            //members.insert(name.clone(), Doc::Function(Box::new(function)));
             members[name.clone()] = Doc::Function(Box::new(function));
             continue;
         }
@@ -251,7 +252,7 @@ fn generate_values(
                     description: None,
                     flux_type: typ
                 };
-                members[name.clone()] = Doc::Value(Box::new(variable));
+                members[&name] = Doc::Value(Box::new(variable));
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
@@ -265,7 +266,7 @@ fn generate_values(
                     description: None,
                     flux_type: typ
                 };
-                members[name.clone()] = Doc::Value(Box::new(builtin));
+                members[&name] = Doc::Value(Box::new(builtin));
             }
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
@@ -280,7 +281,7 @@ fn generate_values(
                         description: None,
                         flux_type: typ
                     };
-                    members[name.clone()] = Doc::Value(Box::new(option));
+                    members[&name] = Doc::Value(Box::new(option));
                 }
             }
             _ => {}
