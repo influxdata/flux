@@ -24,6 +24,7 @@ use crate::semantic::types::{
 
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
+use serde_json::value::Value::Null;
 
 const PRELUDE: [&str; 2] = ["universe", "influxdata/influxdb"];
 
@@ -222,7 +223,7 @@ fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
 ) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
-    let members: HashMap<String, Doc> = HashMap::new();
+    let mut members: HashMap<String, Doc> = HashMap::new();
     //println!("{:?}", types);
     for stmt in &f.body { 
         // let typ = format!("{}", types[&name].normal());
@@ -244,6 +245,8 @@ fn generate_values(
                 let name = s.id.name.clone();
                 let typ = format!("{}", types[&name].normal());
                 if !types.contains_key(&name) {
+                    continue;
+                }
                     match &types[&name].expr {
                         MonoType::Fun(f) => {
                             // generate function doc
@@ -258,19 +261,19 @@ fn generate_values(
                                 description: None,
                                 flux_type: typ
                             };
-                            //members.insert(name.clone(), Doc::Value(Box::new(variable)));
                             members[&name] = Doc::Value(Box::new(variable));
                         }
                     }
-                }
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let name = s.id.name.clone();
                 let typ = format!("{}", types[&name].normal());
                 if !types.contains_key(&name) {
+                        continue;
+                }
                     match &types[&name].expr {
-                        MonoType::Fun(f) => {
+                        MonoType::Fun(_f) => {
                             // generate function doc
                             let function = generate_function_struct(name.clone(), doc, typ);
                             members[&name] = Doc::Function(Box::new(function));
@@ -282,11 +285,9 @@ fn generate_values(
                                 description: None,
                                 flux_type: typ
                             };
-                            //members.insert(name.clone(), Doc::Value(Box::new(builtin)));
                             members[&name] = Doc::Value(Box::new(builtin));
                         }
                     }
-                }
             }
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
@@ -294,8 +295,10 @@ fn generate_values(
                     let name = v.id.name.clone();
                     let typ = format!("{}", types[&name].normal());
                     if !types.contains_key(&name) {
+                        continue;
+                    }
                         match &types[&name].expr {
-                            MonoType::Fun(f) => {
+                            MonoType::Fun(_f) => {
                                 // generate function doc
                                 let function = generate_function_struct(name.clone(), doc, typ);
                                 members[&name] = Doc::Function(Box::new(function));
@@ -307,14 +310,13 @@ fn generate_values(
                                     description: None,
                                     flux_type: typ
                                 };
-                                //members.insert(name.clone(), Doc::Value(Box::new(option)));
                                 members[&name] = Doc::Value(Box::new(option));
                             }
                         }
-                    }
                 }
             }
             _ => {}
+
         }
     }
     Ok(members)
