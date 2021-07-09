@@ -37,8 +37,7 @@ if [[ -n "$FMT_OUT" ]]; then
 fi
 
 cd ..
-export PATH=$PATH:.
-FMT_OUT="$(flux fmt -c stdlib)"
+FMT_OUT="$(env GO111MODULE=on go run -tags '' ./cmd/flux/main.go fmt -c stdlib)"
 if [[ -n "$FMT_OUT" ]]; then
     echo 'Commit includes flux files that are not fluxfmt-ed' && \
     echo 'run "make fmt"' && \
