@@ -1,4 +1,4 @@
-package internal
+package influxdb
 
 import (
 	"time"

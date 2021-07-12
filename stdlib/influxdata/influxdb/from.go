@@ -63,7 +63,7 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	if b, ok, err := GetNameOrID(args, "bucket", "bucketID"); err != nil {
 		return nil, err
 	} else if !ok {
-		return nil, errors.New(codes.Invalid, "must specify only one of bucket or bucketID")
+		return nil, errors.New(codes.Invalid, "must specify bucket or bucketID")
 	} else {
 		spec.Bucket = b
 	}
@@ -100,7 +100,7 @@ func GetNameOrID(args flux.Arguments, nameParam, idParam string) (NameOrID, bool
 	}
 
 	if nameOk && idOk {
-		return NameOrID{}, false, errors.Newf(codes.Invalid, "must specify one of %s or %s", nameParam, idParam)
+		return NameOrID{}, false, errors.Newf(codes.Invalid, "must specify only one of %s or %s", nameParam, idParam)
 	}
 	return NameOrID{Name: name, ID: id}, nameOk || idOk, nil
 }
