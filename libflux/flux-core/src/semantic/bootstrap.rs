@@ -570,7 +570,17 @@ mod tests {
 
         let names = r.unwrap().0;
 
-        assert_eq!(vec!["system", "date", "math", "strings", "regexp"], names,);
+        assert_eq!(
+            vec![
+                "system",
+                "date",
+                "math",
+                "strings",
+                "regexp",
+                "experimental/table"
+            ],
+            names,
+        );
     }
 
     #[test]

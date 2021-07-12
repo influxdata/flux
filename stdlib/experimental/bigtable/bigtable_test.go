@@ -19,6 +19,7 @@ import (
 	"github.com/influxdata/flux/values"
 
 	_ "github.com/influxdata/flux/stdlib/date"
+	_ "github.com/influxdata/flux/stdlib/experimental/table"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	_ "github.com/influxdata/flux/stdlib/math"
 	_ "github.com/influxdata/flux/stdlib/regexp"

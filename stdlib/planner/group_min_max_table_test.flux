@@ -4,8 +4,6 @@ package planner_test
 import "testing"
 import "planner"
 
-option now = () => 2030-01-01T00:00:00Z
-
 inData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,true,true,true,false
@@ -92,7 +90,7 @@ inData = "
 
 testcase group_min_table {
     result = testing.loadStorage(csv: inData)
-        |> range(start: 2019-11-25T00:00:00Z)
+        |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
         |> group(columns: ["t0"])
         |> min()
         |> drop(columns: ["_start", "_stop"])
@@ -110,7 +108,7 @@ testcase group_min_table {
 }
 testcase group_max_table {
     result = testing.loadStorage(csv: inData)
-        |> range(start: 2019-11-25T00:00:00Z)
+        |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
         |> group(columns: ["t0"])
         |> max()
         |> drop(columns: ["_start", "_stop"])
@@ -128,7 +126,7 @@ testcase group_max_table {
 }
 testcase group_no_agg_table {
     result = testing.loadStorage(csv: inData)
-        |> range(start: 2019-11-25T00:00:00Z)
+        |> range(start: 2019-11-25T00:00:00Z, stop: 2030-01-01T00:00:00Z)
         |> group(columns: ["t0"])
         |> drop(columns: ["_start", "_stop"])
         |> sort(columns: ["t1", "_time"])

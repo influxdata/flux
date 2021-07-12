@@ -862,13 +862,16 @@ func TestStack(t *testing.T) {
 		t.Fatal("expected side effect to be a table object")
 	}
 
+	// The position of window is dependent on the position of the function
+	// call in the universe.flux file. If the universe.flux file changes,
+	// the corresponding start and end should be changed too.
 	want := []interpreter.StackEntry{
 		{
 			FunctionName: "window",
 			Location: ast.SourceLocation{
 				File:   "universe.flux",
-				Start:  ast.Position{Line: 224, Column: 8},
-				End:    ast.Position{Line: 224, Column: 47},
+				Start:  ast.Position{Line: 232, Column: 8},
+				End:    ast.Position{Line: 232, Column: 47},
 				Source: `window(every: inf, timeColumn: timeDst)`,
 			},
 		},
