@@ -32,9 +32,10 @@ import (
 )
 
 type testFlags struct {
-	testNames []string
-	paths     []string
-	verbosity int
+	testNames     []string
+	paths         []string
+	skipTestCases []string
+	verbosity     int
 }
 
 func TestCommand(setup TestSetupFunc) *cobra.Command {
@@ -50,6 +51,7 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 	}
 	testCommand.Flags().StringSliceVarP(&flags.paths, "path", "p", nil, "The root level directory for all packages.")
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
+	testCommand.Flags().StringSliceVar(&flags.skipTestCases, "skip", []string{}, "Comma-separated list of test cases to skip.")
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, or -vv)")
 	return testCommand
 }
@@ -79,7 +81,7 @@ func runFluxTests(setup TestSetupFunc, flags testFlags) {
 	}
 	defer func() { _ = executor.Close() }()
 
-	runner.Run(executor, flags.verbosity)
+	runner.Run(executor, flags.verbosity, flags.skipTestCases)
 	runner.Finish()
 }
 
@@ -526,8 +528,15 @@ func findParentTestRoot(path string) (string, filesystem.Service, bool, error) {
 }
 
 // Run runs all tests, reporting their results.
-func (t *TestRunner) Run(executor TestExecutor, verbosity int) {
+func (t *TestRunner) Run(executor TestExecutor, verbosity int, skipTestCases []string) {
+	skipMap := make(map[string]struct{})
+	for _, n := range skipTestCases {
+		skipMap[n] = struct{}{}
+	}
 	for _, test := range t.tests {
+		if _, ok := skipMap[test.name]; ok {
+			continue
+		}
 		test.Run(executor)
 		t.reporter.ReportTestRun(test)
 	}
