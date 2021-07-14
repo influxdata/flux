@@ -24,6 +24,7 @@ import (
 	http "github.com/influxdata/flux/stdlib/http"
 	influxdb "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
+	sample "github.com/influxdata/flux/stdlib/influxdata/influxdb/sample"
 	schema "github.com/influxdata/flux/stdlib/influxdata/influxdb/schema"
 	secrets "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	tasks "github.com/influxdata/flux/stdlib/influxdata/influxdb/tasks"
@@ -67,6 +68,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, http.FluxTestPackages...)
 	pkgs = append(pkgs, influxdb.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
+	pkgs = append(pkgs, sample.FluxTestPackages...)
 	pkgs = append(pkgs, schema.FluxTestPackages...)
 	pkgs = append(pkgs, secrets.FluxTestPackages...)
 	pkgs = append(pkgs, tasks.FluxTestPackages...)
