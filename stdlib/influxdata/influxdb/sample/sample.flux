@@ -21,7 +21,7 @@ sets = [
         url: "https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv",
         desc: "Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.",
         size: "~1.3 MB",
-    }
+    },
     "usgs": {
         url: "https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv",
         desc: "USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.",
