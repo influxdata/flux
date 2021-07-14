@@ -13,15 +13,11 @@ expected = "
 ,,0,true
 "
 
-t_list = () => {
+testcase list {
     got = sample.list()
         |> count()
         |> map(fn: (r) => ({_value: r._value > 0}))
     want = csv.from(csv: expected)
 
     return testing.diff(got: got, want: want)
-}
-
-testcase _list {
-    t_list()
 }
