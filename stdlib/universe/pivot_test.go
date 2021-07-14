@@ -786,16 +786,162 @@ func TestPivot_Process(t *testing.T) {
 	}
 }
 
-func TestPivot2_Process(t *testing.T) {
+func TestSortedPivot_ProcessWithTags(t *testing.T) {
 	testCases := []struct {
 		name string
-		spec *universe.PivotProcedureSpec
-		data []flux.Table
+		spec *universe.SortedPivotProcedureSpec
+		data []flux.Table // test case data must be in groupKey sorted order
+		want []*executetest.Table
+	}{
+		{
+			name: "_field and tag with one measurement",
+			spec: &universe.SortedPivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement", "_field", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.83, "system", "load1", "host.local"},
+						{execute.Time(2), 1.7, "system", "load1", "host.local"},
+						{execute.Time(3), 1.74, "system", "load1", "host.local"},
+						{execute.Time(4), 1.63, "system", "load1", "host.local"},
+						{execute.Time(5), 1.91, "system", "load1", "host.local"},
+						{execute.Time(6), 1.84, "system", "load1", "host.local"},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"_measurement", "_field", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.98, "system", "load15", "host.local"},
+						{execute.Time(2), 1.97, "system", "load15", "host.local"},
+						{execute.Time(3), 1.97, "system", "load15", "host.local"},
+						{execute.Time(4), 1.96, "system", "load15", "host.local"},
+						{execute.Time(5), 1.98, "system", "load15", "host.local"},
+						{execute.Time(6), 1.97, "system", "load15", "host.local"},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"_measurement", "_field", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), int64(95), "system", "load5", "host.local"},
+						{execute.Time(2), int64(92), "system", "load5", "host.local"},
+						{execute.Time(3), int64(92), "system", "load5", "host.local"},
+						{execute.Time(4), int64(89), "system", "load5", "host.local"},
+						{execute.Time(5), int64(94), "system", "load5", "host.local"},
+						{execute.Time(6), int64(93), "system", "load5", "host.local"},
+					},
+				},
+				&executetest.Table{
+					KeyCols: []string{"_measurement", "_field", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TInt},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), int64(82), "swap", "used_p", "host.local"},
+						{execute.Time(2), int64(83), "swap", "used_p", "host.local"},
+						{execute.Time(3), int64(84), "swap", "used_p", "host.local"},
+						{execute.Time(4), int64(85), "swap", "used_p", "host.local"},
+						{execute.Time(5), int64(82), "swap", "used_p", "host.local"},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"_measurement", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "used_p", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "swap", "host.local", int64(82)},
+						{execute.Time(2), "swap", "host.local", int64(83)},
+						{execute.Time(3), "swap", "host.local", int64(84)},
+						{execute.Time(4), "swap", "host.local", int64(85)},
+						{execute.Time(5), "swap", "host.local", int64(82)},
+					},
+				},
+				{
+					KeyCols: []string{"_measurement", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "load1", Type: flux.TFloat},
+						{Label: "load15", Type: flux.TFloat},
+						{Label: "load5", Type: flux.TInt},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), "system", "host.local", 1.83, 1.98, int64(95)},
+						{execute.Time(2), "system", "host.local", 1.7, 1.97, int64(92)},
+						{execute.Time(3), "system", "host.local", 1.74, 1.97, int64(92)},
+						{execute.Time(4), "system", "host.local", 1.63, 1.96, int64(89)},
+						{execute.Time(5), "system", "host.local", 1.91, 1.98, int64(94)},
+						{execute.Time(6), "system", "host.local", 1.84, 1.97, int64(93)},
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			executetest.ProcessTestHelper2(
+				t,
+				tc.data,
+				tc.want,
+				nil,
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					spec := *tc.spec
+					tr, d, err := universe.NewSortedPivotTransformation(context.Background(), spec, id, alloc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					return tr, d
+				})
+		})
+	}
+}
+
+func TestSortedPivot_Process(t *testing.T) {
+	testCases := []struct {
+		name string
+		spec *universe.SortedPivotProcedureSpec
+		data []flux.Table // test case data must be in groupKey sorted order
 		want []*executetest.Table
 	}{
 		{
 			name: "_field flatten case one measurement",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -846,7 +992,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "_field flatten case two measurements",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -936,7 +1082,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "_field flatten case two measurements different value type",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1026,7 +1172,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "dropping a column not in rowKey or groupKey",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1079,7 +1225,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "group key doesn't change",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1133,7 +1279,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "group key loses a member",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1163,7 +1309,7 @@ func TestPivot2_Process(t *testing.T) {
 						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 2.0, "m1", "f2", "B"},
+						{execute.Time(2), 4.0, "m1", "f2", "A"},
 					},
 				},
 				&executetest.Table{
@@ -1176,7 +1322,7 @@ func TestPivot2_Process(t *testing.T) {
 						{Label: "grouper", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(2), 4.0, "m1", "f2", "A"},
+						{execute.Time(1), 2.0, "m1", "f2", "B"},
 					},
 				},
 			},
@@ -1211,7 +1357,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "group key loses all members. drops _value",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "grouper",
@@ -1276,7 +1422,7 @@ func TestPivot2_Process(t *testing.T) {
 		},
 		{
 			name: "_field flatten case one table with nulls",
-			spec: &universe.PivotProcedureSpec{
+			spec: &universe.SortedPivotProcedureSpec{
 				RowKey:      []string{"_time"},
 				ColumnKey:   []string{"_field"},
 				ValueColumn: "_value",
@@ -1289,11 +1435,12 @@ func TestPivot2_Process(t *testing.T) {
 						{Label: "_value", Type: flux.TFloat},
 						{Label: "_measurement", Type: flux.TString},
 						{Label: "_field", Type: flux.TString},
+						{Label: "gg", Type: flux.TString},
 					},
 					Data: [][]interface{}{
-						{execute.Time(1), 1.0, "m1", "f1"},
-						{execute.Time(2), 4.0, "m1", "f1"},
-						{execute.Time(3), nil, "m1", "f1"},
+						{execute.Time(1), 1.0, "m1", "f1", "gg1"},
+						{execute.Time(2), 4.0, "m1", "f1", "gg1"},
+						{execute.Time(3), nil, "m1", "f1", "gg1"},
 					},
 				},
 				&executetest.Table{
@@ -1354,13 +1501,7 @@ func TestPivot2_Process(t *testing.T) {
 				nil,
 				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 					spec := *tc.spec
-					spec.IsKeyColumnFunc = func(label string) bool {
-						return true
-					}
-					spec.IsSortedByFunc = func(cols []string, desc bool) bool {
-						return true
-					}
-					tr, d, err := universe.NewPivotTransformation2(context.Background(), spec, id, alloc)
+					tr, d, err := universe.NewSortedPivotTransformation(context.Background(), spec, id, alloc)
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -1370,21 +1511,15 @@ func TestPivot2_Process(t *testing.T) {
 	}
 }
 
-func TestPivot2_Process_VariousSchemas(t *testing.T) {
-	spec := universe.PivotProcedureSpec{
+func TestSortedPivot_Process_VariousSchemas(t *testing.T) {
+	spec := universe.SortedPivotProcedureSpec{
 		RowKey:      []string{"_time"},
 		ColumnKey:   []string{"_field"},
 		ValueColumn: "_value",
-		IsKeyColumnFunc: func(label string) bool {
-			return true
-		},
-		IsSortedByFunc: func(cols []string, desc bool) bool {
-			return true
-		},
 	}
 	mem := &memory.Allocator{}
 	id := executetest.RandomDatasetID()
-	tr, d, err := universe.NewPivotTransformation2(context.Background(), spec, id, mem)
+	tr, d, err := universe.NewSortedPivotTransformation(context.Background(), spec, id, mem)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1435,16 +1570,10 @@ func BenchmarkPivot(b *testing.B) {
 
 func benchmarkPivot(b *testing.B, n int) {
 	b.ReportAllocs()
-	spec := &universe.PivotProcedureSpec{
+	spec := &universe.SortedPivotProcedureSpec{
 		RowKey:      []string{execute.DefaultTimeColLabel},
 		ColumnKey:   []string{"_field"},
 		ValueColumn: execute.DefaultValueColLabel,
-		IsSortedByFunc: func(cols []string, desc bool) bool {
-			return true
-		},
-		IsKeyColumnFunc: func(label string) bool {
-			return true
-		},
 	}
 	executetest.ProcessBenchmarkHelper(b,
 		func(alloc *memory.Allocator) (flux.TableIterator, error) {
@@ -1464,7 +1593,7 @@ func benchmarkPivot(b *testing.B, n int) {
 			// cache := execute.NewTableBuilderCache(alloc)
 			// d := execute.NewDataset(id, execute.DiscardingMode, cache)
 			// t := NewPivotTransformation(d, cache, spec)
-			t, d, err := universe.NewPivotTransformation2(context.Background(), *spec, id, alloc)
+			t, d, err := universe.NewSortedPivotTransformation(context.Background(), *spec, id, alloc)
 			if err != nil {
 				b.Fatal(err)
 			}
