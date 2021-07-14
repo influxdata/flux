@@ -34,12 +34,15 @@ output = "
 #group,false,false,true,true,false,true,true,true,false
 #default,_result,,,,,,,,
 ,result,table,_start,_stop,_time,_measurement,host,_field,_value
+,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91
+,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,
 ,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98
 ,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97
 ,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99
+,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,
 ,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95
 ,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92
 ,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93

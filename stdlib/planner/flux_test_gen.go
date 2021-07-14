@@ -20,10 +20,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 151,
-					Line:   54,
+					Line:   57,
 				},
 				File:   "aggregate_window_max_eval_test.flux",
-				Source: "package planner_test\n\n\nimport \"testing\"\nimport \"planner\"\n\noption planner.disablePhysicalRules = [\"PushDownWindowAggregateRule\"]\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.99\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\"\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"\naggregate_window_max_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)\n\ntest aggregate_window_max_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
+				Source: "package planner_test\n\n\nimport \"testing\"\nimport \"planner\"\n\noption planner.disablePhysicalRules = [\"PushDownWindowAggregateRule\"]\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.99\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\"\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"\naggregate_window_max_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)\n\ntest aggregate_window_max_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -224,10 +224,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   49,
+						Line:   52,
 					},
 					File:   "aggregate_window_max_eval_test.flux",
-					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   35,
@@ -260,17 +260,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   49,
+							Line:   52,
 						},
 						File:   "aggregate_window_max_eval_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
 						Start: ast.Position{
 							Column: 10,
 							Line:   35,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n",
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -279,13 +279,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 44,
-						Line:   52,
+						Line:   55,
 					},
 					File:   "aggregate_window_max_eval_test.flux",
 					Source: "aggregate_window_max_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   50,
+						Line:   53,
 					},
 				},
 			},
@@ -296,13 +296,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 24,
-							Line:   50,
+							Line:   53,
 						},
 						File:   "aggregate_window_max_eval_test.flux",
 						Source: "aggregate_window_max_fn",
 						Start: ast.Position{
 							Column: 1,
-							Line:   50,
+							Line:   53,
 						},
 					},
 				},
@@ -316,13 +316,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 44,
-							Line:   52,
+							Line:   55,
 						},
 						File:   "aggregate_window_max_eval_test.flux",
 						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)",
 						Start: ast.Position{
 							Column: 27,
-							Line:   50,
+							Line:   53,
 						},
 					},
 				},
@@ -335,13 +335,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   50,
+										Line:   53,
 									},
 									File:   "aggregate_window_max_eval_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 42,
-										Line:   50,
+										Line:   53,
 									},
 								},
 							},
@@ -353,13 +353,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   51,
+									Line:   54,
 								},
 								File:   "aggregate_window_max_eval_test.flux",
 								Source: "tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)",
 								Start: ast.Position{
 									Column: 42,
-									Line:   50,
+									Line:   53,
 								},
 							},
 						},
@@ -371,13 +371,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_max_eval_test.flux",
 										Source: "start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z",
 										Start: ast.Position{
 											Column: 14,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -389,13 +389,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "start: 2018-05-22T19:53:00Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -407,13 +407,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_max_eval_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 14,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -427,13 +427,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_max_eval_test.flux",
 												Source: "2018-05-22T19:53:00Z",
 												Start: ast.Position{
 													Column: 21,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -446,13 +446,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "stop: 2018-05-22T19:54:20Z",
 											Start: ast.Position{
 												Column: 43,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -464,13 +464,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_max_eval_test.flux",
 												Source: "stop",
 												Start: ast.Position{
 													Column: 43,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -484,13 +484,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_max_eval_test.flux",
 												Source: "2018-05-22T19:54:20Z",
 												Start: ast.Position{
 													Column: 49,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -506,13 +506,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   51,
+										Line:   54,
 									},
 									File:   "aggregate_window_max_eval_test.flux",
 									Source: "range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   51,
+										Line:   54,
 									},
 								},
 							},
@@ -523,13 +523,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_max_eval_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 8,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -545,13 +545,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
-								Line:   52,
+								Line:   55,
 							},
 							File:   "aggregate_window_max_eval_test.flux",
 							Source: "tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)",
 							Start: ast.Position{
 								Column: 42,
-								Line:   50,
+								Line:   53,
 							},
 						},
 					},
@@ -563,13 +563,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   52,
+										Line:   55,
 									},
 									File:   "aggregate_window_max_eval_test.flux",
 									Source: "every: 20s, fn: max",
 									Start: ast.Position{
 										Column: 24,
-										Line:   52,
+										Line:   55,
 									},
 								},
 							},
@@ -581,13 +581,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   52,
+											Line:   55,
 										},
 										File:   "aggregate_window_max_eval_test.flux",
 										Source: "every: 20s",
 										Start: ast.Position{
 											Column: 24,
-											Line:   52,
+											Line:   55,
 										},
 									},
 								},
@@ -599,13 +599,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   52,
+												Line:   55,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "every",
 											Start: ast.Position{
 												Column: 24,
-												Line:   52,
+												Line:   55,
 											},
 										},
 									},
@@ -619,13 +619,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   52,
+												Line:   55,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "20s",
 											Start: ast.Position{
 												Column: 31,
-												Line:   52,
+												Line:   55,
 											},
 										},
 									},
@@ -641,13 +641,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   52,
+											Line:   55,
 										},
 										File:   "aggregate_window_max_eval_test.flux",
 										Source: "fn: max",
 										Start: ast.Position{
 											Column: 36,
-											Line:   52,
+											Line:   55,
 										},
 									},
 								},
@@ -659,13 +659,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   52,
+												Line:   55,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 36,
-												Line:   52,
+												Line:   55,
 											},
 										},
 									},
@@ -679,13 +679,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   52,
+												Line:   55,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "max",
 											Start: ast.Position{
 												Column: 40,
-												Line:   52,
+												Line:   55,
 											},
 										},
 									},
@@ -701,13 +701,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   52,
+									Line:   55,
 								},
 								File:   "aggregate_window_max_eval_test.flux",
 								Source: "aggregateWindow(every: 20s, fn: max)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   52,
+									Line:   55,
 								},
 							},
 						},
@@ -718,13 +718,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   52,
+										Line:   55,
 									},
 									File:   "aggregate_window_max_eval_test.flux",
 									Source: "aggregateWindow",
 									Start: ast.Position{
 										Column: 8,
-										Line:   52,
+										Line:   55,
 									},
 								},
 							},
@@ -742,13 +742,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   50,
+								Line:   53,
 							},
 							File:   "aggregate_window_max_eval_test.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 28,
-								Line:   50,
+								Line:   53,
 							},
 						},
 					},
@@ -760,13 +760,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   50,
+									Line:   53,
 								},
 								File:   "aggregate_window_max_eval_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 28,
-									Line:   50,
+									Line:   53,
 								},
 							},
 						},
@@ -779,13 +779,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   50,
+								Line:   53,
 							},
 							File:   "aggregate_window_max_eval_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 35,
-								Line:   50,
+								Line:   53,
 							},
 						},
 					}},
@@ -800,13 +800,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 151,
-							Line:   54,
+							Line:   57,
 						},
 						File:   "aggregate_window_max_eval_test.flux",
 						Source: "aggregate_window_max_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   54,
+							Line:   57,
 						},
 					},
 				},
@@ -817,13 +817,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   54,
+								Line:   57,
 							},
 							File:   "aggregate_window_max_eval_test.flux",
 							Source: "aggregate_window_max_evaluate",
 							Start: ast.Position{
 								Column: 6,
-								Line:   54,
+								Line:   57,
 							},
 						},
 					},
@@ -837,13 +837,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 151,
-								Line:   54,
+								Line:   57,
 							},
 							File:   "aggregate_window_max_eval_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 							Start: ast.Position{
 								Column: 38,
-								Line:   54,
+								Line:   57,
 							},
 						},
 					},
@@ -854,13 +854,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 151,
-									Line:   54,
+									Line:   57,
 								},
 								File:   "aggregate_window_max_eval_test.flux",
 								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 								Start: ast.Position{
 									Column: 44,
-									Line:   54,
+									Line:   57,
 								},
 							},
 						},
@@ -871,13 +871,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 150,
-										Line:   54,
+										Line:   57,
 									},
 									File:   "aggregate_window_max_eval_test.flux",
 									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn}",
 									Start: ast.Position{
 										Column: 45,
-										Line:   54,
+										Line:   57,
 									},
 								},
 							},
@@ -889,13 +889,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 84,
-											Line:   54,
+											Line:   57,
 										},
 										File:   "aggregate_window_max_eval_test.flux",
 										Source: "input: testing.loadStorage(csv: input)",
 										Start: ast.Position{
 											Column: 46,
-											Line:   54,
+											Line:   57,
 										},
 									},
 								},
@@ -907,13 +907,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 46,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -928,13 +928,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 83,
-													Line:   54,
+													Line:   57,
 												},
 												File:   "aggregate_window_max_eval_test.flux",
 												Source: "csv: input",
 												Start: ast.Position{
 													Column: 73,
-													Line:   54,
+													Line:   57,
 												},
 											},
 										},
@@ -946,13 +946,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 83,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_max_eval_test.flux",
 													Source: "csv: input",
 													Start: ast.Position{
 														Column: 73,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -964,13 +964,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 76,
-															Line:   54,
+															Line:   57,
 														},
 														File:   "aggregate_window_max_eval_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 73,
-															Line:   54,
+															Line:   57,
 														},
 													},
 												},
@@ -984,13 +984,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 83,
-															Line:   54,
+															Line:   57,
 														},
 														File:   "aggregate_window_max_eval_test.flux",
 														Source: "input",
 														Start: ast.Position{
 															Column: 78,
-															Line:   54,
+															Line:   57,
 														},
 													},
 												},
@@ -1006,13 +1006,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "testing.loadStorage(csv: input)",
 											Start: ast.Position{
 												Column: 53,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -1023,13 +1023,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   54,
+													Line:   57,
 												},
 												File:   "aggregate_window_max_eval_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 53,
-													Line:   54,
+													Line:   57,
 												},
 											},
 										},
@@ -1041,13 +1041,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_max_eval_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 53,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -1060,13 +1060,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 72,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_max_eval_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 61,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -1084,13 +1084,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 120,
-											Line:   54,
+											Line:   57,
 										},
 										File:   "aggregate_window_max_eval_test.flux",
 										Source: "want: testing.loadMem(csv: output)",
 										Start: ast.Position{
 											Column: 86,
-											Line:   54,
+											Line:   57,
 										},
 									},
 								},
@@ -1102,13 +1102,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 90,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 86,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -1123,13 +1123,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 119,
-													Line:   54,
+													Line:   57,
 												},
 												File:   "aggregate_window_max_eval_test.flux",
 												Source: "csv: output",
 												Start: ast.Position{
 													Column: 108,
-													Line:   54,
+													Line:   57,
 												},
 											},
 										},
@@ -1141,13 +1141,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 119,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_max_eval_test.flux",
 													Source: "csv: output",
 													Start: ast.Position{
 														Column: 108,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -1159,13 +1159,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 111,
-															Line:   54,
+															Line:   57,
 														},
 														File:   "aggregate_window_max_eval_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 108,
-															Line:   54,
+															Line:   57,
 														},
 													},
 												},
@@ -1179,13 +1179,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 119,
-															Line:   54,
+															Line:   57,
 														},
 														File:   "aggregate_window_max_eval_test.flux",
 														Source: "output",
 														Start: ast.Position{
 															Column: 113,
-															Line:   54,
+															Line:   57,
 														},
 													},
 												},
@@ -1201,13 +1201,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 120,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "testing.loadMem(csv: output)",
 											Start: ast.Position{
 												Column: 92,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -1218,13 +1218,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 107,
-													Line:   54,
+													Line:   57,
 												},
 												File:   "aggregate_window_max_eval_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 92,
-													Line:   54,
+													Line:   57,
 												},
 											},
 										},
@@ -1236,13 +1236,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 99,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_max_eval_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 92,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -1255,13 +1255,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 107,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_max_eval_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 100,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -1279,13 +1279,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 149,
-											Line:   54,
+											Line:   57,
 										},
 										File:   "aggregate_window_max_eval_test.flux",
 										Source: "fn: aggregate_window_max_fn",
 										Start: ast.Position{
 											Column: 122,
-											Line:   54,
+											Line:   57,
 										},
 									},
 								},
@@ -1297,13 +1297,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 124,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 122,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -1317,13 +1317,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 149,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_max_eval_test.flux",
 											Source: "aggregate_window_max_fn",
 											Start: ast.Position{
 												Column: 126,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -1347,13 +1347,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 151,
-						Line:   54,
+						Line:   57,
 					},
 					File:   "aggregate_window_max_eval_test.flux",
 					Source: "test aggregate_window_max_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   54,
+						Line:   57,
 					},
 				},
 			},
@@ -1480,10 +1480,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 151,
-					Line:   51,
+					Line:   54,
 				},
 				File:   "aggregate_window_max_push_test.flux",
-				Source: "package planner_test\n\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.99\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\"\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"\naggregate_window_max_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)\n\ntest aggregate_window_max_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
+				Source: "package planner_test\n\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.99\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\"\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"\naggregate_window_max_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)\n\ntest aggregate_window_max_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1552,10 +1552,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   46,
+						Line:   49,
 					},
 					File:   "aggregate_window_max_push_test.flux",
-					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   32,
@@ -1588,17 +1588,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   46,
+							Line:   49,
 						},
 						File:   "aggregate_window_max_push_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
 						Start: ast.Position{
 							Column: 10,
 							Line:   32,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n",
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.91\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.99\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1607,13 +1607,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 44,
-						Line:   49,
+						Line:   52,
 					},
 					File:   "aggregate_window_max_push_test.flux",
 					Source: "aggregate_window_max_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   47,
+						Line:   50,
 					},
 				},
 			},
@@ -1624,13 +1624,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 24,
-							Line:   47,
+							Line:   50,
 						},
 						File:   "aggregate_window_max_push_test.flux",
 						Source: "aggregate_window_max_fn",
 						Start: ast.Position{
 							Column: 1,
-							Line:   47,
+							Line:   50,
 						},
 					},
 				},
@@ -1644,13 +1644,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 44,
-							Line:   49,
+							Line:   52,
 						},
 						File:   "aggregate_window_max_push_test.flux",
 						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)",
 						Start: ast.Position{
 							Column: 27,
-							Line:   47,
+							Line:   50,
 						},
 					},
 				},
@@ -1663,13 +1663,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   47,
+										Line:   50,
 									},
 									File:   "aggregate_window_max_push_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 42,
-										Line:   47,
+										Line:   50,
 									},
 								},
 							},
@@ -1681,13 +1681,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   48,
+									Line:   51,
 								},
 								File:   "aggregate_window_max_push_test.flux",
 								Source: "tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)",
 								Start: ast.Position{
 									Column: 42,
-									Line:   47,
+									Line:   50,
 								},
 							},
 						},
@@ -1699,13 +1699,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   48,
+											Line:   51,
 										},
 										File:   "aggregate_window_max_push_test.flux",
 										Source: "start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z",
 										Start: ast.Position{
 											Column: 14,
-											Line:   48,
+											Line:   51,
 										},
 									},
 								},
@@ -1717,13 +1717,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   48,
+												Line:   51,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "start: 2018-05-22T19:53:00Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   48,
+												Line:   51,
 											},
 										},
 									},
@@ -1735,13 +1735,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   48,
+													Line:   51,
 												},
 												File:   "aggregate_window_max_push_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 14,
-													Line:   48,
+													Line:   51,
 												},
 											},
 										},
@@ -1755,13 +1755,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   48,
+													Line:   51,
 												},
 												File:   "aggregate_window_max_push_test.flux",
 												Source: "2018-05-22T19:53:00Z",
 												Start: ast.Position{
 													Column: 21,
-													Line:   48,
+													Line:   51,
 												},
 											},
 										},
@@ -1774,13 +1774,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   48,
+												Line:   51,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "stop: 2018-05-22T19:54:20Z",
 											Start: ast.Position{
 												Column: 43,
-												Line:   48,
+												Line:   51,
 											},
 										},
 									},
@@ -1792,13 +1792,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   48,
+													Line:   51,
 												},
 												File:   "aggregate_window_max_push_test.flux",
 												Source: "stop",
 												Start: ast.Position{
 													Column: 43,
-													Line:   48,
+													Line:   51,
 												},
 											},
 										},
@@ -1812,13 +1812,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   48,
+													Line:   51,
 												},
 												File:   "aggregate_window_max_push_test.flux",
 												Source: "2018-05-22T19:54:20Z",
 												Start: ast.Position{
 													Column: 49,
-													Line:   48,
+													Line:   51,
 												},
 											},
 										},
@@ -1834,13 +1834,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   48,
+										Line:   51,
 									},
 									File:   "aggregate_window_max_push_test.flux",
 									Source: "range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   48,
+										Line:   51,
 									},
 								},
 							},
@@ -1851,13 +1851,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   48,
+											Line:   51,
 										},
 										File:   "aggregate_window_max_push_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 8,
-											Line:   48,
+											Line:   51,
 										},
 									},
 								},
@@ -1873,13 +1873,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
-								Line:   49,
+								Line:   52,
 							},
 							File:   "aggregate_window_max_push_test.flux",
 							Source: "tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: max)",
 							Start: ast.Position{
 								Column: 42,
-								Line:   47,
+								Line:   50,
 							},
 						},
 					},
@@ -1891,13 +1891,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   49,
+										Line:   52,
 									},
 									File:   "aggregate_window_max_push_test.flux",
 									Source: "every: 20s, fn: max",
 									Start: ast.Position{
 										Column: 24,
-										Line:   49,
+										Line:   52,
 									},
 								},
 							},
@@ -1909,13 +1909,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   49,
+											Line:   52,
 										},
 										File:   "aggregate_window_max_push_test.flux",
 										Source: "every: 20s",
 										Start: ast.Position{
 											Column: 24,
-											Line:   49,
+											Line:   52,
 										},
 									},
 								},
@@ -1927,13 +1927,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   49,
+												Line:   52,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "every",
 											Start: ast.Position{
 												Column: 24,
-												Line:   49,
+												Line:   52,
 											},
 										},
 									},
@@ -1947,13 +1947,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   49,
+												Line:   52,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "20s",
 											Start: ast.Position{
 												Column: 31,
-												Line:   49,
+												Line:   52,
 											},
 										},
 									},
@@ -1969,13 +1969,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   49,
+											Line:   52,
 										},
 										File:   "aggregate_window_max_push_test.flux",
 										Source: "fn: max",
 										Start: ast.Position{
 											Column: 36,
-											Line:   49,
+											Line:   52,
 										},
 									},
 								},
@@ -1987,13 +1987,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   49,
+												Line:   52,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 36,
-												Line:   49,
+												Line:   52,
 											},
 										},
 									},
@@ -2007,13 +2007,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   49,
+												Line:   52,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "max",
 											Start: ast.Position{
 												Column: 40,
-												Line:   49,
+												Line:   52,
 											},
 										},
 									},
@@ -2029,13 +2029,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   49,
+									Line:   52,
 								},
 								File:   "aggregate_window_max_push_test.flux",
 								Source: "aggregateWindow(every: 20s, fn: max)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   49,
+									Line:   52,
 								},
 							},
 						},
@@ -2046,13 +2046,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   49,
+										Line:   52,
 									},
 									File:   "aggregate_window_max_push_test.flux",
 									Source: "aggregateWindow",
 									Start: ast.Position{
 										Column: 8,
-										Line:   49,
+										Line:   52,
 									},
 								},
 							},
@@ -2070,13 +2070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   47,
+								Line:   50,
 							},
 							File:   "aggregate_window_max_push_test.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 28,
-								Line:   47,
+								Line:   50,
 							},
 						},
 					},
@@ -2088,13 +2088,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   47,
+									Line:   50,
 								},
 								File:   "aggregate_window_max_push_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 28,
-									Line:   47,
+									Line:   50,
 								},
 							},
 						},
@@ -2107,13 +2107,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   47,
+								Line:   50,
 							},
 							File:   "aggregate_window_max_push_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 35,
-								Line:   47,
+								Line:   50,
 							},
 						},
 					}},
@@ -2128,13 +2128,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 151,
-							Line:   51,
+							Line:   54,
 						},
 						File:   "aggregate_window_max_push_test.flux",
 						Source: "aggregate_window_max_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   51,
+							Line:   54,
 						},
 					},
 				},
@@ -2145,13 +2145,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   51,
+								Line:   54,
 							},
 							File:   "aggregate_window_max_push_test.flux",
 							Source: "aggregate_window_max_pushdown",
 							Start: ast.Position{
 								Column: 6,
-								Line:   51,
+								Line:   54,
 							},
 						},
 					},
@@ -2165,13 +2165,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 151,
-								Line:   51,
+								Line:   54,
 							},
 							File:   "aggregate_window_max_push_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 							Start: ast.Position{
 								Column: 38,
-								Line:   51,
+								Line:   54,
 							},
 						},
 					},
@@ -2182,13 +2182,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 151,
-									Line:   51,
+									Line:   54,
 								},
 								File:   "aggregate_window_max_push_test.flux",
 								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 								Start: ast.Position{
 									Column: 44,
-									Line:   51,
+									Line:   54,
 								},
 							},
 						},
@@ -2199,13 +2199,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 150,
-										Line:   51,
+										Line:   54,
 									},
 									File:   "aggregate_window_max_push_test.flux",
 									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn}",
 									Start: ast.Position{
 										Column: 45,
-										Line:   51,
+										Line:   54,
 									},
 								},
 							},
@@ -2217,13 +2217,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 84,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_max_push_test.flux",
 										Source: "input: testing.loadStorage(csv: input)",
 										Start: ast.Position{
 											Column: 46,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -2235,13 +2235,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 46,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -2256,13 +2256,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 83,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_max_push_test.flux",
 												Source: "csv: input",
 												Start: ast.Position{
 													Column: 73,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -2274,13 +2274,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 83,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_max_push_test.flux",
 													Source: "csv: input",
 													Start: ast.Position{
 														Column: 73,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -2292,13 +2292,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 76,
-															Line:   51,
+															Line:   54,
 														},
 														File:   "aggregate_window_max_push_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 73,
-															Line:   51,
+															Line:   54,
 														},
 													},
 												},
@@ -2312,13 +2312,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 83,
-															Line:   51,
+															Line:   54,
 														},
 														File:   "aggregate_window_max_push_test.flux",
 														Source: "input",
 														Start: ast.Position{
 															Column: 78,
-															Line:   51,
+															Line:   54,
 														},
 													},
 												},
@@ -2334,13 +2334,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "testing.loadStorage(csv: input)",
 											Start: ast.Position{
 												Column: 53,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -2351,13 +2351,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_max_push_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 53,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -2369,13 +2369,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_max_push_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 53,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -2388,13 +2388,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 72,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_max_push_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 61,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -2412,13 +2412,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 120,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_max_push_test.flux",
 										Source: "want: testing.loadMem(csv: output)",
 										Start: ast.Position{
 											Column: 86,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -2430,13 +2430,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 90,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 86,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -2451,13 +2451,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 119,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_max_push_test.flux",
 												Source: "csv: output",
 												Start: ast.Position{
 													Column: 108,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -2469,13 +2469,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 119,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_max_push_test.flux",
 													Source: "csv: output",
 													Start: ast.Position{
 														Column: 108,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -2487,13 +2487,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 111,
-															Line:   51,
+															Line:   54,
 														},
 														File:   "aggregate_window_max_push_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 108,
-															Line:   51,
+															Line:   54,
 														},
 													},
 												},
@@ -2507,13 +2507,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 119,
-															Line:   51,
+															Line:   54,
 														},
 														File:   "aggregate_window_max_push_test.flux",
 														Source: "output",
 														Start: ast.Position{
 															Column: 113,
-															Line:   51,
+															Line:   54,
 														},
 													},
 												},
@@ -2529,13 +2529,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 120,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "testing.loadMem(csv: output)",
 											Start: ast.Position{
 												Column: 92,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -2546,13 +2546,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 107,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_max_push_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 92,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -2564,13 +2564,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 99,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_max_push_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 92,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -2583,13 +2583,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 107,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_max_push_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 100,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -2607,13 +2607,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 149,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_max_push_test.flux",
 										Source: "fn: aggregate_window_max_fn",
 										Start: ast.Position{
 											Column: 122,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -2625,13 +2625,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 124,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 122,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -2645,13 +2645,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 149,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_max_push_test.flux",
 											Source: "aggregate_window_max_fn",
 											Start: ast.Position{
 												Column: 126,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -2675,13 +2675,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 151,
-						Line:   51,
+						Line:   54,
 					},
 					File:   "aggregate_window_max_push_test.flux",
 					Source: "test aggregate_window_max_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_max_fn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   51,
+						Line:   54,
 					},
 				},
 			},
@@ -2771,10 +2771,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 151,
-					Line:   54,
+					Line:   57,
 				},
 				File:   "aggregate_window_min_eval_test.flux",
-				Source: "package planner_test\n\n\nimport \"testing\"\nimport \"planner\"\n\noption planner.disablePhysicalRules = [\"PushDownWindowAggregateRule\"]\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\"\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"\naggregate_window_min_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)\n\ntest aggregate_window_min_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
+				Source: "package planner_test\n\n\nimport \"testing\"\nimport \"planner\"\n\noption planner.disablePhysicalRules = [\"PushDownWindowAggregateRule\"]\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\"\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"\naggregate_window_min_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)\n\ntest aggregate_window_min_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -2975,10 +2975,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   49,
+						Line:   52,
 					},
 					File:   "aggregate_window_min_eval_test.flux",
-					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   35,
@@ -3011,17 +3011,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   49,
+							Line:   52,
 						},
 						File:   "aggregate_window_min_eval_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
 						Start: ast.Position{
 							Column: 10,
 							Line:   35,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n",
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -3030,13 +3030,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 44,
-						Line:   52,
+						Line:   55,
 					},
 					File:   "aggregate_window_min_eval_test.flux",
 					Source: "aggregate_window_min_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   50,
+						Line:   53,
 					},
 				},
 			},
@@ -3047,13 +3047,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 24,
-							Line:   50,
+							Line:   53,
 						},
 						File:   "aggregate_window_min_eval_test.flux",
 						Source: "aggregate_window_min_fn",
 						Start: ast.Position{
 							Column: 1,
-							Line:   50,
+							Line:   53,
 						},
 					},
 				},
@@ -3067,13 +3067,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 44,
-							Line:   52,
+							Line:   55,
 						},
 						File:   "aggregate_window_min_eval_test.flux",
 						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)",
 						Start: ast.Position{
 							Column: 27,
-							Line:   50,
+							Line:   53,
 						},
 					},
 				},
@@ -3086,13 +3086,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   50,
+										Line:   53,
 									},
 									File:   "aggregate_window_min_eval_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 42,
-										Line:   50,
+										Line:   53,
 									},
 								},
 							},
@@ -3104,13 +3104,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   51,
+									Line:   54,
 								},
 								File:   "aggregate_window_min_eval_test.flux",
 								Source: "tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)",
 								Start: ast.Position{
 									Column: 42,
-									Line:   50,
+									Line:   53,
 								},
 							},
 						},
@@ -3122,13 +3122,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_min_eval_test.flux",
 										Source: "start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z",
 										Start: ast.Position{
 											Column: 14,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -3140,13 +3140,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "start: 2018-05-22T19:53:00Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -3158,13 +3158,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_min_eval_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 14,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -3178,13 +3178,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_min_eval_test.flux",
 												Source: "2018-05-22T19:53:00Z",
 												Start: ast.Position{
 													Column: 21,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -3197,13 +3197,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "stop: 2018-05-22T19:54:20Z",
 											Start: ast.Position{
 												Column: 43,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -3215,13 +3215,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_min_eval_test.flux",
 												Source: "stop",
 												Start: ast.Position{
 													Column: 43,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -3235,13 +3235,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_min_eval_test.flux",
 												Source: "2018-05-22T19:54:20Z",
 												Start: ast.Position{
 													Column: 49,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -3257,13 +3257,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   51,
+										Line:   54,
 									},
 									File:   "aggregate_window_min_eval_test.flux",
 									Source: "range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   51,
+										Line:   54,
 									},
 								},
 							},
@@ -3274,13 +3274,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_min_eval_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 8,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -3296,13 +3296,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
-								Line:   52,
+								Line:   55,
 							},
 							File:   "aggregate_window_min_eval_test.flux",
 							Source: "tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)",
 							Start: ast.Position{
 								Column: 42,
-								Line:   50,
+								Line:   53,
 							},
 						},
 					},
@@ -3314,13 +3314,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   52,
+										Line:   55,
 									},
 									File:   "aggregate_window_min_eval_test.flux",
 									Source: "every: 20s, fn: min",
 									Start: ast.Position{
 										Column: 24,
-										Line:   52,
+										Line:   55,
 									},
 								},
 							},
@@ -3332,13 +3332,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   52,
+											Line:   55,
 										},
 										File:   "aggregate_window_min_eval_test.flux",
 										Source: "every: 20s",
 										Start: ast.Position{
 											Column: 24,
-											Line:   52,
+											Line:   55,
 										},
 									},
 								},
@@ -3350,13 +3350,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   52,
+												Line:   55,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "every",
 											Start: ast.Position{
 												Column: 24,
-												Line:   52,
+												Line:   55,
 											},
 										},
 									},
@@ -3370,13 +3370,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   52,
+												Line:   55,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "20s",
 											Start: ast.Position{
 												Column: 31,
-												Line:   52,
+												Line:   55,
 											},
 										},
 									},
@@ -3392,13 +3392,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   52,
+											Line:   55,
 										},
 										File:   "aggregate_window_min_eval_test.flux",
 										Source: "fn: min",
 										Start: ast.Position{
 											Column: 36,
-											Line:   52,
+											Line:   55,
 										},
 									},
 								},
@@ -3410,13 +3410,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   52,
+												Line:   55,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 36,
-												Line:   52,
+												Line:   55,
 											},
 										},
 									},
@@ -3430,13 +3430,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   52,
+												Line:   55,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "min",
 											Start: ast.Position{
 												Column: 40,
-												Line:   52,
+												Line:   55,
 											},
 										},
 									},
@@ -3452,13 +3452,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   52,
+									Line:   55,
 								},
 								File:   "aggregate_window_min_eval_test.flux",
 								Source: "aggregateWindow(every: 20s, fn: min)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   52,
+									Line:   55,
 								},
 							},
 						},
@@ -3469,13 +3469,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   52,
+										Line:   55,
 									},
 									File:   "aggregate_window_min_eval_test.flux",
 									Source: "aggregateWindow",
 									Start: ast.Position{
 										Column: 8,
-										Line:   52,
+										Line:   55,
 									},
 								},
 							},
@@ -3493,13 +3493,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   50,
+								Line:   53,
 							},
 							File:   "aggregate_window_min_eval_test.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 28,
-								Line:   50,
+								Line:   53,
 							},
 						},
 					},
@@ -3511,13 +3511,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   50,
+									Line:   53,
 								},
 								File:   "aggregate_window_min_eval_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 28,
-									Line:   50,
+									Line:   53,
 								},
 							},
 						},
@@ -3530,13 +3530,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   50,
+								Line:   53,
 							},
 							File:   "aggregate_window_min_eval_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 35,
-								Line:   50,
+								Line:   53,
 							},
 						},
 					}},
@@ -3551,13 +3551,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 151,
-							Line:   54,
+							Line:   57,
 						},
 						File:   "aggregate_window_min_eval_test.flux",
 						Source: "aggregate_window_min_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   54,
+							Line:   57,
 						},
 					},
 				},
@@ -3568,13 +3568,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   54,
+								Line:   57,
 							},
 							File:   "aggregate_window_min_eval_test.flux",
 							Source: "aggregate_window_min_evaluate",
 							Start: ast.Position{
 								Column: 6,
-								Line:   54,
+								Line:   57,
 							},
 						},
 					},
@@ -3588,13 +3588,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 151,
-								Line:   54,
+								Line:   57,
 							},
 							File:   "aggregate_window_min_eval_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 							Start: ast.Position{
 								Column: 38,
-								Line:   54,
+								Line:   57,
 							},
 						},
 					},
@@ -3605,13 +3605,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 151,
-									Line:   54,
+									Line:   57,
 								},
 								File:   "aggregate_window_min_eval_test.flux",
 								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 								Start: ast.Position{
 									Column: 44,
-									Line:   54,
+									Line:   57,
 								},
 							},
 						},
@@ -3622,13 +3622,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 150,
-										Line:   54,
+										Line:   57,
 									},
 									File:   "aggregate_window_min_eval_test.flux",
 									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn}",
 									Start: ast.Position{
 										Column: 45,
-										Line:   54,
+										Line:   57,
 									},
 								},
 							},
@@ -3640,13 +3640,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 84,
-											Line:   54,
+											Line:   57,
 										},
 										File:   "aggregate_window_min_eval_test.flux",
 										Source: "input: testing.loadStorage(csv: input)",
 										Start: ast.Position{
 											Column: 46,
-											Line:   54,
+											Line:   57,
 										},
 									},
 								},
@@ -3658,13 +3658,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 46,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -3679,13 +3679,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 83,
-													Line:   54,
+													Line:   57,
 												},
 												File:   "aggregate_window_min_eval_test.flux",
 												Source: "csv: input",
 												Start: ast.Position{
 													Column: 73,
-													Line:   54,
+													Line:   57,
 												},
 											},
 										},
@@ -3697,13 +3697,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 83,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_min_eval_test.flux",
 													Source: "csv: input",
 													Start: ast.Position{
 														Column: 73,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -3715,13 +3715,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 76,
-															Line:   54,
+															Line:   57,
 														},
 														File:   "aggregate_window_min_eval_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 73,
-															Line:   54,
+															Line:   57,
 														},
 													},
 												},
@@ -3735,13 +3735,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 83,
-															Line:   54,
+															Line:   57,
 														},
 														File:   "aggregate_window_min_eval_test.flux",
 														Source: "input",
 														Start: ast.Position{
 															Column: 78,
-															Line:   54,
+															Line:   57,
 														},
 													},
 												},
@@ -3757,13 +3757,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "testing.loadStorage(csv: input)",
 											Start: ast.Position{
 												Column: 53,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -3774,13 +3774,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   54,
+													Line:   57,
 												},
 												File:   "aggregate_window_min_eval_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 53,
-													Line:   54,
+													Line:   57,
 												},
 											},
 										},
@@ -3792,13 +3792,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_min_eval_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 53,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -3811,13 +3811,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 72,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_min_eval_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 61,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -3835,13 +3835,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 120,
-											Line:   54,
+											Line:   57,
 										},
 										File:   "aggregate_window_min_eval_test.flux",
 										Source: "want: testing.loadMem(csv: output)",
 										Start: ast.Position{
 											Column: 86,
-											Line:   54,
+											Line:   57,
 										},
 									},
 								},
@@ -3853,13 +3853,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 90,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 86,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -3874,13 +3874,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 119,
-													Line:   54,
+													Line:   57,
 												},
 												File:   "aggregate_window_min_eval_test.flux",
 												Source: "csv: output",
 												Start: ast.Position{
 													Column: 108,
-													Line:   54,
+													Line:   57,
 												},
 											},
 										},
@@ -3892,13 +3892,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 119,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_min_eval_test.flux",
 													Source: "csv: output",
 													Start: ast.Position{
 														Column: 108,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -3910,13 +3910,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 111,
-															Line:   54,
+															Line:   57,
 														},
 														File:   "aggregate_window_min_eval_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 108,
-															Line:   54,
+															Line:   57,
 														},
 													},
 												},
@@ -3930,13 +3930,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 119,
-															Line:   54,
+															Line:   57,
 														},
 														File:   "aggregate_window_min_eval_test.flux",
 														Source: "output",
 														Start: ast.Position{
 															Column: 113,
-															Line:   54,
+															Line:   57,
 														},
 													},
 												},
@@ -3952,13 +3952,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 120,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "testing.loadMem(csv: output)",
 											Start: ast.Position{
 												Column: 92,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -3969,13 +3969,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 107,
-													Line:   54,
+													Line:   57,
 												},
 												File:   "aggregate_window_min_eval_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 92,
-													Line:   54,
+													Line:   57,
 												},
 											},
 										},
@@ -3987,13 +3987,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 99,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_min_eval_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 92,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -4006,13 +4006,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 107,
-														Line:   54,
+														Line:   57,
 													},
 													File:   "aggregate_window_min_eval_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 100,
-														Line:   54,
+														Line:   57,
 													},
 												},
 											},
@@ -4030,13 +4030,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 149,
-											Line:   54,
+											Line:   57,
 										},
 										File:   "aggregate_window_min_eval_test.flux",
 										Source: "fn: aggregate_window_min_fn",
 										Start: ast.Position{
 											Column: 122,
-											Line:   54,
+											Line:   57,
 										},
 									},
 								},
@@ -4048,13 +4048,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 124,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 122,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -4068,13 +4068,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 149,
-												Line:   54,
+												Line:   57,
 											},
 											File:   "aggregate_window_min_eval_test.flux",
 											Source: "aggregate_window_min_fn",
 											Start: ast.Position{
 												Column: 126,
-												Line:   54,
+												Line:   57,
 											},
 										},
 									},
@@ -4098,13 +4098,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 151,
-						Line:   54,
+						Line:   57,
 					},
 					File:   "aggregate_window_min_eval_test.flux",
 					Source: "test aggregate_window_min_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   54,
+						Line:   57,
 					},
 				},
 			},
@@ -4231,10 +4231,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 151,
-					Line:   51,
+					Line:   54,
 				},
 				File:   "aggregate_window_min_push_test.flux",
-				Source: "package planner_test\n\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\"\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"\naggregate_window_min_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)\n\ntest aggregate_window_min_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
+				Source: "package planner_test\n\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,host.local,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,host.local,load5,1.91\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\"\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"\naggregate_window_min_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)\n\ntest aggregate_window_min_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -4303,10 +4303,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   46,
+						Line:   49,
 					},
 					File:   "aggregate_window_min_push_test.flux",
-					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   32,
@@ -4339,17 +4339,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   46,
+							Line:   49,
 						},
 						File:   "aggregate_window_min_push_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n\"",
 						Start: ast.Position{
 							Column: 10,
 							Line:   32,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n",
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,false,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load1,\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load1,1.84\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load3,\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load3,1.97\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:20Z,system,host.local,load5,\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:53:40Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:00Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:53:00Z,2018-05-22T19:54:20Z,2018-05-22T19:54:20Z,system,host.local,load5,1.93\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -4358,13 +4358,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 44,
-						Line:   49,
+						Line:   52,
 					},
 					File:   "aggregate_window_min_push_test.flux",
 					Source: "aggregate_window_min_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   47,
+						Line:   50,
 					},
 				},
 			},
@@ -4375,13 +4375,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 24,
-							Line:   47,
+							Line:   50,
 						},
 						File:   "aggregate_window_min_push_test.flux",
 						Source: "aggregate_window_min_fn",
 						Start: ast.Position{
 							Column: 1,
-							Line:   47,
+							Line:   50,
 						},
 					},
 				},
@@ -4395,13 +4395,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 44,
-							Line:   49,
+							Line:   52,
 						},
 						File:   "aggregate_window_min_push_test.flux",
 						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)",
 						Start: ast.Position{
 							Column: 27,
-							Line:   47,
+							Line:   50,
 						},
 					},
 				},
@@ -4414,13 +4414,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   47,
+										Line:   50,
 									},
 									File:   "aggregate_window_min_push_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 42,
-										Line:   47,
+										Line:   50,
 									},
 								},
 							},
@@ -4432,13 +4432,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   48,
+									Line:   51,
 								},
 								File:   "aggregate_window_min_push_test.flux",
 								Source: "tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)",
 								Start: ast.Position{
 									Column: 42,
-									Line:   47,
+									Line:   50,
 								},
 							},
 						},
@@ -4450,13 +4450,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   48,
+											Line:   51,
 										},
 										File:   "aggregate_window_min_push_test.flux",
 										Source: "start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z",
 										Start: ast.Position{
 											Column: 14,
-											Line:   48,
+											Line:   51,
 										},
 									},
 								},
@@ -4468,13 +4468,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   48,
+												Line:   51,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "start: 2018-05-22T19:53:00Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   48,
+												Line:   51,
 											},
 										},
 									},
@@ -4486,13 +4486,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   48,
+													Line:   51,
 												},
 												File:   "aggregate_window_min_push_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 14,
-													Line:   48,
+													Line:   51,
 												},
 											},
 										},
@@ -4506,13 +4506,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   48,
+													Line:   51,
 												},
 												File:   "aggregate_window_min_push_test.flux",
 												Source: "2018-05-22T19:53:00Z",
 												Start: ast.Position{
 													Column: 21,
-													Line:   48,
+													Line:   51,
 												},
 											},
 										},
@@ -4525,13 +4525,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   48,
+												Line:   51,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "stop: 2018-05-22T19:54:20Z",
 											Start: ast.Position{
 												Column: 43,
-												Line:   48,
+												Line:   51,
 											},
 										},
 									},
@@ -4543,13 +4543,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   48,
+													Line:   51,
 												},
 												File:   "aggregate_window_min_push_test.flux",
 												Source: "stop",
 												Start: ast.Position{
 													Column: 43,
-													Line:   48,
+													Line:   51,
 												},
 											},
 										},
@@ -4563,13 +4563,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   48,
+													Line:   51,
 												},
 												File:   "aggregate_window_min_push_test.flux",
 												Source: "2018-05-22T19:54:20Z",
 												Start: ast.Position{
 													Column: 49,
-													Line:   48,
+													Line:   51,
 												},
 											},
 										},
@@ -4585,13 +4585,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   48,
+										Line:   51,
 									},
 									File:   "aggregate_window_min_push_test.flux",
 									Source: "range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   48,
+										Line:   51,
 									},
 								},
 							},
@@ -4602,13 +4602,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   48,
+											Line:   51,
 										},
 										File:   "aggregate_window_min_push_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 8,
-											Line:   48,
+											Line:   51,
 										},
 									},
 								},
@@ -4624,13 +4624,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
-								Line:   49,
+								Line:   52,
 							},
 							File:   "aggregate_window_min_push_test.flux",
 							Source: "tables\n    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:20Z)\n    |> aggregateWindow(every: 20s, fn: min)",
 							Start: ast.Position{
 								Column: 42,
-								Line:   47,
+								Line:   50,
 							},
 						},
 					},
@@ -4642,13 +4642,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   49,
+										Line:   52,
 									},
 									File:   "aggregate_window_min_push_test.flux",
 									Source: "every: 20s, fn: min",
 									Start: ast.Position{
 										Column: 24,
-										Line:   49,
+										Line:   52,
 									},
 								},
 							},
@@ -4660,13 +4660,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   49,
+											Line:   52,
 										},
 										File:   "aggregate_window_min_push_test.flux",
 										Source: "every: 20s",
 										Start: ast.Position{
 											Column: 24,
-											Line:   49,
+											Line:   52,
 										},
 									},
 								},
@@ -4678,13 +4678,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   49,
+												Line:   52,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "every",
 											Start: ast.Position{
 												Column: 24,
-												Line:   49,
+												Line:   52,
 											},
 										},
 									},
@@ -4698,13 +4698,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   49,
+												Line:   52,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "20s",
 											Start: ast.Position{
 												Column: 31,
-												Line:   49,
+												Line:   52,
 											},
 										},
 									},
@@ -4720,13 +4720,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   49,
+											Line:   52,
 										},
 										File:   "aggregate_window_min_push_test.flux",
 										Source: "fn: min",
 										Start: ast.Position{
 											Column: 36,
-											Line:   49,
+											Line:   52,
 										},
 									},
 								},
@@ -4738,13 +4738,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   49,
+												Line:   52,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 36,
-												Line:   49,
+												Line:   52,
 											},
 										},
 									},
@@ -4758,13 +4758,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   49,
+												Line:   52,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "min",
 											Start: ast.Position{
 												Column: 40,
-												Line:   49,
+												Line:   52,
 											},
 										},
 									},
@@ -4780,13 +4780,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   49,
+									Line:   52,
 								},
 								File:   "aggregate_window_min_push_test.flux",
 								Source: "aggregateWindow(every: 20s, fn: min)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   49,
+									Line:   52,
 								},
 							},
 						},
@@ -4797,13 +4797,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   49,
+										Line:   52,
 									},
 									File:   "aggregate_window_min_push_test.flux",
 									Source: "aggregateWindow",
 									Start: ast.Position{
 										Column: 8,
-										Line:   49,
+										Line:   52,
 									},
 								},
 							},
@@ -4821,13 +4821,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   47,
+								Line:   50,
 							},
 							File:   "aggregate_window_min_push_test.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 28,
-								Line:   47,
+								Line:   50,
 							},
 						},
 					},
@@ -4839,13 +4839,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   47,
+									Line:   50,
 								},
 								File:   "aggregate_window_min_push_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 28,
-									Line:   47,
+									Line:   50,
 								},
 							},
 						},
@@ -4858,13 +4858,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   47,
+								Line:   50,
 							},
 							File:   "aggregate_window_min_push_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 35,
-								Line:   47,
+								Line:   50,
 							},
 						},
 					}},
@@ -4879,13 +4879,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 151,
-							Line:   51,
+							Line:   54,
 						},
 						File:   "aggregate_window_min_push_test.flux",
 						Source: "aggregate_window_min_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   51,
+							Line:   54,
 						},
 					},
 				},
@@ -4896,13 +4896,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   51,
+								Line:   54,
 							},
 							File:   "aggregate_window_min_push_test.flux",
 							Source: "aggregate_window_min_pushdown",
 							Start: ast.Position{
 								Column: 6,
-								Line:   51,
+								Line:   54,
 							},
 						},
 					},
@@ -4916,13 +4916,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 151,
-								Line:   51,
+								Line:   54,
 							},
 							File:   "aggregate_window_min_push_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 							Start: ast.Position{
 								Column: 38,
-								Line:   51,
+								Line:   54,
 							},
 						},
 					},
@@ -4933,13 +4933,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 151,
-									Line:   51,
+									Line:   54,
 								},
 								File:   "aggregate_window_min_push_test.flux",
 								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 								Start: ast.Position{
 									Column: 44,
-									Line:   51,
+									Line:   54,
 								},
 							},
 						},
@@ -4950,13 +4950,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 150,
-										Line:   51,
+										Line:   54,
 									},
 									File:   "aggregate_window_min_push_test.flux",
 									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn}",
 									Start: ast.Position{
 										Column: 45,
-										Line:   51,
+										Line:   54,
 									},
 								},
 							},
@@ -4968,13 +4968,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 84,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_min_push_test.flux",
 										Source: "input: testing.loadStorage(csv: input)",
 										Start: ast.Position{
 											Column: 46,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -4986,13 +4986,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 46,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -5007,13 +5007,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 83,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_min_push_test.flux",
 												Source: "csv: input",
 												Start: ast.Position{
 													Column: 73,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -5025,13 +5025,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 83,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_min_push_test.flux",
 													Source: "csv: input",
 													Start: ast.Position{
 														Column: 73,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -5043,13 +5043,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 76,
-															Line:   51,
+															Line:   54,
 														},
 														File:   "aggregate_window_min_push_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 73,
-															Line:   51,
+															Line:   54,
 														},
 													},
 												},
@@ -5063,13 +5063,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 83,
-															Line:   51,
+															Line:   54,
 														},
 														File:   "aggregate_window_min_push_test.flux",
 														Source: "input",
 														Start: ast.Position{
 															Column: 78,
-															Line:   51,
+															Line:   54,
 														},
 													},
 												},
@@ -5085,13 +5085,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "testing.loadStorage(csv: input)",
 											Start: ast.Position{
 												Column: 53,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -5102,13 +5102,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_min_push_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 53,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -5120,13 +5120,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_min_push_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 53,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -5139,13 +5139,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 72,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_min_push_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 61,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -5163,13 +5163,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 120,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_min_push_test.flux",
 										Source: "want: testing.loadMem(csv: output)",
 										Start: ast.Position{
 											Column: 86,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -5181,13 +5181,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 90,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 86,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -5202,13 +5202,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 119,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_min_push_test.flux",
 												Source: "csv: output",
 												Start: ast.Position{
 													Column: 108,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -5220,13 +5220,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 119,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_min_push_test.flux",
 													Source: "csv: output",
 													Start: ast.Position{
 														Column: 108,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -5238,13 +5238,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 111,
-															Line:   51,
+															Line:   54,
 														},
 														File:   "aggregate_window_min_push_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 108,
-															Line:   51,
+															Line:   54,
 														},
 													},
 												},
@@ -5258,13 +5258,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 119,
-															Line:   51,
+															Line:   54,
 														},
 														File:   "aggregate_window_min_push_test.flux",
 														Source: "output",
 														Start: ast.Position{
 															Column: 113,
-															Line:   51,
+															Line:   54,
 														},
 													},
 												},
@@ -5280,13 +5280,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 120,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "testing.loadMem(csv: output)",
 											Start: ast.Position{
 												Column: 92,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -5297,13 +5297,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 107,
-													Line:   51,
+													Line:   54,
 												},
 												File:   "aggregate_window_min_push_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 92,
-													Line:   51,
+													Line:   54,
 												},
 											},
 										},
@@ -5315,13 +5315,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 99,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_min_push_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 92,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -5334,13 +5334,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 107,
-														Line:   51,
+														Line:   54,
 													},
 													File:   "aggregate_window_min_push_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 100,
-														Line:   51,
+														Line:   54,
 													},
 												},
 											},
@@ -5358,13 +5358,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 149,
-											Line:   51,
+											Line:   54,
 										},
 										File:   "aggregate_window_min_push_test.flux",
 										Source: "fn: aggregate_window_min_fn",
 										Start: ast.Position{
 											Column: 122,
-											Line:   51,
+											Line:   54,
 										},
 									},
 								},
@@ -5376,13 +5376,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 124,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 122,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -5396,13 +5396,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 149,
-												Line:   51,
+												Line:   54,
 											},
 											File:   "aggregate_window_min_push_test.flux",
 											Source: "aggregate_window_min_fn",
 											Start: ast.Position{
 												Column: 126,
-												Line:   51,
+												Line:   54,
 											},
 										},
 									},
@@ -5426,13 +5426,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 151,
-						Line:   51,
+						Line:   54,
 					},
 					File:   "aggregate_window_min_push_test.flux",
 					Source: "test aggregate_window_min_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: aggregate_window_min_fn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   51,
+						Line:   54,
 					},
 				},
 			},

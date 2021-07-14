@@ -381,7 +381,7 @@ testcase range_nsecs_agg_last {
 
     got = input
         |> range(start: 2021-01-01T00:00:01.000000005Z, stop: 2021-01-01T00:00:01.00000002Z)
-        |> aggregateWindow(every: 5ns, offset: -1ns, fn: last)
+        |> aggregateWindow(every: 5ns, offset: -1ns, fn: last, createEmpty: false)
         |> drop(
             columns: [
                 "_start",
