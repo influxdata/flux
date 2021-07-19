@@ -104,7 +104,7 @@ staticcheck:
 		`go list ./... | grep -v '\/flux\/stdlib\>'`
 	GO111MODULE=on ./gotool.sh honnef.co/go/tools/cmd/staticcheck ./stdlib/...
 
-test: test-go test-rust test-flux
+test: test-go test-rust test-flux test-wasm
 
 test-go: libflux-go
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...
@@ -151,6 +151,9 @@ build-wasm:
 
 publish-wasm: clean-wasm build-wasm
 	cd libflux/flux/pkg && npm publish --access public
+
+test-wasm: clean-wasm build-wasm
+	cd libflux/flux && CC=clang AR==llvm-ar wasm-pack test --node
 
 test-valgrind: libflux
 	cd libflux/c && $(MAKE) test-valgrind
