@@ -12,7 +12,7 @@ package csv
 //
 //   Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.
 //
-// - `file` if the file path of the CSV file to query.
+// - `file` is the file path of the CSV file to query.
 //
 //   The path can be absolute or relative. If relative, it is relative to the working
 //   directory of the `fluxd` process. The CSV file must exist in the same file
