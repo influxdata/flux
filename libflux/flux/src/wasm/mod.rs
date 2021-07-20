@@ -76,9 +76,9 @@ pub fn get_json_documentation(flux_identifier: &str) -> JsValue {
 
     for i in &d {
         // look for the given identifier
-        if flux_identifier == i.path {
+        if flux_identifier == i.name {
             // return that doc package
-            doc = JsValue::from_serde(&serde_json::to_string(&i.values).unwrap()).unwrap();
+            doc = JsValue::from_serde(&serde_json::to_string(&i.members).unwrap()).unwrap();
         }
     }
 
