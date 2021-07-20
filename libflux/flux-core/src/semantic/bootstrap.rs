@@ -62,7 +62,6 @@ pub struct PackageDoc {
     pub description: Option<String>,
     /// the members of the package
     pub members: HashMap<String, Doc>,
-
 }
 
 /// ValueDoc represents the documentation for a single value within a package.
@@ -187,7 +186,7 @@ pub fn stdlib_docs(
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
     for (_path, file) in files {
-        let pkg = generate_docs( &lib, file)?;
+        let pkg = generate_docs(&lib, file)?;
         docs.push(pkg);
     }
     Ok(docs)
@@ -213,7 +212,7 @@ fn generate_docs(
         name: file.package.clone().unwrap().name.name,
         headline: doc,
         description: None,
-        members: members
+        members: members,
     })
 }
 
@@ -234,24 +233,24 @@ fn generate_values(
                 }
                 let typ = format!("{}", types[&name].normal());
                 println!("1");
-                    match &types[&name].expr {
-                        MonoType::Fun(_f) => {
-                            // generate function doc
-                            let function = generate_function_struct(name.clone(), doc, typ);
-                            members.insert(name.clone(), Doc::Function(Box::new(function)));
-                        }
-                        _ => {
-                            // generate value doc
-                            let variable = ValueDoc {
-                                name: name.clone(),
-                                headline: doc,
-                                description: None,
-                                flux_type: typ
-                            };
-                            println!("2");
-                            members.insert(name.clone(), Doc::Value(Box::new(variable)));
-                        }
+                match &types[&name].expr {
+                    MonoType::Fun(_f) => {
+                        // generate function doc
+                        let function = generate_function_struct(name.clone(), doc, typ);
+                        members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
+                    _ => {
+                        // generate value doc
+                        let variable = ValueDoc {
+                            name: name.clone(),
+                            headline: doc,
+                            description: None,
+                            flux_type: typ,
+                        };
+                        println!("2");
+                        members.insert(name.clone(), Doc::Value(Box::new(variable)));
+                    }
+                }
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
@@ -260,22 +259,22 @@ fn generate_values(
                     continue;
                 }
                 let typ = format!("{}", types[&name].normal());
-                    match &types[&name].expr {
-                        MonoType::Fun(_f) => {
-                            // generate function doc
-                            let function = generate_function_struct(name.clone(), doc, typ);
-                            members.insert(name.clone(), Doc::Function(Box::new(function)));
-                        }
-                        _ => {
-                            let builtin = ValueDoc {
-                                name: name.clone(),
-                                headline: doc,
-                                description: None,
-                                flux_type: typ
-                            };
-                            members.insert(name.clone(), Doc::Value(Box::new(builtin)));
-                        }
+                match &types[&name].expr {
+                    MonoType::Fun(_f) => {
+                        // generate function doc
+                        let function = generate_function_struct(name.clone(), doc, typ);
+                        members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
+                    _ => {
+                        let builtin = ValueDoc {
+                            name: name.clone(),
+                            headline: doc,
+                            description: None,
+                            flux_type: typ,
+                        };
+                        members.insert(name.clone(), Doc::Value(Box::new(builtin)));
+                    }
+                }
             }
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
@@ -285,26 +284,25 @@ fn generate_values(
                         continue;
                     }
                     let typ = format!("{}", types[&name].normal());
-                        match &types[&name].expr {
-                            MonoType::Fun(_f) => {
-                                // generate function doc
-                                let function = generate_function_struct(name.clone(), doc, typ);
-                                members.insert(name.clone(), Doc::Function(Box::new(function)));
-                            }
-                            _ => {
-                                let option = ValueDoc {
-                                    name: name.clone(),
-                                    headline: doc,
-                                    description: None,
-                                    flux_type: typ
-                                };
-                                members.insert(name.clone(), Doc::Value(Box::new(option)));
-                            }
+                    match &types[&name].expr {
+                        MonoType::Fun(_f) => {
+                            // generate function doc
+                            let function = generate_function_struct(name.clone(), doc, typ);
+                            members.insert(name.clone(), Doc::Function(Box::new(function)));
                         }
+                        _ => {
+                            let option = ValueDoc {
+                                name: name.clone(),
+                                headline: doc,
+                                description: None,
+                                flux_type: typ,
+                            };
+                            members.insert(name.clone(), Doc::Value(Box::new(option)));
+                        }
+                    }
                 }
             }
             _ => {}
-
         }
     }
     Ok(members)
@@ -326,7 +324,7 @@ fn generate_function_struct(name: String, doc: String, typ: String) -> FunctionD
         headline: doc,
         description: "".to_string(),
         parameters: vec![],
-        flux_type: typ
+        flux_type: typ,
     }
 }
 
