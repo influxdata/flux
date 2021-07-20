@@ -332,7 +332,7 @@ var sourceHashes = map[string]string{
 	"stdlib/strings/toLower_test.flux":                                              "c6dfa403f0c1d31e148787b5c7362c1b0885d90cccde528ba0f538ba7a6e8b1a",
 	"stdlib/strings/toUpper_test.flux":                                              "433418ef48fbc2fc418ff7ee8f8c2157cc607cb29d9f3959b7813d5d27eee741",
 	"stdlib/strings/trim_test.flux":                                                 "3fa0483ea23cbcae3330b6d0bc57075709cff798685940388e505513fbcd4951",
-	"stdlib/system/system.flux":                                                     "d1862e8114816745d57105aeee30147adacd48ef9b02191e2a8b74e3b5b77a03",
+	"stdlib/system/system.flux":                                                     "830cfadc3c127d1291a19fb684f5f1b6d2f24221b086d427e64b9e64e6ea6d10",
 	"stdlib/testing/chronograf/aggregate_window_count_test.flux":                    "14d1037e7c084852e352452e37669c2fe6e3b56800517bdbba2bf188fdd38f6f",
 	"stdlib/testing/chronograf/aggregate_window_mean_test.flux":                     "b4568e2bb015afa736e6decb80ceb647dcfdd4b9abccc1c093c7f242f0028c60",
 	"stdlib/testing/chronograf/aggregate_window_median_test.flux":                   "ae995c3f4806bdf9e768a77de64443c2e4070cb1e56204b96fecfc13f8931d40",
