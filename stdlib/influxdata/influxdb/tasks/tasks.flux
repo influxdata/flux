@@ -15,7 +15,34 @@ option lastSuccessTime = _zeroTime
 // or it will return the orTime.
 builtin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timeable
 
-// lastSuccess will return the last successful time a task ran
-// within an influxdb task. If the task has not successfully run,
-// the orTime will be returned.
+// lastSuccess is a function that returns the time of the last successful run
+//  of the InfluxDb task or the value of the orTime parameter if the task
+//  has never successfully run.
+//
+// ## Parameters
+// - `orTime` is the defualt time value returned if the task has never
+//   successfully run.
+//
+// ## Example
+//
+// ```
+// import "influxdata/influxdb/tasks"
+//
+// tasks.lastSuccess(orTime: 2020-01-01T00:00:00Z)
+// ```
+//
+// ## Query data since the last successful task run
+//
+// ```
+// import "influxdata/influxdb/tasks"
+//
+// option task = {
+//   name: "Example task",
+//   every: 30m
+// }
+//
+// from(bucket: "example-bucket")
+//   |> range(start: tasks.lastSuccess(orTime: -task.every))
+//   // ...
+// ```
 lastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)

@@ -24,13 +24,13 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 6,
-					Line:   79,
+					Line:   148,
 				},
 				File:   "pushbullet.flux",
-				Source: "package pushbullet\n\n\nimport \"http\"\nimport \"json\"\n\noption defaultURL = \"https://api.pushbullet.com/v2/pushes\"\n\n// `pushData` sends a push notification using PushBullet's APIs.\n// `url` - string - URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n// `token` - string - the api token string.  Defaults to: \"\".\n// `data` - object - The data to send to the endpoint. It will be encoded in JSON and sent to PushBullet's endpoint.\n// For how to structure data, see https://docs.pushbullet.com/#create-push.\npushData = (url=defaultURL, token=\"\", data) => {\n    headers = {\n        \"Access-Token\": token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url, data: enc)\n}\n\n// `pushNote` sends a push notification of type `note` using PushBullet's APIs.\n// `url` - string - URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n// `token` - string - the api token string.  Defaults to: \"\".\n// `title` - string - The title of the notification.\n// `text` - string - The text to display in the notification.\npushNote = (url=defaultURL, token=\"\", title, text) => {\n    data = {\n        type: \"note\",\n        title: title,\n        body: text,\n    }\n\n    return pushData(token: token, url: url, data: data)\n}\n\n// `genericEndpoint` does not work for now for a bug in type inference in the compiler.\n//    `genericEndpoint` creates the endpoint for the PushBullet external service.\n//    `url` - string - URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n//    `token` - string - token for the PushBullet endpoint.\n//    The returned factory function accepts a `mapFn` parameter.\n//    The `mapFn` must return an object that will be used as payload as defined in `pushData` function arguments.\n// genericEndpoint = (url=defaultURL, token=\"\") =>\n//     (mapFn) =>\n//         (tables=<-) => tables\n//             |> map(fn: (r) => {\n//                 obj = mapFn(r: r)\n//                 return {r with _sent: string(v: 2 == pushData(\n//                   url: url,\n//                   token: token,\n//                   data: obj,\n//                 ) / 100)}\n//             })\n// `endpoint` creates the endpoint for the PushBullet external service.\n// It will push notifications of type `note`.\n// If you want to push something else, see `genericEndpoint`.\n// `url` - string - URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n// `token` - string - token for the PushBullet endpoint.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `title` and `text` fields as defined in the `pushNote` function arguments.\nendpoint = (url=defaultURL, token=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package pushbullet\n\n\nimport \"http\"\nimport \"json\"\n\noption defaultURL = \"https://api.pushbullet.com/v2/pushes\"\n\n// pushData sends a push notification to the Pushbullet API.\n//\n// ## Parameters\n//\n// - `url` is the URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n// - `token` is the api token string.  Defaults to: \"\".\n// - `data` is the data to send to the endpoint. It will be encoded in JSON and sent to PushBullet's endpoint.\n// For how to structure data, see https://docs.pushbullet.com/#create-push.\n//\n// ## Send the last reported status to Pushbullet\n//\n// ```\n// import \"pushbullet\"\n// import \"influxdata/influxdb/secrets\"\n//\n// token = secrets.get(key: \"PUSHBULLET_TOKEN\")\n//\n// lastReported =\n//   from(bucket: \"example-bucket\")\n//     |> range(start: -1m)\n//     |> filter(fn: (r) => r._measurement == \"statuses\")\n//     |> last()\n//     |> tableFind(fn: (key) => true)\n//     |> getRecord(idx: 0)\n//\n// pushbullet.pushData(\n//   token: token,\n//   data: {\n//     \"type\": \"link\",\n//     \"title\": \"Last reported status\",\n//     \"body\": \"${lastReported._time}: ${lastReported.status}.\"\n//     \"url\": \"${lastReported.statusURL}\"\n//   }\n// )\n// ```\n//\npushData = (url=defaultURL, token=\"\", data) => {\n    headers = {\n        \"Access-Token\": token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url, data: enc)\n}\n\n// pushNote sends a push notification of type note to the Pushbullet API.\n//\n// ## Parameters\n//\n// - `url` is the URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n// - `token` is the api token string.  Defaults to: \"\".\n// - `title` is the title of the notification.\n// - `text` is the text to display in the notification.\n//\n// ## Send the last reported status to Pushbullet\n//\n// ```\n// import \"pushbullet\"\n// import \"influxdata/influxdb/secrets\"\n//\n// token = secrets.get(key: \"PUSHBULLET_TOKEN\")\n//\n// lastReported =\n//   from(bucket: \"example-bucket\")\n//     |> range(start: -1m)\n//     |> filter(fn: (r) => r._measurement == \"statuses\")\n//     |> last()\n//     |> tableFind(fn: (key) => true)\n//     |> getRecord(idx: 0)\n//\n// pushbullet.pushNote(\n//   token: token,\n//   data: {\n//     token: token,\n//     title: \"Last reported status\",\n//     text: \"${lastReported._time}: ${lastReported.status}.\"\n//   }\n// )\n// ```\npushNote = (url=defaultURL, token=\"\", title, text) => {\n    data = {\n        type: \"note\",\n        title: title,\n        body: text,\n    }\n\n    return pushData(token: token, url: url, data: data)\n}\n\n// endpoint creates the endpoint for the Pushbullet API and sends a notification of type note.\n//\n// ## Parameters\n//\n// - `url` is the URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n// - `token` is the api token string.  Defaults to: \"\".\n// - `Usage` pushbullet.endpoint is a factory function that outputs another function. The output function requires a mapFn parameter.\n// - `mapFn` is a function that builds the record used to generate the API request. Requires an r parameter.\n//\n// ## Send the last reported status to Pushbullet\n//\n// ```\n// import \"pushbullet\"\n// import \"influxdata/influxdb/secrets\"\n//\n// token = secrets.get(key: \"PUSHBULLET_TOKEN\")\n//\n// lastReported =\n//   from(bucket: \"example-bucket\")\n//     |> range(start: -10m)\n//     |> filter(fn: (r) => r._measurement == \"statuses\")\n//     |> last()\n//\n// lastReported\n//   |> e(mapFn: (r) => ({\n//       r with\n//       title: r.title,\n//       text: \"${string(v: r._time)}: ${r.status}.\"\n//     })\n//   )()\n// ```\n//\nendpoint = (url=defaultURL, token=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   2,
 				},
 			},
 		},
@@ -42,13 +42,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 59,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "pushbullet.flux",
 						Source: "defaultURL = \"https://api.pushbullet.com/v2/pushes\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "pushbullet.flux",
 							Source: "defaultURL",
 							Start: ast.Position{
 								Column: 8,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 59,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "pushbullet.flux",
 							Source: "\"https://api.pushbullet.com/v2/pushes\"",
 							Start: ast.Position{
 								Column: 21,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -97,13 +97,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 59,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "pushbullet.flux",
 					Source: "option defaultURL = \"https://api.pushbullet.com/v2/pushes\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -114,30 +114,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   22,
+						Line:   54,
 					},
 					File:   "pushbullet.flux",
 					Source: "pushData = (url=defaultURL, token=\"\", data) => {\n    headers = {\n        \"Access-Token\": token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url, data: enc)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   14,
+						Line:   46,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// `pushData` sends a push notification using PushBullet's APIs.\n"}, ast.Comment{Text: "// `url` - string - URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n"}, ast.Comment{Text: "// `token` - string - the api token string.  Defaults to: \"\".\n"}, ast.Comment{Text: "// `data` - object - The data to send to the endpoint. It will be encoded in JSON and sent to PushBullet's endpoint.\n"}, ast.Comment{Text: "// For how to structure data, see https://docs.pushbullet.com/#create-push.\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// pushData sends a push notification to the Pushbullet API.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `url` is the URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n"}, ast.Comment{Text: "// - `token` is the api token string.  Defaults to: \"\".\n"}, ast.Comment{Text: "// - `data` is the data to send to the endpoint. It will be encoded in JSON and sent to PushBullet's endpoint.\n"}, ast.Comment{Text: "// For how to structure data, see https://docs.pushbullet.com/#create-push.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Send the last reported status to Pushbullet\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"pushbullet\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// token = secrets.get(key: \"PUSHBULLET_TOKEN\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// lastReported =\n"}, ast.Comment{Text: "//   from(bucket: \"example-bucket\")\n"}, ast.Comment{Text: "//     |> range(start: -1m)\n"}, ast.Comment{Text: "//     |> filter(fn: (r) => r._measurement == \"statuses\")\n"}, ast.Comment{Text: "//     |> last()\n"}, ast.Comment{Text: "//     |> tableFind(fn: (key) => true)\n"}, ast.Comment{Text: "//     |> getRecord(idx: 0)\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// pushbullet.pushData(\n"}, ast.Comment{Text: "//   token: token,\n"}, ast.Comment{Text: "//   data: {\n"}, ast.Comment{Text: "//     \"type\": \"link\",\n"}, ast.Comment{Text: "//     \"title\": \"Last reported status\",\n"}, ast.Comment{Text: "//     \"body\": \"${lastReported._time}: ${lastReported.status}.\"\n"}, ast.Comment{Text: "//     \"url\": \"${lastReported.statusURL}\"\n"}, ast.Comment{Text: "//   }\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   14,
+							Line:   46,
 						},
 						File:   "pushbullet.flux",
 						Source: "pushData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   14,
+							Line:   46,
 						},
 					},
 				},
@@ -151,13 +151,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   22,
+							Line:   54,
 						},
 						File:   "pushbullet.flux",
 						Source: "(url=defaultURL, token=\"\", data) => {\n    headers = {\n        \"Access-Token\": token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url, data: enc)\n}",
 						Start: ast.Position{
 							Column: 12,
-							Line:   14,
+							Line:   46,
 						},
 					},
 				},
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   22,
+								Line:   54,
 							},
 							File:   "pushbullet.flux",
 							Source: "{\n    headers = {\n        \"Access-Token\": token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v: data)\n\n    return http.post(headers: headers, url: url, data: enc)\n}",
 							Start: ast.Position{
 								Column: 48,
-								Line:   14,
+								Line:   46,
 							},
 						},
 					},
@@ -185,13 +185,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   18,
+									Line:   50,
 								},
 								File:   "pushbullet.flux",
 								Source: "headers = {\n        \"Access-Token\": token,\n        \"Content-Type\": \"application/json\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   15,
+									Line:   47,
 								},
 							},
 						},
@@ -202,13 +202,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   15,
+										Line:   47,
 									},
 									File:   "pushbullet.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   15,
+										Line:   47,
 									},
 								},
 							},
@@ -221,13 +221,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   18,
+										Line:   50,
 									},
 									File:   "pushbullet.flux",
 									Source: "{\n        \"Access-Token\": token,\n        \"Content-Type\": \"application/json\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   15,
+										Line:   47,
 									},
 								},
 							},
@@ -239,13 +239,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   16,
+											Line:   48,
 										},
 										File:   "pushbullet.flux",
 										Source: "\"Access-Token\": token",
 										Start: ast.Position{
 											Column: 9,
-											Line:   16,
+											Line:   48,
 										},
 									},
 								},
@@ -257,13 +257,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   16,
+												Line:   48,
 											},
 											File:   "pushbullet.flux",
 											Source: "\"Access-Token\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   16,
+												Line:   48,
 											},
 										},
 									},
@@ -277,13 +277,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   16,
+												Line:   48,
 											},
 											File:   "pushbullet.flux",
 											Source: "token",
 											Start: ast.Position{
 												Column: 25,
-												Line:   16,
+												Line:   48,
 											},
 										},
 									},
@@ -296,13 +296,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   17,
+											Line:   49,
 										},
 										File:   "pushbullet.flux",
 										Source: "\"Content-Type\": \"application/json\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   17,
+											Line:   49,
 										},
 									},
 								},
@@ -314,13 +314,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   17,
+												Line:   49,
 											},
 											File:   "pushbullet.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   17,
+												Line:   49,
 											},
 										},
 									},
@@ -334,13 +334,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   17,
+												Line:   49,
 											},
 											File:   "pushbullet.flux",
 											Source: "\"application/json\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   17,
+												Line:   49,
 											},
 										},
 									},
@@ -357,13 +357,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   19,
+									Line:   51,
 								},
 								File:   "pushbullet.flux",
 								Source: "enc = json.encode(v: data)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   19,
+									Line:   51,
 								},
 							},
 						},
@@ -374,13 +374,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   19,
+										Line:   51,
 									},
 									File:   "pushbullet.flux",
 									Source: "enc",
 									Start: ast.Position{
 										Column: 5,
-										Line:   19,
+										Line:   51,
 									},
 								},
 							},
@@ -394,13 +394,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   19,
+											Line:   51,
 										},
 										File:   "pushbullet.flux",
 										Source: "v: data",
 										Start: ast.Position{
 											Column: 23,
-											Line:   19,
+											Line:   51,
 										},
 									},
 								},
@@ -412,13 +412,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   19,
+												Line:   51,
 											},
 											File:   "pushbullet.flux",
 											Source: "v: data",
 											Start: ast.Position{
 												Column: 23,
-												Line:   19,
+												Line:   51,
 											},
 										},
 									},
@@ -430,13 +430,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   19,
+													Line:   51,
 												},
 												File:   "pushbullet.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 23,
-													Line:   19,
+													Line:   51,
 												},
 											},
 										},
@@ -450,13 +450,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   19,
+													Line:   51,
 												},
 												File:   "pushbullet.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 26,
-													Line:   19,
+													Line:   51,
 												},
 											},
 										},
@@ -472,13 +472,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   19,
+										Line:   51,
 									},
 									File:   "pushbullet.flux",
 									Source: "json.encode(v: data)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   19,
+										Line:   51,
 									},
 								},
 							},
@@ -489,13 +489,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   19,
+											Line:   51,
 										},
 										File:   "pushbullet.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 11,
-											Line:   19,
+											Line:   51,
 										},
 									},
 								},
@@ -507,13 +507,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   19,
+												Line:   51,
 											},
 											File:   "pushbullet.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 11,
-												Line:   19,
+												Line:   51,
 											},
 										},
 									},
@@ -526,13 +526,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   19,
+												Line:   51,
 											},
 											File:   "pushbullet.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 16,
-												Line:   19,
+												Line:   51,
 											},
 										},
 									},
@@ -552,13 +552,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   21,
+											Line:   53,
 										},
 										File:   "pushbullet.flux",
 										Source: "headers: headers, url: url, data: enc",
 										Start: ast.Position{
 											Column: 22,
-											Line:   21,
+											Line:   53,
 										},
 									},
 								},
@@ -570,13 +570,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   21,
+												Line:   53,
 											},
 											File:   "pushbullet.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   21,
+												Line:   53,
 											},
 										},
 									},
@@ -588,13 +588,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   21,
+													Line:   53,
 												},
 												File:   "pushbullet.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   21,
+													Line:   53,
 												},
 											},
 										},
@@ -608,13 +608,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   21,
+													Line:   53,
 												},
 												File:   "pushbullet.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   21,
+													Line:   53,
 												},
 											},
 										},
@@ -627,13 +627,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   21,
+												Line:   53,
 											},
 											File:   "pushbullet.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 40,
-												Line:   21,
+												Line:   53,
 											},
 										},
 									},
@@ -645,13 +645,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   21,
+													Line:   53,
 												},
 												File:   "pushbullet.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   21,
+													Line:   53,
 												},
 											},
 										},
@@ -665,13 +665,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   21,
+													Line:   53,
 												},
 												File:   "pushbullet.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 45,
-													Line:   21,
+													Line:   53,
 												},
 											},
 										},
@@ -684,13 +684,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 59,
-												Line:   21,
+												Line:   53,
 											},
 											File:   "pushbullet.flux",
 											Source: "data: enc",
 											Start: ast.Position{
 												Column: 50,
-												Line:   21,
+												Line:   53,
 											},
 										},
 									},
@@ -702,13 +702,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   21,
+													Line:   53,
 												},
 												File:   "pushbullet.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 50,
-													Line:   21,
+													Line:   53,
 												},
 											},
 										},
@@ -722,13 +722,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 59,
-													Line:   21,
+													Line:   53,
 												},
 												File:   "pushbullet.flux",
 												Source: "enc",
 												Start: ast.Position{
 													Column: 56,
-													Line:   21,
+													Line:   53,
 												},
 											},
 										},
@@ -744,13 +744,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 60,
-										Line:   21,
+										Line:   53,
 									},
 									File:   "pushbullet.flux",
 									Source: "http.post(headers: headers, url: url, data: enc)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   21,
+										Line:   53,
 									},
 								},
 							},
@@ -761,13 +761,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   21,
+											Line:   53,
 										},
 										File:   "pushbullet.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   21,
+											Line:   53,
 										},
 									},
 								},
@@ -779,13 +779,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   21,
+												Line:   53,
 											},
 											File:   "pushbullet.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   21,
+												Line:   53,
 											},
 										},
 									},
@@ -798,13 +798,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   21,
+												Line:   53,
 											},
 											File:   "pushbullet.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   21,
+												Line:   53,
 											},
 										},
 									},
@@ -821,13 +821,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 60,
-									Line:   21,
+									Line:   53,
 								},
 								File:   "pushbullet.flux",
 								Source: "return http.post(headers: headers, url: url, data: enc)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   21,
+									Line:   53,
 								},
 							},
 						},
@@ -843,13 +843,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   14,
+								Line:   46,
 							},
 							File:   "pushbullet.flux",
 							Source: "url=defaultURL",
 							Start: ast.Position{
 								Column: 13,
-								Line:   14,
+								Line:   46,
 							},
 						},
 					},
@@ -861,13 +861,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   14,
+									Line:   46,
 								},
 								File:   "pushbullet.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   14,
+									Line:   46,
 								},
 							},
 						},
@@ -881,13 +881,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   14,
+									Line:   46,
 								},
 								File:   "pushbullet.flux",
 								Source: "defaultURL",
 								Start: ast.Position{
 									Column: 17,
-									Line:   14,
+									Line:   46,
 								},
 							},
 						},
@@ -900,13 +900,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   14,
+								Line:   46,
 							},
 							File:   "pushbullet.flux",
 							Source: "token=\"\"",
 							Start: ast.Position{
 								Column: 29,
-								Line:   14,
+								Line:   46,
 							},
 						},
 					},
@@ -918,13 +918,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   14,
+									Line:   46,
 								},
 								File:   "pushbullet.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 29,
-									Line:   14,
+									Line:   46,
 								},
 							},
 						},
@@ -938,13 +938,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   14,
+									Line:   46,
 								},
 								File:   "pushbullet.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 35,
-									Line:   14,
+									Line:   46,
 								},
 							},
 						},
@@ -957,13 +957,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   14,
+								Line:   46,
 							},
 							File:   "pushbullet.flux",
 							Source: "data",
 							Start: ast.Position{
 								Column: 39,
-								Line:   14,
+								Line:   46,
 							},
 						},
 					},
@@ -975,13 +975,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   14,
+									Line:   46,
 								},
 								File:   "pushbullet.flux",
 								Source: "data",
 								Start: ast.Position{
 									Column: 39,
-									Line:   14,
+									Line:   46,
 								},
 							},
 						},
@@ -999,30 +999,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   37,
+						Line:   98,
 					},
 					File:   "pushbullet.flux",
 					Source: "pushNote = (url=defaultURL, token=\"\", title, text) => {\n    data = {\n        type: \"note\",\n        title: title,\n        body: text,\n    }\n\n    return pushData(token: token, url: url, data: data)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   29,
+						Line:   90,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// `pushNote` sends a push notification of type `note` using PushBullet's APIs.\n"}, ast.Comment{Text: "// `url` - string - URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n"}, ast.Comment{Text: "// `token` - string - the api token string.  Defaults to: \"\".\n"}, ast.Comment{Text: "// `title` - string - The title of the notification.\n"}, ast.Comment{Text: "// `text` - string - The text to display in the notification.\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// pushNote sends a push notification of type note to the Pushbullet API.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `url` is the URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n"}, ast.Comment{Text: "// - `token` is the api token string.  Defaults to: \"\".\n"}, ast.Comment{Text: "// - `title` is the title of the notification.\n"}, ast.Comment{Text: "// - `text` is the text to display in the notification.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Send the last reported status to Pushbullet\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"pushbullet\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// token = secrets.get(key: \"PUSHBULLET_TOKEN\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// lastReported =\n"}, ast.Comment{Text: "//   from(bucket: \"example-bucket\")\n"}, ast.Comment{Text: "//     |> range(start: -1m)\n"}, ast.Comment{Text: "//     |> filter(fn: (r) => r._measurement == \"statuses\")\n"}, ast.Comment{Text: "//     |> last()\n"}, ast.Comment{Text: "//     |> tableFind(fn: (key) => true)\n"}, ast.Comment{Text: "//     |> getRecord(idx: 0)\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// pushbullet.pushNote(\n"}, ast.Comment{Text: "//   token: token,\n"}, ast.Comment{Text: "//   data: {\n"}, ast.Comment{Text: "//     token: token,\n"}, ast.Comment{Text: "//     title: \"Last reported status\",\n"}, ast.Comment{Text: "//     text: \"${lastReported._time}: ${lastReported.status}.\"\n"}, ast.Comment{Text: "//   }\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   29,
+							Line:   90,
 						},
 						File:   "pushbullet.flux",
 						Source: "pushNote",
 						Start: ast.Position{
 							Column: 1,
-							Line:   29,
+							Line:   90,
 						},
 					},
 				},
@@ -1036,13 +1036,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   37,
+							Line:   98,
 						},
 						File:   "pushbullet.flux",
 						Source: "(url=defaultURL, token=\"\", title, text) => {\n    data = {\n        type: \"note\",\n        title: title,\n        body: text,\n    }\n\n    return pushData(token: token, url: url, data: data)\n}",
 						Start: ast.Position{
 							Column: 12,
-							Line:   29,
+							Line:   90,
 						},
 					},
 				},
@@ -1053,13 +1053,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   37,
+								Line:   98,
 							},
 							File:   "pushbullet.flux",
 							Source: "{\n    data = {\n        type: \"note\",\n        title: title,\n        body: text,\n    }\n\n    return pushData(token: token, url: url, data: data)\n}",
 							Start: ast.Position{
 								Column: 55,
-								Line:   29,
+								Line:   90,
 							},
 						},
 					},
@@ -1070,13 +1070,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   34,
+									Line:   95,
 								},
 								File:   "pushbullet.flux",
 								Source: "data = {\n        type: \"note\",\n        title: title,\n        body: text,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   30,
+									Line:   91,
 								},
 							},
 						},
@@ -1087,13 +1087,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   30,
+										Line:   91,
 									},
 									File:   "pushbullet.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 5,
-										Line:   30,
+										Line:   91,
 									},
 								},
 							},
@@ -1106,13 +1106,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   34,
+										Line:   95,
 									},
 									File:   "pushbullet.flux",
 									Source: "{\n        type: \"note\",\n        title: title,\n        body: text,\n    }",
 									Start: ast.Position{
 										Column: 12,
-										Line:   30,
+										Line:   91,
 									},
 								},
 							},
@@ -1124,13 +1124,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   31,
+											Line:   92,
 										},
 										File:   "pushbullet.flux",
 										Source: "type: \"note\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   31,
+											Line:   92,
 										},
 									},
 								},
@@ -1142,13 +1142,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   31,
+												Line:   92,
 											},
 											File:   "pushbullet.flux",
 											Source: "type",
 											Start: ast.Position{
 												Column: 9,
-												Line:   31,
+												Line:   92,
 											},
 										},
 									},
@@ -1162,13 +1162,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   31,
+												Line:   92,
 											},
 											File:   "pushbullet.flux",
 											Source: "\"note\"",
 											Start: ast.Position{
 												Column: 15,
-												Line:   31,
+												Line:   92,
 											},
 										},
 									},
@@ -1181,13 +1181,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   32,
+											Line:   93,
 										},
 										File:   "pushbullet.flux",
 										Source: "title: title",
 										Start: ast.Position{
 											Column: 9,
-											Line:   32,
+											Line:   93,
 										},
 									},
 								},
@@ -1199,13 +1199,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   32,
+												Line:   93,
 											},
 											File:   "pushbullet.flux",
 											Source: "title",
 											Start: ast.Position{
 												Column: 9,
-												Line:   32,
+												Line:   93,
 											},
 										},
 									},
@@ -1219,13 +1219,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   32,
+												Line:   93,
 											},
 											File:   "pushbullet.flux",
 											Source: "title",
 											Start: ast.Position{
 												Column: 16,
-												Line:   32,
+												Line:   93,
 											},
 										},
 									},
@@ -1238,13 +1238,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   33,
+											Line:   94,
 										},
 										File:   "pushbullet.flux",
 										Source: "body: text",
 										Start: ast.Position{
 											Column: 9,
-											Line:   33,
+											Line:   94,
 										},
 									},
 								},
@@ -1256,13 +1256,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   33,
+												Line:   94,
 											},
 											File:   "pushbullet.flux",
 											Source: "body",
 											Start: ast.Position{
 												Column: 9,
-												Line:   33,
+												Line:   94,
 											},
 										},
 									},
@@ -1276,13 +1276,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   33,
+												Line:   94,
 											},
 											File:   "pushbullet.flux",
 											Source: "text",
 											Start: ast.Position{
 												Column: 15,
-												Line:   33,
+												Line:   94,
 											},
 										},
 									},
@@ -1301,13 +1301,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 55,
-											Line:   36,
+											Line:   97,
 										},
 										File:   "pushbullet.flux",
 										Source: "token: token, url: url, data: data",
 										Start: ast.Position{
 											Column: 21,
-											Line:   36,
+											Line:   97,
 										},
 									},
 								},
@@ -1319,13 +1319,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   36,
+												Line:   97,
 											},
 											File:   "pushbullet.flux",
 											Source: "token: token",
 											Start: ast.Position{
 												Column: 21,
-												Line:   36,
+												Line:   97,
 											},
 										},
 									},
@@ -1337,13 +1337,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   36,
+													Line:   97,
 												},
 												File:   "pushbullet.flux",
 												Source: "token",
 												Start: ast.Position{
 													Column: 21,
-													Line:   36,
+													Line:   97,
 												},
 											},
 										},
@@ -1357,13 +1357,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   36,
+													Line:   97,
 												},
 												File:   "pushbullet.flux",
 												Source: "token",
 												Start: ast.Position{
 													Column: 28,
-													Line:   36,
+													Line:   97,
 												},
 											},
 										},
@@ -1376,13 +1376,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   36,
+												Line:   97,
 											},
 											File:   "pushbullet.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 35,
-												Line:   36,
+												Line:   97,
 											},
 										},
 									},
@@ -1394,13 +1394,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   36,
+													Line:   97,
 												},
 												File:   "pushbullet.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 35,
-													Line:   36,
+													Line:   97,
 												},
 											},
 										},
@@ -1414,13 +1414,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   36,
+													Line:   97,
 												},
 												File:   "pushbullet.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   36,
+													Line:   97,
 												},
 											},
 										},
@@ -1433,13 +1433,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 55,
-												Line:   36,
+												Line:   97,
 											},
 											File:   "pushbullet.flux",
 											Source: "data: data",
 											Start: ast.Position{
 												Column: 45,
-												Line:   36,
+												Line:   97,
 											},
 										},
 									},
@@ -1451,13 +1451,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   36,
+													Line:   97,
 												},
 												File:   "pushbullet.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 45,
-													Line:   36,
+													Line:   97,
 												},
 											},
 										},
@@ -1471,13 +1471,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 55,
-													Line:   36,
+													Line:   97,
 												},
 												File:   "pushbullet.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 51,
-													Line:   36,
+													Line:   97,
 												},
 											},
 										},
@@ -1493,13 +1493,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 56,
-										Line:   36,
+										Line:   97,
 									},
 									File:   "pushbullet.flux",
 									Source: "pushData(token: token, url: url, data: data)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   36,
+										Line:   97,
 									},
 								},
 							},
@@ -1510,13 +1510,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   36,
+											Line:   97,
 										},
 										File:   "pushbullet.flux",
 										Source: "pushData",
 										Start: ast.Position{
 											Column: 12,
-											Line:   36,
+											Line:   97,
 										},
 									},
 								},
@@ -1531,13 +1531,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
-									Line:   36,
+									Line:   97,
 								},
 								File:   "pushbullet.flux",
 								Source: "return pushData(token: token, url: url, data: data)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   36,
+									Line:   97,
 								},
 							},
 						},
@@ -1553,13 +1553,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   29,
+								Line:   90,
 							},
 							File:   "pushbullet.flux",
 							Source: "url=defaultURL",
 							Start: ast.Position{
 								Column: 13,
-								Line:   29,
+								Line:   90,
 							},
 						},
 					},
@@ -1571,13 +1571,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   29,
+									Line:   90,
 								},
 								File:   "pushbullet.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   29,
+									Line:   90,
 								},
 							},
 						},
@@ -1591,13 +1591,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   29,
+									Line:   90,
 								},
 								File:   "pushbullet.flux",
 								Source: "defaultURL",
 								Start: ast.Position{
 									Column: 17,
-									Line:   29,
+									Line:   90,
 								},
 							},
 						},
@@ -1610,13 +1610,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   29,
+								Line:   90,
 							},
 							File:   "pushbullet.flux",
 							Source: "token=\"\"",
 							Start: ast.Position{
 								Column: 29,
-								Line:   29,
+								Line:   90,
 							},
 						},
 					},
@@ -1628,13 +1628,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   29,
+									Line:   90,
 								},
 								File:   "pushbullet.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 29,
-									Line:   29,
+									Line:   90,
 								},
 							},
 						},
@@ -1648,13 +1648,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   29,
+									Line:   90,
 								},
 								File:   "pushbullet.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 35,
-									Line:   29,
+									Line:   90,
 								},
 							},
 						},
@@ -1667,13 +1667,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
-								Line:   29,
+								Line:   90,
 							},
 							File:   "pushbullet.flux",
 							Source: "title",
 							Start: ast.Position{
 								Column: 39,
-								Line:   29,
+								Line:   90,
 							},
 						},
 					},
@@ -1685,13 +1685,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   29,
+									Line:   90,
 								},
 								File:   "pushbullet.flux",
 								Source: "title",
 								Start: ast.Position{
 									Column: 39,
-									Line:   29,
+									Line:   90,
 								},
 							},
 						},
@@ -1706,13 +1706,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   29,
+								Line:   90,
 							},
 							File:   "pushbullet.flux",
 							Source: "text",
 							Start: ast.Position{
 								Column: 46,
-								Line:   29,
+								Line:   90,
 							},
 						},
 					},
@@ -1724,13 +1724,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   29,
+									Line:   90,
 								},
 								File:   "pushbullet.flux",
 								Source: "text",
 								Start: ast.Position{
 									Column: 46,
-									Line:   29,
+									Line:   90,
 								},
 							},
 						},
@@ -1748,30 +1748,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 6,
-						Line:   79,
+						Line:   148,
 					},
 					File:   "pushbullet.flux",
 					Source: "endpoint = (url=defaultURL, token=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   63,
+						Line:   132,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// `genericEndpoint` does not work for now for a bug in type inference in the compiler.\n"}, ast.Comment{Text: "//    `genericEndpoint` creates the endpoint for the PushBullet external service.\n"}, ast.Comment{Text: "//    `url` - string - URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n"}, ast.Comment{Text: "//    `token` - string - token for the PushBullet endpoint.\n"}, ast.Comment{Text: "//    The returned factory function accepts a `mapFn` parameter.\n"}, ast.Comment{Text: "//    The `mapFn` must return an object that will be used as payload as defined in `pushData` function arguments.\n"}, ast.Comment{Text: "// genericEndpoint = (url=defaultURL, token=\"\") =>\n"}, ast.Comment{Text: "//     (mapFn) =>\n"}, ast.Comment{Text: "//         (tables=<-) => tables\n"}, ast.Comment{Text: "//             |> map(fn: (r) => {\n"}, ast.Comment{Text: "//                 obj = mapFn(r: r)\n"}, ast.Comment{Text: "//                 return {r with _sent: string(v: 2 == pushData(\n"}, ast.Comment{Text: "//                   url: url,\n"}, ast.Comment{Text: "//                   token: token,\n"}, ast.Comment{Text: "//                   data: obj,\n"}, ast.Comment{Text: "//                 ) / 100)}\n"}, ast.Comment{Text: "//             })\n"}, ast.Comment{Text: "// `endpoint` creates the endpoint for the PushBullet external service.\n"}, ast.Comment{Text: "// It will push notifications of type `note`.\n"}, ast.Comment{Text: "// If you want to push something else, see `genericEndpoint`.\n"}, ast.Comment{Text: "// `url` - string - URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n"}, ast.Comment{Text: "// `token` - string - token for the PushBullet endpoint.\n"}, ast.Comment{Text: "// The returned factory function accepts a `mapFn` parameter.\n"}, ast.Comment{Text: "// The `mapFn` must return an object with `title` and `text` fields as defined in the `pushNote` function arguments.\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// endpoint creates the endpoint for the Pushbullet API and sends a notification of type note.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `url` is the URL of the PushBullet endpoint. Defaults to: \"https://api.pushbullet.com/v2/pushes\".\n"}, ast.Comment{Text: "// - `token` is the api token string.  Defaults to: \"\".\n"}, ast.Comment{Text: "// - `Usage` pushbullet.endpoint is a factory function that outputs another function. The output function requires a mapFn parameter.\n"}, ast.Comment{Text: "// - `mapFn` is a function that builds the record used to generate the API request. Requires an r parameter.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Send the last reported status to Pushbullet\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"pushbullet\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// token = secrets.get(key: \"PUSHBULLET_TOKEN\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// lastReported =\n"}, ast.Comment{Text: "//   from(bucket: \"example-bucket\")\n"}, ast.Comment{Text: "//     |> range(start: -10m)\n"}, ast.Comment{Text: "//     |> filter(fn: (r) => r._measurement == \"statuses\")\n"}, ast.Comment{Text: "//     |> last()\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// lastReported\n"}, ast.Comment{Text: "//   |> e(mapFn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       title: r.title,\n"}, ast.Comment{Text: "//       text: \"${string(v: r._time)}: ${r.status}.\"\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   63,
+							Line:   132,
 						},
 						File:   "pushbullet.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   63,
+							Line:   132,
 						},
 					},
 				},
@@ -1785,13 +1785,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   79,
+							Line:   148,
 						},
 						File:   "pushbullet.flux",
 						Source: "(url=defaultURL, token=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   63,
+							Line:   132,
 						},
 					},
 				},
@@ -1803,13 +1803,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 6,
-								Line:   79,
+								Line:   148,
 							},
 							File:   "pushbullet.flux",
 							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
 								Column: 42,
-								Line:   63,
+								Line:   132,
 							},
 						},
 					},
@@ -1821,13 +1821,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   79,
+									Line:   148,
 								},
 								File:   "pushbullet.flux",
 								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
 									Column: 53,
-									Line:   63,
+									Line:   132,
 								},
 							},
 						},
@@ -1839,13 +1839,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 74,
-											Line:   63,
+											Line:   132,
 										},
 										File:   "pushbullet.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 68,
-											Line:   63,
+											Line:   132,
 										},
 									},
 								},
@@ -1857,13 +1857,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   79,
+										Line:   148,
 									},
 									File:   "pushbullet.flux",
 									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
 										Column: 68,
-										Line:   63,
+										Line:   132,
 									},
 								},
 							},
@@ -1875,13 +1875,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   78,
+												Line:   147,
 											},
 											File:   "pushbullet.flux",
 											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
 												Column: 9,
-												Line:   65,
+												Line:   134,
 											},
 										},
 									},
@@ -1893,13 +1893,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   78,
+													Line:   147,
 												},
 												File:   "pushbullet.flux",
 												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
 													Column: 9,
-													Line:   65,
+													Line:   134,
 												},
 											},
 										},
@@ -1911,13 +1911,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   65,
+														Line:   134,
 													},
 													File:   "pushbullet.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 9,
-														Line:   65,
+														Line:   134,
 													},
 												},
 											},
@@ -1932,13 +1932,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 10,
-														Line:   78,
+														Line:   147,
 													},
 													File:   "pushbullet.flux",
 													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
 														Column: 13,
-														Line:   65,
+														Line:   134,
 													},
 												},
 											},
@@ -1949,13 +1949,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 10,
-															Line:   78,
+															Line:   147,
 														},
 														File:   "pushbullet.flux",
 														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
 															Column: 20,
-															Line:   65,
+															Line:   134,
 														},
 													},
 												},
@@ -1966,13 +1966,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   66,
+																Line:   135,
 															},
 															File:   "pushbullet.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 13,
-																Line:   66,
+																Line:   135,
 															},
 														},
 													},
@@ -1983,13 +1983,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 16,
-																	Line:   66,
+																	Line:   135,
 																},
 																File:   "pushbullet.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   66,
+																	Line:   135,
 																},
 															},
 														},
@@ -2003,13 +2003,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 29,
-																		Line:   66,
+																		Line:   135,
 																	},
 																	File:   "pushbullet.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   66,
+																		Line:   135,
 																	},
 																},
 															},
@@ -2021,13 +2021,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 29,
-																			Line:   66,
+																			Line:   135,
 																		},
 																		File:   "pushbullet.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 25,
-																			Line:   66,
+																			Line:   135,
 																		},
 																	},
 																},
@@ -2039,13 +2039,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 26,
-																				Line:   66,
+																				Line:   135,
 																			},
 																			File:   "pushbullet.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 25,
-																				Line:   66,
+																				Line:   135,
 																			},
 																		},
 																	},
@@ -2059,13 +2059,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 29,
-																				Line:   66,
+																				Line:   135,
 																			},
 																			File:   "pushbullet.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 28,
-																				Line:   66,
+																				Line:   135,
 																			},
 																		},
 																	},
@@ -2081,13 +2081,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   66,
+																	Line:   135,
 																},
 																File:   "pushbullet.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   66,
+																	Line:   135,
 																},
 															},
 														},
@@ -2098,13 +2098,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 24,
-																		Line:   66,
+																		Line:   135,
 																	},
 																	File:   "pushbullet.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 19,
-																		Line:   66,
+																		Line:   135,
 																	},
 																},
 															},
@@ -2121,13 +2121,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 14,
-																	Line:   77,
+																	Line:   146,
 																},
 																File:   "pushbullet.flux",
 																Source: "{r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   68,
+																	Line:   137,
 																},
 															},
 														},
@@ -2139,13 +2139,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 18,
-																		Line:   76,
+																		Line:   145,
 																	},
 																	File:   "pushbullet.flux",
 																	Source: "_sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                )",
 																	Start: ast.Position{
 																		Column: 17,
-																		Line:   69,
+																		Line:   138,
 																	},
 																},
 															},
@@ -2157,13 +2157,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 22,
-																			Line:   69,
+																			Line:   138,
 																		},
 																		File:   "pushbullet.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 17,
-																			Line:   69,
+																			Line:   138,
 																		},
 																	},
 																},
@@ -2178,13 +2178,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 28,
-																				Line:   75,
+																				Line:   144,
 																			},
 																			File:   "pushbullet.flux",
 																			Source: "v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100",
 																			Start: ast.Position{
 																				Column: 21,
-																				Line:   70,
+																				Line:   139,
 																			},
 																		},
 																	},
@@ -2196,13 +2196,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   75,
+																					Line:   144,
 																				},
 																				File:   "pushbullet.flux",
 																				Source: "v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100",
 																				Start: ast.Position{
 																					Column: 21,
-																					Line:   70,
+																					Line:   139,
 																				},
 																			},
 																		},
@@ -2214,13 +2214,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 22,
-																						Line:   70,
+																						Line:   139,
 																					},
 																					File:   "pushbullet.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 21,
-																						Line:   70,
+																						Line:   139,
 																					},
 																				},
 																			},
@@ -2234,13 +2234,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 28,
-																						Line:   75,
+																						Line:   144,
 																					},
 																					File:   "pushbullet.flux",
 																					Source: "2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100",
 																					Start: ast.Position{
 																						Column: 24,
-																						Line:   70,
+																						Line:   139,
 																					},
 																				},
 																			},
@@ -2251,13 +2251,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 25,
-																							Line:   70,
+																							Line:   139,
 																						},
 																						File:   "pushbullet.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 24,
-																							Line:   70,
+																							Line:   139,
 																						},
 																					},
 																				},
@@ -2271,13 +2271,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 28,
-																							Line:   75,
+																							Line:   144,
 																						},
 																						File:   "pushbullet.flux",
 																						Source: "pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100",
 																						Start: ast.Position{
 																							Column: 29,
-																							Line:   70,
+																							Line:   139,
 																						},
 																					},
 																				},
@@ -2289,13 +2289,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 39,
-																									Line:   74,
+																									Line:   143,
 																								},
 																								File:   "pushbullet.flux",
 																								Source: "url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text",
 																								Start: ast.Position{
 																									Column: 25,
-																									Line:   71,
+																									Line:   140,
 																								},
 																							},
 																						},
@@ -2307,13 +2307,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 33,
-																										Line:   71,
+																										Line:   140,
 																									},
 																									File:   "pushbullet.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   71,
+																										Line:   140,
 																									},
 																								},
 																							},
@@ -2325,13 +2325,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 28,
-																											Line:   71,
+																											Line:   140,
 																										},
 																										File:   "pushbullet.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   71,
+																											Line:   140,
 																										},
 																									},
 																								},
@@ -2345,13 +2345,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   71,
+																											Line:   140,
 																										},
 																										File:   "pushbullet.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 30,
-																											Line:   71,
+																											Line:   140,
 																										},
 																									},
 																								},
@@ -2364,13 +2364,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 37,
-																										Line:   72,
+																										Line:   141,
 																									},
 																									File:   "pushbullet.flux",
 																									Source: "token: token",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   72,
+																										Line:   141,
 																									},
 																								},
 																							},
@@ -2382,13 +2382,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 30,
-																											Line:   72,
+																											Line:   141,
 																										},
 																										File:   "pushbullet.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   72,
+																											Line:   141,
 																										},
 																									},
 																								},
@@ -2402,13 +2402,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 37,
-																											Line:   72,
+																											Line:   141,
 																										},
 																										File:   "pushbullet.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 32,
-																											Line:   72,
+																											Line:   141,
 																										},
 																									},
 																								},
@@ -2421,13 +2421,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 41,
-																										Line:   73,
+																										Line:   142,
 																									},
 																									File:   "pushbullet.flux",
 																									Source: "title: obj.title",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   73,
+																										Line:   142,
 																									},
 																								},
 																							},
@@ -2439,13 +2439,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 30,
-																											Line:   73,
+																											Line:   142,
 																										},
 																										File:   "pushbullet.flux",
 																										Source: "title",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   73,
+																											Line:   142,
 																										},
 																									},
 																								},
@@ -2459,13 +2459,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 41,
-																											Line:   73,
+																											Line:   142,
 																										},
 																										File:   "pushbullet.flux",
 																										Source: "obj.title",
 																										Start: ast.Position{
 																											Column: 32,
-																											Line:   73,
+																											Line:   142,
 																										},
 																									},
 																								},
@@ -2477,13 +2477,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 35,
-																												Line:   73,
+																												Line:   142,
 																											},
 																											File:   "pushbullet.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 32,
-																												Line:   73,
+																												Line:   142,
 																											},
 																										},
 																									},
@@ -2496,13 +2496,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 41,
-																												Line:   73,
+																												Line:   142,
 																											},
 																											File:   "pushbullet.flux",
 																											Source: "title",
 																											Start: ast.Position{
 																												Column: 36,
-																												Line:   73,
+																												Line:   142,
 																											},
 																										},
 																									},
@@ -2517,13 +2517,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 39,
-																										Line:   74,
+																										Line:   143,
 																									},
 																									File:   "pushbullet.flux",
 																									Source: "text: obj.text",
 																									Start: ast.Position{
 																										Column: 25,
-																										Line:   74,
+																										Line:   143,
 																									},
 																								},
 																							},
@@ -2535,13 +2535,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   74,
+																											Line:   143,
 																										},
 																										File:   "pushbullet.flux",
 																										Source: "text",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   74,
+																											Line:   143,
 																										},
 																									},
 																								},
@@ -2555,13 +2555,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 39,
-																											Line:   74,
+																											Line:   143,
 																										},
 																										File:   "pushbullet.flux",
 																										Source: "obj.text",
 																										Start: ast.Position{
 																											Column: 31,
-																											Line:   74,
+																											Line:   143,
 																										},
 																									},
 																								},
@@ -2573,13 +2573,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 34,
-																												Line:   74,
+																												Line:   143,
 																											},
 																											File:   "pushbullet.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 31,
-																												Line:   74,
+																												Line:   143,
 																											},
 																										},
 																									},
@@ -2592,13 +2592,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 39,
-																												Line:   74,
+																												Line:   143,
 																											},
 																											File:   "pushbullet.flux",
 																											Source: "text",
 																											Start: ast.Position{
 																												Column: 35,
-																												Line:   74,
+																												Line:   143,
 																											},
 																										},
 																									},
@@ -2616,13 +2616,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 22,
-																								Line:   75,
+																								Line:   144,
 																							},
 																							File:   "pushbullet.flux",
 																							Source: "pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    )",
 																							Start: ast.Position{
 																								Column: 29,
-																								Line:   70,
+																								Line:   139,
 																							},
 																						},
 																					},
@@ -2633,13 +2633,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 37,
-																									Line:   70,
+																									Line:   139,
 																								},
 																								File:   "pushbullet.flux",
 																								Source: "pushNote",
 																								Start: ast.Position{
 																									Column: 29,
-																									Line:   70,
+																									Line:   139,
 																								},
 																							},
 																						},
@@ -2656,13 +2656,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 28,
-																								Line:   75,
+																								Line:   144,
 																							},
 																							File:   "pushbullet.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 25,
-																								Line:   75,
+																								Line:   144,
 																							},
 																						},
 																					},
@@ -2680,13 +2680,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
-																			Line:   76,
+																			Line:   145,
 																		},
 																		File:   "pushbullet.flux",
 																		Source: "string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                )",
 																		Start: ast.Position{
 																			Column: 24,
-																			Line:   69,
+																			Line:   138,
 																		},
 																	},
 																},
@@ -2697,13 +2697,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   69,
+																				Line:   138,
 																			},
 																			File:   "pushbullet.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 24,
-																				Line:   69,
+																				Line:   138,
 																			},
 																		},
 																	},
@@ -2721,13 +2721,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 22,
-																		Line:   68,
+																		Line:   137,
 																	},
 																	File:   "pushbullet.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 21,
-																		Line:   68,
+																		Line:   137,
 																	},
 																},
 															},
@@ -2740,13 +2740,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 14,
-																Line:   77,
+																Line:   146,
 															},
 															File:   "pushbullet.flux",
 															Source: "return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
 																Column: 13,
-																Line:   68,
+																Line:   137,
 															},
 														},
 													},
@@ -2762,13 +2762,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   65,
+															Line:   134,
 														},
 														File:   "pushbullet.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   65,
+															Line:   134,
 														},
 													},
 												},
@@ -2780,13 +2780,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   65,
+																Line:   134,
 															},
 															File:   "pushbullet.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   65,
+																Line:   134,
 															},
 														},
 													},
@@ -2807,13 +2807,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   79,
+											Line:   148,
 										},
 										File:   "pushbullet.flux",
 										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == pushNote(\n                        url: url,\n                        token: token,\n                        title: obj.title,\n                        text: obj.text,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   64,
+											Line:   133,
 										},
 									},
 								},
@@ -2824,13 +2824,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   64,
+												Line:   133,
 											},
 											File:   "pushbullet.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 8,
-												Line:   64,
+												Line:   133,
 											},
 										},
 									},
@@ -2848,13 +2848,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 63,
-										Line:   63,
+										Line:   132,
 									},
 									File:   "pushbullet.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 54,
-										Line:   63,
+										Line:   132,
 									},
 								},
 							},
@@ -2866,13 +2866,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 60,
-											Line:   63,
+											Line:   132,
 										},
 										File:   "pushbullet.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 54,
-											Line:   63,
+											Line:   132,
 										},
 									},
 								},
@@ -2885,13 +2885,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 63,
-										Line:   63,
+										Line:   132,
 									},
 									File:   "pushbullet.flux",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 61,
-										Line:   63,
+										Line:   132,
 									},
 								},
 							}},
@@ -2906,13 +2906,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   63,
+									Line:   132,
 								},
 								File:   "pushbullet.flux",
 								Source: "mapFn",
 								Start: ast.Position{
 									Column: 43,
-									Line:   63,
+									Line:   132,
 								},
 							},
 						},
@@ -2924,13 +2924,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   63,
+										Line:   132,
 									},
 									File:   "pushbullet.flux",
 									Source: "mapFn",
 									Start: ast.Position{
 										Column: 43,
-										Line:   63,
+										Line:   132,
 									},
 								},
 							},
@@ -2949,13 +2949,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   63,
+								Line:   132,
 							},
 							File:   "pushbullet.flux",
 							Source: "url=defaultURL",
 							Start: ast.Position{
 								Column: 13,
-								Line:   63,
+								Line:   132,
 							},
 						},
 					},
@@ -2967,13 +2967,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   63,
+									Line:   132,
 								},
 								File:   "pushbullet.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   63,
+									Line:   132,
 								},
 							},
 						},
@@ -2987,13 +2987,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   63,
+									Line:   132,
 								},
 								File:   "pushbullet.flux",
 								Source: "defaultURL",
 								Start: ast.Position{
 									Column: 17,
-									Line:   63,
+									Line:   132,
 								},
 							},
 						},
@@ -3006,13 +3006,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   63,
+								Line:   132,
 							},
 							File:   "pushbullet.flux",
 							Source: "token=\"\"",
 							Start: ast.Position{
 								Column: 29,
-								Line:   63,
+								Line:   132,
 							},
 						},
 					},
@@ -3024,13 +3024,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   63,
+									Line:   132,
 								},
 								File:   "pushbullet.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 29,
-									Line:   63,
+									Line:   132,
 								},
 							},
 						},
@@ -3044,13 +3044,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   63,
+									Line:   132,
 								},
 								File:   "pushbullet.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 35,
-									Line:   63,
+									Line:   132,
 								},
 							},
 						},
@@ -3069,13 +3069,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "pushbullet.flux",
 					Source: "import \"http\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -3086,13 +3086,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "pushbullet.flux",
 						Source: "\"http\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -3106,13 +3106,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "pushbullet.flux",
 					Source: "import \"json\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -3123,13 +3123,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "pushbullet.flux",
 						Source: "\"json\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -3140,18 +3140,18 @@ var pkgAST = &ast.Package{
 		Name:     "pushbullet.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Package pushbullet provides functions for sending data to Pushbullet.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   1,
+						Line:   2,
 					},
 					File:   "pushbullet.flux",
 					Source: "package pushbullet",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   2,
 					},
 				},
 			},
@@ -3162,13 +3162,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   1,
+							Line:   2,
 						},
 						File:   "pushbullet.flux",
 						Source: "pushbullet",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   2,
 						},
 					},
 				},

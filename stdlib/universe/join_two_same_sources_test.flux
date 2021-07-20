@@ -27,11 +27,11 @@ t_join_two_same_sources = (table=<-) => {
     data_1 = table
         |> range(start: 2018-12-19T22:13:30Z, stop: 2018-12-19T22:13:50Z)
         |> filter(fn: (r) => r._measurement == "command" and r._field == "id")
-        |> aggregateWindow(every: 1s, fn: last)
+        |> aggregateWindow(every: 1s, fn: last, createEmpty: false)
     data_2 = table
         |> range(start: 2018-12-19T22:13:30Z, stop: 2018-12-19T22:13:50Z)
         |> filter(fn: (r) => r._measurement == "command" and r._field == "guild")
-        |> aggregateWindow(every: 1s, fn: last)
+        |> aggregateWindow(every: 1s, fn: last, createEmpty: false)
 
     return join(tables: {d1: data_1, d2: data_2}, on: ["_time"])
 }

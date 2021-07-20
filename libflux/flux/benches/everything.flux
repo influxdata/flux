@@ -2177,9 +2177,6 @@ builtin length : (arr: [A]) => int
 builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]
 builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]
 
-// sleep is the identity function with the side effect of delaying execution by a specified duration
-builtin sleep : (<-v: A, duration: duration) => A
-
 // die returns a fatal error from within a flux script
 builtin die : (msg: string) => A
 

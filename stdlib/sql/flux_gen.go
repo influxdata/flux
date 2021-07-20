@@ -24,30 +24,30 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 11,
-					Line:   5,
+					Line:   444,
 				},
 				File:   "sql.flux",
-				Source: "package sql\n\n\nbuiltin from : (driverName: string, dataSourceName: string, query: string) => [A]\nbuiltin to",
+				Source: "package sql\n\n\n// from is a function that retrieves data from a SQL data source.\n//\n// ## Parameters\n// - `driverName` is the driver used to connect to the SQL database.\n//\n//   The following drivers are available:\n//    - awsathena\n//    - bigquery\n//    - mysql\n//    - postgres\n//    - snowflake\n//    - sqlite3 - Does not work with InfluxDB OSS or InfluxDB Cloud\n//    - sqlserver, mssql\n//\n// - `dataSourceName` is the data source name (DNS) or connection string used\n//   to connect to the SQL database.\n//\n//   The string's form and structure depend on the driver used.\n//\n// - `query` is the query to run against the SQL database.\n//\n// ## Driver dataSourceName examples\n//\n// ```\n// # Amazon Athena Driver DSN\n// s3://myorgqueryresults/?accessID=AKIAJLO3F...&region=us-west-1&secretAccessKey=NnQ7MUMp9PYZsmD47c%2BSsXGOFsd%2F...\n// s3://myorgqueryresults/?accessID=AKIAJLO3F...&db=dbname&missingAsDefault=false&missingAsEmptyString=false&region=us-west-1&secretAccessKey=NnQ7MUMp9PYZsmD47c%2BSsXGOFsd%2F...&WGRemoteCreation=false\n//\n// # MySQL Driver DSN\n// username:password@tcp(localhost:3306)/dbname?param=value\n//\n// # Postgres Driver DSN\n// postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full\n//\n// # Snowflake Driver DSNs\n// username[:password]@accountname/dbname/schemaname?param1=value1&paramN=valueN\n// username[:password]@accountname/dbname?param1=value1&paramN=valueN\n// username[:password]@hostname:port/dbname/schemaname?account=<your_account>&param1=value1&paramN=valueN\n//\n// # SQLite Driver DSN\n// file:/path/to/test.db?cache=shared&mode=ro\n//\n// # Microsoft SQL Server Driver DSNs\n// sqlserver://username:password@localhost:1234?database=examplebdb\n// server=localhost;user id=username;database=examplebdb;\n// server=localhost;user id=username;database=examplebdb;azure auth=ENV\n// server=localhost;user id=username;database=examplebdbr;azure tenant id=77e7d537;azure client id=58879ce8;azure client secret=0123456789\n//\n// # Google BigQuery DSNs\n// bigquery://projectid/?param1=value&param2=value\n// bigquery://projectid/location?param1=value&param2=value\n// ```\n//\n// ## Query a MySQL database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"MYSQL_USER\")\n// password = secrets.get(key: \"MYSQL_PASS\")\n//\n// sql.from(\n//  driverName: \"mysql\",\n//  dataSourceName: \"${username}:${password}@tcp(localhost:3306)/db\",\n//  query:\"SELECT * FROM example_table\"\n// )\n// ```\n//\n// ## Query a Postgres database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"POSTGRES_USER\")\n// password = secrets.get(key: \"POSTGRES_PASS\")\n//\n// sql.from(\n//   driverName: \"postgres\",\n//   dataSourceName: \"postgresql://${username}:${password}@localhost\",\n//   query:\"SELECT * FROM example_table\"\n// )\n// ```\n//\n// ## Query a Snowflake database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"SNOWFLAKE_USER\")\n// password = secrets.get(key: \"SNOWFLAKE_PASS\")\n// account = secrets.get(key: \"SNOWFLAKE_ACCT\")\n//\n// sql.from(\n//   driverName: \"snowflake\",\n//   dataSourceName: \"${username}:${password}@${account}/db/exampleschema?warehouse=wh\",\n//   query: \"SELECT * FROM example_table\"\n// )\n// ```\n//\n// ## Query a SQLite database\n//\n// ```\n// import \"sql\"\n//\n// sql.from(\n//   driverName: \"sqlite3\",\n//   dataSourceName: \"file:/path/to/test.db?cache=shared&mode=ro\",\n//   query: \"SELECT * FROM example_table\"\n// )\n// ```\n// InfluxDB OSS and InfluxDB Cloud do not have direct access to the local filesystem\n// and cannot query SQLite data sources. Use the Flux REPL to query a SQLite data\n// source on your local filesystem.\n//\n// ## Query an Amazon Athena database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// region = us-west-1\n// accessID = secrets.get(key: \"ATHENA_ACCESS_ID\")\n// secretKey = secrets.get(key: \"ATHENA_SECRET_KEY\")\n//\n// sql.from(\n//  driverName: \"awsathena\",\n//  dataSourceName: \"s3://myorgqueryresults/?accessID=${accessID}&region=${region}&secretAccessKey=${secretKey}\",\n//  query:\"SELECT * FROM example_table\"\n// )\n// ```\n// # Athena connection strings\n// To query an Amazon Athena database, use the following querry parameters in your Athena\n// S3 connection string (DNS):\n// * Required\n// - *region - AWS region\n// - *accessID - AWS IAM access ID\n// - *SecretAccessKey - AWS IAM secret key\n// - db - database name\n// - WGRemoteCreation - controls workgroup and tag creation\n// - missingAsDefault - replace missing data with default values\n// - missingAsEmptyString - replace missing data with empty strings\n//\n// ## Query a SQL Server database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"SQLSERVER_USER\")\n// password = secrets.get(key: \"SQLSERVER_PASS\")\n//\n// sql.from(\n//   driverName: \"sqlserver\",\n//   dataSourceName: \"sqlserver://${username}:${password}@localhost:1234?database=examplebdb\",\n//   query: \"GO SELECT * FROM Example.Table\"\n// )\n// ```\n// # SQL Server ADO authentication\n// Use one of the following methods to provide SQL Server authentication\n// credentials as ActiveX Data Objects (ADO) connection string parameters:\n//\n// # Retrieve authentication credentials from environment variables\n// ```\n// azure auth=ENV\n// ```\n//\n// # Retrieve authentication credentials from a file\n// ```\n// azure auth=C:\\secure\\azure.auth\n// ```\n// InfluxDB OSS and InfluxDB Cloud user interfaces do not provide access to the underlying\n// filesystem and do not support reading credentials from a file. To retrieve SQL Server\n// credentials from a file, execute the query in the Flux REPL on your local machine.\n//\n// # Specify authentication credentials in the connection string\n// ```\n// # Example of providing tenant ID, client ID, and client secret token\n// azure tenant id=77...;azure client id=58...;azure client secret=0cf123..\n// # Example of providing tenant ID, client ID, certificate path and certificate password\n// azure tenant id=77...;azure client id=58...;azure certificate path=C:\\secure\\...;azure certificate password=xY...\n// # Example of providing tenant ID, client ID, and Azure username and password\n// azure tenant id=77...;azure client id=58...;azure username=some@myorg;azure password=a1...\n// ```\n//\n// # Use a managed identity in an Azure VM\n// ```\n// azure auth=MSI\n// ```\n//\n// ## Query a BigQuery database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n// projectID = secrets.get(key: \"BIGQUERY_PROJECT_ID\")\n// apiKey = secrets.get(key: \"BIGQUERY_APIKEY\")\n// sql.from(\n//  driverName: \"bigquery\",\n//  dataSourceName: \"bigquery://${projectID}/?apiKey=${apiKey}\",\n//  query:\"SELECT * FROM exampleTable\"\n// )\n// ```\n// # Common BigQuery URL parameters\n// The Flux BigQuery Implementation uses the Google Cloud Go SDK. Provide your\n// authentication credentials using one of the following methods:\n//\n// - The `GOOGLE_APPLICATION_CREDENTIALS` environment variable that identifies the\n//   location of yur credential JSON file.\n//\n// - Provide your BigQuery API key using the apiKey URL parameters in your BigQuery DSN.\n//\n// # Example apiKey URL parameter\n// ```\n// bigquery://projectid/?apiKey=AIzaSyB6XK8IO5AzKZXoioQOVNTFYzbDBjY5hy4\n// ```\n//\n// - Provide your base-64 encoded service account, refresh token, or JSON credentials\n//   using the credentials URL parameter in your BigQuery DSN.\n//\n// # Example credential URL parameter\n// ```\n// bigquery://projectid/?credentials=eyJ0eXBlIjoiYXV0...\n// ```\nbuiltin from : (driverName: string, dataSourceName: string, query: string) => [A]\n\n// to is a function that writes data to an SQL database.\n//\n// ## Parameters\n// - `driverName` is the driver used to connect to the SQL database.\n//\n//   The following drivers are available:\n//    - bigquery\n//    - mysql\n//    - postgres\n//    - snowflake\n//    - sqlite3 - Does not work with InfluxDB OSS or InfluxDB Cloud\n//    - sqlserver, mssql\n//\n// sql.to does not support Amazon Athena.\n//\n// - `dataSourceName` is the data source name (DNS) or connection string used\n//   to connect to the SQL database.\n//\n// - `table` is the destination table.\n//\n// - `batchSize` is the number of parameters or columns that can be queued within\n//   each call to Exec. Defaults to 10000.\n//\n//   If writing to SQLite database, set the batchSize to 999 or less.\n//\n// ## Driver dataSourceName examples\n//\n// ```\n// # Postgres Driver DSN\n// postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full\n// # MySQL Driver DSN\n// username:password@tcp(localhost:3306)/dbname?param=value\n//\n// # Snowflake Driver DSNs\n// username[:password]@accountname/dbname/schemaname?param1=value1&paramN=valueN\n// username[:password]@accountname/dbname?param1=value1&paramN=valueN\n// username[:password]@hostname:port/dbname/schemaname?account=<your_account>&param1=value1&paramN=valueN\n//\n// # SQLite Driver DSN\n// file:/path/to/test.db?cache=shared&mode=rw\n//\n// # Microsoft SQL Server Driver DSNs\n// sqlserver://username:password@localhost:1234?database=examplebdb\n// server=localhost;user id=username;database=examplebdb;\n// server=localhost;user id=username;database=examplebdb;azure auth=ENV\n// server=localhost;user id=username;database=examplebdbr;azure tenant id=77e7d537;azure client id=58879ce8;azure client secret=0123456789\n//\n// # Google BigQuery DSNs\n// bigquery://projectid/?param1=value&param2=value\n// bigquery://projectid/location?param1=value&param2=value\n// ```\n//\n// ## Write data to a MySQL database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"MYSQL_USER\")\n// password = secrets.get(key: \"MYSQL_PASS\")\n//\n// sql.to(\n//   driverName: \"mysql\",\n//   dataSourceName: \"${username}:${password}@tcp(localhost:3306)/db\",\n//   table: \"example_table\"\n// )\n// ```\n//\n// ## Write data to a Postgres database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"POSTGRES_USER\")\n// password = secrets.get(key: \"POSTGRES_PASS\")\n//\n// sql.to(\n//   driverName: \"postgres\",\n//   dataSourceName: \"postgresql://${username}:${password}@localhost\",\n//   table: \"example_table\"\n// )\n// ```\n//\n// ## Write data to a snowflake database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"SNOWFLAKE_USER\")\n// password = secrets.get(key: \"SNOWFLAKE_PASS\")\n// account = secrets.get(key: \"SNOWFLAKE_ACCT\")\n//\n// sql.to(\n//   driverName: \"snowflake\",\n//   dataSourceName: \"${username}:${password}@${account}/db/exampleschema?warehouse=wh\",\n//   table: \"example_table\"\n// )\n// ```\n//\n// ## Write data to an SQLite database\n//\n// ```\n// import \"sql\"\n//\n// sql.to(\n//   driverName: \"sqlite3\",\n//   dataSourceName: \"file:/path/to/test.db?cache=shared&mode=rw\",\n//   table: \"example_table\"\n// )\n// ```\n// InfluxDB OSS and InfluxDB Cloud do not have direct access to the local\n// filesystem and cannot write to SQLite data sources. Use the Flux REPL\n// to write to an SQLite data source on your local filesystem.\n//\n// ## Write data to a SQL Server database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n//\n// username = secrets.get(key: \"SQLSERVER_USER\")\n// password = secrets.get(key: \"SQLSERVER_PASS\")\n//\n// sql.to(\n//   driverName: \"sqlserver\",\n//   dataSourceName: \"sqlserver://${username}:${password}@localhost:1234?database=examplebdb\",\n//   table: \"Example.Table\"\n// )\n// ```\n//\n// # SQL Server ADO authentication\n// Use one of the following methods to provide SQL Server authentication credentials as\n// ActiveX Data Objects (ADO) connection string parameters:\n//\n// # Retrieve authentication credentials from environment variables\n// ```\n// azure auth=ENV\n// ```\n//\n// # Retrieve authentication credentials from a file\n// ```\n// azure auth=C:\\secure\\azure.auth\n// ```\n// InfluxDB OSS and InfluxDB Cloud user interfaces do not provide access to the underlying file\n// system and do not support reading credentials from a file. To retrieve SQL Server credentials\n// from a file, execute the query in the Flux REPL on your local machine.\n//\n// # Specify authentication credentials in the connection string\n// ```\n// # Example of providing tenant ID, client ID, and client secret token\n// azure tenant id=77...;azure client id=58...;azure client secret=0cf123..\n//\n// # Example of providing tenant ID, client ID, certificate path and certificate password\n// azure tenant id=77...;azure client id=58...;azure certificate path=C:\\secure\\...;azure certificate password=xY...\n//\n// # Example of providing tenant ID, client ID, and Azure username and password\n// azure tenant id=77...;azure client id=58...;azure username=some@myorg;azure password=a1...\n// ```\n//\n// # Use a managed identity in an Azure VM\n// ```\n// azure auth=MSI\n// ```\n//\n// ## Write to a BigQuery database\n//\n// ```\n// import \"sql\"\n// import \"influxdata/influxdb/secrets\"\n// projectID = secrets.get(key: \"BIGQUERY_PROJECT_ID\")\n// apiKey = secrets.get(key: \"BIGQUERY_APIKEY\")\n// sql.to(\n//  driverName: \"bigquery\",\n//  dataSourceName: \"bigquery://${projectID}/?apiKey=${apiKey}\",\n//  table:\"exampleTable\"\n// )\n// ```\n//\n// # Common BigQuery URL parameters\n// - dataset - BigQuery dataset ID. When set, you can use unqualified table\n//   names in queries.\n//\n// # BigQuery authentication parameters\n// - The `GOOGLE_APPLICATION_CREDENTIALS` environment variable that identifies\n//   the location of your credential JSON file.\n//\n// - Provide your BigQuery API key using the apiKey URL parameter in your\n//   BigQuery DSN.\n//\n// # Example apiKey URL parameter\n// ```\n// bigquery://projectid/?apiKey=AIzaSyB6XK8IO5AzKZXoioQOVNTFYzbDBjY5hy4\n// ```\n//\n// - Provide your base-64 encoded service account, refresh token, or JSON credentials\n//   URL parameter in your BigQuery DSN.\n//\n// # Example credentials URL parameter\n// ```\n// bigquery://projectid/?credentials=eyJ0eXBlIjoiYXV0...\n// ```\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   10,
 				},
 			},
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// from is a function that retrieves data from a SQL data source.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `driverName` is the driver used to connect to the SQL database.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   The following drivers are available:\n"}, ast.Comment{Text: "//    - awsathena\n"}, ast.Comment{Text: "//    - bigquery\n"}, ast.Comment{Text: "//    - mysql\n"}, ast.Comment{Text: "//    - postgres\n"}, ast.Comment{Text: "//    - snowflake\n"}, ast.Comment{Text: "//    - sqlite3 - Does not work with InfluxDB OSS or InfluxDB Cloud\n"}, ast.Comment{Text: "//    - sqlserver, mssql\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `dataSourceName` is the data source name (DNS) or connection string used\n"}, ast.Comment{Text: "//   to connect to the SQL database.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   The string's form and structure depend on the driver used.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `query` is the query to run against the SQL database.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Driver dataSourceName examples\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// # Amazon Athena Driver DSN\n"}, ast.Comment{Text: "// s3://myorgqueryresults/?accessID=AKIAJLO3F...&region=us-west-1&secretAccessKey=NnQ7MUMp9PYZsmD47c%2BSsXGOFsd%2F...\n"}, ast.Comment{Text: "// s3://myorgqueryresults/?accessID=AKIAJLO3F...&db=dbname&missingAsDefault=false&missingAsEmptyString=false&region=us-west-1&secretAccessKey=NnQ7MUMp9PYZsmD47c%2BSsXGOFsd%2F...&WGRemoteCreation=false\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # MySQL Driver DSN\n"}, ast.Comment{Text: "// username:password@tcp(localhost:3306)/dbname?param=value\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Postgres Driver DSN\n"}, ast.Comment{Text: "// postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Snowflake Driver DSNs\n"}, ast.Comment{Text: "// username[:password]@accountname/dbname/schemaname?param1=value1&paramN=valueN\n"}, ast.Comment{Text: "// username[:password]@accountname/dbname?param1=value1&paramN=valueN\n"}, ast.Comment{Text: "// username[:password]@hostname:port/dbname/schemaname?account=<your_account>&param1=value1&paramN=valueN\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # SQLite Driver DSN\n"}, ast.Comment{Text: "// file:/path/to/test.db?cache=shared&mode=ro\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Microsoft SQL Server Driver DSNs\n"}, ast.Comment{Text: "// sqlserver://username:password@localhost:1234?database=examplebdb\n"}, ast.Comment{Text: "// server=localhost;user id=username;database=examplebdb;\n"}, ast.Comment{Text: "// server=localhost;user id=username;database=examplebdb;azure auth=ENV\n"}, ast.Comment{Text: "// server=localhost;user id=username;database=examplebdbr;azure tenant id=77e7d537;azure client id=58879ce8;azure client secret=0123456789\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Google BigQuery DSNs\n"}, ast.Comment{Text: "// bigquery://projectid/?param1=value&param2=value\n"}, ast.Comment{Text: "// bigquery://projectid/location?param1=value&param2=value\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Query a MySQL database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"MYSQL_USER\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"MYSQL_PASS\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.from(\n"}, ast.Comment{Text: "//  driverName: \"mysql\",\n"}, ast.Comment{Text: "//  dataSourceName: \"${username}:${password}@tcp(localhost:3306)/db\",\n"}, ast.Comment{Text: "//  query:\"SELECT * FROM example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Query a Postgres database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"POSTGRES_USER\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"POSTGRES_PASS\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.from(\n"}, ast.Comment{Text: "//   driverName: \"postgres\",\n"}, ast.Comment{Text: "//   dataSourceName: \"postgresql://${username}:${password}@localhost\",\n"}, ast.Comment{Text: "//   query:\"SELECT * FROM example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Query a Snowflake database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"SNOWFLAKE_USER\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"SNOWFLAKE_PASS\")\n"}, ast.Comment{Text: "// account = secrets.get(key: \"SNOWFLAKE_ACCT\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.from(\n"}, ast.Comment{Text: "//   driverName: \"snowflake\",\n"}, ast.Comment{Text: "//   dataSourceName: \"${username}:${password}@${account}/db/exampleschema?warehouse=wh\",\n"}, ast.Comment{Text: "//   query: \"SELECT * FROM example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Query a SQLite database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.from(\n"}, ast.Comment{Text: "//   driverName: \"sqlite3\",\n"}, ast.Comment{Text: "//   dataSourceName: \"file:/path/to/test.db?cache=shared&mode=ro\",\n"}, ast.Comment{Text: "//   query: \"SELECT * FROM example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// InfluxDB OSS and InfluxDB Cloud do not have direct access to the local filesystem\n"}, ast.Comment{Text: "// and cannot query SQLite data sources. Use the Flux REPL to query a SQLite data\n"}, ast.Comment{Text: "// source on your local filesystem.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Query an Amazon Athena database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// region = us-west-1\n"}, ast.Comment{Text: "// accessID = secrets.get(key: \"ATHENA_ACCESS_ID\")\n"}, ast.Comment{Text: "// secretKey = secrets.get(key: \"ATHENA_SECRET_KEY\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.from(\n"}, ast.Comment{Text: "//  driverName: \"awsathena\",\n"}, ast.Comment{Text: "//  dataSourceName: \"s3://myorgqueryresults/?accessID=${accessID}&region=${region}&secretAccessKey=${secretKey}\",\n"}, ast.Comment{Text: "//  query:\"SELECT * FROM example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// # Athena connection strings\n"}, ast.Comment{Text: "// To query an Amazon Athena database, use the following querry parameters in your Athena\n"}, ast.Comment{Text: "// S3 connection string (DNS):\n"}, ast.Comment{Text: "// * Required\n"}, ast.Comment{Text: "// - *region - AWS region\n"}, ast.Comment{Text: "// - *accessID - AWS IAM access ID\n"}, ast.Comment{Text: "// - *SecretAccessKey - AWS IAM secret key\n"}, ast.Comment{Text: "// - db - database name\n"}, ast.Comment{Text: "// - WGRemoteCreation - controls workgroup and tag creation\n"}, ast.Comment{Text: "// - missingAsDefault - replace missing data with default values\n"}, ast.Comment{Text: "// - missingAsEmptyString - replace missing data with empty strings\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Query a SQL Server database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"SQLSERVER_USER\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"SQLSERVER_PASS\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.from(\n"}, ast.Comment{Text: "//   driverName: \"sqlserver\",\n"}, ast.Comment{Text: "//   dataSourceName: \"sqlserver://${username}:${password}@localhost:1234?database=examplebdb\",\n"}, ast.Comment{Text: "//   query: \"GO SELECT * FROM Example.Table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// # SQL Server ADO authentication\n"}, ast.Comment{Text: "// Use one of the following methods to provide SQL Server authentication\n"}, ast.Comment{Text: "// credentials as ActiveX Data Objects (ADO) connection string parameters:\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Retrieve authentication credentials from environment variables\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// azure auth=ENV\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Retrieve authentication credentials from a file\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// azure auth=C:\\secure\\azure.auth\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// InfluxDB OSS and InfluxDB Cloud user interfaces do not provide access to the underlying\n"}, ast.Comment{Text: "// filesystem and do not support reading credentials from a file. To retrieve SQL Server\n"}, ast.Comment{Text: "// credentials from a file, execute the query in the Flux REPL on your local machine.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Specify authentication credentials in the connection string\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// # Example of providing tenant ID, client ID, and client secret token\n"}, ast.Comment{Text: "// azure tenant id=77...;azure client id=58...;azure client secret=0cf123..\n"}, ast.Comment{Text: "// # Example of providing tenant ID, client ID, certificate path and certificate password\n"}, ast.Comment{Text: "// azure tenant id=77...;azure client id=58...;azure certificate path=C:\\secure\\...;azure certificate password=xY...\n"}, ast.Comment{Text: "// # Example of providing tenant ID, client ID, and Azure username and password\n"}, ast.Comment{Text: "// azure tenant id=77...;azure client id=58...;azure username=some@myorg;azure password=a1...\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Use a managed identity in an Azure VM\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// azure auth=MSI\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Query a BigQuery database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "// projectID = secrets.get(key: \"BIGQUERY_PROJECT_ID\")\n"}, ast.Comment{Text: "// apiKey = secrets.get(key: \"BIGQUERY_APIKEY\")\n"}, ast.Comment{Text: "// sql.from(\n"}, ast.Comment{Text: "//  driverName: \"bigquery\",\n"}, ast.Comment{Text: "//  dataSourceName: \"bigquery://${projectID}/?apiKey=${apiKey}\",\n"}, ast.Comment{Text: "//  query:\"SELECT * FROM exampleTable\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// # Common BigQuery URL parameters\n"}, ast.Comment{Text: "// The Flux BigQuery Implementation uses the Google Cloud Go SDK. Provide your\n"}, ast.Comment{Text: "// authentication credentials using one of the following methods:\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - The `GOOGLE_APPLICATION_CREDENTIALS` environment variable that identifies the\n"}, ast.Comment{Text: "//   location of yur credential JSON file.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - Provide your BigQuery API key using the apiKey URL parameters in your BigQuery DSN.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Example apiKey URL parameter\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// bigquery://projectid/?apiKey=AIzaSyB6XK8IO5AzKZXoioQOVNTFYzbDBjY5hy4\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - Provide your base-64 encoded service account, refresh token, or JSON credentials\n"}, ast.Comment{Text: "//   using the credentials URL parameter in your BigQuery DSN.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Example credential URL parameter\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// bigquery://projectid/?credentials=eyJ0eXBlIjoiYXV0...\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   4,
+						Line:   239,
 					},
 					File:   "sql.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   239,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   4,
+							Line:   239,
 						},
 						File:   "sql.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   239,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 82,
-							Line:   4,
+							Line:   239,
 						},
 						File:   "sql.flux",
 						Source: "(driverName: string, dataSourceName: string, query: string) => [A]",
 						Start: ast.Position{
 							Column: 16,
-							Line:   4,
+							Line:   239,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 82,
-								Line:   4,
+								Line:   239,
 							},
 							File:   "sql.flux",
 							Source: "(driverName: string, dataSourceName: string, query: string) => [A]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   4,
+								Line:   239,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   4,
+									Line:   239,
 								},
 								File:   "sql.flux",
 								Source: "driverName: string",
 								Start: ast.Position{
 									Column: 17,
-									Line:   4,
+									Line:   239,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   4,
+										Line:   239,
 									},
 									File:   "sql.flux",
 									Source: "driverName",
 									Start: ast.Position{
 										Column: 17,
-										Line:   4,
+										Line:   239,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   4,
+										Line:   239,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 29,
-										Line:   4,
+										Line:   239,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 35,
-											Line:   4,
+											Line:   239,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 29,
-											Line:   4,
+											Line:   239,
 										},
 									},
 								},
@@ -187,13 +187,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   4,
+									Line:   239,
 								},
 								File:   "sql.flux",
 								Source: "dataSourceName: string",
 								Start: ast.Position{
 									Column: 37,
-									Line:   4,
+									Line:   239,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   4,
+										Line:   239,
 									},
 									File:   "sql.flux",
 									Source: "dataSourceName",
 									Start: ast.Position{
 										Column: 37,
-										Line:   4,
+										Line:   239,
 									},
 								},
 							},
@@ -224,13 +224,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 59,
-										Line:   4,
+										Line:   239,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 53,
-										Line:   4,
+										Line:   239,
 									},
 								},
 							},
@@ -241,13 +241,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   4,
+											Line:   239,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 53,
-											Line:   4,
+											Line:   239,
 										},
 									},
 								},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 74,
-									Line:   4,
+									Line:   239,
 								},
 								File:   "sql.flux",
 								Source: "query: string",
 								Start: ast.Position{
 									Column: 61,
-									Line:   4,
+									Line:   239,
 								},
 							},
 						},
@@ -279,13 +279,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 66,
-										Line:   4,
+										Line:   239,
 									},
 									File:   "sql.flux",
 									Source: "query",
 									Start: ast.Position{
 										Column: 61,
-										Line:   4,
+										Line:   239,
 									},
 								},
 							},
@@ -298,13 +298,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 74,
-										Line:   4,
+										Line:   239,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 68,
-										Line:   4,
+										Line:   239,
 									},
 								},
 							},
@@ -315,13 +315,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 74,
-											Line:   4,
+											Line:   239,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 68,
-											Line:   4,
+											Line:   239,
 										},
 									},
 								},
@@ -336,13 +336,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 82,
-									Line:   4,
+									Line:   239,
 								},
 								File:   "sql.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 79,
-									Line:   4,
+									Line:   239,
 								},
 							},
 						},
@@ -353,13 +353,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 81,
-										Line:   4,
+										Line:   239,
 									},
 									File:   "sql.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 80,
-										Line:   4,
+										Line:   239,
 									},
 								},
 							},
@@ -370,13 +370,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
-											Line:   4,
+											Line:   239,
 										},
 										File:   "sql.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 80,
-											Line:   4,
+											Line:   239,
 										},
 									},
 								},
@@ -388,18 +388,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// to is a function that writes data to an SQL database.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `driverName` is the driver used to connect to the SQL database.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   The following drivers are available:\n"}, ast.Comment{Text: "//    - bigquery\n"}, ast.Comment{Text: "//    - mysql\n"}, ast.Comment{Text: "//    - postgres\n"}, ast.Comment{Text: "//    - snowflake\n"}, ast.Comment{Text: "//    - sqlite3 - Does not work with InfluxDB OSS or InfluxDB Cloud\n"}, ast.Comment{Text: "//    - sqlserver, mssql\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.to does not support Amazon Athena.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `dataSourceName` is the data source name (DNS) or connection string used\n"}, ast.Comment{Text: "//   to connect to the SQL database.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `table` is the destination table.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `batchSize` is the number of parameters or columns that can be queued within\n"}, ast.Comment{Text: "//   each call to Exec. Defaults to 10000.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   If writing to SQLite database, set the batchSize to 999 or less.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Driver dataSourceName examples\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// # Postgres Driver DSN\n"}, ast.Comment{Text: "// postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full\n"}, ast.Comment{Text: "// # MySQL Driver DSN\n"}, ast.Comment{Text: "// username:password@tcp(localhost:3306)/dbname?param=value\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Snowflake Driver DSNs\n"}, ast.Comment{Text: "// username[:password]@accountname/dbname/schemaname?param1=value1&paramN=valueN\n"}, ast.Comment{Text: "// username[:password]@accountname/dbname?param1=value1&paramN=valueN\n"}, ast.Comment{Text: "// username[:password]@hostname:port/dbname/schemaname?account=<your_account>&param1=value1&paramN=valueN\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # SQLite Driver DSN\n"}, ast.Comment{Text: "// file:/path/to/test.db?cache=shared&mode=rw\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Microsoft SQL Server Driver DSNs\n"}, ast.Comment{Text: "// sqlserver://username:password@localhost:1234?database=examplebdb\n"}, ast.Comment{Text: "// server=localhost;user id=username;database=examplebdb;\n"}, ast.Comment{Text: "// server=localhost;user id=username;database=examplebdb;azure auth=ENV\n"}, ast.Comment{Text: "// server=localhost;user id=username;database=examplebdbr;azure tenant id=77e7d537;azure client id=58879ce8;azure client secret=0123456789\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Google BigQuery DSNs\n"}, ast.Comment{Text: "// bigquery://projectid/?param1=value&param2=value\n"}, ast.Comment{Text: "// bigquery://projectid/location?param1=value&param2=value\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Write data to a MySQL database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"MYSQL_USER\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"MYSQL_PASS\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.to(\n"}, ast.Comment{Text: "//   driverName: \"mysql\",\n"}, ast.Comment{Text: "//   dataSourceName: \"${username}:${password}@tcp(localhost:3306)/db\",\n"}, ast.Comment{Text: "//   table: \"example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Write data to a Postgres database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"POSTGRES_USER\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"POSTGRES_PASS\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.to(\n"}, ast.Comment{Text: "//   driverName: \"postgres\",\n"}, ast.Comment{Text: "//   dataSourceName: \"postgresql://${username}:${password}@localhost\",\n"}, ast.Comment{Text: "//   table: \"example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Write data to a snowflake database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"SNOWFLAKE_USER\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"SNOWFLAKE_PASS\")\n"}, ast.Comment{Text: "// account = secrets.get(key: \"SNOWFLAKE_ACCT\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.to(\n"}, ast.Comment{Text: "//   driverName: \"snowflake\",\n"}, ast.Comment{Text: "//   dataSourceName: \"${username}:${password}@${account}/db/exampleschema?warehouse=wh\",\n"}, ast.Comment{Text: "//   table: \"example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Write data to an SQLite database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.to(\n"}, ast.Comment{Text: "//   driverName: \"sqlite3\",\n"}, ast.Comment{Text: "//   dataSourceName: \"file:/path/to/test.db?cache=shared&mode=rw\",\n"}, ast.Comment{Text: "//   table: \"example_table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// InfluxDB OSS and InfluxDB Cloud do not have direct access to the local\n"}, ast.Comment{Text: "// filesystem and cannot write to SQLite data sources. Use the Flux REPL\n"}, ast.Comment{Text: "// to write to an SQLite data source on your local filesystem.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Write data to a SQL Server database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// username = secrets.get(key: \"SQLSERVER_USER\")\n"}, ast.Comment{Text: "// password = secrets.get(key: \"SQLSERVER_PASS\")\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sql.to(\n"}, ast.Comment{Text: "//   driverName: \"sqlserver\",\n"}, ast.Comment{Text: "//   dataSourceName: \"sqlserver://${username}:${password}@localhost:1234?database=examplebdb\",\n"}, ast.Comment{Text: "//   table: \"Example.Table\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # SQL Server ADO authentication\n"}, ast.Comment{Text: "// Use one of the following methods to provide SQL Server authentication credentials as\n"}, ast.Comment{Text: "// ActiveX Data Objects (ADO) connection string parameters:\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Retrieve authentication credentials from environment variables\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// azure auth=ENV\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Retrieve authentication credentials from a file\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// azure auth=C:\\secure\\azure.auth\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// InfluxDB OSS and InfluxDB Cloud user interfaces do not provide access to the underlying file\n"}, ast.Comment{Text: "// system and do not support reading credentials from a file. To retrieve SQL Server credentials\n"}, ast.Comment{Text: "// from a file, execute the query in the Flux REPL on your local machine.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Specify authentication credentials in the connection string\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// # Example of providing tenant ID, client ID, and client secret token\n"}, ast.Comment{Text: "// azure tenant id=77...;azure client id=58...;azure client secret=0cf123..\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Example of providing tenant ID, client ID, certificate path and certificate password\n"}, ast.Comment{Text: "// azure tenant id=77...;azure client id=58...;azure certificate path=C:\\secure\\...;azure certificate password=xY...\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Example of providing tenant ID, client ID, and Azure username and password\n"}, ast.Comment{Text: "// azure tenant id=77...;azure client id=58...;azure username=some@myorg;azure password=a1...\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Use a managed identity in an Azure VM\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// azure auth=MSI\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Write to a BigQuery database\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sql\"\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/secrets\"\n"}, ast.Comment{Text: "// projectID = secrets.get(key: \"BIGQUERY_PROJECT_ID\")\n"}, ast.Comment{Text: "// apiKey = secrets.get(key: \"BIGQUERY_APIKEY\")\n"}, ast.Comment{Text: "// sql.to(\n"}, ast.Comment{Text: "//  driverName: \"bigquery\",\n"}, ast.Comment{Text: "//  dataSourceName: \"bigquery://${projectID}/?apiKey=${apiKey}\",\n"}, ast.Comment{Text: "//  table:\"exampleTable\"\n"}, ast.Comment{Text: "// )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Common BigQuery URL parameters\n"}, ast.Comment{Text: "// - dataset - BigQuery dataset ID. When set, you can use unqualified table\n"}, ast.Comment{Text: "//   names in queries.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # BigQuery authentication parameters\n"}, ast.Comment{Text: "// - The `GOOGLE_APPLICATION_CREDENTIALS` environment variable that identifies\n"}, ast.Comment{Text: "//   the location of your credential JSON file.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - Provide your BigQuery API key using the apiKey URL parameter in your\n"}, ast.Comment{Text: "//   BigQuery DSN.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Example apiKey URL parameter\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// bigquery://projectid/?apiKey=AIzaSyB6XK8IO5AzKZXoioQOVNTFYzbDBjY5hy4\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - Provide your base-64 encoded service account, refresh token, or JSON credentials\n"}, ast.Comment{Text: "//   URL parameter in your BigQuery DSN.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Example credentials URL parameter\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// bigquery://projectid/?credentials=eyJ0eXBlIjoiYXV0...\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   5,
+						Line:   444,
 					},
 					File:   "sql.flux",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   444,
 					},
 				},
 			},
@@ -411,13 +411,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   5,
+							Line:   444,
 						},
 						File:   "sql.flux",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   444,
 						},
 					},
 				},
@@ -430,13 +430,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   11,
+							Line:   450,
 						},
 						File:   "sql.flux",
 						Source: "(\n    <-tables: [A],\n    driverName: string,\n    dataSourceName: string,\n    table: string,\n    ?batchSize: int,\n) => [A]",
 						Start: ast.Position{
 							Column: 14,
-							Line:   5,
+							Line:   444,
 						},
 					},
 				},
@@ -448,13 +448,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 9,
-								Line:   11,
+								Line:   450,
 							},
 							File:   "sql.flux",
 							Source: "(\n    <-tables: [A],\n    driverName: string,\n    dataSourceName: string,\n    table: string,\n    ?batchSize: int,\n) => [A]",
 							Start: ast.Position{
 								Column: 14,
-								Line:   5,
+								Line:   444,
 							},
 						},
 					},
@@ -465,13 +465,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   6,
+									Line:   445,
 								},
 								File:   "sql.flux",
 								Source: "<-tables: [A]",
 								Start: ast.Position{
 									Column: 5,
-									Line:   6,
+									Line:   445,
 								},
 							},
 						},
@@ -483,13 +483,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   6,
+										Line:   445,
 									},
 									File:   "sql.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 7,
-										Line:   6,
+										Line:   445,
 									},
 								},
 							},
@@ -502,13 +502,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   6,
+										Line:   445,
 									},
 									File:   "sql.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 15,
-										Line:   6,
+										Line:   445,
 									},
 								},
 							},
@@ -519,13 +519,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 17,
-											Line:   6,
+											Line:   445,
 										},
 										File:   "sql.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 16,
-											Line:   6,
+											Line:   445,
 										},
 									},
 								},
@@ -536,13 +536,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   6,
+												Line:   445,
 											},
 											File:   "sql.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 16,
-												Line:   6,
+												Line:   445,
 											},
 										},
 									},
@@ -557,13 +557,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   7,
+									Line:   446,
 								},
 								File:   "sql.flux",
 								Source: "driverName: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   7,
+									Line:   446,
 								},
 							},
 						},
@@ -575,13 +575,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   7,
+										Line:   446,
 									},
 									File:   "sql.flux",
 									Source: "driverName",
 									Start: ast.Position{
 										Column: 5,
-										Line:   7,
+										Line:   446,
 									},
 								},
 							},
@@ -594,13 +594,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   7,
+										Line:   446,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 17,
-										Line:   7,
+										Line:   446,
 									},
 								},
 							},
@@ -611,13 +611,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   7,
+											Line:   446,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 17,
-											Line:   7,
+											Line:   446,
 										},
 									},
 								},
@@ -631,13 +631,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   8,
+									Line:   447,
 								},
 								File:   "sql.flux",
 								Source: "dataSourceName: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   8,
+									Line:   447,
 								},
 							},
 						},
@@ -649,13 +649,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   8,
+										Line:   447,
 									},
 									File:   "sql.flux",
 									Source: "dataSourceName",
 									Start: ast.Position{
 										Column: 5,
-										Line:   8,
+										Line:   447,
 									},
 								},
 							},
@@ -668,13 +668,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   8,
+										Line:   447,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 21,
-										Line:   8,
+										Line:   447,
 									},
 								},
 							},
@@ -685,13 +685,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   8,
+											Line:   447,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 21,
-											Line:   8,
+											Line:   447,
 										},
 									},
 								},
@@ -705,13 +705,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   9,
+									Line:   448,
 								},
 								File:   "sql.flux",
 								Source: "table: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   9,
+									Line:   448,
 								},
 							},
 						},
@@ -723,13 +723,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   9,
+										Line:   448,
 									},
 									File:   "sql.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 5,
-										Line:   9,
+										Line:   448,
 									},
 								},
 							},
@@ -742,13 +742,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   9,
+										Line:   448,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 12,
-										Line:   9,
+										Line:   448,
 									},
 								},
 							},
@@ -759,13 +759,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   9,
+											Line:   448,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 12,
-											Line:   9,
+											Line:   448,
 										},
 									},
 								},
@@ -779,13 +779,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   10,
+									Line:   449,
 								},
 								File:   "sql.flux",
 								Source: "?batchSize: int",
 								Start: ast.Position{
 									Column: 5,
-									Line:   10,
+									Line:   449,
 								},
 							},
 						},
@@ -797,13 +797,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   10,
+										Line:   449,
 									},
 									File:   "sql.flux",
 									Source: "batchSize",
 									Start: ast.Position{
 										Column: 6,
-										Line:   10,
+										Line:   449,
 									},
 								},
 							},
@@ -816,13 +816,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   10,
+										Line:   449,
 									},
 									File:   "sql.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 17,
-										Line:   10,
+										Line:   449,
 									},
 								},
 							},
@@ -833,13 +833,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   10,
+											Line:   449,
 										},
 										File:   "sql.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 17,
-											Line:   10,
+											Line:   449,
 										},
 									},
 								},
@@ -854,13 +854,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
-									Line:   11,
+									Line:   450,
 								},
 								File:   "sql.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 6,
-									Line:   11,
+									Line:   450,
 								},
 							},
 						},
@@ -871,13 +871,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   11,
+										Line:   450,
 									},
 									File:   "sql.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 7,
-										Line:   11,
+										Line:   450,
 									},
 								},
 							},
@@ -888,13 +888,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 8,
-											Line:   11,
+											Line:   450,
 										},
 										File:   "sql.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 7,
-											Line:   11,
+											Line:   450,
 										},
 									},
 								},
@@ -911,18 +911,18 @@ var pkgAST = &ast.Package{
 		Name:     "sql.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Package SQL provides tools for working with data in SQL\n"}, ast.Comment{Text: "// databases such as:\n"}, ast.Comment{Text: "// - Amazon Athena\n"}, ast.Comment{Text: "// - Google BigQuery\n"}, ast.Comment{Text: "// - Microsoft SQL Server\n"}, ast.Comment{Text: "// - MySQL\n"}, ast.Comment{Text: "// - PostgreSQL\n"}, ast.Comment{Text: "// - Snowflake\n"}, ast.Comment{Text: "// - SQLite\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   1,
+						Line:   10,
 					},
 					File:   "sql.flux",
 					Source: "package sql",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   10,
 					},
 				},
 			},
@@ -933,13 +933,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   1,
+							Line:   10,
 						},
 						File:   "sql.flux",
 						Source: "sql",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   10,
 						},
 					},
 				},

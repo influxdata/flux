@@ -24,30 +24,30 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   23,
+					Line:   46,
 				},
 				File:   "interpolate.flux",
-				Source: "package interpolate\n\n\n// Linear inserts rows at regular intervals using linear interpolation\n// to determine the value of any missing rows.\n//\n// Example\n//\n//    import \"interpolate\"\n//    import \"array\"\n//    \n//    array.from(\n//        rows: [\n//            {_time: 2021-01-01T00:00:00Z, _value: 10.0},\n//            {_time: 2021-01-02T00:00:00Z, _value: 20.0},\n//            {_time: 2021-01-04T00:00:00Z, _value: 40.0},\n//            {_time: 2021-01-05T00:00:00Z, _value: 50.0},\n//            {_time: 2021-01-08T00:00:00Z, _value: 80.0},\n//            {_time: 2021-01-09T00:00:00Z, _value: 90.0},\n//        ],\n//    )\n//        |> interpolate.linear(every: 1d)\nbuiltin linear",
+				Source: "package interpolate\n\n\n// linear is a function that inserts rows at regular intervals using linear\n//  interpolation to determine values for inserted rows. \n//\n// ## Function Requirements\n// - Input data must have _time and _value columns.\n// - All columns other than _time and _value must be part of the group key.\n//\n// ## Parameters\n// - `every` is the duration of time between interpolated points.\n//\n// Interpolate missing data by day\n//\n// ```\n// import \"interpolate\"\n//\n// data\n//   |> interpolate.linear(every: 1d)\n// ```\n// # Input\n// _time | _value\n// --- | ---\n// 2021-01-01T00:00:00Z | 10.0\n// 2021-01-02T00:00:00Z | 20.0\n// 2021-01-04T00:00:00Z | 40.0\n// 2021-01-05T00:00:00Z | 50.0\n// 2021-01-08T00:00:00Z | 80.0\n// 2021-01-09T00:00:00Z | 90.0\n//\n// # Output\n// _time | _value\n// --- | ---\n// 2021-01-01T00:00:00Z | 10.0\n// 2021-01-02T00:00:00Z | 20.0\n// 2021-01-04T00:00:00Z | 40.0\n// 2021-01-05T00:00:00Z | 50.0\n// 2021-01-06T00:00:00Z | 60.0\n// 2021-01-07T00:00:00Z | 70.0\n// 2021-01-08T00:00:00Z | 80.0\n// 2021-01-09T00:00:00Z | 90.0\n//\nbuiltin linear",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   3,
 				},
 			},
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Linear inserts rows at regular intervals using linear interpolation\n"}, ast.Comment{Text: "// to determine the value of any missing rows.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//    import \"interpolate\"\n"}, ast.Comment{Text: "//    import \"array\"\n"}, ast.Comment{Text: "//    \n"}, ast.Comment{Text: "//    array.from(\n"}, ast.Comment{Text: "//        rows: [\n"}, ast.Comment{Text: "//            {_time: 2021-01-01T00:00:00Z, _value: 10.0},\n"}, ast.Comment{Text: "//            {_time: 2021-01-02T00:00:00Z, _value: 20.0},\n"}, ast.Comment{Text: "//            {_time: 2021-01-04T00:00:00Z, _value: 40.0},\n"}, ast.Comment{Text: "//            {_time: 2021-01-05T00:00:00Z, _value: 50.0},\n"}, ast.Comment{Text: "//            {_time: 2021-01-08T00:00:00Z, _value: 80.0},\n"}, ast.Comment{Text: "//            {_time: 2021-01-09T00:00:00Z, _value: 90.0},\n"}, ast.Comment{Text: "//        ],\n"}, ast.Comment{Text: "//    )\n"}, ast.Comment{Text: "//        |> interpolate.linear(every: 1d)\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// linear is a function that inserts rows at regular intervals using linear\n"}, ast.Comment{Text: "//  interpolation to determine values for inserted rows. \n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Function Requirements\n"}, ast.Comment{Text: "// - Input data must have _time and _value columns.\n"}, ast.Comment{Text: "// - All columns other than _time and _value must be part of the group key.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `every` is the duration of time between interpolated points.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Interpolate missing data by day\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"interpolate\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> interpolate.linear(every: 1d)\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// # Input\n"}, ast.Comment{Text: "// _time | _value\n"}, ast.Comment{Text: "// --- | ---\n"}, ast.Comment{Text: "// 2021-01-01T00:00:00Z | 10.0\n"}, ast.Comment{Text: "// 2021-01-02T00:00:00Z | 20.0\n"}, ast.Comment{Text: "// 2021-01-04T00:00:00Z | 40.0\n"}, ast.Comment{Text: "// 2021-01-05T00:00:00Z | 50.0\n"}, ast.Comment{Text: "// 2021-01-08T00:00:00Z | 80.0\n"}, ast.Comment{Text: "// 2021-01-09T00:00:00Z | 90.0\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// # Output\n"}, ast.Comment{Text: "// _time | _value\n"}, ast.Comment{Text: "// --- | ---\n"}, ast.Comment{Text: "// 2021-01-01T00:00:00Z | 10.0\n"}, ast.Comment{Text: "// 2021-01-02T00:00:00Z | 20.0\n"}, ast.Comment{Text: "// 2021-01-04T00:00:00Z | 40.0\n"}, ast.Comment{Text: "// 2021-01-05T00:00:00Z | 50.0\n"}, ast.Comment{Text: "// 2021-01-06T00:00:00Z | 60.0\n"}, ast.Comment{Text: "// 2021-01-07T00:00:00Z | 70.0\n"}, ast.Comment{Text: "// 2021-01-08T00:00:00Z | 80.0\n"}, ast.Comment{Text: "// 2021-01-09T00:00:00Z | 90.0\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   23,
+						Line:   46,
 					},
 					File:   "interpolate.flux",
 					Source: "builtin linear",
 					Start: ast.Position{
 						Column: 1,
-						Line:   23,
+						Line:   46,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   23,
+							Line:   46,
 						},
 						File:   "interpolate.flux",
 						Source: "linear",
 						Start: ast.Position{
 							Column: 9,
-							Line:   23,
+							Line:   46,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   32,
+							Line:   55,
 						},
 						File:   "interpolate.flux",
 						Source: "(\n    <-tables: [{T with\n        _time: time,\n        _value: float,\n    }],\n    every: duration,\n) => [{T with\n    _time: time,\n    _value: float,\n}]",
 						Start: ast.Position{
 							Column: 18,
-							Line:   23,
+							Line:   46,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   32,
+								Line:   55,
 							},
 							File:   "interpolate.flux",
 							Source: "(\n    <-tables: [{T with\n        _time: time,\n        _value: float,\n    }],\n    every: duration,\n) => [{T with\n    _time: time,\n    _value: float,\n}]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   23,
+								Line:   46,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
-									Line:   27,
+									Line:   50,
 								},
 								File:   "interpolate.flux",
 								Source: "<-tables: [{T with\n        _time: time,\n        _value: float,\n    }]",
 								Start: ast.Position{
 									Column: 5,
-									Line:   24,
+									Line:   47,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   24,
+										Line:   47,
 									},
 									File:   "interpolate.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 7,
-										Line:   24,
+										Line:   47,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 7,
-										Line:   27,
+										Line:   50,
 									},
 									File:   "interpolate.flux",
 									Source: "[{T with\n        _time: time,\n        _value: float,\n    }]",
 									Start: ast.Position{
 										Column: 15,
-										Line:   24,
+										Line:   47,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   27,
+											Line:   50,
 										},
 										File:   "interpolate.flux",
 										Source: "{T with\n        _time: time,\n        _value: float,\n    }",
 										Start: ast.Position{
 											Column: 16,
-											Line:   24,
+											Line:   47,
 										},
 									},
 								},
@@ -184,13 +184,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   25,
+												Line:   48,
 											},
 											File:   "interpolate.flux",
 											Source: "_time: time",
 											Start: ast.Position{
 												Column: 9,
-												Line:   25,
+												Line:   48,
 											},
 										},
 									},
@@ -201,13 +201,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   25,
+													Line:   48,
 												},
 												File:   "interpolate.flux",
 												Source: "_time",
 												Start: ast.Position{
 													Column: 9,
-													Line:   25,
+													Line:   48,
 												},
 											},
 										},
@@ -220,13 +220,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   25,
+													Line:   48,
 												},
 												File:   "interpolate.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 16,
-													Line:   25,
+													Line:   48,
 												},
 											},
 										},
@@ -237,13 +237,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   25,
+														Line:   48,
 													},
 													File:   "interpolate.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 16,
-														Line:   25,
+														Line:   48,
 													},
 												},
 											},
@@ -257,13 +257,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   26,
+												Line:   49,
 											},
 											File:   "interpolate.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 9,
-												Line:   26,
+												Line:   49,
 											},
 										},
 									},
@@ -274,13 +274,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   26,
+													Line:   49,
 												},
 												File:   "interpolate.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 9,
-													Line:   26,
+													Line:   49,
 												},
 											},
 										},
@@ -293,13 +293,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   26,
+													Line:   49,
 												},
 												File:   "interpolate.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 17,
-													Line:   26,
+													Line:   49,
 												},
 											},
 										},
@@ -310,13 +310,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   26,
+														Line:   49,
 													},
 													File:   "interpolate.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 17,
-														Line:   26,
+														Line:   49,
 													},
 												},
 											},
@@ -331,13 +331,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   24,
+												Line:   47,
 											},
 											File:   "interpolate.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 17,
-												Line:   24,
+												Line:   47,
 											},
 										},
 									},
@@ -352,13 +352,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   28,
+									Line:   51,
 								},
 								File:   "interpolate.flux",
 								Source: "every: duration",
 								Start: ast.Position{
 									Column: 5,
-									Line:   28,
+									Line:   51,
 								},
 							},
 						},
@@ -370,13 +370,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   28,
+										Line:   51,
 									},
 									File:   "interpolate.flux",
 									Source: "every",
 									Start: ast.Position{
 										Column: 5,
-										Line:   28,
+										Line:   51,
 									},
 								},
 							},
@@ -389,13 +389,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   28,
+										Line:   51,
 									},
 									File:   "interpolate.flux",
 									Source: "duration",
 									Start: ast.Position{
 										Column: 12,
-										Line:   28,
+										Line:   51,
 									},
 								},
 							},
@@ -406,13 +406,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   28,
+											Line:   51,
 										},
 										File:   "interpolate.flux",
 										Source: "duration",
 										Start: ast.Position{
 											Column: 12,
-											Line:   28,
+											Line:   51,
 										},
 									},
 								},
@@ -427,13 +427,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   32,
+									Line:   55,
 								},
 								File:   "interpolate.flux",
 								Source: "[{T with\n    _time: time,\n    _value: float,\n}]",
 								Start: ast.Position{
 									Column: 6,
-									Line:   29,
+									Line:   52,
 								},
 							},
 						},
@@ -444,13 +444,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   32,
+										Line:   55,
 									},
 									File:   "interpolate.flux",
 									Source: "{T with\n    _time: time,\n    _value: float,\n}",
 									Start: ast.Position{
 										Column: 7,
-										Line:   29,
+										Line:   52,
 									},
 								},
 							},
@@ -461,13 +461,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   30,
+											Line:   53,
 										},
 										File:   "interpolate.flux",
 										Source: "_time: time",
 										Start: ast.Position{
 											Column: 5,
-											Line:   30,
+											Line:   53,
 										},
 									},
 								},
@@ -478,13 +478,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   30,
+												Line:   53,
 											},
 											File:   "interpolate.flux",
 											Source: "_time",
 											Start: ast.Position{
 												Column: 5,
-												Line:   30,
+												Line:   53,
 											},
 										},
 									},
@@ -497,13 +497,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   30,
+												Line:   53,
 											},
 											File:   "interpolate.flux",
 											Source: "time",
 											Start: ast.Position{
 												Column: 12,
-												Line:   30,
+												Line:   53,
 											},
 										},
 									},
@@ -514,13 +514,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   30,
+													Line:   53,
 												},
 												File:   "interpolate.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 12,
-													Line:   30,
+													Line:   53,
 												},
 											},
 										},
@@ -534,13 +534,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   31,
+											Line:   54,
 										},
 										File:   "interpolate.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 5,
-											Line:   31,
+											Line:   54,
 										},
 									},
 								},
@@ -551,13 +551,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   31,
+												Line:   54,
 											},
 											File:   "interpolate.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 5,
-												Line:   31,
+												Line:   54,
 											},
 										},
 									},
@@ -570,13 +570,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   31,
+												Line:   54,
 											},
 											File:   "interpolate.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 13,
-												Line:   31,
+												Line:   54,
 											},
 										},
 									},
@@ -587,13 +587,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   31,
+													Line:   54,
 												},
 												File:   "interpolate.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 13,
-													Line:   31,
+													Line:   54,
 												},
 											},
 										},
@@ -608,13 +608,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 9,
-											Line:   29,
+											Line:   52,
 										},
 										File:   "interpolate.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 8,
-											Line:   29,
+											Line:   52,
 										},
 									},
 								},
@@ -631,18 +631,18 @@ var pkgAST = &ast.Package{
 		Name:     "interpolate.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Flux interpolate package provides functions that insert rows for missing data\n"}, ast.Comment{Text: "// at regular intervals and estimate values using different interpolation methods.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   1,
+						Line:   3,
 					},
 					File:   "interpolate.flux",
 					Source: "package interpolate",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   3,
 					},
 				},
 			},
@@ -653,13 +653,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   1,
+							Line:   3,
 						},
 						File:   "interpolate.flux",
 						Source: "interpolate",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   3,
 						},
 					},
 				},

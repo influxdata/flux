@@ -1,3 +1,4 @@
+// Package system provides functions for reading values from the system.
 package system
 
 
@@ -6,8 +7,8 @@ package system
 // ## Example
 // ```
 // import "system"
+// import "array"
 //
-// data
-//   |> set(key: "processed_at", value: string(v: system.time() ))
+// array.from(rows:[{time: system.time()}])
 // ```
 builtin time : () => time

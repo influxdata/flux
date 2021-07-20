@@ -1,6 +1,7 @@
 //! Flux start-up.
 
 use std::collections::HashSet;
+use std::env::consts;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
@@ -32,6 +33,34 @@ type AstFileMap = SemanticMap<String, ast::File>;
 pub struct Error {
     /// Error message.
     pub msg: String,
+}
+
+/// DocPackage represents the documentation for a package and its sub packages
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocPackage {
+    /// the path to the documentation package
+    pub path: String,
+    /// the name of the comments package?
+    pub name: String,
+    /// the doc
+    pub doc: String,
+    /// the values of the comments
+    pub values: Vec<DocValue>,
+}
+
+/// DocValue represents the documentation for a single value within a package.
+/// Values include options, builtins or any variable assignment within the top level scope of a
+/// package.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DocValue {
+    /// the path to the package
+    pub pkgpath: String,
+    /// the name of the package
+    pub name: String,
+    /// the doc
+    pub doc: String,
+    /// the type of the comments
+    pub typ: String,
 }
 
 impl From<io::Error> for Error {
@@ -79,20 +108,140 @@ impl From<&str> for Error {
         }
     }
 }
+
+fn stdlib_relative_path() -> &'static str {
+    if consts::OS == "windows" {
+        "..\\..\\stdlib"
+    } else {
+        "../../stdlib"
+    }
+}
+
 /// Infers the types of the standard library returning two [`PolyTypeMap`]s, one for the prelude
 /// and one for the standard library, as well as a type variable [`Fresher`].
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
+pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>, AstFileMap), Error>
+{
     let mut f = Fresher::default();
 
-    let dir = "../../stdlib";
-    let files = file_map(parse_flux_files(dir)?);
-    let rerun_if_changed = compute_file_dependencies(dir);
+    let path = stdlib_relative_path();
+    let files = file_map(parse_flux_files(path)?);
+    let rerun_if_changed = compute_file_dependencies(path);
 
     let (prelude, importer) = infer_pre(&mut f, &files)?;
     let importer = infer_std(&mut f, &files, prelude.clone(), importer)?;
 
-    Ok((prelude, importer, f, rerun_if_changed))
+    Ok((prelude, importer, f, rerun_if_changed, files))
+}
+
+/// new stdlib docs function
+pub fn stdlib_docs(
+    lib: &PolyTypeMap,
+    files: &AstFileMap,
+) -> Result<Vec<DocPackage>, Box<dyn std::error::Error>> {
+    //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
+    let mut docs = Vec::new();
+    for (path, file) in files {
+        let pkg = generate_docs(path.clone(), &lib, file)?;
+        docs.push(pkg);
+    }
+    Ok(docs)
+}
+
+// Generates the docs by parsing the sources and checking type inference.
+fn generate_docs(
+    path: String,
+    types: &PolyTypeMap,
+    file: &ast::File,
+) -> Result<DocPackage, Box<dyn std::error::Error>> {
+    // construct the package documentation
+    // use type inference to determine types of all values
+    //let sem_pkg = analyze(pkg.clone())?;
+    //let types = pkg_types(&sem_pkg);
+
+    let mut doc = String::new();
+    let values = generate_values(&file, &types, &path)?;
+    if let Some(comment) = &file.package {
+        doc = comments_to_string(&comment.base.comments);
+    }
+    //TODO check if package name exists and if it doesn't throw an error message
+    Ok(DocPackage {
+        path,
+        name: file.package.clone().unwrap().name.name,
+        doc,
+        values,
+    })
+}
+
+// Generates docs for the values in a given source file.
+fn generate_values(
+    f: &ast::File,
+    types: &PolyTypeMap,
+    pkgpath: &str,
+) -> Result<Vec<DocValue>, Box<dyn std::error::Error>> {
+    let mut values: Vec<DocValue> = Vec::new();
+    //println!("{:?}", types);
+    for stmt in &f.body {
+        match stmt {
+            ast::Statement::Variable(s) => {
+                let doc = comments_to_string(&s.id.base.comments);
+                let name = s.id.name.clone();
+                //println!("{}", name);
+                if !types.contains_key(&name) {
+                    continue;
+                }
+                let typ = format!("{}", types[&name].normal());
+                values.push(DocValue {
+                    pkgpath: pkgpath.to_string(),
+                    name: name.clone(),
+                    doc,
+                    typ,
+                });
+            }
+            ast::Statement::Builtin(s) => {
+                let doc = comments_to_string(&s.base.comments);
+                let name = s.id.name.clone();
+                if !types.contains_key(&name) {
+                    continue;
+                }
+                let typ = format!("{}", types[&name].normal());
+                values.push(DocValue {
+                    pkgpath: pkgpath.to_string(),
+                    name: name.clone(),
+                    doc,
+                    typ,
+                });
+            }
+            ast::Statement::Option(s) => {
+                if let ast::Assignment::Variable(v) = &s.assignment {
+                    let doc = comments_to_string(&s.base.comments);
+                    let name = v.id.name.clone();
+                    if !types.contains_key(&name) {
+                        continue;
+                    }
+                    let typ = format!("{}", types[&name].normal());
+                    values.push(DocValue {
+                        pkgpath: pkgpath.to_string(),
+                        name: name.clone(),
+                        doc,
+                        typ,
+                    });
+                }
+            }
+            _ => {}
+        }
+    }
+    Ok(values)
+}
+
+fn comments_to_string(comments: &[ast::Comment]) -> String {
+    let mut s = String::new();
+    if !comments.is_empty() {
+        for c in comments {
+            s.push_str(c.text.as_str().strip_prefix("//").unwrap());
+        }
+    }
+    comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
 }
 
 fn compute_file_dependencies(root: &str) -> Vec<String> {
@@ -156,12 +305,25 @@ fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
         .filter_map(|r| r.ok())
         .filter(|r| r.path().is_file());
 
+    let is_windows = consts::OS == "windows";
+
     for entry in entries {
         if let Some(path) = entry.path().to_str() {
             if path.ends_with(".flux") && !path.ends_with("_test.flux") {
+                let mut normalized_path = path.to_string();
+                if is_windows {
+                    // When building on Windows, the paths generated by WalkDir will
+                    // use `\` instead of `/` as their separator. It's easier to normalize
+                    // the separators to always be `/` here than it is to change the
+                    // rest of this buildscript & the flux runtime initialization logic
+                    // to work with either separator.
+                    normalized_path = normalized_path.replace("\\", "/");
+                }
                 files.push(parser::parse_string(
-                    path.rsplitn(2, "/stdlib/").collect::<Vec<&str>>()[0],
-                    &fs::read_to_string(path)?,
+                    normalized_path
+                        .rsplitn(2, "/stdlib/")
+                        .collect::<Vec<&str>>()[0],
+                    &fs::read_to_string(entry.path())?,
                 ));
             }
         }
@@ -422,7 +584,7 @@ mod tests {
 
     #[test]
     fn prelude_dependencies() {
-        let files = file_map(parse_flux_files("../../stdlib").unwrap());
+        let files = file_map(parse_flux_files(stdlib_relative_path()).unwrap());
 
         let r = PRELUDE.iter().try_fold(
             (Vec::new(), HashSet::new(), HashSet::new()),
@@ -431,7 +593,17 @@ mod tests {
 
         let names = r.unwrap().0;
 
-        assert_eq!(vec!["system", "date", "math", "strings", "regexp"], names,);
+        assert_eq!(
+            vec![
+                "system",
+                "date",
+                "math",
+                "strings",
+                "regexp",
+                "experimental/table"
+            ],
+            names,
+        );
     }
 
     #[test]

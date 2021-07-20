@@ -13,7 +13,7 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y \
     openssl libtinfo5 ruby \
     ca-certificates curl file gnupg \
-    build-essential cmake \
+    build-essential cmake nodejs npm \
     libxml2-dev libssl-dev zlib1g-dev \
     autoconf automake autotools-dev libtool xutils-dev valgrind && \
     rm -rf /var/lib/apt/lists/*
@@ -37,7 +37,8 @@ ENV RUSTC_WRAPPER=sccache
 # Install additional tooling and requirements for building flux.
 ENV COLM_VERSION=0.14.2
 ENV RAGEL7_VERSION=7.0.1
-RUN curl https://www.colm.net/files/thurston.asc | gpg --import - && \
+COPY .thurston.asc thurston.asc
+RUN gpg --import thurston.asc && \
     curl https://www.colm.net/files/colm/colm-${COLM_VERSION}.tar.gz -O && \
     curl https://www.colm.net/files/colm/colm-${COLM_VERSION}.tar.gz.asc -O && \
     gpg --verify colm-${COLM_VERSION}.tar.gz.asc colm-${COLM_VERSION}.tar.gz && \

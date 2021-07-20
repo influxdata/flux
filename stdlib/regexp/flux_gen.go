@@ -24,30 +24,30 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 18,
-					Line:   11,
+					Line:   255,
 				},
 				File:   "regexp.flux",
-				Source: "package regexp\n\n\nbuiltin compile : (v: string) => regexp\nbuiltin quoteMeta : (v: string) => string\nbuiltin findString : (r: regexp, v: string) => string\nbuiltin findStringIndex : (r: regexp, v: string) => [int]\nbuiltin matchRegexpString : (r: regexp, v: string) => bool\nbuiltin replaceAllString : (r: regexp, v: string, t: string) => string\nbuiltin splitRegexp : (r: regexp, v: string, i: int) => [string]\nbuiltin getString",
+				Source: "package regexp\n\n\n// compile is a function that parses a regular expression and,\n//  if successful, returns a Regexp object that can be used to\n//  match against text.\n//\n// ## Parameters\n// - `v` is the string value to parse into regular expression.\n//\n// ## Example\n//\n// ```\n// import \"regexp\"\n//\n// regexp.compile(v: \"abcd\")\n// // Returns the regexp object `abcd`\n// ```\n//\n// ## Use a string value as a regular expression\n//\n// ```\n// import \"regexp\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       regexStr: r.regexStr,\n//       _value: r._value,\n//       firstRegexMatch: findString(\n//         r: regexp.compile(v: regexStr),\n//         v: r._value\n//       )\n//     })\n//   )\n// ```\nbuiltin compile : (v: string) => regexp\n\n// quoteMeta is a function that escapes all regular expression\n//  metacharacters inside of a string.\n//\n// ## Parameters\n// - `v` is the string that contains regular expression metacharacters\n//   to escape\n//\n// ## Example\n//\n// ```\n// import \"regexp\"\n//\n// regexp.quoteMeta(v: \".+*?()|[]{}^$\")\n// // Returns \"\\.\\+\\*\\?\\(\\)\\|\\[\\]\\{\\}\\^\\$\"\n// ```\n//\n// ## Escape regular expression meta characters in column values\n//\n// ```\n// import \"regexp\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       notes: r.notes,\n//       notes_escaped: regexp.quoteMeta(v: r.notes)\n//     })\n//   )\n// ```\nbuiltin quoteMeta : (v: string) => string\n\n// findString is a function that returns the left-most regular expression\n//  match in a string.\n//\n// ## Parameters\n// - `r` is the regular expression used to search v.\n// - `v` is the string value to search.\n//\n// ## Example\n//\n// ```\n// import \"regexp\"\n//\n// regexp.findString(r: /foo.?/, v: \"seafood fool\")\n// // Returns \"food\"\n// ```\n//\n// ## Find the first regular expression match in each row\n//\n// ```\n// import \"regexp\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       message: r.message,\n//       regexp: r.regexp,\n//       match: regexp.findString(r: r.regexp, v: r.message)\n//     })\n//   )\n// ```\nbuiltin findString : (r: regexp, v: string) => string\n\n// findStringIdex is a function that returns a two-element array of integers\n//  defining the beginning and ending indexes of the left-most regular\n//  expression match in a string.\n//\n// ## Parameters\n// - 'r' is the regular expression used to search v.\n// - `v` is the string value to search.\n//\n// ## Example\n//\n// ```\n// import \"regexp\"\n//\n// regexp.findStringIndex(r: /ab?/, v: \"tablet\")\n// // Returns [1, 3]\n// ```\n//\n// ## Index the bounds of first regular expression match in each row\n//\n// ```\n// import \"regexp\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       regexStr: r.regexStr,\n//       _value: r._value,\n//       matchIndex: regexp.findStringIndex(\n//         r: regexp.compile(r.regexStr),\n//         v: r._value\n//       )\n//     })\n//   )\n// ```\nbuiltin findStringIndex : (r: regexp, v: string) => [int]\n\n// matchRegexpString is a function that tests if a string contains any\n//  match to a regular expression.\n//\n// ## Parameters\n// - `r` is the regular expression used to search v.\n// - `v` is the string value to search.\n//\n// ## Example\n//\n// ```\n// import \"regexp\"\n//\n// regexp.matchRegexpString(r: /(gopher){2}/, v: \"gophergophergopher\")\n// // Returns true\n// ```\n//\n// ## Filter by columns that contain matches to a regular expression\n//\n// ```\n// import \"regexp\"\n//\n// data\n//   |> filter(fn: (r) =>\n//     regexp.matchRegexpString(\n//       r: /Alert\\:/,\n//       v: r.message\n//     )\n//   )\n// ```\nbuiltin matchRegexpString : (r: regexp, v: string) => bool\n\n// replaceAllString is a function that replaces all reguar expression matches\n//  in a string with a specified replacement.\n//\n// ## Parameters\n// - `r` is the regular expression used to search v.\n// - `v` is the string value to search.\n// - `t` is the replacement for matches to r.\n//\n// ## Example\n//\n// ```\n// import \"regexp\"\n//\n// regexp.replaceAllString(r: /a(x*)b/, v: \"-ab-axxb-\", t: \"T\")\n// // Returns \"-T-T-\"\n// ```\n//\n// ## Replace regular expression matches in string column values\n//\n// ```\n// import \"regexp\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       message: r.message,\n//       updated_message: regexp.replaceAllString(\n//         r: /cat|bird|ferret/,\n//         v: r.message,\n//         t: \"dog\"\n//       )\n//   }))\n// ```\nbuiltin replaceAllString : (r: regexp, v: string, t: string) => string\n\n// splitRegexp is a function that splits a string into substrings separated\n//  by regular expression matches and return an array of i substrings\n//  between matches.\n//\n// ## Parameters\n// - `r` is the regular expression used to search v.\n// - `v` is the string value to be searched.\n// - `i` is the maximum number of substrings to return.\n//\n//   -1 returns all matching substrings.\n//\n// ## Example\n//\n// ```\n// import \"regexp\"\n//\n// regexp.splitRegexp(r: /a*/, v: \"abaabaccadaaae\", i: 5)\n// // Returns [\"\", \"b\", \"b\", \"c\", \"cadaaae\"]\n// ```\nbuiltin splitRegexp : (r: regexp, v: string, i: int) => [string]\n\n// getString is a function that returns the source string used to compile\n//  a regular expression.\n//\n// ## Parameters\n// - `r` is the regular expression object to convert to a string.\n//\n// ## Example\n//\n// ```\n// import \"regexp\"\n//\n// regexp.getString(r: /[a-zA-Z]/)\n// // Returns \"[a-zA-Z]\"\n// ```\n//\n// ## Convert regular expressions into strings in each row\n//\n// ```\n// import \"regexp\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       regex: r.regex,\n//       regexStr: regexp.getString(r: r.regex)\n//     })\n//   )\n// ```\nbuiltin getString",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   3,
 				},
 			},
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// compile is a function that parses a regular expression and,\n"}, ast.Comment{Text: "//  if successful, returns a Regexp object that can be used to\n"}, ast.Comment{Text: "//  match against text.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `v` is the string value to parse into regular expression.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// regexp.compile(v: \"abcd\")\n"}, ast.Comment{Text: "// // Returns the regexp object `abcd`\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Use a string value as a regular expression\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       regexStr: r.regexStr,\n"}, ast.Comment{Text: "//       _value: r._value,\n"}, ast.Comment{Text: "//       firstRegexMatch: findString(\n"}, ast.Comment{Text: "//         r: regexp.compile(v: regexStr),\n"}, ast.Comment{Text: "//         v: r._value\n"}, ast.Comment{Text: "//       )\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   4,
+						Line:   39,
 					},
 					File:   "regexp.flux",
 					Source: "builtin compile",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   39,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   4,
+							Line:   39,
 						},
 						File:   "regexp.flux",
 						Source: "compile",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   39,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   4,
+							Line:   39,
 						},
 						File:   "regexp.flux",
 						Source: "(v: string) => regexp",
 						Start: ast.Position{
 							Column: 19,
-							Line:   4,
+							Line:   39,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   4,
+								Line:   39,
 							},
 							File:   "regexp.flux",
 							Source: "(v: string) => regexp",
 							Start: ast.Position{
 								Column: 19,
-								Line:   4,
+								Line:   39,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   4,
+									Line:   39,
 								},
 								File:   "regexp.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   4,
+									Line:   39,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   4,
+										Line:   39,
 									},
 									File:   "regexp.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   4,
+										Line:   39,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   4,
+										Line:   39,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   4,
+										Line:   39,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   4,
+											Line:   39,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   4,
+											Line:   39,
 										},
 									},
 								},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   4,
+									Line:   39,
 								},
 								File:   "regexp.flux",
 								Source: "regexp",
 								Start: ast.Position{
 									Column: 34,
-									Line:   4,
+									Line:   39,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   4,
+										Line:   39,
 									},
 									File:   "regexp.flux",
 									Source: "regexp",
 									Start: ast.Position{
 										Column: 34,
-										Line:   4,
+										Line:   39,
 									},
 								},
 							},
@@ -222,18 +222,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// quoteMeta is a function that escapes all regular expression\n"}, ast.Comment{Text: "//  metacharacters inside of a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `v` is the string that contains regular expression metacharacters\n"}, ast.Comment{Text: "//   to escape\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// regexp.quoteMeta(v: \".+*?()|[]{}^$\")\n"}, ast.Comment{Text: "// // Returns \"\\.\\+\\*\\?\\(\\)\\|\\[\\]\\{\\}\\^\\$\"\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Escape regular expression meta characters in column values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       notes: r.notes,\n"}, ast.Comment{Text: "//       notes_escaped: regexp.quoteMeta(v: r.notes)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   5,
+						Line:   70,
 					},
 					File:   "regexp.flux",
 					Source: "builtin quoteMeta",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   70,
 					},
 				},
 			},
@@ -245,13 +245,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   5,
+							Line:   70,
 						},
 						File:   "regexp.flux",
 						Source: "quoteMeta",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   70,
 						},
 					},
 				},
@@ -264,13 +264,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
-							Line:   5,
+							Line:   70,
 						},
 						File:   "regexp.flux",
 						Source: "(v: string) => string",
 						Start: ast.Position{
 							Column: 21,
-							Line:   5,
+							Line:   70,
 						},
 					},
 				},
@@ -282,13 +282,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
-								Line:   5,
+								Line:   70,
 							},
 							File:   "regexp.flux",
 							Source: "(v: string) => string",
 							Start: ast.Position{
 								Column: 21,
-								Line:   5,
+								Line:   70,
 							},
 						},
 					},
@@ -299,13 +299,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   5,
+									Line:   70,
 								},
 								File:   "regexp.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   5,
+									Line:   70,
 								},
 							},
 						},
@@ -317,13 +317,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   5,
+										Line:   70,
 									},
 									File:   "regexp.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 22,
-										Line:   5,
+										Line:   70,
 									},
 								},
 							},
@@ -336,13 +336,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   5,
+										Line:   70,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   5,
+										Line:   70,
 									},
 								},
 							},
@@ -353,13 +353,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   5,
+											Line:   70,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   5,
+											Line:   70,
 										},
 									},
 								},
@@ -374,13 +374,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   5,
+									Line:   70,
 								},
 								File:   "regexp.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 36,
-									Line:   5,
+									Line:   70,
 								},
 							},
 						},
@@ -391,13 +391,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   5,
+										Line:   70,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 36,
-										Line:   5,
+										Line:   70,
 									},
 								},
 							},
@@ -408,18 +408,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// findString is a function that returns the left-most regular expression\n"}, ast.Comment{Text: "//  match in a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `r` is the regular expression used to search v.\n"}, ast.Comment{Text: "// - `v` is the string value to search.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// regexp.findString(r: /foo.?/, v: \"seafood fool\")\n"}, ast.Comment{Text: "// // Returns \"food\"\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Find the first regular expression match in each row\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       message: r.message,\n"}, ast.Comment{Text: "//       regexp: r.regexp,\n"}, ast.Comment{Text: "//       match: regexp.findString(r: r.regexp, v: r.message)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   6,
+						Line:   102,
 					},
 					File:   "regexp.flux",
 					Source: "builtin findString",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   102,
 					},
 				},
 			},
@@ -431,13 +431,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   6,
+							Line:   102,
 						},
 						File:   "regexp.flux",
 						Source: "findString",
 						Start: ast.Position{
 							Column: 9,
-							Line:   6,
+							Line:   102,
 						},
 					},
 				},
@@ -450,13 +450,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
-							Line:   6,
+							Line:   102,
 						},
 						File:   "regexp.flux",
 						Source: "(r: regexp, v: string) => string",
 						Start: ast.Position{
 							Column: 22,
-							Line:   6,
+							Line:   102,
 						},
 					},
 				},
@@ -468,13 +468,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   6,
+								Line:   102,
 							},
 							File:   "regexp.flux",
 							Source: "(r: regexp, v: string) => string",
 							Start: ast.Position{
 								Column: 22,
-								Line:   6,
+								Line:   102,
 							},
 						},
 					},
@@ -485,13 +485,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   6,
+									Line:   102,
 								},
 								File:   "regexp.flux",
 								Source: "r: regexp",
 								Start: ast.Position{
 									Column: 23,
-									Line:   6,
+									Line:   102,
 								},
 							},
 						},
@@ -503,13 +503,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   6,
+										Line:   102,
 									},
 									File:   "regexp.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 23,
-										Line:   6,
+										Line:   102,
 									},
 								},
 							},
@@ -522,13 +522,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   6,
+										Line:   102,
 									},
 									File:   "regexp.flux",
 									Source: "regexp",
 									Start: ast.Position{
 										Column: 26,
-										Line:   6,
+										Line:   102,
 									},
 								},
 							},
@@ -539,13 +539,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   6,
+											Line:   102,
 										},
 										File:   "regexp.flux",
 										Source: "regexp",
 										Start: ast.Position{
 											Column: 26,
-											Line:   6,
+											Line:   102,
 										},
 									},
 								},
@@ -559,13 +559,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   6,
+									Line:   102,
 								},
 								File:   "regexp.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 34,
-									Line:   6,
+									Line:   102,
 								},
 							},
 						},
@@ -577,13 +577,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   6,
+										Line:   102,
 									},
 									File:   "regexp.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 34,
-										Line:   6,
+										Line:   102,
 									},
 								},
 							},
@@ -596,13 +596,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   6,
+										Line:   102,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 37,
-										Line:   6,
+										Line:   102,
 									},
 								},
 							},
@@ -613,13 +613,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   6,
+											Line:   102,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 37,
-											Line:   6,
+											Line:   102,
 										},
 									},
 								},
@@ -634,13 +634,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   6,
+									Line:   102,
 								},
 								File:   "regexp.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 48,
-									Line:   6,
+									Line:   102,
 								},
 							},
 						},
@@ -651,13 +651,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   6,
+										Line:   102,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 48,
-										Line:   6,
+										Line:   102,
 									},
 								},
 							},
@@ -668,18 +668,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// findStringIdex is a function that returns a two-element array of integers\n"}, ast.Comment{Text: "//  defining the beginning and ending indexes of the left-most regular\n"}, ast.Comment{Text: "//  expression match in a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - 'r' is the regular expression used to search v.\n"}, ast.Comment{Text: "// - `v` is the string value to search.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// regexp.findStringIndex(r: /ab?/, v: \"tablet\")\n"}, ast.Comment{Text: "// // Returns [1, 3]\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Index the bounds of first regular expression match in each row\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       regexStr: r.regexStr,\n"}, ast.Comment{Text: "//       _value: r._value,\n"}, ast.Comment{Text: "//       matchIndex: regexp.findStringIndex(\n"}, ast.Comment{Text: "//         r: regexp.compile(r.regexStr),\n"}, ast.Comment{Text: "//         v: r._value\n"}, ast.Comment{Text: "//       )\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 24,
-						Line:   7,
+						Line:   138,
 					},
 					File:   "regexp.flux",
 					Source: "builtin findStringIndex",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   138,
 					},
 				},
 			},
@@ -691,13 +691,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 24,
-							Line:   7,
+							Line:   138,
 						},
 						File:   "regexp.flux",
 						Source: "findStringIndex",
 						Start: ast.Position{
 							Column: 9,
-							Line:   7,
+							Line:   138,
 						},
 					},
 				},
@@ -710,13 +710,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 58,
-							Line:   7,
+							Line:   138,
 						},
 						File:   "regexp.flux",
 						Source: "(r: regexp, v: string) => [int]",
 						Start: ast.Position{
 							Column: 27,
-							Line:   7,
+							Line:   138,
 						},
 					},
 				},
@@ -728,13 +728,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 58,
-								Line:   7,
+								Line:   138,
 							},
 							File:   "regexp.flux",
 							Source: "(r: regexp, v: string) => [int]",
 							Start: ast.Position{
 								Column: 27,
-								Line:   7,
+								Line:   138,
 							},
 						},
 					},
@@ -745,13 +745,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   7,
+									Line:   138,
 								},
 								File:   "regexp.flux",
 								Source: "r: regexp",
 								Start: ast.Position{
 									Column: 28,
-									Line:   7,
+									Line:   138,
 								},
 							},
 						},
@@ -763,13 +763,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   7,
+										Line:   138,
 									},
 									File:   "regexp.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 28,
-										Line:   7,
+										Line:   138,
 									},
 								},
 							},
@@ -782,13 +782,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   7,
+										Line:   138,
 									},
 									File:   "regexp.flux",
 									Source: "regexp",
 									Start: ast.Position{
 										Column: 31,
-										Line:   7,
+										Line:   138,
 									},
 								},
 							},
@@ -799,13 +799,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 37,
-											Line:   7,
+											Line:   138,
 										},
 										File:   "regexp.flux",
 										Source: "regexp",
 										Start: ast.Position{
 											Column: 31,
-											Line:   7,
+											Line:   138,
 										},
 									},
 								},
@@ -819,13 +819,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   7,
+									Line:   138,
 								},
 								File:   "regexp.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 39,
-									Line:   7,
+									Line:   138,
 								},
 							},
 						},
@@ -837,13 +837,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   7,
+										Line:   138,
 									},
 									File:   "regexp.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 39,
-										Line:   7,
+										Line:   138,
 									},
 								},
 							},
@@ -856,13 +856,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   7,
+										Line:   138,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 42,
-										Line:   7,
+										Line:   138,
 									},
 								},
 							},
@@ -873,13 +873,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   7,
+											Line:   138,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 42,
-											Line:   7,
+											Line:   138,
 										},
 									},
 								},
@@ -894,13 +894,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   7,
+									Line:   138,
 								},
 								File:   "regexp.flux",
 								Source: "[int]",
 								Start: ast.Position{
 									Column: 53,
-									Line:   7,
+									Line:   138,
 								},
 							},
 						},
@@ -911,13 +911,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 57,
-										Line:   7,
+										Line:   138,
 									},
 									File:   "regexp.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 54,
-										Line:   7,
+										Line:   138,
 									},
 								},
 							},
@@ -928,13 +928,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 57,
-											Line:   7,
+											Line:   138,
 										},
 										File:   "regexp.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 54,
-											Line:   7,
+											Line:   138,
 										},
 									},
 								},
@@ -946,18 +946,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// matchRegexpString is a function that tests if a string contains any\n"}, ast.Comment{Text: "//  match to a regular expression.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `r` is the regular expression used to search v.\n"}, ast.Comment{Text: "// - `v` is the string value to search.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// regexp.matchRegexpString(r: /(gopher){2}/, v: \"gophergophergopher\")\n"}, ast.Comment{Text: "// // Returns true\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Filter by columns that contain matches to a regular expression\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> filter(fn: (r) =>\n"}, ast.Comment{Text: "//     regexp.matchRegexpString(\n"}, ast.Comment{Text: "//       r: /Alert\\:/,\n"}, ast.Comment{Text: "//       v: r.message\n"}, ast.Comment{Text: "//     )\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 26,
-						Line:   8,
+						Line:   169,
 					},
 					File:   "regexp.flux",
 					Source: "builtin matchRegexpString",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   169,
 					},
 				},
 			},
@@ -969,13 +969,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 26,
-							Line:   8,
+							Line:   169,
 						},
 						File:   "regexp.flux",
 						Source: "matchRegexpString",
 						Start: ast.Position{
 							Column: 9,
-							Line:   8,
+							Line:   169,
 						},
 					},
 				},
@@ -988,13 +988,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 59,
-							Line:   8,
+							Line:   169,
 						},
 						File:   "regexp.flux",
 						Source: "(r: regexp, v: string) => bool",
 						Start: ast.Position{
 							Column: 29,
-							Line:   8,
+							Line:   169,
 						},
 					},
 				},
@@ -1006,13 +1006,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 59,
-								Line:   8,
+								Line:   169,
 							},
 							File:   "regexp.flux",
 							Source: "(r: regexp, v: string) => bool",
 							Start: ast.Position{
 								Column: 29,
-								Line:   8,
+								Line:   169,
 							},
 						},
 					},
@@ -1023,13 +1023,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   8,
+									Line:   169,
 								},
 								File:   "regexp.flux",
 								Source: "r: regexp",
 								Start: ast.Position{
 									Column: 30,
-									Line:   8,
+									Line:   169,
 								},
 							},
 						},
@@ -1041,13 +1041,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   8,
+										Line:   169,
 									},
 									File:   "regexp.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 30,
-										Line:   8,
+										Line:   169,
 									},
 								},
 							},
@@ -1060,13 +1060,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   8,
+										Line:   169,
 									},
 									File:   "regexp.flux",
 									Source: "regexp",
 									Start: ast.Position{
 										Column: 33,
-										Line:   8,
+										Line:   169,
 									},
 								},
 							},
@@ -1077,13 +1077,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   8,
+											Line:   169,
 										},
 										File:   "regexp.flux",
 										Source: "regexp",
 										Start: ast.Position{
 											Column: 33,
-											Line:   8,
+											Line:   169,
 										},
 									},
 								},
@@ -1097,13 +1097,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   8,
+									Line:   169,
 								},
 								File:   "regexp.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 41,
-									Line:   8,
+									Line:   169,
 								},
 							},
 						},
@@ -1115,13 +1115,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   8,
+										Line:   169,
 									},
 									File:   "regexp.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 41,
-										Line:   8,
+										Line:   169,
 									},
 								},
 							},
@@ -1134,13 +1134,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 50,
-										Line:   8,
+										Line:   169,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 44,
-										Line:   8,
+										Line:   169,
 									},
 								},
 							},
@@ -1151,13 +1151,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 50,
-											Line:   8,
+											Line:   169,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 44,
-											Line:   8,
+											Line:   169,
 										},
 									},
 								},
@@ -1172,13 +1172,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   8,
+									Line:   169,
 								},
 								File:   "regexp.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 55,
-									Line:   8,
+									Line:   169,
 								},
 							},
 						},
@@ -1189,13 +1189,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 59,
-										Line:   8,
+										Line:   169,
 									},
 									File:   "regexp.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 55,
-										Line:   8,
+										Line:   169,
 									},
 								},
 							},
@@ -1206,18 +1206,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// replaceAllString is a function that replaces all reguar expression matches\n"}, ast.Comment{Text: "//  in a string with a specified replacement.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `r` is the regular expression used to search v.\n"}, ast.Comment{Text: "// - `v` is the string value to search.\n"}, ast.Comment{Text: "// - `t` is the replacement for matches to r.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// regexp.replaceAllString(r: /a(x*)b/, v: \"-ab-axxb-\", t: \"T\")\n"}, ast.Comment{Text: "// // Returns \"-T-T-\"\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Replace regular expression matches in string column values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       message: r.message,\n"}, ast.Comment{Text: "//       updated_message: regexp.replaceAllString(\n"}, ast.Comment{Text: "//         r: /cat|bird|ferret/,\n"}, ast.Comment{Text: "//         v: r.message,\n"}, ast.Comment{Text: "//         t: \"dog\"\n"}, ast.Comment{Text: "//       )\n"}, ast.Comment{Text: "//   }))\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   9,
+						Line:   204,
 					},
 					File:   "regexp.flux",
 					Source: "builtin replaceAllString",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   204,
 					},
 				},
 			},
@@ -1229,13 +1229,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   9,
+							Line:   204,
 						},
 						File:   "regexp.flux",
 						Source: "replaceAllString",
 						Start: ast.Position{
 							Column: 9,
-							Line:   9,
+							Line:   204,
 						},
 					},
 				},
@@ -1248,13 +1248,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 71,
-							Line:   9,
+							Line:   204,
 						},
 						File:   "regexp.flux",
 						Source: "(r: regexp, v: string, t: string) => string",
 						Start: ast.Position{
 							Column: 28,
-							Line:   9,
+							Line:   204,
 						},
 					},
 				},
@@ -1266,13 +1266,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 71,
-								Line:   9,
+								Line:   204,
 							},
 							File:   "regexp.flux",
 							Source: "(r: regexp, v: string, t: string) => string",
 							Start: ast.Position{
 								Column: 28,
-								Line:   9,
+								Line:   204,
 							},
 						},
 					},
@@ -1283,13 +1283,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   9,
+									Line:   204,
 								},
 								File:   "regexp.flux",
 								Source: "r: regexp",
 								Start: ast.Position{
 									Column: 29,
-									Line:   9,
+									Line:   204,
 								},
 							},
 						},
@@ -1301,13 +1301,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   9,
+										Line:   204,
 									},
 									File:   "regexp.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 29,
-										Line:   9,
+										Line:   204,
 									},
 								},
 							},
@@ -1320,13 +1320,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   9,
+										Line:   204,
 									},
 									File:   "regexp.flux",
 									Source: "regexp",
 									Start: ast.Position{
 										Column: 32,
-										Line:   9,
+										Line:   204,
 									},
 								},
 							},
@@ -1337,13 +1337,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 38,
-											Line:   9,
+											Line:   204,
 										},
 										File:   "regexp.flux",
 										Source: "regexp",
 										Start: ast.Position{
 											Column: 32,
-											Line:   9,
+											Line:   204,
 										},
 									},
 								},
@@ -1357,13 +1357,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   9,
+									Line:   204,
 								},
 								File:   "regexp.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 40,
-									Line:   9,
+									Line:   204,
 								},
 							},
 						},
@@ -1375,13 +1375,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   9,
+										Line:   204,
 									},
 									File:   "regexp.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 40,
-										Line:   9,
+										Line:   204,
 									},
 								},
 							},
@@ -1394,13 +1394,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   9,
+										Line:   204,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 43,
-										Line:   9,
+										Line:   204,
 									},
 								},
 							},
@@ -1411,13 +1411,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 49,
-											Line:   9,
+											Line:   204,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 43,
-											Line:   9,
+											Line:   204,
 										},
 									},
 								},
@@ -1431,13 +1431,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 60,
-									Line:   9,
+									Line:   204,
 								},
 								File:   "regexp.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 51,
-									Line:   9,
+									Line:   204,
 								},
 							},
 						},
@@ -1449,13 +1449,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 52,
-										Line:   9,
+										Line:   204,
 									},
 									File:   "regexp.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 51,
-										Line:   9,
+										Line:   204,
 									},
 								},
 							},
@@ -1468,13 +1468,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 60,
-										Line:   9,
+										Line:   204,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 54,
-										Line:   9,
+										Line:   204,
 									},
 								},
 							},
@@ -1485,13 +1485,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 60,
-											Line:   9,
+											Line:   204,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 54,
-											Line:   9,
+											Line:   204,
 										},
 									},
 								},
@@ -1506,13 +1506,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   9,
+									Line:   204,
 								},
 								File:   "regexp.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 65,
-									Line:   9,
+									Line:   204,
 								},
 							},
 						},
@@ -1523,13 +1523,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 71,
-										Line:   9,
+										Line:   204,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 65,
-										Line:   9,
+										Line:   204,
 									},
 								},
 							},
@@ -1540,18 +1540,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// splitRegexp is a function that splits a string into substrings separated\n"}, ast.Comment{Text: "//  by regular expression matches and return an array of i substrings\n"}, ast.Comment{Text: "//  between matches.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `r` is the regular expression used to search v.\n"}, ast.Comment{Text: "// - `v` is the string value to be searched.\n"}, ast.Comment{Text: "// - `i` is the maximum number of substrings to return.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//   -1 returns all matching substrings.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// regexp.splitRegexp(r: /a*/, v: \"abaabaccadaaae\", i: 5)\n"}, ast.Comment{Text: "// // Returns [\"\", \"b\", \"b\", \"c\", \"cadaaae\"]\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   10,
+						Line:   225,
 					},
 					File:   "regexp.flux",
 					Source: "builtin splitRegexp",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   225,
 					},
 				},
 			},
@@ -1563,13 +1563,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   10,
+							Line:   225,
 						},
 						File:   "regexp.flux",
 						Source: "splitRegexp",
 						Start: ast.Position{
 							Column: 9,
-							Line:   10,
+							Line:   225,
 						},
 					},
 				},
@@ -1582,13 +1582,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 65,
-							Line:   10,
+							Line:   225,
 						},
 						File:   "regexp.flux",
 						Source: "(r: regexp, v: string, i: int) => [string]",
 						Start: ast.Position{
 							Column: 23,
-							Line:   10,
+							Line:   225,
 						},
 					},
 				},
@@ -1600,13 +1600,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 65,
-								Line:   10,
+								Line:   225,
 							},
 							File:   "regexp.flux",
 							Source: "(r: regexp, v: string, i: int) => [string]",
 							Start: ast.Position{
 								Column: 23,
-								Line:   10,
+								Line:   225,
 							},
 						},
 					},
@@ -1617,13 +1617,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   10,
+									Line:   225,
 								},
 								File:   "regexp.flux",
 								Source: "r: regexp",
 								Start: ast.Position{
 									Column: 24,
-									Line:   10,
+									Line:   225,
 								},
 							},
 						},
@@ -1635,13 +1635,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   10,
+										Line:   225,
 									},
 									File:   "regexp.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 24,
-										Line:   10,
+										Line:   225,
 									},
 								},
 							},
@@ -1654,13 +1654,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   10,
+										Line:   225,
 									},
 									File:   "regexp.flux",
 									Source: "regexp",
 									Start: ast.Position{
 										Column: 27,
-										Line:   10,
+										Line:   225,
 									},
 								},
 							},
@@ -1671,13 +1671,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   10,
+											Line:   225,
 										},
 										File:   "regexp.flux",
 										Source: "regexp",
 										Start: ast.Position{
 											Column: 27,
-											Line:   10,
+											Line:   225,
 										},
 									},
 								},
@@ -1691,13 +1691,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   10,
+									Line:   225,
 								},
 								File:   "regexp.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 35,
-									Line:   10,
+									Line:   225,
 								},
 							},
 						},
@@ -1709,13 +1709,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   10,
+										Line:   225,
 									},
 									File:   "regexp.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 35,
-										Line:   10,
+										Line:   225,
 									},
 								},
 							},
@@ -1728,13 +1728,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 44,
-										Line:   10,
+										Line:   225,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 38,
-										Line:   10,
+										Line:   225,
 									},
 								},
 							},
@@ -1745,13 +1745,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
-											Line:   10,
+											Line:   225,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 38,
-											Line:   10,
+											Line:   225,
 										},
 									},
 								},
@@ -1765,13 +1765,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 52,
-									Line:   10,
+									Line:   225,
 								},
 								File:   "regexp.flux",
 								Source: "i: int",
 								Start: ast.Position{
 									Column: 46,
-									Line:   10,
+									Line:   225,
 								},
 							},
 						},
@@ -1783,13 +1783,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   10,
+										Line:   225,
 									},
 									File:   "regexp.flux",
 									Source: "i",
 									Start: ast.Position{
 										Column: 46,
-										Line:   10,
+										Line:   225,
 									},
 								},
 							},
@@ -1802,13 +1802,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 52,
-										Line:   10,
+										Line:   225,
 									},
 									File:   "regexp.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 49,
-										Line:   10,
+										Line:   225,
 									},
 								},
 							},
@@ -1819,13 +1819,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 52,
-											Line:   10,
+											Line:   225,
 										},
 										File:   "regexp.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 49,
-											Line:   10,
+											Line:   225,
 										},
 									},
 								},
@@ -1840,13 +1840,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 65,
-									Line:   10,
+									Line:   225,
 								},
 								File:   "regexp.flux",
 								Source: "[string]",
 								Start: ast.Position{
 									Column: 57,
-									Line:   10,
+									Line:   225,
 								},
 							},
 						},
@@ -1857,13 +1857,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 64,
-										Line:   10,
+										Line:   225,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 58,
-										Line:   10,
+										Line:   225,
 									},
 								},
 							},
@@ -1874,13 +1874,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 64,
-											Line:   10,
+											Line:   225,
 										},
 										File:   "regexp.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 58,
-											Line:   10,
+											Line:   225,
 										},
 									},
 								},
@@ -1892,18 +1892,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// getString is a function that returns the source string used to compile\n"}, ast.Comment{Text: "//  a regular expression.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "// - `r` is the regular expression object to convert to a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Example\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// regexp.getString(r: /[a-zA-Z]/)\n"}, ast.Comment{Text: "// // Returns \"[a-zA-Z]\"\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Convert regular expressions into strings in each row\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"regexp\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       regex: r.regex,\n"}, ast.Comment{Text: "//       regexStr: regexp.getString(r: r.regex)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   11,
+						Line:   255,
 					},
 					File:   "regexp.flux",
 					Source: "builtin getString",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   255,
 					},
 				},
 			},
@@ -1915,13 +1915,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   11,
+							Line:   255,
 						},
 						File:   "regexp.flux",
 						Source: "getString",
 						Start: ast.Position{
 							Column: 9,
-							Line:   11,
+							Line:   255,
 						},
 					},
 				},
@@ -1934,13 +1934,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
-							Line:   11,
+							Line:   255,
 						},
 						File:   "regexp.flux",
 						Source: "(r: regexp) => string",
 						Start: ast.Position{
 							Column: 21,
-							Line:   11,
+							Line:   255,
 						},
 					},
 				},
@@ -1952,13 +1952,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
-								Line:   11,
+								Line:   255,
 							},
 							File:   "regexp.flux",
 							Source: "(r: regexp) => string",
 							Start: ast.Position{
 								Column: 21,
-								Line:   11,
+								Line:   255,
 							},
 						},
 					},
@@ -1969,13 +1969,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   11,
+									Line:   255,
 								},
 								File:   "regexp.flux",
 								Source: "r: regexp",
 								Start: ast.Position{
 									Column: 22,
-									Line:   11,
+									Line:   255,
 								},
 							},
 						},
@@ -1987,13 +1987,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   11,
+										Line:   255,
 									},
 									File:   "regexp.flux",
 									Source: "r",
 									Start: ast.Position{
 										Column: 22,
-										Line:   11,
+										Line:   255,
 									},
 								},
 							},
@@ -2006,13 +2006,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   11,
+										Line:   255,
 									},
 									File:   "regexp.flux",
 									Source: "regexp",
 									Start: ast.Position{
 										Column: 25,
-										Line:   11,
+										Line:   255,
 									},
 								},
 							},
@@ -2023,13 +2023,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   11,
+											Line:   255,
 										},
 										File:   "regexp.flux",
 										Source: "regexp",
 										Start: ast.Position{
 											Column: 25,
-											Line:   11,
+											Line:   255,
 										},
 									},
 								},
@@ -2044,13 +2044,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   11,
+									Line:   255,
 								},
 								File:   "regexp.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 36,
-									Line:   11,
+									Line:   255,
 								},
 							},
 						},
@@ -2061,13 +2061,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   11,
+										Line:   255,
 									},
 									File:   "regexp.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 36,
-										Line:   11,
+										Line:   255,
 									},
 								},
 							},
@@ -2083,18 +2083,18 @@ var pkgAST = &ast.Package{
 		Name:     "regexp.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Flux regular expressions package includes functions that provide enhanced\n"}, ast.Comment{Text: "// regular expression functionality.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   1,
+						Line:   3,
 					},
 					File:   "regexp.flux",
 					Source: "package regexp",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   3,
 					},
 				},
 			},
@@ -2105,13 +2105,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   1,
+							Line:   3,
 						},
 						File:   "regexp.flux",
 						Source: "regexp",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   3,
 						},
 					},
 				},

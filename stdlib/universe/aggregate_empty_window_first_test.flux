@@ -35,12 +35,15 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:30Z,usage_guest,cpu,cpu-total,host.local,0
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:00Z,usage_guest,cpu,cpu-total,host.local,0
 ,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:30Z,usage_guest,cpu,cpu-total,host.local,0
+,,0,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_guest,cpu,cpu-total,host.local,
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:30Z,usage_guest_nice,cpu,cpu-total,host.local,0
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:00Z,usage_guest_nice,cpu,cpu-total,host.local,0
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:30Z,usage_guest_nice,cpu,cpu-total,host.local,0
+,,1,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_guest_nice,cpu,cpu-total,host.local,
 ,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:53:30Z,usage_idle,cpu,cpu-total,host.local,91.7364670583823
 ,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:00Z,usage_idle,cpu,cpu-total,host.local,89.51118889861233
 ,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:54:30Z,usage_idle,cpu,cpu-total,host.local,68.304576144036
+,,2,2018-05-22T19:53:26Z,2018-05-22T19:55:00Z,2018-05-22T19:55:00Z,usage_idle,cpu,cpu-total,host.local,
 "
 
 test aggregate_window_empty_first = () => ({

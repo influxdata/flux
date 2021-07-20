@@ -24,30 +24,30 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 18,
-					Line:   39,
+					Line:   744,
 				},
 				File:   "strings.flux",
-				Source: "package strings\n\n\n// Transformation functions\nbuiltin title : (v: string) => string\nbuiltin toUpper : (v: string) => string\nbuiltin toLower : (v: string) => string\nbuiltin trim : (v: string, cutset: string) => string\nbuiltin trimPrefix : (v: string, prefix: string) => string\nbuiltin trimSpace : (v: string) => string\nbuiltin trimSuffix : (v: string, suffix: string) => string\nbuiltin trimRight : (v: string, cutset: string) => string\nbuiltin trimLeft : (v: string, cutset: string) => string\nbuiltin toTitle : (v: string) => string\nbuiltin hasPrefix : (v: string, prefix: string) => bool\nbuiltin hasSuffix : (v: string, suffix: string) => bool\nbuiltin containsStr : (v: string, substr: string) => bool\nbuiltin containsAny : (v: string, chars: string) => bool\nbuiltin equalFold : (v: string, t: string) => bool\nbuiltin compare : (v: string, t: string) => int\nbuiltin countStr : (v: string, substr: string) => int\nbuiltin index : (v: string, substr: string) => int\nbuiltin indexAny : (v: string, chars: string) => int\nbuiltin lastIndex : (v: string, substr: string) => int\nbuiltin lastIndexAny : (v: string, chars: string) => int\nbuiltin isDigit : (v: string) => bool\nbuiltin isLetter : (v: string) => bool\nbuiltin isLower : (v: string) => bool\nbuiltin isUpper : (v: string) => bool\nbuiltin repeat : (v: string, i: int) => string\nbuiltin replace : (v: string, t: string, u: string, i: int) => string\nbuiltin replaceAll : (v: string, t: string, u: string) => string\nbuiltin split : (v: string, t: string) => [string]\nbuiltin splitAfter : (v: string, t: string) => [string]\nbuiltin splitN : (v: string, t: string, n: int) => [string]\nbuiltin splitAfterN : (v: string, t: string, i: int) => [string]\nbuiltin joinStr : (arr: [string], v: string) => string\nbuiltin strlen : (v: string) => int\nbuiltin substring",
+				Source: "package strings\n\n\n// title converts a string to title case.\n//\n// ## Parameters\n//\n// - `v` is the string value to convert.\n//\n// ## Convert all values of a column to title case\n//\n// ```\n//  import \"strings\"\n//\n//  data\n//      |> map(fn: (r) => ({ r with pageTitle: strings.title(v: r.pageTitle) }))\n//\nbuiltin title : (v: string) => string\n\n// toUpper converts a string to uppercase.\n//\n// ## Parameters\n//\n// - `v` is the string value to convert.\n//\n// ## Convert all values of a column to upper case\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({ r with envVars: strings.toUpper(v: r.envVars) }))\n// ```\n//\n// The difference between toTitle and toUpper\n//\n//      - The results of toUpper() and toTitle are often the same, however the difference is visible when using special characters:\n//\n//      - str = \"ǳ\"\n//\n//      - strings.toUpper(v: str) // Returns Ǳ\n//      - strings.toTitle(v: str) // Returns ǲ\n//\nbuiltin toUpper : (v: string) => string\n\n// toLower converts a string to lowercase.\n//\n// ## Parameters\n//\n// - `v` is the string value to convert.\n//\n// ## Convert all values of a column to lower case\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//        r with exclamation: strings.toLower(v: r.exclamation)\n//      })\n//    )\n// ```\n//\nbuiltin toLower : (v: string) => string\n\n// trim removes leading and trailing characters specified in the cutset from a string.\n//\n// ## Parameters\n//\n// - `v` is the string to remove characters from.\n// - `cutset` is the  leading and trailing characters to remove from the string.\n//\n//      Only characters that match the cutset string exactly are trimmed.\n//\n// ## Trim leading and trailing periods from all values in a column\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       variables: strings.trim(v: r.variables, cutset: \".\")\n//     })\n//   )\n//\nbuiltin trim : (v: string, cutset: string) => string\n\n// trimPrefix removes a prefix from a string. Strings that do not start with the prefix are returned unchanged.\n//\n// ## Parameters\n//\n// - `v` is the string to trim\n// - `prefix` is the prefix to remove\n//\n// ## Trim leading and trailing periods from all values in a column\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       sensorID: strings.trimPrefix(v: r.sensorId, prefix: \"s12_\")\n//     })\n//   )\n// ```\n//\nbuiltin trimPrefix : (v: string, prefix: string) => string\n\n// trimSpace removes leading and trailing spaces from a string.\n//\n// ## Parameters\n//\n// - `v` is the string to remove spaces from\n//\n// ## Trim leading and trailing spaces from all values in a column\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({ r with userInput: strings.trimSpace(v: r.userInput) }))\n// ```\nbuiltin trimSpace : (v: string) => string\n\n// The trimSuffix removes a suffix from a string. Strings that do not end with the suffix are returned unchanged.\n//\n// ## Parameters\n//\n// - `v` is the string to trim\n// - `suffix` is the suffix to remove.\n//\n// ## Remove a suffix from all values in a column\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       sensorID: strings.trimSuffix(v: r.sensorId, suffix: \"_s12\")\n//     })\n//   )\n// ```\n//\nbuiltin trimSuffix : (v: string, suffix: string) => string\n\n// trimRight removes trailing characters specified in the cutset from a string.\n//\n// ## Parameters\n//\n// - `v` is the string to to remove characters from\n// - `cutset` is the trailing characters to trim from the string.\n//\n//      Only characters that match the cutset string exactly are trimmed.\n//\n// ## Trim trailing periods from all values in a column\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       variables: strings.trimRight(v: r.variables, cutset: \".\")\n//     })\n//   )\n// ```\n//\nbuiltin trimRight : (v: string, cutset: string) => string\n\n// trimLeft removes specified leading characters from a string.\n//\n// ## Parameters\n//\n// - `v` is the string to to remove characters from\n// - `cutset` is the trailing characters to trim from the string.\n//\n// ## Trim leading periods from all values in a column\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       variables: strings.trimLeft(v: r.variables, cutset: \".\")\n//     })\n//   )\n// ```\n//\nbuiltin trimLeft : (v: string, cutset: string) => string\n\n// toTitle converts all characters in a string to title case.\n//\n// ## Parameters\n//\n// - `v` is the string value to convert.\n//\n// ## Convert characters in a string to title case\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({ r with pageTitle: strings.toTitle(v: r.pageTitle) }))\n// ```\n//\nbuiltin toTitle : (v: string) => string\n\n// hasPrefix indicates if a string begins with a specified prefix.\n//\n// ## Parameters\n//\n// - `v` is the string value to search.\n// - `prefix` is the string prefix to search for.\n//\n// ## Filter based on the presence of a prefix in a column value\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> filter(fn:(r) => strings.hasPrefix(v: r.metric, prefix: \"int_\" ))\n// ```\n//\nbuiltin hasPrefix : (v: string, prefix: string) => bool\n\n// hasSuffix indicates if a string ends with a specified suffix.\n//\n// ## Parameters\n//\n// - `v` is the string value to search.\n// - `prefix` is the string suffix to search for.\n//\n// ## Filter based on the presence of a suffix in a column value\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> filter(fn:(r) => strings.hasSuffix(v: r.metric, suffix: \"_count\" ))\n// ```\n//\nbuiltin hasSuffix : (v: string, suffix: string) => bool\n\n// containsStr reports whether a string contains a specified substring.\n//\n// ## Parameters\n//\n// - `v` is the string value to search\n// - `substr` is the substring value to search for\n//\n// ## Report if a string contains a specific substring\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       _value: strings.containsStr(v: r.author, substr: \"John\")\n//     })\n//   )\n// ```\n//\nbuiltin containsStr : (v: string, substr: string) => bool\n\n// containsAny reports whether a specified string contains characters from another string.\n//\n// ## Parameters\n//\n// - `v` is the string value to search\n// - `chars` is the character to search for\n//\n// ## Report if a string contains specific characters\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       _value: strings.containsAny(v: r.price, chars: \"£$¢\")\n//     })\n//   )\n// ```\n//\nbuiltin containsAny : (v: string, chars: string) => bool\n\n// equalFold reports whether two UTF-8 strings are equal under Unicode case-folding.\n//\n// ## Parameters\n//\n// - `v` is the string value to compare\n// - `t` is the string value to compare against\n//\n// ## Ignore case when testing if two strings are the same\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       string1: r.string1,\n//       string2: r.string2,\n//       same: strings.equalFold(v: r.string1, t: r.string2)\n//     })\n//   )\n// ```\n//\nbuiltin equalFold : (v: string, t: string) => bool\n\n// compare compares the lexicographical order of two strings.\n//\n//      Return values\n//      Comparison\tReturn value\n//      v < t\t    -1\n//      v == t\t    0\n//      v > t\t    1\n//\n// ## Parameters\n//\n// - `v` is the string value to compare\n// - `t` is the string value to compare against\n//\n// ## Compare the lexicographical order of column values\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       _value: strings.compare(v: r.tag1, t: r.tag2)\n//     })\n//   )\n// ```\n//\nbuiltin compare : (v: string, t: string) => int\n\n//countStr counts the number of non-overlapping instances of a substring appears in a string.\n//\n// ## Parameters\n//\n// - `v` is the string value to search\n// - `substr` is the substr value to count\n//\n//      The function counts only non-overlapping instances of substr. For example:\n//      strings.coutnStr(v: \"ooooo\", substr: \"oo\")\n//      // Returns 2 -- (oo)(oo)o\n//\n// ## Count instances of a substring within a string\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//        _value: strings.countStr(v: r.message, substr: \"uh\")\n//     })\n//   )\n// ```\n//\nbuiltin countStr : (v: string, substr: string) => int\n\n// index returns the index of the first instance of a substring in a string. If the substring is not present, it returns -1.\n//\n// ## Parameters\n//\n// - `v` is the string value to search\n// - `substr` is the substring to search for\n//\n// ## Find the first occurrence of a substring\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       the_index: strings.index(v: r.pageTitle, substr: \"the\")\n//     })\n//   )\n// ```\n//\nbuiltin index : (v: string, substr: string) => int\n\n// indexAny returns the index of the first instance of specified characters in a string. If none of the specified characters are present, it returns -1.\n//\n// ## Parameters\n//\n// - `v` is the string value to search\n// - `chars` are the chars to search for\n//\n// ## Find the first occurrence of characters from a string\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       charIndex: strings.indexAny(v: r._field, chars: \"_-\")\n//     })\n//   )\n// ```\n//\nbuiltin indexAny : (v: string, chars: string) => int\n\n// lastIndex returns the index of the last instance of a substring in a string. If the substring is not present, the function returns -1.\n//\n// ## Parameters\n//\n// - `v` is the string value to search\n// - `substr` is the substring to search for\n//\n// ## Find the last occurrence of a substring\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       the_index: strings.lastIndex(v: r.pageTitle, substr: \"the\")\n//     })\n//   )\n// ```\n//\nbuiltin lastIndex : (v: string, substr: string) => int\n\n// lastIndexAny returns the index of the last instance of any specified characters in a string. If none of the specified characters are present, the function returns -1.\n//\n// ## Parameters\n//\n// - `v` is the string value to search\n// - `chars` are the characters to search for\n//\n// ## Find the last occurrence of characters from a string\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       charLastIndex: strings.lastIndexAny(v: r._field, chars: \"_-\")\n//     })\n//   )\n// ```\n//\nbuiltin lastIndexAny : (v: string, chars: string) => int\n\n// isDigit tests if a single-character string is a digit (0-9).\n//\n// ## Parameters\n//\n// - `v` is the single-character string to test.\n//\n// ## Filter by columns with digits as values\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> filter(fn: (r) => strings.isDigit(v: r.serverRef))\n// ```\n//\nbuiltin isDigit : (v: string) => bool\n\n// isLetter tests if a single character string is a letter (a-z, A-Z).\n//\n// ## Parameters\n//\n// - `v` is the single-character string to test.\n//\n// ## Filter by columns with digits as values\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> filter(fn: (r) => strings.isLetter(v: r.serverRef))\n// ```\n//\nbuiltin isLetter : (v: string) => bool\n\n// isLower tests if a single-character string is lowercase.\n//\n// ## Parameters\n//\n// - `v` is the single-character string value to test.\n//\n// ## Filter by columns with single-letter lowercase values\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> filter(fn: (r) => strings.isLower(v: r.host))\n// ```\n//\nbuiltin isLower : (v: string) => bool\n\n// isUpper tests if a single character string is uppercase.\n//\n// ## Parameters\n//\n// - `v` is the single-character string value to test.\n//\n// ## Filter by columns with single-letter uppercase values\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> filter(fn: (r) => strings.isUpper(v: r.host))\n// ```\n//\nbuiltin isUpper : (v: string) => bool\n\n// repeat returns a string consisting of i copies of a specified string.\n//\n// ## Parameters\n//\n// - `v` is the string value to repeat.\n// - `i` is the number of times to repeat v.\n//\n// ## Repeat a string based on existing columns\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       laugh: r.laugh\n//       intensity: r.intensity\n//       laughter: strings.repeat(v: r.laugh, i: r.intensity)\n//     })\n//   )\n// ```\n//\nbuiltin repeat : (v: string, i: int) => string\n\n// replace replaces the first i non-overlapping instances of a substring with a specified replacement.\n//\n// ## Parameters\n//\n// - `v` is the string value to search.\n// - `t` is the substring value to replace.\n// - `u` is the replacement for i instances of t.\n// - `i` is the number of non-overlapping t matches to replace.\n//\n// ## Replace a specific number of string matches\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       content: strings.replace(v: r.content, t: \"he\", u: \"her\", i: 3)\n//     })\n//   )\n// ```\n//\nbuiltin replace : (v: string, t: string, u: string, i: int) => string\n\n// replaceAll replaces all non-overlapping instances of a substring with a specified replacement.\n//\n// ## Parameters\n//\n// - `v` is the string value to search.\n// - `t` is the substring to replace.\n// - `u` is the replacement for all instances of t.\n//\n// ## Replace string matches\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       content: strings.replaceAll(v: r.content, t: \"he\", u: \"her\")\n//     })\n//   )\n// ```\n//\nbuiltin replaceAll : (v: string, t: string, u: string) => string\n\n// split splits a string on a specified separator and returns an array of substrings.\n//\n// ## Parameters\n//\n// - `v` is the string value to split.\n// - `t` is the string value that acts as the separator.\n//\n// ## Split a string into an array of substrings\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map (fn:(r) => strings.split(v: r.searchTags, t: \",\"))\n// ```\n//\nbuiltin split : (v: string, t: string) => [string]\n\n// splitAfter splits a string after a specified separator and returns an array of substrings. Split substrings include the separator, t.\n//\n// ## Parameters\n//\n// - `v` is the string value to split.\n// - `t` is the string value that acts as the separator.\n//\n// ## Split a string into an array of substrings\n//\n// ```\n// import \"strings\"\n//\n// data\n//    |> map (fn:(r) => strings.splitAfter(v: r.searchTags, t: \",\"))\n// ```\n//\nbuiltin splitAfter : (v: string, t: string) => [string]\n\n// splitN splits a string on a specified separator and returns an array of i substrings.\n//\n// ## Parameters\n//\n// - `v` is the string value to split.\n// - `t` is the string value that acts as the separator.\n// - `i` is the maximum number of split substrings to return. -1 returns all matching substrings.\n//\n//       - The last substring is the unsplit remainder.\n//\n// ## Split a string into an array of substrings\n//\n// ```\n// import \"strings\"\n//\n// data\n//    |> map (fn:(r) => strings.splitN(v: r.searchTags, t: \",\"))\n// ```\n//\nbuiltin splitN : (v: string, t: string, n: int) => [string]\n\n// splitAfterN splits a string after a specified separator and returns an array of i substrings. Split substrings include the separator t.\n//\n// ## Parameters\n//\n// - `v` is the string value to split.\n// - `t` is the string value that acts as the separator.\n// - `i` is the maximum number of split substrings to return. -1 returns all matching substrings.\n//\n//       - The last substring is the unsplit remainder.\n//\n// ## Split a string into an array of substrings\n//\n// ```\n// import \"strings\"\n//\n// data\n//    |> map (fn:(r) => strings.splitAfterN(v: r.searchTags, t: \",\"))\n// ```\n//\nbuiltin splitAfterN : (v: string, t: string, i: int) => [string]\n\n// joinStr concatenates elements of a string array into a single string using a specified separator.\n//\n// ## Parameters\n//\n// - `arr` is the array of strings to concatenate.\n// - `t` is the separator to use in the concatenated value.\n//\n// ## Join a list of strings into a single string\n//\n// ```\n// import \"strings\"\n//\n// searchTags = [\"tag1\", \"tag2\", \"tag3\"]\n//\n// strings.joinStr(arr: searchTags, v: \",\"))\n// ```\n//\nbuiltin joinStr : (arr: [string], v: string) => string\n\n// strlen returns the length of a string. String length is determined by the number of UTF code points a string contains.\n//\n// ## Parameters\n//\n// - `v` is the string value to measure.\n//\n// ## Filter based on string value length\n//\n// ```\n// import \"strings\"\n//\n// data\n//    |> filter(fn: (r) => strings.strlen(v: r._measurement) <= 4)\n// ```\n//\n// ## Store the length of string values\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       length: strings.strlen(v: r._value)\n//     })\n//   )\n// ```\n//\nbuiltin strlen : (v: string) => int\n\n// substring returns a substring based on start and end parameters. These parameters are represent indices of UTF code points in the string.\n//\n// ## Parameters\n//\n// - `v` is the string value to search for.\n// - `start` is the starting inclusive index of the substring.\n// - `end` is the ending exclusive index of the substring.\n//\n// ## Store the first four characters of a string\n//\n// ```\n// import \"strings\"\n//\n// data\n//   |> map(fn: (r) => ({\n//       r with\n//       abbr: strings.substring(v: r.name, start: 0, end: 4)\n//     })\n//   )\n// ```\nbuiltin substring",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   2,
 				},
 			},
 		},
 		Body: []ast.Statement{&ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Transformation functions\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// title converts a string to title case.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to convert.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Convert all values of a column to title case\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//  import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//  data\n"}, ast.Comment{Text: "//      |> map(fn: (r) => ({ r with pageTitle: strings.title(v: r.pageTitle) }))\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   5,
+						Line:   19,
 					},
 					File:   "strings.flux",
 					Source: "builtin title",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   19,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   5,
+							Line:   19,
 						},
 						File:   "strings.flux",
 						Source: "title",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   19,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   5,
+							Line:   19,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => string",
 						Start: ast.Position{
 							Column: 17,
-							Line:   5,
+							Line:   19,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   5,
+								Line:   19,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => string",
 							Start: ast.Position{
 								Column: 17,
-								Line:   5,
+								Line:   19,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   5,
+									Line:   19,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 18,
-									Line:   5,
+									Line:   19,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   5,
+										Line:   19,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 18,
-										Line:   5,
+										Line:   19,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   5,
+										Line:   19,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 21,
-										Line:   5,
+										Line:   19,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   5,
+											Line:   19,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 21,
-											Line:   5,
+											Line:   19,
 										},
 									},
 								},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   5,
+									Line:   19,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 32,
-									Line:   5,
+									Line:   19,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   5,
+										Line:   19,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 32,
-										Line:   5,
+										Line:   19,
 									},
 								},
 							},
@@ -222,18 +222,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// toUpper converts a string to uppercase.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to convert.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Convert all values of a column to upper case\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({ r with envVars: strings.toUpper(v: r.envVars) }))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// The difference between toTitle and toUpper\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      - The results of toUpper() and toTitle are often the same, however the difference is visible when using special characters:\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      - str = \"ǳ\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      - strings.toUpper(v: str) // Returns Ǳ\n"}, ast.Comment{Text: "//      - strings.toTitle(v: str) // Returns ǲ\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   6,
+						Line:   45,
 					},
 					File:   "strings.flux",
 					Source: "builtin toUpper",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   45,
 					},
 				},
 			},
@@ -245,13 +245,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   6,
+							Line:   45,
 						},
 						File:   "strings.flux",
 						Source: "toUpper",
 						Start: ast.Position{
 							Column: 9,
-							Line:   6,
+							Line:   45,
 						},
 					},
 				},
@@ -264,13 +264,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   6,
+							Line:   45,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => string",
 						Start: ast.Position{
 							Column: 19,
-							Line:   6,
+							Line:   45,
 						},
 					},
 				},
@@ -282,13 +282,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   6,
+								Line:   45,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => string",
 							Start: ast.Position{
 								Column: 19,
-								Line:   6,
+								Line:   45,
 							},
 						},
 					},
@@ -299,13 +299,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   6,
+									Line:   45,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   6,
+									Line:   45,
 								},
 							},
 						},
@@ -317,13 +317,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   6,
+										Line:   45,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   6,
+										Line:   45,
 									},
 								},
 							},
@@ -336,13 +336,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   6,
+										Line:   45,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   6,
+										Line:   45,
 									},
 								},
 							},
@@ -353,13 +353,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   6,
+											Line:   45,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   6,
+											Line:   45,
 										},
 									},
 								},
@@ -374,13 +374,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   6,
+									Line:   45,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 34,
-									Line:   6,
+									Line:   45,
 								},
 							},
 						},
@@ -391,13 +391,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   6,
+										Line:   45,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 34,
-										Line:   6,
+										Line:   45,
 									},
 								},
 							},
@@ -408,18 +408,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// toLower converts a string to lowercase.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to convert.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Convert all values of a column to lower case\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//        r with exclamation: strings.toLower(v: r.exclamation)\n"}, ast.Comment{Text: "//      })\n"}, ast.Comment{Text: "//    )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   7,
+						Line:   65,
 					},
 					File:   "strings.flux",
 					Source: "builtin toLower",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   65,
 					},
 				},
 			},
@@ -431,13 +431,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   7,
+							Line:   65,
 						},
 						File:   "strings.flux",
 						Source: "toLower",
 						Start: ast.Position{
 							Column: 9,
-							Line:   7,
+							Line:   65,
 						},
 					},
 				},
@@ -450,13 +450,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   7,
+							Line:   65,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => string",
 						Start: ast.Position{
 							Column: 19,
-							Line:   7,
+							Line:   65,
 						},
 					},
 				},
@@ -468,13 +468,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   7,
+								Line:   65,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => string",
 							Start: ast.Position{
 								Column: 19,
-								Line:   7,
+								Line:   65,
 							},
 						},
 					},
@@ -485,13 +485,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   7,
+									Line:   65,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   7,
+									Line:   65,
 								},
 							},
 						},
@@ -503,13 +503,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   7,
+										Line:   65,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   7,
+										Line:   65,
 									},
 								},
 							},
@@ -522,13 +522,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   7,
+										Line:   65,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   7,
+										Line:   65,
 									},
 								},
 							},
@@ -539,13 +539,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   7,
+											Line:   65,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   7,
+											Line:   65,
 										},
 									},
 								},
@@ -560,13 +560,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   7,
+									Line:   65,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 34,
-									Line:   7,
+									Line:   65,
 								},
 							},
 						},
@@ -577,13 +577,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   7,
+										Line:   65,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 34,
-										Line:   7,
+										Line:   65,
 									},
 								},
 							},
@@ -594,18 +594,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// trim removes leading and trailing characters specified in the cutset from a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string to remove characters from.\n"}, ast.Comment{Text: "// - `cutset` is the  leading and trailing characters to remove from the string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      Only characters that match the cutset string exactly are trimmed.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Trim leading and trailing periods from all values in a column\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       variables: strings.trim(v: r.variables, cutset: \".\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   8,
+						Line:   88,
 					},
 					File:   "strings.flux",
 					Source: "builtin trim",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   88,
 					},
 				},
 			},
@@ -617,13 +617,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   8,
+							Line:   88,
 						},
 						File:   "strings.flux",
 						Source: "trim",
 						Start: ast.Position{
 							Column: 9,
-							Line:   8,
+							Line:   88,
 						},
 					},
 				},
@@ -636,13 +636,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 53,
-							Line:   8,
+							Line:   88,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, cutset: string) => string",
 						Start: ast.Position{
 							Column: 16,
-							Line:   8,
+							Line:   88,
 						},
 					},
 				},
@@ -654,13 +654,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 53,
-								Line:   8,
+								Line:   88,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, cutset: string) => string",
 							Start: ast.Position{
 								Column: 16,
-								Line:   8,
+								Line:   88,
 							},
 						},
 					},
@@ -671,13 +671,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   8,
+									Line:   88,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 17,
-									Line:   8,
+									Line:   88,
 								},
 							},
 						},
@@ -689,13 +689,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   8,
+										Line:   88,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 17,
-										Line:   8,
+										Line:   88,
 									},
 								},
 							},
@@ -708,13 +708,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   8,
+										Line:   88,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 20,
-										Line:   8,
+										Line:   88,
 									},
 								},
 							},
@@ -725,13 +725,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   8,
+											Line:   88,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 20,
-											Line:   8,
+											Line:   88,
 										},
 									},
 								},
@@ -745,13 +745,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   8,
+									Line:   88,
 								},
 								File:   "strings.flux",
 								Source: "cutset: string",
 								Start: ast.Position{
 									Column: 28,
-									Line:   8,
+									Line:   88,
 								},
 							},
 						},
@@ -763,13 +763,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   8,
+										Line:   88,
 									},
 									File:   "strings.flux",
 									Source: "cutset",
 									Start: ast.Position{
 										Column: 28,
-										Line:   8,
+										Line:   88,
 									},
 								},
 							},
@@ -782,13 +782,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   8,
+										Line:   88,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 36,
-										Line:   8,
+										Line:   88,
 									},
 								},
 							},
@@ -799,13 +799,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   8,
+											Line:   88,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 36,
-											Line:   8,
+											Line:   88,
 										},
 									},
 								},
@@ -820,13 +820,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   8,
+									Line:   88,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 47,
-									Line:   8,
+									Line:   88,
 								},
 							},
 						},
@@ -837,13 +837,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   8,
+										Line:   88,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 47,
-										Line:   8,
+										Line:   88,
 									},
 								},
 							},
@@ -854,18 +854,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// trimPrefix removes a prefix from a string. Strings that do not start with the prefix are returned unchanged.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string to trim\n"}, ast.Comment{Text: "// - `prefix` is the prefix to remove\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Trim leading and trailing periods from all values in a column\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       sensorID: strings.trimPrefix(v: r.sensorId, prefix: \"s12_\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   9,
+						Line:   110,
 					},
 					File:   "strings.flux",
 					Source: "builtin trimPrefix",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   110,
 					},
 				},
 			},
@@ -877,13 +877,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   9,
+							Line:   110,
 						},
 						File:   "strings.flux",
 						Source: "trimPrefix",
 						Start: ast.Position{
 							Column: 9,
-							Line:   9,
+							Line:   110,
 						},
 					},
 				},
@@ -896,13 +896,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 59,
-							Line:   9,
+							Line:   110,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, prefix: string) => string",
 						Start: ast.Position{
 							Column: 22,
-							Line:   9,
+							Line:   110,
 						},
 					},
 				},
@@ -914,13 +914,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 59,
-								Line:   9,
+								Line:   110,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, prefix: string) => string",
 							Start: ast.Position{
 								Column: 22,
-								Line:   9,
+								Line:   110,
 							},
 						},
 					},
@@ -931,13 +931,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   9,
+									Line:   110,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 23,
-									Line:   9,
+									Line:   110,
 								},
 							},
 						},
@@ -949,13 +949,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   9,
+										Line:   110,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 23,
-										Line:   9,
+										Line:   110,
 									},
 								},
 							},
@@ -968,13 +968,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   9,
+										Line:   110,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 26,
-										Line:   9,
+										Line:   110,
 									},
 								},
 							},
@@ -985,13 +985,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   9,
+											Line:   110,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 26,
-											Line:   9,
+											Line:   110,
 										},
 									},
 								},
@@ -1005,13 +1005,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   9,
+									Line:   110,
 								},
 								File:   "strings.flux",
 								Source: "prefix: string",
 								Start: ast.Position{
 									Column: 34,
-									Line:   9,
+									Line:   110,
 								},
 							},
 						},
@@ -1023,13 +1023,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   9,
+										Line:   110,
 									},
 									File:   "strings.flux",
 									Source: "prefix",
 									Start: ast.Position{
 										Column: 34,
-										Line:   9,
+										Line:   110,
 									},
 								},
 							},
@@ -1042,13 +1042,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   9,
+										Line:   110,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 42,
-										Line:   9,
+										Line:   110,
 									},
 								},
 							},
@@ -1059,13 +1059,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   9,
+											Line:   110,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 42,
-											Line:   9,
+											Line:   110,
 										},
 									},
 								},
@@ -1080,13 +1080,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   9,
+									Line:   110,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 53,
-									Line:   9,
+									Line:   110,
 								},
 							},
 						},
@@ -1097,13 +1097,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 59,
-										Line:   9,
+										Line:   110,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 53,
-										Line:   9,
+										Line:   110,
 									},
 								},
 							},
@@ -1114,18 +1114,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// trimSpace removes leading and trailing spaces from a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string to remove spaces from\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Trim leading and trailing spaces from all values in a column\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({ r with userInput: strings.trimSpace(v: r.userInput) }))\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   10,
+						Line:   126,
 					},
 					File:   "strings.flux",
 					Source: "builtin trimSpace",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   126,
 					},
 				},
 			},
@@ -1137,13 +1137,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   10,
+							Line:   126,
 						},
 						File:   "strings.flux",
 						Source: "trimSpace",
 						Start: ast.Position{
 							Column: 9,
-							Line:   10,
+							Line:   126,
 						},
 					},
 				},
@@ -1156,13 +1156,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
-							Line:   10,
+							Line:   126,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => string",
 						Start: ast.Position{
 							Column: 21,
-							Line:   10,
+							Line:   126,
 						},
 					},
 				},
@@ -1174,13 +1174,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
-								Line:   10,
+								Line:   126,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => string",
 							Start: ast.Position{
 								Column: 21,
-								Line:   10,
+								Line:   126,
 							},
 						},
 					},
@@ -1191,13 +1191,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   10,
+									Line:   126,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   10,
+									Line:   126,
 								},
 							},
 						},
@@ -1209,13 +1209,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   10,
+										Line:   126,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 22,
-										Line:   10,
+										Line:   126,
 									},
 								},
 							},
@@ -1228,13 +1228,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   10,
+										Line:   126,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   10,
+										Line:   126,
 									},
 								},
 							},
@@ -1245,13 +1245,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   10,
+											Line:   126,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   10,
+											Line:   126,
 										},
 									},
 								},
@@ -1266,13 +1266,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   10,
+									Line:   126,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 36,
-									Line:   10,
+									Line:   126,
 								},
 							},
 						},
@@ -1283,13 +1283,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   10,
+										Line:   126,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 36,
-										Line:   10,
+										Line:   126,
 									},
 								},
 							},
@@ -1300,18 +1300,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// The trimSuffix removes a suffix from a string. Strings that do not end with the suffix are returned unchanged.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string to trim\n"}, ast.Comment{Text: "// - `suffix` is the suffix to remove.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Remove a suffix from all values in a column\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       sensorID: strings.trimSuffix(v: r.sensorId, suffix: \"_s12\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   11,
+						Line:   148,
 					},
 					File:   "strings.flux",
 					Source: "builtin trimSuffix",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   148,
 					},
 				},
 			},
@@ -1323,13 +1323,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   11,
+							Line:   148,
 						},
 						File:   "strings.flux",
 						Source: "trimSuffix",
 						Start: ast.Position{
 							Column: 9,
-							Line:   11,
+							Line:   148,
 						},
 					},
 				},
@@ -1342,13 +1342,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 59,
-							Line:   11,
+							Line:   148,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, suffix: string) => string",
 						Start: ast.Position{
 							Column: 22,
-							Line:   11,
+							Line:   148,
 						},
 					},
 				},
@@ -1360,13 +1360,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 59,
-								Line:   11,
+								Line:   148,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, suffix: string) => string",
 							Start: ast.Position{
 								Column: 22,
-								Line:   11,
+								Line:   148,
 							},
 						},
 					},
@@ -1377,13 +1377,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   11,
+									Line:   148,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 23,
-									Line:   11,
+									Line:   148,
 								},
 							},
 						},
@@ -1395,13 +1395,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   11,
+										Line:   148,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 23,
-										Line:   11,
+										Line:   148,
 									},
 								},
 							},
@@ -1414,13 +1414,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   11,
+										Line:   148,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 26,
-										Line:   11,
+										Line:   148,
 									},
 								},
 							},
@@ -1431,13 +1431,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   11,
+											Line:   148,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 26,
-											Line:   11,
+											Line:   148,
 										},
 									},
 								},
@@ -1451,13 +1451,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   11,
+									Line:   148,
 								},
 								File:   "strings.flux",
 								Source: "suffix: string",
 								Start: ast.Position{
 									Column: 34,
-									Line:   11,
+									Line:   148,
 								},
 							},
 						},
@@ -1469,13 +1469,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   11,
+										Line:   148,
 									},
 									File:   "strings.flux",
 									Source: "suffix",
 									Start: ast.Position{
 										Column: 34,
-										Line:   11,
+										Line:   148,
 									},
 								},
 							},
@@ -1488,13 +1488,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   11,
+										Line:   148,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 42,
-										Line:   11,
+										Line:   148,
 									},
 								},
 							},
@@ -1505,13 +1505,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   11,
+											Line:   148,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 42,
-											Line:   11,
+											Line:   148,
 										},
 									},
 								},
@@ -1526,13 +1526,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   11,
+									Line:   148,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 53,
-									Line:   11,
+									Line:   148,
 								},
 							},
 						},
@@ -1543,13 +1543,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 59,
-										Line:   11,
+										Line:   148,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 53,
-										Line:   11,
+										Line:   148,
 									},
 								},
 							},
@@ -1560,18 +1560,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// trimRight removes trailing characters specified in the cutset from a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string to to remove characters from\n"}, ast.Comment{Text: "// - `cutset` is the trailing characters to trim from the string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      Only characters that match the cutset string exactly are trimmed.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Trim trailing periods from all values in a column\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       variables: strings.trimRight(v: r.variables, cutset: \".\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   12,
+						Line:   172,
 					},
 					File:   "strings.flux",
 					Source: "builtin trimRight",
 					Start: ast.Position{
 						Column: 1,
-						Line:   12,
+						Line:   172,
 					},
 				},
 			},
@@ -1583,13 +1583,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   12,
+							Line:   172,
 						},
 						File:   "strings.flux",
 						Source: "trimRight",
 						Start: ast.Position{
 							Column: 9,
-							Line:   12,
+							Line:   172,
 						},
 					},
 				},
@@ -1602,13 +1602,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 58,
-							Line:   12,
+							Line:   172,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, cutset: string) => string",
 						Start: ast.Position{
 							Column: 21,
-							Line:   12,
+							Line:   172,
 						},
 					},
 				},
@@ -1620,13 +1620,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 58,
-								Line:   12,
+								Line:   172,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, cutset: string) => string",
 							Start: ast.Position{
 								Column: 21,
-								Line:   12,
+								Line:   172,
 							},
 						},
 					},
@@ -1637,13 +1637,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   12,
+									Line:   172,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   12,
+									Line:   172,
 								},
 							},
 						},
@@ -1655,13 +1655,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   12,
+										Line:   172,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 22,
-										Line:   12,
+										Line:   172,
 									},
 								},
 							},
@@ -1674,13 +1674,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   12,
+										Line:   172,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   12,
+										Line:   172,
 									},
 								},
 							},
@@ -1691,13 +1691,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   12,
+											Line:   172,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   12,
+											Line:   172,
 										},
 									},
 								},
@@ -1711,13 +1711,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   12,
+									Line:   172,
 								},
 								File:   "strings.flux",
 								Source: "cutset: string",
 								Start: ast.Position{
 									Column: 33,
-									Line:   12,
+									Line:   172,
 								},
 							},
 						},
@@ -1729,13 +1729,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   12,
+										Line:   172,
 									},
 									File:   "strings.flux",
 									Source: "cutset",
 									Start: ast.Position{
 										Column: 33,
-										Line:   12,
+										Line:   172,
 									},
 								},
 							},
@@ -1748,13 +1748,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   12,
+										Line:   172,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 41,
-										Line:   12,
+										Line:   172,
 									},
 								},
 							},
@@ -1765,13 +1765,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   12,
+											Line:   172,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 41,
-											Line:   12,
+											Line:   172,
 										},
 									},
 								},
@@ -1786,13 +1786,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   12,
+									Line:   172,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 52,
-									Line:   12,
+									Line:   172,
 								},
 							},
 						},
@@ -1803,13 +1803,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 58,
-										Line:   12,
+										Line:   172,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 52,
-										Line:   12,
+										Line:   172,
 									},
 								},
 							},
@@ -1820,18 +1820,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// trimLeft removes specified leading characters from a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string to to remove characters from\n"}, ast.Comment{Text: "// - `cutset` is the trailing characters to trim from the string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Trim leading periods from all values in a column\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       variables: strings.trimLeft(v: r.variables, cutset: \".\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   13,
+						Line:   194,
 					},
 					File:   "strings.flux",
 					Source: "builtin trimLeft",
 					Start: ast.Position{
 						Column: 1,
-						Line:   13,
+						Line:   194,
 					},
 				},
 			},
@@ -1843,13 +1843,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   13,
+							Line:   194,
 						},
 						File:   "strings.flux",
 						Source: "trimLeft",
 						Start: ast.Position{
 							Column: 9,
-							Line:   13,
+							Line:   194,
 						},
 					},
 				},
@@ -1862,13 +1862,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 57,
-							Line:   13,
+							Line:   194,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, cutset: string) => string",
 						Start: ast.Position{
 							Column: 20,
-							Line:   13,
+							Line:   194,
 						},
 					},
 				},
@@ -1880,13 +1880,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 57,
-								Line:   13,
+								Line:   194,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, cutset: string) => string",
 							Start: ast.Position{
 								Column: 20,
-								Line:   13,
+								Line:   194,
 							},
 						},
 					},
@@ -1897,13 +1897,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   13,
+									Line:   194,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 21,
-									Line:   13,
+									Line:   194,
 								},
 							},
 						},
@@ -1915,13 +1915,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   13,
+										Line:   194,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 21,
-										Line:   13,
+										Line:   194,
 									},
 								},
 							},
@@ -1934,13 +1934,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   13,
+										Line:   194,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 24,
-										Line:   13,
+										Line:   194,
 									},
 								},
 							},
@@ -1951,13 +1951,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   13,
+											Line:   194,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 24,
-											Line:   13,
+											Line:   194,
 										},
 									},
 								},
@@ -1971,13 +1971,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   13,
+									Line:   194,
 								},
 								File:   "strings.flux",
 								Source: "cutset: string",
 								Start: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   194,
 								},
 							},
 						},
@@ -1989,13 +1989,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   13,
+										Line:   194,
 									},
 									File:   "strings.flux",
 									Source: "cutset",
 									Start: ast.Position{
 										Column: 32,
-										Line:   13,
+										Line:   194,
 									},
 								},
 							},
@@ -2008,13 +2008,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   13,
+										Line:   194,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 40,
-										Line:   13,
+										Line:   194,
 									},
 								},
 							},
@@ -2025,13 +2025,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   13,
+											Line:   194,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 40,
-											Line:   13,
+											Line:   194,
 										},
 									},
 								},
@@ -2046,13 +2046,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 57,
-									Line:   13,
+									Line:   194,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 51,
-									Line:   13,
+									Line:   194,
 								},
 							},
 						},
@@ -2063,13 +2063,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 57,
-										Line:   13,
+										Line:   194,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 51,
-										Line:   13,
+										Line:   194,
 									},
 								},
 							},
@@ -2080,18 +2080,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// toTitle converts all characters in a string to title case.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to convert.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Convert characters in a string to title case\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({ r with pageTitle: strings.toTitle(v: r.pageTitle) }))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   14,
+						Line:   211,
 					},
 					File:   "strings.flux",
 					Source: "builtin toTitle",
 					Start: ast.Position{
 						Column: 1,
-						Line:   14,
+						Line:   211,
 					},
 				},
 			},
@@ -2103,13 +2103,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   14,
+							Line:   211,
 						},
 						File:   "strings.flux",
 						Source: "toTitle",
 						Start: ast.Position{
 							Column: 9,
-							Line:   14,
+							Line:   211,
 						},
 					},
 				},
@@ -2122,13 +2122,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   14,
+							Line:   211,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => string",
 						Start: ast.Position{
 							Column: 19,
-							Line:   14,
+							Line:   211,
 						},
 					},
 				},
@@ -2140,13 +2140,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   14,
+								Line:   211,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => string",
 							Start: ast.Position{
 								Column: 19,
-								Line:   14,
+								Line:   211,
 							},
 						},
 					},
@@ -2157,13 +2157,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   14,
+									Line:   211,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   14,
+									Line:   211,
 								},
 							},
 						},
@@ -2175,13 +2175,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   14,
+										Line:   211,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   14,
+										Line:   211,
 									},
 								},
 							},
@@ -2194,13 +2194,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   14,
+										Line:   211,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   14,
+										Line:   211,
 									},
 								},
 							},
@@ -2211,13 +2211,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   14,
+											Line:   211,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   14,
+											Line:   211,
 										},
 									},
 								},
@@ -2232,13 +2232,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   14,
+									Line:   211,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 34,
-									Line:   14,
+									Line:   211,
 								},
 							},
 						},
@@ -2249,13 +2249,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   14,
+										Line:   211,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 34,
-										Line:   14,
+										Line:   211,
 									},
 								},
 							},
@@ -2266,18 +2266,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// hasPrefix indicates if a string begins with a specified prefix.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search.\n"}, ast.Comment{Text: "// - `prefix` is the string prefix to search for.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Filter based on the presence of a prefix in a column value\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> filter(fn:(r) => strings.hasPrefix(v: r.metric, prefix: \"int_\" ))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   15,
+						Line:   229,
 					},
 					File:   "strings.flux",
 					Source: "builtin hasPrefix",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   229,
 					},
 				},
 			},
@@ -2289,13 +2289,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   15,
+							Line:   229,
 						},
 						File:   "strings.flux",
 						Source: "hasPrefix",
 						Start: ast.Position{
 							Column: 9,
-							Line:   15,
+							Line:   229,
 						},
 					},
 				},
@@ -2308,13 +2308,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 56,
-							Line:   15,
+							Line:   229,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, prefix: string) => bool",
 						Start: ast.Position{
 							Column: 21,
-							Line:   15,
+							Line:   229,
 						},
 					},
 				},
@@ -2326,13 +2326,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 56,
-								Line:   15,
+								Line:   229,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, prefix: string) => bool",
 							Start: ast.Position{
 								Column: 21,
-								Line:   15,
+								Line:   229,
 							},
 						},
 					},
@@ -2343,13 +2343,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   15,
+									Line:   229,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   15,
+									Line:   229,
 								},
 							},
 						},
@@ -2361,13 +2361,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   15,
+										Line:   229,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 22,
-										Line:   15,
+										Line:   229,
 									},
 								},
 							},
@@ -2380,13 +2380,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   15,
+										Line:   229,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   15,
+										Line:   229,
 									},
 								},
 							},
@@ -2397,13 +2397,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   15,
+											Line:   229,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   15,
+											Line:   229,
 										},
 									},
 								},
@@ -2417,13 +2417,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   15,
+									Line:   229,
 								},
 								File:   "strings.flux",
 								Source: "prefix: string",
 								Start: ast.Position{
 									Column: 33,
-									Line:   15,
+									Line:   229,
 								},
 							},
 						},
@@ -2435,13 +2435,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   15,
+										Line:   229,
 									},
 									File:   "strings.flux",
 									Source: "prefix",
 									Start: ast.Position{
 										Column: 33,
-										Line:   15,
+										Line:   229,
 									},
 								},
 							},
@@ -2454,13 +2454,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   15,
+										Line:   229,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 41,
-										Line:   15,
+										Line:   229,
 									},
 								},
 							},
@@ -2471,13 +2471,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   15,
+											Line:   229,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 41,
-											Line:   15,
+											Line:   229,
 										},
 									},
 								},
@@ -2492,13 +2492,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
-									Line:   15,
+									Line:   229,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 52,
-									Line:   15,
+									Line:   229,
 								},
 							},
 						},
@@ -2509,13 +2509,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 56,
-										Line:   15,
+										Line:   229,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 52,
-										Line:   15,
+										Line:   229,
 									},
 								},
 							},
@@ -2526,18 +2526,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// hasSuffix indicates if a string ends with a specified suffix.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search.\n"}, ast.Comment{Text: "// - `prefix` is the string suffix to search for.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Filter based on the presence of a suffix in a column value\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> filter(fn:(r) => strings.hasSuffix(v: r.metric, suffix: \"_count\" ))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   16,
+						Line:   247,
 					},
 					File:   "strings.flux",
 					Source: "builtin hasSuffix",
 					Start: ast.Position{
 						Column: 1,
-						Line:   16,
+						Line:   247,
 					},
 				},
 			},
@@ -2549,13 +2549,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   16,
+							Line:   247,
 						},
 						File:   "strings.flux",
 						Source: "hasSuffix",
 						Start: ast.Position{
 							Column: 9,
-							Line:   16,
+							Line:   247,
 						},
 					},
 				},
@@ -2568,13 +2568,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 56,
-							Line:   16,
+							Line:   247,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, suffix: string) => bool",
 						Start: ast.Position{
 							Column: 21,
-							Line:   16,
+							Line:   247,
 						},
 					},
 				},
@@ -2586,13 +2586,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 56,
-								Line:   16,
+								Line:   247,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, suffix: string) => bool",
 							Start: ast.Position{
 								Column: 21,
-								Line:   16,
+								Line:   247,
 							},
 						},
 					},
@@ -2603,13 +2603,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   16,
+									Line:   247,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   16,
+									Line:   247,
 								},
 							},
 						},
@@ -2621,13 +2621,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   16,
+										Line:   247,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 22,
-										Line:   16,
+										Line:   247,
 									},
 								},
 							},
@@ -2640,13 +2640,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   16,
+										Line:   247,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   16,
+										Line:   247,
 									},
 								},
 							},
@@ -2657,13 +2657,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   16,
+											Line:   247,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   16,
+											Line:   247,
 										},
 									},
 								},
@@ -2677,13 +2677,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   16,
+									Line:   247,
 								},
 								File:   "strings.flux",
 								Source: "suffix: string",
 								Start: ast.Position{
 									Column: 33,
-									Line:   16,
+									Line:   247,
 								},
 							},
 						},
@@ -2695,13 +2695,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   16,
+										Line:   247,
 									},
 									File:   "strings.flux",
 									Source: "suffix",
 									Start: ast.Position{
 										Column: 33,
-										Line:   16,
+										Line:   247,
 									},
 								},
 							},
@@ -2714,13 +2714,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   16,
+										Line:   247,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 41,
-										Line:   16,
+										Line:   247,
 									},
 								},
 							},
@@ -2731,13 +2731,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   16,
+											Line:   247,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 41,
-											Line:   16,
+											Line:   247,
 										},
 									},
 								},
@@ -2752,13 +2752,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
-									Line:   16,
+									Line:   247,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 52,
-									Line:   16,
+									Line:   247,
 								},
 							},
 						},
@@ -2769,13 +2769,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 56,
-										Line:   16,
+										Line:   247,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 52,
-										Line:   16,
+										Line:   247,
 									},
 								},
 							},
@@ -2786,18 +2786,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// containsStr reports whether a string contains a specified substring.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search\n"}, ast.Comment{Text: "// - `substr` is the substring value to search for\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Report if a string contains a specific substring\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       _value: strings.containsStr(v: r.author, substr: \"John\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   17,
+						Line:   269,
 					},
 					File:   "strings.flux",
 					Source: "builtin containsStr",
 					Start: ast.Position{
 						Column: 1,
-						Line:   17,
+						Line:   269,
 					},
 				},
 			},
@@ -2809,13 +2809,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   17,
+							Line:   269,
 						},
 						File:   "strings.flux",
 						Source: "containsStr",
 						Start: ast.Position{
 							Column: 9,
-							Line:   17,
+							Line:   269,
 						},
 					},
 				},
@@ -2828,13 +2828,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 58,
-							Line:   17,
+							Line:   269,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, substr: string) => bool",
 						Start: ast.Position{
 							Column: 23,
-							Line:   17,
+							Line:   269,
 						},
 					},
 				},
@@ -2846,13 +2846,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 58,
-								Line:   17,
+								Line:   269,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, substr: string) => bool",
 							Start: ast.Position{
 								Column: 23,
-								Line:   17,
+								Line:   269,
 							},
 						},
 					},
@@ -2863,13 +2863,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   17,
+									Line:   269,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 24,
-									Line:   17,
+									Line:   269,
 								},
 							},
 						},
@@ -2881,13 +2881,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   17,
+										Line:   269,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 24,
-										Line:   17,
+										Line:   269,
 									},
 								},
 							},
@@ -2900,13 +2900,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   17,
+										Line:   269,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 27,
-										Line:   17,
+										Line:   269,
 									},
 								},
 							},
@@ -2917,13 +2917,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   17,
+											Line:   269,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 27,
-											Line:   17,
+											Line:   269,
 										},
 									},
 								},
@@ -2937,13 +2937,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   17,
+									Line:   269,
 								},
 								File:   "strings.flux",
 								Source: "substr: string",
 								Start: ast.Position{
 									Column: 35,
-									Line:   17,
+									Line:   269,
 								},
 							},
 						},
@@ -2955,13 +2955,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   17,
+										Line:   269,
 									},
 									File:   "strings.flux",
 									Source: "substr",
 									Start: ast.Position{
 										Column: 35,
-										Line:   17,
+										Line:   269,
 									},
 								},
 							},
@@ -2974,13 +2974,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   17,
+										Line:   269,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 43,
-										Line:   17,
+										Line:   269,
 									},
 								},
 							},
@@ -2991,13 +2991,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 49,
-											Line:   17,
+											Line:   269,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 43,
-											Line:   17,
+											Line:   269,
 										},
 									},
 								},
@@ -3012,13 +3012,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   17,
+									Line:   269,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 54,
-									Line:   17,
+									Line:   269,
 								},
 							},
 						},
@@ -3029,13 +3029,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 58,
-										Line:   17,
+										Line:   269,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 54,
-										Line:   17,
+										Line:   269,
 									},
 								},
 							},
@@ -3046,18 +3046,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// containsAny reports whether a specified string contains characters from another string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search\n"}, ast.Comment{Text: "// - `chars` is the character to search for\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Report if a string contains specific characters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       _value: strings.containsAny(v: r.price, chars: \"£$¢\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   18,
+						Line:   291,
 					},
 					File:   "strings.flux",
 					Source: "builtin containsAny",
 					Start: ast.Position{
 						Column: 1,
-						Line:   18,
+						Line:   291,
 					},
 				},
 			},
@@ -3069,13 +3069,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   18,
+							Line:   291,
 						},
 						File:   "strings.flux",
 						Source: "containsAny",
 						Start: ast.Position{
 							Column: 9,
-							Line:   18,
+							Line:   291,
 						},
 					},
 				},
@@ -3088,13 +3088,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 57,
-							Line:   18,
+							Line:   291,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, chars: string) => bool",
 						Start: ast.Position{
 							Column: 23,
-							Line:   18,
+							Line:   291,
 						},
 					},
 				},
@@ -3106,13 +3106,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 57,
-								Line:   18,
+								Line:   291,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, chars: string) => bool",
 							Start: ast.Position{
 								Column: 23,
-								Line:   18,
+								Line:   291,
 							},
 						},
 					},
@@ -3123,13 +3123,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   18,
+									Line:   291,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 24,
-									Line:   18,
+									Line:   291,
 								},
 							},
 						},
@@ -3141,13 +3141,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   18,
+										Line:   291,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 24,
-										Line:   18,
+										Line:   291,
 									},
 								},
 							},
@@ -3160,13 +3160,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   18,
+										Line:   291,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 27,
-										Line:   18,
+										Line:   291,
 									},
 								},
 							},
@@ -3177,13 +3177,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   18,
+											Line:   291,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 27,
-											Line:   18,
+											Line:   291,
 										},
 									},
 								},
@@ -3197,13 +3197,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   18,
+									Line:   291,
 								},
 								File:   "strings.flux",
 								Source: "chars: string",
 								Start: ast.Position{
 									Column: 35,
-									Line:   18,
+									Line:   291,
 								},
 							},
 						},
@@ -3215,13 +3215,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   18,
+										Line:   291,
 									},
 									File:   "strings.flux",
 									Source: "chars",
 									Start: ast.Position{
 										Column: 35,
-										Line:   18,
+										Line:   291,
 									},
 								},
 							},
@@ -3234,13 +3234,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   18,
+										Line:   291,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 42,
-										Line:   18,
+										Line:   291,
 									},
 								},
 							},
@@ -3251,13 +3251,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   18,
+											Line:   291,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 42,
-											Line:   18,
+											Line:   291,
 										},
 									},
 								},
@@ -3272,13 +3272,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 57,
-									Line:   18,
+									Line:   291,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 53,
-									Line:   18,
+									Line:   291,
 								},
 							},
 						},
@@ -3289,13 +3289,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 57,
-										Line:   18,
+										Line:   291,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 53,
-										Line:   18,
+										Line:   291,
 									},
 								},
 							},
@@ -3306,18 +3306,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// equalFold reports whether two UTF-8 strings are equal under Unicode case-folding.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to compare\n"}, ast.Comment{Text: "// - `t` is the string value to compare against\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Ignore case when testing if two strings are the same\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       string1: r.string1,\n"}, ast.Comment{Text: "//       string2: r.string2,\n"}, ast.Comment{Text: "//       same: strings.equalFold(v: r.string1, t: r.string2)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   19,
+						Line:   315,
 					},
 					File:   "strings.flux",
 					Source: "builtin equalFold",
 					Start: ast.Position{
 						Column: 1,
-						Line:   19,
+						Line:   315,
 					},
 				},
 			},
@@ -3329,13 +3329,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   19,
+							Line:   315,
 						},
 						File:   "strings.flux",
 						Source: "equalFold",
 						Start: ast.Position{
 							Column: 9,
-							Line:   19,
+							Line:   315,
 						},
 					},
 				},
@@ -3348,13 +3348,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   19,
+							Line:   315,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, t: string) => bool",
 						Start: ast.Position{
 							Column: 21,
-							Line:   19,
+							Line:   315,
 						},
 					},
 				},
@@ -3366,13 +3366,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   19,
+								Line:   315,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, t: string) => bool",
 							Start: ast.Position{
 								Column: 21,
-								Line:   19,
+								Line:   315,
 							},
 						},
 					},
@@ -3383,13 +3383,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   19,
+									Line:   315,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   19,
+									Line:   315,
 								},
 							},
 						},
@@ -3401,13 +3401,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   19,
+										Line:   315,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 22,
-										Line:   19,
+										Line:   315,
 									},
 								},
 							},
@@ -3420,13 +3420,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   19,
+										Line:   315,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   19,
+										Line:   315,
 									},
 								},
 							},
@@ -3437,13 +3437,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   19,
+											Line:   315,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   19,
+											Line:   315,
 										},
 									},
 								},
@@ -3457,13 +3457,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   19,
+									Line:   315,
 								},
 								File:   "strings.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 33,
-									Line:   19,
+									Line:   315,
 								},
 							},
 						},
@@ -3475,13 +3475,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   19,
+										Line:   315,
 									},
 									File:   "strings.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 33,
-										Line:   19,
+										Line:   315,
 									},
 								},
 							},
@@ -3494,13 +3494,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   19,
+										Line:   315,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 36,
-										Line:   19,
+										Line:   315,
 									},
 								},
 							},
@@ -3511,13 +3511,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   19,
+											Line:   315,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 36,
-											Line:   19,
+											Line:   315,
 										},
 									},
 								},
@@ -3532,13 +3532,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   19,
+									Line:   315,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 47,
-									Line:   19,
+									Line:   315,
 								},
 							},
 						},
@@ -3549,13 +3549,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   19,
+										Line:   315,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 47,
-										Line:   19,
+										Line:   315,
 									},
 								},
 							},
@@ -3566,18 +3566,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// compare compares the lexicographical order of two strings.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      Return values\n"}, ast.Comment{Text: "//      Comparison\tReturn value\n"}, ast.Comment{Text: "//      v < t\t    -1\n"}, ast.Comment{Text: "//      v == t\t    0\n"}, ast.Comment{Text: "//      v > t\t    1\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to compare\n"}, ast.Comment{Text: "// - `t` is the string value to compare against\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Compare the lexicographical order of column values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       _value: strings.compare(v: r.tag1, t: r.tag2)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   20,
+						Line:   343,
 					},
 					File:   "strings.flux",
 					Source: "builtin compare",
 					Start: ast.Position{
 						Column: 1,
-						Line:   20,
+						Line:   343,
 					},
 				},
 			},
@@ -3589,13 +3589,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   20,
+							Line:   343,
 						},
 						File:   "strings.flux",
 						Source: "compare",
 						Start: ast.Position{
 							Column: 9,
-							Line:   20,
+							Line:   343,
 						},
 					},
 				},
@@ -3608,13 +3608,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 48,
-							Line:   20,
+							Line:   343,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, t: string) => int",
 						Start: ast.Position{
 							Column: 19,
-							Line:   20,
+							Line:   343,
 						},
 					},
 				},
@@ -3626,13 +3626,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 48,
-								Line:   20,
+								Line:   343,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, t: string) => int",
 							Start: ast.Position{
 								Column: 19,
-								Line:   20,
+								Line:   343,
 							},
 						},
 					},
@@ -3643,13 +3643,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   20,
+									Line:   343,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   20,
+									Line:   343,
 								},
 							},
 						},
@@ -3661,13 +3661,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   20,
+										Line:   343,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   20,
+										Line:   343,
 									},
 								},
 							},
@@ -3680,13 +3680,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   20,
+										Line:   343,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   20,
+										Line:   343,
 									},
 								},
 							},
@@ -3697,13 +3697,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   20,
+											Line:   343,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   20,
+											Line:   343,
 										},
 									},
 								},
@@ -3717,13 +3717,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   20,
+									Line:   343,
 								},
 								File:   "strings.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 31,
-									Line:   20,
+									Line:   343,
 								},
 							},
 						},
@@ -3735,13 +3735,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   20,
+										Line:   343,
 									},
 									File:   "strings.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 31,
-										Line:   20,
+										Line:   343,
 									},
 								},
 							},
@@ -3754,13 +3754,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   20,
+										Line:   343,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 34,
-										Line:   20,
+										Line:   343,
 									},
 								},
 							},
@@ -3771,13 +3771,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   20,
+											Line:   343,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 34,
-											Line:   20,
+											Line:   343,
 										},
 									},
 								},
@@ -3792,13 +3792,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   20,
+									Line:   343,
 								},
 								File:   "strings.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 45,
-									Line:   20,
+									Line:   343,
 								},
 							},
 						},
@@ -3809,13 +3809,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   20,
+										Line:   343,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 45,
-										Line:   20,
+										Line:   343,
 									},
 								},
 							},
@@ -3826,18 +3826,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "//countStr counts the number of non-overlapping instances of a substring appears in a string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search\n"}, ast.Comment{Text: "// - `substr` is the substr value to count\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//      The function counts only non-overlapping instances of substr. For example:\n"}, ast.Comment{Text: "//      strings.coutnStr(v: \"ooooo\", substr: \"oo\")\n"}, ast.Comment{Text: "//      // Returns 2 -- (oo)(oo)o\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Count instances of a substring within a string\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//        _value: strings.countStr(v: r.message, substr: \"uh\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   21,
+						Line:   369,
 					},
 					File:   "strings.flux",
 					Source: "builtin countStr",
 					Start: ast.Position{
 						Column: 1,
-						Line:   21,
+						Line:   369,
 					},
 				},
 			},
@@ -3849,13 +3849,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   21,
+							Line:   369,
 						},
 						File:   "strings.flux",
 						Source: "countStr",
 						Start: ast.Position{
 							Column: 9,
-							Line:   21,
+							Line:   369,
 						},
 					},
 				},
@@ -3868,13 +3868,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
-							Line:   21,
+							Line:   369,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, substr: string) => int",
 						Start: ast.Position{
 							Column: 20,
-							Line:   21,
+							Line:   369,
 						},
 					},
 				},
@@ -3886,13 +3886,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   21,
+								Line:   369,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, substr: string) => int",
 							Start: ast.Position{
 								Column: 20,
-								Line:   21,
+								Line:   369,
 							},
 						},
 					},
@@ -3903,13 +3903,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   21,
+									Line:   369,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 21,
-									Line:   21,
+									Line:   369,
 								},
 							},
 						},
@@ -3921,13 +3921,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   21,
+										Line:   369,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 21,
-										Line:   21,
+										Line:   369,
 									},
 								},
 							},
@@ -3940,13 +3940,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   21,
+										Line:   369,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 24,
-										Line:   21,
+										Line:   369,
 									},
 								},
 							},
@@ -3957,13 +3957,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   21,
+											Line:   369,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 24,
-											Line:   21,
+											Line:   369,
 										},
 									},
 								},
@@ -3977,13 +3977,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   21,
+									Line:   369,
 								},
 								File:   "strings.flux",
 								Source: "substr: string",
 								Start: ast.Position{
 									Column: 32,
-									Line:   21,
+									Line:   369,
 								},
 							},
 						},
@@ -3995,13 +3995,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   21,
+										Line:   369,
 									},
 									File:   "strings.flux",
 									Source: "substr",
 									Start: ast.Position{
 										Column: 32,
-										Line:   21,
+										Line:   369,
 									},
 								},
 							},
@@ -4014,13 +4014,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   21,
+										Line:   369,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 40,
-										Line:   21,
+										Line:   369,
 									},
 								},
 							},
@@ -4031,13 +4031,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   21,
+											Line:   369,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 40,
-											Line:   21,
+											Line:   369,
 										},
 									},
 								},
@@ -4052,13 +4052,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   21,
+									Line:   369,
 								},
 								File:   "strings.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 51,
-									Line:   21,
+									Line:   369,
 								},
 							},
 						},
@@ -4069,13 +4069,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   21,
+										Line:   369,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 51,
-										Line:   21,
+										Line:   369,
 									},
 								},
 							},
@@ -4086,18 +4086,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// index returns the index of the first instance of a substring in a string. If the substring is not present, it returns -1.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search\n"}, ast.Comment{Text: "// - `substr` is the substring to search for\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Find the first occurrence of a substring\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       the_index: strings.index(v: r.pageTitle, substr: \"the\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   22,
+						Line:   391,
 					},
 					File:   "strings.flux",
 					Source: "builtin index",
 					Start: ast.Position{
 						Column: 1,
-						Line:   22,
+						Line:   391,
 					},
 				},
 			},
@@ -4109,13 +4109,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   22,
+							Line:   391,
 						},
 						File:   "strings.flux",
 						Source: "index",
 						Start: ast.Position{
 							Column: 9,
-							Line:   22,
+							Line:   391,
 						},
 					},
 				},
@@ -4128,13 +4128,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   22,
+							Line:   391,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, substr: string) => int",
 						Start: ast.Position{
 							Column: 17,
-							Line:   22,
+							Line:   391,
 						},
 					},
 				},
@@ -4146,13 +4146,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   22,
+								Line:   391,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, substr: string) => int",
 							Start: ast.Position{
 								Column: 17,
-								Line:   22,
+								Line:   391,
 							},
 						},
 					},
@@ -4163,13 +4163,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   22,
+									Line:   391,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 18,
-									Line:   22,
+									Line:   391,
 								},
 							},
 						},
@@ -4181,13 +4181,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   22,
+										Line:   391,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 18,
-										Line:   22,
+										Line:   391,
 									},
 								},
 							},
@@ -4200,13 +4200,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   22,
+										Line:   391,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 21,
-										Line:   22,
+										Line:   391,
 									},
 								},
 							},
@@ -4217,13 +4217,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   22,
+											Line:   391,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 21,
-											Line:   22,
+											Line:   391,
 										},
 									},
 								},
@@ -4237,13 +4237,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   22,
+									Line:   391,
 								},
 								File:   "strings.flux",
 								Source: "substr: string",
 								Start: ast.Position{
 									Column: 29,
-									Line:   22,
+									Line:   391,
 								},
 							},
 						},
@@ -4255,13 +4255,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   22,
+										Line:   391,
 									},
 									File:   "strings.flux",
 									Source: "substr",
 									Start: ast.Position{
 										Column: 29,
-										Line:   22,
+										Line:   391,
 									},
 								},
 							},
@@ -4274,13 +4274,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   22,
+										Line:   391,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 37,
-										Line:   22,
+										Line:   391,
 									},
 								},
 							},
@@ -4291,13 +4291,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   22,
+											Line:   391,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 37,
-											Line:   22,
+											Line:   391,
 										},
 									},
 								},
@@ -4312,13 +4312,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   22,
+									Line:   391,
 								},
 								File:   "strings.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 48,
-									Line:   22,
+									Line:   391,
 								},
 							},
 						},
@@ -4329,13 +4329,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   22,
+										Line:   391,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 48,
-										Line:   22,
+										Line:   391,
 									},
 								},
 							},
@@ -4346,18 +4346,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// indexAny returns the index of the first instance of specified characters in a string. If none of the specified characters are present, it returns -1.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search\n"}, ast.Comment{Text: "// - `chars` are the chars to search for\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Find the first occurrence of characters from a string\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       charIndex: strings.indexAny(v: r._field, chars: \"_-\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   23,
+						Line:   413,
 					},
 					File:   "strings.flux",
 					Source: "builtin indexAny",
 					Start: ast.Position{
 						Column: 1,
-						Line:   23,
+						Line:   413,
 					},
 				},
 			},
@@ -4369,13 +4369,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   23,
+							Line:   413,
 						},
 						File:   "strings.flux",
 						Source: "indexAny",
 						Start: ast.Position{
 							Column: 9,
-							Line:   23,
+							Line:   413,
 						},
 					},
 				},
@@ -4388,13 +4388,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 53,
-							Line:   23,
+							Line:   413,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, chars: string) => int",
 						Start: ast.Position{
 							Column: 20,
-							Line:   23,
+							Line:   413,
 						},
 					},
 				},
@@ -4406,13 +4406,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 53,
-								Line:   23,
+								Line:   413,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, chars: string) => int",
 							Start: ast.Position{
 								Column: 20,
-								Line:   23,
+								Line:   413,
 							},
 						},
 					},
@@ -4423,13 +4423,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   23,
+									Line:   413,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 21,
-									Line:   23,
+									Line:   413,
 								},
 							},
 						},
@@ -4441,13 +4441,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   23,
+										Line:   413,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 21,
-										Line:   23,
+										Line:   413,
 									},
 								},
 							},
@@ -4460,13 +4460,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   23,
+										Line:   413,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 24,
-										Line:   23,
+										Line:   413,
 									},
 								},
 							},
@@ -4477,13 +4477,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   23,
+											Line:   413,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 24,
-											Line:   23,
+											Line:   413,
 										},
 									},
 								},
@@ -4497,13 +4497,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   23,
+									Line:   413,
 								},
 								File:   "strings.flux",
 								Source: "chars: string",
 								Start: ast.Position{
 									Column: 32,
-									Line:   23,
+									Line:   413,
 								},
 							},
 						},
@@ -4515,13 +4515,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   23,
+										Line:   413,
 									},
 									File:   "strings.flux",
 									Source: "chars",
 									Start: ast.Position{
 										Column: 32,
-										Line:   23,
+										Line:   413,
 									},
 								},
 							},
@@ -4534,13 +4534,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 45,
-										Line:   23,
+										Line:   413,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 39,
-										Line:   23,
+										Line:   413,
 									},
 								},
 							},
@@ -4551,13 +4551,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   23,
+											Line:   413,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 39,
-											Line:   23,
+											Line:   413,
 										},
 									},
 								},
@@ -4572,13 +4572,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   23,
+									Line:   413,
 								},
 								File:   "strings.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 50,
-									Line:   23,
+									Line:   413,
 								},
 							},
 						},
@@ -4589,13 +4589,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   23,
+										Line:   413,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 50,
-										Line:   23,
+										Line:   413,
 									},
 								},
 							},
@@ -4606,18 +4606,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// lastIndex returns the index of the last instance of a substring in a string. If the substring is not present, the function returns -1.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search\n"}, ast.Comment{Text: "// - `substr` is the substring to search for\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Find the last occurrence of a substring\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       the_index: strings.lastIndex(v: r.pageTitle, substr: \"the\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   24,
+						Line:   435,
 					},
 					File:   "strings.flux",
 					Source: "builtin lastIndex",
 					Start: ast.Position{
 						Column: 1,
-						Line:   24,
+						Line:   435,
 					},
 				},
 			},
@@ -4629,13 +4629,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   24,
+							Line:   435,
 						},
 						File:   "strings.flux",
 						Source: "lastIndex",
 						Start: ast.Position{
 							Column: 9,
-							Line:   24,
+							Line:   435,
 						},
 					},
 				},
@@ -4648,13 +4648,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 55,
-							Line:   24,
+							Line:   435,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, substr: string) => int",
 						Start: ast.Position{
 							Column: 21,
-							Line:   24,
+							Line:   435,
 						},
 					},
 				},
@@ -4666,13 +4666,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 55,
-								Line:   24,
+								Line:   435,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, substr: string) => int",
 							Start: ast.Position{
 								Column: 21,
-								Line:   24,
+								Line:   435,
 							},
 						},
 					},
@@ -4683,13 +4683,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   24,
+									Line:   435,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   24,
+									Line:   435,
 								},
 							},
 						},
@@ -4701,13 +4701,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   24,
+										Line:   435,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 22,
-										Line:   24,
+										Line:   435,
 									},
 								},
 							},
@@ -4720,13 +4720,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   24,
+										Line:   435,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   24,
+										Line:   435,
 									},
 								},
 							},
@@ -4737,13 +4737,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   24,
+											Line:   435,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   24,
+											Line:   435,
 										},
 									},
 								},
@@ -4757,13 +4757,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   24,
+									Line:   435,
 								},
 								File:   "strings.flux",
 								Source: "substr: string",
 								Start: ast.Position{
 									Column: 33,
-									Line:   24,
+									Line:   435,
 								},
 							},
 						},
@@ -4775,13 +4775,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   24,
+										Line:   435,
 									},
 									File:   "strings.flux",
 									Source: "substr",
 									Start: ast.Position{
 										Column: 33,
-										Line:   24,
+										Line:   435,
 									},
 								},
 							},
@@ -4794,13 +4794,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   24,
+										Line:   435,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 41,
-										Line:   24,
+										Line:   435,
 									},
 								},
 							},
@@ -4811,13 +4811,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   24,
+											Line:   435,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 41,
-											Line:   24,
+											Line:   435,
 										},
 									},
 								},
@@ -4832,13 +4832,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 55,
-									Line:   24,
+									Line:   435,
 								},
 								File:   "strings.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 52,
-									Line:   24,
+									Line:   435,
 								},
 							},
 						},
@@ -4849,13 +4849,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 55,
-										Line:   24,
+										Line:   435,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 52,
-										Line:   24,
+										Line:   435,
 									},
 								},
 							},
@@ -4866,18 +4866,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// lastIndexAny returns the index of the last instance of any specified characters in a string. If none of the specified characters are present, the function returns -1.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search\n"}, ast.Comment{Text: "// - `chars` are the characters to search for\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Find the last occurrence of characters from a string\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       charLastIndex: strings.lastIndexAny(v: r._field, chars: \"_-\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 21,
-						Line:   25,
+						Line:   457,
 					},
 					File:   "strings.flux",
 					Source: "builtin lastIndexAny",
 					Start: ast.Position{
 						Column: 1,
-						Line:   25,
+						Line:   457,
 					},
 				},
 			},
@@ -4889,13 +4889,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   25,
+							Line:   457,
 						},
 						File:   "strings.flux",
 						Source: "lastIndexAny",
 						Start: ast.Position{
 							Column: 9,
-							Line:   25,
+							Line:   457,
 						},
 					},
 				},
@@ -4908,13 +4908,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 57,
-							Line:   25,
+							Line:   457,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, chars: string) => int",
 						Start: ast.Position{
 							Column: 24,
-							Line:   25,
+							Line:   457,
 						},
 					},
 				},
@@ -4926,13 +4926,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 57,
-								Line:   25,
+								Line:   457,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, chars: string) => int",
 							Start: ast.Position{
 								Column: 24,
-								Line:   25,
+								Line:   457,
 							},
 						},
 					},
@@ -4943,13 +4943,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   25,
+									Line:   457,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 25,
-									Line:   25,
+									Line:   457,
 								},
 							},
 						},
@@ -4961,13 +4961,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   25,
+										Line:   457,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 25,
-										Line:   25,
+										Line:   457,
 									},
 								},
 							},
@@ -4980,13 +4980,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   25,
+										Line:   457,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 28,
-										Line:   25,
+										Line:   457,
 									},
 								},
 							},
@@ -4997,13 +4997,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   25,
+											Line:   457,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 28,
-											Line:   25,
+											Line:   457,
 										},
 									},
 								},
@@ -5017,13 +5017,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   25,
+									Line:   457,
 								},
 								File:   "strings.flux",
 								Source: "chars: string",
 								Start: ast.Position{
 									Column: 36,
-									Line:   25,
+									Line:   457,
 								},
 							},
 						},
@@ -5035,13 +5035,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   25,
+										Line:   457,
 									},
 									File:   "strings.flux",
 									Source: "chars",
 									Start: ast.Position{
 										Column: 36,
-										Line:   25,
+										Line:   457,
 									},
 								},
 							},
@@ -5054,13 +5054,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   25,
+										Line:   457,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 43,
-										Line:   25,
+										Line:   457,
 									},
 								},
 							},
@@ -5071,13 +5071,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 49,
-											Line:   25,
+											Line:   457,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 43,
-											Line:   25,
+											Line:   457,
 										},
 									},
 								},
@@ -5092,13 +5092,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 57,
-									Line:   25,
+									Line:   457,
 								},
 								File:   "strings.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 54,
-									Line:   25,
+									Line:   457,
 								},
 							},
 						},
@@ -5109,13 +5109,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 57,
-										Line:   25,
+										Line:   457,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 54,
-										Line:   25,
+										Line:   457,
 									},
 								},
 							},
@@ -5126,18 +5126,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// isDigit tests if a single-character string is a digit (0-9).\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the single-character string to test.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Filter by columns with digits as values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> filter(fn: (r) => strings.isDigit(v: r.serverRef))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   26,
+						Line:   474,
 					},
 					File:   "strings.flux",
 					Source: "builtin isDigit",
 					Start: ast.Position{
 						Column: 1,
-						Line:   26,
+						Line:   474,
 					},
 				},
 			},
@@ -5149,13 +5149,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   26,
+							Line:   474,
 						},
 						File:   "strings.flux",
 						Source: "isDigit",
 						Start: ast.Position{
 							Column: 9,
-							Line:   26,
+							Line:   474,
 						},
 					},
 				},
@@ -5168,13 +5168,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   26,
+							Line:   474,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => bool",
 						Start: ast.Position{
 							Column: 19,
-							Line:   26,
+							Line:   474,
 						},
 					},
 				},
@@ -5186,13 +5186,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   26,
+								Line:   474,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => bool",
 							Start: ast.Position{
 								Column: 19,
-								Line:   26,
+								Line:   474,
 							},
 						},
 					},
@@ -5203,13 +5203,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   26,
+									Line:   474,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   26,
+									Line:   474,
 								},
 							},
 						},
@@ -5221,13 +5221,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   26,
+										Line:   474,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   26,
+										Line:   474,
 									},
 								},
 							},
@@ -5240,13 +5240,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   26,
+										Line:   474,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   26,
+										Line:   474,
 									},
 								},
 							},
@@ -5257,13 +5257,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   26,
+											Line:   474,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   26,
+											Line:   474,
 										},
 									},
 								},
@@ -5278,13 +5278,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   26,
+									Line:   474,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 34,
-									Line:   26,
+									Line:   474,
 								},
 							},
 						},
@@ -5295,13 +5295,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   26,
+										Line:   474,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 34,
-										Line:   26,
+										Line:   474,
 									},
 								},
 							},
@@ -5312,18 +5312,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// isLetter tests if a single character string is a letter (a-z, A-Z).\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the single-character string to test.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Filter by columns with digits as values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> filter(fn: (r) => strings.isLetter(v: r.serverRef))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   27,
+						Line:   491,
 					},
 					File:   "strings.flux",
 					Source: "builtin isLetter",
 					Start: ast.Position{
 						Column: 1,
-						Line:   27,
+						Line:   491,
 					},
 				},
 			},
@@ -5335,13 +5335,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   27,
+							Line:   491,
 						},
 						File:   "strings.flux",
 						Source: "isLetter",
 						Start: ast.Position{
 							Column: 9,
-							Line:   27,
+							Line:   491,
 						},
 					},
 				},
@@ -5354,13 +5354,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 39,
-							Line:   27,
+							Line:   491,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => bool",
 						Start: ast.Position{
 							Column: 20,
-							Line:   27,
+							Line:   491,
 						},
 					},
 				},
@@ -5372,13 +5372,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 39,
-								Line:   27,
+								Line:   491,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => bool",
 							Start: ast.Position{
 								Column: 20,
-								Line:   27,
+								Line:   491,
 							},
 						},
 					},
@@ -5389,13 +5389,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   27,
+									Line:   491,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 21,
-									Line:   27,
+									Line:   491,
 								},
 							},
 						},
@@ -5407,13 +5407,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   27,
+										Line:   491,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 21,
-										Line:   27,
+										Line:   491,
 									},
 								},
 							},
@@ -5426,13 +5426,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   27,
+										Line:   491,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 24,
-										Line:   27,
+										Line:   491,
 									},
 								},
 							},
@@ -5443,13 +5443,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   27,
+											Line:   491,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 24,
-											Line:   27,
+											Line:   491,
 										},
 									},
 								},
@@ -5464,13 +5464,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   27,
+									Line:   491,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 35,
-									Line:   27,
+									Line:   491,
 								},
 							},
 						},
@@ -5481,13 +5481,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   27,
+										Line:   491,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 35,
-										Line:   27,
+										Line:   491,
 									},
 								},
 							},
@@ -5498,18 +5498,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// isLower tests if a single-character string is lowercase.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the single-character string value to test.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Filter by columns with single-letter lowercase values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> filter(fn: (r) => strings.isLower(v: r.host))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   28,
+						Line:   508,
 					},
 					File:   "strings.flux",
 					Source: "builtin isLower",
 					Start: ast.Position{
 						Column: 1,
-						Line:   28,
+						Line:   508,
 					},
 				},
 			},
@@ -5521,13 +5521,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   28,
+							Line:   508,
 						},
 						File:   "strings.flux",
 						Source: "isLower",
 						Start: ast.Position{
 							Column: 9,
-							Line:   28,
+							Line:   508,
 						},
 					},
 				},
@@ -5540,13 +5540,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   28,
+							Line:   508,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => bool",
 						Start: ast.Position{
 							Column: 19,
-							Line:   28,
+							Line:   508,
 						},
 					},
 				},
@@ -5558,13 +5558,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   28,
+								Line:   508,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => bool",
 							Start: ast.Position{
 								Column: 19,
-								Line:   28,
+								Line:   508,
 							},
 						},
 					},
@@ -5575,13 +5575,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   28,
+									Line:   508,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   28,
+									Line:   508,
 								},
 							},
 						},
@@ -5593,13 +5593,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   28,
+										Line:   508,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   28,
+										Line:   508,
 									},
 								},
 							},
@@ -5612,13 +5612,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   28,
+										Line:   508,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   28,
+										Line:   508,
 									},
 								},
 							},
@@ -5629,13 +5629,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   28,
+											Line:   508,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   28,
+											Line:   508,
 										},
 									},
 								},
@@ -5650,13 +5650,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   28,
+									Line:   508,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 34,
-									Line:   28,
+									Line:   508,
 								},
 							},
 						},
@@ -5667,13 +5667,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   28,
+										Line:   508,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 34,
-										Line:   28,
+										Line:   508,
 									},
 								},
 							},
@@ -5684,18 +5684,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// isUpper tests if a single character string is uppercase.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the single-character string value to test.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Filter by columns with single-letter uppercase values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> filter(fn: (r) => strings.isUpper(v: r.host))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   29,
+						Line:   525,
 					},
 					File:   "strings.flux",
 					Source: "builtin isUpper",
 					Start: ast.Position{
 						Column: 1,
-						Line:   29,
+						Line:   525,
 					},
 				},
 			},
@@ -5707,13 +5707,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   29,
+							Line:   525,
 						},
 						File:   "strings.flux",
 						Source: "isUpper",
 						Start: ast.Position{
 							Column: 9,
-							Line:   29,
+							Line:   525,
 						},
 					},
 				},
@@ -5726,13 +5726,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   29,
+							Line:   525,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => bool",
 						Start: ast.Position{
 							Column: 19,
-							Line:   29,
+							Line:   525,
 						},
 					},
 				},
@@ -5744,13 +5744,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   29,
+								Line:   525,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => bool",
 							Start: ast.Position{
 								Column: 19,
-								Line:   29,
+								Line:   525,
 							},
 						},
 					},
@@ -5761,13 +5761,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   29,
+									Line:   525,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   29,
+									Line:   525,
 								},
 							},
 						},
@@ -5779,13 +5779,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   29,
+										Line:   525,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   29,
+										Line:   525,
 									},
 								},
 							},
@@ -5798,13 +5798,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   29,
+										Line:   525,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   29,
+										Line:   525,
 									},
 								},
 							},
@@ -5815,13 +5815,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   29,
+											Line:   525,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   29,
+											Line:   525,
 										},
 									},
 								},
@@ -5836,13 +5836,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   29,
+									Line:   525,
 								},
 								File:   "strings.flux",
 								Source: "bool",
 								Start: ast.Position{
 									Column: 34,
-									Line:   29,
+									Line:   525,
 								},
 							},
 						},
@@ -5853,13 +5853,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   29,
+										Line:   525,
 									},
 									File:   "strings.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 34,
-										Line:   29,
+										Line:   525,
 									},
 								},
 							},
@@ -5870,18 +5870,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// repeat returns a string consisting of i copies of a specified string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to repeat.\n"}, ast.Comment{Text: "// - `i` is the number of times to repeat v.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Repeat a string based on existing columns\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       laugh: r.laugh\n"}, ast.Comment{Text: "//       intensity: r.intensity\n"}, ast.Comment{Text: "//       laughter: strings.repeat(v: r.laugh, i: r.intensity)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   30,
+						Line:   548,
 					},
 					File:   "strings.flux",
 					Source: "builtin repeat",
 					Start: ast.Position{
 						Column: 1,
-						Line:   30,
+						Line:   548,
 					},
 				},
 			},
@@ -5893,13 +5893,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   30,
+							Line:   548,
 						},
 						File:   "strings.flux",
 						Source: "repeat",
 						Start: ast.Position{
 							Column: 9,
-							Line:   30,
+							Line:   548,
 						},
 					},
 				},
@@ -5912,13 +5912,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 47,
-							Line:   30,
+							Line:   548,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, i: int) => string",
 						Start: ast.Position{
 							Column: 18,
-							Line:   30,
+							Line:   548,
 						},
 					},
 				},
@@ -5930,13 +5930,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 47,
-								Line:   30,
+								Line:   548,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, i: int) => string",
 							Start: ast.Position{
 								Column: 18,
-								Line:   30,
+								Line:   548,
 							},
 						},
 					},
@@ -5947,13 +5947,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   30,
+									Line:   548,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 19,
-									Line:   30,
+									Line:   548,
 								},
 							},
 						},
@@ -5965,13 +5965,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   30,
+										Line:   548,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 19,
-										Line:   30,
+										Line:   548,
 									},
 								},
 							},
@@ -5984,13 +5984,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   30,
+										Line:   548,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 22,
-										Line:   30,
+										Line:   548,
 									},
 								},
 							},
@@ -6001,13 +6001,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   30,
+											Line:   548,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 22,
-											Line:   30,
+											Line:   548,
 										},
 									},
 								},
@@ -6021,13 +6021,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   30,
+									Line:   548,
 								},
 								File:   "strings.flux",
 								Source: "i: int",
 								Start: ast.Position{
 									Column: 30,
-									Line:   30,
+									Line:   548,
 								},
 							},
 						},
@@ -6039,13 +6039,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   30,
+										Line:   548,
 									},
 									File:   "strings.flux",
 									Source: "i",
 									Start: ast.Position{
 										Column: 30,
-										Line:   30,
+										Line:   548,
 									},
 								},
 							},
@@ -6058,13 +6058,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   30,
+										Line:   548,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 33,
-										Line:   30,
+										Line:   548,
 									},
 								},
 							},
@@ -6075,13 +6075,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 36,
-											Line:   30,
+											Line:   548,
 										},
 										File:   "strings.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 33,
-											Line:   30,
+											Line:   548,
 										},
 									},
 								},
@@ -6096,13 +6096,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   30,
+									Line:   548,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 41,
-									Line:   30,
+									Line:   548,
 								},
 							},
 						},
@@ -6113,13 +6113,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   30,
+										Line:   548,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 41,
-										Line:   30,
+										Line:   548,
 									},
 								},
 							},
@@ -6130,18 +6130,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// replace replaces the first i non-overlapping instances of a substring with a specified replacement.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search.\n"}, ast.Comment{Text: "// - `t` is the substring value to replace.\n"}, ast.Comment{Text: "// - `u` is the replacement for i instances of t.\n"}, ast.Comment{Text: "// - `i` is the number of non-overlapping t matches to replace.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Replace a specific number of string matches\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       content: strings.replace(v: r.content, t: \"he\", u: \"her\", i: 3)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   31,
+						Line:   572,
 					},
 					File:   "strings.flux",
 					Source: "builtin replace",
 					Start: ast.Position{
 						Column: 1,
-						Line:   31,
+						Line:   572,
 					},
 				},
 			},
@@ -6153,13 +6153,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   31,
+							Line:   572,
 						},
 						File:   "strings.flux",
 						Source: "replace",
 						Start: ast.Position{
 							Column: 9,
-							Line:   31,
+							Line:   572,
 						},
 					},
 				},
@@ -6172,13 +6172,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 70,
-							Line:   31,
+							Line:   572,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, t: string, u: string, i: int) => string",
 						Start: ast.Position{
 							Column: 19,
-							Line:   31,
+							Line:   572,
 						},
 					},
 				},
@@ -6190,13 +6190,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 70,
-								Line:   31,
+								Line:   572,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, t: string, u: string, i: int) => string",
 							Start: ast.Position{
 								Column: 19,
-								Line:   31,
+								Line:   572,
 							},
 						},
 					},
@@ -6207,13 +6207,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   31,
+									Line:   572,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 20,
-									Line:   31,
+									Line:   572,
 								},
 							},
 						},
@@ -6225,13 +6225,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 20,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6244,13 +6244,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6261,13 +6261,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   31,
+											Line:   572,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   31,
+											Line:   572,
 										},
 									},
 								},
@@ -6281,13 +6281,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   31,
+									Line:   572,
 								},
 								File:   "strings.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 31,
-									Line:   31,
+									Line:   572,
 								},
 							},
 						},
@@ -6299,13 +6299,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 31,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6318,13 +6318,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 34,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6335,13 +6335,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   31,
+											Line:   572,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 34,
-											Line:   31,
+											Line:   572,
 										},
 									},
 								},
@@ -6355,13 +6355,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   31,
+									Line:   572,
 								},
 								File:   "strings.flux",
 								Source: "u: string",
 								Start: ast.Position{
 									Column: 42,
-									Line:   31,
+									Line:   572,
 								},
 							},
 						},
@@ -6373,13 +6373,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "u",
 									Start: ast.Position{
 										Column: 42,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6392,13 +6392,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 45,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6409,13 +6409,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 51,
-											Line:   31,
+											Line:   572,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 45,
-											Line:   31,
+											Line:   572,
 										},
 									},
 								},
@@ -6429,13 +6429,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   31,
+									Line:   572,
 								},
 								File:   "strings.flux",
 								Source: "i: int",
 								Start: ast.Position{
 									Column: 53,
-									Line:   31,
+									Line:   572,
 								},
 							},
 						},
@@ -6447,13 +6447,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "i",
 									Start: ast.Position{
 										Column: 53,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6466,13 +6466,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 59,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 56,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6483,13 +6483,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   31,
+											Line:   572,
 										},
 										File:   "strings.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 56,
-											Line:   31,
+											Line:   572,
 										},
 									},
 								},
@@ -6504,13 +6504,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   31,
+									Line:   572,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 64,
-									Line:   31,
+									Line:   572,
 								},
 							},
 						},
@@ -6521,13 +6521,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   31,
+										Line:   572,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 64,
-										Line:   31,
+										Line:   572,
 									},
 								},
 							},
@@ -6538,18 +6538,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// replaceAll replaces all non-overlapping instances of a substring with a specified replacement.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search.\n"}, ast.Comment{Text: "// - `t` is the substring to replace.\n"}, ast.Comment{Text: "// - `u` is the replacement for all instances of t.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Replace string matches\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       content: strings.replaceAll(v: r.content, t: \"he\", u: \"her\")\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   32,
+						Line:   595,
 					},
 					File:   "strings.flux",
 					Source: "builtin replaceAll",
 					Start: ast.Position{
 						Column: 1,
-						Line:   32,
+						Line:   595,
 					},
 				},
 			},
@@ -6561,13 +6561,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   32,
+							Line:   595,
 						},
 						File:   "strings.flux",
 						Source: "replaceAll",
 						Start: ast.Position{
 							Column: 9,
-							Line:   32,
+							Line:   595,
 						},
 					},
 				},
@@ -6580,13 +6580,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 65,
-							Line:   32,
+							Line:   595,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, t: string, u: string) => string",
 						Start: ast.Position{
 							Column: 22,
-							Line:   32,
+							Line:   595,
 						},
 					},
 				},
@@ -6598,13 +6598,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 65,
-								Line:   32,
+								Line:   595,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, t: string, u: string) => string",
 							Start: ast.Position{
 								Column: 22,
-								Line:   32,
+								Line:   595,
 							},
 						},
 					},
@@ -6615,13 +6615,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   32,
+									Line:   595,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 23,
-									Line:   32,
+									Line:   595,
 								},
 							},
 						},
@@ -6633,13 +6633,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   32,
+										Line:   595,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 23,
-										Line:   32,
+										Line:   595,
 									},
 								},
 							},
@@ -6652,13 +6652,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   32,
+										Line:   595,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 26,
-										Line:   32,
+										Line:   595,
 									},
 								},
 							},
@@ -6669,13 +6669,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   32,
+											Line:   595,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 26,
-											Line:   32,
+											Line:   595,
 										},
 									},
 								},
@@ -6689,13 +6689,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   32,
+									Line:   595,
 								},
 								File:   "strings.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 34,
-									Line:   32,
+									Line:   595,
 								},
 							},
 						},
@@ -6707,13 +6707,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   32,
+										Line:   595,
 									},
 									File:   "strings.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 34,
-										Line:   32,
+										Line:   595,
 									},
 								},
 							},
@@ -6726,13 +6726,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   32,
+										Line:   595,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 37,
-										Line:   32,
+										Line:   595,
 									},
 								},
 							},
@@ -6743,13 +6743,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   32,
+											Line:   595,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 37,
-											Line:   32,
+											Line:   595,
 										},
 									},
 								},
@@ -6763,13 +6763,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   32,
+									Line:   595,
 								},
 								File:   "strings.flux",
 								Source: "u: string",
 								Start: ast.Position{
 									Column: 45,
-									Line:   32,
+									Line:   595,
 								},
 							},
 						},
@@ -6781,13 +6781,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   32,
+										Line:   595,
 									},
 									File:   "strings.flux",
 									Source: "u",
 									Start: ast.Position{
 										Column: 45,
-										Line:   32,
+										Line:   595,
 									},
 								},
 							},
@@ -6800,13 +6800,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   32,
+										Line:   595,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 48,
-										Line:   32,
+										Line:   595,
 									},
 								},
 							},
@@ -6817,13 +6817,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   32,
+											Line:   595,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 48,
-											Line:   32,
+											Line:   595,
 										},
 									},
 								},
@@ -6838,13 +6838,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 65,
-									Line:   32,
+									Line:   595,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 59,
-									Line:   32,
+									Line:   595,
 								},
 							},
 						},
@@ -6855,13 +6855,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 65,
-										Line:   32,
+										Line:   595,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 59,
-										Line:   32,
+										Line:   595,
 									},
 								},
 							},
@@ -6872,18 +6872,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// split splits a string on a specified separator and returns an array of substrings.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to split.\n"}, ast.Comment{Text: "// - `t` is the string value that acts as the separator.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Split a string into an array of substrings\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map (fn:(r) => strings.split(v: r.searchTags, t: \",\"))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   33,
+						Line:   613,
 					},
 					File:   "strings.flux",
 					Source: "builtin split",
 					Start: ast.Position{
 						Column: 1,
-						Line:   33,
+						Line:   613,
 					},
 				},
 			},
@@ -6895,13 +6895,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   33,
+							Line:   613,
 						},
 						File:   "strings.flux",
 						Source: "split",
 						Start: ast.Position{
 							Column: 9,
-							Line:   33,
+							Line:   613,
 						},
 					},
 				},
@@ -6914,13 +6914,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   33,
+							Line:   613,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, t: string) => [string]",
 						Start: ast.Position{
 							Column: 17,
-							Line:   33,
+							Line:   613,
 						},
 					},
 				},
@@ -6932,13 +6932,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   33,
+								Line:   613,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, t: string) => [string]",
 							Start: ast.Position{
 								Column: 17,
-								Line:   33,
+								Line:   613,
 							},
 						},
 					},
@@ -6949,13 +6949,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   33,
+									Line:   613,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 18,
-									Line:   33,
+									Line:   613,
 								},
 							},
 						},
@@ -6967,13 +6967,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   33,
+										Line:   613,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 18,
-										Line:   33,
+										Line:   613,
 									},
 								},
 							},
@@ -6986,13 +6986,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   33,
+										Line:   613,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 21,
-										Line:   33,
+										Line:   613,
 									},
 								},
 							},
@@ -7003,13 +7003,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   33,
+											Line:   613,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 21,
-											Line:   33,
+											Line:   613,
 										},
 									},
 								},
@@ -7023,13 +7023,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   33,
+									Line:   613,
 								},
 								File:   "strings.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 29,
-									Line:   33,
+									Line:   613,
 								},
 							},
 						},
@@ -7041,13 +7041,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   33,
+										Line:   613,
 									},
 									File:   "strings.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 29,
-										Line:   33,
+										Line:   613,
 									},
 								},
 							},
@@ -7060,13 +7060,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   33,
+										Line:   613,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 32,
-										Line:   33,
+										Line:   613,
 									},
 								},
 							},
@@ -7077,13 +7077,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 38,
-											Line:   33,
+											Line:   613,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 32,
-											Line:   33,
+											Line:   613,
 										},
 									},
 								},
@@ -7098,13 +7098,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   33,
+									Line:   613,
 								},
 								File:   "strings.flux",
 								Source: "[string]",
 								Start: ast.Position{
 									Column: 43,
-									Line:   33,
+									Line:   613,
 								},
 							},
 						},
@@ -7115,13 +7115,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 50,
-										Line:   33,
+										Line:   613,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 44,
-										Line:   33,
+										Line:   613,
 									},
 								},
 							},
@@ -7132,13 +7132,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 50,
-											Line:   33,
+											Line:   613,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 44,
-											Line:   33,
+											Line:   613,
 										},
 									},
 								},
@@ -7150,18 +7150,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// splitAfter splits a string after a specified separator and returns an array of substrings. Split substrings include the separator, t.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to split.\n"}, ast.Comment{Text: "// - `t` is the string value that acts as the separator.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Split a string into an array of substrings\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//    |> map (fn:(r) => strings.splitAfter(v: r.searchTags, t: \",\"))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   34,
+						Line:   631,
 					},
 					File:   "strings.flux",
 					Source: "builtin splitAfter",
 					Start: ast.Position{
 						Column: 1,
-						Line:   34,
+						Line:   631,
 					},
 				},
 			},
@@ -7173,13 +7173,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   34,
+							Line:   631,
 						},
 						File:   "strings.flux",
 						Source: "splitAfter",
 						Start: ast.Position{
 							Column: 9,
-							Line:   34,
+							Line:   631,
 						},
 					},
 				},
@@ -7192,13 +7192,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 56,
-							Line:   34,
+							Line:   631,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, t: string) => [string]",
 						Start: ast.Position{
 							Column: 22,
-							Line:   34,
+							Line:   631,
 						},
 					},
 				},
@@ -7210,13 +7210,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 56,
-								Line:   34,
+								Line:   631,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, t: string) => [string]",
 							Start: ast.Position{
 								Column: 22,
-								Line:   34,
+								Line:   631,
 							},
 						},
 					},
@@ -7227,13 +7227,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   34,
+									Line:   631,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 23,
-									Line:   34,
+									Line:   631,
 								},
 							},
 						},
@@ -7245,13 +7245,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   34,
+										Line:   631,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 23,
-										Line:   34,
+										Line:   631,
 									},
 								},
 							},
@@ -7264,13 +7264,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   34,
+										Line:   631,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 26,
-										Line:   34,
+										Line:   631,
 									},
 								},
 							},
@@ -7281,13 +7281,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   34,
+											Line:   631,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 26,
-											Line:   34,
+											Line:   631,
 										},
 									},
 								},
@@ -7301,13 +7301,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   34,
+									Line:   631,
 								},
 								File:   "strings.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 34,
-									Line:   34,
+									Line:   631,
 								},
 							},
 						},
@@ -7319,13 +7319,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   34,
+										Line:   631,
 									},
 									File:   "strings.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 34,
-										Line:   34,
+										Line:   631,
 									},
 								},
 							},
@@ -7338,13 +7338,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   34,
+										Line:   631,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 37,
-										Line:   34,
+										Line:   631,
 									},
 								},
 							},
@@ -7355,13 +7355,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   34,
+											Line:   631,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 37,
-											Line:   34,
+											Line:   631,
 										},
 									},
 								},
@@ -7376,13 +7376,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
-									Line:   34,
+									Line:   631,
 								},
 								File:   "strings.flux",
 								Source: "[string]",
 								Start: ast.Position{
 									Column: 48,
-									Line:   34,
+									Line:   631,
 								},
 							},
 						},
@@ -7393,13 +7393,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 55,
-										Line:   34,
+										Line:   631,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 49,
-										Line:   34,
+										Line:   631,
 									},
 								},
 							},
@@ -7410,13 +7410,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 55,
-											Line:   34,
+											Line:   631,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 49,
-											Line:   34,
+											Line:   631,
 										},
 									},
 								},
@@ -7428,18 +7428,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// splitN splits a string on a specified separator and returns an array of i substrings.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to split.\n"}, ast.Comment{Text: "// - `t` is the string value that acts as the separator.\n"}, ast.Comment{Text: "// - `i` is the maximum number of split substrings to return. -1 returns all matching substrings.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//       - The last substring is the unsplit remainder.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Split a string into an array of substrings\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//    |> map (fn:(r) => strings.splitN(v: r.searchTags, t: \",\"))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   35,
+						Line:   652,
 					},
 					File:   "strings.flux",
 					Source: "builtin splitN",
 					Start: ast.Position{
 						Column: 1,
-						Line:   35,
+						Line:   652,
 					},
 				},
 			},
@@ -7451,13 +7451,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   35,
+							Line:   652,
 						},
 						File:   "strings.flux",
 						Source: "splitN",
 						Start: ast.Position{
 							Column: 9,
-							Line:   35,
+							Line:   652,
 						},
 					},
 				},
@@ -7470,13 +7470,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 60,
-							Line:   35,
+							Line:   652,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, t: string, n: int) => [string]",
 						Start: ast.Position{
 							Column: 18,
-							Line:   35,
+							Line:   652,
 						},
 					},
 				},
@@ -7488,13 +7488,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 60,
-								Line:   35,
+								Line:   652,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, t: string, n: int) => [string]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   35,
+								Line:   652,
 							},
 						},
 					},
@@ -7505,13 +7505,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   35,
+									Line:   652,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 19,
-									Line:   35,
+									Line:   652,
 								},
 							},
 						},
@@ -7523,13 +7523,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   35,
+										Line:   652,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 19,
-										Line:   35,
+										Line:   652,
 									},
 								},
 							},
@@ -7542,13 +7542,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   35,
+										Line:   652,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 22,
-										Line:   35,
+										Line:   652,
 									},
 								},
 							},
@@ -7559,13 +7559,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   35,
+											Line:   652,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 22,
-											Line:   35,
+											Line:   652,
 										},
 									},
 								},
@@ -7579,13 +7579,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   35,
+									Line:   652,
 								},
 								File:   "strings.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 30,
-									Line:   35,
+									Line:   652,
 								},
 							},
 						},
@@ -7597,13 +7597,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   35,
+										Line:   652,
 									},
 									File:   "strings.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 30,
-										Line:   35,
+										Line:   652,
 									},
 								},
 							},
@@ -7616,13 +7616,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   35,
+										Line:   652,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 33,
-										Line:   35,
+										Line:   652,
 									},
 								},
 							},
@@ -7633,13 +7633,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   35,
+											Line:   652,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 33,
-											Line:   35,
+											Line:   652,
 										},
 									},
 								},
@@ -7653,13 +7653,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   35,
+									Line:   652,
 								},
 								File:   "strings.flux",
 								Source: "n: int",
 								Start: ast.Position{
 									Column: 41,
-									Line:   35,
+									Line:   652,
 								},
 							},
 						},
@@ -7671,13 +7671,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   35,
+										Line:   652,
 									},
 									File:   "strings.flux",
 									Source: "n",
 									Start: ast.Position{
 										Column: 41,
-										Line:   35,
+										Line:   652,
 									},
 								},
 							},
@@ -7690,13 +7690,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   35,
+										Line:   652,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 44,
-										Line:   35,
+										Line:   652,
 									},
 								},
 							},
@@ -7707,13 +7707,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   35,
+											Line:   652,
 										},
 										File:   "strings.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 44,
-											Line:   35,
+											Line:   652,
 										},
 									},
 								},
@@ -7728,13 +7728,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 60,
-									Line:   35,
+									Line:   652,
 								},
 								File:   "strings.flux",
 								Source: "[string]",
 								Start: ast.Position{
 									Column: 52,
-									Line:   35,
+									Line:   652,
 								},
 							},
 						},
@@ -7745,13 +7745,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 59,
-										Line:   35,
+										Line:   652,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 53,
-										Line:   35,
+										Line:   652,
 									},
 								},
 							},
@@ -7762,13 +7762,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   35,
+											Line:   652,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 53,
-											Line:   35,
+											Line:   652,
 										},
 									},
 								},
@@ -7780,18 +7780,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// splitAfterN splits a string after a specified separator and returns an array of i substrings. Split substrings include the separator t.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to split.\n"}, ast.Comment{Text: "// - `t` is the string value that acts as the separator.\n"}, ast.Comment{Text: "// - `i` is the maximum number of split substrings to return. -1 returns all matching substrings.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//       - The last substring is the unsplit remainder.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Split a string into an array of substrings\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//    |> map (fn:(r) => strings.splitAfterN(v: r.searchTags, t: \",\"))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   36,
+						Line:   673,
 					},
 					File:   "strings.flux",
 					Source: "builtin splitAfterN",
 					Start: ast.Position{
 						Column: 1,
-						Line:   36,
+						Line:   673,
 					},
 				},
 			},
@@ -7803,13 +7803,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   36,
+							Line:   673,
 						},
 						File:   "strings.flux",
 						Source: "splitAfterN",
 						Start: ast.Position{
 							Column: 9,
-							Line:   36,
+							Line:   673,
 						},
 					},
 				},
@@ -7822,13 +7822,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 65,
-							Line:   36,
+							Line:   673,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, t: string, i: int) => [string]",
 						Start: ast.Position{
 							Column: 23,
-							Line:   36,
+							Line:   673,
 						},
 					},
 				},
@@ -7840,13 +7840,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 65,
-								Line:   36,
+								Line:   673,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, t: string, i: int) => [string]",
 							Start: ast.Position{
 								Column: 23,
-								Line:   36,
+								Line:   673,
 							},
 						},
 					},
@@ -7857,13 +7857,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   36,
+									Line:   673,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 24,
-									Line:   36,
+									Line:   673,
 								},
 							},
 						},
@@ -7875,13 +7875,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   36,
+										Line:   673,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 24,
-										Line:   36,
+										Line:   673,
 									},
 								},
 							},
@@ -7894,13 +7894,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   36,
+										Line:   673,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 27,
-										Line:   36,
+										Line:   673,
 									},
 								},
 							},
@@ -7911,13 +7911,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   36,
+											Line:   673,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 27,
-											Line:   36,
+											Line:   673,
 										},
 									},
 								},
@@ -7931,13 +7931,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   36,
+									Line:   673,
 								},
 								File:   "strings.flux",
 								Source: "t: string",
 								Start: ast.Position{
 									Column: 35,
-									Line:   36,
+									Line:   673,
 								},
 							},
 						},
@@ -7949,13 +7949,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   36,
+										Line:   673,
 									},
 									File:   "strings.flux",
 									Source: "t",
 									Start: ast.Position{
 										Column: 35,
-										Line:   36,
+										Line:   673,
 									},
 								},
 							},
@@ -7968,13 +7968,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 44,
-										Line:   36,
+										Line:   673,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 38,
-										Line:   36,
+										Line:   673,
 									},
 								},
 							},
@@ -7985,13 +7985,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
-											Line:   36,
+											Line:   673,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 38,
-											Line:   36,
+											Line:   673,
 										},
 									},
 								},
@@ -8005,13 +8005,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 52,
-									Line:   36,
+									Line:   673,
 								},
 								File:   "strings.flux",
 								Source: "i: int",
 								Start: ast.Position{
 									Column: 46,
-									Line:   36,
+									Line:   673,
 								},
 							},
 						},
@@ -8023,13 +8023,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   36,
+										Line:   673,
 									},
 									File:   "strings.flux",
 									Source: "i",
 									Start: ast.Position{
 										Column: 46,
-										Line:   36,
+										Line:   673,
 									},
 								},
 							},
@@ -8042,13 +8042,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 52,
-										Line:   36,
+										Line:   673,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 49,
-										Line:   36,
+										Line:   673,
 									},
 								},
 							},
@@ -8059,13 +8059,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 52,
-											Line:   36,
+											Line:   673,
 										},
 										File:   "strings.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 49,
-											Line:   36,
+											Line:   673,
 										},
 									},
 								},
@@ -8080,13 +8080,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 65,
-									Line:   36,
+									Line:   673,
 								},
 								File:   "strings.flux",
 								Source: "[string]",
 								Start: ast.Position{
 									Column: 57,
-									Line:   36,
+									Line:   673,
 								},
 							},
 						},
@@ -8097,13 +8097,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 64,
-										Line:   36,
+										Line:   673,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 58,
-										Line:   36,
+										Line:   673,
 									},
 								},
 							},
@@ -8114,13 +8114,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 64,
-											Line:   36,
+											Line:   673,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 58,
-											Line:   36,
+											Line:   673,
 										},
 									},
 								},
@@ -8132,18 +8132,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// joinStr concatenates elements of a string array into a single string using a specified separator.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `arr` is the array of strings to concatenate.\n"}, ast.Comment{Text: "// - `t` is the separator to use in the concatenated value.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Join a list of strings into a single string\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// searchTags = [\"tag1\", \"tag2\", \"tag3\"]\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// strings.joinStr(arr: searchTags, v: \",\"))\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   37,
+						Line:   692,
 					},
 					File:   "strings.flux",
 					Source: "builtin joinStr",
 					Start: ast.Position{
 						Column: 1,
-						Line:   37,
+						Line:   692,
 					},
 				},
 			},
@@ -8155,13 +8155,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   37,
+							Line:   692,
 						},
 						File:   "strings.flux",
 						Source: "joinStr",
 						Start: ast.Position{
 							Column: 9,
-							Line:   37,
+							Line:   692,
 						},
 					},
 				},
@@ -8174,13 +8174,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 55,
-							Line:   37,
+							Line:   692,
 						},
 						File:   "strings.flux",
 						Source: "(arr: [string], v: string) => string",
 						Start: ast.Position{
 							Column: 19,
-							Line:   37,
+							Line:   692,
 						},
 					},
 				},
@@ -8192,13 +8192,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 55,
-								Line:   37,
+								Line:   692,
 							},
 							File:   "strings.flux",
 							Source: "(arr: [string], v: string) => string",
 							Start: ast.Position{
 								Column: 19,
-								Line:   37,
+								Line:   692,
 							},
 						},
 					},
@@ -8209,13 +8209,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   37,
+									Line:   692,
 								},
 								File:   "strings.flux",
 								Source: "arr: [string]",
 								Start: ast.Position{
 									Column: 20,
-									Line:   37,
+									Line:   692,
 								},
 							},
 						},
@@ -8227,13 +8227,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   37,
+										Line:   692,
 									},
 									File:   "strings.flux",
 									Source: "arr",
 									Start: ast.Position{
 										Column: 20,
-										Line:   37,
+										Line:   692,
 									},
 								},
 							},
@@ -8246,13 +8246,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   37,
+										Line:   692,
 									},
 									File:   "strings.flux",
 									Source: "[string]",
 									Start: ast.Position{
 										Column: 25,
-										Line:   37,
+										Line:   692,
 									},
 								},
 							},
@@ -8263,13 +8263,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   37,
+											Line:   692,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 26,
-											Line:   37,
+											Line:   692,
 										},
 									},
 								},
@@ -8280,13 +8280,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   37,
+												Line:   692,
 											},
 											File:   "strings.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 26,
-												Line:   37,
+												Line:   692,
 											},
 										},
 									},
@@ -8301,13 +8301,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   37,
+									Line:   692,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 35,
-									Line:   37,
+									Line:   692,
 								},
 							},
 						},
@@ -8319,13 +8319,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   37,
+										Line:   692,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 35,
-										Line:   37,
+										Line:   692,
 									},
 								},
 							},
@@ -8338,13 +8338,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 44,
-										Line:   37,
+										Line:   692,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 38,
-										Line:   37,
+										Line:   692,
 									},
 								},
 							},
@@ -8355,13 +8355,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
-											Line:   37,
+											Line:   692,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 38,
-											Line:   37,
+											Line:   692,
 										},
 									},
 								},
@@ -8376,13 +8376,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 55,
-									Line:   37,
+									Line:   692,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 49,
-									Line:   37,
+									Line:   692,
 								},
 							},
 						},
@@ -8393,13 +8393,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 55,
-										Line:   37,
+										Line:   692,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 49,
-										Line:   37,
+										Line:   692,
 									},
 								},
 							},
@@ -8410,18 +8410,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// strlen returns the length of a string. String length is determined by the number of UTF code points a string contains.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to measure.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Filter based on string value length\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//    |> filter(fn: (r) => strings.strlen(v: r._measurement) <= 4)\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Store the length of string values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       length: strings.strlen(v: r._value)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   38,
+						Line:   722,
 					},
 					File:   "strings.flux",
 					Source: "builtin strlen",
 					Start: ast.Position{
 						Column: 1,
-						Line:   38,
+						Line:   722,
 					},
 				},
 			},
@@ -8433,13 +8433,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   38,
+							Line:   722,
 						},
 						File:   "strings.flux",
 						Source: "strlen",
 						Start: ast.Position{
 							Column: 9,
-							Line:   38,
+							Line:   722,
 						},
 					},
 				},
@@ -8452,13 +8452,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 36,
-							Line:   38,
+							Line:   722,
 						},
 						File:   "strings.flux",
 						Source: "(v: string) => int",
 						Start: ast.Position{
 							Column: 18,
-							Line:   38,
+							Line:   722,
 						},
 					},
 				},
@@ -8470,13 +8470,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
-								Line:   38,
+								Line:   722,
 							},
 							File:   "strings.flux",
 							Source: "(v: string) => int",
 							Start: ast.Position{
 								Column: 18,
-								Line:   38,
+								Line:   722,
 							},
 						},
 					},
@@ -8487,13 +8487,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   38,
+									Line:   722,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 19,
-									Line:   38,
+									Line:   722,
 								},
 							},
 						},
@@ -8505,13 +8505,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   38,
+										Line:   722,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 19,
-										Line:   38,
+										Line:   722,
 									},
 								},
 							},
@@ -8524,13 +8524,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   38,
+										Line:   722,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 22,
-										Line:   38,
+										Line:   722,
 									},
 								},
 							},
@@ -8541,13 +8541,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   38,
+											Line:   722,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 22,
-											Line:   38,
+											Line:   722,
 										},
 									},
 								},
@@ -8562,13 +8562,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   38,
+									Line:   722,
 								},
 								File:   "strings.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 33,
-									Line:   38,
+									Line:   722,
 								},
 							},
 						},
@@ -8579,13 +8579,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   38,
+										Line:   722,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 33,
-										Line:   38,
+										Line:   722,
 									},
 								},
 							},
@@ -8596,18 +8596,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// substring returns a substring based on start and end parameters. These parameters are represent indices of UTF code points in the string.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `v` is the string value to search for.\n"}, ast.Comment{Text: "// - `start` is the starting inclusive index of the substring.\n"}, ast.Comment{Text: "// - `end` is the ending exclusive index of the substring.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Store the first four characters of a string\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"strings\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// data\n"}, ast.Comment{Text: "//   |> map(fn: (r) => ({\n"}, ast.Comment{Text: "//       r with\n"}, ast.Comment{Text: "//       abbr: strings.substring(v: r.name, start: 0, end: 4)\n"}, ast.Comment{Text: "//     })\n"}, ast.Comment{Text: "//   )\n"}, ast.Comment{Text: "// ```\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   39,
+						Line:   744,
 					},
 					File:   "strings.flux",
 					Source: "builtin substring",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   744,
 					},
 				},
 			},
@@ -8619,13 +8619,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   39,
+							Line:   744,
 						},
 						File:   "strings.flux",
 						Source: "substring",
 						Start: ast.Position{
 							Column: 9,
-							Line:   39,
+							Line:   744,
 						},
 					},
 				},
@@ -8638,13 +8638,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 64,
-							Line:   39,
+							Line:   744,
 						},
 						File:   "strings.flux",
 						Source: "(v: string, start: int, end: int) => string",
 						Start: ast.Position{
 							Column: 21,
-							Line:   39,
+							Line:   744,
 						},
 					},
 				},
@@ -8656,13 +8656,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 64,
-								Line:   39,
+								Line:   744,
 							},
 							File:   "strings.flux",
 							Source: "(v: string, start: int, end: int) => string",
 							Start: ast.Position{
 								Column: 21,
-								Line:   39,
+								Line:   744,
 							},
 						},
 					},
@@ -8673,13 +8673,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   39,
+									Line:   744,
 								},
 								File:   "strings.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   39,
+									Line:   744,
 								},
 							},
 						},
@@ -8691,13 +8691,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   39,
+										Line:   744,
 									},
 									File:   "strings.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 22,
-										Line:   39,
+										Line:   744,
 									},
 								},
 							},
@@ -8710,13 +8710,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   39,
+										Line:   744,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   39,
+										Line:   744,
 									},
 								},
 							},
@@ -8727,13 +8727,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   39,
+											Line:   744,
 										},
 										File:   "strings.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   39,
+											Line:   744,
 										},
 									},
 								},
@@ -8747,13 +8747,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   39,
+									Line:   744,
 								},
 								File:   "strings.flux",
 								Source: "start: int",
 								Start: ast.Position{
 									Column: 33,
-									Line:   39,
+									Line:   744,
 								},
 							},
 						},
@@ -8765,13 +8765,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   39,
+										Line:   744,
 									},
 									File:   "strings.flux",
 									Source: "start",
 									Start: ast.Position{
 										Column: 33,
-										Line:   39,
+										Line:   744,
 									},
 								},
 							},
@@ -8784,13 +8784,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
-										Line:   39,
+										Line:   744,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 40,
-										Line:   39,
+										Line:   744,
 									},
 								},
 							},
@@ -8801,13 +8801,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   39,
+											Line:   744,
 										},
 										File:   "strings.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 40,
-											Line:   39,
+											Line:   744,
 										},
 									},
 								},
@@ -8821,13 +8821,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   39,
+									Line:   744,
 								},
 								File:   "strings.flux",
 								Source: "end: int",
 								Start: ast.Position{
 									Column: 45,
-									Line:   39,
+									Line:   744,
 								},
 							},
 						},
@@ -8839,13 +8839,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   39,
+										Line:   744,
 									},
 									File:   "strings.flux",
 									Source: "end",
 									Start: ast.Position{
 										Column: 45,
-										Line:   39,
+										Line:   744,
 									},
 								},
 							},
@@ -8858,13 +8858,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   39,
+										Line:   744,
 									},
 									File:   "strings.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 50,
-										Line:   39,
+										Line:   744,
 									},
 								},
 							},
@@ -8875,13 +8875,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
-											Line:   39,
+											Line:   744,
 										},
 										File:   "strings.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 50,
-											Line:   39,
+											Line:   744,
 										},
 									},
 								},
@@ -8896,13 +8896,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 64,
-									Line:   39,
+									Line:   744,
 								},
 								File:   "strings.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 58,
-									Line:   39,
+									Line:   744,
 								},
 							},
 						},
@@ -8913,13 +8913,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 64,
-										Line:   39,
+										Line:   744,
 									},
 									File:   "strings.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 58,
-										Line:   39,
+										Line:   744,
 									},
 								},
 							},
@@ -8935,18 +8935,18 @@ var pkgAST = &ast.Package{
 		Name:     "strings.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Package strings provides functions to manipulate UTF-8 encoded strings.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   1,
+						Line:   2,
 					},
 					File:   "strings.flux",
 					Source: "package strings",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   2,
 					},
 				},
 			},
@@ -8957,13 +8957,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   1,
+							Line:   2,
 						},
 						File:   "strings.flux",
 						Source: "strings",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   2,
 						},
 					},
 				},

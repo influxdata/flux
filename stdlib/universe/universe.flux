@@ -6,6 +6,7 @@ import "date"
 import "math"
 import "strings"
 import "regexp"
+import "experimental/table"
 
 // now is a function option whose default behaviour is to return the current system time
 option now = system.time
@@ -186,9 +187,6 @@ builtin length : (arr: [A]) => int
 builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]
 builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]
 
-// sleep is the identity function with the side effect of delaying execution by a specified duration
-builtin sleep : (<-v: A, duration: duration) => A
-
 // die returns a fatal error from within a flux script
 builtin die : (msg: string) => A
 
@@ -205,7 +203,13 @@ cov = (x, y, on, pearsonr=false) => join(
     |> covariance(pearsonr: pearsonr, columns: ["_value_x", "_value_y"])
 pearsonr = (x, y, on) => cov(x: x, y: y, on: on, pearsonr: true)
 
-// AggregateWindow applies an aggregate function to fixed windows of time.
+_fillEmpty = (tables=<-, createEmpty) => if createEmpty then
+    tables
+        |> table.fill()
+else
+    tables
+
+// aggregateWindow applies an aggregate function to fixed windows of time.
 // The procedure is to window the data, perform an aggregate operation,
 // and then undo the windowing to produce an output table for every input table.
 aggregateWindow = (
@@ -220,6 +224,7 @@ aggregateWindow = (
 ) => tables
     |> window(every: every, offset: offset, createEmpty: createEmpty)
     |> fn(column: column)
+    |> _fillEmpty(createEmpty: createEmpty)
     |> duplicate(column: timeSrc, as: timeDst)
     |> window(every: inf, timeColumn: timeDst)
 

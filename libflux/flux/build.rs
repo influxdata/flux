@@ -2,7 +2,9 @@ extern crate fluxcore;
 
 use std::{env, fs, io, io::Write, path};
 
+use deflate::deflate_bytes;
 use fluxcore::semantic::bootstrap;
+use fluxcore::semantic::bootstrap::stdlib_docs;
 use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::flatbuffers::types as fb;
 use fluxcore::semantic::sub::Substitutable;
@@ -48,7 +50,7 @@ where
 fn main() -> Result<(), Error> {
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
-    let (pre, lib, fresher, files) = bootstrap::infer_stdlib()?;
+    let (pre, lib, fresher, files, file_map) = bootstrap::infer_stdlib()?;
     for f in files.iter() {
         println!("cargo:rerun-if-changed={}", f);
     }
@@ -68,6 +70,12 @@ fn main() -> Result<(), Error> {
             });
         }
     }
+    let new_docs = stdlib_docs(&pre, &file_map).unwrap();
+    let json_docs = serde_json::to_vec(&new_docs).unwrap();
+    let comp_docs = deflate_bytes(&json_docs);
+    let path = dir.join("docs.json");
+    let mut file = fs::File::create(path)?;
+    file.write_all(&comp_docs)?;
 
     let path = dir.join("prelude.data");
     serialize(Environment::from(pre), fb::build_env, &path)?;

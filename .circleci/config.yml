@@ -84,6 +84,52 @@ jobs:
     steps:
       - checkout
       - run: make test-valgrind
+  build-windows:
+    machine:
+      image: windows-server-2019-vs2019:stable
+    resource_class: windows.medium
+    shell: bash.exe -eo pipefail
+    steps:
+      - run:
+          name: Install system dependencies
+          command: |
+            choco upgrade golang --version=1.16.6
+
+            choco install \
+              llvm \
+              pkgconfiglite \
+              rustup.install
+
+            # rustc depends on a version of libgcc_eh that isn't present in the latest mingw.
+            choco install mingw --version=8.1.0
+
+            echo 'export PATH="${HOME}/.cargo/bin:/c/Program Files/Go/bin:${PATH}"' >> $BASH_ENV
+      - run:
+          name: Install mingw rustup target
+          command: |
+            rustup target add x86_64-pc-windows-gnu
+            # Cargo's built-in support for fetching dependencies from GitHub requires
+            # an ssh agent to be set up, which doesn't work on Circle's Windows executors.
+            # See https://github.com/rust-lang/cargo/issues/1851#issuecomment-450130685
+            cat <<EOF >> ~/.cargo/config
+            [net]
+            git-fetch-with-cli = true
+            EOF
+      - checkout
+      - run:
+          name: Install pkg-config wrapper
+          command: |
+            export GOPATH="${HOME}/go"
+            echo "export GOPATH='${GOPATH}'" >> $BASH_ENV
+            mkdir -p "${GOPATH}/bin"
+            echo 'export PATH="${GOPATH}/bin:${PATH}"' >> $BASH_ENV
+            go install github.com/influxdata/pkg-config
+      - run:
+          name: Generate libflux
+          command: go generate ./libflux/go/libflux
+      - run:
+          name: Build flux
+          command: go build ./...
 
   release:
     docker:
@@ -122,6 +168,7 @@ workflows:
       - test-race
       - test-bench
       - test-valgrind
+      - build-windows
 
   release:
     jobs:

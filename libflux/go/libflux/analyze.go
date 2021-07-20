@@ -1,6 +1,7 @@
 package libflux
 
-// #include "influxdata/flux.h"
+// #cgo CFLAGS: -I${SRCDIR}/../../include/influxdata
+// #include <flux.h>
 // #include <stdlib.h>
 import "C"
 

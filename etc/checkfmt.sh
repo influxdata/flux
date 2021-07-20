@@ -5,7 +5,7 @@ HAS_FMT_ERR=0
 for file in $(go list -f '{{$dir := .Dir}}{{range .GoFiles}}{{printf "%s/%s\n" $dir .}}{{end}}' ./...); do
   # ... if file does not contain standard generated code comment (https://golang.org/s/generatedcode)...
   if ! grep -Exq '^// Code generated .* DO NOT EDIT\.$' $file; then
-    FMT_OUT="$(gofmt -l -d -e $file)" # gofmt exits 0 regardless of whether it's formatted.
+    FMT_OUT="$(gofmt -l -d -e "$file")" # gofmt exits 0 regardless of whether it's formatted.
     # ... and if gofmt had any output...
     if [[ -n "$FMT_OUT" ]]; then
       if [ "$HAS_FMT_ERR" -eq "0" ]; then
@@ -27,18 +27,19 @@ if [ "$HAS_FMT_ERR" -eq "1" ]; then
     echo ''
 fi
 
-cd libflux
-FMT_OUT="$(cargo fmt --all -- --check)"
-if [[ -n "$FMT_OUT" ]]; then
-    echo 'Commit includes files that are not rustfmt-ed' && \
-    echo 'run "make fmt"' && \
-    echo ''
-    HAS_FMT_ERR=1
-fi
+(
+  cd libflux || exit
+  FMT_OUT="$(cargo fmt --all -- --check)"
+  if [[ -n "$FMT_OUT" ]]; then
+      echo 'Commit includes files that are not rustfmt-ed' && \
+      echo 'run "make fmt"' && \
+      echo ''
+      HAS_FMT_ERR=1
+  fi
+)
 
 cd ..
-export PATH=$PATH:.
-FMT_OUT="$(flux fmt -c stdlib)"
+FMT_OUT="$(env GO111MODULE=on go run -tags '' ./cmd/flux/main.go fmt -c stdlib)"
 if [[ -n "$FMT_OUT" ]]; then
     echo 'Commit includes flux files that are not fluxfmt-ed' && \
     echo 'run "make fmt"' && \
