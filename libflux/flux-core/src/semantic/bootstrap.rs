@@ -185,7 +185,8 @@ pub fn stdlib_docs(
 ) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
-    for (_path, file) in files {
+    for file in files.values() {
+    //for (_path, file) in files {
         let pkg = generate_docs(&lib, file)?;
         docs.push(pkg);
     }
@@ -212,7 +213,7 @@ fn generate_docs(
         name: file.package.clone().unwrap().name.name,
         headline: doc,
         description: None,
-        members: members,
+        members,
     })
 }
 
