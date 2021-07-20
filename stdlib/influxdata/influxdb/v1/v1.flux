@@ -1,4 +1,4 @@
-// Flux V1 provides an API for working with an InfluxDB v1.x instance.
+// Package v1 provides an API for working with an InfluxDB v1.x instance.
 // >NOTE: Must functions in this package are now deprecated see influxdata/influxdb/schema.
 package v1
 

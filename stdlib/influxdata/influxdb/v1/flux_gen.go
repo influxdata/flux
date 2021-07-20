@@ -2010,7 +2010,7 @@ var pkgAST = &ast.Package{
 		Name:     "v1.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// Flux V1 provides an API for working with an InfluxDB v1.x instance.\n"}, ast.Comment{Text: "// >NOTE: Must functions in this package are now deprecated see influxdata/influxdb/schema.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// Package v1 provides an API for working with an InfluxDB v1.x instance.\n"}, ast.Comment{Text: "// >NOTE: Must functions in this package are now deprecated see influxdata/influxdb/schema.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
