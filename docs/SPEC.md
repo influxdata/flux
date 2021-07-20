@@ -1040,6 +1040,7 @@ A statement controls execution.
 
     Statement = OptionAssignment
               | BuiltinStatement
+              | TestStatement
               | VariableAssignment
               | ReturnStatement
               | ExpressionStatement .
@@ -1152,6 +1153,30 @@ All such values must have a corresponding builtin statement to declare the exist
 Example
 
     builtin filter : (<-tables: [T], fn: (r: T) => bool) => [T]
+
+## Test Statements
+
+A test statment defines a block of code that describes a test.
+A test is a block of code to execute that can make assertions about its behavior.
+
+    TestStatement = "test" identifier  Block
+
+The test statement block is treated as if it were a file block within its own package block.
+Any statements inside the enclosing file block of the test statement are also part of the test package.
+Therefore each test case can be understood to execute in isolation from other tests in the same file.
+
+Example
+
+    import "testing"
+
+    test addition {
+        testing.assertEqual(got: 1 + 1, want: 2)
+    }
+
+    test changeNow {
+        option now = () => 2020-01-01T00:00:00Z
+        testing.assertEqual(got: now(), want: 2020-01-01T00:00:00Z)
+    }
 
 ### Date/Time constants
 
