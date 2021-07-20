@@ -229,11 +229,11 @@ fn generate_values(
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
-                let typ = format!("{}", types[&name].normal());
-                println!("1");
                 if !types.contains_key(&name) {
                     continue;
                 }
+                let typ = format!("{}", types[&name].normal());
+                println!("1");
                     match &types[&name].expr {
                         MonoType::Fun(_f) => {
                             // generate function doc
@@ -256,10 +256,10 @@ fn generate_values(
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let name = s.id.name.clone();
-                let typ = format!("{}", types[&name].normal());
                 if !types.contains_key(&name) {
-                        continue;
+                    continue;
                 }
+                let typ = format!("{}", types[&name].normal());
                     match &types[&name].expr {
                         MonoType::Fun(_f) => {
                             // generate function doc
@@ -281,10 +281,10 @@ fn generate_values(
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
                     let name = v.id.name.clone();
-                    let typ = format!("{}", types[&name].normal());
                     if !types.contains_key(&name) {
                         continue;
                     }
+                    let typ = format!("{}", types[&name].normal());
                         match &types[&name].expr {
                             MonoType::Fun(_f) => {
                                 // generate function doc

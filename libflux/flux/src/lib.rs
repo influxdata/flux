@@ -22,7 +22,7 @@ pub use fluxcore::scanner;
 pub use fluxcore::semantic;
 pub use fluxcore::*;
 
-use crate::semantic::bootstrap::DocPackage;
+use crate::semantic::bootstrap::PackageDoc;
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
 use inflate::inflate_bytes;
@@ -44,7 +44,7 @@ pub fn imports() -> Option<Environment> {
         .into()
 }
 
-pub fn docs() -> Vec<DocPackage> {
+pub fn docs() -> Vec<PackageDoc> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
     serde_json::from_slice(&inflate_bytes(buf).unwrap()).unwrap()
 }
