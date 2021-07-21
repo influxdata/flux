@@ -59,4 +59,14 @@ func TestNewObjectType(t *testing.T) {
 	if want, got := objectType.String(), "{a: int, b: string}"; want != got {
 		t.Errorf("unexpected monotype -want/+got:\n\t- %s\n\t+ %s", want, got)
 	}
+
+	// Nest the object type in another object.
+	objectType = semantic.NewObjectType(
+		[]semantic.PropertyType{
+			{Key: []byte("r"), Value: objectType},
+		},
+	)
+	if want, got := objectType.String(), "{r: {a: int, b: string}}"; want != got {
+		t.Errorf("unexpected monotype -want/+got:\n\t- %s\n\t+ %s", want, got)
+	}
 }

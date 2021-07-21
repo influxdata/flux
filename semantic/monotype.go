@@ -794,12 +794,12 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 				Value: monoTypeFromFunc(prop.V, prop.VType()),
 			}
 		}
-		extends := record.Extends(nil)
-		var tv uint64
-		if extends != nil {
-			tv = extends.I()
+
+		var tv *uint64
+		if extends := record.Extends(nil); extends != nil {
+			tv = func(v uint64) *uint64 { return &v }(extends.I())
 		}
-		return buildObjectType(builder, properties, &tv)
+		return buildObjectType(builder, properties, tv)
 	case fbsemantic.MonoTypeFun:
 		var fun fbsemantic.Fun
 		fun.Init(table.Bytes, table.Pos)
