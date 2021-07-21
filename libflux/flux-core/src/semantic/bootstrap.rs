@@ -186,7 +186,6 @@ pub fn stdlib_docs(
     //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
     for file in files.values() {
-    //for (_path, file) in files {
         let pkg = generate_docs(&lib, file)?;
         docs.push(pkg);
     }
@@ -200,8 +199,8 @@ fn generate_docs(
 ) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
-    //let sem_pkg = analyze(pkg.clone())?;
-    //let types = pkg_types(&sem_pkg);
+    // let sem_pkg = analyze(pkg.clone())?;
+    // let types = pkg_types(&sem_pkg);
 
     let mut doc = String::new();
     let members = generate_values(&file, &types)?;
@@ -223,7 +222,6 @@ fn generate_values(
     types: &PolyTypeMap,
 ) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
     let mut members: HashMap<String, Doc> = HashMap::new();
-    //println!("{:?}", types);
     for stmt in &f.body {
         match stmt {
             ast::Statement::Variable(s) => {
@@ -233,7 +231,6 @@ fn generate_values(
                     continue;
                 }
                 let typ = format!("{}", types[&name].normal());
-                println!("1");
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
@@ -248,7 +245,6 @@ fn generate_values(
                             description: None,
                             flux_type: typ,
                         };
-                        println!("2");
                         members.insert(name.clone(), Doc::Value(Box::new(variable)));
                     }
                 }

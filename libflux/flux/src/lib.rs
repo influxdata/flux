@@ -1125,7 +1125,7 @@ from(bucket: v.bucket)
         let got = format!("{:?}", d[19]); // the csv DocPackage location
         println!(
             "{}",
-            String::from_utf8(serde_json::to_vec(&d[19].members).unwrap()).unwrap()
+            String::from_utf8(serde_json::to_vec(&d[19]).unwrap()).unwrap()
         );
         assert_eq!(stat, got);
     }
