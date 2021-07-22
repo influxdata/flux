@@ -39,7 +39,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/scanner/token.rs":                                        "5090c2ac4b341566a85f7d9ed9b48746dd2084ec2f3effdb4a7dc16cf34d44b9",
 	"libflux/flux-core/src/scanner/unicode.rl":                                      "f923f3b385ddfa65c74427b11971785fc25ea806ca03d547045de808e16ef9a1",
 	"libflux/flux-core/src/scanner/unicode.rl.COPYING":                              "6cf2d5d26d52772ded8a5f0813f49f83dfa76006c5f398713be3854fe7bc4c7e",
-	"libflux/flux-core/src/semantic/bootstrap.rs":                                   "34cc4755027774e34812c4d0b26cbb55a94956cdc202d2cd63f051c2bf811f02",
+	"libflux/flux-core/src/semantic/bootstrap.rs":                                   "6af15b8df203e3707b4eb5bd83b833840d01c750c8778a2dc5580764b6306cab",
 	"libflux/flux-core/src/semantic/check.rs":                                       "476db74a4479baff7091bb85a5ac2b8e9ffc07883bec92f9543a1024366ff9db",
 	"libflux/flux-core/src/semantic/convert.rs":                                     "fc78500a57dbfb9521303a5c5140939efe583ce855cd232afd5e6d43a8817893",
 	"libflux/flux-core/src/semantic/env.rs":                                         "7bbc29da93f07f7ad795e90d3b444791a195d98f6688a7bad5feffff9784902e",

@@ -46,7 +46,7 @@ pub enum Doc {
     /// Builtin represents documentation for a builtin value exposed from a package.
     Builtin(Box<ValueDoc>),
     /// Option represents documentation for a option value exposed from a package.
-    Option(Box<ValueDoc>),
+    Opt(Box<ValueDoc>),
     /// Function represents documentation for a function value exposed from a package.
     Function(Box<FunctionDoc>),
 }
