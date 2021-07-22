@@ -36,7 +36,7 @@ pub struct Error {
     pub msg: String,
 }
 
-/// Doc is an enum that can take the form of any form of flux documentation through polymorphism.
+/// Doc is an enum that can take the form of the various types of flux documentation structures through polymorphism.
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Doc {
     /// Package represents documentation for an entire Flux package.
@@ -60,7 +60,7 @@ pub struct PackageDoc {
     pub headline: String,
     /// the description of the package
     pub description: Option<String>,
-    /// the members of the package which are values and functions with their parameters
+    /// the members are the values and funcitons of a package
     pub members: HashMap<String, Doc>,
 }
 
@@ -96,7 +96,7 @@ pub struct FunctionDoc {
 
 /// Implementation block for FunctionDoc to house future "FunctionDod" methods
 impl FunctionDoc {
-    /// static method to construct a new FunctionDoc
+    /// Constructs a new FunctionDoc with the given name, headline, and flux type
     fn new_with_args(name: String, doc: String, typ: String) -> FunctionDoc {
         FunctionDoc {
             name,
