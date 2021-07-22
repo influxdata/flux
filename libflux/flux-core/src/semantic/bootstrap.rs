@@ -36,7 +36,7 @@ pub struct Error {
     pub msg: String,
 }
 
-/// Doc represents a documentation for Flux source code.
+/// Doc is an enum that can take the form of any form of flux documentation through polymorphism.
 #[derive(Debug, Serialize, Deserialize)]
 pub enum Doc {
     /// Package represents documentation for an entire Flux package.
@@ -60,7 +60,7 @@ pub struct PackageDoc {
     pub headline: String,
     /// the description of the package
     pub description: Option<String>,
-    /// the members of the package
+    /// the members of the package which are values and functions with their parameters
     pub members: HashMap<String, Doc>,
 }
 
@@ -92,6 +92,20 @@ pub struct FunctionDoc {
     parameters: Vec<ParameterDoc>,
     /// the type of the function
     flux_type: String,
+}
+
+/// Implementation block for FunctionDoc to house future "FunctionDod" methods
+impl FunctionDoc {
+    /// static method to construct a new FunctionDoc
+    fn new_with_args(name: String, doc: String, typ: String) -> FunctionDoc {
+        FunctionDoc {
+            name,
+            headline: doc,
+            description: "".to_string(),
+            parameters: vec![],
+            flux_type: typ,
+        }
+    }
 }
 
 /// ParameterDoc represents the documentation for a single parameter within a function.
@@ -183,7 +197,6 @@ pub fn stdlib_docs(
     lib: &PolyTypeMap,
     files: &AstFileMap,
 ) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
-    //let pkg = docs::walk_pkg(&args.pkg, &args.pkg)?;
     let mut docs = Vec::new();
     for file in files.values() {
         let pkg = generate_docs(&lib, file)?;
@@ -199,9 +212,6 @@ fn generate_docs(
 ) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
-    // let sem_pkg = analyze(pkg.clone())?;
-    // let types = pkg_types(&sem_pkg);
-
     let mut doc = String::new();
     let members = generate_values(&file, &types)?;
     if let Some(comment) = &file.package {
@@ -234,7 +244,7 @@ fn generate_values(
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
-                        let function = generate_function_struct(name.clone(), doc, typ);
+                        let function = FunctionDoc::new_with_args(name.clone(), doc, typ);
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
@@ -259,7 +269,7 @@ fn generate_values(
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
-                        let function = generate_function_struct(name.clone(), doc, typ);
+                        let function = FunctionDoc::new_with_args(name.clone(), doc, typ);
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
@@ -284,7 +294,7 @@ fn generate_values(
                     match &types[&name].expr {
                         MonoType::Fun(_f) => {
                             // generate function doc
-                            let function = generate_function_struct(name.clone(), doc, typ);
+                            let function = FunctionDoc::new_with_args(name.clone(), doc, typ);
                             members.insert(name.clone(), Doc::Function(Box::new(function)));
                         }
                         _ => {
@@ -313,16 +323,6 @@ fn comments_to_string(comments: &[ast::Comment]) -> String {
         }
     }
     comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
-}
-
-fn generate_function_struct(name: String, doc: String, typ: String) -> FunctionDoc {
-    FunctionDoc {
-        name,
-        headline: doc,
-        description: "".to_string(),
-        parameters: vec![],
-        flux_type: typ,
-    }
 }
 
 fn compute_file_dependencies(root: &str) -> Vec<String> {
