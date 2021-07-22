@@ -22,6 +22,7 @@ use crate::semantic::types::{
     MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, TvarKinds,
 };
 
+use pulldown_cmark::Event;
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
 
@@ -217,6 +218,11 @@ fn generate_docs(
     if let Some(comment) = &file.package {
         doc = comments_to_string(&comment.base.comments);
     }
+    // let parser = parser.map(|event| match event {
+    //     Event::SoftBreak => Event::HardBreak,
+    //     _ => event
+    // });
+
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
         name: file.package.clone().unwrap().name.name,

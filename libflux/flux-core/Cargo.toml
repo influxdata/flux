@@ -31,6 +31,7 @@ flatbuffers = "2.0.0"
 derivative = "2.1.1"
 walkdir = "2.2.9"
 lsp-types = { version = "0.89.2", optional = true }
+pulldown-cmark = { version = "0.8", default-features = false }
 
 [dev-dependencies]
 colored = "1.8"
