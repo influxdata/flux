@@ -22,7 +22,7 @@ use crate::semantic::types::{
     MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, TvarKinds,
 };
 
-use pulldown_cmark::Event;
+use pulldown_cmark::{Event, Options, Parser};
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
 
@@ -222,6 +222,9 @@ fn generate_docs(
     //     Event::SoftBreak => Event::HardBreak,
     //     _ => event
     // });
+
+    let mut options = Options::empty();
+    let parser = Parser::new_ext(&doc, options);
 
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
