@@ -22,7 +22,7 @@ use crate::semantic::types::{
     MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, TvarKinds,
 };
 
-use pulldown_cmark::{Event, Options, Parser};
+use pulldown_cmark::{Event, Parser};
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
 
@@ -218,27 +218,34 @@ fn generate_docs(
     if let Some(comment) = &file.package {
         all_comment = comments_to_string(&comment.base.comments);
     }
-    // let parser = parser.map(|event| match event {
-    //     Event::SoftBreak => Event::HardBreak,
+    println!("here");
+    // let mut options = Options::empty();
+    // options.insert(Options::ENABLE_TABLES);
+    // let parser = Parser::new_ext(&all_comment, options);
+    // // iterator
+    let headline = String::new();
+    let description = None;
+    // parser.map(|event | match event {
+    //     Event::Start(pulldown_cmark::Tag::Paragraph) => headline = all_comment ,
+    //     Event::Start(pulldown_cmark::Tag::Heading(2)) => Some(description) = Some(Option::from(all_comment)) ,
     //     _ => event
     // });
-
-    let mut options = Options::empty();
-    options.insert(Options::ENABLE_TABLES);
-    let parser = Parser::new_ext(&all_comment, options);
-    // iterator
-    let mut headline = String::new();
-    let mut description =  None;
-    parser.map(|event | match event {
-        Event::Start(pulldown_cmark::Tag::Paragraph) => headline = all_comment ,
-        Event::Start(pulldown_cmark::Tag::Heading(2)) => Some(description) = Some(Option::from(all_comment)) ,
-        _ => event
-    });
+    let parser = Parser::new(&all_comment);
+    let events: Vec<String> = parser
+        .map(|event| match event {
+            Event::Text(t) => format!("Got some text: {}", t),
+            Event::Start(tag) => format!("Got an opening tag: {:?}", tag),
+            Event::End(tag) => format!("End of first text segment: {:?}", tag),
+            _ => "Unrecognized event".to_string(),
+        })
+        .collect();
+    println!("{:#?}", events[0]);
+    println!("{:#?}", events[1]);
 
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
         name: file.package.clone().unwrap().name.name,
-        headline: doc,
+        headline: headline,
         description: description,
         members,
     })
