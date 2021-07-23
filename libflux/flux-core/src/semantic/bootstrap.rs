@@ -224,6 +224,7 @@ fn generate_docs(
     // });
 
     let mut options = Options::empty();
+    options.insert(Options::ENABLE_TABLES);
     let parser = Parser::new_ext(&doc, options);
 
     //TODO check if package name exists and if it doesn't throw an error message
