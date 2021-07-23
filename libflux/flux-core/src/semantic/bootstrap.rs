@@ -226,6 +226,12 @@ fn generate_docs(
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);
     let parser = Parser::new_ext(&doc, options);
+    // iterator
+    parser.map(|event | match event {
+        Event::Start(pulldown_cmark::Tag::Paragraph) => event,
+        Event::Start(pulldown_cmark::Tag::Heading(2)) => event,
+        _ => event
+    });
 
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
