@@ -213,10 +213,10 @@ fn generate_docs(
 ) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
-    let mut doc = String::new();
+    let mut all_comment = String::new();
     let members = generate_values(&file, &types)?;
     if let Some(comment) = &file.package {
-        doc = comments_to_string(&comment.base.comments);
+        all_comment = comments_to_string(&comment.base.comments);
     }
     // let parser = parser.map(|event| match event {
     //     Event::SoftBreak => Event::HardBreak,
@@ -225,11 +225,13 @@ fn generate_docs(
 
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);
-    let parser = Parser::new_ext(&doc, options);
+    let parser = Parser::new_ext(&all_comment, options);
     // iterator
+    let mut headline = String::new();
+    let mut description =  None;
     parser.map(|event | match event {
-        Event::Start(pulldown_cmark::Tag::Paragraph) => event,
-        Event::Start(pulldown_cmark::Tag::Heading(2)) => event,
+        Event::Start(pulldown_cmark::Tag::Paragraph) => headline = all_comment ,
+        Event::Start(pulldown_cmark::Tag::Heading(2)) => Some(description) = Some(Option::from(all_comment)) ,
         _ => event
     });
 
@@ -237,7 +239,7 @@ fn generate_docs(
     Ok(PackageDoc {
         name: file.package.clone().unwrap().name.name,
         headline: doc,
-        description: None,
+        description: description,
         members,
     })
 }
