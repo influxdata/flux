@@ -245,8 +245,8 @@ fn generate_docs(
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
         name: file.package.clone().unwrap().name.name,
-        headline: headline,
-        description: description,
+        headline,
+        description,
         members,
     })
 }
