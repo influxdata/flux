@@ -236,11 +236,13 @@ fn generate_docs(
             Event::Text(t) => format!("Got some text: {}", t),
             Event::Start(tag) => format!("Got an opening tag: {:?}", tag),
             Event::End(tag) => format!("End of first text segment: {:?}", tag),
+            Event::Html(tag) => format!("Got HTML tag: {:?}", tag),
+            Event::Code(t) => format!("Got cod tag: {:?}", t),
             _ => "Unrecognized event".to_string(),
         })
         .collect();
     println!("{:#?}", events[0]);
-    println!("{:#?}", events[1]);
+    //println!("{:#?}", events[1]);
 
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
