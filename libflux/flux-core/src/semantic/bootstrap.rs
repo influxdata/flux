@@ -218,13 +218,13 @@ fn generate_docs(
     if let Some(comment) = &file.package {
         all_comment = comments_to_string(&comment.base.comments);
     }
-    println!("here");
+    //println!("here");
     // let mut options = Options::empty();
     // options.insert(Options::ENABLE_TABLES);
     // let parser = Parser::new_ext(&all_comment, options);
     // // iterator
-    let headline = String::new();
-    let description = None;
+    let headline = all_comment.clone();
+    let mut description = None;
     // parser.map(|event | match event {
     //     Event::Start(pulldown_cmark::Tag::Paragraph) => headline = all_comment ,
     //     Event::Start(pulldown_cmark::Tag::Heading(2)) => Some(description) = Some(Option::from(all_comment)) ,
@@ -243,12 +243,14 @@ fn generate_docs(
         .collect();
     println!("{:#?}", events[0]);
     //println!("{:#?}", events[1]);
-
+    if events.len() > 0 {
+        description = Option::from(events[0].to_string());
+    }
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
         name: file.package.clone().unwrap().name.name,
         headline,
-        description,
+        description: description.clone(),
         members,
     })
 }
