@@ -236,7 +236,7 @@ fn generate_docs(
             Event::Text(t) => format!("Got some text: {}", t),
             Event::Start(tag) => format!("Got an opening tag: {:?}", tag),
             Event::End(tag) => format!("End of first text segment: {:?}", tag),
-            Event::Html(tag) => format!("Got HTML tag: {:?}", tag),
+            Event::Html(tag) => format!("Got HTML tag: {}", tag),
             Event::Code(t) => format!("Got cod tag: {:?}", t),
             _ => "Unrecognized event".to_string(),
         })
@@ -351,7 +351,8 @@ fn comments_to_string(comments: &[ast::Comment]) -> String {
             s.push_str(c.text.as_str().strip_prefix("//").unwrap());
         }
     }
-    comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
+    s
+    //comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
 }
 
 fn compute_file_dependencies(root: &str) -> Vec<String> {
