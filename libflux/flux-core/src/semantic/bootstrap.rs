@@ -218,19 +218,18 @@ fn generate_docs(
     if let Some(comment) = &file.package {
         all_comment = comments_to_string(&comment.base.comments);
     }
-    // iterator
     let mut headline: String = "".to_string();
     let mut description = None;
-    let mut loc: bool = false;
-    let mut cur = &mut headline;
+    let mut reached_end: bool = false;
+    let mut description_text: String = "".to_string();
     let parser = Parser::new(&all_comment);
-    let events: Vec<String> = parser
+    let _events: Vec<String> = parser
         .map(|event| match event {
             Event::Text(t) => {
-                if loc == false {
+                if reached_end == false {
                     headline.push_str(&t.to_string());
                 } else {
-                    description.insert(Option::from(&t.to_string()));
+                    description_text.push_str(&t.to_string());
                 }
                 format!("{}", t)
             }
@@ -238,30 +237,15 @@ fn generate_docs(
                 format!("start: {:?}", tag)
             }
             Event::End(tag) => {
-                loc == true;
+                reached_end = true;
                 format!("end: {:?}", tag)
             }
-            Event::Html(tag) => format!("HTML: {}", tag),
-            Event::Code(t) => format!("code: {:?}", t),
-            Event::SoftBreak => format!("Soft Break"),
-            Event::HardBreak => format!("Hard Break"),
             _ => "Unrecognized event".to_string(),
         })
         .collect();
-    // println!("length of events: {}", events.len());
-    // println!("{:#?}", events[0].to_string());
-    // println!("{:#?}", events[1].to_string());
-    // println!("{:#?}", events[2].to_string());
-    // println!("{:#?}", events[3].to_string());
-    // println!("{:#?}", events[4].to_string());
-    // println!("{:#?}", events[5].to_string());
-    // println!("{:#?}", events[6].to_string());
-    // println!("{:#?}", events[7].to_string());
-    // println!("{:#?}", events[8].to_string());
-    // println!("{:#?}", events[9].to_string());
-    // if events.len() > 0 {
-    //     description = Option::from(events[0].to_string());
-    // }
+    if description_text != "" {
+        description = Option::from(description_text);
+    }
 
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
