@@ -218,38 +218,52 @@ fn generate_docs(
     if let Some(comment) = &file.package {
         all_comment = comments_to_string(&comment.base.comments);
     }
-    //println!("here");
-    // let mut options = Options::empty();
-    // options.insert(Options::ENABLE_TABLES);
-    // let parser = Parser::new_ext(&all_comment, options);
-    // // iterator
-    let headline = all_comment.clone();
+    // iterator
+    let mut headline: String = "".to_string();
     let mut description = None;
-    // parser.map(|event | match event {
-    //     Event::Start(pulldown_cmark::Tag::Paragraph) => headline = all_comment ,
-    //     Event::Start(pulldown_cmark::Tag::Heading(2)) => Some(description) = Some(Option::from(all_comment)) ,
-    //     _ => event
-    // });
+    //let mut loc: bool = false;
+    let mut cur = &mut headline;
+
     let parser = Parser::new(&all_comment);
     let events: Vec<String> = parser
         .map(|event| match event {
-            Event::Text(t) => format!("Got some text: {}", t),
-            Event::Start(tag) => format!("Got an opening tag: {:?}", tag),
-            Event::End(tag) => format!("End of first text segment: {:?}", tag),
-            Event::Html(tag) => format!("Got HTML tag: {}", tag),
-            Event::Code(t) => format!("Got cod tag: {:?}", t),
+            Event::Text(t) => {
+                cur.push_str(&t.to_string());
+                format!("{}", t)
+            }
+            Event::Start(tag) => {
+                format!("start: {:?}", tag)
+            }
+            Event::End(tag) => {
+                cur = &mut description;
+                format!("end: {:?}", tag)
+            }
+            Event::Html(tag) => format!("HTML: {}", tag),
+            Event::Code(t) => format!("code: {:?}", t),
+            Event::SoftBreak => format!("Soft Break"),
+            Event::HardBreak => format!("Hard Break"),
             _ => "Unrecognized event".to_string(),
         })
         .collect();
-    println!("{:#?}", events[0]);
-    //println!("{:#?}", events[1]);
-    if events.len() > 0 {
-        description = Option::from(events[0].to_string());
-    }
+    // println!("length of events: {}", events.len());
+    // println!("{:#?}", events[0].to_string());
+    // println!("{:#?}", events[1].to_string());
+    // println!("{:#?}", events[2].to_string());
+    // println!("{:#?}", events[3].to_string());
+    // println!("{:#?}", events[4].to_string());
+    // println!("{:#?}", events[5].to_string());
+    // println!("{:#?}", events[6].to_string());
+    // println!("{:#?}", events[7].to_string());
+    // println!("{:#?}", events[8].to_string());
+    // println!("{:#?}", events[9].to_string());
+    // if events.len() > 0 {
+    //     description = Option::from(events[0].to_string());
+    // }
+
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
         name: file.package.clone().unwrap().name.name,
-        headline,
+        headline: headline.to_string(),
         description: description.clone(),
         members,
     })
