@@ -221,21 +221,24 @@ fn generate_docs(
     // iterator
     let mut headline: String = "".to_string();
     let mut description = None;
-    //let mut loc: bool = false;
+    let mut loc: bool = false;
     let mut cur = &mut headline;
-
     let parser = Parser::new(&all_comment);
     let events: Vec<String> = parser
         .map(|event| match event {
             Event::Text(t) => {
-                cur.push_str(&t.to_string());
+                if loc == false {
+                    headline.push_str(&t.to_string());
+                } else {
+                    description.insert(Option::from(&t.to_string()));
+                }
                 format!("{}", t)
             }
             Event::Start(tag) => {
                 format!("start: {:?}", tag)
             }
             Event::End(tag) => {
-                cur = &mut description;
+                loc == true;
                 format!("end: {:?}", tag)
             }
             Event::Html(tag) => format!("HTML: {}", tag),
