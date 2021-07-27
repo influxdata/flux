@@ -15,13 +15,11 @@ Please see the [CONTRIBUTING](https://github.com/influxdata/flux/blob/master/CON
 
 ## Package Ownership
 
-Packages in the `contrib` directory are owned and maintained by their author not the InfluxData team.
-As such the author will be requested for review on all changes to the package.
-
+Packages in the `contrib` directory are owned and maintained by their author. 
+As such, the InfluxData team will request a review by the original author on all changes proposed to the package.
 
 ## Future Plans
 
 In the future we may create a more official repository of Flux packages that does not require committing the code to the Flux code repository.
 When that happens we intend to promote the packages from the `contrib` directory into their own Flux package in that repository in what ever form that takes.
 Until then we will collect third party packages into the `contrib` directory.
-
