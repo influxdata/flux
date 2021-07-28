@@ -98,11 +98,11 @@ pub struct FunctionDoc {
 /// Implementation block for FunctionDoc to house future "FunctionDod" methods
 impl FunctionDoc {
     /// Constructs a new FunctionDoc with the given name, headline, and flux type
-    fn new_with_args(name: String, doc: String, typ: String) -> FunctionDoc {
+    fn new_with_args(name: String, headline: String, description: String, typ: String) -> FunctionDoc {
         FunctionDoc {
             name,
-            headline: doc,
-            description: "".to_string(),
+            headline,
+            description: description,
             parameters: vec![],
             flux_type: typ,
         }
@@ -218,6 +218,18 @@ fn generate_docs(
     if let Some(comment) = &file.package {
         all_comment = comments_to_string(&comment.base.comments);
     }
+    let (headline, description) = seperate_description(&all_comment);
+
+    //TODO check if package name exists and if it doesn't throw an error message
+    Ok(PackageDoc {
+        name: file.package.clone().unwrap().name.name,
+        headline: headline.to_string(),
+        description: description.clone(),
+        members,
+    })
+}
+// Separates headline from description
+fn seperate_description (all_comment: &String) -> (String,Option<String>) {
     let mut headline: String = "".to_string();
     let mut description = None;
     let mut reached_end: bool = false;
@@ -246,14 +258,7 @@ fn generate_docs(
     if description_text != "" {
         description = Option::from(description_text);
     }
-
-    //TODO check if package name exists and if it doesn't throw an error message
-    Ok(PackageDoc {
-        name: file.package.clone().unwrap().name.name,
-        headline: headline.to_string(),
-        description: description.clone(),
-        members,
-    })
+    (headline,description)
 }
 
 // Generates docs for the values in a given source file.
@@ -266,6 +271,7 @@ fn generate_values(
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
+                let (headline, description) = seperate_description(&doc);
                 let name = s.id.name.clone();
                 if !types.contains_key(&name) {
                     continue;
@@ -274,15 +280,15 @@ fn generate_values(
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
-                        let function = FunctionDoc::new_with_args(name.clone(), doc, typ);
+                        let function = FunctionDoc::new_with_args(name.clone(), headline, description.unwrap(), typ);
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
                         // generate value doc
                         let variable = ValueDoc {
                             name: name.clone(),
-                            headline: doc,
-                            description: None,
+                            headline,
+                            description,
                             flux_type: typ,
                         };
                         members.insert(name.clone(), Doc::Value(Box::new(variable)));
@@ -291,6 +297,7 @@ fn generate_values(
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
+                let (headline, description) = seperate_description(&doc);
                 let name = s.id.name.clone();
                 if !types.contains_key(&name) {
                     continue;
@@ -299,14 +306,14 @@ fn generate_values(
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
-                        let function = FunctionDoc::new_with_args(name.clone(), doc, typ);
+                        let function = FunctionDoc::new_with_args(name.clone(), headline, description, typ);
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
                         let builtin = ValueDoc {
                             name: name.clone(),
-                            headline: doc,
-                            description: None,
+                            headline,
+                            description,
                             flux_type: typ,
                         };
                         members.insert(name.clone(), Doc::Value(Box::new(builtin)));
@@ -316,6 +323,7 @@ fn generate_values(
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
+                    let (headline, description) = seperate_description(&doc);
                     let name = v.id.name.clone();
                     if !types.contains_key(&name) {
                         continue;
@@ -324,14 +332,14 @@ fn generate_values(
                     match &types[&name].expr {
                         MonoType::Fun(_f) => {
                             // generate function doc
-                            let function = FunctionDoc::new_with_args(name.clone(), doc, typ);
+                            let function = FunctionDoc::new_with_args(name.clone(), headline, description, typ);
                             members.insert(name.clone(), Doc::Function(Box::new(function)));
                         }
                         _ => {
                             let option = ValueDoc {
                                 name: name.clone(),
-                                headline: doc,
-                                description: None,
+                                headline,
+                                description,
                                 flux_type: typ,
                             };
                             members.insert(name.clone(), Doc::Value(Box::new(option)));
