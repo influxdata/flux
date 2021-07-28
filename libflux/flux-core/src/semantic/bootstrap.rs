@@ -228,6 +228,7 @@ fn generate_docs(
         members,
     })
 }
+
 // Separates headline from description
 fn seperate_description (all_comment: &String) -> (String,Option<String>) {
     let mut headline: String = "".to_string();
@@ -272,6 +273,13 @@ fn generate_values(
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
                 let (headline, description) = seperate_description(&doc);
+                let mut description_string = String::new();
+                // unwrap description
+                match &description {
+                    Some(x) => description_string = x.to_string(),
+                    None => description_string = "".to_string(),
+                }
+
                 let name = s.id.name.clone();
                 if !types.contains_key(&name) {
                     continue;
@@ -280,7 +288,7 @@ fn generate_values(
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
-                        let function = FunctionDoc::new_with_args(name.clone(), headline, description.unwrap(), typ);
+                        let function = FunctionDoc::new_with_args(name.clone(), headline, description_string, typ);
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
@@ -298,6 +306,12 @@ fn generate_values(
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let (headline, description) = seperate_description(&doc);
+                let mut description_string = String::new();
+                // unwrap description
+                match &description {
+                    Some(x) => description_string = x.to_string(),
+                    None => description_string = "".to_string(),
+                }
                 let name = s.id.name.clone();
                 if !types.contains_key(&name) {
                     continue;
@@ -306,7 +320,7 @@ fn generate_values(
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
-                        let function = FunctionDoc::new_with_args(name.clone(), headline, description, typ);
+                        let function = FunctionDoc::new_with_args(name.clone(), headline, description_string, typ);
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
@@ -324,6 +338,12 @@ fn generate_values(
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
                     let (headline, description) = seperate_description(&doc);
+                    let mut description_string = String::new();
+                    // unwrap description
+                    match &description {
+                        Some(x) => description_string = x.to_string(),
+                        None => description_string = "".to_string(),
+                    }
                     let name = v.id.name.clone();
                     if !types.contains_key(&name) {
                         continue;
@@ -332,7 +352,7 @@ fn generate_values(
                     match &types[&name].expr {
                         MonoType::Fun(_f) => {
                             // generate function doc
-                            let function = FunctionDoc::new_with_args(name.clone(), headline, description, typ);
+                            let function = FunctionDoc::new_with_args(name.clone(), headline, description_string, typ);
                             members.insert(name.clone(), Doc::Function(Box::new(function)));
                         }
                         _ => {
