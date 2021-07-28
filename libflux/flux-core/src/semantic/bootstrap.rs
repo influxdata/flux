@@ -243,6 +243,9 @@ fn seperate_description (all_comment: &String) -> (String,Option<String>) {
                     headline.push_str(&t.to_string());
                 } else {
                     description_text.push_str(&t.to_string());
+                    if description_text.chars().last().unwrap() == '.'{
+                        description_text.push_str(" ");
+                    }
                 }
                 format!("{}", t)
             }
@@ -279,7 +282,6 @@ fn generate_values(
                     Some(x) => description_string = x.to_string(),
                     None => description_string = "".to_string(),
                 }
-
                 let name = s.id.name.clone();
                 if !types.contains_key(&name) {
                     continue;
