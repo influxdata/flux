@@ -3,6 +3,7 @@ package experimental_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -22,6 +23,7 @@ import (
 	"github.com/influxdata/flux/stdlib/experimental"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
+	protocol "github.com/influxdata/line-protocol"
 )
 
 func TestTo_Query(t *testing.T) {
@@ -263,4 +265,86 @@ func TestToTransformation_Errors(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestToTransformation_CloseOnError(t *testing.T) {
+	var closed bool
+	deps := dependenciestest.Default()
+	provider := influxdb.Dependency{
+		Provider: MockProvider{
+			WriterForFn: func(ctx context.Context, conf influxdb.Config) (influxdb.Writer, error) {
+				return &MockWriter{
+					WriteFn: func(metric ...protocol.Metric) error {
+						return errors.New("expected")
+					},
+					CloseFn: func() error {
+						closed = true
+						return nil
+					},
+				}, nil
+			},
+		},
+	}
+
+	cache := execute.NewTableBuilderCache(&memory.Allocator{})
+	d := execute.NewDataset(executetest.RandomDatasetID(), execute.DiscardingMode, cache)
+	d.SetTriggerSpec(plan.DefaultTriggerSpec)
+
+	ctx := deps.Inject(context.Background())
+	ctx = provider.Inject(ctx)
+	spec := &experimental.ToProcedureSpec{
+		Config: influxdb.Config{
+			Bucket: influxdb.NameOrID{Name: "mybucket"},
+			Host:   "http://localhost:8086",
+		},
+	}
+	tr, err := experimental.NewToTransformation(ctx, d, cache, spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	parentID := executetest.RandomDatasetID()
+	input := static.TableGroup{
+		static.Times("_time", 0, 10, 20, 30),
+		static.Floats("f0", 1.0, 2.0, 3.0, nil),
+		static.Ints("f1", 1, nil, 3, nil),
+		static.StringKey("_measurement", "m0"),
+		static.TableList{
+			static.StringKeys("t0", "a", "b"),
+		},
+	}
+
+	err = input.Do(func(tbl flux.Table) error {
+		return tr.Process(parentID, tbl)
+	})
+	if err == nil {
+		t.Error("expected error")
+	}
+	tr.Finish(parentID, err)
+
+	if !closed {
+		t.Error("writer was not closed")
+	}
+}
+
+type MockProvider struct {
+	influxdb.UnimplementedProvider
+	WriterForFn func(ctx context.Context, conf influxdb.Config) (influxdb.Writer, error)
+}
+
+func (p MockProvider) WriterFor(ctx context.Context, conf influxdb.Config) (influxdb.Writer, error) {
+	return p.WriterForFn(ctx, conf)
+}
+
+type MockWriter struct {
+	WriteFn func(metric ...protocol.Metric) error
+	CloseFn func() error
+}
+
+func (m *MockWriter) Write(metric ...protocol.Metric) error {
+	return m.WriteFn(metric...)
+}
+
+func (m *MockWriter) Close() error {
+	return m.CloseFn()
 }

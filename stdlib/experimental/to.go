@@ -174,11 +174,10 @@ func (t *ToTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute
 
 // Finish is called after the `to` flux function's transformation is done processing.
 func (t *ToTransformation) Finish(id execute.DatasetID, err error) {
-	if err != nil {
-		t.d.Finish(err)
-		return
+	writeErr := t.writer.Close()
+	if err == nil {
+		err = writeErr
 	}
-	err = t.writer.Close()
 	t.d.Finish(err)
 }
 
