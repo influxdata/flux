@@ -5,9 +5,9 @@ import (
 	"context"
 	"sort"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/arrowutil"
@@ -114,7 +114,7 @@ func (s *sortTransformation2) isSorted(cr flux.ColReader, cols []int) bool {
 	return true
 }
 
-func (s *sortTransformation2) sort(cr flux.ColReader, cols []int) *array.Int64 {
+func (s *sortTransformation2) sort(cr flux.ColReader, cols []int) *array.Int {
 	// Construct the indices.
 	indices := mutable.NewInt64Array(s.mem)
 	indices.Resize(cr.Len())
@@ -156,7 +156,7 @@ func (s *sortTransformation2) Finish(id execute.DatasetID, err error) {
 
 type sortTableMergeHeapItem struct {
 	cr        flux.ColReader
-	indices   *array.Int64
+	indices   *array.Int
 	i, offset int
 }
 

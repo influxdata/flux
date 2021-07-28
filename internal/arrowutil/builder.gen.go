@@ -7,37 +7,26 @@
 package arrowutil
 
 import (
-	"github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/influxdata/flux/array"
 )
 
-func NewInt64Builder(mem memory.Allocator) *array.Int64Builder {
-
-	return array.NewInt64Builder(mem)
-
+func NewIntBuilder(mem memory.Allocator) *array.IntBuilder {
+	return array.NewIntBuilder(mem)
 }
 
-func NewUint64Builder(mem memory.Allocator) *array.Uint64Builder {
-
-	return array.NewUint64Builder(mem)
-
+func NewUintBuilder(mem memory.Allocator) *array.UintBuilder {
+	return array.NewUintBuilder(mem)
 }
 
-func NewFloat64Builder(mem memory.Allocator) *array.Float64Builder {
-
-	return array.NewFloat64Builder(mem)
-
+func NewFloatBuilder(mem memory.Allocator) *array.FloatBuilder {
+	return array.NewFloatBuilder(mem)
 }
 
 func NewBooleanBuilder(mem memory.Allocator) *array.BooleanBuilder {
-
 	return array.NewBooleanBuilder(mem)
-
 }
 
-func NewStringBuilder(mem memory.Allocator) *array.BinaryBuilder {
-
-	return array.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
-
+func NewStringBuilder(mem memory.Allocator) *array.StringBuilder {
+	return array.NewStringBuilder(mem)
 }

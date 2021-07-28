@@ -3,8 +3,8 @@ package universe
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	fluxarrow "github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -220,7 +220,7 @@ func (hwt *holtWintersTransformation) Process(id execute.DatasetID, tbl flux.Tab
 
 	// Crafting timestamps.
 	// Timestamps are deduced by summing the interval to the first/last valid timestamp.
-	tsb := array.NewInt64Builder(fluxarrow.NewAllocator(hwt.alloc))
+	tsb := array.NewIntBuilder(fluxarrow.NewAllocator(hwt.alloc))
 	s := stop.Add(hwt.interval)
 	if hwt.withFit {
 		s = start
@@ -229,7 +229,7 @@ func (hwt *holtWintersTransformation) Process(id execute.DatasetID, tbl flux.Tab
 		tsb.Append(int64(s))
 		s = s.Add(hwt.interval)
 	}
-	newTs := tsb.NewInt64Array()
+	newTs := tsb.NewIntArray()
 	defer func() {
 		newVs.Release()
 		newTs.Release()
@@ -258,8 +258,8 @@ func (hwt *holtWintersTransformation) Process(id execute.DatasetID, tbl flux.Tab
 //  - if no value is present for a bucket, that is considered as an invalid value (treated like null values).
 // HoltWinters will only be provided with the values returned.
 // Timestamps can be deduced by summing interval to the first/last valid timestamp.
-func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeIdx int) (*array.Float64, values.Time, values.Time, error) {
-	vs := array.NewFloat64Builder(fluxarrow.NewAllocator(hwt.alloc))
+func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeIdx int) (*array.Float, values.Time, values.Time, error) {
+	vs := array.NewFloatBuilder(fluxarrow.NewAllocator(hwt.alloc))
 	var start, stop int64
 	bucketEnd := int64(-1)
 	bucketFilled := false
@@ -351,7 +351,7 @@ func (hwt *holtWintersTransformation) getCleanData(tbl flux.Table, colIdx, timeI
 	}); err != nil {
 		return nil, 0, 0, err
 	}
-	return vs.NewFloat64Array(), values.Time(start), values.Time(stop), nil
+	return vs.NewFloatArray(), values.Time(start), values.Time(stop), nil
 }
 
 func (hwt *holtWintersTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {

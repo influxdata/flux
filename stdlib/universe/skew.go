@@ -3,8 +3,8 @@ package universe
 import (
 	"math"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -117,7 +117,7 @@ func (a *SkewAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *SkewAgg) DoInt(vs *array.Int64) {
+func (a *SkewAgg) DoInt(vs *array.Int) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {
 			continue
@@ -135,7 +135,7 @@ func (a *SkewAgg) DoInt(vs *array.Int64) {
 		a.m1 += deltaN
 	}
 }
-func (a *SkewAgg) DoUInt(vs *array.Uint64) {
+func (a *SkewAgg) DoUInt(vs *array.Uint) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {
 			continue
@@ -153,7 +153,7 @@ func (a *SkewAgg) DoUInt(vs *array.Uint64) {
 		a.m1 += deltaN
 	}
 }
-func (a *SkewAgg) DoFloat(vs *array.Float64) {
+func (a *SkewAgg) DoFloat(vs *array.Float) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {
 			continue

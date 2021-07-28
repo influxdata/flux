@@ -4,9 +4,9 @@ import (
 	"context"
 	"sort"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -100,7 +100,7 @@ func (w *windowTransformation2) processView(cr flux.ColReader, t *windowSchemaTe
 }
 
 // getTimeColumn retrieves the time column for this flux.ColReader.
-func (w *windowTransformation2) getTimeColumn(cr flux.ColReader) (*array.Int64, error) {
+func (w *windowTransformation2) getTimeColumn(cr flux.ColReader) (*array.Int, error) {
 	idx := execute.ColIdx(w.timeCol, cr.Cols())
 	if idx < 0 {
 		return nil, errors.Newf(codes.FailedPrecondition, "no time column: %s", w.timeCol)
@@ -115,7 +115,7 @@ func (w *windowTransformation2) getTimeColumn(cr flux.ColReader) (*array.Int64, 
 // sort will return the indexes of the array as if it were sorted.
 // It does not modify the array and the array returned are the indexes of the
 // sorted values.
-func (w *windowTransformation2) sort(ts *array.Int64, mem memory.Allocator) *array.Int64 {
+func (w *windowTransformation2) sort(ts *array.Int, mem memory.Allocator) *array.Int {
 	// Construct a mutable array builder so that we can modify the buffer in-place
 	// while still using memory accounting.
 	indexes := mutable.NewInt64Array(mem)
@@ -154,7 +154,7 @@ func (w *windowTransformation2) sort(ts *array.Int64, mem memory.Allocator) *arr
 // scanWindows scans the timestamps and returns the appropriate boundaries.
 // Not all timestamps may be associated with a boundary and some timestamps may
 // be associated with multiple boundaries.
-func (w *windowTransformation2) scanWindows(ts, indices *array.Int64) []execute.Bounds {
+func (w *windowTransformation2) scanWindows(ts, indices *array.Int) []execute.Bounds {
 	if w.window.Every() == infinityVar.Duration() {
 		bounds := []execute.Bounds{{Start: interval.MinTime, Stop: interval.MaxTime}}
 		w.clipBounds(bounds)
@@ -213,7 +213,7 @@ func (w *windowTransformation2) determineSchemaTemplate(tbl flux.Table) windowSc
 
 // createWindows iterates over the windows and creates each window
 // for the found boundaries.
-func (w *windowTransformation2) createWindows(ts, indices *array.Int64, t *windowSchemaTemplate, bounds []execute.Bounds, cr flux.ColReader) {
+func (w *windowTransformation2) createWindows(ts, indices *array.Int, t *windowSchemaTemplate, bounds []execute.Bounds, cr flux.ColReader) {
 	// Run through the boundaries and construct the table buffers.
 	offset := 0
 	for _, bound := range bounds {
@@ -344,7 +344,7 @@ func (w *windowTransformation2) getBuilder(t *windowSchemaTemplate, bound execut
 // appendWinddow will append the values for the current window to the table.
 // This takes a start offset to begin the search for the starting point and it
 // returns the actual starting point.
-func (w *windowTransformation2) appendWindow(ts, indices *array.Int64, bound execute.Bounds, b *table.ArrowBuilder, offset int, cr flux.ColReader) int {
+func (w *windowTransformation2) appendWindow(ts, indices *array.Int, bound execute.Bounds, b *table.ArrowBuilder, offset int, cr flux.ColReader) int {
 	// Retrieve the span of offsets that are in this boundary.
 	start, stop := w.getWindowSpan(ts, indices, bound, offset)
 
@@ -360,13 +360,13 @@ func (w *windowTransformation2) appendWindow(ts, indices *array.Int64, bound exe
 
 		switch col.Label {
 		case w.startCol:
-			b := builder.(*array.Int64Builder)
+			b := builder.(*array.IntBuilder)
 			b.Reserve(indices.Len())
 			for i, n := 0, indices.Len(); i < n; i++ {
 				b.Append(int64(bound.Start))
 			}
 		case w.stopCol:
-			b := builder.(*array.Int64Builder)
+			b := builder.(*array.IntBuilder)
 			b.Reserve(indices.Len())
 			for i, n := 0, indices.Len(); i < n; i++ {
 				b.Append(int64(bound.Stop))
@@ -383,7 +383,7 @@ func (w *windowTransformation2) appendWindow(ts, indices *array.Int64, bound exe
 // getWindowSpan retrieves the span of indexes that fit into this boundary.
 // There will always be at least one point because we only invoke this method
 // with boundaries that we have already determined to have at least one row.
-func (w *windowTransformation2) getWindowSpan(ts, indexes *array.Int64, bound execute.Bounds, offset int) (start, stop int) {
+func (w *windowTransformation2) getWindowSpan(ts, indexes *array.Int, bound execute.Bounds, offset int) (start, stop int) {
 	// Find the start offset that fits in this boundary.
 	n := indexes.Len()
 	for ; offset < n; offset++ {

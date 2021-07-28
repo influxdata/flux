@@ -3,8 +3,8 @@ package universe
 import (
 	"math"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -235,7 +235,7 @@ func (t *tripleExponentialDerivativeTransformation) passThrough(vs *moving_avera
 			if err := b.AppendBools(bj, s); err != nil {
 				return err
 			}
-		case *array.Binary:
+		case *array.String:
 			if err := b.AppendStrings(bj, s); err != nil {
 				return err
 			}
@@ -247,7 +247,7 @@ func (t *tripleExponentialDerivativeTransformation) passThrough(vs *moving_avera
 	return nil
 }
 
-func (t *tripleExponentialDerivativeTransformation) passThroughTime(vs *array.Int64, b execute.TableBuilder, bj int) error {
+func (t *tripleExponentialDerivativeTransformation) passThroughTime(vs *array.Int, b execute.TableBuilder, bj int) error {
 
 	// Skip all values which Triple Exponential Derivative won't output
 	//     - math.Min decides whether to skip all the values in the slice
@@ -336,7 +336,7 @@ func (t *tripleExponentialDerivativeTransformation) Finish(id execute.DatasetID,
 	t.d.Finish(err)
 }
 
-func arrayToFloatArrow(a []interface{}, alloc *memory.Allocator) *array.Float64 {
+func arrayToFloatArrow(a []interface{}, alloc *memory.Allocator) *array.Float {
 	bld := arrow.NewFloatBuilder(alloc)
 	defer bld.Release()
 
@@ -348,5 +348,5 @@ func arrayToFloatArrow(a []interface{}, alloc *memory.Allocator) *array.Float64 
 		}
 	}
 
-	return bld.NewFloat64Array()
+	return bld.NewFloatArray()
 }

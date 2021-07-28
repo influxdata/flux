@@ -3,9 +3,9 @@ package arrowutil
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/bitutil"
 	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/influxdata/flux/array"
 )
 
 func Filter(arr array.Interface, bitset []byte, mem memory.Allocator) array.Interface {

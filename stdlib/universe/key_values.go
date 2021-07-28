@@ -401,7 +401,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 							}
 							nullDistinct = true
 						} else {
-							v := vs.ValueString(i)
+							v := vs.Value(i)
 							if stringDistinct[[2]string{c.name, v}] {
 								continue
 							}
@@ -412,7 +412,7 @@ func (t *keyValuesTransformation) Process(id execute.DatasetID, tbl flux.Table) 
 						return err
 					}
 					if vs.IsValid(i) {
-						v := vs.ValueString(i)
+						v := vs.Value(i)
 						if err := builder.AppendString(valueColIdx, v); err != nil {
 							return err
 						}

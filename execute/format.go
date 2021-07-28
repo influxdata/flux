@@ -251,7 +251,7 @@ func (f *Formatter) valueBuf(i, j int, typ flux.ColType, cr flux.ColReader) []by
 		}
 	case flux.TString:
 		if cr.Strings(j).IsValid(i) {
-			buf = []byte(cr.Strings(j).ValueString(i))
+			buf = []byte(cr.Strings(j).Value(i))
 		}
 	case flux.TTime:
 		if cr.Times(j).IsValid(i) {

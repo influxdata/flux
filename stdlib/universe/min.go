@@ -1,8 +1,8 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -142,10 +142,10 @@ func (s *MinSelector) selectRow(idx int, cr flux.ColReader) {
 	}
 }
 
-func (s *MinTimeSelector) DoTime(vs *array.Int64, cr flux.ColReader) {
+func (s *MinTimeSelector) DoTime(vs *array.Int, cr flux.ColReader) {
 	s.MinIntSelector.DoInt(vs, cr)
 }
-func (s *MinIntSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
+func (s *MinIntSelector) DoInt(vs *array.Int, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
@@ -158,7 +158,7 @@ func (s *MinIntSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinUIntSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
+func (s *MinUIntSelector) DoUInt(vs *array.Uint, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
@@ -171,7 +171,7 @@ func (s *MinUIntSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
 	}
 	s.selectRow(minIdx, cr)
 }
-func (s *MinFloatSelector) DoFloat(vs *array.Float64, cr flux.ColReader) {
+func (s *MinFloatSelector) DoFloat(vs *array.Float, cr flux.ColReader) {
 	minIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {

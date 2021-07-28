@@ -1,12 +1,11 @@
 package arrow
 
 import (
-	"github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/memory"
 )
 
-func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
+func NewString(vs []string, alloc *memory.Allocator) *array.String {
 	b := NewStringBuilder(alloc)
 	b.Resize(len(vs))
 	sz := 0
@@ -15,17 +14,17 @@ func NewString(vs []string, alloc *memory.Allocator) *array.Binary {
 	}
 	b.ReserveData(sz)
 	for _, v := range vs {
-		b.AppendString(v)
+		b.Append(v)
 	}
-	a := b.NewBinaryArray()
+	a := b.NewStringArray()
 	b.Release()
 	return a
 }
 
-func StringSlice(arr *array.Binary, i, j int) *array.Binary {
-	return Slice(arr, int64(i), int64(j)).(*array.Binary)
+func StringSlice(arr *array.String, i, j int) *array.String {
+	return Slice(arr, int64(i), int64(j)).(*array.String)
 }
 
-func NewStringBuilder(a *memory.Allocator) *array.BinaryBuilder {
-	return array.NewBinaryBuilder(a, arrow.BinaryTypes.String)
+func NewStringBuilder(a *memory.Allocator) *array.StringBuilder {
+	return array.NewStringBuilder(a)
 }

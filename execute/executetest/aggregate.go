@@ -3,17 +3,17 @@ package executetest
 import (
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 )
 
 // AggFuncTestHelper splits the data in half, runs Do over each split and compares
 // the Value to want.
-func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data *array.Float64, want interface{}) {
+func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data *array.Float, want interface{}) {
 	t.Helper()
 
 	// Call Do twice, since this is possible according to the interface.
@@ -51,7 +51,7 @@ func AggFuncTestHelper(t *testing.T, agg execute.Aggregate, data *array.Float64,
 }
 
 // AggFuncBenchmarkHelper benchmarks the aggregate function over data and compares to wantValue
-func AggFuncBenchmarkHelper(b *testing.B, agg execute.Aggregate, data *array.Float64, want interface{}) {
+func AggFuncBenchmarkHelper(b *testing.B, agg execute.Aggregate, data *array.Float, want interface{}) {
 	b.Helper()
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {

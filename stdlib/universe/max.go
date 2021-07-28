@@ -1,8 +1,8 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -142,10 +142,10 @@ func (s *MaxSelector) selectRow(idx int, cr flux.ColReader) {
 	}
 }
 
-func (s *MaxTimeSelector) DoTime(vs *array.Int64, cr flux.ColReader) {
+func (s *MaxTimeSelector) DoTime(vs *array.Int, cr flux.ColReader) {
 	s.MaxIntSelector.DoInt(vs, cr)
 }
-func (s *MaxIntSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
+func (s *MaxIntSelector) DoInt(vs *array.Int, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
@@ -158,7 +158,7 @@ func (s *MaxIntSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
-func (s *MaxUIntSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
+func (s *MaxUIntSelector) DoUInt(vs *array.Uint, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
@@ -171,7 +171,7 @@ func (s *MaxUIntSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
 	}
 	s.selectRow(maxIdx, cr)
 }
-func (s *MaxFloatSelector) DoFloat(vs *array.Float64, cr flux.ColReader) {
+func (s *MaxFloatSelector) DoFloat(vs *array.Float, cr flux.ColReader) {
 	maxIdx := -1
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {

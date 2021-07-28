@@ -10,34 +10,34 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/internal/arrowutil"
 )
 
-func TestIterateInt64s(t *testing.T) {
+func TestIterateInts(t *testing.T) {
 	arrs := make([]array.Interface, 0, 3)
 	for i := 0; i < 3; i++ {
-		b := arrowutil.NewInt64Builder(memory.DefaultAllocator)
+		b := arrowutil.NewIntBuilder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {
 			if 0.05 > rand.Float64() {
 				b.AppendNull()
 				continue
 			}
-			v := generateInt64()
+			v := generateInt()
 			b.Append(v)
 		}
 		arrs = append(arrs, b.NewArray())
 	}
 
-	itr := arrowutil.IterateInt64s(arrs)
+	itr := arrowutil.IterateInts(arrs)
 	for i := 0; i < 300; i++ {
 		if !itr.Next() {
 			t.Fatalf("expected next value, but got false at index %d", i)
 		}
 
-		arr := arrs[i/100].(*array.Int64)
+		arr := arrs[i/100].(*array.Int)
 		if want, got := arr.IsValid(i%100), itr.IsValid(); !cmp.Equal(want, got) {
 			t.Fatalf("unexpected valid value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
 		} else if want && got {
@@ -51,28 +51,28 @@ func TestIterateInt64s(t *testing.T) {
 	}
 }
 
-func TestIterateUint64s(t *testing.T) {
+func TestIterateUints(t *testing.T) {
 	arrs := make([]array.Interface, 0, 3)
 	for i := 0; i < 3; i++ {
-		b := arrowutil.NewUint64Builder(memory.DefaultAllocator)
+		b := arrowutil.NewUintBuilder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {
 			if 0.05 > rand.Float64() {
 				b.AppendNull()
 				continue
 			}
-			v := generateUint64()
+			v := generateUint()
 			b.Append(v)
 		}
 		arrs = append(arrs, b.NewArray())
 	}
 
-	itr := arrowutil.IterateUint64s(arrs)
+	itr := arrowutil.IterateUints(arrs)
 	for i := 0; i < 300; i++ {
 		if !itr.Next() {
 			t.Fatalf("expected next value, but got false at index %d", i)
 		}
 
-		arr := arrs[i/100].(*array.Uint64)
+		arr := arrs[i/100].(*array.Uint)
 		if want, got := arr.IsValid(i%100), itr.IsValid(); !cmp.Equal(want, got) {
 			t.Fatalf("unexpected valid value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
 		} else if want && got {
@@ -86,28 +86,28 @@ func TestIterateUint64s(t *testing.T) {
 	}
 }
 
-func TestIterateFloat64s(t *testing.T) {
+func TestIterateFloats(t *testing.T) {
 	arrs := make([]array.Interface, 0, 3)
 	for i := 0; i < 3; i++ {
-		b := arrowutil.NewFloat64Builder(memory.DefaultAllocator)
+		b := arrowutil.NewFloatBuilder(memory.DefaultAllocator)
 		for j := 0; j < 100; j++ {
 			if 0.05 > rand.Float64() {
 				b.AppendNull()
 				continue
 			}
-			v := generateFloat64()
+			v := generateFloat()
 			b.Append(v)
 		}
 		arrs = append(arrs, b.NewArray())
 	}
 
-	itr := arrowutil.IterateFloat64s(arrs)
+	itr := arrowutil.IterateFloats(arrs)
 	for i := 0; i < 300; i++ {
 		if !itr.Next() {
 			t.Fatalf("expected next value, but got false at index %d", i)
 		}
 
-		arr := arrs[i/100].(*array.Float64)
+		arr := arrs[i/100].(*array.Float)
 		if want, got := arr.IsValid(i%100), itr.IsValid(); !cmp.Equal(want, got) {
 			t.Fatalf("unexpected valid value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
 		} else if want && got {
@@ -166,7 +166,7 @@ func TestIterateStrings(t *testing.T) {
 				continue
 			}
 			v := generateString()
-			b.AppendString(v)
+			b.Append(v)
 		}
 		arrs = append(arrs, b.NewArray())
 	}
@@ -177,11 +177,11 @@ func TestIterateStrings(t *testing.T) {
 			t.Fatalf("expected next value, but got false at index %d", i)
 		}
 
-		arr := arrs[i/100].(*array.Binary)
+		arr := arrs[i/100].(*array.String)
 		if want, got := arr.IsValid(i%100), itr.IsValid(); !cmp.Equal(want, got) {
 			t.Fatalf("unexpected valid value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
 		} else if want && got {
-			if want, got := arr.ValueString(i%100), itr.ValueString(); !cmp.Equal(want, got) {
+			if want, got := arr.Value(i%100), itr.Value(); !cmp.Equal(want, got) {
 				t.Fatalf("unexpected value at index %d -want/+got:\n%s", i, cmp.Diff(want, got))
 			}
 		}

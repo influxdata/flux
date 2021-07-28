@@ -1,8 +1,8 @@
 package arrow
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 )
@@ -35,20 +35,20 @@ func (t *TableBuffer) Len() int {
 func (t *TableBuffer) Bools(j int) *array.Boolean {
 	return t.Values[j].(*array.Boolean)
 }
-func (t *TableBuffer) Ints(j int) *array.Int64 {
-	return t.Values[j].(*array.Int64)
+func (t *TableBuffer) Ints(j int) *array.Int {
+	return t.Values[j].(*array.Int)
 }
-func (t *TableBuffer) UInts(j int) *array.Uint64 {
-	return t.Values[j].(*array.Uint64)
+func (t *TableBuffer) UInts(j int) *array.Uint {
+	return t.Values[j].(*array.Uint)
 }
-func (t *TableBuffer) Floats(j int) *array.Float64 {
-	return t.Values[j].(*array.Float64)
+func (t *TableBuffer) Floats(j int) *array.Float {
+	return t.Values[j].(*array.Float)
 }
-func (t *TableBuffer) Strings(j int) *array.Binary {
-	return t.Values[j].(*array.Binary)
+func (t *TableBuffer) Strings(j int) *array.String {
+	return t.Values[j].(*array.String)
 }
-func (t *TableBuffer) Times(j int) *array.Int64 {
-	return t.Values[j].(*array.Int64)
+func (t *TableBuffer) Times(j int) *array.Int {
+	return t.Values[j].(*array.Int)
 }
 
 func (t *TableBuffer) Retain() {

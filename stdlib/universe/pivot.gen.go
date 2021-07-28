@@ -7,9 +7,9 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
@@ -44,19 +44,19 @@ func (gr *pivotTableGroup) buildColumn(keys array.Interface, buf *pivotTableBuff
 	switch gr.rowCol.Type {
 
 	case flux.TInt:
-		return gr.buildColumnFromInts(keys.(*array.Int64), buf, mem)
+		return gr.buildColumnFromInts(keys.(*array.Int), buf, mem)
 
 	case flux.TUInt:
-		return gr.buildColumnFromUints(keys.(*array.Uint64), buf, mem)
+		return gr.buildColumnFromUints(keys.(*array.Uint), buf, mem)
 
 	case flux.TFloat:
-		return gr.buildColumnFromFloats(keys.(*array.Float64), buf, mem)
+		return gr.buildColumnFromFloats(keys.(*array.Float), buf, mem)
 
 	case flux.TString:
-		return gr.buildColumnFrom(keys.(*array.Binary), buf, mem)
+		return gr.buildColumnFrom(keys.(*array.String), buf, mem)
 
 	case flux.TTime:
-		return gr.buildColumnFromTimes(keys.(*array.Int64), buf, mem)
+		return gr.buildColumnFromTimes(keys.(*array.Int), buf, mem)
 
 	default:
 		panic(errors.Newf(codes.Unimplemented, "row column merge not implemented for %s", gr.rowCol.Type))
@@ -74,16 +74,16 @@ func (gr *pivotTableGroup) mergeIntKeys(mem memory.Allocator) array.Interface {
 		count++
 	})
 
-	b := arrowutil.NewInt64Builder(mem)
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(count)
 	gr.forEachInt(buffers, b.Append)
 	return b.NewArray()
 }
 
 func (gr *pivotTableGroup) forEachInt(buffers [][]array.Interface, fn func(v int64)) {
-	iterators := make([]*arrowutil.Int64Iterator, 0, len(buffers))
+	iterators := make([]*arrowutil.IntIterator, 0, len(buffers))
 	for _, vs := range buffers {
-		itr := arrowutil.IterateInt64s(vs)
+		itr := arrowutil.IterateInts(vs)
 		if !itr.Next() {
 			continue
 		}
@@ -131,7 +131,7 @@ func (gr *pivotTableGroup) forEachInt(buffers [][]array.Interface, fn func(v int
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFromInts(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 
 	switch buf.valueType {
 
@@ -159,12 +159,12 @@ func (gr *pivotTableGroup) buildColumnFromInts(keys *array.Int64, buf *pivotTabl
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromInts(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+func (gr *pivotTableGroup) buildIntColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	kitr := arrowutil.IterateInts(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -185,12 +185,12 @@ func (gr *pivotTableGroup) buildIntColumnFromInts(keys *array.Int64, buf *pivotT
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromInts(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewUint64Builder(mem)
+func (gr *pivotTableGroup) buildUintColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
-	vitr := arrowutil.IterateUint64s(buf.values)
+	kitr := arrowutil.IterateInts(buf.keys)
+	vitr := arrowutil.IterateUints(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -211,12 +211,12 @@ func (gr *pivotTableGroup) buildUintColumnFromInts(keys *array.Int64, buf *pivot
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromInts(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewFloat64Builder(mem)
+func (gr *pivotTableGroup) buildFloatColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
-	vitr := arrowutil.IterateFloat64s(buf.values)
+	kitr := arrowutil.IterateInts(buf.keys)
+	vitr := arrowutil.IterateFloats(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -237,11 +237,11 @@ func (gr *pivotTableGroup) buildFloatColumnFromInts(keys *array.Int64, buf *pivo
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromInts(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
+	kitr := arrowutil.IterateInts(buf.keys)
 	vitr := arrowutil.IterateBooleans(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
@@ -263,17 +263,17 @@ func (gr *pivotTableGroup) buildBooleanColumnFromInts(keys *array.Int64, buf *pi
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromInts(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
+	kitr := arrowutil.IterateInts(buf.keys)
 	vitr := arrowutil.IterateStrings(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
 				if vitr.IsValid() {
-					b.AppendString(vitr.ValueString())
+					b.Append(vitr.Value())
 				} else {
 					b.AppendNull()
 				}
@@ -289,12 +289,12 @@ func (gr *pivotTableGroup) buildStringColumnFromInts(keys *array.Int64, buf *piv
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromInts(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+func (gr *pivotTableGroup) buildTimeColumnFromInts(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	kitr := arrowutil.IterateInts(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -326,16 +326,16 @@ func (gr *pivotTableGroup) mergeUintKeys(mem memory.Allocator) array.Interface {
 		count++
 	})
 
-	b := arrowutil.NewUint64Builder(mem)
+	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(count)
 	gr.forEachUint(buffers, b.Append)
 	return b.NewArray()
 }
 
 func (gr *pivotTableGroup) forEachUint(buffers [][]array.Interface, fn func(v uint64)) {
-	iterators := make([]*arrowutil.Uint64Iterator, 0, len(buffers))
+	iterators := make([]*arrowutil.UintIterator, 0, len(buffers))
 	for _, vs := range buffers {
-		itr := arrowutil.IterateUint64s(vs)
+		itr := arrowutil.IterateUints(vs)
 		if !itr.Next() {
 			continue
 		}
@@ -383,7 +383,7 @@ func (gr *pivotTableGroup) forEachUint(buffers [][]array.Interface, fn func(v ui
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFromUints(keys *array.Uint64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 
 	switch buf.valueType {
 
@@ -411,12 +411,12 @@ func (gr *pivotTableGroup) buildColumnFromUints(keys *array.Uint64, buf *pivotTa
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromUints(keys *array.Uint64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+func (gr *pivotTableGroup) buildIntColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateUint64s(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	kitr := arrowutil.IterateUints(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -437,12 +437,12 @@ func (gr *pivotTableGroup) buildIntColumnFromUints(keys *array.Uint64, buf *pivo
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromUints(keys *array.Uint64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewUint64Builder(mem)
+func (gr *pivotTableGroup) buildUintColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateUint64s(buf.keys)
-	vitr := arrowutil.IterateUint64s(buf.values)
+	kitr := arrowutil.IterateUints(buf.keys)
+	vitr := arrowutil.IterateUints(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -463,12 +463,12 @@ func (gr *pivotTableGroup) buildUintColumnFromUints(keys *array.Uint64, buf *piv
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromUints(keys *array.Uint64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewFloat64Builder(mem)
+func (gr *pivotTableGroup) buildFloatColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateUint64s(buf.keys)
-	vitr := arrowutil.IterateFloat64s(buf.values)
+	kitr := arrowutil.IterateUints(buf.keys)
+	vitr := arrowutil.IterateFloats(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -489,11 +489,11 @@ func (gr *pivotTableGroup) buildFloatColumnFromUints(keys *array.Uint64, buf *pi
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromUints(keys *array.Uint64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateUint64s(buf.keys)
+	kitr := arrowutil.IterateUints(buf.keys)
 	vitr := arrowutil.IterateBooleans(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
@@ -515,17 +515,17 @@ func (gr *pivotTableGroup) buildBooleanColumnFromUints(keys *array.Uint64, buf *
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromUints(keys *array.Uint64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateUint64s(buf.keys)
+	kitr := arrowutil.IterateUints(buf.keys)
 	vitr := arrowutil.IterateStrings(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
 				if vitr.IsValid() {
-					b.AppendString(vitr.ValueString())
+					b.Append(vitr.Value())
 				} else {
 					b.AppendNull()
 				}
@@ -541,12 +541,12 @@ func (gr *pivotTableGroup) buildStringColumnFromUints(keys *array.Uint64, buf *p
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromUints(keys *array.Uint64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+func (gr *pivotTableGroup) buildTimeColumnFromUints(keys *array.Uint, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateUint64s(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	kitr := arrowutil.IterateUints(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -578,16 +578,16 @@ func (gr *pivotTableGroup) mergeFloatKeys(mem memory.Allocator) array.Interface 
 		count++
 	})
 
-	b := arrowutil.NewFloat64Builder(mem)
+	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(count)
 	gr.forEachFloat(buffers, b.Append)
 	return b.NewArray()
 }
 
 func (gr *pivotTableGroup) forEachFloat(buffers [][]array.Interface, fn func(v float64)) {
-	iterators := make([]*arrowutil.Float64Iterator, 0, len(buffers))
+	iterators := make([]*arrowutil.FloatIterator, 0, len(buffers))
 	for _, vs := range buffers {
-		itr := arrowutil.IterateFloat64s(vs)
+		itr := arrowutil.IterateFloats(vs)
 		if !itr.Next() {
 			continue
 		}
@@ -635,7 +635,7 @@ func (gr *pivotTableGroup) forEachFloat(buffers [][]array.Interface, fn func(v f
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFromFloats(keys *array.Float64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 
 	switch buf.valueType {
 
@@ -663,12 +663,12 @@ func (gr *pivotTableGroup) buildColumnFromFloats(keys *array.Float64, buf *pivot
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromFloats(keys *array.Float64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+func (gr *pivotTableGroup) buildIntColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateFloat64s(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	kitr := arrowutil.IterateFloats(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -689,12 +689,12 @@ func (gr *pivotTableGroup) buildIntColumnFromFloats(keys *array.Float64, buf *pi
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromFloats(keys *array.Float64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewUint64Builder(mem)
+func (gr *pivotTableGroup) buildUintColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateFloat64s(buf.keys)
-	vitr := arrowutil.IterateUint64s(buf.values)
+	kitr := arrowutil.IterateFloats(buf.keys)
+	vitr := arrowutil.IterateUints(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -715,12 +715,12 @@ func (gr *pivotTableGroup) buildUintColumnFromFloats(keys *array.Float64, buf *p
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromFloats(keys *array.Float64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewFloat64Builder(mem)
+func (gr *pivotTableGroup) buildFloatColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateFloat64s(buf.keys)
-	vitr := arrowutil.IterateFloat64s(buf.values)
+	kitr := arrowutil.IterateFloats(buf.keys)
+	vitr := arrowutil.IterateFloats(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -741,11 +741,11 @@ func (gr *pivotTableGroup) buildFloatColumnFromFloats(keys *array.Float64, buf *
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromFloats(keys *array.Float64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateFloat64s(buf.keys)
+	kitr := arrowutil.IterateFloats(buf.keys)
 	vitr := arrowutil.IterateBooleans(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
@@ -767,17 +767,17 @@ func (gr *pivotTableGroup) buildBooleanColumnFromFloats(keys *array.Float64, buf
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromFloats(keys *array.Float64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateFloat64s(buf.keys)
+	kitr := arrowutil.IterateFloats(buf.keys)
 	vitr := arrowutil.IterateStrings(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
 				if vitr.IsValid() {
-					b.AppendString(vitr.ValueString())
+					b.Append(vitr.Value())
 				} else {
 					b.AppendNull()
 				}
@@ -793,12 +793,12 @@ func (gr *pivotTableGroup) buildStringColumnFromFloats(keys *array.Float64, buf 
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromFloats(keys *array.Float64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+func (gr *pivotTableGroup) buildTimeColumnFromFloats(keys *array.Float, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateFloat64s(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	kitr := arrowutil.IterateFloats(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -820,11 +820,11 @@ func (gr *pivotTableGroup) buildTimeColumnFromFloats(keys *array.Float64, buf *p
 }
 
 func (gr *pivotTableGroup) buildIntColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
 	kitr := arrowutil.IterateBooleans(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -846,11 +846,11 @@ func (gr *pivotTableGroup) buildIntColumnFromBooleans(keys *array.Boolean, buf *
 }
 
 func (gr *pivotTableGroup) buildUintColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewUint64Builder(mem)
+	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
 	kitr := arrowutil.IterateBooleans(buf.keys)
-	vitr := arrowutil.IterateUint64s(buf.values)
+	vitr := arrowutil.IterateUints(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -872,11 +872,11 @@ func (gr *pivotTableGroup) buildUintColumnFromBooleans(keys *array.Boolean, buf 
 }
 
 func (gr *pivotTableGroup) buildFloatColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewFloat64Builder(mem)
+	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
 	kitr := arrowutil.IterateBooleans(buf.keys)
-	vitr := arrowutil.IterateFloat64s(buf.values)
+	vitr := arrowutil.IterateFloats(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -933,7 +933,7 @@ func (gr *pivotTableGroup) buildStringColumnFromBooleans(keys *array.Boolean, bu
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
 				if vitr.IsValid() {
-					b.AppendString(vitr.ValueString())
+					b.Append(vitr.Value())
 				} else {
 					b.AppendNull()
 				}
@@ -950,11 +950,11 @@ func (gr *pivotTableGroup) buildStringColumnFromBooleans(keys *array.Boolean, bu
 }
 
 func (gr *pivotTableGroup) buildTimeColumnFromBooleans(keys *array.Boolean, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
 	kitr := arrowutil.IterateBooleans(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -988,7 +988,7 @@ func (gr *pivotTableGroup) mergeStringKeys(mem memory.Allocator) array.Interface
 
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(count)
-	gr.forEachString(buffers, b.AppendString)
+	gr.forEachString(buffers, b.Append)
 	return b.NewArray()
 }
 
@@ -996,258 +996,6 @@ func (gr *pivotTableGroup) forEachString(buffers [][]array.Interface, fn func(v 
 	iterators := make([]*arrowutil.StringIterator, 0, len(buffers))
 	for _, vs := range buffers {
 		itr := arrowutil.IterateStrings(vs)
-		if !itr.Next() {
-			continue
-		}
-		iterators = append(iterators, &itr)
-	}
-
-	// Count the number of common keys.
-	for len(iterators) > 0 {
-		next := iterators[0].ValueString()
-		for _, itr := range iterators[1:] {
-			if v := itr.ValueString(); v < next {
-				next = v
-			}
-		}
-
-		// This counts as a row.
-		fn(next)
-
-		// Advance any iterators to the next non-null value
-		// that match the next value.
-		for i := 0; i < len(iterators); {
-			itr := iterators[i]
-			if itr.ValueString() != next {
-				i++
-				continue
-			}
-
-			// Advance to the next non-null value.
-			for {
-				if !itr.Next() {
-					// Remove this iterator from the list.
-					copy(iterators[i:], iterators[i+1:])
-					iterators = iterators[:len(iterators)-1]
-					break
-				}
-
-				if itr.IsValid() && itr.ValueString() != next {
-					// The next value is valid so advance
-					// to the next iterator.
-					i++
-					break
-				}
-			}
-		}
-	}
-}
-
-func (gr *pivotTableGroup) buildColumnFrom(keys *array.Binary, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-
-	switch buf.valueType {
-
-	case flux.TInt:
-		return gr.buildIntColumnFrom(keys, buf, mem)
-
-	case flux.TUInt:
-		return gr.buildUintColumnFrom(keys, buf, mem)
-
-	case flux.TFloat:
-		return gr.buildFloatColumnFrom(keys, buf, mem)
-
-	case flux.TBool:
-		return gr.buildBooleanColumnFrom(keys, buf, mem)
-
-	case flux.TString:
-		return gr.buildStringColumnFrom(keys, buf, mem)
-
-	case flux.TTime:
-		return gr.buildTimeColumnFrom(keys, buf, mem)
-
-	default:
-		panic("unimplemented")
-	}
-
-}
-
-func (gr *pivotTableGroup) buildIntColumnFrom(keys *array.Binary, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
-	b.Resize(keys.Len())
-
-	kitr := arrowutil.IterateStrings(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
-	for i := 0; kitr.Next() && vitr.Next(); {
-		for ; i < keys.Len(); i++ {
-			if kitr.ValueString() == keys.ValueString(i) {
-				if vitr.IsValid() {
-					b.Append(vitr.Value())
-				} else {
-					b.AppendNull()
-				}
-				i++
-				break
-			}
-			b.AppendNull()
-		}
-	}
-	for i := b.Len(); i < keys.Len(); i++ {
-		b.AppendNull()
-	}
-	return b.NewArray()
-}
-
-func (gr *pivotTableGroup) buildUintColumnFrom(keys *array.Binary, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewUint64Builder(mem)
-	b.Resize(keys.Len())
-
-	kitr := arrowutil.IterateStrings(buf.keys)
-	vitr := arrowutil.IterateUint64s(buf.values)
-	for i := 0; kitr.Next() && vitr.Next(); {
-		for ; i < keys.Len(); i++ {
-			if kitr.ValueString() == keys.ValueString(i) {
-				if vitr.IsValid() {
-					b.Append(vitr.Value())
-				} else {
-					b.AppendNull()
-				}
-				i++
-				break
-			}
-			b.AppendNull()
-		}
-	}
-	for i := b.Len(); i < keys.Len(); i++ {
-		b.AppendNull()
-	}
-	return b.NewArray()
-}
-
-func (gr *pivotTableGroup) buildFloatColumnFrom(keys *array.Binary, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewFloat64Builder(mem)
-	b.Resize(keys.Len())
-
-	kitr := arrowutil.IterateStrings(buf.keys)
-	vitr := arrowutil.IterateFloat64s(buf.values)
-	for i := 0; kitr.Next() && vitr.Next(); {
-		for ; i < keys.Len(); i++ {
-			if kitr.ValueString() == keys.ValueString(i) {
-				if vitr.IsValid() {
-					b.Append(vitr.Value())
-				} else {
-					b.AppendNull()
-				}
-				i++
-				break
-			}
-			b.AppendNull()
-		}
-	}
-	for i := b.Len(); i < keys.Len(); i++ {
-		b.AppendNull()
-	}
-	return b.NewArray()
-}
-
-func (gr *pivotTableGroup) buildBooleanColumnFrom(keys *array.Binary, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewBooleanBuilder(mem)
-	b.Resize(keys.Len())
-
-	kitr := arrowutil.IterateStrings(buf.keys)
-	vitr := arrowutil.IterateBooleans(buf.values)
-	for i := 0; kitr.Next() && vitr.Next(); {
-		for ; i < keys.Len(); i++ {
-			if kitr.ValueString() == keys.ValueString(i) {
-				if vitr.IsValid() {
-					b.Append(vitr.Value())
-				} else {
-					b.AppendNull()
-				}
-				i++
-				break
-			}
-			b.AppendNull()
-		}
-	}
-	for i := b.Len(); i < keys.Len(); i++ {
-		b.AppendNull()
-	}
-	return b.NewArray()
-}
-
-func (gr *pivotTableGroup) buildStringColumnFrom(keys *array.Binary, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewStringBuilder(mem)
-	b.Resize(keys.Len())
-
-	kitr := arrowutil.IterateStrings(buf.keys)
-	vitr := arrowutil.IterateStrings(buf.values)
-	for i := 0; kitr.Next() && vitr.Next(); {
-		for ; i < keys.Len(); i++ {
-			if kitr.ValueString() == keys.ValueString(i) {
-				if vitr.IsValid() {
-					b.AppendString(vitr.ValueString())
-				} else {
-					b.AppendNull()
-				}
-				i++
-				break
-			}
-			b.AppendNull()
-		}
-	}
-	for i := b.Len(); i < keys.Len(); i++ {
-		b.AppendNull()
-	}
-	return b.NewArray()
-}
-
-func (gr *pivotTableGroup) buildTimeColumnFrom(keys *array.Binary, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
-	b.Resize(keys.Len())
-
-	kitr := arrowutil.IterateStrings(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
-	for i := 0; kitr.Next() && vitr.Next(); {
-		for ; i < keys.Len(); i++ {
-			if kitr.ValueString() == keys.ValueString(i) {
-				if vitr.IsValid() {
-					b.Append(vitr.Value())
-				} else {
-					b.AppendNull()
-				}
-				i++
-				break
-			}
-			b.AppendNull()
-		}
-	}
-	for i := b.Len(); i < keys.Len(); i++ {
-		b.AppendNull()
-	}
-	return b.NewArray()
-}
-
-func (gr *pivotTableGroup) mergeTimeKeys(mem memory.Allocator) array.Interface {
-	buffers := make([][]array.Interface, 0, len(gr.buffers))
-	for _, buf := range gr.buffers {
-		buffers = append(buffers, buf.keys)
-	}
-
-	count := 0
-	gr.forEachTime(buffers, func(v int64) {
-		count++
-	})
-
-	b := arrowutil.NewInt64Builder(mem)
-	b.Resize(count)
-	gr.forEachTime(buffers, b.Append)
-	return b.NewArray()
-}
-
-func (gr *pivotTableGroup) forEachTime(buffers [][]array.Interface, fn func(v int64)) {
-	iterators := make([]*arrowutil.Int64Iterator, 0, len(buffers))
-	for _, vs := range buffers {
-		itr := arrowutil.IterateInt64s(vs)
 		if !itr.Next() {
 			continue
 		}
@@ -1295,7 +1043,259 @@ func (gr *pivotTableGroup) forEachTime(buffers [][]array.Interface, fn func(v in
 	}
 }
 
-func (gr *pivotTableGroup) buildColumnFromTimes(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+
+	switch buf.valueType {
+
+	case flux.TInt:
+		return gr.buildIntColumnFrom(keys, buf, mem)
+
+	case flux.TUInt:
+		return gr.buildUintColumnFrom(keys, buf, mem)
+
+	case flux.TFloat:
+		return gr.buildFloatColumnFrom(keys, buf, mem)
+
+	case flux.TBool:
+		return gr.buildBooleanColumnFrom(keys, buf, mem)
+
+	case flux.TString:
+		return gr.buildStringColumnFrom(keys, buf, mem)
+
+	case flux.TTime:
+		return gr.buildTimeColumnFrom(keys, buf, mem)
+
+	default:
+		panic("unimplemented")
+	}
+
+}
+
+func (gr *pivotTableGroup) buildIntColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
+	b.Resize(keys.Len())
+
+	kitr := arrowutil.IterateStrings(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
+	for i := 0; kitr.Next() && vitr.Next(); {
+		for ; i < keys.Len(); i++ {
+			if kitr.Value() == keys.Value(i) {
+				if vitr.IsValid() {
+					b.Append(vitr.Value())
+				} else {
+					b.AppendNull()
+				}
+				i++
+				break
+			}
+			b.AppendNull()
+		}
+	}
+	for i := b.Len(); i < keys.Len(); i++ {
+		b.AppendNull()
+	}
+	return b.NewArray()
+}
+
+func (gr *pivotTableGroup) buildUintColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewUintBuilder(mem)
+	b.Resize(keys.Len())
+
+	kitr := arrowutil.IterateStrings(buf.keys)
+	vitr := arrowutil.IterateUints(buf.values)
+	for i := 0; kitr.Next() && vitr.Next(); {
+		for ; i < keys.Len(); i++ {
+			if kitr.Value() == keys.Value(i) {
+				if vitr.IsValid() {
+					b.Append(vitr.Value())
+				} else {
+					b.AppendNull()
+				}
+				i++
+				break
+			}
+			b.AppendNull()
+		}
+	}
+	for i := b.Len(); i < keys.Len(); i++ {
+		b.AppendNull()
+	}
+	return b.NewArray()
+}
+
+func (gr *pivotTableGroup) buildFloatColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewFloatBuilder(mem)
+	b.Resize(keys.Len())
+
+	kitr := arrowutil.IterateStrings(buf.keys)
+	vitr := arrowutil.IterateFloats(buf.values)
+	for i := 0; kitr.Next() && vitr.Next(); {
+		for ; i < keys.Len(); i++ {
+			if kitr.Value() == keys.Value(i) {
+				if vitr.IsValid() {
+					b.Append(vitr.Value())
+				} else {
+					b.AppendNull()
+				}
+				i++
+				break
+			}
+			b.AppendNull()
+		}
+	}
+	for i := b.Len(); i < keys.Len(); i++ {
+		b.AppendNull()
+	}
+	return b.NewArray()
+}
+
+func (gr *pivotTableGroup) buildBooleanColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewBooleanBuilder(mem)
+	b.Resize(keys.Len())
+
+	kitr := arrowutil.IterateStrings(buf.keys)
+	vitr := arrowutil.IterateBooleans(buf.values)
+	for i := 0; kitr.Next() && vitr.Next(); {
+		for ; i < keys.Len(); i++ {
+			if kitr.Value() == keys.Value(i) {
+				if vitr.IsValid() {
+					b.Append(vitr.Value())
+				} else {
+					b.AppendNull()
+				}
+				i++
+				break
+			}
+			b.AppendNull()
+		}
+	}
+	for i := b.Len(); i < keys.Len(); i++ {
+		b.AppendNull()
+	}
+	return b.NewArray()
+}
+
+func (gr *pivotTableGroup) buildStringColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewStringBuilder(mem)
+	b.Resize(keys.Len())
+
+	kitr := arrowutil.IterateStrings(buf.keys)
+	vitr := arrowutil.IterateStrings(buf.values)
+	for i := 0; kitr.Next() && vitr.Next(); {
+		for ; i < keys.Len(); i++ {
+			if kitr.Value() == keys.Value(i) {
+				if vitr.IsValid() {
+					b.Append(vitr.Value())
+				} else {
+					b.AppendNull()
+				}
+				i++
+				break
+			}
+			b.AppendNull()
+		}
+	}
+	for i := b.Len(); i < keys.Len(); i++ {
+		b.AppendNull()
+	}
+	return b.NewArray()
+}
+
+func (gr *pivotTableGroup) buildTimeColumnFrom(keys *array.String, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
+	b.Resize(keys.Len())
+
+	kitr := arrowutil.IterateStrings(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
+	for i := 0; kitr.Next() && vitr.Next(); {
+		for ; i < keys.Len(); i++ {
+			if kitr.Value() == keys.Value(i) {
+				if vitr.IsValid() {
+					b.Append(vitr.Value())
+				} else {
+					b.AppendNull()
+				}
+				i++
+				break
+			}
+			b.AppendNull()
+		}
+	}
+	for i := b.Len(); i < keys.Len(); i++ {
+		b.AppendNull()
+	}
+	return b.NewArray()
+}
+
+func (gr *pivotTableGroup) mergeTimeKeys(mem memory.Allocator) array.Interface {
+	buffers := make([][]array.Interface, 0, len(gr.buffers))
+	for _, buf := range gr.buffers {
+		buffers = append(buffers, buf.keys)
+	}
+
+	count := 0
+	gr.forEachTime(buffers, func(v int64) {
+		count++
+	})
+
+	b := arrowutil.NewIntBuilder(mem)
+	b.Resize(count)
+	gr.forEachTime(buffers, b.Append)
+	return b.NewArray()
+}
+
+func (gr *pivotTableGroup) forEachTime(buffers [][]array.Interface, fn func(v int64)) {
+	iterators := make([]*arrowutil.IntIterator, 0, len(buffers))
+	for _, vs := range buffers {
+		itr := arrowutil.IterateInts(vs)
+		if !itr.Next() {
+			continue
+		}
+		iterators = append(iterators, &itr)
+	}
+
+	// Count the number of common keys.
+	for len(iterators) > 0 {
+		next := iterators[0].Value()
+		for _, itr := range iterators[1:] {
+			if v := itr.Value(); v < next {
+				next = v
+			}
+		}
+
+		// This counts as a row.
+		fn(next)
+
+		// Advance any iterators to the next non-null value
+		// that match the next value.
+		for i := 0; i < len(iterators); {
+			itr := iterators[i]
+			if itr.Value() != next {
+				i++
+				continue
+			}
+
+			// Advance to the next non-null value.
+			for {
+				if !itr.Next() {
+					// Remove this iterator from the list.
+					copy(iterators[i:], iterators[i+1:])
+					iterators = iterators[:len(iterators)-1]
+					break
+				}
+
+				if itr.IsValid() && itr.Value() != next {
+					// The next value is valid so advance
+					// to the next iterator.
+					i++
+					break
+				}
+			}
+		}
+	}
+}
+
+func (gr *pivotTableGroup) buildColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 
 	switch buf.valueType {
 
@@ -1323,12 +1323,12 @@ func (gr *pivotTableGroup) buildColumnFromTimes(keys *array.Int64, buf *pivotTab
 
 }
 
-func (gr *pivotTableGroup) buildIntColumnFromTimes(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+func (gr *pivotTableGroup) buildIntColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	kitr := arrowutil.IterateInts(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -1349,12 +1349,12 @@ func (gr *pivotTableGroup) buildIntColumnFromTimes(keys *array.Int64, buf *pivot
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildUintColumnFromTimes(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewUint64Builder(mem)
+func (gr *pivotTableGroup) buildUintColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewUintBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
-	vitr := arrowutil.IterateUint64s(buf.values)
+	kitr := arrowutil.IterateInts(buf.keys)
+	vitr := arrowutil.IterateUints(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -1375,12 +1375,12 @@ func (gr *pivotTableGroup) buildUintColumnFromTimes(keys *array.Int64, buf *pivo
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildFloatColumnFromTimes(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewFloat64Builder(mem)
+func (gr *pivotTableGroup) buildFloatColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewFloatBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
-	vitr := arrowutil.IterateFloat64s(buf.values)
+	kitr := arrowutil.IterateInts(buf.keys)
+	vitr := arrowutil.IterateFloats(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
@@ -1401,11 +1401,11 @@ func (gr *pivotTableGroup) buildFloatColumnFromTimes(keys *array.Int64, buf *piv
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildBooleanColumnFromTimes(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildBooleanColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 	b := arrowutil.NewBooleanBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
+	kitr := arrowutil.IterateInts(buf.keys)
 	vitr := arrowutil.IterateBooleans(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
@@ -1427,17 +1427,17 @@ func (gr *pivotTableGroup) buildBooleanColumnFromTimes(keys *array.Int64, buf *p
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildStringColumnFromTimes(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+func (gr *pivotTableGroup) buildStringColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
 	b := arrowutil.NewStringBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
+	kitr := arrowutil.IterateInts(buf.keys)
 	vitr := arrowutil.IterateStrings(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {
 				if vitr.IsValid() {
-					b.AppendString(vitr.ValueString())
+					b.Append(vitr.Value())
 				} else {
 					b.AppendNull()
 				}
@@ -1453,12 +1453,12 @@ func (gr *pivotTableGroup) buildStringColumnFromTimes(keys *array.Int64, buf *pi
 	return b.NewArray()
 }
 
-func (gr *pivotTableGroup) buildTimeColumnFromTimes(keys *array.Int64, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
-	b := arrowutil.NewInt64Builder(mem)
+func (gr *pivotTableGroup) buildTimeColumnFromTimes(keys *array.Int, buf *pivotTableBuffer, mem memory.Allocator) array.Interface {
+	b := arrowutil.NewIntBuilder(mem)
 	b.Resize(keys.Len())
 
-	kitr := arrowutil.IterateInt64s(buf.keys)
-	vitr := arrowutil.IterateInt64s(buf.values)
+	kitr := arrowutil.IterateInts(buf.keys)
+	vitr := arrowutil.IterateInts(buf.values)
 	for i := 0; kitr.Next() && vitr.Next(); {
 		for ; i < keys.Len(); i++ {
 			if kitr.Value() == keys.Value(i) {

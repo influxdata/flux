@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
@@ -310,14 +310,14 @@ func TestQuantileOperation_Marshaling(t *testing.T) {
 func TestQuantile_Process(t *testing.T) {
 	testCases := []struct {
 		name     string
-		data     func() *array.Float64
+		data     func() *array.Float
 		quantile float64
 		exact    bool
 		want     interface{}
 	}{
 		{
 			name: "zero",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{0, 0, 0}, nil)
 			},
 			quantile: 0.5,
@@ -325,7 +325,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "50th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
 			},
 			quantile: 0.5,
@@ -333,7 +333,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "75th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
 			},
 			quantile: 0.75,
@@ -341,7 +341,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "90th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
 			},
 			quantile: 0.9,
@@ -349,7 +349,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "99th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5, 5, 4, 3, 2, 1}, nil)
 			},
 			quantile: 0.99,
@@ -357,7 +357,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "exact 50th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
 			quantile: 0.5,
@@ -366,7 +366,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "exact 75th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
 			quantile: 0.75,
@@ -375,7 +375,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "exact 90th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
 			quantile: 0.9,
@@ -384,7 +384,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "exact 99th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
 			quantile: 0.99,
@@ -393,7 +393,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "exact 100th",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3, 4, 5}, nil)
 			},
 			quantile: 1,
@@ -402,7 +402,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "exact 50th normal",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat(NormalData, nil)
 			},
 			quantile: 0.5,
@@ -411,7 +411,7 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "normal",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat(NormalData, nil)
 			},
 			quantile: 0.9,
@@ -419,14 +419,14 @@ func TestQuantile_Process(t *testing.T) {
 		},
 		{
 			name: "empty",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat(nil, nil)
 			},
 			want: nil,
 		},
 		{
 			name: "with nulls",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				b := arrow.NewFloatBuilder(nil)
 				defer b.Release()
 				b.AppendValues([]float64{1, 3, 3}, nil)
@@ -434,19 +434,19 @@ func TestQuantile_Process(t *testing.T) {
 				b.AppendValues([]float64{5, 5, 4, 3}, nil)
 				b.AppendNull()
 				b.AppendValues([]float64{1}, nil)
-				return b.NewFloat64Array()
+				return b.NewFloatArray()
 			},
 			quantile: 0.5,
 			want:     3.0,
 		},
 		{
 			name: "only nulls",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				b := arrow.NewFloatBuilder(nil)
 				defer b.Release()
 				b.AppendNull()
 				b.AppendNull()
-				return b.NewFloat64Array()
+				return b.NewFloatArray()
 			},
 			want: nil,
 		},

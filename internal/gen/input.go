@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/execute"
@@ -406,7 +406,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 				for n > 0 {
 					tvalues := make([]array.Interface, len(w.Cols()))
 
-					var ts *array.Int64
+					var ts *array.Int
 					ts, start, n = dg.generateBufferTimes(start, n)
 					for i, v := range s.Values() {
 						if keyValues[i] == nil {
@@ -445,7 +445,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 	return nil
 }
 
-func (dg *dataGenerator) generateBufferTimes(start values.Time, n int) (ts *array.Int64, stop values.Time, left int) {
+func (dg *dataGenerator) generateBufferTimes(start values.Time, n int) (ts *array.Int, stop values.Time, left int) {
 	size := n
 	if size > 1024 {
 		size = 1024
@@ -456,7 +456,7 @@ func (dg *dataGenerator) generateBufferTimes(start values.Time, n int) (ts *arra
 	for stop = start; b.Len() < size; stop = stop.Add(dg.Period) {
 		b.Append(int64(stop))
 	}
-	return b.NewInt64Array(), stop, n - size
+	return b.NewIntArray(), stop, n - size
 }
 
 func (dg *dataGenerator) generateBufferValues(r *rand.Rand, typ flux.ColType, n int) array.Interface {
@@ -507,7 +507,7 @@ func (dg *dataGenerator) generateBufferValues(r *rand.Rand, typ flux.ColType, n 
 				continue
 			}
 			v := genTagValue(r, 3, 7)
-			b.AppendString(v)
+			b.Append(v)
 		}
 		return b.NewArray()
 	case flux.TBool:

@@ -197,7 +197,7 @@ func (t *cumulativeSumTransformation) Process(id execute.DatasetID, tbl flux.Tab
 				}
 			case flux.TString:
 				for i := 0; i < l; i++ {
-					if err := builder.AppendString(j, cr.Strings(j).ValueString(i)); err != nil {
+					if err := builder.AppendString(j, cr.Strings(j).Value(i)); err != nil {
 						return err
 					}
 				}

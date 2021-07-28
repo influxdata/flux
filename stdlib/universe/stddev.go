@@ -3,8 +3,8 @@ package universe
 import (
 	"math"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -128,7 +128,7 @@ func (a *StddevAgg) NewFloatAgg() execute.DoFloatAgg {
 func (a *StddevAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
-func (a *StddevAgg) DoInt(vs *array.Int64) {
+func (a *StddevAgg) DoInt(vs *array.Int) {
 	var delta, delta2 float64
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {
@@ -143,7 +143,7 @@ func (a *StddevAgg) DoInt(vs *array.Int64) {
 		a.m2 += delta * delta2
 	}
 }
-func (a *StddevAgg) DoUInt(vs *array.Uint64) {
+func (a *StddevAgg) DoUInt(vs *array.Uint) {
 	var delta, delta2 float64
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {
@@ -158,7 +158,7 @@ func (a *StddevAgg) DoUInt(vs *array.Uint64) {
 		a.m2 += delta * delta2
 	}
 }
-func (a *StddevAgg) DoFloat(vs *array.Float64) {
+func (a *StddevAgg) DoFloat(vs *array.Float) {
 	var delta, delta2 float64
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {

@@ -1,8 +1,8 @@
 package moving_average
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/values"
 )
@@ -163,7 +163,7 @@ func (r *ExponentialMovingAverage) DoNumeric(vs *ArrayContainer, b execute.Table
 	return nil
 }
 
-func (r *ExponentialMovingAverage) PassThroughTime(vs *array.Int64, b execute.TableBuilder, bj int) error {
+func (r *ExponentialMovingAverage) PassThroughTime(vs *array.Int, b execute.TableBuilder, bj int) error {
 	j := 0
 
 	for ; r.i[bj] < r.inTimePeriod && j < vs.Len(); r.i[bj]++ {

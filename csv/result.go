@@ -13,9 +13,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -1252,7 +1252,7 @@ func encodeValueFrom(i, j int, c colMeta, cr flux.ColReader) (string, error) {
 		}
 	case flux.TString:
 		if cr.Strings(j).IsValid(i) {
-			v = cr.Strings(j).ValueString(i)
+			v = cr.Strings(j).Value(i)
 		}
 	case flux.TTime:
 		if cr.Times(j).IsValid(i) {

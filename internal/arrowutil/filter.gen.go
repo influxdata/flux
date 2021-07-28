@@ -9,27 +9,27 @@ package arrowutil
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/bitutil"
 	"github.com/apache/arrow/go/arrow/memory"
+	"github.com/influxdata/flux/array"
 )
 
 func Filter(arr array.Interface, bitset []byte, mem memory.Allocator) array.Interface {
 	switch arr := arr.(type) {
 
-	case *array.Int64:
-		return FilterInt64s(arr, bitset, mem)
+	case *array.Int:
+		return FilterInts(arr, bitset, mem)
 
-	case *array.Uint64:
-		return FilterUint64s(arr, bitset, mem)
+	case *array.Uint:
+		return FilterUints(arr, bitset, mem)
 
-	case *array.Float64:
-		return FilterFloat64s(arr, bitset, mem)
+	case *array.Float:
+		return FilterFloats(arr, bitset, mem)
 
 	case *array.Boolean:
 		return FilterBooleans(arr, bitset, mem)
 
-	case *array.Binary:
+	case *array.String:
 		return FilterStrings(arr, bitset, mem)
 
 	default:
@@ -37,9 +37,9 @@ func Filter(arr array.Interface, bitset []byte, mem memory.Allocator) array.Inte
 	}
 }
 
-func FilterInt64s(arr *array.Int64, bitset []byte, mem memory.Allocator) *array.Int64 {
+func FilterInts(arr *array.Int, bitset []byte, mem memory.Allocator) *array.Int {
 	n := bitutil.CountSetBits(bitset, 0, len(bitset))
-	b := NewInt64Builder(mem)
+	b := NewIntBuilder(mem)
 	b.Resize(n)
 	for i := 0; i < len(bitset); i++ {
 		if bitutil.BitIsSet(bitset, i) {
@@ -50,12 +50,12 @@ func FilterInt64s(arr *array.Int64, bitset []byte, mem memory.Allocator) *array.
 			}
 		}
 	}
-	return b.NewInt64Array()
+	return b.NewIntArray()
 }
 
-func FilterUint64s(arr *array.Uint64, bitset []byte, mem memory.Allocator) *array.Uint64 {
+func FilterUints(arr *array.Uint, bitset []byte, mem memory.Allocator) *array.Uint {
 	n := bitutil.CountSetBits(bitset, 0, len(bitset))
-	b := NewUint64Builder(mem)
+	b := NewUintBuilder(mem)
 	b.Resize(n)
 	for i := 0; i < len(bitset); i++ {
 		if bitutil.BitIsSet(bitset, i) {
@@ -66,12 +66,12 @@ func FilterUint64s(arr *array.Uint64, bitset []byte, mem memory.Allocator) *arra
 			}
 		}
 	}
-	return b.NewUint64Array()
+	return b.NewUintArray()
 }
 
-func FilterFloat64s(arr *array.Float64, bitset []byte, mem memory.Allocator) *array.Float64 {
+func FilterFloats(arr *array.Float, bitset []byte, mem memory.Allocator) *array.Float {
 	n := bitutil.CountSetBits(bitset, 0, len(bitset))
-	b := NewFloat64Builder(mem)
+	b := NewFloatBuilder(mem)
 	b.Resize(n)
 	for i := 0; i < len(bitset); i++ {
 		if bitutil.BitIsSet(bitset, i) {
@@ -82,7 +82,7 @@ func FilterFloat64s(arr *array.Float64, bitset []byte, mem memory.Allocator) *ar
 			}
 		}
 	}
-	return b.NewFloat64Array()
+	return b.NewFloatArray()
 }
 
 func FilterBooleans(arr *array.Boolean, bitset []byte, mem memory.Allocator) *array.Boolean {
@@ -101,18 +101,18 @@ func FilterBooleans(arr *array.Boolean, bitset []byte, mem memory.Allocator) *ar
 	return b.NewBooleanArray()
 }
 
-func FilterStrings(arr *array.Binary, bitset []byte, mem memory.Allocator) *array.Binary {
+func FilterStrings(arr *array.String, bitset []byte, mem memory.Allocator) *array.String {
 	n := bitutil.CountSetBits(bitset, 0, len(bitset))
 	b := NewStringBuilder(mem)
 	b.Resize(n)
 	for i := 0; i < len(bitset); i++ {
 		if bitutil.BitIsSet(bitset, i) {
 			if arr.IsValid(i) {
-				b.AppendString(arr.ValueString(i))
+				b.Append(arr.Value(i))
 			} else {
 				b.AppendNull()
 			}
 		}
 	}
-	return b.NewBinaryArray()
+	return b.NewStringArray()
 }

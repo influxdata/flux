@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -124,7 +124,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewFloat64Array()
+			cols[j] = b.NewFloatArray()
 			b.Release()
 		case flux.TInt:
 			b := arrow.NewIntBuilder(t.Alloc)
@@ -135,18 +135,18 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewInt64Array()
+			cols[j] = b.NewIntArray()
 			b.Release()
 		case flux.TString:
 			b := arrow.NewStringBuilder(t.Alloc)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
-					b.AppendString(v.(string))
+					b.Append(v.(string))
 				} else {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewBinaryArray()
+			cols[j] = b.NewStringArray()
 			b.Release()
 		case flux.TTime:
 			b := arrow.NewIntBuilder(t.Alloc)
@@ -157,7 +157,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewInt64Array()
+			cols[j] = b.NewIntArray()
 			b.Release()
 		case flux.TUInt:
 			b := arrow.NewUintBuilder(t.Alloc)
@@ -168,7 +168,7 @@ func (t *Table) Do(f func(flux.ColReader) error) error {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewUint64Array()
+			cols[j] = b.NewUintArray()
 			b.Release()
 		}
 	}
@@ -211,24 +211,24 @@ func (cr *ColReader) Bools(j int) *array.Boolean {
 	return cr.cols[j].(*array.Boolean)
 }
 
-func (cr *ColReader) Ints(j int) *array.Int64 {
-	return cr.cols[j].(*array.Int64)
+func (cr *ColReader) Ints(j int) *array.Int {
+	return cr.cols[j].(*array.Int)
 }
 
-func (cr *ColReader) UInts(j int) *array.Uint64 {
-	return cr.cols[j].(*array.Uint64)
+func (cr *ColReader) UInts(j int) *array.Uint {
+	return cr.cols[j].(*array.Uint)
 }
 
-func (cr *ColReader) Floats(j int) *array.Float64 {
-	return cr.cols[j].(*array.Float64)
+func (cr *ColReader) Floats(j int) *array.Float {
+	return cr.cols[j].(*array.Float)
 }
 
-func (cr *ColReader) Strings(j int) *array.Binary {
-	return cr.cols[j].(*array.Binary)
+func (cr *ColReader) Strings(j int) *array.String {
+	return cr.cols[j].(*array.String)
 }
 
-func (cr *ColReader) Times(j int) *array.Int64 {
-	return cr.cols[j].(*array.Int64)
+func (cr *ColReader) Times(j int) *array.Int {
+	return cr.cols[j].(*array.Int)
 }
 
 func (cr *ColReader) Retain() {
@@ -274,7 +274,7 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewFloat64Array()
+			cols[j] = b.NewFloatArray()
 			b.Release()
 		case flux.TInt:
 			b := arrow.NewIntBuilder(nil)
@@ -285,18 +285,18 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewInt64Array()
+			cols[j] = b.NewIntArray()
 			b.Release()
 		case flux.TString:
 			b := arrow.NewStringBuilder(nil)
 			for i := range t.Data {
 				if v := t.Data[i][j]; v != nil {
-					b.AppendString(v.(string))
+					b.Append(v.(string))
 				} else {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewBinaryArray()
+			cols[j] = b.NewStringArray()
 			b.Release()
 		case flux.TTime:
 			b := arrow.NewIntBuilder(nil)
@@ -307,7 +307,7 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewInt64Array()
+			cols[j] = b.NewIntArray()
 			b.Release()
 		case flux.TUInt:
 			b := arrow.NewUintBuilder(nil)
@@ -318,7 +318,7 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 					b.AppendNull()
 				}
 			}
-			cols[j] = b.NewUint64Array()
+			cols[j] = b.NewUintArray()
 			b.Release()
 		}
 	}
@@ -338,15 +338,15 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 			case flux.TBool:
 				row[j] = arrow.BoolSlice(cols[j].(*array.Boolean), i, i+1)
 			case flux.TFloat:
-				row[j] = arrow.FloatSlice(cols[j].(*array.Float64), i, i+1)
+				row[j] = arrow.FloatSlice(cols[j].(*array.Float), i, i+1)
 			case flux.TInt:
-				row[j] = arrow.IntSlice(cols[j].(*array.Int64), i, i+1)
+				row[j] = arrow.IntSlice(cols[j].(*array.Int), i, i+1)
 			case flux.TString:
-				row[j] = arrow.StringSlice(cols[j].(*array.Binary), i, i+1)
+				row[j] = arrow.StringSlice(cols[j].(*array.String), i, i+1)
 			case flux.TTime:
-				row[j] = arrow.IntSlice(cols[j].(*array.Int64), i, i+1)
+				row[j] = arrow.IntSlice(cols[j].(*array.Int), i, i+1)
 			case flux.TUInt:
-				row[j] = arrow.UintSlice(cols[j].(*array.Uint64), i, i+1)
+				row[j] = arrow.UintSlice(cols[j].(*array.Uint), i, i+1)
 			}
 		}
 		if err := f(&ColReader{
@@ -442,7 +442,7 @@ func ConvertTable(tbl flux.Table) (*Table, error) {
 					}
 				case flux.TString:
 					if col := cr.Strings(j); col.IsValid(i) {
-						row[j] = col.ValueString(i)
+						row[j] = col.Value(i)
 					}
 				case flux.TTime:
 					if col := cr.Times(j); col.IsValid(i) {

@@ -216,7 +216,7 @@ func (t *uniqueTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 					}
 					nullUnique = true
 				} else {
-					v := vs.ValueString(i)
+					v := vs.Value(i)
 					if stringUnique[v] {
 						continue
 					}

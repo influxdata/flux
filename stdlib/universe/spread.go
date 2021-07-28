@@ -1,8 +1,8 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -136,7 +136,7 @@ func (a *SpreadAgg) IsNull() bool {
 }
 
 // DoInt searches for the min and max value of the array and caches them in the aggregate
-func (a *SpreadIntAgg) DoInt(vs *array.Int64) {
+func (a *SpreadIntAgg) DoInt(vs *array.Int) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {
 			continue
@@ -163,7 +163,7 @@ func (a *SpreadIntAgg) ValueInt() int64 {
 }
 
 // Do searches for the min and max value of the array and caches them in the aggregate
-func (a *SpreadUIntAgg) DoUInt(vs *array.Uint64) {
+func (a *SpreadUIntAgg) DoUInt(vs *array.Uint) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {
 			continue
@@ -190,7 +190,7 @@ func (a *SpreadUIntAgg) ValueUInt() uint64 {
 }
 
 // Do searches for the min and max value of the array and caches them in the aggregate
-func (a *SpreadFloatAgg) DoFloat(vs *array.Float64) {
+func (a *SpreadFloatAgg) DoFloat(vs *array.Float) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsNull(i) {
 			continue

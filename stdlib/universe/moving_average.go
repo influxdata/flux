@@ -1,8 +1,8 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -341,7 +341,7 @@ func (t *movingAverageTransformation) doNumeric(vs *moving_average.ArrayContaine
 	return nil
 }
 
-func (t *movingAverageTransformation) passThroughTime(vs *array.Int64, b execute.TableBuilder, bj int) error {
+func (t *movingAverageTransformation) passThroughTime(vs *array.Int, b execute.TableBuilder, bj int) error {
 	t.notEmpty[bj] = true
 	j := 0
 

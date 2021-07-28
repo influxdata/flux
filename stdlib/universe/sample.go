@@ -3,8 +3,8 @@ package universe
 import (
 	"math/rand"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -174,21 +174,21 @@ func (s *SampleSelector) selectSample(l int) []int {
 	return s.selected
 }
 
-func (s *SampleSelector) DoTime(vs *array.Int64) []int {
+func (s *SampleSelector) DoTime(vs *array.Int) []int {
 	return s.selectSample(vs.Len())
 }
 func (s *SampleSelector) DoBool(vs *array.Boolean) []int {
 	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoInt(vs *array.Int64) []int {
+func (s *SampleSelector) DoInt(vs *array.Int) []int {
 	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoUInt(vs *array.Uint64) []int {
+func (s *SampleSelector) DoUInt(vs *array.Uint) []int {
 	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoFloat(vs *array.Float64) []int {
+func (s *SampleSelector) DoFloat(vs *array.Float) []int {
 	return s.selectSample(vs.Len())
 }
-func (s *SampleSelector) DoString(vs *array.Binary) []int {
+func (s *SampleSelector) DoString(vs *array.String) []int {
 	return s.selectSample(vs.Len())
 }

@@ -1,7 +1,7 @@
 package arrow
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/memory"
 )
 
