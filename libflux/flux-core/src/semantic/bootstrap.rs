@@ -273,7 +273,7 @@ fn generate_values(
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
                 let (headline, description) = seperate_description(&doc);
-                let mut description_string = String::new();
+                let description_string: String;
                 // unwrap description
                 match &description {
                     Some(x) => description_string = x.to_string(),
@@ -306,7 +306,7 @@ fn generate_values(
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let (headline, description) = seperate_description(&doc);
-                let mut description_string = String::new();
+                let description_string: String;
                 // unwrap description
                 match &description {
                     Some(x) => description_string = x.to_string(),
@@ -338,7 +338,7 @@ fn generate_values(
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
                     let (headline, description) = seperate_description(&doc);
-                    let mut description_string = String::new();
+                    let description_string: String;
                     // unwrap description
                     match &description {
                         Some(x) => description_string = x.to_string(),
