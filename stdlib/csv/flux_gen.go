@@ -448,7 +448,7 @@ var pkgAST = &ast.Package{
 		Name:     "csv.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// CSV provides tools for working with [annotated CSV](https://github.com/influxdata/flux/blob/master/docs/SPEC.md#csv) files.\n"}},
+				Comments: []ast.Comment{ast.Comment{Text: "// package CSV provides tools for working with data in annotated CSV format.\n"}},
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{

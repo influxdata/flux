@@ -98,11 +98,16 @@ pub struct FunctionDoc {
 /// Implementation block for FunctionDoc to house future "FunctionDod" methods
 impl FunctionDoc {
     /// Constructs a new FunctionDoc with the given name, headline, and flux type
-    fn new_with_args(name: String, headline: String, description: String, typ: String) -> FunctionDoc {
+    fn new_with_args(
+        name: String,
+        headline: String,
+        description: String,
+        typ: String,
+    ) -> FunctionDoc {
         FunctionDoc {
             name,
             headline,
-            description: description,
+            description,
             parameters: vec![],
             flux_type: typ,
         }
@@ -223,14 +228,14 @@ fn generate_docs(
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
         name: file.package.clone().unwrap().name.name,
-        headline: headline.to_string(),
-        description: description.clone(),
+        headline,
+        description,
         members,
     })
 }
 
 // Separates headline from description
-fn seperate_description (all_comment: &String) -> (String,Option<String>) {
+fn seperate_description(all_comment: &str) -> (String, Option<String>) {
     let mut headline: String = "".to_string();
     let mut description = None;
     let mut reached_end: bool = false;
@@ -239,12 +244,12 @@ fn seperate_description (all_comment: &String) -> (String,Option<String>) {
     let _events: Vec<String> = parser
         .map(|event| match event {
             Event::Text(t) => {
-                if reached_end == false {
+                if !reached_end {
                     headline.push_str(&t.to_string());
                 } else {
                     description_text.push_str(&t.to_string());
-                    if description_text.chars().last().unwrap() == '.'{
-                        description_text.push_str(" ");
+                    if description_text.ends_with('.') {
+                        description_text.push_str(&" ");
                     }
                 }
                 format!("{}", t)
@@ -259,10 +264,10 @@ fn seperate_description (all_comment: &String) -> (String,Option<String>) {
             _ => "Unrecognized event".to_string(),
         })
         .collect();
-    if description_text != "" {
+    if !description_text.is_empty() {
         description = Option::from(description_text);
     }
-    (headline,description)
+    (headline, description)
 }
 
 // Generates docs for the values in a given source file.
@@ -290,7 +295,12 @@ fn generate_values(
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
-                        let function = FunctionDoc::new_with_args(name.clone(), headline, description_string, typ);
+                        let function = FunctionDoc::new_with_args(
+                            name.clone(),
+                            headline,
+                            description_string,
+                            typ,
+                        );
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
@@ -322,7 +332,12 @@ fn generate_values(
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
                         // generate function doc
-                        let function = FunctionDoc::new_with_args(name.clone(), headline, description_string, typ);
+                        let function = FunctionDoc::new_with_args(
+                            name.clone(),
+                            headline,
+                            description_string,
+                            typ,
+                        );
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
@@ -354,7 +369,12 @@ fn generate_values(
                     match &types[&name].expr {
                         MonoType::Fun(_f) => {
                             // generate function doc
-                            let function = FunctionDoc::new_with_args(name.clone(), headline, description_string, typ);
+                            let function = FunctionDoc::new_with_args(
+                                name.clone(),
+                                headline,
+                                description_string,
+                                typ,
+                            );
                             members.insert(name.clone(), Doc::Function(Box::new(function)));
                         }
                         _ => {
