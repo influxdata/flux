@@ -26,8 +26,9 @@ import (
 //go:generate tmpl -data=@../../internal/types.tmpldata -o pivot.gen.go pivot.gen.go.tmpl
 
 const (
-	PivotKind      = "pivot"
-	nullValueLabel = "null"
+	PivotKind       = "pivot"
+	SortedPivotKind = "sortedPivot"
+	nullValueLabel  = "null"
 )
 
 type PivotOpSpec struct {
@@ -413,7 +414,7 @@ type SortedPivotProcedureSpec struct {
 }
 
 func (s *SortedPivotProcedureSpec) Kind() plan.ProcedureKind {
-	return PivotKind
+	return SortedPivotKind
 }
 func (s *SortedPivotProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(SortedPivotProcedureSpec)
