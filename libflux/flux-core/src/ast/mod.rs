@@ -23,7 +23,7 @@ pub const DEFAULT_PACKAGE_NAME: &str = "main";
 
 /// Position is the AST counterpart of [`scanner::Position`].
 /// It adds serde capabilities.
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Copy, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct Position {
     pub line: u32,

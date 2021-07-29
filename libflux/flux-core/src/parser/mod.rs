@@ -283,8 +283,8 @@ impl Parser {
 
         SourceLocation {
             file: Some(self.fname.clone()),
-            start: start.clone(),
-            end: end.clone(),
+            start: *start,
+            end: *end,
             source: Some(self.source[s_off..e_off].to_string()),
         }
     }
@@ -298,15 +298,15 @@ impl Parser {
         let mut end = ast::Position::invalid();
         let pkg = self.parse_package_clause();
         if let Some(pkg) = &pkg {
-            end = pkg.base.location.end.clone();
+            end = pkg.base.location.end;
         }
         let imports = self.parse_import_list();
         if let Some(import) = imports.last() {
-            end = import.base.location.end.clone();
+            end = import.base.location.end;
         }
         let body = self.parse_statement_list();
         if let Some(stmt) = body.last() {
-            end = stmt.base().location.end.clone();
+            end = stmt.base().location.end;
         }
         let eof = self.peek();
         File {
