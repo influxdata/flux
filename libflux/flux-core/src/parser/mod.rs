@@ -21,7 +21,6 @@ pub fn parse_string(name: &str, s: &str) -> File {
 }
 
 struct TokenError {
-    pub message: String,
     pub token: Token,
 }
 
@@ -1387,7 +1386,7 @@ impl Parser {
                                 value,
                             }));
                         }
-                        Err(message) => return Err(TokenError { token: t, message }),
+                        Err(_) => return Err(TokenError { token: t }),
                     }
                 }
                 TokenType::StringExpr => {
@@ -1462,10 +1461,7 @@ impl Parser {
                 base: self.base_node_from_token(&t),
                 value,
             }),
-            Err(_) => Err(TokenError {
-                token: t,
-                message: String::from("failed to parse float literal"),
-            }),
+            Err(_) => Err(TokenError { token: t }),
         }
     }
     fn parse_string_literal(&mut self) -> StringLit {
@@ -1509,7 +1505,7 @@ impl Parser {
                 base: self.base_node_from_token(&t),
                 value,
             }),
-            Err(message) => Err(TokenError { token: t, message }),
+            Err(_message) => Err(TokenError { token: t }),
         }
     }
     fn parse_duration_literal(&mut self) -> Result<DurationLit, TokenError> {
@@ -1521,7 +1517,7 @@ impl Parser {
                 base: self.base_node_from_token(&t),
                 values,
             }),
-            Err(message) => Err(TokenError { token: t, message }),
+            Err(_message) => Err(TokenError { token: t }),
         }
     }
     fn parse_pipe_literal(&mut self) -> PipeLit {
