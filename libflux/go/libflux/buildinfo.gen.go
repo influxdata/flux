@@ -236,6 +236,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/schema/influxRawQuery_test.flux":                    "46e6b4670162c92b8ebe73eab99aa3ee84ae19b097a761a68b88fe6913a1bf1b",
 	"stdlib/influxdata/influxdb/schema/schema.flux":                                 "1a7a83a4923fc71d28500bdc789d2a781e304f949707955476071a9685df86e9",
 	"stdlib/influxdata/influxdb/schema/show_fields_test.flux":                       "fa3774d7fa544d49dd407b2e349a813aac86827dbaaf2cc72e92af2d7c1e5a7b",
+	"stdlib/influxdata/influxdb/schema/show_fields_with_meas_pred_test.flux":        "ce4eb3c7f9833be2eb5d7c85d1bb68d12344933a36915612b7d36903b096448e",
 	"stdlib/influxdata/influxdb/schema/show_fields_with_pred_test.flux":             "5edfadc36b9683c7d048d368cc29cf71aff6fe68ab02fb328cf9f5bb420cd33c",
 	"stdlib/influxdata/influxdb/schema/show_measurements_test.flux":                 "7b5c2f54db839ad319c9bcd339affcd1bcadc3fc7f52a042567356776ab412fe",
 	"stdlib/influxdata/influxdb/schema/show_measurements_with_many_preds_test.flux": "fc251f958943f77399e2e3ed2e159966d02673c7b0c9cf291dd16136df6c4461",
