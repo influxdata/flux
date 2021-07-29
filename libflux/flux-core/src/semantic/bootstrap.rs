@@ -241,8 +241,8 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
     let mut reached_end: bool = false;
     let mut description_text: String = "".to_string();
     let parser = Parser::new(&all_comment);
-    let _events: Vec<String> = parser
-        .map(|event| match event {
+    for event in parser {
+        match event {
             Event::Text(t) => {
                 if !reached_end {
                     headline.push_str(&t.to_string());
@@ -262,8 +262,8 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
                 format!("end: {:?}", tag)
             }
             _ => "Unrecognized event".to_string(),
-        })
-        .collect();
+        };
+    }
     if !description_text.is_empty() {
         description = Option::from(description_text);
     }
