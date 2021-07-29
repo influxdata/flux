@@ -65,6 +65,18 @@ impl Default for Position {
     }
 }
 
+/// Convert a Position to a lsp_types::Position
+/// https://microsoft.github.io/language-server-protocol/specification#position
+#[cfg(feature = "lsp")]
+impl Into<lsp_types::Position> for Position {
+    fn into(self) -> lsp_types::Position {
+        lsp_types::Position {
+            line: self.line - 1,
+            character: self.column - 1,
+        }
+    }
+}
+
 /// Represents the location of a node in the AST.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct SourceLocation {
