@@ -220,8 +220,8 @@ fn generate_docs(
     // use type inference to determine types of all values
     let mut all_comment = String::new();
     let members = generate_values(&file, &types)?;
-    if let Some(comment) = &file.package {
-        all_comment = comments_to_string(&comment.base.comments);
+    if Some(&file.package) != None {
+        all_comment = comments_to_string(&file.package.as_ref().unwrap().base.comments);
     }
     let (headline, description) = seperate_description(&all_comment);
 
