@@ -1,4 +1,4 @@
-// package CSV provides tools for working with data in annotated CSV format.
+// Package csv provides tools for working with data in annotated CSV format.
 package csv
 
 

@@ -282,7 +282,6 @@ fn generate_values(
                 let doc = comments_to_string(&s.id.base.comments);
                 let (headline, description) = seperate_description(&doc);
                 let description_string: String;
-                // unwrap description
                 match &description {
                     Some(x) => description_string = x.to_string(),
                     None => description_string = "".to_string(),
@@ -304,7 +303,6 @@ fn generate_values(
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
                     }
                     _ => {
-                        // generate value doc
                         let variable = ValueDoc {
                             name: name.clone(),
                             headline,
@@ -319,7 +317,6 @@ fn generate_values(
                 let doc = comments_to_string(&s.base.comments);
                 let (headline, description) = seperate_description(&doc);
                 let description_string: String;
-                // unwrap description
                 match &description {
                     Some(x) => description_string = x.to_string(),
                     None => description_string = "".to_string(),
@@ -331,7 +328,6 @@ fn generate_values(
                 let typ = format!("{}", types[&name].normal());
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
-                        // generate function doc
                         let function = FunctionDoc::new_with_args(
                             name.clone(),
                             headline,
@@ -356,7 +352,6 @@ fn generate_values(
                     let doc = comments_to_string(&s.base.comments);
                     let (headline, description) = seperate_description(&doc);
                     let description_string: String;
-                    // unwrap description
                     match &description {
                         Some(x) => description_string = x.to_string(),
                         None => description_string = "".to_string(),
