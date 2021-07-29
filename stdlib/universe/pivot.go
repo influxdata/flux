@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strconv"
 
-	"github.com/apache/arrow/go/arrow/array"
 	arrowmemory "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -379,7 +379,7 @@ func valueToStr(cr flux.ColReader, c flux.ColMeta, row, col int) string {
 		}
 	case flux.TString:
 		if v := cr.Strings(col); v.IsValid(row) {
-			result = v.ValueString(row)
+			result = v.Value(row)
 		}
 	case flux.TTime:
 		if v := cr.Times(col); v.IsValid(row) {

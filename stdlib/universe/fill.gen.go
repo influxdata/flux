@@ -9,39 +9,38 @@ package universe
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/values"
 )
 
 func (t *fillTransformation) fillColumn(typ flux.ColType, arr array.Interface, fillValue *interface{}) array.Interface {
 	switch typ {
 	case flux.TInt:
-		return t.fillIntColumn(arr.(*array.Int64), fillValue)
+		return t.fillIntColumn(arr.(*array.Int), fillValue)
 	case flux.TUInt:
-		return t.fillUintColumn(arr.(*array.Uint64), fillValue)
+		return t.fillUintColumn(arr.(*array.Uint), fillValue)
 	case flux.TFloat:
-		return t.fillFloatColumn(arr.(*array.Float64), fillValue)
+		return t.fillFloatColumn(arr.(*array.Float), fillValue)
 	case flux.TBool:
 		return t.fillBooleanColumn(arr.(*array.Boolean), fillValue)
 	case flux.TString:
-		return t.fillStringColumn(arr.(*array.Binary), fillValue)
+		return t.fillStringColumn(arr.(*array.String), fillValue)
 	case flux.TTime:
-		return t.fillTimeColumn(arr.(*array.Int64), fillValue)
+		return t.fillTimeColumn(arr.(*array.Int), fillValue)
 
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
 	}
 }
 
-func (t *fillTransformation) fillIntColumn(arr *array.Int64, fillValue *interface{}) array.Interface {
+func (t *fillTransformation) fillIntColumn(arr *array.Int, fillValue *interface{}) array.Interface {
 	fillValueNull := *fillValue == nil
 	var fillValueInt int64
 	if !fillValueNull {
 		fillValueInt = (*fillValue).(int64)
 	}
-	b := array.NewInt64Builder(t.alloc)
+	b := array.NewIntBuilder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
@@ -65,13 +64,13 @@ func (t *fillTransformation) fillIntColumn(arr *array.Int64, fillValue *interfac
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillUintColumn(arr *array.Uint64, fillValue *interface{}) array.Interface {
+func (t *fillTransformation) fillUintColumn(arr *array.Uint, fillValue *interface{}) array.Interface {
 	fillValueNull := *fillValue == nil
 	var fillValueUint uint64
 	if !fillValueNull {
 		fillValueUint = (*fillValue).(uint64)
 	}
-	b := array.NewUint64Builder(t.alloc)
+	b := array.NewUintBuilder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
@@ -95,13 +94,13 @@ func (t *fillTransformation) fillUintColumn(arr *array.Uint64, fillValue *interf
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillFloatColumn(arr *array.Float64, fillValue *interface{}) array.Interface {
+func (t *fillTransformation) fillFloatColumn(arr *array.Float, fillValue *interface{}) array.Interface {
 	fillValueNull := *fillValue == nil
 	var fillValueFloat float64
 	if !fillValueNull {
 		fillValueFloat = (*fillValue).(float64)
 	}
-	b := array.NewFloat64Builder(t.alloc)
+	b := array.NewFloatBuilder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
@@ -155,24 +154,24 @@ func (t *fillTransformation) fillBooleanColumn(arr *array.Boolean, fillValue *in
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillStringColumn(arr *array.Binary, fillValue *interface{}) array.Interface {
+func (t *fillTransformation) fillStringColumn(arr *array.String, fillValue *interface{}) array.Interface {
 	fillValueNull := *fillValue == nil
 	var fillValueString string
 	if !fillValueNull {
 		fillValueString = (*fillValue).(string)
 	}
-	b := array.NewBinaryBuilder(t.alloc, arrow.BinaryTypes.String)
+	b := array.NewStringBuilder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {
 			if fillValueNull {
 				b.AppendNull()
 			} else {
-				b.AppendString(fillValueString)
+				b.Append(fillValueString)
 			}
 		} else {
-			v := arr.ValueString(i)
-			b.AppendString(v)
+			v := arr.Value(i)
+			b.Append(v)
 			if t.spec.UsePrevious {
 				fillValueString = v
 				fillValueNull = false
@@ -185,13 +184,13 @@ func (t *fillTransformation) fillStringColumn(arr *array.Binary, fillValue *inte
 	return b.NewArray()
 }
 
-func (t *fillTransformation) fillTimeColumn(arr *array.Int64, fillValue *interface{}) array.Interface {
+func (t *fillTransformation) fillTimeColumn(arr *array.Int, fillValue *interface{}) array.Interface {
 	fillValueNull := *fillValue == nil
 	var fillValueTime int64
 	if !fillValueNull {
 		fillValueTime = int64((*fillValue).(values.Time))
 	}
-	b := array.NewInt64Builder(t.alloc)
+	b := array.NewIntBuilder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {

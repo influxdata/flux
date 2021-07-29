@@ -6,39 +6,39 @@
 
 package arrowutil
 
-import "github.com/apache/arrow/go/arrow/array"
+import "github.com/influxdata/flux/array"
 
-type Int64Iterator struct {
-	Values []*array.Int64
+type IntIterator struct {
+	Values []*array.Int
 	i      int
 	init   bool
 }
 
-func IterateInt64s(arrs []array.Interface) Int64Iterator {
+func IterateInts(arrs []array.Interface) IntIterator {
 	if len(arrs) == 0 {
-		return Int64Iterator{}
+		return IntIterator{}
 	}
-	values := make([]*array.Int64, 0, len(arrs))
+	values := make([]*array.Int, 0, len(arrs))
 	for _, arr := range arrs {
-		values = append(values, arr.(*array.Int64))
+		values = append(values, arr.(*array.Int))
 	}
-	return Int64Iterator{Values: values}
+	return IntIterator{Values: values}
 }
 
 // Value returns the current value in the iterator.
-func (i *Int64Iterator) Value() int64 {
+func (i *IntIterator) Value() int64 {
 	vs := i.Values[0]
 	return vs.Value(i.i)
 }
 
 // IsValid returns if the current value is valid.
-func (i *Int64Iterator) IsValid() bool {
+func (i *IntIterator) IsValid() bool {
 	vs := i.Values[0]
 	return vs.IsValid(i.i)
 }
 
 // IsNull returns if the current value is null.
-func (i *Int64Iterator) IsNull() bool {
+func (i *IntIterator) IsNull() bool {
 	vs := i.Values[0]
 	return vs.IsNull(i.i)
 }
@@ -47,7 +47,7 @@ func (i *Int64Iterator) IsNull() bool {
 // if there are no more values to be read. This will
 // initialize the iterator if this is the first time it
 // is called and return true if there is at least one element.
-func (i *Int64Iterator) Next() bool {
+func (i *IntIterator) Next() bool {
 	if !i.init {
 		i.init = true
 		return i.peek()
@@ -57,13 +57,13 @@ func (i *Int64Iterator) Next() bool {
 }
 
 // IsEmpty returns true if the iterator has no values to read.
-func (i *Int64Iterator) IsEmpty() bool {
+func (i *IntIterator) IsEmpty() bool {
 	return i.peek()
 }
 
 // peek will return whether another value is available.
 // It will iterate through the iterators until it finds a valid one.
-func (i *Int64Iterator) peek() bool {
+func (i *IntIterator) peek() bool {
 	for len(i.Values) > 0 {
 		if i.i < i.Values[0].Len() {
 			return true
@@ -74,37 +74,37 @@ func (i *Int64Iterator) peek() bool {
 	return false
 }
 
-type Uint64Iterator struct {
-	Values []*array.Uint64
+type UintIterator struct {
+	Values []*array.Uint
 	i      int
 	init   bool
 }
 
-func IterateUint64s(arrs []array.Interface) Uint64Iterator {
+func IterateUints(arrs []array.Interface) UintIterator {
 	if len(arrs) == 0 {
-		return Uint64Iterator{}
+		return UintIterator{}
 	}
-	values := make([]*array.Uint64, 0, len(arrs))
+	values := make([]*array.Uint, 0, len(arrs))
 	for _, arr := range arrs {
-		values = append(values, arr.(*array.Uint64))
+		values = append(values, arr.(*array.Uint))
 	}
-	return Uint64Iterator{Values: values}
+	return UintIterator{Values: values}
 }
 
 // Value returns the current value in the iterator.
-func (i *Uint64Iterator) Value() uint64 {
+func (i *UintIterator) Value() uint64 {
 	vs := i.Values[0]
 	return vs.Value(i.i)
 }
 
 // IsValid returns if the current value is valid.
-func (i *Uint64Iterator) IsValid() bool {
+func (i *UintIterator) IsValid() bool {
 	vs := i.Values[0]
 	return vs.IsValid(i.i)
 }
 
 // IsNull returns if the current value is null.
-func (i *Uint64Iterator) IsNull() bool {
+func (i *UintIterator) IsNull() bool {
 	vs := i.Values[0]
 	return vs.IsNull(i.i)
 }
@@ -113,7 +113,7 @@ func (i *Uint64Iterator) IsNull() bool {
 // if there are no more values to be read. This will
 // initialize the iterator if this is the first time it
 // is called and return true if there is at least one element.
-func (i *Uint64Iterator) Next() bool {
+func (i *UintIterator) Next() bool {
 	if !i.init {
 		i.init = true
 		return i.peek()
@@ -123,13 +123,13 @@ func (i *Uint64Iterator) Next() bool {
 }
 
 // IsEmpty returns true if the iterator has no values to read.
-func (i *Uint64Iterator) IsEmpty() bool {
+func (i *UintIterator) IsEmpty() bool {
 	return i.peek()
 }
 
 // peek will return whether another value is available.
 // It will iterate through the iterators until it finds a valid one.
-func (i *Uint64Iterator) peek() bool {
+func (i *UintIterator) peek() bool {
 	for len(i.Values) > 0 {
 		if i.i < i.Values[0].Len() {
 			return true
@@ -140,37 +140,37 @@ func (i *Uint64Iterator) peek() bool {
 	return false
 }
 
-type Float64Iterator struct {
-	Values []*array.Float64
+type FloatIterator struct {
+	Values []*array.Float
 	i      int
 	init   bool
 }
 
-func IterateFloat64s(arrs []array.Interface) Float64Iterator {
+func IterateFloats(arrs []array.Interface) FloatIterator {
 	if len(arrs) == 0 {
-		return Float64Iterator{}
+		return FloatIterator{}
 	}
-	values := make([]*array.Float64, 0, len(arrs))
+	values := make([]*array.Float, 0, len(arrs))
 	for _, arr := range arrs {
-		values = append(values, arr.(*array.Float64))
+		values = append(values, arr.(*array.Float))
 	}
-	return Float64Iterator{Values: values}
+	return FloatIterator{Values: values}
 }
 
 // Value returns the current value in the iterator.
-func (i *Float64Iterator) Value() float64 {
+func (i *FloatIterator) Value() float64 {
 	vs := i.Values[0]
 	return vs.Value(i.i)
 }
 
 // IsValid returns if the current value is valid.
-func (i *Float64Iterator) IsValid() bool {
+func (i *FloatIterator) IsValid() bool {
 	vs := i.Values[0]
 	return vs.IsValid(i.i)
 }
 
 // IsNull returns if the current value is null.
-func (i *Float64Iterator) IsNull() bool {
+func (i *FloatIterator) IsNull() bool {
 	vs := i.Values[0]
 	return vs.IsNull(i.i)
 }
@@ -179,7 +179,7 @@ func (i *Float64Iterator) IsNull() bool {
 // if there are no more values to be read. This will
 // initialize the iterator if this is the first time it
 // is called and return true if there is at least one element.
-func (i *Float64Iterator) Next() bool {
+func (i *FloatIterator) Next() bool {
 	if !i.init {
 		i.init = true
 		return i.peek()
@@ -189,13 +189,13 @@ func (i *Float64Iterator) Next() bool {
 }
 
 // IsEmpty returns true if the iterator has no values to read.
-func (i *Float64Iterator) IsEmpty() bool {
+func (i *FloatIterator) IsEmpty() bool {
 	return i.peek()
 }
 
 // peek will return whether another value is available.
 // It will iterate through the iterators until it finds a valid one.
-func (i *Float64Iterator) peek() bool {
+func (i *FloatIterator) peek() bool {
 	for len(i.Values) > 0 {
 		if i.i < i.Values[0].Len() {
 			return true
@@ -273,7 +273,7 @@ func (i *BooleanIterator) peek() bool {
 }
 
 type StringIterator struct {
-	Values []*array.Binary
+	Values []*array.String
 	i      int
 	init   bool
 }
@@ -282,17 +282,17 @@ func IterateStrings(arrs []array.Interface) StringIterator {
 	if len(arrs) == 0 {
 		return StringIterator{}
 	}
-	values := make([]*array.Binary, 0, len(arrs))
+	values := make([]*array.String, 0, len(arrs))
 	for _, arr := range arrs {
-		values = append(values, arr.(*array.Binary))
+		values = append(values, arr.(*array.String))
 	}
 	return StringIterator{Values: values}
 }
 
-// ValueString returns the current value in the iterator.
-func (i *StringIterator) ValueString() string {
+// Value returns the current value in the iterator.
+func (i *StringIterator) Value() string {
 	vs := i.Values[0]
-	return vs.ValueString(i.i)
+	return vs.Value(i.i)
 }
 
 // IsValid returns if the current value is valid.

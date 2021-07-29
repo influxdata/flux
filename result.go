@@ -3,7 +3,7 @@ package flux
 import (
 	"io"
 
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/iocounter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -165,11 +165,11 @@ type ColReader interface {
 	// All slices will have the same length.
 	Len() int
 	Bools(j int) *array.Boolean
-	Ints(j int) *array.Int64
-	UInts(j int) *array.Uint64
-	Floats(j int) *array.Float64
-	Strings(j int) *array.Binary
-	Times(j int) *array.Int64
+	Ints(j int) *array.Int
+	UInts(j int) *array.Uint
+	Floats(j int) *array.Float
+	Strings(j int) *array.String
+	Times(j int) *array.Int
 
 	// Retain will retain this buffer to avoid having the
 	// memory consumed by it freed.

@@ -3,16 +3,16 @@ package arrow_test
 import (
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/math"
 	arrowmemory "github.com/apache/arrow/go/arrow/memory"
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 )
 
 func TestSum_Float64_Empty(t *testing.T) {
-	b := array.NewFloat64Builder(arrowmemory.NewGoAllocator())
-	vs := b.NewFloat64Array()
+	b := array.NewFloatBuilder(arrowmemory.NewGoAllocator())
+	vs := b.NewFloatArray()
 	b.Release()
 
 	defer func() {
@@ -27,8 +27,8 @@ func TestSum_Float64_Empty(t *testing.T) {
 }
 
 func TestSum_Int64_Empty(t *testing.T) {
-	b := array.NewInt64Builder(arrowmemory.NewGoAllocator())
-	vs := b.NewInt64Array()
+	b := array.NewIntBuilder(arrowmemory.NewGoAllocator())
+	vs := b.NewIntArray()
 	b.Release()
 
 	defer func() {
@@ -43,8 +43,8 @@ func TestSum_Int64_Empty(t *testing.T) {
 }
 
 func TestSum_Uint64_Empty(t *testing.T) {
-	b := array.NewUint64Builder(arrowmemory.NewGoAllocator())
-	vs := b.NewUint64Array()
+	b := array.NewUintBuilder(arrowmemory.NewGoAllocator())
+	vs := b.NewUintArray()
 	b.Release()
 
 	defer func() {
@@ -472,7 +472,7 @@ func TestSlice_String(t *testing.T) {
 
 	vs := make([]string, l)
 	for i := 0; i < l; i++ {
-		vs[i] = arr.ValueString(i)
+		vs[i] = arr.Value(i)
 	}
 
 	if !cmp.Equal(values, vs) {
@@ -540,7 +540,7 @@ func TestSlice_String(t *testing.T) {
 
 			vs = vs[:0]
 			for i := 0; i < l; i++ {
-				vs = append(vs, arr.ValueString(i))
+				vs = append(vs, arr.Value(i))
 			}
 
 			if !cmp.Equal(tc.want, vs) {
@@ -599,7 +599,7 @@ func TestSlice_OutOfBounds_String(t *testing.T) {
 				}()
 			}
 
-			slice.ValueString(tc.index)
+			slice.Value(tc.index)
 		})
 	}
 }

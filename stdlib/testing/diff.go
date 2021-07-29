@@ -1,13 +1,12 @@
 package testing
 
 import (
-	"bytes"
 	"math"
 	"sort"
 	"sync"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -194,7 +193,7 @@ func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*
 
 			switch col.Type {
 			case flux.TFloat:
-				b := builders[col.Label].Builder.(*array.Float64Builder)
+				b := builders[col.Label].Builder.(*array.FloatBuilder)
 				b.Reserve(cr.Len())
 
 				vs := cr.Floats(j)
@@ -206,7 +205,7 @@ func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*
 					}
 				}
 			case flux.TInt:
-				b := builders[col.Label].Builder.(*array.Int64Builder)
+				b := builders[col.Label].Builder.(*array.IntBuilder)
 				b.Reserve(cr.Len())
 
 				vs := cr.Ints(j)
@@ -218,7 +217,7 @@ func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*
 					}
 				}
 			case flux.TUInt:
-				b := builders[col.Label].Builder.(*array.Uint64Builder)
+				b := builders[col.Label].Builder.(*array.UintBuilder)
 				b.Reserve(cr.Len())
 
 				vs := cr.UInts(j)
@@ -230,7 +229,7 @@ func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*
 					}
 				}
 			case flux.TString:
-				b := builders[col.Label].Builder.(*array.BinaryBuilder)
+				b := builders[col.Label].Builder.(*array.StringBuilder)
 				b.Reserve(cr.Len())
 
 				vs := cr.Strings(j)
@@ -254,7 +253,7 @@ func copyTable(id execute.DatasetID, tbl flux.Table, alloc *memory.Allocator) (*
 					}
 				}
 			case flux.TTime:
-				b := builders[col.Label].Builder.(*array.Int64Builder)
+				b := builders[col.Label].Builder.(*array.IntBuilder)
 				b.Reserve(cr.Len())
 
 				vs := cr.Times(j)
@@ -512,7 +511,7 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 
 		switch wantCol.Type {
 		case flux.TFloat:
-			want, got := wantCol.Values.(*array.Float64).Value(i), gotCol.Values.(*array.Float64).Value(i)
+			want, got := wantCol.Values.(*array.Float).Value(i), gotCol.Values.(*array.Float).Value(i)
 			if t.nansEqual && math.IsNaN(want) && math.IsNaN(got) {
 				// treat NaNs as equal so go to next column
 				continue
@@ -521,18 +520,18 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 				return false
 			}
 		case flux.TInt:
-			want, got := wantCol.Values.(*array.Int64), gotCol.Values.(*array.Int64)
+			want, got := wantCol.Values.(*array.Int), gotCol.Values.(*array.Int)
 			if want.Value(i) != got.Value(i) {
 				return false
 			}
 		case flux.TUInt:
-			want, got := wantCol.Values.(*array.Uint64), gotCol.Values.(*array.Uint64)
+			want, got := wantCol.Values.(*array.Uint), gotCol.Values.(*array.Uint)
 			if want.Value(i) != got.Value(i) {
 				return false
 			}
 		case flux.TString:
-			want, got := wantCol.Values.(*array.Binary), gotCol.Values.(*array.Binary)
-			if !bytes.Equal(want.Value(i), got.Value(i)) {
+			want, got := wantCol.Values.(*array.String), gotCol.Values.(*array.String)
+			if want.Value(i) != got.Value(i) {
 				return false
 			}
 		case flux.TBool:
@@ -541,7 +540,7 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 				return false
 			}
 		case flux.TTime:
-			want, got := wantCol.Values.(*array.Int64), gotCol.Values.(*array.Int64)
+			want, got := wantCol.Values.(*array.Int), gotCol.Values.(*array.Int)
 			if want.Value(i) != got.Value(i) {
 				return false
 			}
@@ -573,23 +572,23 @@ func (t *DiffTransformation) appendRow(builder execute.TableBuilder, i, diffIdx 
 
 		switch col.Type {
 		case flux.TFloat:
-			vs := col.Values.(*array.Float64)
+			vs := col.Values.(*array.Float)
 			if err := builder.AppendFloat(j, vs.Value(i)); err != nil {
 				return err
 			}
 		case flux.TInt:
-			vs := col.Values.(*array.Int64)
+			vs := col.Values.(*array.Int)
 			if err := builder.AppendInt(j, vs.Value(i)); err != nil {
 				return err
 			}
 		case flux.TUInt:
-			vs := col.Values.(*array.Uint64)
+			vs := col.Values.(*array.Uint)
 			if err := builder.AppendUInt(j, vs.Value(i)); err != nil {
 				return err
 			}
 		case flux.TString:
-			vs := col.Values.(*array.Binary)
-			if err := builder.AppendString(j, vs.ValueString(i)); err != nil {
+			vs := col.Values.(*array.String)
+			if err := builder.AppendString(j, vs.Value(i)); err != nil {
 				return err
 			}
 		case flux.TBool:
@@ -598,7 +597,7 @@ func (t *DiffTransformation) appendRow(builder execute.TableBuilder, i, diffIdx 
 				return err
 			}
 		case flux.TTime:
-			vs := col.Values.(*array.Int64)
+			vs := col.Values.(*array.Int)
 			if err := builder.AppendTime(j, execute.Time(vs.Value(i))); err != nil {
 				return err
 			}

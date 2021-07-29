@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-func generateInt64() int64 {
+func generateInt() int64 {
 	return int64(rand.Intn(201) - 100)
 }
 
-func generateUint64() uint64 {
+func generateUint() uint64 {
 	return uint64(rand.Intn(201) - 100)
 }
 
-func generateFloat64() float64 {
+func generateFloat() float64 {
 	return rand.NormFloat64() * 50
 }
 

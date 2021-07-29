@@ -1,8 +1,8 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -131,21 +131,21 @@ func (s *FirstSelector) selectFirst(vs array.Interface) []int {
 	return nil
 }
 
-func (s *FirstSelector) DoTime(vs *array.Int64) []int {
+func (s *FirstSelector) DoTime(vs *array.Int) []int {
 	return s.selectFirst(vs)
 }
 func (s *FirstSelector) DoBool(vs *array.Boolean) []int {
 	return s.selectFirst(vs)
 }
-func (s *FirstSelector) DoInt(vs *array.Int64) []int {
+func (s *FirstSelector) DoInt(vs *array.Int) []int {
 	return s.selectFirst(vs)
 }
-func (s *FirstSelector) DoUInt(vs *array.Uint64) []int {
+func (s *FirstSelector) DoUInt(vs *array.Uint) []int {
 	return s.selectFirst(vs)
 }
-func (s *FirstSelector) DoFloat(vs *array.Float64) []int {
+func (s *FirstSelector) DoFloat(vs *array.Float) []int {
 	return s.selectFirst(vs)
 }
-func (s *FirstSelector) DoString(vs *array.Binary) []int {
+func (s *FirstSelector) DoString(vs *array.String) []int {
 	return s.selectFirst(vs)
 }

@@ -1,25 +1,25 @@
 package arrow
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/memory"
 )
 
-func NewUint(vs []uint64, alloc *memory.Allocator) *array.Uint64 {
+func NewUint(vs []uint64, alloc *memory.Allocator) *array.Uint {
 	b := NewUintBuilder(alloc)
 	b.Resize(len(vs))
 	for _, v := range vs {
 		b.UnsafeAppend(v)
 	}
-	a := b.NewUint64Array()
+	a := b.NewUintArray()
 	b.Release()
 	return a
 }
 
-func UintSlice(arr *array.Uint64, i, j int) *array.Uint64 {
-	return Slice(arr, int64(i), int64(j)).(*array.Uint64)
+func UintSlice(arr *array.Uint, i, j int) *array.Uint {
+	return Slice(arr, int64(i), int64(j)).(*array.Uint)
 }
 
-func NewUintBuilder(a *memory.Allocator) *array.Uint64Builder {
-	return array.NewUint64Builder(a)
+func NewUintBuilder(a *memory.Allocator) *array.UintBuilder {
+	return array.NewUintBuilder(a)
 }

@@ -240,7 +240,7 @@ func writeTableToAPI(ctx context.Context, t *ToTransformation, tbl flux.Table) (
 			for j, col := range er.Cols() {
 				switch {
 				case col.Label == spec.MeasurementColumn:
-					metric.NameStr = er.Strings(j).ValueString(i)
+					metric.NameStr = er.Strings(j).Value(i)
 				case col.Label == timeColLabel:
 					valueTime := execute.ValueForRow(er, i, j)
 					if valueTime.IsNull() {
@@ -255,7 +255,7 @@ func writeTableToAPI(ctx context.Context, t *ToTransformation, tbl flux.Table) (
 
 					metric.Tags = append(metric.Tags, &lp.Tag{
 						Key:   col.Label,
-						Value: er.Strings(j).ValueString(i),
+						Value: er.Strings(j).Value(i),
 					})
 				}
 			}

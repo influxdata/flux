@@ -192,7 +192,7 @@ func TestQueryResultIterator_Results(t *testing.T) {
 				for i := 0; i < cr.Len(); i++ {
 					r := row{
 						Value: cr.Ints(0).Value(i),
-						Tag:   cr.Strings(1).ValueString(i),
+						Tag:   cr.Strings(1).Value(i),
 					}
 					got = append(got, r)
 				}

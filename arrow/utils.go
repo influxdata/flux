@@ -3,10 +3,9 @@ package arrow
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
@@ -18,13 +17,13 @@ import (
 func NewBuilder(typ flux.ColType, mem memory.Allocator) array.Builder {
 	switch typ {
 	case flux.TInt, flux.TTime:
-		return array.NewInt64Builder(mem)
+		return array.NewIntBuilder(mem)
 	case flux.TUInt:
-		return array.NewUint64Builder(mem)
+		return array.NewUintBuilder(mem)
 	case flux.TFloat:
-		return array.NewFloat64Builder(mem)
+		return array.NewFloatBuilder(mem)
 	case flux.TString:
-		return array.NewBinaryBuilder(mem, arrow.BinaryTypes.String)
+		return array.NewStringBuilder(mem)
 	case flux.TBool:
 		return array.NewBooleanBuilder(mem)
 	default:
@@ -63,7 +62,7 @@ func AppendValue(b array.Builder, v values.Value) error {
 
 // AppendInt will append an int64 to a compatible builder.
 func AppendInt(b array.Builder, v int64) error {
-	vb, ok := b.(*array.Int64Builder)
+	vb, ok := b.(*array.IntBuilder)
 	if !ok {
 		return errors.Newf(codes.Internal, "incompatible builder for type %s", flux.TInt)
 	}
@@ -73,7 +72,7 @@ func AppendInt(b array.Builder, v int64) error {
 
 // AppendUint will append a uint64 to a compatible builder.
 func AppendUint(b array.Builder, v uint64) error {
-	vb, ok := b.(*array.Uint64Builder)
+	vb, ok := b.(*array.UintBuilder)
 	if !ok {
 		return errors.Newf(codes.Internal, "incompatible builder for type %s", flux.TUInt)
 	}
@@ -83,7 +82,7 @@ func AppendUint(b array.Builder, v uint64) error {
 
 // AppendFloat will append a float64 to a compatible builder.
 func AppendFloat(b array.Builder, v float64) error {
-	vb, ok := b.(*array.Float64Builder)
+	vb, ok := b.(*array.FloatBuilder)
 	if !ok {
 		return errors.Newf(codes.Internal, "incompatible builder for type %s", flux.TFloat)
 	}
@@ -93,11 +92,11 @@ func AppendFloat(b array.Builder, v float64) error {
 
 // AppendString will append a string to a compatible builder.
 func AppendString(b array.Builder, v string) error {
-	vb, ok := b.(*array.BinaryBuilder)
+	vb, ok := b.(*array.StringBuilder)
 	if !ok {
 		return errors.Newf(codes.Internal, "incompatible builder for type %s", flux.TString)
 	}
-	vb.AppendString(v)
+	vb.Append(v)
 	return nil
 }
 
@@ -113,7 +112,7 @@ func AppendBool(b array.Builder, v bool) error {
 
 // AppendTime will append a Time value to a compatible builder.
 func AppendTime(b array.Builder, v values.Time) error {
-	vb, ok := b.(*array.Int64Builder)
+	vb, ok := b.(*array.IntBuilder)
 	if !ok {
 		return errors.Newf(codes.Internal, "incompatible builder for type %s", flux.TTime)
 	}
@@ -128,10 +127,5 @@ func AppendTime(b array.Builder, v values.Time) error {
 // but array.NewSlice will construct an array.String when
 // the data type is a string rather than an array.Binary.
 func Slice(arr array.Interface, i, j int64) array.Interface {
-	data := array.NewSliceData(arr.Data(), i, j)
-	defer data.Release()
-	if _, ok := arr.(*array.Binary); ok {
-		return array.NewBinaryData(data)
-	}
-	return array.MakeFromData(data)
+	return array.Slice(arr, int(i), int(j))
 }

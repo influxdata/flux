@@ -1,36 +1,36 @@
 [
   {
-    "Name": "Int64",
-    "Type": "array.Int64",
+    "Name": "Int",
+    "Type": "array.Int",
     "PrimitiveType": "int64",
     "MonoType": "semantic.BasicInt",
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
     "Append": "Append",
-    "NewArray": "NewInt64Array"
+    "NewArray": "NewIntArray"
   },
   {
-    "Name": "Uint64",
-    "Type": "array.Uint64",
+    "Name": "Uint",
+    "Type": "array.Uint",
     "PrimitiveType": "uint64",
     "MonoType": "semantic.BasicUint",
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
     "Append": "Append",
-    "NewArray": "NewUint64Array"
+    "NewArray": "NewUintArray"
   },
   {
-    "Name": "Float64",
-    "Type": "array.Float64",
+    "Name": "Float",
+    "Type": "array.Float",
     "PrimitiveType": "float64",
     "MonoType": "semantic.BasicFloat",
     "IsNumeric": true,
     "IsComparable": true,
     "Value": "Value",
     "Append": "Append",
-    "NewArray": "NewFloat64Array"
+    "NewArray": "NewFloatArray"
   },
   {
     "Name": "Boolean",
@@ -45,13 +45,13 @@
   },
   {
     "Name": "String",
-    "Type": "array.Binary",
+    "Type": "array.String",
     "PrimitiveType": "string",
     "MonoType": "semantic.BasicString",
     "IsNumeric": false,
     "IsComparable": true,
-    "Value": "ValueString",
-    "Append": "AppendString",
-    "NewArray": "NewBinaryArray"
+    "Value": "Value",
+    "Append": "Append",
+    "NewArray": "NewStringArray"
   }
 ]

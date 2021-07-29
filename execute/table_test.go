@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
@@ -380,7 +380,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 			name: "Ints",
 			typ:  flux.TInt,
 			values: func() array.Interface {
-				b := array.NewInt64Builder(memory.DefaultAllocator)
+				b := array.NewIntBuilder(memory.DefaultAllocator)
 				b.Append(2)
 				b.Append(3)
 				b.AppendNull()
@@ -403,7 +403,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 			name: "UInts",
 			typ:  flux.TUInt,
 			values: func() array.Interface {
-				b := array.NewUint64Builder(memory.DefaultAllocator)
+				b := array.NewUintBuilder(memory.DefaultAllocator)
 				b.Append(2)
 				b.Append(3)
 				b.AppendNull()
@@ -426,7 +426,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 			name: "Floats",
 			typ:  flux.TFloat,
 			values: func() array.Interface {
-				b := array.NewFloat64Builder(memory.DefaultAllocator)
+				b := array.NewFloatBuilder(memory.DefaultAllocator)
 				b.Append(2)
 				b.Append(3)
 				b.AppendNull()
@@ -450,12 +450,12 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 			typ:  flux.TString,
 			values: func() array.Interface {
 				b := arrow.NewStringBuilder(&memory.Allocator{})
-				b.AppendString("a")
-				b.AppendString("d")
+				b.Append("a")
+				b.Append("d")
 				b.AppendNull()
-				b.AppendString("b")
+				b.Append("b")
 				b.AppendNull()
-				b.AppendString("e")
+				b.Append("e")
 				return b.NewArray()
 			}(),
 			want: &executetest.Table{
@@ -495,7 +495,7 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 			name: "Times",
 			typ:  flux.TTime,
 			values: func() array.Interface {
-				b := array.NewInt64Builder(memory.DefaultAllocator)
+				b := array.NewIntBuilder(memory.DefaultAllocator)
 				b.Append(2)
 				b.Append(3)
 				b.AppendNull()
@@ -528,23 +528,23 @@ func TestColListTableBuilder_AppendValues(t *testing.T) {
 					t.Fatal(err)
 				}
 			case flux.TInt:
-				if err := b.AppendInts(0, tt.values.(*array.Int64)); err != nil {
+				if err := b.AppendInts(0, tt.values.(*array.Int)); err != nil {
 					t.Fatal(err)
 				}
 			case flux.TUInt:
-				if err := b.AppendUInts(0, tt.values.(*array.Uint64)); err != nil {
+				if err := b.AppendUInts(0, tt.values.(*array.Uint)); err != nil {
 					t.Fatal(err)
 				}
 			case flux.TFloat:
-				if err := b.AppendFloats(0, tt.values.(*array.Float64)); err != nil {
+				if err := b.AppendFloats(0, tt.values.(*array.Float)); err != nil {
 					t.Fatal(err)
 				}
 			case flux.TString:
-				if err := b.AppendStrings(0, tt.values.(*array.Binary)); err != nil {
+				if err := b.AppendStrings(0, tt.values.(*array.String)); err != nil {
 					t.Fatal(err)
 				}
 			case flux.TTime:
-				if err := b.AppendTimes(0, tt.values.(*array.Int64)); err != nil {
+				if err := b.AppendTimes(0, tt.values.(*array.Int)); err != nil {
 					t.Fatal(err)
 				}
 			default:

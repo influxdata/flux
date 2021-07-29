@@ -1,8 +1,8 @@
 package table
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/internal/execute/groupkey"
 	"github.com/influxdata/flux/values"
 )
@@ -97,11 +97,11 @@ func (m *maskTableView) Cols() []flux.ColMeta {
 
 func (m *maskTableView) Len() int                    { return m.reader.Len() }
 func (m *maskTableView) Bools(j int) *array.Boolean  { return m.reader.Bools(j + m.offsets[j]) }
-func (m *maskTableView) Ints(j int) *array.Int64     { return m.reader.Ints(j + m.offsets[j]) }
-func (m *maskTableView) UInts(j int) *array.Uint64   { return m.reader.UInts(j + m.offsets[j]) }
-func (m *maskTableView) Floats(j int) *array.Float64 { return m.reader.Floats(j + m.offsets[j]) }
-func (m *maskTableView) Strings(j int) *array.Binary { return m.reader.Strings(j + m.offsets[j]) }
-func (m *maskTableView) Times(j int) *array.Int64    { return m.reader.Times(j + m.offsets[j]) }
+func (m *maskTableView) Ints(j int) *array.Int       { return m.reader.Ints(j + m.offsets[j]) }
+func (m *maskTableView) UInts(j int) *array.Uint     { return m.reader.UInts(j + m.offsets[j]) }
+func (m *maskTableView) Floats(j int) *array.Float   { return m.reader.Floats(j + m.offsets[j]) }
+func (m *maskTableView) Strings(j int) *array.String { return m.reader.Strings(j + m.offsets[j]) }
+func (m *maskTableView) Times(j int) *array.Int      { return m.reader.Times(j + m.offsets[j]) }
 func (m *maskTableView) Retain()                     { m.reader.Retain() }
 func (m *maskTableView) Release()                    { m.reader.Release() }
 

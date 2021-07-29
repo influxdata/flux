@@ -3,8 +3,8 @@ package universe
 import (
 	"time"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -265,25 +265,25 @@ func (d *derivative) Type() (flux.ColType, error) {
 }
 
 // Do will compute the derivative for the given array using the times.
-func (d *derivative) Do(ts *array.Int64, vs array.Interface, b execute.TableBuilder, j int) error {
+func (d *derivative) Do(ts *array.Int, vs array.Interface, b execute.TableBuilder, j int) error {
 	switch d.col.Type {
 	case flux.TInt:
-		return d.doInts(ts, vs.(*array.Int64), b, j)
+		return d.doInts(ts, vs.(*array.Int), b, j)
 	case flux.TUInt:
-		return d.doUints(ts, vs.(*array.Uint64), b, j)
+		return d.doUints(ts, vs.(*array.Uint), b, j)
 	case flux.TFloat:
-		return d.doFloats(ts, vs.(*array.Float64), b, j)
+		return d.doFloats(ts, vs.(*array.Float), b, j)
 	case flux.TString:
-		return d.doStrings(ts, vs.(*array.Binary), b, j)
+		return d.doStrings(ts, vs.(*array.String), b, j)
 	case flux.TBool:
 		return d.doBools(ts, vs.(*array.Boolean), b, j)
 	case flux.TTime:
-		return d.doTimes(ts, vs.(*array.Int64), b, j)
+		return d.doTimes(ts, vs.(*array.Int), b, j)
 	}
 	return errors.Newf(codes.Unimplemented, "derivative: column type %s is unimplemented", d.col.Type)
 }
 
-func (d *derivative) doInts(ts, vs *array.Int64, b execute.TableBuilder, j int) error {
+func (d *derivative) doInts(ts, vs *array.Int, b execute.TableBuilder, j int) error {
 	i := 0
 
 	// Initialize by reading the first value.
@@ -363,7 +363,7 @@ func (d *derivative) doInts(ts, vs *array.Int64, b execute.TableBuilder, j int) 
 	return nil
 }
 
-func (d *derivative) doUints(ts *array.Int64, vs *array.Uint64, b execute.TableBuilder, j int) error {
+func (d *derivative) doUints(ts *array.Int, vs *array.Uint, b execute.TableBuilder, j int) error {
 	i := 0
 
 	// Initialize by reading the first value.
@@ -451,7 +451,7 @@ func (d *derivative) doUints(ts *array.Int64, vs *array.Uint64, b execute.TableB
 	return nil
 }
 
-func (d *derivative) doFloats(ts *array.Int64, vs *array.Float64, b execute.TableBuilder, j int) error {
+func (d *derivative) doFloats(ts *array.Int, vs *array.Float, b execute.TableBuilder, j int) error {
 	i := 0
 
 	// Initialize by reading the first value.
@@ -531,7 +531,7 @@ func (d *derivative) doFloats(ts *array.Int64, vs *array.Float64, b execute.Tabl
 	return nil
 }
 
-func (d *derivative) doStrings(ts *array.Int64, vs *array.Binary, b execute.TableBuilder, j int) error {
+func (d *derivative) doStrings(ts *array.Int, vs *array.String, b execute.TableBuilder, j int) error {
 	i := 0
 	if !d.initialized {
 		d.t = ts.Value(i)
@@ -553,7 +553,7 @@ func (d *derivative) doStrings(ts *array.Int64, vs *array.Binary, b execute.Tabl
 				return err
 			}
 		} else {
-			if err := b.AppendString(j, vs.ValueString(i)); err != nil {
+			if err := b.AppendString(j, vs.Value(i)); err != nil {
 				return err
 			}
 		}
@@ -562,7 +562,7 @@ func (d *derivative) doStrings(ts *array.Int64, vs *array.Binary, b execute.Tabl
 	return nil
 }
 
-func (d *derivative) doBools(ts *array.Int64, vs *array.Boolean, b execute.TableBuilder, j int) error {
+func (d *derivative) doBools(ts *array.Int, vs *array.Boolean, b execute.TableBuilder, j int) error {
 	i := 0
 	if !d.initialized {
 		d.t = ts.Value(i)
@@ -593,7 +593,7 @@ func (d *derivative) doBools(ts *array.Int64, vs *array.Boolean, b execute.Table
 	return nil
 }
 
-func (d *derivative) doTimes(ts, vs *array.Int64, b execute.TableBuilder, j int) error {
+func (d *derivative) doTimes(ts, vs *array.Int, b execute.TableBuilder, j int) error {
 	i := 0
 	if !d.initialized {
 		d.t = ts.Value(i)

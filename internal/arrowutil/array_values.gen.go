@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -20,71 +20,69 @@ func NewArrayValue(arr array.Interface, typ flux.ColType) values.Array {
 	switch elemType := flux.SemanticType(typ); elemType {
 
 	case semantic.BasicInt:
-		return NewInt64ArrayValue(arr.(*array.Int64))
+		return NewIntArrayValue(arr.(*array.Int))
 
 	case semantic.BasicUint:
-		return NewUint64ArrayValue(arr.(*array.Uint64))
+		return NewUintArrayValue(arr.(*array.Uint))
 
 	case semantic.BasicFloat:
-		return NewFloat64ArrayValue(arr.(*array.Float64))
+		return NewFloatArrayValue(arr.(*array.Float))
 
 	case semantic.BasicBool:
 		return NewBooleanArrayValue(arr.(*array.Boolean))
 
 	case semantic.BasicString:
-		return NewStringArrayValue(arr.(*array.Binary))
+		return NewStringArrayValue(arr.(*array.String))
 
 	default:
 		panic(fmt.Errorf("unsupported column data type: %s", typ))
 	}
 }
 
-var _ values.Value = Int64ArrayValue{}
-var _ values.Array = Int64ArrayValue{}
+var _ values.Value = IntArrayValue{}
+var _ values.Array = IntArrayValue{}
 
-type Int64ArrayValue struct {
-	arr *array.Int64
+type IntArrayValue struct {
+	arr *array.Int
 	typ semantic.MonoType
 }
 
-func NewInt64ArrayValue(arr *array.Int64) values.Array {
-	return Int64ArrayValue{
+func NewIntArrayValue(arr *array.Int) values.Array {
+	return IntArrayValue{
 		arr: arr,
 		typ: semantic.NewArrayType(semantic.BasicInt),
 	}
 }
 
-func (v Int64ArrayValue) Type() semantic.MonoType { return v.typ }
-func (v Int64ArrayValue) IsNull() bool            { return false }
-func (v Int64ArrayValue) Str() string             { panic(values.UnexpectedKind(semantic.Array, semantic.String)) }
-func (v Int64ArrayValue) Bytes() []byte           { panic(values.UnexpectedKind(semantic.Array, semantic.Bytes)) }
-func (v Int64ArrayValue) Int() int64              { panic(values.UnexpectedKind(semantic.Array, semantic.Int)) }
-func (v Int64ArrayValue) UInt() uint64            { panic(values.UnexpectedKind(semantic.Array, semantic.UInt)) }
-func (v Int64ArrayValue) Float() float64 {
-	panic(values.UnexpectedKind(semantic.Array, semantic.Float))
-}
-func (v Int64ArrayValue) Bool() bool { panic(values.UnexpectedKind(semantic.Array, semantic.Bool)) }
-func (v Int64ArrayValue) Time() values.Time {
+func (v IntArrayValue) Type() semantic.MonoType { return v.typ }
+func (v IntArrayValue) IsNull() bool            { return false }
+func (v IntArrayValue) Str() string             { panic(values.UnexpectedKind(semantic.Array, semantic.String)) }
+func (v IntArrayValue) Bytes() []byte           { panic(values.UnexpectedKind(semantic.Array, semantic.Bytes)) }
+func (v IntArrayValue) Int() int64              { panic(values.UnexpectedKind(semantic.Array, semantic.Int)) }
+func (v IntArrayValue) UInt() uint64            { panic(values.UnexpectedKind(semantic.Array, semantic.UInt)) }
+func (v IntArrayValue) Float() float64          { panic(values.UnexpectedKind(semantic.Array, semantic.Float)) }
+func (v IntArrayValue) Bool() bool              { panic(values.UnexpectedKind(semantic.Array, semantic.Bool)) }
+func (v IntArrayValue) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Time))
 }
-func (v Int64ArrayValue) Duration() values.Duration {
+func (v IntArrayValue) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Duration))
 }
-func (v Int64ArrayValue) Regexp() *regexp.Regexp {
+func (v IntArrayValue) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Regexp))
 }
-func (v Int64ArrayValue) Array() values.Array { return v }
-func (v Int64ArrayValue) Object() values.Object {
+func (v IntArrayValue) Array() values.Array { return v }
+func (v IntArrayValue) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Object))
 }
-func (v Int64ArrayValue) Function() values.Function {
+func (v IntArrayValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
-func (v Int64ArrayValue) Dict() values.Dictionary {
+func (v IntArrayValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
 }
 
-func (v Int64ArrayValue) Equal(other values.Value) bool {
+func (v IntArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {
 		return false
 	} else if v.arr.Len() != other.Array().Len() {
@@ -100,75 +98,71 @@ func (v Int64ArrayValue) Equal(other values.Value) bool {
 	return true
 }
 
-func (v Int64ArrayValue) Get(i int) values.Value {
+func (v IntArrayValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
 	return values.New(v.arr.Value(i))
 }
 
-func (v Int64ArrayValue) Set(i int, value values.Value) { panic("cannot set value on immutable array") }
-func (v Int64ArrayValue) Append(value values.Value)     { panic("cannot append to immutable array") }
+func (v IntArrayValue) Set(i int, value values.Value) { panic("cannot set value on immutable array") }
+func (v IntArrayValue) Append(value values.Value)     { panic("cannot append to immutable array") }
 
-func (v Int64ArrayValue) Len() int { return v.arr.Len() }
-func (v Int64ArrayValue) Range(f func(i int, v values.Value)) {
+func (v IntArrayValue) Len() int { return v.arr.Len() }
+func (v IntArrayValue) Range(f func(i int, v values.Value)) {
 	for i, n := 0, v.arr.Len(); i < n; i++ {
 		f(i, v.Get(i))
 	}
 }
 
-func (v Int64ArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
+func (v IntArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable array")
 }
 
-var _ values.Value = Uint64ArrayValue{}
-var _ values.Array = Uint64ArrayValue{}
+var _ values.Value = UintArrayValue{}
+var _ values.Array = UintArrayValue{}
 
-type Uint64ArrayValue struct {
-	arr *array.Uint64
+type UintArrayValue struct {
+	arr *array.Uint
 	typ semantic.MonoType
 }
 
-func NewUint64ArrayValue(arr *array.Uint64) values.Array {
-	return Uint64ArrayValue{
+func NewUintArrayValue(arr *array.Uint) values.Array {
+	return UintArrayValue{
 		arr: arr,
 		typ: semantic.NewArrayType(semantic.BasicUint),
 	}
 }
 
-func (v Uint64ArrayValue) Type() semantic.MonoType { return v.typ }
-func (v Uint64ArrayValue) IsNull() bool            { return false }
-func (v Uint64ArrayValue) Str() string             { panic(values.UnexpectedKind(semantic.Array, semantic.String)) }
-func (v Uint64ArrayValue) Bytes() []byte {
-	panic(values.UnexpectedKind(semantic.Array, semantic.Bytes))
-}
-func (v Uint64ArrayValue) Int() int64   { panic(values.UnexpectedKind(semantic.Array, semantic.Int)) }
-func (v Uint64ArrayValue) UInt() uint64 { panic(values.UnexpectedKind(semantic.Array, semantic.UInt)) }
-func (v Uint64ArrayValue) Float() float64 {
-	panic(values.UnexpectedKind(semantic.Array, semantic.Float))
-}
-func (v Uint64ArrayValue) Bool() bool { panic(values.UnexpectedKind(semantic.Array, semantic.Bool)) }
-func (v Uint64ArrayValue) Time() values.Time {
+func (v UintArrayValue) Type() semantic.MonoType { return v.typ }
+func (v UintArrayValue) IsNull() bool            { return false }
+func (v UintArrayValue) Str() string             { panic(values.UnexpectedKind(semantic.Array, semantic.String)) }
+func (v UintArrayValue) Bytes() []byte           { panic(values.UnexpectedKind(semantic.Array, semantic.Bytes)) }
+func (v UintArrayValue) Int() int64              { panic(values.UnexpectedKind(semantic.Array, semantic.Int)) }
+func (v UintArrayValue) UInt() uint64            { panic(values.UnexpectedKind(semantic.Array, semantic.UInt)) }
+func (v UintArrayValue) Float() float64          { panic(values.UnexpectedKind(semantic.Array, semantic.Float)) }
+func (v UintArrayValue) Bool() bool              { panic(values.UnexpectedKind(semantic.Array, semantic.Bool)) }
+func (v UintArrayValue) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Time))
 }
-func (v Uint64ArrayValue) Duration() values.Duration {
+func (v UintArrayValue) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Duration))
 }
-func (v Uint64ArrayValue) Regexp() *regexp.Regexp {
+func (v UintArrayValue) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Regexp))
 }
-func (v Uint64ArrayValue) Array() values.Array { return v }
-func (v Uint64ArrayValue) Object() values.Object {
+func (v UintArrayValue) Array() values.Array { return v }
+func (v UintArrayValue) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Object))
 }
-func (v Uint64ArrayValue) Function() values.Function {
+func (v UintArrayValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
-func (v Uint64ArrayValue) Dict() values.Dictionary {
+func (v UintArrayValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
 }
 
-func (v Uint64ArrayValue) Equal(other values.Value) bool {
+func (v UintArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {
 		return false
 	} else if v.arr.Len() != other.Array().Len() {
@@ -184,79 +178,73 @@ func (v Uint64ArrayValue) Equal(other values.Value) bool {
 	return true
 }
 
-func (v Uint64ArrayValue) Get(i int) values.Value {
+func (v UintArrayValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
 	return values.New(v.arr.Value(i))
 }
 
-func (v Uint64ArrayValue) Set(i int, value values.Value) {
-	panic("cannot set value on immutable array")
-}
-func (v Uint64ArrayValue) Append(value values.Value) { panic("cannot append to immutable array") }
+func (v UintArrayValue) Set(i int, value values.Value) { panic("cannot set value on immutable array") }
+func (v UintArrayValue) Append(value values.Value)     { panic("cannot append to immutable array") }
 
-func (v Uint64ArrayValue) Len() int { return v.arr.Len() }
-func (v Uint64ArrayValue) Range(f func(i int, v values.Value)) {
+func (v UintArrayValue) Len() int { return v.arr.Len() }
+func (v UintArrayValue) Range(f func(i int, v values.Value)) {
 	for i, n := 0, v.arr.Len(); i < n; i++ {
 		f(i, v.Get(i))
 	}
 }
 
-func (v Uint64ArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
+func (v UintArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable array")
 }
 
-var _ values.Value = Float64ArrayValue{}
-var _ values.Array = Float64ArrayValue{}
+var _ values.Value = FloatArrayValue{}
+var _ values.Array = FloatArrayValue{}
 
-type Float64ArrayValue struct {
-	arr *array.Float64
+type FloatArrayValue struct {
+	arr *array.Float
 	typ semantic.MonoType
 }
 
-func NewFloat64ArrayValue(arr *array.Float64) values.Array {
-	return Float64ArrayValue{
+func NewFloatArrayValue(arr *array.Float) values.Array {
+	return FloatArrayValue{
 		arr: arr,
 		typ: semantic.NewArrayType(semantic.BasicFloat),
 	}
 }
 
-func (v Float64ArrayValue) Type() semantic.MonoType { return v.typ }
-func (v Float64ArrayValue) IsNull() bool            { return false }
-func (v Float64ArrayValue) Str() string {
-	panic(values.UnexpectedKind(semantic.Array, semantic.String))
-}
-func (v Float64ArrayValue) Bytes() []byte {
-	panic(values.UnexpectedKind(semantic.Array, semantic.Bytes))
-}
-func (v Float64ArrayValue) Int() int64   { panic(values.UnexpectedKind(semantic.Array, semantic.Int)) }
-func (v Float64ArrayValue) UInt() uint64 { panic(values.UnexpectedKind(semantic.Array, semantic.UInt)) }
-func (v Float64ArrayValue) Float() float64 {
+func (v FloatArrayValue) Type() semantic.MonoType { return v.typ }
+func (v FloatArrayValue) IsNull() bool            { return false }
+func (v FloatArrayValue) Str() string             { panic(values.UnexpectedKind(semantic.Array, semantic.String)) }
+func (v FloatArrayValue) Bytes() []byte           { panic(values.UnexpectedKind(semantic.Array, semantic.Bytes)) }
+func (v FloatArrayValue) Int() int64              { panic(values.UnexpectedKind(semantic.Array, semantic.Int)) }
+func (v FloatArrayValue) UInt() uint64            { panic(values.UnexpectedKind(semantic.Array, semantic.UInt)) }
+func (v FloatArrayValue) Float() float64 {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Float))
 }
-func (v Float64ArrayValue) Bool() bool { panic(values.UnexpectedKind(semantic.Array, semantic.Bool)) }
-func (v Float64ArrayValue) Time() values.Time {
+func (v FloatArrayValue) Bool() bool { panic(values.UnexpectedKind(semantic.Array, semantic.Bool)) }
+func (v FloatArrayValue) Time() values.Time {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Time))
 }
-func (v Float64ArrayValue) Duration() values.Duration {
+func (v FloatArrayValue) Duration() values.Duration {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Duration))
 }
-func (v Float64ArrayValue) Regexp() *regexp.Regexp {
+func (v FloatArrayValue) Regexp() *regexp.Regexp {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Regexp))
 }
-func (v Float64ArrayValue) Array() values.Array { return v }
-func (v Float64ArrayValue) Object() values.Object {
+func (v FloatArrayValue) Array() values.Array { return v }
+func (v FloatArrayValue) Object() values.Object {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Object))
 }
-func (v Float64ArrayValue) Function() values.Function {
+func (v FloatArrayValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
-func (v Float64ArrayValue) Dict() values.Dictionary {
+func (v FloatArrayValue) Dict() values.Dictionary {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
 }
 
-func (v Float64ArrayValue) Equal(other values.Value) bool {
+func (v FloatArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {
 		return false
 	} else if v.arr.Len() != other.Array().Len() {
@@ -272,26 +260,24 @@ func (v Float64ArrayValue) Equal(other values.Value) bool {
 	return true
 }
 
-func (v Float64ArrayValue) Get(i int) values.Value {
+func (v FloatArrayValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
 	return values.New(v.arr.Value(i))
 }
 
-func (v Float64ArrayValue) Set(i int, value values.Value) {
-	panic("cannot set value on immutable array")
-}
-func (v Float64ArrayValue) Append(value values.Value) { panic("cannot append to immutable array") }
+func (v FloatArrayValue) Set(i int, value values.Value) { panic("cannot set value on immutable array") }
+func (v FloatArrayValue) Append(value values.Value)     { panic("cannot append to immutable array") }
 
-func (v Float64ArrayValue) Len() int { return v.arr.Len() }
-func (v Float64ArrayValue) Range(f func(i int, v values.Value)) {
+func (v FloatArrayValue) Len() int { return v.arr.Len() }
+func (v FloatArrayValue) Range(f func(i int, v values.Value)) {
 	for i, n := 0, v.arr.Len(); i < n; i++ {
 		f(i, v.Get(i))
 	}
 }
 
-func (v Float64ArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
+func (v FloatArrayValue) Sort(f func(i values.Value, j values.Value) bool) {
 	panic("cannot sort immutable array")
 }
 
@@ -387,11 +373,11 @@ var _ values.Value = StringArrayValue{}
 var _ values.Array = StringArrayValue{}
 
 type StringArrayValue struct {
-	arr *array.Binary
+	arr *array.String
 	typ semantic.MonoType
 }
 
-func NewStringArrayValue(arr *array.Binary) values.Array {
+func NewStringArrayValue(arr *array.String) values.Array {
 	return StringArrayValue{
 		arr: arr,
 		typ: semantic.NewArrayType(semantic.BasicString),
@@ -450,7 +436,7 @@ func (v StringArrayValue) Get(i int) values.Value {
 	if v.arr.IsNull(i) {
 		return values.Null
 	}
-	return values.New(v.arr.ValueString(i))
+	return values.New(v.arr.Value(i))
 }
 
 func (v StringArrayValue) Set(i int, value values.Value) {

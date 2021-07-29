@@ -5,9 +5,9 @@ import (
 	"sort"
 	"sync/atomic"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -410,7 +410,7 @@ func ValueForRow(cr flux.ColReader, i, j int) values.Value {
 		if cr.Strings(j).IsNull(i) {
 			return values.NewNull(semantic.BasicString)
 		}
-		return values.NewString(cr.Strings(j).ValueString(i))
+		return values.NewString(cr.Strings(j).Value(i))
 	case flux.TInt:
 		if cr.Ints(j).IsNull(i) {
 			return values.NewNull(semantic.BasicInt)
@@ -475,11 +475,11 @@ type TableBuilder interface {
 	// it will set the numer of rows in the table to the size of the new column.  It's the
 	// caller's job to make sure that the expected number of rows in each column is equal.
 	AppendBools(j int, vs *array.Boolean) error
-	AppendInts(j int, vs *array.Int64) error
-	AppendUInts(j int, vs *array.Uint64) error
-	AppendFloats(j int, vs *array.Float64) error
-	AppendStrings(j int, vs *array.Binary) error
-	AppendTimes(j int, vs *array.Int64) error
+	AppendInts(j int, vs *array.Int) error
+	AppendUInts(j int, vs *array.Uint) error
+	AppendFloats(j int, vs *array.Float) error
+	AppendStrings(j int, vs *array.String) error
+	AppendTimes(j int, vs *array.Int) error
 
 	// TODO(adam): determine if there's a useful API for AppendValues
 	// AppendValues(j int, values []values.Value)
@@ -766,7 +766,7 @@ func (b *ColListTableBuilder) AppendInt(j int, value int64) error {
 	return nil
 }
 
-func (b *ColListTableBuilder) AppendInts(j int, vs *array.Int64) error {
+func (b *ColListTableBuilder) AppendInts(j int, vs *array.Int) error {
 	if err := b.checkCol(j, flux.TInt); err != nil {
 		return err
 	}
@@ -822,7 +822,7 @@ func (b *ColListTableBuilder) AppendUInt(j int, value uint64) error {
 	return nil
 }
 
-func (b *ColListTableBuilder) AppendUInts(j int, vs *array.Uint64) error {
+func (b *ColListTableBuilder) AppendUInts(j int, vs *array.Uint) error {
 	if err := b.checkCol(j, flux.TUInt); err != nil {
 		return err
 	}
@@ -877,7 +877,7 @@ func (b *ColListTableBuilder) AppendFloat(j int, value float64) error {
 	return nil
 }
 
-func (b *ColListTableBuilder) AppendFloats(j int, vs *array.Float64) error {
+func (b *ColListTableBuilder) AppendFloats(j int, vs *array.Float) error {
 	if err := b.checkCol(j, flux.TFloat); err != nil {
 		return err
 	}
@@ -932,7 +932,7 @@ func (b *ColListTableBuilder) AppendString(j int, value string) error {
 	return nil
 }
 
-func (b *ColListTableBuilder) AppendStrings(j int, vs *array.Binary) error {
+func (b *ColListTableBuilder) AppendStrings(j int, vs *array.String) error {
 	if err := b.checkCol(j, flux.TString); err != nil {
 		return err
 	}
@@ -942,7 +942,7 @@ func (b *ColListTableBuilder) AppendStrings(j int, vs *array.Binary) error {
 			if err := b.AppendNil(j); err != nil {
 				return err
 			}
-		} else if err := b.AppendString(j, vs.ValueString(i)); err != nil {
+		} else if err := b.AppendString(j, vs.Value(i)); err != nil {
 			return err
 		}
 	}
@@ -985,7 +985,7 @@ func (b *ColListTableBuilder) AppendTime(j int, value Time) error {
 	return nil
 }
 
-func (b *ColListTableBuilder) AppendTimes(j int, vs *array.Int64) error {
+func (b *ColListTableBuilder) AppendTimes(j int, vs *array.Int) error {
 	if err := b.checkCol(j, flux.TTime); err != nil {
 		return err
 	}
@@ -1341,24 +1341,24 @@ func (t *ColListTable) Bools(j int) *array.Boolean {
 	CheckColType(t.colMeta[j], flux.TBool)
 	return t.cols[j].(*boolColumn).data
 }
-func (t *ColListTable) Ints(j int) *array.Int64 {
+func (t *ColListTable) Ints(j int) *array.Int {
 	CheckColType(t.colMeta[j], flux.TInt)
 	return t.cols[j].(*intColumn).data
 }
-func (t *ColListTable) UInts(j int) *array.Uint64 {
+func (t *ColListTable) UInts(j int) *array.Uint {
 	CheckColType(t.colMeta[j], flux.TUInt)
 	return t.cols[j].(*uintColumn).data
 }
-func (t *ColListTable) Floats(j int) *array.Float64 {
+func (t *ColListTable) Floats(j int) *array.Float {
 	CheckColType(t.colMeta[j], flux.TFloat)
 	return t.cols[j].(*floatColumn).data
 }
-func (t *ColListTable) Strings(j int) *array.Binary {
+func (t *ColListTable) Strings(j int) *array.String {
 	meta := t.colMeta[j]
 	CheckColType(meta, flux.TString)
 	return t.cols[j].(*stringColumn).data
 }
-func (t *ColListTable) Times(j int) *array.Int64 {
+func (t *ColListTable) Times(j int) *array.Int {
 	CheckColType(t.colMeta[j], flux.TTime)
 	return t.cols[j].(*timeColumn).data
 }
@@ -1595,7 +1595,7 @@ func (c *boolColumnBuilder) Swap(i, j int) {
 
 type intColumn struct {
 	flux.ColMeta
-	data *array.Int64
+	data *array.Int
 }
 
 func (c *intColumn) Meta() flux.ColMeta {
@@ -1631,7 +1631,7 @@ func (c *intColumnBuilder) Release() {
 }
 
 func (c *intColumnBuilder) Copy() column {
-	var data *array.Int64
+	var data *array.Int
 	if len(c.nils) > 0 {
 		b := arrow.NewIntBuilder(c.alloc.Allocator)
 		b.Reserve(len(c.data))
@@ -1642,7 +1642,7 @@ func (c *intColumnBuilder) Copy() column {
 			}
 			b.UnsafeAppend(v)
 		}
-		data = b.NewInt64Array()
+		data = b.NewIntArray()
 		b.Release()
 	} else {
 		data = arrow.NewInt(c.data, c.alloc.Allocator)
@@ -1677,7 +1677,7 @@ func (c *intColumnBuilder) Swap(i, j int) {
 
 type uintColumn struct {
 	flux.ColMeta
-	data *array.Uint64
+	data *array.Uint
 }
 
 func (c *uintColumn) Meta() flux.ColMeta {
@@ -1713,7 +1713,7 @@ func (c *uintColumnBuilder) Release() {
 }
 
 func (c *uintColumnBuilder) Copy() column {
-	var data *array.Uint64
+	var data *array.Uint
 	if len(c.nils) > 0 {
 		b := arrow.NewUintBuilder(c.alloc.Allocator)
 		b.Reserve(len(c.data))
@@ -1724,7 +1724,7 @@ func (c *uintColumnBuilder) Copy() column {
 			}
 			b.UnsafeAppend(v)
 		}
-		data = b.NewUint64Array()
+		data = b.NewUintArray()
 		b.Release()
 	} else {
 		data = arrow.NewUint(c.data, c.alloc.Allocator)
@@ -1759,7 +1759,7 @@ func (c *uintColumnBuilder) Swap(i, j int) {
 
 type floatColumn struct {
 	flux.ColMeta
-	data *array.Float64
+	data *array.Float
 }
 
 func (c *floatColumn) Meta() flux.ColMeta {
@@ -1796,7 +1796,7 @@ func (c *floatColumnBuilder) Release() {
 }
 
 func (c *floatColumnBuilder) Copy() column {
-	var data *array.Float64
+	var data *array.Float
 	if len(c.nils) > 0 {
 		b := arrow.NewFloatBuilder(c.alloc.Allocator)
 		b.Reserve(len(c.data))
@@ -1807,7 +1807,7 @@ func (c *floatColumnBuilder) Copy() column {
 			}
 			b.UnsafeAppend(v)
 		}
-		data = b.NewFloat64Array()
+		data = b.NewFloatArray()
 		b.Release()
 	} else {
 		data = arrow.NewFloat(c.data, c.alloc.Allocator)
@@ -1842,7 +1842,7 @@ func (c *floatColumnBuilder) Swap(i, j int) {
 
 type stringColumn struct {
 	flux.ColMeta
-	data *array.Binary
+	data *array.String
 }
 
 func (c *stringColumn) Meta() flux.ColMeta {
@@ -1879,7 +1879,7 @@ func (c *stringColumnBuilder) Release() {
 }
 
 func (c *stringColumnBuilder) Copy() column {
-	var data *array.Binary
+	var data *array.String
 	if len(c.nils) > 0 {
 		b := arrow.NewStringBuilder(c.alloc.Allocator)
 		b.Reserve(len(c.data))
@@ -1896,9 +1896,9 @@ func (c *stringColumnBuilder) Copy() column {
 				b.AppendNull()
 				continue
 			}
-			b.AppendString(v)
+			b.Append(v)
 		}
-		data = b.NewBinaryArray()
+		data = b.NewStringArray()
 		b.Release()
 	} else {
 		data = arrow.NewString(c.data, c.alloc.Allocator)
@@ -1933,7 +1933,7 @@ func (c *stringColumnBuilder) Swap(i, j int) {
 
 type timeColumn struct {
 	flux.ColMeta
-	data *array.Int64
+	data *array.Int
 }
 
 func (c *timeColumn) Meta() flux.ColMeta {
@@ -1980,7 +1980,7 @@ func (c *timeColumnBuilder) Copy() column {
 	}
 	col := &timeColumn{
 		ColMeta: c.ColMeta,
-		data:    b.NewInt64Array(),
+		data:    b.NewIntArray(),
 	}
 	b.Release()
 	return col

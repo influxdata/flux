@@ -13,9 +13,8 @@ import (
 	"fmt"
 	"time"
 
-	stdarrow "github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -248,7 +247,7 @@ type intColumn struct {
 }
 
 func (s intColumn) Make(n int) array.Interface {
-	b := array.NewInt64Builder(memory.DefaultAllocator)
+	b := array.NewIntBuilder(memory.DefaultAllocator)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -307,7 +306,7 @@ type uintColumn struct {
 }
 
 func (s uintColumn) Make(n int) array.Interface {
-	b := array.NewUint64Builder(memory.DefaultAllocator)
+	b := array.NewUintBuilder(memory.DefaultAllocator)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -370,7 +369,7 @@ type floatColumn struct {
 }
 
 func (s floatColumn) Make(n int) array.Interface {
-	b := array.NewFloat64Builder(memory.DefaultAllocator)
+	b := array.NewFloatBuilder(memory.DefaultAllocator)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -431,9 +430,9 @@ type stringColumn struct {
 }
 
 func (s stringColumn) Make(n int) array.Interface {
-	b := array.NewBinaryBuilder(memory.DefaultAllocator, stdarrow.BinaryTypes.String)
+	b := array.NewStringBuilder(memory.DefaultAllocator)
 	b.Resize(len(s.v))
-	b.AppendStringValues(s.v, s.valid)
+	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
 }
 
@@ -552,7 +551,7 @@ type timeColumn struct {
 }
 
 func (s timeColumn) Make(n int) array.Interface {
-	b := array.NewInt64Builder(memory.DefaultAllocator)
+	b := array.NewIntBuilder(memory.DefaultAllocator)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()

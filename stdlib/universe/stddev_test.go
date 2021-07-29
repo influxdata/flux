@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
@@ -26,12 +26,12 @@ func TestStddevOperation_Marshaling(t *testing.T) {
 func TestStddev_Process(t *testing.T) {
 	testCases := []struct {
 		name        string
-		data        func() *array.Float64
+		data        func() *array.Float
 		wantForMode map[string]interface{}
 	}{
 		{
 			name: "zero",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 1, 1}, nil)
 			},
 			wantForMode: map[string]interface{}{
@@ -41,7 +41,7 @@ func TestStddev_Process(t *testing.T) {
 		},
 		{
 			name: "nonzero",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1, 2, 3}, nil)
 			},
 			wantForMode: map[string]interface{}{
@@ -51,7 +51,7 @@ func TestStddev_Process(t *testing.T) {
 		},
 		{
 			name: "NaN",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{1}, nil)
 			},
 			wantForMode: map[string]interface{}{
@@ -61,7 +61,7 @@ func TestStddev_Process(t *testing.T) {
 		},
 		{
 			name: "empty",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat(nil, nil)
 			},
 			wantForMode: map[string]interface{}{
@@ -71,7 +71,7 @@ func TestStddev_Process(t *testing.T) {
 		},
 		{
 			name: "with nulls",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				b := arrow.NewFloatBuilder(nil)
 				defer b.Release()
 				b.Append(1)
@@ -79,7 +79,7 @@ func TestStddev_Process(t *testing.T) {
 				b.Append(2)
 				b.AppendNull()
 				b.Append(3)
-				return b.NewFloat64Array()
+				return b.NewFloatArray()
 			},
 			wantForMode: map[string]interface{}{
 				"sample":     1.0,
@@ -88,12 +88,12 @@ func TestStddev_Process(t *testing.T) {
 		},
 		{
 			name: "only nulls",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				b := arrow.NewFloatBuilder(nil)
 				defer b.Release()
 				b.AppendNull()
 				b.AppendNull()
-				return b.NewFloat64Array()
+				return b.NewFloatArray()
 			},
 			wantForMode: map[string]interface{}{
 				"sample":     nil,

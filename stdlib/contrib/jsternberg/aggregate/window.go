@@ -5,9 +5,9 @@ import (
 	"context"
 	"math"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -186,8 +186,8 @@ func (w *windowTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	}
 
 	// Construct a buffer for the start and stop columns.
-	startB := array.NewInt64Builder(w.mem)
-	stopB := array.NewInt64Builder(w.mem)
+	startB := array.NewIntBuilder(w.mem)
+	stopB := array.NewIntBuilder(w.mem)
 
 	// Maintain the state and process the table.
 	state := windowTableState{
@@ -250,7 +250,7 @@ func (w *windowTransformation) getTimeColumn(tbl flux.Table) (int, error) {
 
 type windowTableState struct {
 	*windowTransformation
-	startB, stopB *array.Int64Builder
+	startB, stopB *array.IntBuilder
 	timeColumn    int
 	windows       list.List
 	columns       []*columnState
@@ -291,7 +291,7 @@ func (w *windowTableState) Flush() error {
 	return nil
 }
 
-func (w *windowTableState) EvalPendingWindows(cr flux.ColReader, ts *array.Int64) error {
+func (w *windowTableState) EvalPendingWindows(cr flux.ColReader, ts *array.Int) error {
 	// If there are any active windows from the last buffer,
 	// process them here.
 	for e := w.windows.Front(); e != nil; {
@@ -325,7 +325,7 @@ func (w *windowTableState) EvalPendingWindows(cr flux.ColReader, ts *array.Int64
 	return nil
 }
 
-func (w *windowTableState) ProcessTable(cr flux.ColReader, ts *array.Int64) error {
+func (w *windowTableState) ProcessTable(cr flux.ColReader, ts *array.Int) error {
 	window := w.spec.Window
 
 	// Iterate through each of the time values.
@@ -383,7 +383,7 @@ func (w *windowTableState) ProcessTable(cr flux.ColReader, ts *array.Int64) erro
 	return nil
 }
 
-func (w *windowTableState) EvalWindow(cr flux.ColReader, ts *array.Int64, ws *windowState, offset int) (complete bool, err error) {
+func (w *windowTableState) EvalWindow(cr flux.ColReader, ts *array.Int, ws *windowState, offset int) (complete bool, err error) {
 	// Find the span for the current bounds in this column reader.
 	start, stop, n := offset, offset+1, ts.Len()
 	for ; stop < n; stop++ {

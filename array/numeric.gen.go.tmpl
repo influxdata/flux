@@ -1,0 +1,65 @@
+package array
+
+import (
+    "github.com/apache/arrow/go/arrow/array"
+    "github.com/apache/arrow/go/arrow/memory"
+)
+
+type (
+	{{range .}}
+	{{.Name}} = array.{{.Type}}{{end}}
+)
+
+{{range .}}
+type {{.Name}}Builder struct {
+    b *array.{{.Type}}Builder
+}
+
+func New{{.Name}}Builder(mem memory.Allocator) *{{.Name}}Builder {
+    return &{{.Name}}Builder{
+        b: array.New{{.Type}}Builder(mem),
+    }
+}
+func (b *{{.Name}}Builder) Retain() {
+    b.b.Retain()
+}
+func (b *{{.Name}}Builder) Release() {
+    b.b.Release()
+}
+func (b *{{.Name}}Builder) Len() int {
+    return b.b.Len()
+}
+func (b *{{.Name}}Builder) Cap() int {
+    return b.b.Cap()
+}
+func (b *{{.Name}}Builder) Append(v {{.PrimitiveType}}) {
+    b.b.Append(v)
+}
+func (b *{{.Name}}Builder) AppendValues(v []{{.PrimitiveType}}, valid []bool) {
+    b.b.AppendValues(v, valid)
+}
+func (b *{{.Name}}Builder) UnsafeAppend(v {{.PrimitiveType}}) {
+    b.b.UnsafeAppend(v)
+}
+func (b *{{.Name}}Builder) NullN() int {
+    return b.b.NullN()
+}
+func (b *{{.Name}}Builder) AppendNull() {
+    b.b.AppendNull()
+}
+func (b *{{.Name}}Builder) UnsafeAppendBoolToBitmap(isValid bool) {
+    b.b.UnsafeAppendBoolToBitmap(isValid)
+}
+func (b *{{.Name}}Builder) Reserve(n int) {
+    b.b.Reserve(n)
+}
+func (b *{{.Name}}Builder) Resize(n int) {
+    b.b.Resize(n)
+}
+func (b *{{.Name}}Builder) NewArray() Interface {
+    return b.New{{.Name}}Array()
+}
+func (b *{{.Name}}Builder) New{{.Name}}Array() *{{.Name}} {
+    return b.b.New{{.Type}}Array()
+}
+{{end}}

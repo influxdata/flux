@@ -261,8 +261,8 @@ data = "
 					for i, meta := range reader.Cols() {
 						if meta.Label == "_sent" {
 							Sent = true
-							if reader.Strings(i).ValueString(0) != "true" {
-								t.Errorf("expected _sent to be true but got %s", reader.Strings(i).ValueString(0))
+							if reader.Strings(i).Value(0) != "true" {
+								t.Errorf("expected _sent to be true but got %s", reader.Strings(i).Value(0))
 							}
 						}
 					}

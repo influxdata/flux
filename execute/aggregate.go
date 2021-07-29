@@ -1,8 +1,8 @@
 package execute
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
@@ -223,19 +223,19 @@ type DoBoolAgg interface {
 }
 type DoFloatAgg interface {
 	ValueFunc
-	DoFloat(*array.Float64)
+	DoFloat(*array.Float)
 }
 type DoIntAgg interface {
 	ValueFunc
-	DoInt(*array.Int64)
+	DoInt(*array.Int)
 }
 type DoUIntAgg interface {
 	ValueFunc
-	DoUInt(*array.Uint64)
+	DoUInt(*array.Uint)
 }
 type DoStringAgg interface {
 	ValueFunc
-	DoString(*array.Binary)
+	DoString(*array.String)
 }
 
 type BoolValueFunc interface {

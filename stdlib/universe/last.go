@@ -1,8 +1,8 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -139,21 +139,21 @@ func (s *LastSelector) selectLast(vs array.Interface, cr flux.ColReader) {
 	}
 }
 
-func (s *LastSelector) DoTime(vs *array.Int64, cr flux.ColReader) {
+func (s *LastSelector) DoTime(vs *array.Int, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
 func (s *LastSelector) DoBool(vs *array.Boolean, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
-func (s *LastSelector) DoInt(vs *array.Int64, cr flux.ColReader) {
+func (s *LastSelector) DoInt(vs *array.Int, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
-func (s *LastSelector) DoUInt(vs *array.Uint64, cr flux.ColReader) {
+func (s *LastSelector) DoUInt(vs *array.Uint, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
-func (s *LastSelector) DoFloat(vs *array.Float64, cr flux.ColReader) {
+func (s *LastSelector) DoFloat(vs *array.Float, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }
-func (s *LastSelector) DoString(vs *array.Binary, cr flux.ColReader) {
+func (s *LastSelector) DoString(vs *array.String, cr flux.ColReader) {
 	s.selectLast(vs, cr)
 }

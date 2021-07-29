@@ -1017,7 +1017,7 @@ func equalRowKeys(x, y int, cr flux.ColReader, on map[string]bool) bool {
 				return false
 			}
 		case flux.TString:
-			if xv, yv := cr.Strings(j).ValueString(x), cr.Strings(j).ValueString(y); xv != yv {
+			if xv, yv := cr.Strings(j).Value(x), cr.Strings(j).Value(y); xv != yv {
 				return false
 			}
 		case flux.TTime:

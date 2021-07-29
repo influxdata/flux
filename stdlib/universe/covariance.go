@@ -3,8 +3,8 @@ package universe
 import (
 	"math"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -214,7 +214,7 @@ func (t *CovarianceTransformation) reset() {
 	t.ym2 = 0
 	t.xym2 = 0
 }
-func (t *CovarianceTransformation) DoFloat(xs, ys *array.Float64) {
+func (t *CovarianceTransformation) DoFloat(xs, ys *array.Float) {
 	var xdelta, ydelta, xdelta2, ydelta2 float64
 	for i := 0; i < xs.Len(); i++ {
 		if xs.IsNull(i) || ys.IsNull(i) {

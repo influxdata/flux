@@ -3,9 +3,8 @@ package universe
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow"
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/values"
 )
 
@@ -26,7 +25,7 @@ func (t *fillTransformation) fill{{.Name}}Column(arr *{{.ArrowType}}, fillValue 
 	if !fillValueNull {
 		{{if eq .Name "Time"}}fillValue{{.Name}} = {{.Type}}((*fillValue).(values.Time)){{else}}fillValue{{.Name}} = (*fillValue).({{.Type}}){{end}}
 	}
-	{{if eq .Name "String"}}b := array.NewBinaryBuilder(t.alloc, arrow.BinaryTypes.String){{else}}b := array.New{{.ArrowName}}Builder(t.alloc){{end}}
+	b := array.New{{.ArrowName}}Builder(t.alloc)
 	b.Resize(arr.Len())
 	for i := 0; i < arr.Len(); i++ {
 		if arr.IsNull(i) {

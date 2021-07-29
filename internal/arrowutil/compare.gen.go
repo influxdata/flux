@@ -9,7 +9,7 @@ package arrowutil
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/influxdata/flux/array"
 )
 
 // CompareFunc defines the interface for a comparison function.
@@ -23,20 +23,20 @@ type CompareFunc func(x, y array.Interface, i, j int) int
 func Compare(x, y array.Interface, i, j int) int {
 	switch x := x.(type) {
 
-	case *array.Int64:
-		return Int64Compare(x, y.(*array.Int64), i, j)
+	case *array.Int:
+		return IntCompare(x, y.(*array.Int), i, j)
 
-	case *array.Uint64:
-		return Uint64Compare(x, y.(*array.Uint64), i, j)
+	case *array.Uint:
+		return UintCompare(x, y.(*array.Uint), i, j)
 
-	case *array.Float64:
-		return Float64Compare(x, y.(*array.Float64), i, j)
+	case *array.Float:
+		return FloatCompare(x, y.(*array.Float), i, j)
 
 	case *array.Boolean:
 		return BooleanCompare(x, y.(*array.Boolean), i, j)
 
-	case *array.Binary:
-		return StringCompare(x, y.(*array.Binary), i, j)
+	case *array.String:
+		return StringCompare(x, y.(*array.String), i, j)
 
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", x.DataType()))
@@ -49,27 +49,27 @@ func Compare(x, y array.Interface, i, j int) int {
 func CompareDesc(x, y array.Interface, i, j int) int {
 	switch x := x.(type) {
 
-	case *array.Int64:
-		return Int64CompareDesc(x, y.(*array.Int64), i, j)
+	case *array.Int:
+		return IntCompareDesc(x, y.(*array.Int), i, j)
 
-	case *array.Uint64:
-		return Uint64CompareDesc(x, y.(*array.Uint64), i, j)
+	case *array.Uint:
+		return UintCompareDesc(x, y.(*array.Uint), i, j)
 
-	case *array.Float64:
-		return Float64CompareDesc(x, y.(*array.Float64), i, j)
+	case *array.Float:
+		return FloatCompareDesc(x, y.(*array.Float), i, j)
 
 	case *array.Boolean:
 		return BooleanCompareDesc(x, y.(*array.Boolean), i, j)
 
-	case *array.Binary:
-		return StringCompareDesc(x, y.(*array.Binary), i, j)
+	case *array.String:
+		return StringCompareDesc(x, y.(*array.String), i, j)
 
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", x.DataType()))
 	}
 }
 
-func Int64Compare(x, y *array.Int64, i, j int) int {
+func IntCompare(x, y *array.Int, i, j int) int {
 	if x.IsNull(i) {
 		if y.IsNull(j) {
 			return 0
@@ -88,7 +88,7 @@ func Int64Compare(x, y *array.Int64, i, j int) int {
 
 }
 
-func Int64CompareDesc(x, y *array.Int64, i, j int) int {
+func IntCompareDesc(x, y *array.Int, i, j int) int {
 	if x.IsNull(i) {
 		if y.IsNull(j) {
 			return 0
@@ -107,7 +107,7 @@ func Int64CompareDesc(x, y *array.Int64, i, j int) int {
 
 }
 
-func Uint64Compare(x, y *array.Uint64, i, j int) int {
+func UintCompare(x, y *array.Uint, i, j int) int {
 	if x.IsNull(i) {
 		if y.IsNull(j) {
 			return 0
@@ -126,7 +126,7 @@ func Uint64Compare(x, y *array.Uint64, i, j int) int {
 
 }
 
-func Uint64CompareDesc(x, y *array.Uint64, i, j int) int {
+func UintCompareDesc(x, y *array.Uint, i, j int) int {
 	if x.IsNull(i) {
 		if y.IsNull(j) {
 			return 0
@@ -145,7 +145,7 @@ func Uint64CompareDesc(x, y *array.Uint64, i, j int) int {
 
 }
 
-func Float64Compare(x, y *array.Float64, i, j int) int {
+func FloatCompare(x, y *array.Float, i, j int) int {
 	if x.IsNull(i) {
 		if y.IsNull(j) {
 			return 0
@@ -164,7 +164,7 @@ func Float64Compare(x, y *array.Float64, i, j int) int {
 
 }
 
-func Float64CompareDesc(x, y *array.Float64, i, j int) int {
+func FloatCompareDesc(x, y *array.Float, i, j int) int {
 	if x.IsNull(i) {
 		if y.IsNull(j) {
 			return 0
@@ -227,7 +227,7 @@ func BooleanCompareDesc(x, y *array.Boolean, i, j int) int {
 
 }
 
-func StringCompare(x, y *array.Binary, i, j int) int {
+func StringCompare(x, y *array.String, i, j int) int {
 	if x.IsNull(i) {
 		if y.IsNull(j) {
 			return 0
@@ -237,7 +237,7 @@ func StringCompare(x, y *array.Binary, i, j int) int {
 		return 1
 	}
 
-	if l, r := x.ValueString(i), y.ValueString(j); l < r {
+	if l, r := x.Value(i), y.Value(j); l < r {
 		return -1
 	} else if l == r {
 		return 0
@@ -246,7 +246,7 @@ func StringCompare(x, y *array.Binary, i, j int) int {
 
 }
 
-func StringCompareDesc(x, y *array.Binary, i, j int) int {
+func StringCompareDesc(x, y *array.String, i, j int) int {
 	if x.IsNull(i) {
 		if y.IsNull(j) {
 			return 0
@@ -256,7 +256,7 @@ func StringCompareDesc(x, y *array.Binary, i, j int) int {
 		return -1
 	}
 
-	if l, r := x.ValueString(i), y.ValueString(j); l > r {
+	if l, r := x.Value(i), y.Value(j); l > r {
 		return -1
 	} else if l == r {
 		return 0

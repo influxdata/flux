@@ -1,8 +1,8 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
@@ -302,7 +302,7 @@ func (t *relativeStrengthIndexTransformation) doNumeric(vs *moving_average.Array
 	return nil
 }
 
-func (t *relativeStrengthIndexTransformation) passThroughTime(vs *array.Int64, b execute.TableBuilder, bj int) error {
+func (t *relativeStrengthIndexTransformation) passThroughTime(vs *array.Int, b execute.TableBuilder, bj int) error {
 	// We can use EMA's PassThroughTime, but we need to get rid of the first value
 	slice := vs
 	if t.i[bj] == 0 {

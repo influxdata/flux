@@ -1,9 +1,9 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/apache/arrow/go/arrow/math"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -114,7 +114,7 @@ type SumIntAgg struct {
 	ok  bool
 }
 
-func (a *SumIntAgg) DoInt(vs *array.Int64) {
+func (a *SumIntAgg) DoInt(vs *array.Int) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Int64.Sum(vs)
@@ -144,7 +144,7 @@ type SumUIntAgg struct {
 	ok  bool
 }
 
-func (a *SumUIntAgg) DoUInt(vs *array.Uint64) {
+func (a *SumUIntAgg) DoUInt(vs *array.Uint) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Uint64.Sum(vs)
@@ -174,7 +174,7 @@ type SumFloatAgg struct {
 	ok  bool
 }
 
-func (a *SumFloatAgg) DoFloat(vs *array.Float64) {
+func (a *SumFloatAgg) DoFloat(vs *array.Float) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		if vs.NullN() == 0 {
 			a.sum += math.Float64.Sum(vs)

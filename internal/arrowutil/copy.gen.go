@@ -9,27 +9,27 @@ package arrowutil
 import (
 	"fmt"
 
-	"github.com/apache/arrow/go/arrow/array"
+	"github.com/influxdata/flux/array"
 )
 
 // CopyTo will copy the contents of the array into a new array builder.
 func CopyTo(b array.Builder, arr array.Interface) {
 	switch arr := arr.(type) {
 
-	case *array.Int64:
-		CopyInt64sTo(b.(*array.Int64Builder), arr)
+	case *array.Int:
+		CopyIntsTo(b.(*array.IntBuilder), arr)
 
-	case *array.Uint64:
-		CopyUint64sTo(b.(*array.Uint64Builder), arr)
+	case *array.Uint:
+		CopyUintsTo(b.(*array.UintBuilder), arr)
 
-	case *array.Float64:
-		CopyFloat64sTo(b.(*array.Float64Builder), arr)
+	case *array.Float:
+		CopyFloatsTo(b.(*array.FloatBuilder), arr)
 
 	case *array.Boolean:
 		CopyBooleansTo(b.(*array.BooleanBuilder), arr)
 
-	case *array.Binary:
-		CopyStringsTo(b.(*array.BinaryBuilder), arr)
+	case *array.String:
+		CopyStringsTo(b.(*array.StringBuilder), arr)
 
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
@@ -37,23 +37,23 @@ func CopyTo(b array.Builder, arr array.Interface) {
 }
 
 // CopyByIndexTo will copy the contents of the array at the given indices into a new array builder.
-func CopyByIndexTo(b array.Builder, arr array.Interface, indices *array.Int64) {
+func CopyByIndexTo(b array.Builder, arr array.Interface, indices *array.Int) {
 	switch arr := arr.(type) {
 
-	case *array.Int64:
-		CopyInt64sByIndexTo(b.(*array.Int64Builder), arr, indices)
+	case *array.Int:
+		CopyIntsByIndexTo(b.(*array.IntBuilder), arr, indices)
 
-	case *array.Uint64:
-		CopyUint64sByIndexTo(b.(*array.Uint64Builder), arr, indices)
+	case *array.Uint:
+		CopyUintsByIndexTo(b.(*array.UintBuilder), arr, indices)
 
-	case *array.Float64:
-		CopyFloat64sByIndexTo(b.(*array.Float64Builder), arr, indices)
+	case *array.Float:
+		CopyFloatsByIndexTo(b.(*array.FloatBuilder), arr, indices)
 
 	case *array.Boolean:
 		CopyBooleansByIndexTo(b.(*array.BooleanBuilder), arr, indices)
 
-	case *array.Binary:
-		CopyStringsByIndexTo(b.(*array.BinaryBuilder), arr, indices)
+	case *array.String:
+		CopyStringsByIndexTo(b.(*array.StringBuilder), arr, indices)
 
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
@@ -64,27 +64,27 @@ func CopyByIndexTo(b array.Builder, arr array.Interface, indices *array.Int64) {
 func CopyValue(b array.Builder, arr array.Interface, i int) {
 	switch arr := arr.(type) {
 
-	case *array.Int64:
-		CopyInt64Value(b.(*array.Int64Builder), arr, i)
+	case *array.Int:
+		CopyIntValue(b.(*array.IntBuilder), arr, i)
 
-	case *array.Uint64:
-		CopyUint64Value(b.(*array.Uint64Builder), arr, i)
+	case *array.Uint:
+		CopyUintValue(b.(*array.UintBuilder), arr, i)
 
-	case *array.Float64:
-		CopyFloat64Value(b.(*array.Float64Builder), arr, i)
+	case *array.Float:
+		CopyFloatValue(b.(*array.FloatBuilder), arr, i)
 
 	case *array.Boolean:
 		CopyBooleanValue(b.(*array.BooleanBuilder), arr, i)
 
-	case *array.Binary:
-		CopyStringValue(b.(*array.BinaryBuilder), arr, i)
+	case *array.String:
+		CopyStringValue(b.(*array.StringBuilder), arr, i)
 
 	default:
 		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
 	}
 }
 
-func CopyInt64sTo(b *array.Int64Builder, arr *array.Int64) {
+func CopyIntsTo(b *array.IntBuilder, arr *array.Int) {
 	b.Reserve(arr.Len())
 
 	for i, n := 0, arr.Len(); i < n; i++ {
@@ -96,7 +96,7 @@ func CopyInt64sTo(b *array.Int64Builder, arr *array.Int64) {
 	}
 }
 
-func CopyInt64sByIndexTo(b *array.Int64Builder, arr *array.Int64, indices *array.Int64) {
+func CopyIntsByIndexTo(b *array.IntBuilder, arr *array.Int, indices *array.Int) {
 	b.Reserve(indices.Len())
 
 	for i, n := 0, indices.Len(); i < n; i++ {
@@ -109,7 +109,7 @@ func CopyInt64sByIndexTo(b *array.Int64Builder, arr *array.Int64, indices *array
 	}
 }
 
-func CopyInt64Value(b *array.Int64Builder, arr *array.Int64, i int) {
+func CopyIntValue(b *array.IntBuilder, arr *array.Int, i int) {
 	if arr.IsNull(i) {
 		b.AppendNull()
 		return
@@ -117,7 +117,7 @@ func CopyInt64Value(b *array.Int64Builder, arr *array.Int64, i int) {
 	b.Append(arr.Value(i))
 }
 
-func CopyUint64sTo(b *array.Uint64Builder, arr *array.Uint64) {
+func CopyUintsTo(b *array.UintBuilder, arr *array.Uint) {
 	b.Reserve(arr.Len())
 
 	for i, n := 0, arr.Len(); i < n; i++ {
@@ -129,7 +129,7 @@ func CopyUint64sTo(b *array.Uint64Builder, arr *array.Uint64) {
 	}
 }
 
-func CopyUint64sByIndexTo(b *array.Uint64Builder, arr *array.Uint64, indices *array.Int64) {
+func CopyUintsByIndexTo(b *array.UintBuilder, arr *array.Uint, indices *array.Int) {
 	b.Reserve(indices.Len())
 
 	for i, n := 0, indices.Len(); i < n; i++ {
@@ -142,7 +142,7 @@ func CopyUint64sByIndexTo(b *array.Uint64Builder, arr *array.Uint64, indices *ar
 	}
 }
 
-func CopyUint64Value(b *array.Uint64Builder, arr *array.Uint64, i int) {
+func CopyUintValue(b *array.UintBuilder, arr *array.Uint, i int) {
 	if arr.IsNull(i) {
 		b.AppendNull()
 		return
@@ -150,7 +150,7 @@ func CopyUint64Value(b *array.Uint64Builder, arr *array.Uint64, i int) {
 	b.Append(arr.Value(i))
 }
 
-func CopyFloat64sTo(b *array.Float64Builder, arr *array.Float64) {
+func CopyFloatsTo(b *array.FloatBuilder, arr *array.Float) {
 	b.Reserve(arr.Len())
 
 	for i, n := 0, arr.Len(); i < n; i++ {
@@ -162,7 +162,7 @@ func CopyFloat64sTo(b *array.Float64Builder, arr *array.Float64) {
 	}
 }
 
-func CopyFloat64sByIndexTo(b *array.Float64Builder, arr *array.Float64, indices *array.Int64) {
+func CopyFloatsByIndexTo(b *array.FloatBuilder, arr *array.Float, indices *array.Int) {
 	b.Reserve(indices.Len())
 
 	for i, n := 0, indices.Len(); i < n; i++ {
@@ -175,7 +175,7 @@ func CopyFloat64sByIndexTo(b *array.Float64Builder, arr *array.Float64, indices 
 	}
 }
 
-func CopyFloat64Value(b *array.Float64Builder, arr *array.Float64, i int) {
+func CopyFloatValue(b *array.FloatBuilder, arr *array.Float, i int) {
 	if arr.IsNull(i) {
 		b.AppendNull()
 		return
@@ -195,7 +195,7 @@ func CopyBooleansTo(b *array.BooleanBuilder, arr *array.Boolean) {
 	}
 }
 
-func CopyBooleansByIndexTo(b *array.BooleanBuilder, arr *array.Boolean, indices *array.Int64) {
+func CopyBooleansByIndexTo(b *array.BooleanBuilder, arr *array.Boolean, indices *array.Int) {
 	b.Reserve(indices.Len())
 
 	for i, n := 0, indices.Len(); i < n; i++ {
@@ -216,7 +216,7 @@ func CopyBooleanValue(b *array.BooleanBuilder, arr *array.Boolean, i int) {
 	b.Append(arr.Value(i))
 }
 
-func CopyStringsTo(b *array.BinaryBuilder, arr *array.Binary) {
+func CopyStringsTo(b *array.StringBuilder, arr *array.String) {
 	b.Reserve(arr.Len())
 
 	{
@@ -235,11 +235,11 @@ func CopyStringsTo(b *array.BinaryBuilder, arr *array.Binary) {
 			b.AppendNull()
 			continue
 		}
-		b.AppendString(arr.ValueString(i))
+		b.Append(arr.Value(i))
 	}
 }
 
-func CopyStringsByIndexTo(b *array.BinaryBuilder, arr *array.Binary, indices *array.Int64) {
+func CopyStringsByIndexTo(b *array.StringBuilder, arr *array.String, indices *array.Int) {
 	b.Reserve(indices.Len())
 
 	{
@@ -260,14 +260,14 @@ func CopyStringsByIndexTo(b *array.BinaryBuilder, arr *array.Binary, indices *ar
 			b.AppendNull()
 			continue
 		}
-		b.AppendString(arr.ValueString(offset))
+		b.Append(arr.Value(offset))
 	}
 }
 
-func CopyStringValue(b *array.BinaryBuilder, arr *array.Binary, i int) {
+func CopyStringValue(b *array.StringBuilder, arr *array.String, i int) {
 	if arr.IsNull(i) {
 		b.AppendNull()
 		return
 	}
-	b.AppendString(arr.ValueString(i))
+	b.Append(arr.Value(i))
 }

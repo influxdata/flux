@@ -381,7 +381,7 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 						valueArgs = append(valueArgs, nil)
 						break
 					}
-					valueArgs = append(valueArgs, er.Strings(j).ValueString(i))
+					valueArgs = append(valueArgs, er.Strings(j).Value(i))
 				case flux.TTime:
 					if er.Times(j).IsNull(i) {
 						valueArgs = append(valueArgs, nil)

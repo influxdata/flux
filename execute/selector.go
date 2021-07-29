@@ -1,8 +1,8 @@
 package execute
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
@@ -259,22 +259,22 @@ type IndexSelector interface {
 	NewStringSelector() DoStringIndexSelector
 }
 type DoTimeIndexSelector interface {
-	DoTime(*array.Int64) []int
+	DoTime(*array.Int) []int
 }
 type DoBoolIndexSelector interface {
 	DoBool(*array.Boolean) []int
 }
 type DoIntIndexSelector interface {
-	DoInt(*array.Int64) []int
+	DoInt(*array.Int) []int
 }
 type DoUIntIndexSelector interface {
-	DoUInt(*array.Uint64) []int
+	DoUInt(*array.Uint) []int
 }
 type DoFloatIndexSelector interface {
-	DoFloat(*array.Float64) []int
+	DoFloat(*array.Float) []int
 }
 type DoStringIndexSelector interface {
-	DoString(*array.Binary) []int
+	DoString(*array.String) []int
 }
 
 type RowSelector interface {
@@ -292,7 +292,7 @@ type Rower interface {
 
 type DoTimeRowSelector interface {
 	Rower
-	DoTime(vs *array.Int64, cr flux.ColReader)
+	DoTime(vs *array.Int, cr flux.ColReader)
 }
 type DoBoolRowSelector interface {
 	Rower
@@ -300,19 +300,19 @@ type DoBoolRowSelector interface {
 }
 type DoIntRowSelector interface {
 	Rower
-	DoInt(vs *array.Int64, cr flux.ColReader)
+	DoInt(vs *array.Int, cr flux.ColReader)
 }
 type DoUIntRowSelector interface {
 	Rower
-	DoUInt(vs *array.Uint64, cr flux.ColReader)
+	DoUInt(vs *array.Uint, cr flux.ColReader)
 }
 type DoFloatRowSelector interface {
 	Rower
-	DoFloat(vs *array.Float64, cr flux.ColReader)
+	DoFloat(vs *array.Float, cr flux.ColReader)
 }
 type DoStringRowSelector interface {
 	Rower
-	DoString(vs *array.Binary, cr flux.ColReader)
+	DoString(vs *array.String, cr flux.ColReader)
 }
 
 type Row struct {
@@ -333,7 +333,7 @@ func ReadRow(i int, cr flux.ColReader) (row Row) {
 		case flux.TFloat:
 			row.Values[j] = cr.Floats(j).Value(i)
 		case flux.TString:
-			row.Values[j] = cr.Strings(j).ValueString(i)
+			row.Values[j] = cr.Strings(j).Value(i)
 		case flux.TTime:
 			row.Values[j] = values.Time(cr.Times(j).Value(i))
 		}

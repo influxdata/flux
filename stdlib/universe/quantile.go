@@ -4,8 +4,8 @@ import (
 	"math"
 	"sort"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -253,7 +253,7 @@ func (a *QuantileAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *QuantileAgg) DoFloat(vs *array.Float64) {
+func (a *QuantileAgg) DoFloat(vs *array.Float) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
 			a.digest.Add(vs.Value(i), 1)
@@ -317,7 +317,7 @@ func (a *ExactQuantileAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *ExactQuantileAgg) DoFloat(vs *array.Float64) {
+func (a *ExactQuantileAgg) DoFloat(vs *array.Float) {
 	if vs.NullN() == 0 {
 		a.data = append(a.data, vs.Float64Values()...)
 		return
@@ -510,7 +510,7 @@ func (t *ExactQuantileSelectorTransformation) Process(id execute.DatasetID, tbl 
 			for i := 0; i < vs.Len(); i++ {
 				if vs.IsValid(i) {
 					rows = append(rows, stringValue{
-						value: vs.ValueString(i),
+						value: vs.Value(i),
 						row:   execute.ReadRow(i, cr),
 					})
 				}

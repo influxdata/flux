@@ -3,9 +3,9 @@ package universe
 import (
 	"math"
 
-	"github.com/apache/arrow/go/arrow/array"
 	arrowmath "github.com/apache/arrow/go/arrow/math"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -109,7 +109,7 @@ func (a *MeanAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *MeanAgg) DoInt(vs *array.Int64) {
+func (a *MeanAgg) DoInt(vs *array.Int) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		a.count += int64(l)
 		if vs.NullN() == 0 {
@@ -123,7 +123,7 @@ func (a *MeanAgg) DoInt(vs *array.Int64) {
 		}
 	}
 }
-func (a *MeanAgg) DoUInt(vs *array.Uint64) {
+func (a *MeanAgg) DoUInt(vs *array.Uint) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		a.count += int64(l)
 		if vs.NullN() == 0 {
@@ -137,7 +137,7 @@ func (a *MeanAgg) DoUInt(vs *array.Uint64) {
 		}
 	}
 }
-func (a *MeanAgg) DoFloat(vs *array.Float64) {
+func (a *MeanAgg) DoFloat(vs *array.Float) {
 	if l := vs.Len() - vs.NullN(); l > 0 {
 		a.count += int64(l)
 		if vs.NullN() == 0 {

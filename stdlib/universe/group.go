@@ -4,8 +4,8 @@ import (
 	"context"
 	"sort"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -301,7 +301,7 @@ func (t *groupTransformation) groupByRow(tbl flux.Table) error {
 func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColReader, i, j int) error {
 	switch cr.Cols()[j].Type {
 	case flux.TInt:
-		b := b.(*array.Int64Builder)
+		b := b.(*array.IntBuilder)
 		vs := cr.Ints(j)
 		if vs.IsNull(i) {
 			b.AppendNull()
@@ -309,7 +309,7 @@ func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColRea
 			b.Append(vs.Value(i))
 		}
 	case flux.TUInt:
-		b := b.(*array.Uint64Builder)
+		b := b.(*array.UintBuilder)
 		vs := cr.UInts(j)
 		if vs.IsNull(i) {
 			b.AppendNull()
@@ -317,7 +317,7 @@ func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColRea
 			b.Append(vs.Value(i))
 		}
 	case flux.TFloat:
-		b := b.(*array.Float64Builder)
+		b := b.(*array.FloatBuilder)
 		vs := cr.Floats(j)
 		if vs.IsNull(i) {
 			b.AppendNull()
@@ -325,7 +325,7 @@ func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColRea
 			b.Append(vs.Value(i))
 		}
 	case flux.TString:
-		b := b.(*array.BinaryBuilder)
+		b := b.(*array.StringBuilder)
 		vs := cr.Strings(j)
 		if vs.IsNull(i) {
 			b.AppendNull()
@@ -341,7 +341,7 @@ func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColRea
 			b.Append(vs.Value(i))
 		}
 	case flux.TTime:
-		b := b.(*array.Int64Builder)
+		b := b.(*array.IntBuilder)
 		vs := cr.Times(j)
 		if vs.IsNull(i) {
 			b.AppendNull()

@@ -1,8 +1,8 @@
 package universe
 
 import (
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -112,16 +112,16 @@ func (a *CountAgg) NewStringAgg() execute.DoStringAgg {
 func (a *CountAgg) DoBool(vs *array.Boolean) {
 	a.count += int64(vs.Len())
 }
-func (a *CountAgg) DoUInt(vs *array.Uint64) {
+func (a *CountAgg) DoUInt(vs *array.Uint) {
 	a.count += int64(vs.Len())
 }
-func (a *CountAgg) DoInt(vs *array.Int64) {
+func (a *CountAgg) DoInt(vs *array.Int) {
 	a.count += int64(vs.Len())
 }
-func (a *CountAgg) DoFloat(vs *array.Float64) {
+func (a *CountAgg) DoFloat(vs *array.Float) {
 	a.count += int64(vs.Len())
 }
-func (a *CountAgg) DoString(vs *array.Binary) {
+func (a *CountAgg) DoString(vs *array.String) {
 	a.count += int64(vs.Len())
 }
 

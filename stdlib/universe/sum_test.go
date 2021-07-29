@@ -3,8 +3,8 @@ package universe_test
 import (
 	"testing"
 
-	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/memory"
@@ -25,33 +25,33 @@ func TestSumOperation_Marshaling(t *testing.T) {
 func TestSum_Process(t *testing.T) {
 	testCases := []struct {
 		name string
-		data func() *array.Float64
+		data func() *array.Float
 		want interface{}
 	}{
 		{
 			name: "zero",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{0, 0, 0}, nil)
 			},
 			want: 0.0,
 		},
 		{
 			name: "nonzero",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat([]float64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, nil)
 			},
 			want: 45.0,
 		},
 		{
 			name: "empty",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				return arrow.NewFloat(nil, nil)
 			},
 			want: nil,
 		},
 		{
 			name: "with nulls",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				b := arrow.NewFloatBuilder(nil)
 				defer b.Release()
 				b.AppendValues([]float64{0, 1, 2, 3}, nil)
@@ -59,18 +59,18 @@ func TestSum_Process(t *testing.T) {
 				b.AppendValues([]float64{5, 6}, nil)
 				b.AppendNull()
 				b.AppendValues([]float64{8, 9}, nil)
-				return b.NewFloat64Array()
+				return b.NewFloatArray()
 			},
 			want: 34.0,
 		},
 		{
 			name: "only nulls",
-			data: func() *array.Float64 {
+			data: func() *array.Float {
 				b := arrow.NewFloatBuilder(nil)
 				defer b.Release()
 				b.AppendNull()
 				b.AppendNull()
-				return b.NewFloat64Array()
+				return b.NewFloatArray()
 			},
 			want: nil,
 		},
