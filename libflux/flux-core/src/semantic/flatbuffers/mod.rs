@@ -482,8 +482,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 }
                 let body_loc = ast::SourceLocation {
                     file: func.loc.file.clone(),
-                    start: body_start_pos.clone(),
-                    end: body_end_pos.clone(),
+                    start: *body_start_pos,
+                    end: *body_end_pos,
                     source: None,
                 };
                 let body_loc = v.create_loc(&body_loc);
