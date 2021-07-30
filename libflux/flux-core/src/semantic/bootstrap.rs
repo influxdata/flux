@@ -237,7 +237,6 @@ fn generate_docs(
 // Separates headline from description
 fn seperate_description(all_comment: &str) -> (String, Option<String>) {
     let mut headline: String = "".to_string();
-    let mut description = None;
     let mut reached_end: bool = false;
     let mut description_text: String = "".to_string();
     let parser = Parser::new(&all_comment);
@@ -265,9 +264,10 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
         };
     }
     if !description_text.is_empty() {
-        description = Option::from(description_text);
+        (headline, Option::from(description_text))
+    } else {
+        (headline, Option::None)
     }
-    (headline, description)
 }
 
 // Generates docs for the values in a given source file.
