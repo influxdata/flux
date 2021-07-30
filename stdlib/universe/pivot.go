@@ -38,6 +38,7 @@ type PivotOpSpec struct {
 }
 
 func init() {
+	// default pivot
 	pivotSignature := runtime.MustLookupBuiltinType("universe", "pivot")
 
 	runtime.RegisterPackageValue("universe", PivotKind, flux.MustValue(flux.FunctionValue(PivotKind, createPivotOpSpec, pivotSignature)))
@@ -45,6 +46,9 @@ func init() {
 
 	plan.RegisterProcedureSpec(PivotKind, newPivotProcedure, PivotKind)
 	execute.RegisterTransformation(PivotKind, createPivotTransformation)
+
+	// optimized pivot
+	execute.RegisterTransformation(SortedPivotKind, createPivotTransformation)
 }
 
 func createPivotOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
