@@ -12,9 +12,9 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                            "9a430dd48aa806c4a3e18ccceaf0c00750b3d0fe894aa4ba3f0114f910c928c4",
+	"libflux/Cargo.lock":                                                            "70faadf3b77d149bf08f8a5527cd7902e98ac29bab72e4458693c6b96ada4d61",
 	"libflux/Cargo.toml":                                                            "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                  "bf5c358237a9dc331a0c7f5597f5afc90eee4f459fcfe22ec562e9284016d182",
+	"libflux/flux-core/Cargo.toml":                                                  "49902a1bd6c4aca947e54ee9db785ff50ba935bc22f836acdadcfbe3496055f6",
 	"libflux/flux-core/benches/scanner.rs":                                          "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
 	"libflux/flux-core/src/ast/check/mod.rs":                                        "066040a5d7284deb05121370511dbe69b153550120db7d9925c35e13acf301a5",
 	"libflux/flux-core/src/ast/check/tests.rs":                                      "dfa6dc9b877a72825c4b6669606c5b79de1bc11602c4259f712af1a252c92820",
@@ -39,7 +39,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/scanner/token.rs":                                        "5090c2ac4b341566a85f7d9ed9b48746dd2084ec2f3effdb4a7dc16cf34d44b9",
 	"libflux/flux-core/src/scanner/unicode.rl":                                      "f923f3b385ddfa65c74427b11971785fc25ea806ca03d547045de808e16ef9a1",
 	"libflux/flux-core/src/scanner/unicode.rl.COPYING":                              "6cf2d5d26d52772ded8a5f0813f49f83dfa76006c5f398713be3854fe7bc4c7e",
-	"libflux/flux-core/src/semantic/bootstrap.rs":                                   "7b63c2039eeb9f5703fc31451d13fdf64511cf02f86f90634feab3db5a0acd9d",
+	"libflux/flux-core/src/semantic/bootstrap.rs":                                   "9e42709adbb68371be5a75c235315b26f78da25e2edd7eaee82a53a889761b6c",
 	"libflux/flux-core/src/semantic/check.rs":                                       "476db74a4479baff7091bb85a5ac2b8e9ffc07883bec92f9543a1024366ff9db",
 	"libflux/flux-core/src/semantic/convert.rs":                                     "fc78500a57dbfb9521303a5c5140939efe583ce855cd232afd5e6d43a8817893",
 	"libflux/flux-core/src/semantic/env.rs":                                         "7bbc29da93f07f7ad795e90d3b444791a195d98f6688a7bad5feffff9784902e",
