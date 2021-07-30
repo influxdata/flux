@@ -261,7 +261,7 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
                 reached_end = true;
                 format!("end: {:?}", tag)
             }
-            _ => "Unrecognized event".to_string(),
+            _ => "Unsupported markdown in documentation comment".to_string(),
         };
     }
     if !description_text.is_empty() {
