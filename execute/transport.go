@@ -263,18 +263,48 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 	return
 }
 
+// Message is a message sent from one Dataset to another.
 type Message interface {
+	// Type returns the MessageType for this Message.
 	Type() MessageType
+
+	// SrcDatasetID is the DatasetID that produced this Message.
 	SrcDatasetID() DatasetID
+
+	// Ack is used to acknowledge that the Message was received
+	// and terminated. A Message may be passed between various
+	// Transport implementations. When the Ack is received,
+	// this signals to the Message to release any memory it may
+	// have retained.
+	Ack()
+
+	// Dup is used to duplicate the Message.
+	// This is useful when the Message has to be sent to multiple
+	// receivers from a single sender.
+	Dup() Message
 }
 
 type MessageType int
 
 const (
+	// RetractTableType is sent when the previous table for
+	// a given group key should be retracted.
 	RetractTableType MessageType = iota
+
+	// ProcessType is sent when there is an entire flux.Table
+	// ready to be processed from the upstream Dataset.
 	ProcessType
+
+	// UpdateWatermarkType is sent when there will be no more
+	// points older than the watermark for any key.
 	UpdateWatermarkType
+
+	// UpdateProcessingTimeType is sent to update the current time.
 	UpdateProcessingTimeType
+
+	// FinishType is sent when there are no more messages from
+	// the upstream Dataset or an upstream error occurred that
+	// caused the execution to abort.
 	FinishType
 )
 
@@ -283,6 +313,7 @@ type srcMessage DatasetID
 func (m srcMessage) SrcDatasetID() DatasetID {
 	return DatasetID(m)
 }
+func (m srcMessage) Ack() {}
 
 type RetractTableMsg interface {
 	Message
@@ -299,6 +330,9 @@ func (m *retractTableMsg) Type() MessageType {
 }
 func (m *retractTableMsg) Key() flux.GroupKey {
 	return m.key
+}
+func (m *retractTableMsg) Dup() Message {
+	return m
 }
 
 type ProcessMsg interface {
@@ -317,6 +351,17 @@ func (m *processMsg) Type() MessageType {
 func (m *processMsg) Table() flux.Table {
 	return m.table
 }
+func (m *processMsg) Ack() {
+	m.table.Done()
+}
+func (m *processMsg) Dup() Message {
+	cpy, _ := table.Copy(m.table)
+	m.table = cpy.Copy()
+
+	dup := *m
+	dup.table = cpy
+	return &dup
+}
 
 type UpdateWatermarkMsg interface {
 	Message
@@ -333,6 +378,9 @@ func (m *updateWatermarkMsg) Type() MessageType {
 }
 func (m *updateWatermarkMsg) WatermarkTime() Time {
 	return m.time
+}
+func (m *updateWatermarkMsg) Dup() Message {
+	return m
 }
 
 type UpdateProcessingTimeMsg interface {
@@ -351,6 +399,9 @@ func (m *updateProcessingTimeMsg) Type() MessageType {
 func (m *updateProcessingTimeMsg) ProcessingTime() Time {
 	return m.time
 }
+func (m *updateProcessingTimeMsg) Dup() Message {
+	return m
+}
 
 type FinishMsg interface {
 	Message
@@ -367,6 +418,9 @@ func (m *finishMsg) Type() MessageType {
 }
 func (m *finishMsg) Error() error {
 	return m.err
+}
+func (m *finishMsg) Dup() Message {
+	return m
 }
 
 // consecutiveTransportTable is a flux.Table that is being processed
