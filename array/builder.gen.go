@@ -2,7 +2,7 @@
 // https://github.com/benbjohnson/tmpl
 //
 // DO NOT EDIT!
-// Source: numeric.gen.go.tmpl
+// Source: builder.gen.go.tmpl
 
 package array
 
@@ -12,9 +12,10 @@ import (
 )
 
 type (
-	Int   = array.Int64
-	Uint  = array.Uint64
-	Float = array.Float64
+	Int     = array.Int64
+	Uint    = array.Uint64
+	Float   = array.Float64
+	Boolean = array.Boolean
 )
 
 type IntBuilder struct {
@@ -171,4 +172,56 @@ func (b *FloatBuilder) NewArray() Interface {
 }
 func (b *FloatBuilder) NewFloatArray() *Float {
 	return b.b.NewFloat64Array()
+}
+
+type BooleanBuilder struct {
+	b *array.BooleanBuilder
+}
+
+func NewBooleanBuilder(mem memory.Allocator) *BooleanBuilder {
+	return &BooleanBuilder{
+		b: array.NewBooleanBuilder(mem),
+	}
+}
+func (b *BooleanBuilder) Retain() {
+	b.b.Retain()
+}
+func (b *BooleanBuilder) Release() {
+	b.b.Release()
+}
+func (b *BooleanBuilder) Len() int {
+	return b.b.Len()
+}
+func (b *BooleanBuilder) Cap() int {
+	return b.b.Cap()
+}
+func (b *BooleanBuilder) Append(v bool) {
+	b.b.Append(v)
+}
+func (b *BooleanBuilder) AppendValues(v []bool, valid []bool) {
+	b.b.AppendValues(v, valid)
+}
+func (b *BooleanBuilder) UnsafeAppend(v bool) {
+	b.b.UnsafeAppend(v)
+}
+func (b *BooleanBuilder) NullN() int {
+	return b.b.NullN()
+}
+func (b *BooleanBuilder) AppendNull() {
+	b.b.AppendNull()
+}
+func (b *BooleanBuilder) UnsafeAppendBoolToBitmap(isValid bool) {
+	b.b.UnsafeAppendBoolToBitmap(isValid)
+}
+func (b *BooleanBuilder) Reserve(n int) {
+	b.b.Reserve(n)
+}
+func (b *BooleanBuilder) Resize(n int) {
+	b.b.Resize(n)
+}
+func (b *BooleanBuilder) NewArray() Interface {
+	return b.NewBooleanArray()
+}
+func (b *BooleanBuilder) NewBooleanArray() *Boolean {
+	return b.b.NewBooleanArray()
 }

@@ -1,0 +1,29 @@
+package array
+
+import (
+    "github.com/apache/arrow/go/arrow/memory"
+    "github.com/influxdata/flux/codes"
+    "github.com/influxdata/flux/internal/errors"
+)
+
+func Repeat(v interface{}, n int, mem memory.Allocator) Interface {
+    switch v := v.(type) {
+    {{range .}}
+    case {{.PrimitiveType}}:
+        return {{.Name}}Repeat(v, n, mem)
+    {{end}}
+    default:
+        panic(errors.Newf(codes.Internal, "invalid arrow primitive type: %T", v))
+    }
+}
+
+{{range .}}{{if .ArrowType}}
+func {{.Name}}Repeat(v {{.PrimitiveType}}, n int, mem memory.Allocator) *{{.Name}} {
+    b := New{{.Name}}Builder(mem)
+    b.Resize(n)
+    for i := 0; i < n; i++ {
+        b.Append(v)
+    }
+    return b.New{{.Name}}Array()
+}
+{{end}}{{end}}
