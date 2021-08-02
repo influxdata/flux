@@ -21,7 +21,7 @@ func TestString(t *testing.T) {
 					b.Append("a")
 				}
 			},
-			sz: 256,
+			sz: 0,
 			want: []interface{}{
 				"a", "a", "a", "a", "a",
 				"a", "a", "a", "a", "a",
@@ -37,7 +37,7 @@ func TestString(t *testing.T) {
 					b.Append("b")
 				}
 			},
-			sz: 256,
+			sz: 192,
 			want: []interface{}{
 				"a", "a", "a", "a", "a",
 				"b", "b", "b", "b", "b",
@@ -54,7 +54,7 @@ func TestString(t *testing.T) {
 					b.Append(v)
 				}
 			},
-			sz: 256,
+			sz: 192,
 			want: []interface{}{
 				"a", "b", "c", "d", "e",
 				nil, "g", "h", "i", "j",
@@ -65,8 +65,28 @@ func TestString(t *testing.T) {
 			mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
 			defer mem.AssertSize(t, 0)
 
+			// Construct a string builder, resize it to a capacity larger than
+			// what is required, then verify we see that value.
 			b := array.NewStringBuilder(mem)
+			b.Resize(len(tc.want) + 2)
+			if want, got := len(tc.want)+2, b.Cap(); want != got {
+				t.Errorf("unexpected builder cap -want/+got:\n\t- %d\n\t+ %d", want, got)
+			}
+
+			// Build the array using the string builder.
 			tc.build(b)
+
+			// Verify the string builder attributes.
+			if want, got := countNulls(tc.want), b.NullN(); want != got {
+				t.Errorf("unexpected builder null count -want/+got:\n\t- %d\n\t+ %d", want, got)
+			}
+			if want, got := len(tc.want), b.Len(); want != got {
+				t.Errorf("unexpected builder len -want/+got:\n\t- %d\n\t+ %d", want, got)
+			}
+			if want, got := len(tc.want)+2, b.Cap(); want != got {
+				t.Errorf("unexpected builder cap -want/+got:\n\t- %d\n\t+ %d", want, got)
+			}
+			mem.AssertSize(t, tc.sz)
 
 			arr := b.NewStringArray()
 			defer arr.Release()
@@ -95,6 +115,40 @@ func TestString(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestStringBuilder_NewArray(t *testing.T) {
+	// Reuse the same builder over and over and ensure
+	// it is using the proper amount of memory.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	b := array.NewStringBuilder(mem)
+
+	for i := 0; i < 3; i++ {
+		b.Resize(10)
+		b.ReserveData(10)
+		for i := 0; i < 10; i++ {
+			b.Append("a")
+		}
+
+		arr := b.NewArray()
+		mem.AssertSize(t, 0)
+		arr.Release()
+		mem.AssertSize(t, 0)
+
+		b.Resize(10)
+		b.ReserveData(10)
+		for i := 0; i < 10; i++ {
+			if i%2 == 0 {
+				b.Append("a")
+			} else {
+				b.Append("b")
+			}
+		}
+		arr = b.NewArray()
+		mem.AssertSize(t, 192)
+		arr.Release()
+		mem.AssertSize(t, 0)
 	}
 }
 
@@ -276,4 +330,13 @@ func getValue(arr array.Interface, i int) interface{} {
 	default:
 		panic("unimplemented")
 	}
+}
+
+func countNulls(arr []interface{}) (n int) {
+	for _, v := range arr {
+		if v == nil {
+			n++
+		}
+	}
+	return n
 }
