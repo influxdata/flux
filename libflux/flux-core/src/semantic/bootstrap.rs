@@ -272,17 +272,55 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
 }
 
 fn separate_func_docs(all_doc: &str) -> (String, Option<String>, Vec<ParameterDoc>) {
-    let headline: String = "".to_string();
-    let description: String = "".to_string();
-    let params = Vec::new();
+    let mut headline: String = "".to_string();
+    let mut description: String = "".to_string();
+    let mut tmp = &mut headline;
+    let mut params = Vec::new();
+    let mut check_params = false;
+    let mut create_params = false;
+
     let parser = Parser::new(&all_doc);
     for event in parser {
         match event {
             Event::Start(pulldown_cmark::Tag::Heading(2)) => {
-                println!("Starting Header Found!!!");
+                if !check_params && !create_params {
+                    check_params = true;
+                } else {
+                    create_params = false;
+                }
+            }
+            Event::Start(pulldown_cmark::Tag::List(None)) => {
+                // if create_params, create a new ParameterDoc
+                if create_params {
+                    params.push(ParameterDoc{
+                        name: "".to_string(),
+                        headline: "".to_string(),
+                        description: None,
+                        required: false,
+                    });
+                } else {
+                    tmp.push_str(&" LIST ");
+                }
+            }
+            Event::Code(c) => {
+                if create_params {
+                    params[params.len() - 1].name = c.to_string();
+                } else {
+                    tmp.push_str(&c.to_string());
+                }
             }
             Event::Text(t) => {
-                println!("{}", t);
+                // check if parameter list:
+                if check_params && "Parameters".eq(&t.to_string()) {
+                    create_params = true;
+                    check_params = false;
+                } else {
+                    tmp.push_str(&t.to_string());
+                }
+            }
+            Event::End(tag) => {
+                tmp = &mut description;
+                println!("end: {:?}", tag);
             }
             _ => println!("Unsupported type found!"),
         }
