@@ -102,13 +102,14 @@ impl FunctionDoc {
         name: String,
         headline: String,
         description: String,
+        parameters: Vec<ParameterDoc>,
         typ: String,
     ) -> FunctionDoc {
         FunctionDoc {
             name,
             headline,
             description,
-            parameters: vec![],
+            parameters,
             flux_type: typ,
         }
     }
@@ -270,6 +271,25 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
     }
 }
 
+fn separate_func_docs(all_doc: &str) -> (String, Option<String>, Vec<ParameterDoc>) {
+    let headline: String = "".to_string();
+    let description: String = "".to_string();
+    let params = Vec::new();
+    let parser = Parser::new(&all_doc);
+    for event in parser {
+        match event {
+            Event::Start(pulldown_cmark::Tag::Heading(2)) => {
+                println!("Starting Header Found!!!");
+            }
+            Event::Text(t) => {
+                println!("{}", t);
+            }
+            _ => println!("Unsupported type found!"),
+        }
+    }
+    (headline, Option::from(description), params)
+}
+
 // Generates docs for the values in a given source file.
 fn generate_values(
     f: &ast::File,
@@ -280,7 +300,7 @@ fn generate_values(
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
-                let (headline, description) = seperate_description(&doc);
+                let (headline, description, params) = separate_func_docs(&doc);
                 let description_string: String;
                 match &description {
                     Some(x) => description_string = x.to_string(),
@@ -298,6 +318,7 @@ fn generate_values(
                             name.clone(),
                             headline,
                             description_string,
+                            params,
                             typ,
                         );
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
@@ -315,7 +336,7 @@ fn generate_values(
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
-                let (headline, description) = seperate_description(&doc);
+                let (headline, description, params) = separate_func_docs(&doc);
                 let description_string: String;
                 match &description {
                     Some(x) => description_string = x.to_string(),
@@ -332,6 +353,7 @@ fn generate_values(
                             name.clone(),
                             headline,
                             description_string,
+                            params,
                             typ,
                         );
                         members.insert(name.clone(), Doc::Function(Box::new(function)));
@@ -350,7 +372,7 @@ fn generate_values(
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
-                    let (headline, description) = seperate_description(&doc);
+                    let (headline, description, params) = separate_func_docs(&doc);
                     let description_string: String;
                     match &description {
                         Some(x) => description_string = x.to_string(),
@@ -368,6 +390,7 @@ fn generate_values(
                                 name.clone(),
                                 headline,
                                 description_string,
+                                params,
                                 typ,
                             );
                             members.insert(name.clone(), Doc::Function(Box::new(function)));
