@@ -1,4 +1,4 @@
-import * as wasm from '/Users/barweiner/GolandProjects/flux/libflux/flux/pkg';
+import * as wasm from '/Users/barweiner/GolandProjects/flux/libflux/flux/pkg"';
 
 
 export function get_json_documentation() {
