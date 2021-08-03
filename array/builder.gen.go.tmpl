@@ -6,18 +6,18 @@ import (
 )
 
 type (
-	{{range .}}
-	{{.Name}} = array.{{.Type}}{{end}}
+	{{range .}}{{if .ArrowType}}
+	{{.Name}} = array.{{.ArrowType}}{{end}}{{end}}
 )
 
-{{range .}}
+{{range .}}{{if .ArrowType}}
 type {{.Name}}Builder struct {
-    b *array.{{.Type}}Builder
+    b *array.{{.ArrowType}}Builder
 }
 
 func New{{.Name}}Builder(mem memory.Allocator) *{{.Name}}Builder {
     return &{{.Name}}Builder{
-        b: array.New{{.Type}}Builder(mem),
+        b: array.New{{.ArrowType}}Builder(mem),
     }
 }
 func (b *{{.Name}}Builder) Retain() {
@@ -60,6 +60,6 @@ func (b *{{.Name}}Builder) NewArray() Interface {
     return b.New{{.Name}}Array()
 }
 func (b *{{.Name}}Builder) New{{.Name}}Array() *{{.Name}} {
-    return b.b.New{{.Type}}Array()
+    return b.b.New{{.ArrowType}}Array()
 }
-{{end}}
+{{end}}{{end}}
