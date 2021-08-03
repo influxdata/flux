@@ -96,24 +96,24 @@ pub struct FunctionDoc {
 }
 
 /// Implementation block for FunctionDoc to house future "FunctionDod" methods
-impl FunctionDoc {
-    /// Constructs a new FunctionDoc with the given name, headline, and flux type
-    fn new_with_args(
-        name: String,
-        headline: String,
-        description: String,
-        parameters: Vec<ParameterDoc>,
-        typ: String,
-    ) -> FunctionDoc {
-        FunctionDoc {
-            name,
-            headline,
-            description,
-            parameters,
-            flux_type: typ,
-        }
-    }
-}
+// impl FunctionDoc {
+//     /// Constructs a new FunctionDoc with the given name, headline, and flux type
+//     fn new_with_args(
+//         name: String,
+//         headline: String,
+//         description: String,
+//         parameters: Vec<ParameterDoc>,
+//         typ: String,
+//     ) -> FunctionDoc {
+//         FunctionDoc {
+//             name,
+//             headline,
+//             description,
+//             parameters,
+//             flux_type: typ,
+//         }
+//     }
+// }
 
 /// ParameterDoc represents the documentation for a single parameter within a function.
 #[derive(Debug, Serialize, Deserialize)]
@@ -271,61 +271,78 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
     }
 }
 
-fn separate_func_docs(all_doc: &str) -> (String, Option<String>, Vec<ParameterDoc>) {
-    let mut headline: String = "".to_string();
-    let mut description: String = "".to_string();
-    let mut tmp = &mut headline;
-    let mut params = Vec::new();
-    let mut check_params = false;
-    let mut create_params = false;
+fn separate_func_docs(all_doc: &str) -> FunctionDoc {
+    let mut funcdocs = FunctionDoc{
+        name: String::new(),
+        headline: String::new(),
+        description: String::new(),
+        parameters: Vec::new(),
+        flux_type: String::new(),
+    };
+    let mut tmp = &mut funcdocs.headline;
+    let mut param_flag = false;
 
     let parser = Parser::new(&all_doc);
-    for event in parser {
-        match event {
+    let events: Vec<pulldown_cmark::Event> = parser.collect();
+    for (_, event) in events.windows(2).enumerate() { // HEADER
+        match &event[0] {
             Event::Start(pulldown_cmark::Tag::Heading(2)) => {
-                if !check_params && !create_params {
-                    check_params = true;
-                } else {
-                    create_params = false;
+                // check if parameter header
+                match &event[1] {
+                    Event::Text(t) => {
+                        if "Parameters".eq(&t.to_string()) {
+                            param_flag = true;
+                        }
+                    }
+                    _ => {
+                        param_flag = false;
+                        format!("header found");
+                    }
                 }
             }
-            Event::Start(pulldown_cmark::Tag::List(None)) => {
+            Event::Start(pulldown_cmark::Tag::List(None)) => { // LIST
                 // if create_params, create a new ParameterDoc
-                if create_params {
-                    params.push(ParameterDoc{
-                        name: "".to_string(),
-                        headline: "".to_string(),
+                if param_flag {
+                    funcdocs.parameters.push(ParameterDoc{
+                        name: String::new(),
+                        headline: String::new(),
                         description: None,
                         required: false,
                     });
                 } else {
-                    tmp.push_str(&" LIST ");
+                    tmp.push_str(&" - ");
                 }
             }
-            Event::Code(c) => {
-                if create_params {
-                    params[params.len() - 1].name = c.to_string();
+            Event::Code(c) => { // CODE
+                if param_flag {
+                    let len = funcdocs.parameters.len() - 1;
+                    funcdocs.parameters[len].name = c.to_string();
                 } else {
                     tmp.push_str(&c.to_string());
                 }
             }
-            Event::Text(t) => {
+            Event::Text(t) => { // TEXT
                 // check if parameter list:
-                if check_params && "Parameters".eq(&t.to_string()) {
-                    create_params = true;
-                    check_params = false;
+                if param_flag {
+                    let len = funcdocs.parameters.len() - 1;
+                    // check if headline is empty, else populate desc
+                    if funcdocs.parameters[len].headline.is_empty() {
+                        funcdocs.parameters[len].headline = t.to_string();
+                    } else {
+                        funcdocs.parameters[len].description = Option::from(t.to_string());
+                    }
                 } else {
                     tmp.push_str(&t.to_string());
                 }
             }
-            Event::End(tag) => {
-                tmp = &mut description;
+            Event::End(tag) => { // END
+                tmp = &mut funcdocs.description;
                 println!("end: {:?}", tag);
             }
             _ => println!("Unsupported type found!"),
         }
     }
-    (headline, Option::from(description), params)
+    funcdocs
 }
 
 // Generates docs for the values in a given source file.
@@ -338,12 +355,7 @@ fn generate_values(
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
-                let (headline, description, params) = separate_func_docs(&doc);
-                let description_string: String;
-                match &description {
-                    Some(x) => description_string = x.to_string(),
-                    None => description_string = "".to_string(),
-                }
+                let funcdoc = separate_func_docs(&doc);
                 let name = s.id.name.clone();
                 if !types.contains_key(&name) {
                     continue;
@@ -351,21 +363,13 @@ fn generate_values(
                 let typ = format!("{}", types[&name].normal());
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
-                        // generate function doc
-                        let function = FunctionDoc::new_with_args(
-                            name.clone(),
-                            headline,
-                            description_string,
-                            params,
-                            typ,
-                        );
-                        members.insert(name.clone(), Doc::Function(Box::new(function)));
+                        members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                     }
                     _ => {
                         let variable = ValueDoc {
                             name: name.clone(),
-                            headline,
-                            description,
+                            headline: funcdoc.headline,
+                            description: Option::from(funcdoc.description),
                             flux_type: typ,
                         };
                         members.insert(name.clone(), Doc::Value(Box::new(variable)));
@@ -374,12 +378,7 @@ fn generate_values(
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
-                let (headline, description, params) = separate_func_docs(&doc);
-                let description_string: String;
-                match &description {
-                    Some(x) => description_string = x.to_string(),
-                    None => description_string = "".to_string(),
-                }
+                let funcdoc = separate_func_docs(&doc);
                 let name = s.id.name.clone();
                 if !types.contains_key(&name) {
                     continue;
@@ -387,20 +386,13 @@ fn generate_values(
                 let typ = format!("{}", types[&name].normal());
                 match &types[&name].expr {
                     MonoType::Fun(_f) => {
-                        let function = FunctionDoc::new_with_args(
-                            name.clone(),
-                            headline,
-                            description_string,
-                            params,
-                            typ,
-                        );
-                        members.insert(name.clone(), Doc::Function(Box::new(function)));
+                        members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                     }
                     _ => {
                         let builtin = ValueDoc {
                             name: name.clone(),
-                            headline,
-                            description,
+                            headline: funcdoc.headline,
+                            description: Option::from(funcdoc.description),
                             flux_type: typ,
                         };
                         members.insert(name.clone(), Doc::Value(Box::new(builtin)));
@@ -410,12 +402,7 @@ fn generate_values(
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
-                    let (headline, description, params) = separate_func_docs(&doc);
-                    let description_string: String;
-                    match &description {
-                        Some(x) => description_string = x.to_string(),
-                        None => description_string = "".to_string(),
-                    }
+                    let funcdoc = separate_func_docs(&doc);
                     let name = v.id.name.clone();
                     if !types.contains_key(&name) {
                         continue;
@@ -423,21 +410,13 @@ fn generate_values(
                     let typ = format!("{}", types[&name].normal());
                     match &types[&name].expr {
                         MonoType::Fun(_f) => {
-                            // generate function doc
-                            let function = FunctionDoc::new_with_args(
-                                name.clone(),
-                                headline,
-                                description_string,
-                                params,
-                                typ,
-                            );
-                            members.insert(name.clone(), Doc::Function(Box::new(function)));
+                            members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                         }
                         _ => {
                             let option = ValueDoc {
                                 name: name.clone(),
-                                headline,
-                                description,
+                                headline: funcdoc.headline,
+                                description: Option::from(funcdoc.description),
                                 flux_type: typ,
                             };
                             members.insert(name.clone(), Doc::Value(Box::new(option)));
