@@ -306,6 +306,15 @@ const (
 	// the upstream Dataset or an upstream error occurred that
 	// caused the execution to abort.
 	FinishType
+
+	// ProcessChunkType is sent when a new table.Chunk is ready to
+	// be processed from the upstream Dataset.
+	ProcessChunkType
+
+	// FlushKeyType is sent when the upstream Dataset wishes
+	// to flush the data associated with a key presently stored
+	// in the Dataset.
+	FlushKeyType
 )
 
 type srcMessage DatasetID
@@ -420,6 +429,60 @@ func (m *finishMsg) Error() error {
 	return m.err
 }
 func (m *finishMsg) Dup() Message {
+	return m
+}
+
+type ProcessChunkMsg interface {
+	Message
+	TableChunk() table.Chunk
+}
+
+type processChunkMsg struct {
+	srcMessage
+	chunk table.Chunk
+	acked bool
+}
+
+func (m *processChunkMsg) Type() MessageType {
+	return ProcessChunkType
+}
+func (m *processChunkMsg) TableChunk() table.Chunk {
+	return m.chunk
+}
+func (m *processChunkMsg) Ack() {
+	if !m.acked {
+		m.chunk.Release()
+		m.chunk = table.Chunk{}
+		m.acked = true
+	}
+}
+func (m *processChunkMsg) Dup() Message {
+	dup := *m
+	if !dup.acked {
+		dup.chunk.Retain()
+	}
+	return &dup
+}
+
+type FlushKeyMsg interface {
+	Message
+	Key() flux.GroupKey
+}
+
+//lint:ignore U1000 will be used by issue #3887
+type flushKeyMsg struct {
+	srcMessage
+	//lint:ignore U1000 will be used by issue #3887
+	key flux.GroupKey
+}
+
+func (m *flushKeyMsg) Type() MessageType {
+	return FlushKeyType
+}
+func (m *flushKeyMsg) Key() flux.GroupKey {
+	return m.key
+}
+func (m *flushKeyMsg) Dup() Message {
 	return m
 }
 
