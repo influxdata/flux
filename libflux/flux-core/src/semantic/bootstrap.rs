@@ -271,9 +271,9 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
     }
 }
 
-fn separate_func_docs(all_doc: &str) -> FunctionDoc {
+fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
     let mut funcdocs = FunctionDoc{
-        name: String::new(),
+        name: name.to_string(),
         headline: String::new(),
         description: String::new(),
         parameters: Vec::new(),
@@ -288,20 +288,22 @@ fn separate_func_docs(all_doc: &str) -> FunctionDoc {
         match &event[0] {
             Event::Start(pulldown_cmark::Tag::Heading(2)) => {
                 // check if parameter header
+                println!("Heading found!");
                 match &event[1] {
                     Event::Text(t) => {
                         if "Parameters".eq(&t.to_string()) {
+                            println!("Parameter flag set!");
                             param_flag = true;
                         }
                     }
                     _ => {
                         param_flag = false;
-                        format!("header found");
                     }
                 }
             }
             Event::Start(pulldown_cmark::Tag::List(None)) => { // LIST
                 // if create_params, create a new ParameterDoc
+                println!("List found!");
                 if param_flag {
                     funcdocs.parameters.push(ParameterDoc{
                         name: String::new(),
@@ -314,6 +316,7 @@ fn separate_func_docs(all_doc: &str) -> FunctionDoc {
                 }
             }
             Event::Code(c) => { // CODE
+                println!("Code found!");
                 if param_flag {
                     let len = funcdocs.parameters.len() - 1;
                     funcdocs.parameters[len].name = c.to_string();
@@ -323,7 +326,8 @@ fn separate_func_docs(all_doc: &str) -> FunctionDoc {
             }
             Event::Text(t) => { // TEXT
                 // check if parameter list:
-                if param_flag {
+                println!("Text found!");
+                if param_flag  && funcdocs.parameters.len() > 0 {
                     let len = funcdocs.parameters.len() - 1;
                     // check if headline is empty, else populate desc
                     if funcdocs.parameters[len].headline.is_empty() {
@@ -355,8 +359,8 @@ fn generate_values(
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
-                let funcdoc = separate_func_docs(&doc);
                 let name = s.id.name.clone();
+                let funcdoc = separate_func_docs(&doc, &name);
                 if !types.contains_key(&name) {
                     continue;
                 }
@@ -378,8 +382,8 @@ fn generate_values(
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
-                let funcdoc = separate_func_docs(&doc);
                 let name = s.id.name.clone();
+                let funcdoc = separate_func_docs(&doc, &name);
                 if !types.contains_key(&name) {
                     continue;
                 }
@@ -402,8 +406,8 @@ fn generate_values(
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
-                    let funcdoc = separate_func_docs(&doc);
                     let name = v.id.name.clone();
+                    let funcdoc = separate_func_docs(&doc, &name);
                     if !types.contains_key(&name) {
                         continue;
                     }
