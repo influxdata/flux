@@ -721,6 +721,158 @@ func TestMergeJoin_Process(t *testing.T) {
 			},
 		},
 		{
+			name: "join with mismatched schemas",
+			spec: &universe.MergeJoinProcedureSpec{
+				On:         []string{"_time"},
+				TableNames: tableNames,
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "key", Type: flux.TString},
+					},
+					KeyCols: []string{"key"},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "foo"},
+						{execute.Time(2), 2.0, "foo"},
+					},
+				},
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					KeyCols: []string{},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.5},
+						{execute.Time(2), 2.5},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "key", Type: flux.TString},
+					},
+					KeyCols: []string{"key"},
+					Data: [][]interface{}{
+						{execute.Time(1), 10.0, "bar"},
+						{execute.Time(2), 20.0, "bar"},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "key_a", Type: flux.TString},
+						{Label: "key_b", Type: flux.TString},
+					},
+					KeyCols: []string{"key_a", "key_b"},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, 10.0, "foo", "bar"},
+						{execute.Time(2), 2.0, 20.0, "foo", "bar"},
+					},
+				},
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "key_a", Type: flux.TString},
+						{Label: "key_b", Type: flux.TString},
+					},
+					KeyCols: []string{"key_b"},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.5, 10.0, nil, "bar"},
+						{execute.Time(2), 2.5, 20.0, nil, "bar"},
+					},
+				},
+			},
+		},
+		{
+			name: "join with mismatched schemas with null in group key",
+			spec: &universe.MergeJoinProcedureSpec{
+				On:         []string{"_time"},
+				TableNames: tableNames,
+			},
+			data0: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "key", Type: flux.TString},
+					},
+					KeyCols: []string{"key"},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "foo"},
+						{execute.Time(2), 2.0, "foo"},
+					},
+				},
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					KeyCols: []string{},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.5},
+						{execute.Time(2), 2.5},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "key", Type: flux.TString},
+					},
+					KeyCols: []string{"key"},
+					Data: [][]interface{}{
+						{execute.Time(1), 10.0, nil},
+						{execute.Time(2), 20.0, nil},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "key_a", Type: flux.TString},
+						{Label: "key_b", Type: flux.TString},
+					},
+					KeyCols: []string{"key_a", "key_b"},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, 10.0, "foo", nil},
+						{execute.Time(2), 2.0, 20.0, "foo", nil},
+					},
+				},
+				{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value_a", Type: flux.TFloat},
+						{Label: "_value_b", Type: flux.TFloat},
+						{Label: "key_a", Type: flux.TString},
+						{Label: "key_b", Type: flux.TString},
+					},
+					KeyCols: []string{"key_b"},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.5, 10.0, nil, nil},
+						{execute.Time(2), 2.5, 20.0, nil, nil},
+					},
+				},
+			},
+		},
+		{
 			name: "inner with extra attributes",
 			spec: &universe.MergeJoinProcedureSpec{
 				On:         []string{"_time", "t1"},

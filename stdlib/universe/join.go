@@ -856,6 +856,46 @@ func equalJoinkeys(left, right flux.GroupKey) bool {
 	return true
 }
 
+// Find indexes of column names missing between the two tables
+func (c *MergeJoinCache) missingColIdx(lCols, rCols []flux.ColMeta) []int {
+
+	var idxs []int
+
+	if len(lCols) == 0 || len(rCols) == 0 {
+		return idxs
+	}
+
+	trackIdx := make(map[int]struct{})
+
+	for _, lCol := range lCols {
+		column := tableCol{
+			table: c.names[c.leftID],
+			col:   lCol.Label,
+		}
+		newColumn := c.schemaMap[column]
+		newColumnIdx := c.colIndex[newColumn]
+		trackIdx[newColumnIdx] = struct{}{}
+	}
+
+	for _, rCol := range rCols {
+		column := tableCol{
+			table: c.names[c.rightID],
+			col:   rCol.Label,
+		}
+		newColumn := c.schemaMap[column]
+		newColumnIdx := c.colIndex[newColumn]
+		trackIdx[newColumnIdx] = struct{}{}
+	}
+
+	for _, idx := range c.colIndex {
+		if _, ok := trackIdx[idx]; !ok {
+			idxs = append(idxs, idx)
+		}
+	}
+
+	return idxs
+}
+
 func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Table, error) {
 	// Sort input tables
 	left.Sort(c.order, false)
@@ -882,6 +922,9 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 			return nil, err
 		}
 	}
+
+	// find missing coloumn indexes between two tables
+	missingIdxs := c.missingColIdx(left.Cols(), right.Cols())
 
 	// Perform sort merge join
 	for !leftSet.Empty() && !rightSet.Empty() {
@@ -917,6 +960,11 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 							_ = builder.AppendValue(newColumnIdx, columnVal)
 						}
 					})
+
+					// append nil for the missing column in the result table
+					for _, mIdx := range missingIdxs {
+						_ = builder.AppendNil(mIdx)
+					}
 				}
 			}
 			leftSet, leftKey = c.advance(leftSet.Stop, left)
