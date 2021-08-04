@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -19,6 +20,11 @@ type Array interface {
 	Len() int
 	Range(func(i int, v Value))
 	Sort(func(i, j Value) bool)
+}
+
+type ArrayElementwiser interface {
+	Array
+	ElementwiseAdd(mem *memory.Allocator, other ArrayElementwiser) Array
 }
 
 type array struct {

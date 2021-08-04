@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/semantic"
 )
 
@@ -79,6 +80,14 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Duration()
 		d := ConvertDurationNsecs(l.Duration() + r.Duration())
 		return NewDuration(d), nil
+	},
+	{Operator: ast.AdditionOperator, Left: semantic.Array, Right: semantic.Array}: func(lv, rv Value) (Value, error) {
+		elv, lok := lv.(ArrayElementwiser)
+		erv, rok := rv.(ArrayElementwiser)
+		if lok && rok {
+			return elv.ElementwiseAdd(&memory.Allocator{}, erv), nil
+		}
+		panic("cannot add arrays that don't iomplement ArrayElementwiser")
 	},
 	{Operator: ast.SubtractionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
