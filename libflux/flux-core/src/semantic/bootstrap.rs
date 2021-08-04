@@ -297,13 +297,14 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                         }
                     }
                     _ => {
+                        println!("setting param flag to false");
                         param_flag = false;
                     }
                 }
             }
-            Event::Start(pulldown_cmark::Tag::List(None)) => { // LIST
-                // if create_params, create a new ParameterDoc
-                println!("List found!");
+            Event::Start(pulldown_cmark::Tag::Item) => { // LIST ITEM
+                // if param flag is set, create a new ParameterDoc
+                println!("Start list item");
                 if param_flag {
                     funcdocs.parameters.push(ParameterDoc{
                         name: String::new(),
@@ -326,8 +327,8 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
             }
             Event::Text(t) => { // TEXT
                 // check if parameter list:
-                println!("Text found!");
                 if param_flag  && funcdocs.parameters.len() > 0 {
+                    println!("adding to parameter doc");
                     let len = funcdocs.parameters.len() - 1;
                     // check if headline is empty, else populate desc
                     if funcdocs.parameters[len].headline.is_empty() {
@@ -343,12 +344,23 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                         }
                     }
                 } else {
+                    println!("adding to func description");
                     tmp.push_str(&t.to_string());
+                }
+            }
+            Event::End(pulldown_cmark::Tag::List(None)) => {
+                // set to false
+                println!("setting param flag to false");
+                if param_flag {
+                    param_flag = false;
                 }
             }
             Event::End(tag) => { // END
                 tmp = &mut funcdocs.description;
                 println!("end: {:?}", tag);
+            }
+            Event::Start(t) => {
+                println!("start found: {:?}", t);
             }
             _ => println!("Unsupported type found!"),
         }
@@ -835,5 +847,49 @@ mod tests {
             },
             got_err
         );
+    }
+
+    #[test]
+    fn test_docs_parse() {
+        let s = r#"from constructs a table from an array of records.
+
+Each record in the array is converted into an output row or record. All
+records must have the same keys and data types.
+
+## Parameters
+- `rows` is the array of records to construct a table with.
+
+- `test` just a test
+
+## Build an arbitrary table
+
+```
+import "array"
+
+rows = [
+{foo: "bar", baz: 21.2},
+{foo: "bar", baz: 23.8}
+]
+
+array.from(rows: rows)
+```
+
+## Union custom rows with query results
+
+```
+import "influxdata/influxdb/v1"
+import "array"
+
+tags = v1.tagValues(
+    bucket: "example-bucket",
+    tag: "host"
+)
+
+wildcard_tag = array.from(rows: [{_value: "*"}])
+
+union(tables: [tags, wildcard_tag])
+```"#;
+        let funcdocs = separate_func_docs(s, "from");
+        println!("{:?}", funcdocs);
     }
 }
