@@ -284,9 +284,9 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
 
     let parser = Parser::new(&all_doc);
     let events: Vec<pulldown_cmark::Event> = parser.collect();
-    for (_, event) in events.windows(2).enumerate() { // HEADER
+    for (_, event) in events.windows(2).enumerate() {
         match &event[0] {
-            Event::Start(pulldown_cmark::Tag::Heading(2)) => {
+            Event::Start(pulldown_cmark::Tag::Heading(2)) => { // HEADER
                 // check if parameter header
                 println!("Heading found!");
                 match &event[1] {
@@ -333,7 +333,14 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                     if funcdocs.parameters[len].headline.is_empty() {
                         funcdocs.parameters[len].headline = t.to_string();
                     } else {
-                        funcdocs.parameters[len].description = Option::from(t.to_string());
+                        // check if description is empty, if not concat
+                        if funcdocs.parameters[len].description != None {
+                            let s = funcdocs.parameters[len].description.as_ref().unwrap();
+                            s.to_string().push_str(&t.to_string());
+                            funcdocs.parameters[len].description = Option::from(s.to_string());
+                        } else {
+                            funcdocs.parameters[len].description = Option::from(t.to_string());
+                        }
                     }
                 } else {
                     tmp.push_str(&t.to_string());
