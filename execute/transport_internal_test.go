@@ -12,3 +12,11 @@ func NewProcessMsg(tbl flux.Table) ProcessMsg {
 func NewProcessChunkMsg(chunk table.Chunk) ProcessChunkMsg {
 	return &processChunkMsg{chunk: chunk}
 }
+
+func NewFlushKeyMsg(key flux.GroupKey) FlushKeyMsg {
+	return &flushKeyMsg{key: key}
+}
+
+func NewFinishMsg(err error) FinishMsg {
+	return &finishMsg{err: err}
+}

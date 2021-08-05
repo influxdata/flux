@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/execute/table/static"
+	"github.com/influxdata/flux/mock"
 )
 
 func TestProcessMsg(t *testing.T) {
@@ -161,4 +162,161 @@ func TestProcessChunkMsg(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 	}
 	mem.AssertSize(t, 0)
+}
+
+func TestWrapTransformationInTransport(t *testing.T) {
+	want := static.TableGroup{
+		static.StringKey("_m", "m0"),
+		static.StringKeys("t0", "a", "b"),
+		static.Times("_time", 0, 10, 20),
+		static.Floats("_value", 0, 1, 2),
+	}
+
+	t.Run("FlushKey", func(t *testing.T) {
+		var (
+			got      table.Iterator
+			finished bool
+		)
+
+		// Create transformation that stores any processed tables into the
+		// list of got tables and marks when it has been finished.
+		tr := execute.WrapTransformationInTransport(&mock.Transformation{
+			ProcessFn: func(id execute.DatasetID, tbl flux.Table) error {
+				buf, err := table.Copy(tbl)
+				if err != nil {
+					return err
+				}
+				got = append(got, buf)
+				return nil
+			},
+			FinishFn: func(id execute.DatasetID, err error) {
+				if err != nil {
+					t.Error(err)
+				}
+				finished = true
+			},
+		}, memory.DefaultAllocator)
+
+		processed := 0
+		if err := want.Do(func(tbl flux.Table) error {
+			if err := tbl.Do(func(cr flux.ColReader) error {
+				chunk := table.ChunkFromReader(cr)
+				chunk.Retain()
+				m := execute.NewProcessChunkMsg(chunk)
+				return tr.ProcessMessage(m)
+			}); err != nil {
+				return err
+			}
+
+			// At this point, the table has sent all chunks to the transformation,
+			// but the table hasn't been processed yet because it hasn't been flushed.
+			if got, want := len(got), processed; got != want {
+				t.Errorf("wrong number of tables processed -want/+got:\n\t- %d\n\t+ %d", want, got)
+			}
+
+			// Flush the group key which will cause the above table to be processed.
+			m := execute.NewFlushKeyMsg(tbl.Key())
+			if err := tr.ProcessMessage(m); err != nil {
+				return err
+			}
+			// Increment the number processed because the flush key message should increment it.
+			processed++
+
+			// We should have processed the table.
+			if got, want := len(got), processed; got != want {
+				t.Errorf("wrong number of tables processed -want/+got:\n\t- %d\n\t+ %d", want, got)
+			}
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+
+		m := execute.NewFinishMsg(nil)
+		if err := tr.ProcessMessage(m); err != nil {
+			t.Fatal(err)
+		}
+
+		// Finish should have been invoked.
+		if !finished {
+			t.Error("finish message not received")
+		}
+
+		// Compare the output to ensure tables were processed correctly.
+		if diff := table.Diff(want, got); diff != "" {
+			t.Errorf("unexpected table data -want/+got:\n%s", diff)
+		}
+	})
+
+	t.Run("Finish", func(t *testing.T) {
+		var (
+			got      table.Iterator
+			finished bool
+		)
+
+		// Create transformation that stores any processed tables into the
+		// list of got tables and marks when it has been finished.
+		tr := execute.WrapTransformationInTransport(&mock.Transformation{
+			ProcessFn: func(id execute.DatasetID, tbl flux.Table) error {
+				buf, err := table.Copy(tbl)
+				if err != nil {
+					return err
+				}
+				got = append(got, buf)
+				return nil
+			},
+			FinishFn: func(id execute.DatasetID, err error) {
+				if err != nil {
+					t.Error(err)
+				}
+				finished = true
+			},
+		}, memory.DefaultAllocator)
+
+		processed := 0
+		if err := want.Do(func(tbl flux.Table) error {
+			if err := tbl.Do(func(cr flux.ColReader) error {
+				chunk := table.ChunkFromReader(cr)
+				chunk.Retain()
+				m := execute.NewProcessChunkMsg(chunk)
+				return tr.ProcessMessage(m)
+			}); err != nil {
+				return err
+			}
+			processed++
+
+			// We increment the number of tables that should be ready to be processed,
+			// but we check here to make sure that process has not been invoked.
+			if got, want := len(got), 0; got != want {
+				t.Errorf("wrong number of tables processed -want/+got:\n\t- %d\n\t+ %d", want, got)
+			}
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+
+		// Since there have been no flushes, none of the tables should have been processed.
+		if got, want := len(got), 0; got != want {
+			t.Errorf("wrong number of tables processed -want/+got:\n\t- %d\n\t+ %d", want, got)
+		}
+
+		m := execute.NewFinishMsg(nil)
+		if err := tr.ProcessMessage(m); err != nil {
+			t.Fatal(err)
+		}
+
+		// The transformation should have called finish.
+		if !finished {
+			t.Error("finish message not received")
+		}
+
+		// Pending tables should have been flushed.
+		if got, want := len(got), processed; got != want {
+			t.Errorf("wrong number of tables processed -want/+got:\n\t- %d\n\t+ %d", want, got)
+		}
+
+		// Compare the output to ensure tables were processed correctly.
+		if diff := table.Diff(want, got); diff != "" {
+			t.Errorf("unexpected table data -want/+got:\n%s", diff)
+		}
+	})
 }
