@@ -1,0 +1,12 @@
+# This file defines feature flags.
+#
+# It is used for code generation in the ./internal/feature package.
+# If you change this file, run `make generate` to regenerate.
+#
+# Format details:
+#
+# - name:         Human-readable name
+#   description:  Human-readable description
+#   key:          Programmatic name
+#   default:      Used when unable to reach server and to infer flag type
+#   contact:      Contact for information or issues regarding the flag
