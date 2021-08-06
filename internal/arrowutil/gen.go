@@ -18,6 +18,8 @@ import (
 //go:generate tmpl -data=@types.tmpldata -o iterator.gen_test.go iterator.gen_test.go.tmpl
 //go:generate tmpl -data=@types.tmpldata -o filter.gen.go filter.gen.go.tmpl
 
+var _ values.ArrayElementwiser = (*FloatArrayValue)(nil)
+
 func (v FloatArrayValue) ElementwiseAdd(mem *memory.Allocator, other values.ArrayElementwiser) values.Array {
 	ao := other.(FloatArrayValue)
 	if v.arr.Len() != ao.arr.Len() {
@@ -32,6 +34,19 @@ func (v FloatArrayValue) ElementwiseAdd(mem *memory.Allocator, other values.Arra
 		}
 	}
 	return NewFloatArrayValue(b.NewFloatArray())
+}
+
+func (v FloatArrayValue) ElementwiseGT(mem *memory.Allocator, rhs values.Value) values.Array {
+	rhsFlt := rhs.Float()
+	b := NewBooleanBuilder(mem)
+	for i := 0; i < v.arr.Len(); i++ {
+		if v.arr.IsValid(i) {
+			b.Append(v.arr.Value(i) > rhsFlt)
+		} else {
+			b.AppendNull()
+		}
+	}
+	return NewBooleanArrayValue(b.NewBooleanArray())
 }
 
 func (v FloatArrayValue) GetArrowArray() *array.Float {

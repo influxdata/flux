@@ -25,6 +25,7 @@ type Array interface {
 type ArrayElementwiser interface {
 	Array
 	ElementwiseAdd(mem *memory.Allocator, other ArrayElementwiser) Array
+	ElementwiseGT(mem *memory.Allocator, rhs Value) Array
 }
 
 type array struct {

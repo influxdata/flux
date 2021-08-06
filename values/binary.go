@@ -380,6 +380,13 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 
 	// GreaterThanOperator
 
+	{Operator: ast.GreaterThanOperator, Left: semantic.Array, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		elv, lok := lv.(ArrayElementwiser)
+		if lok {
+			return elv.ElementwiseGT(&memory.Allocator{}, rv), nil
+		}
+		panic("cannot compare array that doesn't iomplement ArrayElementwiser")
+	},
 	{Operator: ast.GreaterThanOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
 		r := rv.Int()
