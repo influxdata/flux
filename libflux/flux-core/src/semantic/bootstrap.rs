@@ -22,6 +22,7 @@ use crate::semantic::types::{
     MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, TvarKinds,
 };
 
+use pulldown_cmark::CodeBlockKind;
 use pulldown_cmark::{Event, Parser};
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
@@ -286,26 +287,24 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
     let events: Vec<pulldown_cmark::Event> = parser.collect();
     for (_, event) in events.windows(2).enumerate() {
         match &event[0] {
-            Event::Start(pulldown_cmark::Tag::Heading(2)) => { // HEADER
-                // check if parameter header
-                println!("Heading found!");
+            Event::Start(pulldown_cmark::Tag::Heading(2)) => {
                 match &event[1] {
                     Event::Text(t) => {
                         if "Parameters".eq(&t.to_string()) {
-                            println!("Parameter flag set!");
+                            //println!("param flag start");
                             param_flag = true;
+                        } else {
+                            tmp.push_str(&"## ");
                         }
                     }
                     _ => {
-                        println!("setting param flag to false");
                         param_flag = false;
                     }
                 }
             }
-            Event::Start(pulldown_cmark::Tag::Item) => { // LIST ITEM
-                // if param flag is set, create a new ParameterDoc
-                println!("Start list item");
+            Event::Start(pulldown_cmark::Tag::Item) => {
                 if param_flag {
+                    //println!("Starting new Param!");
                     funcdocs.parameters.push(ParameterDoc{
                         name: String::new(),
                         headline: String::new(),
@@ -316,19 +315,36 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                     tmp.push_str(&" - ");
                 }
             }
-            Event::Code(c) => { // CODE
-                println!("Code found!");
+            Event::Start(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) => {
+                tmp.push_str(&"\n```\n");
+            }
+            Event::Code(c) => {
                 if param_flag {
                     let len = funcdocs.parameters.len() - 1;
-                    funcdocs.parameters[len].name = c.to_string();
+                    if funcdocs.parameters[len].name.is_empty() {
+                        funcdocs.parameters[len].name = c.to_string();
+                    } else {
+                        if funcdocs.parameters[len].headline.is_empty() {
+                            funcdocs.parameters[len].headline.push_str(&c.to_string());
+                        } else {
+                            if funcdocs.parameters[len].description != None {
+                                let doc = &funcdocs.parameters[len].description;
+                                let x = doc.as_ref().map(|d| format!("{} {}", d, c.to_string()));
+                                funcdocs.parameters[len].description = x;
+                            } else {
+                                //println!("adding code to DESCRIPTION: {}", c.to_string());
+                                funcdocs.parameters[len].description = Some(c.to_string());
+                            }
+                        }
+                    }
                 } else {
                     tmp.push_str(&c.to_string());
                 }
             }
-            Event::Text(t) => { // TEXT
+            Event::Text(t) => {
                 // check if parameter list:
                 if param_flag  && funcdocs.parameters.len() > 0 {
-                    println!("adding to parameter doc");
+                    //println!("adding text to param: {}", t.to_string());
                     let len = funcdocs.parameters.len() - 1;
                     // check if headline is empty, else populate desc
                     if funcdocs.parameters[len].headline.is_empty() {
@@ -336,33 +352,45 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                     } else {
                         // check if description is empty, if not concat
                         if funcdocs.parameters[len].description != None {
-                            let s = funcdocs.parameters[len].description.as_ref().unwrap();
-                            s.to_string().push_str(&t.to_string());
-                            funcdocs.parameters[len].description = Option::from(s.to_string());
+                            let doc = &funcdocs.parameters[len].description;
+                            let x = doc.as_ref().map(|d| format!("{} {}", d, t.to_string()));
+                            funcdocs.parameters[len].description = x;
                         } else {
+                            //println!("adding text to DESCRIPTION: {}", t.to_string());
                             funcdocs.parameters[len].description = Option::from(t.to_string());
                         }
                     }
-                } else {
-                    println!("adding to func description");
+                } else if !("Parameters".eq(&t.to_string())) {
+                    //println!("adding text to function");
                     tmp.push_str(&t.to_string());
+                    if tmp.ends_with('.') {
+                        tmp.push_str(&" ");
+                    }
+                    match &event[1] {
+                        Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) => {
+                            tmp.push_str(&"```\n\n");
+                        }
+                        _ => {
+                            format!("Unsupported type found!");
+                        }
+                    }
                 }
             }
+            Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) => {
+                tmp.push_str(&"```\n\n");
+            }
             Event::End(pulldown_cmark::Tag::List(None)) => {
-                // set to false
-                println!("setting param flag to false");
                 if param_flag {
+                    //println!("end of param flag");
                     param_flag = false;
                 }
             }
-            Event::End(tag) => { // END
+            Event::End(_) => {
                 tmp = &mut funcdocs.description;
-                println!("end: {:?}", tag);
             }
-            Event::Start(t) => {
-                println!("start found: {:?}", t);
+            _ => {
+                format!("Unsupported type found!");
             }
-            _ => println!("Unsupported type found!"),
         }
     }
     funcdocs
@@ -859,6 +887,8 @@ records must have the same keys and data types.
 ## Parameters
 - `rows` is the array of records to construct a table with.
 
+    This is an example of row descriptions.
+
 - `test` just a test
 
 ## Build an arbitrary table
@@ -888,6 +918,89 @@ tags = v1.tagValues(
 wildcard_tag = array.from(rows: [{_value: "*"}])
 
 union(tables: [tags, wildcard_tag])
+```"#;
+        let funcdocs = separate_func_docs(s, "from");
+        println!("{:?}", funcdocs);
+    }
+
+    #[test]
+    fn test_csv_docs() {
+        let s = r#"from is a function that retrieves data from a comma separated value (CSV) data source.
+
+A stream of tables are returned, each unique series contained within its own table.
+Each record in the table represents a single point in the series.
+
+## Parameters
+- `csv` is CSV data.
+
+    Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.
+
+- `file` is the file path of the CSV file to query.
+
+    The path can be absolute or relative. If relative, it is relative to the working
+    directory of the `fluxd` process. The CSV file must exist in the same file
+    system running the `fluxd` process.
+
+- `mode` is the CSV parsing mode. Default is annotations.
+
+    Available annotation modes:
+      annotations: Use CSV notations to determine column data types.
+      raw: Parse all columns as strings and use the first row as the header row
+      and all subsequent rows as data.
+
+## Query anotated CSV data from file
+
+```
+import "csv"
+
+csv.from(file: "path/to/data-file.csv")
+```
+
+## Query raw data from CSV file
+
+```
+import "csv"
+
+csv.from(
+file: "/path/to/data-file.csv",
+mode: "raw"
+)
+```
+
+## Query an annotated CSV string
+
+```
+import "csv"
+
+csvData = "
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,false,false,false,false,false,false
+#default,,,,,,,,
+,result,table,_start,_stop,_time,region,host,_value
+,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43
+,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
+,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
+"
+
+csv.from(csv: csvData)
+
+```
+
+## Query a raw CSV string
+```
+import "csv"
+
+csvData = "
+_start,_stop,_time,region,host,_value
+2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43
+2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
+2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
+"
+
+csv.from(
+csv: csvData,
+mode: "raw"
+)
 ```"#;
         let funcdocs = separate_func_docs(s, "from");
         println!("{:?}", funcdocs);
