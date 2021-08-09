@@ -1123,7 +1123,6 @@ from(bucket: v.bucket)
     // failure because another patch was merged that added a new stdlib, which pushed
     // `csv` from the 19th item to the 20th item.
     fn ensure_docs() {
-<<<<<<< HEAD
         let doc = docs();
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1146,6 +1145,7 @@ from(bucket: v.bucket)
             }
         }
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> d3752b49 (feat: parse parameters in function docs)
 =======
 =======
@@ -1154,6 +1154,8 @@ from(bucket: v.bucket)
         let got = format!("{:?}", d[20]); // the csv DocPackage location
 >>>>>>> b4b6de60 (chore: remove libflux site (#3931))
 >>>>>>> 84a9883c (chore: remove libflux site (#3931))
+=======
+>>>>>>> b2a752cf (fix: merged with master)
         assert_eq!(stat, got);
     }
     #[test]
