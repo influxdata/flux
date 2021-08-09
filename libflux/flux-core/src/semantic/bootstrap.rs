@@ -96,26 +96,6 @@ pub struct FunctionDoc {
     flux_type: String,
 }
 
-/// Implementation block for FunctionDoc to house future "FunctionDod" methods
-// impl FunctionDoc {
-//     /// Constructs a new FunctionDoc with the given name, headline, and flux type
-//     fn new_with_args(
-//         name: String,
-//         headline: String,
-//         description: String,
-//         parameters: Vec<ParameterDoc>,
-//         typ: String,
-//     ) -> FunctionDoc {
-//         FunctionDoc {
-//             name,
-//             headline,
-//             description,
-//             parameters,
-//             flux_type: typ,
-//         }
-//     }
-// }
-
 /// ParameterDoc represents the documentation for a single parameter within a function.
 #[derive(Debug, Serialize, Deserialize)]
 struct ParameterDoc {
@@ -225,7 +205,7 @@ fn generate_docs(
     if Some(&file.package) != None {
         all_comment = comments_to_string(&file.package.as_ref().unwrap().base.comments);
     }
-    let (headline, description) = seperate_description(&all_comment);
+    let (headline, description) = separate_description(&all_comment);
 
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
@@ -237,7 +217,7 @@ fn generate_docs(
 }
 
 // Separates headline from description
-fn seperate_description(all_comment: &str) -> (String, Option<String>) {
+fn separate_description(all_comment: &str) -> (String, Option<String>) {
     let mut headline: String = "".to_string();
     let mut reached_end: bool = false;
     let mut description_text: String = "".to_string();

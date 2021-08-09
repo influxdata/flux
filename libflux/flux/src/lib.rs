@@ -1131,6 +1131,7 @@ from(bucket: v.bucket)
         }
         assert_eq!(stat, got);
     }
+    
     #[test]
     //Array package's docs are accessed from their specific index in the vector of DocPackages, ensuring that they are accessible and correct
     fn ensure_docs2() {
