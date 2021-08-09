@@ -1125,7 +1125,6 @@ from(bucket: v.bucket)
         let mut got = String::new();
         for d in doc {
             if d.name == "csv" {
-                // println!("GOT CSV DOC: {:?}", d);
                 got = format!("{:?}", d);
                 break;
             }
@@ -1140,7 +1139,6 @@ from(bucket: v.bucket)
         let mut got = String::new();
         for d in doc {
             if d.name == "array" {
-                // println!("GOT ARRAY DOC: {:?}", d);
                 got = format!("{:?}", d);
                 break;
             }
