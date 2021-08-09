@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
 	"github.com/influxdata/flux/arrow"
@@ -20,7 +21,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
 
@@ -42,14 +42,14 @@ type Table []Column
 // If the produced Table is invalid, then this method
 // will panic.
 func (s Table) Do(f func(flux.Table) error) error {
-	return f(s.Table())
+	return f(s.Table(memory.DefaultAllocator))
 }
 
-func (s Table) Build(template *[]Column) []flux.Table {
+func (s Table) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	t := make(Table, 0, len(*template)+len(s))
 	t = append(t, *template...)
 	t = append(t, s...)
-	return []flux.Table{t.Table()}
+	return []flux.Table{t.Table(mem)}
 }
 
 // Table will produce a flux.Table using the Column values
@@ -57,7 +57,7 @@ func (s Table) Build(template *[]Column) []flux.Table {
 //
 // If the Table produces an invalid buffer, then this method
 // will panic.
-func (s Table) Table() flux.Table {
+func (s Table) Table(mem memory.Allocator) flux.Table {
 	if len(s) == 0 {
 		panic(errors.New(codes.Internal, "static table has no columns"))
 	}
@@ -81,7 +81,7 @@ func (s Table) Table() flux.Table {
 	// Construct each of the buffers.
 	buffer.Values = make([]array.Interface, len(buffer.Columns))
 	for i, c := range s {
-		buffer.Values[i] = c.Make(n)
+		buffer.Values[i] = c.Make(n, mem)
 	}
 
 	if err := buffer.Validate(); err != nil {
@@ -118,7 +118,7 @@ type Column interface {
 
 	// Make will construct an array with the given length
 	// if it is possible.
-	Make(n int) array.Interface
+	Make(n int, mem memory.Allocator) array.Interface
 
 	// Len will return the length of this column.
 	// If no length is known, this will return -1.
@@ -195,8 +195,8 @@ type KeyColumn struct {
 	t flux.ColType
 }
 
-func (s KeyColumn) Make(n int) array.Interface {
-	return arrow.Repeat(s.KeyValue(), n, memory.DefaultAllocator)
+func (s KeyColumn) Make(n int, mem memory.Allocator) array.Interface {
+	return arrow.Repeat(s.KeyValue(), n, mem)
 }
 
 func (s KeyColumn) Label() string          { return s.k }
@@ -205,7 +205,7 @@ func (s KeyColumn) Len() int               { return -1 }
 func (s KeyColumn) IsKey() bool            { return true }
 func (s KeyColumn) KeyValue() values.Value { return values.New(s.v) }
 
-func (s KeyColumn) Build(template *[]Column) []flux.Table {
+func (s KeyColumn) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	*template = append(*template, s)
 	return nil
 }
@@ -246,8 +246,8 @@ type intColumn struct {
 	v []int64
 }
 
-func (s intColumn) Make(n int) array.Interface {
-	b := array.NewIntBuilder(memory.DefaultAllocator)
+func (s intColumn) Make(n int, mem memory.Allocator) array.Interface {
+	b := array.NewIntBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -257,7 +257,7 @@ func (s intColumn) Type() flux.ColType     { return flux.TInt }
 func (s intColumn) Len() int               { return len(s.v) }
 func (s intColumn) KeyValue() values.Value { return values.InvalidValue }
 
-func (s intColumn) Build(template *[]Column) []flux.Table {
+func (s intColumn) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	*template = append(*template, s)
 	return nil
 }
@@ -305,8 +305,8 @@ type uintColumn struct {
 	v []uint64
 }
 
-func (s uintColumn) Make(n int) array.Interface {
-	b := array.NewUintBuilder(memory.DefaultAllocator)
+func (s uintColumn) Make(n int, mem memory.Allocator) array.Interface {
+	b := array.NewUintBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -316,7 +316,7 @@ func (s uintColumn) Type() flux.ColType     { return flux.TUInt }
 func (s uintColumn) Len() int               { return len(s.v) }
 func (s uintColumn) KeyValue() values.Value { return values.InvalidValue }
 
-func (s uintColumn) Build(template *[]Column) []flux.Table {
+func (s uintColumn) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	*template = append(*template, s)
 	return nil
 }
@@ -368,8 +368,8 @@ type floatColumn struct {
 	v []float64
 }
 
-func (s floatColumn) Make(n int) array.Interface {
-	b := array.NewFloatBuilder(memory.DefaultAllocator)
+func (s floatColumn) Make(n int, mem memory.Allocator) array.Interface {
+	b := array.NewFloatBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -379,7 +379,7 @@ func (s floatColumn) Type() flux.ColType     { return flux.TFloat }
 func (s floatColumn) Len() int               { return len(s.v) }
 func (s floatColumn) KeyValue() values.Value { return values.InvalidValue }
 
-func (s floatColumn) Build(template *[]Column) []flux.Table {
+func (s floatColumn) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	*template = append(*template, s)
 	return nil
 }
@@ -429,8 +429,8 @@ type stringColumn struct {
 	v []string
 }
 
-func (s stringColumn) Make(n int) array.Interface {
-	b := array.NewStringBuilder(memory.DefaultAllocator)
+func (s stringColumn) Make(n int, mem memory.Allocator) array.Interface {
+	b := array.NewStringBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -440,7 +440,7 @@ func (s stringColumn) Type() flux.ColType     { return flux.TString }
 func (s stringColumn) Len() int               { return len(s.v) }
 func (s stringColumn) KeyValue() values.Value { return values.InvalidValue }
 
-func (s stringColumn) Build(template *[]Column) []flux.Table {
+func (s stringColumn) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	*template = append(*template, s)
 	return nil
 }
@@ -486,8 +486,8 @@ type booleanColumn struct {
 	v []bool
 }
 
-func (s booleanColumn) Make(n int) array.Interface {
-	b := array.NewBooleanBuilder(memory.DefaultAllocator)
+func (s booleanColumn) Make(n int, mem memory.Allocator) array.Interface {
+	b := array.NewBooleanBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -497,7 +497,7 @@ func (s booleanColumn) Type() flux.ColType     { return flux.TBool }
 func (s booleanColumn) Len() int               { return len(s.v) }
 func (s booleanColumn) KeyValue() values.Value { return values.InvalidValue }
 
-func (s booleanColumn) Build(template *[]Column) []flux.Table {
+func (s booleanColumn) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	*template = append(*template, s)
 	return nil
 }
@@ -550,8 +550,8 @@ type timeColumn struct {
 	v []int64
 }
 
-func (s timeColumn) Make(n int) array.Interface {
-	b := array.NewIntBuilder(memory.DefaultAllocator)
+func (s timeColumn) Make(n int, mem memory.Allocator) array.Interface {
+	b := array.NewIntBuilder(mem)
 	b.Resize(len(s.v))
 	b.AppendValues(s.v, s.valid)
 	return b.NewArray()
@@ -561,7 +561,7 @@ func (s timeColumn) Type() flux.ColType     { return flux.TTime }
 func (s timeColumn) Len() int               { return len(s.v) }
 func (s timeColumn) KeyValue() values.Value { return values.InvalidValue }
 
-func (s timeColumn) Build(template *[]Column) []flux.Table {
+func (s timeColumn) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	*template = append(*template, s)
 	return nil
 }
@@ -602,7 +602,7 @@ type TableBuilder interface {
 	// The template is a pointer as a builder is allowed
 	// to modify the template. For implementors, the
 	// template pointer must be non-nil.
-	Build(template *[]Column) []flux.Table
+	Build(template *[]Column, mem memory.Allocator) []flux.Table
 }
 
 // TableGroup will construct a group of Tables
@@ -613,19 +613,19 @@ type TableGroup []TableBuilder
 func (t TableGroup) Do(f func(flux.Table) error) error {
 	// Use an empty template.
 	var template []Column
-	tables := t.Build(&template)
+	tables := t.Build(&template, memory.DefaultAllocator)
 	return table.Iterator(tables).Do(f)
 }
 
 // Build will construct Tables using the given template.
-func (t TableGroup) Build(template *[]Column) []flux.Table {
+func (t TableGroup) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	// Copy over the template.
 	gtemplate := make([]Column, len(*template))
 	copy(gtemplate, *template)
 
 	var tables []flux.Table
 	for _, tb := range t {
-		tables = append(tables, tb.Build(&gtemplate)...)
+		tables = append(tables, tb.Build(&gtemplate, mem)...)
 	}
 	return tables
 }
@@ -638,17 +638,17 @@ func (t TableGroup) Build(template *[]Column) []flux.Table {
 // this will force a single Table to be created.
 type TableList []TableBuilder
 
-func (t TableList) Build(template *[]Column) []flux.Table {
+func (t TableList) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	var tables []flux.Table
 	for _, tb := range t {
 		// Copy over the group template for each of these.
 		gtemplate := make([]Column, len(*template), len(*template)+1)
 		copy(gtemplate, *template)
 
-		if ntables := tb.Build(&gtemplate); len(ntables) > 0 {
+		if ntables := tb.Build(&gtemplate, mem); len(ntables) > 0 {
 			tables = append(tables, ntables...)
 		} else {
-			tables = append(tables, Table(gtemplate).Table())
+			tables = append(tables, Table(gtemplate).Table(mem))
 		}
 	}
 	return tables
@@ -667,11 +667,11 @@ func StringKeys(k string, v ...interface{}) TableList {
 // cross product of each of the TableBuilders with each other.
 type TableMatrix []TableList
 
-func (t TableMatrix) Build(template *[]Column) []flux.Table {
+func (t TableMatrix) Build(template *[]Column, mem memory.Allocator) []flux.Table {
 	if len(t) == 0 {
 		return nil
 	} else if len(t) == 1 {
-		return t[0].Build(template)
+		return t[0].Build(template, mem)
 	}
 
 	// Split the TableList into their own distinct TableGroups
@@ -696,7 +696,7 @@ func (t TableMatrix) Build(template *[]Column) []flux.Table {
 
 	var tables []flux.Table
 	for _, b := range builders {
-		tables = append(tables, b.Build(template)...)
+		tables = append(tables, b.Build(template, mem)...)
 	}
 	return tables
 }

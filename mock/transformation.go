@@ -1,8 +1,10 @@
 package mock
 
 import (
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 )
 
 type Transformation struct {
@@ -28,4 +30,12 @@ func (t *Transformation) UpdateProcessingTime(id execute.DatasetID, ts execute.T
 
 func (t *Transformation) Finish(id execute.DatasetID, err error) {
 	t.FinishFn(id, err)
+}
+
+type NarrowTransformation struct {
+	ProcessFn func(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error
+}
+
+func (n *NarrowTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
+	return n.ProcessFn(chunk, d, mem)
 }
