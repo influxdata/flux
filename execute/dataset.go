@@ -3,9 +3,11 @@ package execute
 import (
 	"context"
 
+	"github.com/apache/arrow/go/arrow/memory"
 	uuid "github.com/gofrs/uuid"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 )
@@ -234,3 +236,97 @@ func (d *PassthroughDataset) Finish(err error) {
 
 func (d *PassthroughDataset) SetTriggerSpec(t plan.TriggerSpec) {
 }
+
+// TransportDataset holds data for a specific node and sends
+// messages to downstream nodes using the Transport.
+//
+// This Dataset also implements a shim for execute.Dataset
+// so it can be integrated with the existing execution engine.
+// These methods are stubs and do not do anything.
+type TransportDataset struct {
+	id         DatasetID
+	transports []Transport
+	cache      *RandomAccessGroupLookup
+	mem        memory.Allocator
+}
+
+// NewTransportDataset constructs a TransportDataset.
+func NewTransportDataset(id DatasetID, mem memory.Allocator) *TransportDataset {
+	return &TransportDataset{
+		id:    id,
+		cache: NewRandomAccessGroupLookup(),
+		mem:   mem,
+	}
+}
+
+// AddTransformation is used to add downstream Transformation nodes
+// to this Transport.
+func (d *TransportDataset) AddTransformation(t Transformation) {
+	if t, ok := t.(Transport); ok {
+		d.transports = append(d.transports, t)
+		return
+	}
+	d.transports = append(d.transports, WrapTransformationInTransport(t, d.mem))
+}
+
+func (d *TransportDataset) sendMessage(m Message) error {
+	if len(d.transports) == 1 {
+		return d.transports[0].ProcessMessage(m)
+	}
+
+	defer m.Ack()
+	for _, t := range d.transports {
+		if err := t.ProcessMessage(m.Dup()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Process sends the given Chunk to be processed by the downstream transports.
+func (d *TransportDataset) Process(chunk table.Chunk) error {
+	m := &processChunkMsg{
+		srcMessage: srcMessage(d.id),
+		chunk:      chunk,
+	}
+	return d.sendMessage(m)
+}
+
+// FlushKey sends the flush key message to the downstream transports.
+func (d *TransportDataset) FlushKey(key flux.GroupKey) error {
+	m := &flushKeyMsg{
+		srcMessage: srcMessage(d.id),
+		key:        key,
+	}
+	return d.sendMessage(m)
+}
+
+func (d *TransportDataset) Lookup(key flux.GroupKey) (interface{}, bool) {
+	return d.cache.Lookup(key)
+}
+func (d *TransportDataset) LookupOrCreate(key flux.GroupKey, fn func() interface{}) interface{} {
+	if fn == nil {
+		fn = func() interface{} {
+			return nil
+		}
+	}
+	return d.cache.LookupOrCreate(key, fn)
+}
+func (d *TransportDataset) Set(key flux.GroupKey, value interface{}) {
+	d.cache.Set(key, value)
+}
+func (d *TransportDataset) Delete(key flux.GroupKey) (v interface{}, found bool) {
+	return d.cache.Delete(key)
+}
+
+func (d *TransportDataset) RetractTable(key flux.GroupKey) error { return nil }
+func (d *TransportDataset) UpdateProcessingTime(t Time) error    { return nil }
+func (d *TransportDataset) UpdateWatermark(mark Time) error      { return nil }
+func (d *TransportDataset) Finish(err error) {
+	m := &finishMsg{
+		srcMessage: srcMessage(d.id),
+		err:        err,
+	}
+	_ = d.sendMessage(m)
+}
+func (d *TransportDataset) SetTriggerSpec(t plan.TriggerSpec) {}
