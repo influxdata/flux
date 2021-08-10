@@ -1224,23 +1224,58 @@ csv.from(
     //Array package's docs are accessed from their specific index in the vector of DocPackages, ensuring that they are accessible and correct
     fn ensure_docs2() {
         let doc = docs();
-        let stat = r#"PackageDoc { name: "array", headline: "Package array provides functions for building tables from flux arrays.", description: None, members: {"from": Function(FunctionDoc { name: "from", headline: "from constructs a table from an array of records. ", description: "Each record in the array is converted into an output row or record. Allrecords must have the same keys and data types. ## Build an arbitrary table\n```\nimport \"array\"\n\nrows = [\n  {foo: \"bar\", baz: 21.2},\n  {foo: \"bar\", baz: 23.8}\n]\n\narray.from(rows: rows)\n```\n\n## Union custom rows with query results\n```\nimport \"influxdata/influxdb/v1\"\nimport \"array\"\n\ntags = v1.tagValues(\n  bucket: \"example-bucket\",\n  tag: \"host\"\n)\n\nwildcard_tag = array.from(rows: [{_value: \"*\"}])\n\nunion(tables: [tags, wildcard_tag])\n```\n\n", parameters: [ParameterDoc { name: "rows", headline: " is the array of records to construct a table with.", description: None, required: false }], flux_type: "" })} }"#;
-        let _exact: PackageDoc = PackageDoc {
+        let mut exact: PackageDoc = PackageDoc{
             name: "array".to_string(),
-            headline: "Package array provides functions for building tables from flux arrays."
-                .to_string(),
+            headline: "Package array provides functions for building tables from flux arrays.".to_string(),
             description: None,
-            members: std::collections::HashMap::new(),
+            members: std::collections::HashMap::new()
         };
-        //exact.members.insert("from".to_string(), fluxcore::semantic::);
+        exact.members.insert("from".to_string(), fluxcore::semantic::bootstrap::Doc::Function(Box::new(FunctionDoc{
+            name: "from".to_string(),
+            headline: "from constructs a table from an array of records. ".to_string(),
+            description: r#"Each record in the array is converted into an output row or record. Allrecords must have the same keys and data types. ## Build an arbitrary table
+```
+import "array"
 
-        let mut got = String::new();
+rows = [
+  {foo: "bar", baz: 21.2},
+  {foo: "bar", baz: 23.8}
+]
+
+array.from(rows: rows)
+```
+
+## Union custom rows with query results
+```
+import "influxdata/influxdb/v1"
+import "array"
+
+tags = v1.tagValues(
+  bucket: "example-bucket",
+  tag: "host"
+)
+
+wildcard_tag = array.from(rows: [{_value: "*"}])
+
+union(tables: [tags, wildcard_tag])
+```
+
+"#.to_string(),
+            parameters: vec![ParameterDoc{
+                name: "rows".to_string(),
+                headline: " is the array of records to construct a table with.".to_string(),
+                description: None,
+                required: false
+            }],
+            flux_type: "".to_string(),
+        })));
+        let mut got = PackageDoc{ name: String::new(), headline: String::new(), description: None, members: std::collections::HashMap::new() };
         for d in doc {
             if d.name == "array" {
-                got = format!("{:?}", d);
+                got = d;
                 break;
             }
         }
-        assert_eq!(stat, got);
+        assert_eq!(exact, got);
     }
 }
