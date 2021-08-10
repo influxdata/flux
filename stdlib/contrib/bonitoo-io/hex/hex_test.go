@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func TestTypeconv_String(t *testing.T) {
+func Test_String(t *testing.T) {
 	testCases := []struct {
 		name      string
 		v         interface{}
@@ -103,7 +103,7 @@ func TestTypeconv_String(t *testing.T) {
 	}
 }
 
-func TestTypeconv_Int(t *testing.T) {
+func Test_Int(t *testing.T) {
 	testCases := []struct {
 		name      string
 		v         interface{}
@@ -213,7 +213,7 @@ func TestTypeconv_Int(t *testing.T) {
 	}
 }
 
-func TestTypeconv_UInt(t *testing.T) {
+func Test_UInt(t *testing.T) {
 	testCases := []struct {
 		name      string
 		v         interface{}
