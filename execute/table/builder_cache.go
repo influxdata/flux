@@ -4,8 +4,6 @@ import (
 	"reflect"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/groupkey"
 )
 
@@ -91,12 +89,16 @@ func (d *BuilderCache) Get(key flux.GroupKey, b interface{}) bool {
 
 // Table will remove a builder from the cache and construct a flux.Table
 // from the buffered contents.
-func (d *BuilderCache) Table(key flux.GroupKey) (flux.Table, error) {
+func (d *BuilderCache) Table(key flux.GroupKey) (flux.Table, bool, error) {
 	builder, ok := d.lookupState(key)
 	if !ok {
-		return nil, errors.Newf(codes.Internal, "table not found with key %v", key)
+		return nil, false, nil
 	}
-	return builder.Table()
+	tbl, err := builder.Table()
+	if err != nil {
+		return nil, false, err
+	}
+	return tbl, true, nil
 }
 
 func (d *BuilderCache) ForEach(f func(key flux.GroupKey, builder Builder) error) error {

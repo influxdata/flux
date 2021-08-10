@@ -654,8 +654,8 @@ func (t *transformationTransportAdapter) ProcessMessage(m Message) error {
 
 		// Retrieve the buffered builder for the given key
 		// and send the data to the next transformation.
-		tbl, err := t.cache.Table(m.Key())
-		if err != nil {
+		tbl, ok, err := t.cache.Table(m.Key())
+		if err != nil || !ok {
 			return err
 		}
 		t.cache.ExpireTable(m.Key())
