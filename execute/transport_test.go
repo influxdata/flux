@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/execute/table/static"
 	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/values"
 )
 
 func TestProcessMsg(t *testing.T) {
@@ -229,6 +230,23 @@ func TestWrapTransformationInTransport(t *testing.T) {
 			return nil
 		}); err != nil {
 			t.Fatal(err)
+		}
+
+		// Include a group key that hasn't previously been seen.
+		// This should not cause an error and nothing should happen.
+		{
+			key := execute.NewGroupKey(
+				[]flux.ColMeta{
+					{Label: "_nonexistant", Type: flux.TString},
+				},
+				[]values.Value{
+					values.NewString("a"),
+				},
+			)
+			m := execute.NewFlushKeyMsg(key)
+			if err := tr.ProcessMessage(m); err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
 		}
 
 		m := execute.NewFinishMsg(nil)
