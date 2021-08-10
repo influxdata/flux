@@ -10,3 +10,8 @@
 #   key:          Programmatic name
 #   default:      Used when unable to reach server and to infer flag type
 #   contact:      Contact for information or issues regarding the flag
+- name: Narrow Transformation Filter
+  description: Enable the NarrowTransformation implementation of filter
+  key: narrowTransformationFilter
+  default: false
+  contact: Jonathan Sternberg

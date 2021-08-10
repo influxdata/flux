@@ -16,6 +16,7 @@ import (
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -157,6 +158,13 @@ func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id 
 		keepEmptyTables: spec.KeepEmptyTables,
 		alloc:           alloc,
 	}
+
+	if feature.NarrowTransformationFilter().Enabled(ctx) {
+		t := &filterTransformationAdapter{
+			filterTransformation: t,
+		}
+		return execute.NewNarrowTransformation(id, t, alloc)
+	}
 	return t, t.d, nil
 }
 
@@ -204,6 +212,14 @@ func (t *filterTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	return t.d.Process(table)
 }
 
+// TODO(jsternberg): This doesn't work since it relies on a previously
+// broken implementation of the compiler package related to type inference
+// so this is now commented out. The comment is left to understand the
+// intention, but this if statement does not work and will always return false.
+//
+// I've kept this method invocation in the older filterTransformation implementation
+// just to avoid changing it, but have left it out of the new implementation until
+// we adapt the code to work.
 func (t *filterTransformation) canFilterByKey(fn *execute.RowPredicatePreparedFn, tbl flux.Table) bool {
 	inType := fn.InferredInputType()
 	nargs, err := inType.NumProperties()
@@ -238,6 +254,7 @@ func (t *filterTransformation) canFilterByKey(fn *execute.RowPredicatePreparedFn
 	return true
 }
 
+// TODO(jsternberg): See the note in canFilterByKey.
 func (t *filterTransformation) filterByKey(tbl flux.Table) error {
 	key := tbl.Key()
 	cols := key.Cols()
@@ -277,35 +294,57 @@ func (t *filterTransformation) filterByKey(tbl flux.Table) error {
 func (t *filterTransformation) filterTable(fn *execute.RowPredicatePreparedFn, in flux.Table, record values.Object, indices []int) (flux.Table, error) {
 	return table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
 		return in.Do(func(cr flux.ColReader) error {
-			bitset, err := t.filter(fn, cr, record, indices)
-			if err != nil {
+			chunk := table.ChunkFromReader(cr)
+			out, ok, err := t.filterChunk(fn, chunk, record, indices, t.alloc)
+			if err != nil || !ok {
 				return err
-			}
-			defer bitset.Release()
-
-			n := bitutil.CountSetBits(bitset.Buf(), 0, bitset.Len())
-			if n == 0 {
-				return nil
 			}
 
 			// Produce arrays for each column.
 			vs := make([]array.Interface, len(w.Cols()))
-			for j, col := range w.Cols() {
-				arr := table.Values(cr, j)
-				if in.Key().HasCol(col.Label) {
-					vs[j] = arrow.Slice(arr, 0, int64(n))
-					continue
-				}
-				vs[j] = arrowutil.Filter(arr, bitset.Bytes(), t.alloc)
+			for j := range w.Cols() {
+				vs[j] = out.Values(j)
 			}
 			return w.Write(vs)
 		})
 	})
 }
 
-func (t *filterTransformation) filter(fn *execute.RowPredicatePreparedFn, cr flux.ColReader, record values.Object, indices []int) (*arrowmem.Buffer, error) {
+func (t *filterTransformation) filterChunk(fn *execute.RowPredicatePreparedFn, chunk table.Chunk, record values.Object, indices []int, mem arrowmem.Allocator) (table.Chunk, bool, error) {
+	buffer := chunk.Buffer()
+	bitset, err := t.filter(fn, &buffer, record, indices, mem)
+	if err != nil {
+		return table.Chunk{}, false, err
+	}
+	defer bitset.Release()
+
+	n := bitutil.CountSetBits(bitset.Buf(), 0, bitset.Len())
+	if n == 0 && !t.keepEmptyTables {
+		// Drop this chunk if it is empty and we are not keeping empty tables.
+		return table.Chunk{}, false, nil
+	}
+
+	// Produce arrays for each column.
+	vs := make([]array.Interface, len(chunk.Cols()))
+	for j, col := range chunk.Cols() {
+		arr := chunk.Values(j)
+		if chunk.Key().HasCol(col.Label) {
+			vs[j] = arrow.Slice(arr, 0, int64(n))
+			continue
+		}
+		vs[j] = arrowutil.Filter(arr, bitset.Bytes(), mem)
+	}
+
+	return table.ChunkFromBuffer(arrow.TableBuffer{
+		GroupKey: chunk.Key(),
+		Columns:  chunk.Cols(),
+		Values:   vs,
+	}), true, nil
+}
+
+func (t *filterTransformation) filter(fn *execute.RowPredicatePreparedFn, cr flux.ColReader, record values.Object, indices []int, mem arrowmem.Allocator) (*arrowmem.Buffer, error) {
 	cols, l := cr.Cols(), cr.Len()
-	bitset := arrowmem.NewResizableBuffer(t.alloc)
+	bitset := arrowmem.NewResizableBuffer(mem)
 	bitset.Resize(l)
 	for i := 0; i < l; i++ {
 		for _, j := range indices {
@@ -330,6 +369,40 @@ func (t *filterTransformation) UpdateProcessingTime(id execute.DatasetID, pt exe
 }
 func (t *filterTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+type filterTransformationAdapter struct {
+	*filterTransformation
+}
+
+func (t *filterTransformationAdapter) Process(chunk table.Chunk, d *execute.TransportDataset, mem arrowmem.Allocator) error {
+	// Prepare the function for the column types.
+	cols := chunk.Cols()
+	fn, err := t.fn.Prepare(cols)
+	if err != nil {
+		// TODO(nathanielc): Should we not fail the query for failed compilation?
+		return err
+	}
+
+	// Prefill the columns that can be inferred from the group key.
+	// Retrieve the input type from the function and record the indices
+	// that need to be obtained from the columns.
+	record := values.NewObject(fn.InputType())
+	indices := make([]int, 0, len(chunk.Cols())-len(chunk.Key().Cols()))
+	for j, c := range chunk.Cols() {
+		if idx := execute.ColIdx(c.Label, chunk.Key().Cols()); idx >= 0 {
+			record.Set(c.Label, chunk.Key().Value(idx))
+			continue
+		}
+		indices = append(indices, j)
+	}
+
+	// Filter the table and pass in the indices we have to read.
+	out, ok, err := t.filterChunk(fn, chunk, record, indices, mem)
+	if err != nil || !ok {
+		return err
+	}
+	return d.Process(out)
 }
 
 // RemoveTrivialFilterRule removes Filter nodes whose predicate always evaluates to true.

@@ -17,14 +17,30 @@ type (
 	BoolFlag   = feature.BoolFlag
 )
 
+var narrowTransformationFilter = feature.MakeBoolFlag(
+	"Narrow Transformation Filter",
+	"narrowTransformationFilter",
+	"Jonathan Sternberg",
+	false,
+)
+
+// NarrowTransformationFilter - Enable the NarrowTransformation implementation of filter
+func NarrowTransformationFilter() BoolFlag {
+	return narrowTransformationFilter
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
 }
 
-var all = []Flag{}
+var all = []Flag{
+	narrowTransformationFilter,
+}
 
-var byKey = map[string]Flag{}
+var byKey = map[string]Flag{
+	"narrowTransformationFilter": narrowTransformationFilter,
+}
 
 // Flags returns all feature flags.
 func Flags() []Flag {
