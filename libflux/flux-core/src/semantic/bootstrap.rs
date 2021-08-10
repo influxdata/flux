@@ -39,7 +39,7 @@ pub struct Error {
 }
 
 /// Doc is an enum that can take the form of the various types of flux documentation structures through polymorphism.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub enum Doc {
     /// Package represents documentation for an entire Flux package.
     Package(Box<PackageDoc>),
@@ -54,7 +54,7 @@ pub enum Doc {
 }
 
 /// PackageDoc represents the documentation for a package and its sub packages
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct PackageDoc {
     /// the name of the comments package
     pub name: String,
@@ -69,7 +69,7 @@ pub struct PackageDoc {
 /// ValueDoc represents the documentation for a single value within a package.
 /// Values include options, builtins or any variable assignment within the top level scope of a
 /// package.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct ValueDoc {
     /// the name of the value
     pub name: String,
@@ -82,31 +82,31 @@ pub struct ValueDoc {
 }
 
 /// FunctionDoc represents the documentation for a single Function within a package.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct FunctionDoc {
     /// the name of the function
     pub name: String,
     /// the headline of the function
-    headline: String,
+    pub headline: String,
     /// the description of the function
-    description: String,
+    pub description: String,
     /// the parameters of the function
-    parameters: Vec<ParameterDoc>,
+    pub parameters: Vec<ParameterDoc>,
     /// the type of the function
-    flux_type: String,
+    pub flux_type: String,
 }
 
 /// ParameterDoc represents the documentation for a single parameter within a function.
-#[derive(Debug, Serialize, Deserialize)]
-struct ParameterDoc {
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
+pub struct ParameterDoc {
     /// the name of the parameter
-    name: String,
+    pub name: String,
     /// the headline of the parameter
-    headline: String,
+    pub headline: String,
     /// the description of the parameter
-    description: Option<String>,
+    pub description: Option<String>,
     /// a boolean indicating if the parameter is required
-    required: bool,
+    pub required: bool,
 }
 
 impl From<io::Error> for Error {
