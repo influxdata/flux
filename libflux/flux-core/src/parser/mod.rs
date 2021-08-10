@@ -1794,7 +1794,7 @@ impl Parser {
                         let invalid_t = self.scan();
                         let loc = self.source_location(
                             &ast::Position::from(&invalid_t.start_pos),
-                            &&ast::Position::from(&invalid_t.end_pos),
+                            &ast::Position::from(&invalid_t.end_pos),
                         );
                         self.errs
                             .push(format!("invalid expression {}: {}", loc, invalid_t.lit));

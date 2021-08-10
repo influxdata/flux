@@ -43,7 +43,7 @@ where
     let mut builder = flatbuffers::FlatBufferBuilder::new();
     let buf = fb::serialize(&mut builder, ty, f);
     let mut file = fs::File::create(path)?;
-    file.write_all(&buf)?;
+    file.write_all(buf)?;
     Ok(())
 }
 

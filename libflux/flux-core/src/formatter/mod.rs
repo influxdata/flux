@@ -363,9 +363,9 @@ impl Formatter {
                 name,
                 monotype,
             } => {
-                self.format_identifier(&name);
+                self.format_identifier(name);
                 self.write_string(": ");
-                self.format_monotype(&monotype);
+                self.format_monotype(monotype);
             }
             ast::ParameterType::Optional {
                 base: _,
@@ -373,9 +373,9 @@ impl Formatter {
                 monotype,
             } => {
                 self.write_rune('?');
-                self.format_identifier(&name);
+                self.format_identifier(name);
                 self.write_string(": ");
-                self.format_monotype(&monotype);
+                self.format_monotype(monotype);
             }
             ast::ParameterType::Pipe {
                 base: _,
@@ -388,7 +388,7 @@ impl Formatter {
                     None => {}
                 }
                 self.write_string(": ");
-                self.format_monotype(&monotype);
+                self.format_monotype(monotype);
             }
         }
     }
@@ -457,7 +457,7 @@ impl Formatter {
         self.format_identifier(&n[0]);
         for k in &n[1..] {
             self.write_string(" + ");
-            self.format_identifier(&k);
+            self.format_identifier(k);
         }
     }
     fn format_tvar(&mut self, n: &ast::TvarType) {
@@ -469,7 +469,7 @@ impl Formatter {
         if let Some(v) = &n.value {
             self.format_comments(&n.separator);
             self.write_string(": ");
-            self.format_node(&Node::from_expr(&v));
+            self.format_node(&Node::from_expr(v));
         }
     }
 
@@ -523,19 +523,19 @@ impl Formatter {
                         // Add parens because we have an object literal for the body
                         self.write_rune(' ');
                         self.write_rune('(');
-                        self.format_node(&Node::from_expr(&b));
+                        self.format_node(&Node::from_expr(b));
                         self.write_rune(')')
                     }
                     _ => {
                         // Do not add parens for everything else
                         self.write_rune(' ');
-                        self.format_node(&Node::from_expr(&b));
+                        self.format_node(&Node::from_expr(b));
                     }
                 }
             }
             ast::FunctionBody::Block(b) => {
                 self.write_rune(' ');
-                self.format_block(&b);
+                self.format_block(b);
             }
         }
     }
@@ -545,7 +545,7 @@ impl Formatter {
             self.format_property_key(&n.key);
             self.format_comments(&n.separator);
             self.write_rune('=');
-            self.format_node(&Node::from_expr(&v));
+            self.format_node(&Node::from_expr(v));
         } else {
             self.format_property_key(&n.key)
         }
@@ -553,8 +553,8 @@ impl Formatter {
 
     fn format_property_key(&mut self, n: &ast::PropertyKey) {
         match n {
-            ast::PropertyKey::StringLit(m) => self.format_string_literal(&m),
-            ast::PropertyKey::Identifier(m) => self.format_identifier(&m),
+            ast::PropertyKey::StringLit(m) => self.format_string_literal(m),
+            ast::PropertyKey::Identifier(m) => self.format_identifier(m),
         }
     }
 
@@ -583,8 +583,8 @@ impl Formatter {
 
     fn format_string_expression_part(&mut self, n: &ast::StringExprPart) {
         match n {
-            ast::StringExprPart::Text(p) => self.format_text_part(&p),
-            ast::StringExprPart::Interpolated(p) => self.format_interpolated_part(&p),
+            ast::StringExprPart::Text(p) => self.format_text_part(p),
+            ast::StringExprPart::Interpolated(p) => self.format_interpolated_part(p),
         }
     }
 
@@ -713,7 +713,7 @@ impl Formatter {
                 let line_gap = current_location - previous_location;
                 self.write_rune(sep);
                 // separate different statements with double newline or statements with comments
-                if line_gap > 1 || cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
+                if line_gap > 1 || cur != prev || starts_with_comment(Node::from_stmt(stmt)) {
                     self.write_rune(sep);
                 }
             }
@@ -757,10 +757,10 @@ impl Formatter {
     fn format_assignment(&mut self, n: &ast::Assignment) {
         match &n {
             ast::Assignment::Variable(m) => {
-                self.format_node(&Node::VariableAssgn(&m));
+                self.format_node(&Node::VariableAssgn(m));
             }
             ast::Assignment::Member(m) => {
-                self.format_node(&Node::MemberAssgn(&m));
+                self.format_node(&Node::MemberAssgn(m));
             }
         }
     }
@@ -812,12 +812,12 @@ impl Formatter {
             ast::PropertyKey::Identifier(m) => {
                 self.format_comments(&n.lbrack);
                 self.write_rune('.');
-                self.format_node(&Node::Identifier(&m));
+                self.format_node(&Node::Identifier(m));
             }
             ast::PropertyKey::StringLit(m) => {
                 self.format_comments(&n.lbrack);
                 self.write_rune('[');
-                self.format_node(&Node::StringLit(&m));
+                self.format_node(&Node::StringLit(m));
                 self.format_comments(&n.rbrack);
                 self.write_rune(']');
             }
@@ -980,14 +980,14 @@ impl Formatter {
                 self.write_rune(' ');
             }
         }
-        self.format_child_with_parens(Node::UnaryExpr(&n), Node::from_expr(&n.argument));
+        self.format_child_with_parens(Node::UnaryExpr(n), Node::from_expr(&n.argument));
     }
 
     fn format_binary_expression(&mut self, n: &ast::BinaryExpr) {
         self.format_binary(
             &n.base.comments,
             &n.operator.to_string(),
-            Node::BinaryExpr(&n),
+            Node::BinaryExpr(n),
             Node::from_expr(&n.left),
             Node::from_expr(&n.right),
         );
@@ -997,7 +997,7 @@ impl Formatter {
         self.format_binary(
             &n.base.comments,
             &n.operator.to_string(),
-            Node::LogicalExpr(&n),
+            Node::LogicalExpr(n),
             Node::from_expr(&n.left),
             Node::from_expr(&n.right),
         );
@@ -1024,7 +1024,7 @@ impl Formatter {
         self.write_string("import ");
         if let Some(alias) = &n.alias {
             if !alias.name.is_empty() {
-                self.format_node(&Node::Identifier(&alias));
+                self.format_node(&Node::Identifier(alias));
                 self.write_rune(' ')
             }
         }
@@ -1047,7 +1047,7 @@ impl Formatter {
         if let Some(src) = &n.base.location.source {
             if !src.is_empty() {
                 // Preserve the exact literal if we have it
-                self.write_string(&src);
+                self.write_string(src);
                 return;
             }
         }
@@ -1298,7 +1298,7 @@ fn at_least_pipe_depth(depth: i32, p: &ast::PipeExpr) -> bool {
         return true;
     }
     match &p.argument {
-        ast::Expression::PipeExpr(p) => at_least_pipe_depth(depth - 1, &p),
+        ast::Expression::PipeExpr(p) => at_least_pipe_depth(depth - 1, p),
         _ => false,
     }
 }

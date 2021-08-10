@@ -333,12 +333,12 @@ where
 {
     if v.visit(node.clone()) {
         match *node.clone() {
-            Node::Package(ref n) => {
+            Node::Package(n) => {
                 for file in n.files.iter() {
                     walk(v, Rc::new(Node::File(file)));
                 }
             }
-            Node::File(ref n) => {
+            Node::File(n) => {
                 if let Some(ref pkg) = n.package {
                     walk(v, Rc::new(Node::PackageClause(pkg)));
                 }
@@ -349,10 +349,10 @@ where
                     walk(v, Rc::new(Node::from_stmt(stmt)));
                 }
             }
-            Node::PackageClause(ref n) => {
+            Node::PackageClause(n) => {
                 walk(v, Rc::new(Node::Identifier(&n.name)));
             }
-            Node::ImportDeclaration(ref n) => {
+            Node::ImportDeclaration(n) => {
                 if let Some(ref alias) = n.alias {
                     walk(v, Rc::new(Node::Identifier(alias)));
                 }
@@ -360,34 +360,34 @@ where
             }
             Node::Identifier(_) => {}
             Node::IdentifierExpr(_) => {}
-            Node::ArrayExpr(ref n) => {
+            Node::ArrayExpr(n) => {
                 for element in n.elements.iter() {
                     walk(v, Rc::new(Node::from_expr(element)));
                 }
             }
-            Node::DictExpr(ref n) => {
+            Node::DictExpr(n) => {
                 for (key, val) in n.elements.iter() {
                     walk(v, Rc::new(Node::from_expr(key)));
                     walk(v, Rc::new(Node::from_expr(val)));
                 }
             }
-            Node::FunctionExpr(ref n) => {
+            Node::FunctionExpr(n) => {
                 for param in n.params.iter() {
                     walk(v, Rc::new(Node::FunctionParameter(param)));
                 }
                 walk(v, Rc::new(Node::Block(&n.body)));
             }
-            Node::FunctionParameter(ref n) => {
+            Node::FunctionParameter(n) => {
                 walk(v, Rc::new(Node::Identifier(&n.key)));
                 if let Some(ref def) = n.default {
                     walk(v, Rc::new(Node::from_expr(def)));
                 }
             }
-            Node::LogicalExpr(ref n) => {
+            Node::LogicalExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.left)));
                 walk(v, Rc::new(Node::from_expr(&n.right)));
             }
-            Node::ObjectExpr(ref n) => {
+            Node::ObjectExpr(n) => {
                 if let Some(ref i) = n.with {
                     walk(v, Rc::new(Node::IdentifierExpr(i)));
                 }
@@ -395,21 +395,21 @@ where
                     walk(v, Rc::new(Node::Property(prop)));
                 }
             }
-            Node::MemberExpr(ref n) => {
+            Node::MemberExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.object)));
             }
-            Node::IndexExpr(ref n) => {
+            Node::IndexExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.array)));
                 walk(v, Rc::new(Node::from_expr(&n.index)));
             }
-            Node::BinaryExpr(ref n) => {
+            Node::BinaryExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.left)));
                 walk(v, Rc::new(Node::from_expr(&n.right)));
             }
-            Node::UnaryExpr(ref n) => {
+            Node::UnaryExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.argument)));
             }
-            Node::CallExpr(ref n) => {
+            Node::CallExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.callee)));
                 if let Some(ref p) = n.pipe {
                     walk(v, Rc::new(Node::from_expr(p)));
@@ -418,12 +418,12 @@ where
                     walk(v, Rc::new(Node::Property(arg)));
                 }
             }
-            Node::ConditionalExpr(ref n) => {
+            Node::ConditionalExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.test)));
                 walk(v, Rc::new(Node::from_expr(&n.consequent)));
                 walk(v, Rc::new(Node::from_expr(&n.alternate)));
             }
-            Node::StringExpr(ref n) => {
+            Node::StringExpr(n) => {
                 for part in n.parts.iter() {
                     walk(v, Rc::new(Node::from_string_expr_part(part)));
                 }
@@ -436,49 +436,49 @@ where
             Node::BooleanLit(_) => {}
             Node::DateTimeLit(_) => {}
             Node::RegexpLit(_) => {}
-            Node::ExprStmt(ref n) => {
+            Node::ExprStmt(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.expression)));
             }
-            Node::OptionStmt(ref n) => {
+            Node::OptionStmt(n) => {
                 walk(v, Rc::new(Node::from_assignment(&n.assignment)));
             }
-            Node::ReturnStmt(ref n) => {
+            Node::ReturnStmt(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.argument)));
             }
-            Node::TestStmt(ref n) => {
+            Node::TestStmt(n) => {
                 walk(v, Rc::new(Node::VariableAssgn(&n.assignment)));
             }
-            Node::TestCaseStmt(ref n) => {
+            Node::TestCaseStmt(n) => {
                 walk(v, Rc::new(Node::Identifier(&n.id)));
                 walk(v, Rc::new(Node::Block(&n.block)));
             }
-            Node::BuiltinStmt(ref n) => {
+            Node::BuiltinStmt(n) => {
                 walk(v, Rc::new(Node::Identifier(&n.id)));
             }
-            Node::Block(ref n) => match n {
+            Node::Block(n) => match n {
                 Block::Variable(ref assgn, ref next) => {
                     walk(v, Rc::new(Node::VariableAssgn(assgn)));
                     walk(v, Rc::new(Node::Block(&*next)));
                 }
-                Block::Expr(ref estmt, ref next) => {
+                Block::Expr(estmt, next) => {
                     walk(v, Rc::new(Node::ExprStmt(estmt)));
                     walk(v, Rc::new(Node::Block(&*next)))
                 }
                 Block::Return(ref ret_stmt) => walk(v, Rc::new(Node::ReturnStmt(ret_stmt))),
             },
-            Node::Property(ref n) => {
+            Node::Property(n) => {
                 walk(v, Rc::new(Node::Identifier(&n.key)));
                 walk(v, Rc::new(Node::from_expr(&n.value)));
             }
             Node::TextPart(_) => {}
-            Node::InterpolatedPart(ref n) => {
+            Node::InterpolatedPart(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.expression)));
             }
-            Node::VariableAssgn(ref n) => {
+            Node::VariableAssgn(n) => {
                 walk(v, Rc::new(Node::Identifier(&n.id)));
                 walk(v, Rc::new(Node::from_expr(&n.init)));
             }
-            Node::MemberAssgn(ref n) => {
+            Node::MemberAssgn(n) => {
                 walk(v, Rc::new(Node::MemberExpr(&n.member)));
                 walk(v, Rc::new(Node::from_expr(&n.init)));
             }

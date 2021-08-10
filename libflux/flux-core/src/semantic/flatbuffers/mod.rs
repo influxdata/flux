@@ -267,7 +267,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
 
                 let properties = {
                     let prop_vec = v.create_property_vector(obj.properties.len());
-                    let fb_prop_vec = v.builder.create_vector(&prop_vec.as_slice());
+                    let fb_prop_vec = v.builder.create_vector(prop_vec.as_slice());
                     Some(fb_prop_vec)
                 };
 
@@ -489,7 +489,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 let body_loc = v.create_loc(&body_loc);
                 let body_vec = {
                     let stmt_vec = v.create_stmt_vector(block_len);
-                    Some(v.builder.create_vector(&stmt_vec.as_slice()))
+                    Some(v.builder.create_vector(stmt_vec.as_slice()))
                 };
                 let body = Some(fbsemantic::Block::create(
                     &mut v.builder,
@@ -860,7 +860,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 v.import_decls.clear();
 
                 let stmt_vec = v.create_stmt_vector(file.body.len());
-                let body = Some(v.builder.create_vector(&stmt_vec.as_slice()));
+                let body = Some(v.builder.create_vector(stmt_vec.as_slice()));
 
                 let file = fbsemantic::File::create(
                     &mut v.builder,

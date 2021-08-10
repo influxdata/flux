@@ -281,7 +281,7 @@ where
         match *node {
             Node::Package(n) => {
                 for file in n.files.iter() {
-                    walk(&w, Node::File(&file));
+                    walk(&w, Node::File(file));
                 }
             }
             Node::File(n) => {
@@ -318,7 +318,7 @@ where
             }
             Node::FunctionExpr(n) => {
                 for param in n.params.iter() {
-                    walk(&w, Node::Property(&param));
+                    walk(&w, Node::Property(param));
                 }
                 walk(&w, Node::from_function_body(&n.body));
             }
@@ -331,7 +331,7 @@ where
                     walk(&w, Node::Identifier(&ws.source));
                 }
                 for prop in n.properties.iter() {
-                    walk(&w, Node::Property(&prop));
+                    walk(&w, Node::Property(prop));
                 }
             }
             Node::MemberExpr(n) => {
@@ -356,7 +356,7 @@ where
             Node::CallExpr(n) => {
                 walk(&w, Node::from_expr(&n.callee));
                 for arg in n.arguments.iter() {
-                    walk(&w, Node::from_expr(&arg));
+                    walk(&w, Node::from_expr(arg));
                 }
             }
             Node::ConditionalExpr(n) => {
@@ -366,7 +366,7 @@ where
             }
             Node::StringExpr(n) => {
                 for part in n.parts.iter() {
-                    walk(&w, Node::from_string_expr_part(&part));
+                    walk(&w, Node::from_string_expr_part(part));
                 }
             }
             Node::ParenExpr(n) => {
@@ -408,7 +408,7 @@ where
             }
             Node::Block(n) => {
                 for s in n.body.iter() {
-                    walk(&w, Node::from_stmt(&s));
+                    walk(&w, Node::from_stmt(s));
                 }
             }
             Node::Property(n) => {

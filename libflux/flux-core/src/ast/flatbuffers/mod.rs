@@ -292,7 +292,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
             walk::Node::Block(bl) => {
                 let body = {
                     let stmt_vec = v.create_stmt_vector(bl.body.len());
-                    Some(v.builder.create_vector(&stmt_vec.as_slice()))
+                    Some(v.builder.create_vector(stmt_vec.as_slice()))
                 };
                 let bl =
                     fbast::Block::create(&mut v.builder, &fbast::BlockArgs { base_node, body });
@@ -365,7 +365,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
             walk::Node::ObjectExpr(oe) => {
                 let properties = {
                     let prop_vec = v.create_property_vector(oe.properties.len());
-                    let fb_prop_vec = v.builder.create_vector(&prop_vec.as_slice());
+                    let fb_prop_vec = v.builder.create_vector(prop_vec.as_slice());
                     Some(fb_prop_vec)
                 };
                 let with = match oe.with {
@@ -692,7 +692,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                 };
                 let body = {
                     let stmt_vec = v.create_stmt_vector(stmt.block.body.len());
-                    Some(v.builder.create_vector(&stmt_vec.as_slice()))
+                    Some(v.builder.create_vector(stmt_vec.as_slice()))
                 };
                 let block =
                     fbast::Block::create(&mut v.builder, &fbast::BlockArgs { base_node, body });
@@ -750,7 +750,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                 v.import_decls.clear();
 
                 let stmt_vec = v.create_stmt_vector(f.body.len());
-                let body = Some(v.builder.create_vector(&stmt_vec.as_slice()));
+                let body = Some(v.builder.create_vector(stmt_vec.as_slice()));
                 let f = fbast::File::create(
                     &mut v.builder,
                     &fbast::FileArgs {

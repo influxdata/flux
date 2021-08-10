@@ -124,7 +124,7 @@ pub extern "C" fn flux_ast_format(
 ) -> Option<Box<ErrorHandle>> {
     let mut out_str = String::new();
     for file in &ast_pkg.files {
-        let s = match formatter::convert_to_string(&file) {
+        let s = match formatter::convert_to_string(file) {
             Ok(v) => v,
             Err(e) => return Some(e.into()),
         };
@@ -448,7 +448,7 @@ impl SemanticAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                let poly = self.imports.lookup(&path).unwrap();
+                let poly = self.imports.lookup(path).unwrap();
                 env.add(name.to_owned(), poly.to_owned());
             }
         }
