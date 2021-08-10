@@ -302,3 +302,57 @@ func Test_UInt(t *testing.T) {
 		})
 	}
 }
+
+func Test_Bytes(t *testing.T) {
+	testCases := []struct {
+		name      string
+		v         interface{}
+		want      []byte
+		wantNull  bool
+		expectErr error
+	}{
+		{
+			name: "bytes(v:hexString)",
+			v:    "6869",
+			want: []byte("hi"),
+		},
+		{
+			name:      "bytes(v:invalidHexString)",
+			v:         "6",
+			expectErr: errors.New("cannot convert string \"6\" to bytes due to hex decoding error: encoding/hex: odd length hex string"),
+		},
+		{
+			name:      "bytes(v:invalidType)",
+			v:         true,
+			expectErr: errors.New("cannot convert bool to bytes"),
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			myMap := map[string]values.Value{
+				"v": values.New(tc.v),
+			}
+			args := values.NewObjectWithValues(myMap)
+			c := bytesConv
+			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
+			if err != nil {
+				if tc.expectErr == nil {
+					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
+				} else if want, got := tc.expectErr.Error(), err.Error(); got != want {
+					t.Errorf("unexpected error - want: %s, got: %s", want, got)
+				}
+				return
+			}
+			if !tc.wantNull {
+				want := values.NewBytes(tc.want)
+				if !got.Equal(want) {
+					t.Errorf("Wanted: %s, got: %v", want, got)
+				}
+			} else {
+				if !got.IsNull() {
+					t.Errorf("Wanted: %v, got: %v", values.Null, got)
+				}
+			}
+		})
+	}
+}

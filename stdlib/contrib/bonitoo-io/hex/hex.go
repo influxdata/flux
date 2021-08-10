@@ -22,12 +22,14 @@ func init() {
 	runtime.RegisterPackageValue(pkgName, "string", stringConv)
 	runtime.RegisterPackageValue(pkgName, "int", intConv)
 	runtime.RegisterPackageValue(pkgName, "uint", uintConv)
+	runtime.RegisterPackageValue(pkgName, "bytes", bytesConv)
 }
 
 var (
 	convIntType    = runtime.MustLookupBuiltinType(pkgName, "int")
 	convUintType   = runtime.MustLookupBuiltinType(pkgName, "uint")
 	convStringType = runtime.MustLookupBuiltinType(pkgName, "string")
+	convBytesType  = runtime.MustLookupBuiltinType(pkgName, "bytes")
 )
 
 var errMissingArg = errors.Newf(codes.Invalid, "missing argument %q", conversionArg)
@@ -156,6 +158,28 @@ var uintConv = values.NewFunction(
 			return nil, errors.Newf(codes.Invalid, "cannot convert %v to uint", v.Type())
 		}
 		return values.NewUInt(i), nil
+	},
+	false,
+)
+
+var bytesConv = values.NewFunction(
+	"bytes",
+	convBytesType,
+	func(ctx context.Context, args values.Object) (values.Value, error) {
+		v, ok := args.Get(conversionArg)
+		if !ok {
+			return nil, errMissingArg
+		}
+		switch v.Type().Nature() {
+		case semantic.String:
+			bytes, err := goHex.DecodeString(v.Str())
+			if err != nil {
+				return nil, errors.Newf(codes.Invalid, "cannot convert string %q to bytes due to hex decoding error: %v", v.Str(), err)
+			}
+			return values.NewBytes(bytes), nil
+		default:
+			return nil, errors.Newf(codes.Invalid, "cannot convert %v to bytes", v.Type())
+		}
 	},
 	false,
 )
