@@ -205,7 +205,7 @@ pub fn stdlib_docs(
 ) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
     let mut docs = Vec::new();
     for file in files.values() {
-        let pkg = generate_docs(&lib, file)?;
+        let pkg = generate_docs(lib, file)?;
         docs.push(pkg);
     }
     Ok(docs)
@@ -219,7 +219,7 @@ fn generate_docs(
     // construct the package documentation
     // use type inference to determine types of all values
     let mut all_comment = String::new();
-    let members = generate_values(&file, &types)?;
+    let members = generate_values(file, types)?;
     if Some(&file.package) != None {
         all_comment = comments_to_string(&file.package.as_ref().unwrap().base.comments);
     }
@@ -239,7 +239,7 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
     let mut headline: String = "".to_string();
     let mut reached_end: bool = false;
     let mut description_text: String = "".to_string();
-    let parser = Parser::new(&all_comment);
+    let parser = Parser::new(all_comment);
     for event in parser {
         match event {
             Event::Text(t) => {
@@ -248,7 +248,7 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
                 } else {
                     description_text.push_str(&t.to_string());
                     if description_text.ends_with('.') {
-                        description_text.push_str(&" ");
+                        description_text.push(' ');
                     }
                 }
                 format!("{}", t)
