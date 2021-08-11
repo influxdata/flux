@@ -56,6 +56,8 @@ pub enum Doc {
 /// PackageDoc represents the documentation for a package and its sub packages
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct PackageDoc {
+    /// the relative path to the package
+    pub path: String,
     /// the name of the comments package
     pub name: String,
     /// the headline of the package
@@ -186,8 +188,8 @@ pub fn stdlib_docs(
     files: &AstFileMap,
 ) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
     let mut docs = Vec::new();
-    for file in files.values() {
-        let pkg = generate_docs(lib, file)?;
+    for (pkgpath, file) in files.iter() {
+        let pkg = generate_docs(&lib, file, pkgpath)?;
         docs.push(pkg);
     }
     Ok(docs)
@@ -197,11 +199,12 @@ pub fn stdlib_docs(
 fn generate_docs(
     types: &PolyTypeMap,
     file: &ast::File,
+    pkgpath: &String
 ) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
     let mut all_comment = String::new();
-    let members = generate_values(file, types)?;
+    let members = generate_values(&file, &types, pkgpath)?;
     if Some(&file.package) != None {
         all_comment = comments_to_string(&file.package.as_ref().unwrap().base.comments);
     }
@@ -209,6 +212,7 @@ fn generate_docs(
 
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
+        path: pkgpath.to_string(),
         name: file.package.clone().unwrap().name.name,
         headline,
         description,
@@ -360,6 +364,7 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
 fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
+    _pkgpath: &String
 ) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
     let mut members: HashMap<String, Doc> = HashMap::new();
     for stmt in &f.body {

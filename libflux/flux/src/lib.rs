@@ -1125,6 +1125,7 @@ from(bucket: v.bucket)
     fn ensure_docs() {
         let doc = docs();
         let mut exact: PackageDoc = PackageDoc {
+            path: "csv".to_string(),
             name: "csv".to_string(),
             headline: "Package csv provides tools for working with data in annotated CSV format."
                 .to_string(),
@@ -1206,13 +1207,14 @@ csv.from(
             flux_type: "".to_string(),
         })));
         let mut got = PackageDoc {
+            path: String::new(),
             name: String::new(),
             headline: String::new(),
             description: None,
             members: std::collections::HashMap::new(),
         };
         for d in doc {
-            if d.name == "csv" {
+            if d.path == "csv" {
                 got = d;
                 break;
             }
@@ -1225,6 +1227,7 @@ csv.from(
     fn ensure_docs2() {
         let doc = docs();
         let mut exact: PackageDoc = PackageDoc{
+            path: "array".to_string(),
             name: "array".to_string(),
             headline: "Package array provides functions for building tables from flux arrays.".to_string(),
             description: None,
@@ -1269,9 +1272,15 @@ union(tables: [tags, wildcard_tag])
             }],
             flux_type: "".to_string(),
         })));
-        let mut got = PackageDoc{ name: String::new(), headline: String::new(), description: None, members: std::collections::HashMap::new() };
+        let mut got = PackageDoc{ 
+            path: String::new(),
+            name: String::new(),
+            headline: String::new(),
+            description: None,
+            members: std::collections::HashMap::new()
+        };
         for d in doc {
-            if d.name == "array" {
+            if d.path == "array" {
                 got = d;
                 break;
             }
