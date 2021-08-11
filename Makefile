@@ -35,6 +35,7 @@ GENERATED_TARGETS = \
 	stdlib/packages.go \
 	internal/fbsemantic/semantic_generated.go \
 	internal/fbsemantic/semantic_generated.go \
+	internal/feature/flags.go \
 	libflux/go/libflux/buildinfo.gen.go \
 	$(LIBFLUX_GENERATED_TARGETS)
 
@@ -63,6 +64,9 @@ ast/asttest/cmpopts.go: ast/ast.go ast/asttest/gen.go $$(call go_deps,./internal
 
 stdlib/packages.go: $(STDLIB_SOURCES) libflux-go internal/fbsemantic/semantic_generated.go
 	$(GO_GENERATE) ./stdlib
+
+internal/feature/flags.go: internal/feature/flags.yml
+	$(GO_GENERATE) ./internal/feature
 
 libflux: $(LIBFLUX_GENERATED_TARGETS)
 	cd libflux && $(CARGO) build $(CARGO_ARGS)
