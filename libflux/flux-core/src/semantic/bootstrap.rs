@@ -335,13 +335,8 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                     if tmp.ends_with('.') {
                         tmp.push_str(&" ");
                     }
-                    match &event[1] {
-                        Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) => {
-                            tmp.push_str(&"```\n\n");
-                        }
-                        _ => {
-                            println!("Unsupported type found!");
-                        }
+                    if let Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) = &event[1] {
+                        tmp.push_str(&"```\n\n");
                     }
                 }
             }
@@ -354,7 +349,7 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                 tmp = &mut funcdocs.description;
             }
             _ => {
-                println!("Unsupported type found!");
+                // unused event tag found. Can be safely ignored.
             }
         }
     }
