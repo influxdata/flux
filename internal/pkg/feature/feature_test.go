@@ -135,7 +135,7 @@ func Test_feature(t *testing.T) {
 }
 
 type testFlagsFlagger struct {
-	m   map[string]interface{}
+	m map[string]interface{}
 }
 
 func (f testFlagsFlagger) FlagValue(ctx context.Context, flag feature.Flag) interface{} {
