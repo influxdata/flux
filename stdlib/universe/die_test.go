@@ -25,7 +25,7 @@ func TestDie(t *testing.T) {
 		}
 
 		want := &flux.Error{
-			Code: codes.Internal,
+			Code: codes.Invalid,
 			Msg:  "this is an error message",
 		}
 
