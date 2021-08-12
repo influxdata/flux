@@ -16,6 +16,14 @@ func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
 }
 
+type Dependency struct {
+	Flagger Flagger
+}
+
+func (d Dependency) Inject(ctx context.Context) context.Context {
+	return Inject(ctx, d.Flagger)
+}
+
 // Flags returns all feature flags.
 func Flags() []Flag {
 	return feature.Flags()
