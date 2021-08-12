@@ -1011,7 +1011,24 @@ impl Record {
             },
         }
     }
-}
+    pub(crate) fn find_prop(&self, p: &String) -> Option<MonoType> {
+        match self {
+            Record::Empty => None,
+            Record::Extension { head, tail } => {
+                if &head.k == p {
+                    return Some(head.v.clone());
+                }
+                match tail {
+                    MonoType::Record(obj) => {
+                        obj.find_prop(p)
+                    }
+                    _ => None,
+                }
+            }
+                }
+            }
+        }
+
 
 // Unification requires that the current substitution be applied
 // to both sides of a constraint before unifying.

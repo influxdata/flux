@@ -204,7 +204,7 @@ fn generate_docs(
     // construct the package documentation
     // use type inference to determine types of all values
     let mut all_comment = String::new();
-    let members = generate_values(&file, &types)?;
+    let members = generate_values(&file, &types, &pkgpath)?;
     if Some(&file.package) != None {
         all_comment = comments_to_string(&file.package.as_ref().unwrap().base.comments);
     }
@@ -364,6 +364,7 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
 fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
+    pkgpath: &str,
 ) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
     let mut members: HashMap<String, Doc> = HashMap::new();
     for stmt in &f.body {
@@ -372,46 +373,56 @@ fn generate_values(
                 let doc = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
                 let funcdoc = separate_func_docs(&doc, &name);
-                if !types.contains_key(&name) {
-                    continue;
+                let pkgtype = &types[pkgpath];
+                if let MonoType::Record(r) = &pkgtype.expr {
+                    let typ = r.find_prop(&name);
+                    if let Some(typ) = typ {
+                        match typ {
+                            MonoType::Fun(_f) => {
+                                members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
+                            }
+                            _ => {
+                                let variable = ValueDoc {
+                                    name: name.clone(),
+                                    headline: funcdoc.headline,
+                                    description: Option::from(funcdoc.description),
+                                    flux_type: format!("{}", typ),
+                                };
+                                members.insert(name.clone(), Doc::Value(Box::new(variable)));
+                            }
+                        }
+                    }
                 }
-                let typ = format!("{}", types[&name].normal());
-                match &types[&name].expr {
-                    MonoType::Fun(_f) => {
-                        members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
-                    }
-                    _ => {
-                        let variable = ValueDoc {
-                            name: name.clone(),
-                            headline: funcdoc.headline,
-                            description: Option::from(funcdoc.description),
-                            flux_type: typ,
-                        };
-                        members.insert(name.clone(), Doc::Value(Box::new(variable)));
-                    }
+                else{
+                    panic!();
                 }
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let name = s.id.name.clone();
                 let funcdoc = separate_func_docs(&doc, &name);
-                if !types.contains_key(&name) {
-                    continue;
+                let pkgtype = &types[pkgpath];
+                if let MonoType::Record(r) = &pkgtype.expr {
+                    let typ = r.find_prop(&name);
+                    if let Some(typ) = typ {
+                        match typ {
+                            MonoType::Fun(_f) => {
+                                members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
+                            }
+                            _ => {
+                                let builtin = ValueDoc {
+                                    name: name.clone(),
+                                    headline: funcdoc.headline,
+                                    description: Option::from(funcdoc.description),
+                                    flux_type: format!("{}", typ),
+                                };
+                                members.insert(name.clone(), Doc::Value(Box::new(builtin)));
+                            }
+                        }
+                    }
                 }
-                let typ = format!("{}", types[&name].normal());
-                match &types[&name].expr {
-                    MonoType::Fun(_f) => {
-                        members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
-                    }
-                    _ => {
-                        let builtin = ValueDoc {
-                            name: name.clone(),
-                            headline: funcdoc.headline,
-                            description: Option::from(funcdoc.description),
-                            flux_type: typ,
-                        };
-                        members.insert(name.clone(), Doc::Value(Box::new(builtin)));
-                    }
+                else{
+                    panic!();
                 }
             }
             ast::Statement::Option(s) => {
@@ -419,23 +430,28 @@ fn generate_values(
                     let doc = comments_to_string(&s.base.comments);
                     let name = v.id.name.clone();
                     let funcdoc = separate_func_docs(&doc, &name);
-                    if !types.contains_key(&name) {
-                        continue;
+                    let pkgtype = &types[pkgpath];
+                    if let MonoType::Record(r) = &pkgtype.expr {
+                        let typ = r.find_prop(&name);
+                        if let Some(typ) = typ {
+                            match typ {
+                                MonoType::Fun(_f) => {
+                                    members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
+                                }
+                                _ => {
+                                    let option = ValueDoc {
+                                        name: name.clone(),
+                                        headline: funcdoc.headline,
+                                        description: Option::from(funcdoc.description),
+                                        flux_type: format!("{}", typ),
+                                    };
+                                    members.insert(name.clone(), Doc::Value(Box::new(option)));
+                                }
+                            }
+                        }
                     }
-                    let typ = format!("{}", types[&name].normal());
-                    match &types[&name].expr {
-                        MonoType::Fun(_f) => {
-                            members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
-                        }
-                        _ => {
-                            let option = ValueDoc {
-                                name: name.clone(),
-                                headline: funcdoc.headline,
-                                description: Option::from(funcdoc.description),
-                                flux_type: typ,
-                            };
-                            members.insert(name.clone(), Doc::Value(Box::new(option)));
-                        }
+                    else{
+                        panic!();
                     }
                 }
             }
