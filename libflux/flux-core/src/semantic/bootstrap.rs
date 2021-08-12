@@ -199,12 +199,12 @@ pub fn stdlib_docs(
 fn generate_docs(
     types: &PolyTypeMap,
     file: &ast::File,
-    pkgpath: &String
+    pkgpath: &str
 ) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
     let mut all_comment = String::new();
-    let members = generate_values(&file, &types, pkgpath)?;
+    let members = generate_values(&file, &types)?;
     if Some(&file.package) != None {
         all_comment = comments_to_string(&file.package.as_ref().unwrap().base.comments);
     }
@@ -364,7 +364,6 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
 fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
-    _pkgpath: &String
 ) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
     let mut members: HashMap<String, Doc> = HashMap::new();
     for stmt in &f.body {
