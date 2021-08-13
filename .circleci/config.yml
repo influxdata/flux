@@ -85,9 +85,6 @@ jobs:
       - checkout
       - run: make test-valgrind
   build-windows:
-    environment:
-      # NOTE: If you change this, you must also change the version in the `FROM` line in `Dockerfile_build`.
-      RUST_VERSION: 1.53
     machine:
       image: windows-server-2019-vs2019:stable
     resource_class: windows.medium
@@ -99,6 +96,7 @@ jobs:
             choco upgrade golang --version=1.16.6
 
             choco install \
+              grep \
               llvm \
               pkgconfiglite \
               rustup.install
@@ -107,9 +105,15 @@ jobs:
             choco install mingw --version=8.1.0
 
             echo 'export PATH="${HOME}/.cargo/bin:/c/Program Files/Go/bin:${PATH}"' >> $BASH_ENV
+      - checkout
       - run:
           name: Pin rust version and install mingw rustup target
           command: |
+            RUST_VERSION=$(grep -Eo 'rust:[^ ]+' Dockerfile_build | cut -d: -f2)
+            if [ -z "$RUST_VERSION" ]; then
+              echo "Error: couldn't parse Rust version from Dockerfile_build!"
+              exit 1
+            fi
             rustup default ${RUST_VERSION}
             rustup target add x86_64-pc-windows-gnu
             # Cargo's built-in support for fetching dependencies from GitHub requires
@@ -119,7 +123,6 @@ jobs:
             [net]
             git-fetch-with-cli = true
             EOF
-      - checkout
       - run:
           name: Install pkg-config wrapper
           command: |

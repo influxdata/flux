@@ -64,7 +64,7 @@ type executionState struct {
 	sources []Source
 	metaCh  chan metadata.Metadata
 
-	transports []Transport
+	transports []AsyncTransport
 
 	dispatcher *poolDispatcher
 	logger     *zap.Logger
@@ -223,7 +223,6 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			ds.WithContext(v.es.ctx)
 		}
 
-		tr.SetLabel(string(node.ID()))
 		if ppn.TriggerSpec == nil {
 			ppn.TriggerSpec = plan.DefaultTriggerSpec
 		}
@@ -232,7 +231,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 
 		for _, p := range nonYieldPredecessors(node) {
 			executionNode := v.nodes[p]
-			transport := newConsecutiveTransport(v.es.ctx, v.es.dispatcher, tr, node, v.es.logger)
+			transport := newConsecutiveTransport(v.es.ctx, v.es.dispatcher, tr, node, v.es.logger, v.es.alloc)
 			v.es.transports = append(v.es.transports, transport)
 			executionNode.AddTransformation(transport)
 		}

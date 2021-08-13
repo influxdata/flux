@@ -329,7 +329,7 @@ impl FunctionBody {
     pub fn base(&self) -> &BaseNode {
         match self {
             FunctionBody::Block(wrapped) => &wrapped.base,
-            FunctionBody::Expr(wrapped) => &wrapped.base(),
+            FunctionBody::Expr(wrapped) => wrapped.base(),
         }
     }
 }

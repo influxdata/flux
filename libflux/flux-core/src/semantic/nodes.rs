@@ -78,13 +78,13 @@ pub enum Statement {
 impl Statement {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
-            Statement::Expr(stmt) => Statement::Expr(stmt.apply(&sub)),
-            Statement::Variable(stmt) => Statement::Variable(Box::new(stmt.apply(&sub))),
-            Statement::Option(stmt) => Statement::Option(Box::new(stmt.apply(&sub))),
-            Statement::Return(stmt) => Statement::Return(stmt.apply(&sub)),
-            Statement::Test(stmt) => Statement::Test(Box::new(stmt.apply(&sub))),
-            Statement::TestCase(stmt) => Statement::TestCase(Box::new(stmt.apply(&sub))),
-            Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(&sub)),
+            Statement::Expr(stmt) => Statement::Expr(stmt.apply(sub)),
+            Statement::Variable(stmt) => Statement::Variable(Box::new(stmt.apply(sub))),
+            Statement::Option(stmt) => Statement::Option(Box::new(stmt.apply(sub))),
+            Statement::Return(stmt) => Statement::Return(stmt.apply(sub)),
+            Statement::Test(stmt) => Statement::Test(Box::new(stmt.apply(sub))),
+            Statement::TestCase(stmt) => Statement::TestCase(Box::new(stmt.apply(sub))),
+            Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(sub)),
         }
     }
 }
@@ -99,8 +99,8 @@ pub enum Assignment {
 impl Assignment {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
-            Assignment::Variable(assign) => Assignment::Variable(assign.apply(&sub)),
-            Assignment::Member(assign) => Assignment::Member(assign.apply(&sub)),
+            Assignment::Variable(assign) => Assignment::Variable(assign.apply(sub)),
+            Assignment::Member(assign) => Assignment::Member(assign.apply(sub)),
         }
     }
 }
@@ -212,27 +212,27 @@ impl Expression {
     }
     fn apply(self, sub: &Substitution) -> Self {
         match self {
-            Expression::Identifier(e) => Expression::Identifier(e.apply(&sub)),
-            Expression::Array(e) => Expression::Array(Box::new(e.apply(&sub))),
-            Expression::Dict(e) => Expression::Dict(Box::new(e.apply(&sub))),
-            Expression::Function(e) => Expression::Function(Box::new(e.apply(&sub))),
-            Expression::Logical(e) => Expression::Logical(Box::new(e.apply(&sub))),
-            Expression::Object(e) => Expression::Object(Box::new(e.apply(&sub))),
-            Expression::Member(e) => Expression::Member(Box::new(e.apply(&sub))),
-            Expression::Index(e) => Expression::Index(Box::new(e.apply(&sub))),
-            Expression::Binary(e) => Expression::Binary(Box::new(e.apply(&sub))),
-            Expression::Unary(e) => Expression::Unary(Box::new(e.apply(&sub))),
-            Expression::Call(e) => Expression::Call(Box::new(e.apply(&sub))),
-            Expression::Conditional(e) => Expression::Conditional(Box::new(e.apply(&sub))),
-            Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.apply(&sub))),
-            Expression::Integer(lit) => Expression::Integer(lit.apply(&sub)),
-            Expression::Float(lit) => Expression::Float(lit.apply(&sub)),
-            Expression::StringLit(lit) => Expression::StringLit(lit.apply(&sub)),
-            Expression::Duration(lit) => Expression::Duration(lit.apply(&sub)),
-            Expression::Uint(lit) => Expression::Uint(lit.apply(&sub)),
-            Expression::Boolean(lit) => Expression::Boolean(lit.apply(&sub)),
-            Expression::DateTime(lit) => Expression::DateTime(lit.apply(&sub)),
-            Expression::Regexp(lit) => Expression::Regexp(lit.apply(&sub)),
+            Expression::Identifier(e) => Expression::Identifier(e.apply(sub)),
+            Expression::Array(e) => Expression::Array(Box::new(e.apply(sub))),
+            Expression::Dict(e) => Expression::Dict(Box::new(e.apply(sub))),
+            Expression::Function(e) => Expression::Function(Box::new(e.apply(sub))),
+            Expression::Logical(e) => Expression::Logical(Box::new(e.apply(sub))),
+            Expression::Object(e) => Expression::Object(Box::new(e.apply(sub))),
+            Expression::Member(e) => Expression::Member(Box::new(e.apply(sub))),
+            Expression::Index(e) => Expression::Index(Box::new(e.apply(sub))),
+            Expression::Binary(e) => Expression::Binary(Box::new(e.apply(sub))),
+            Expression::Unary(e) => Expression::Unary(Box::new(e.apply(sub))),
+            Expression::Call(e) => Expression::Call(Box::new(e.apply(sub))),
+            Expression::Conditional(e) => Expression::Conditional(Box::new(e.apply(sub))),
+            Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.apply(sub))),
+            Expression::Integer(lit) => Expression::Integer(lit.apply(sub)),
+            Expression::Float(lit) => Expression::Float(lit.apply(sub)),
+            Expression::StringLit(lit) => Expression::StringLit(lit.apply(sub)),
+            Expression::Duration(lit) => Expression::Duration(lit.apply(sub)),
+            Expression::Uint(lit) => Expression::Uint(lit.apply(sub)),
+            Expression::Boolean(lit) => Expression::Boolean(lit.apply(sub)),
+            Expression::DateTime(lit) => Expression::DateTime(lit.apply(sub)),
+            Expression::Regexp(lit) => Expression::Regexp(lit.apply(sub)),
         }
     }
 }
@@ -263,7 +263,7 @@ where
 
 #[allow(missing_docs)]
 pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
-    pkg.apply(&sub)
+    pkg.apply(sub)
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -288,11 +288,7 @@ impl Package {
             })
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.files = self
-            .files
-            .into_iter()
-            .map(|file| file.apply(&sub))
-            .collect();
+        self.files = self.files.into_iter().map(|file| file.apply(sub)).collect();
         self
     }
 }
@@ -366,7 +362,7 @@ impl File {
         Ok((env, constraints))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.body = self.body.into_iter().map(|stmt| stmt.apply(&sub)).collect();
+        self.body = self.body.into_iter().map(|stmt| stmt.apply(sub)).collect();
         self
     }
 }
@@ -429,7 +425,7 @@ impl OptionStmt {
         }
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.assignment = self.assignment.apply(&sub);
+        self.assignment = self.assignment.apply(sub);
         self
     }
 }
@@ -465,7 +461,7 @@ impl TestStmt {
         self.assignment.infer(env, f)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.assignment = self.assignment.apply(&sub);
+        self.assignment = self.assignment.apply(sub);
         self
     }
 }
@@ -483,7 +479,7 @@ impl TestCaseStmt {
         self.block.infer(env, f)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.block = self.block.apply(&sub);
+        self.block = self.block.apply(sub);
         self
     }
 }
@@ -503,7 +499,7 @@ impl ExprStmt {
         Ok((env.apply(&sub), cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.expression = self.expression.apply(&sub);
+        self.expression = self.expression.apply(sub);
         self
     }
 }
@@ -522,7 +518,7 @@ impl ReturnStmt {
         self.argument.infer(env, f)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.argument = self.argument.apply(&sub);
+        self.argument = self.argument.apply(sub);
         self
     }
 }
@@ -596,7 +592,7 @@ impl VariableAssgn {
         Ok((env, constraints))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.init = self.init.apply(&sub);
+        self.init = self.init.apply(sub);
         self
     }
 }
@@ -612,8 +608,8 @@ pub struct MemberAssgn {
 
 impl MemberAssgn {
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.member = self.member.apply(&sub);
-        self.init = self.init.apply(&sub);
+        self.member = self.member.apply(sub);
+        self.init = self.init.apply(sub);
         self
     }
 }
@@ -645,11 +641,7 @@ impl StringExpr {
         Ok((env, Constraints::from(constraints)))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.parts = self
-            .parts
-            .into_iter()
-            .map(|part| part.apply(&sub))
-            .collect();
+        self.parts = self.parts.into_iter().map(|part| part.apply(sub)).collect();
         self
     }
 }
@@ -664,7 +656,7 @@ pub enum StringExprPart {
 impl StringExprPart {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
-            StringExprPart::Interpolated(part) => StringExprPart::Interpolated(part.apply(&sub)),
+            StringExprPart::Interpolated(part) => StringExprPart::Interpolated(part.apply(sub)),
             StringExprPart::Text(_) => self,
         }
     }
@@ -688,7 +680,7 @@ pub struct InterpolatedPart {
 
 impl InterpolatedPart {
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.expression = self.expression.apply(&sub);
+        self.expression = self.expression.apply(sub);
         self
     }
 }
@@ -727,11 +719,11 @@ impl ArrayExpr {
         Ok((env, cons.into()))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
+        self.typ = self.typ.apply(sub);
         self.elements = self
             .elements
             .into_iter()
-            .map(|element| element.apply(&sub))
+            .map(|element| element.apply(sub))
             .collect();
         self
     }
@@ -795,11 +787,11 @@ impl DictExpr {
         Ok((env, cons + vec![eq, tc].into()))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
+        self.typ = self.typ.apply(sub);
         self.elements = self
             .elements
             .into_iter()
-            .map(|(key, val)| (key.apply(&sub), val.apply(&sub)))
+            .map(|(key, val)| (key.apply(sub), val.apply(sub)))
             .collect();
         self
     }
@@ -913,13 +905,13 @@ impl FunctionExpr {
     }
     #[allow(missing_docs)]
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
+        self.typ = self.typ.apply(sub);
         self.params = self
             .params
             .into_iter()
-            .map(|param| param.apply(&sub))
+            .map(|param| param.apply(sub))
             .collect();
-        self.body = self.body.apply(&sub);
+        self.body = self.body.apply(sub);
         self
     }
 }
@@ -981,10 +973,10 @@ impl Block {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
             Block::Variable(assign, next) => {
-                Block::Variable(Box::new(assign.apply(&sub)), Box::new(next.apply(&sub)))
+                Block::Variable(Box::new(assign.apply(sub)), Box::new(next.apply(sub)))
             }
-            Block::Expr(es, next) => Block::Expr(es.apply(&sub), Box::new(next.apply(&sub))),
-            Block::Return(e) => Block::Return(e.apply(&sub)),
+            Block::Expr(es, next) => Block::Expr(es.apply(sub), Box::new(next.apply(sub))),
+            Block::Return(e) => Block::Return(e.apply(sub)),
         }
     }
 }
@@ -1004,7 +996,7 @@ impl FunctionParameter {
     fn apply(mut self, sub: &Substitution) -> Self {
         match self.default {
             Some(e) => {
-                self.default = Some(e.apply(&sub));
+                self.default = Some(e.apply(sub));
                 self
             }
             None => self,
@@ -1312,9 +1304,9 @@ impl BinaryExpr {
         Ok((env, lcons + rcons + cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
-        self.left = self.left.apply(&sub);
-        self.right = self.right.apply(&sub);
+        self.typ = self.typ.apply(sub);
+        self.left = self.left.apply(sub);
+        self.right = self.right.apply(sub);
         self
     }
 }
@@ -1384,16 +1376,16 @@ impl CallExpr {
         Ok((env, cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
-        self.callee = self.callee.apply(&sub);
+        self.typ = self.typ.apply(sub);
+        self.callee = self.callee.apply(sub);
         self.arguments = self
             .arguments
             .into_iter()
-            .map(|arg| arg.apply(&sub))
+            .map(|arg| arg.apply(sub))
             .collect();
         match self.pipe {
             Some(e) => {
-                self.pipe = Some(e.apply(&sub));
+                self.pipe = Some(e.apply(sub));
                 self
             }
             None => self,
@@ -1434,9 +1426,9 @@ impl ConditionalExpr {
         Ok((env, cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.test = self.test.apply(&sub);
-        self.consequent = self.consequent.apply(&sub);
-        self.alternate = self.alternate.apply(&sub);
+        self.test = self.test.apply(sub);
+        self.consequent = self.consequent.apply(sub);
+        self.alternate = self.alternate.apply(sub);
         self
     }
 }
@@ -1472,8 +1464,8 @@ impl LogicalExpr {
         Ok((env, cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.left = self.left.apply(&sub);
-        self.right = self.right.apply(&sub);
+        self.left = self.left.apply(sub);
+        self.right = self.right.apply(sub);
         self
     }
 }
@@ -1519,8 +1511,8 @@ impl MemberExpr {
         ))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
-        self.object = self.object.apply(&sub);
+        self.typ = self.typ.apply(sub);
+        self.object = self.object.apply(sub);
         self
     }
 }
@@ -1558,9 +1550,9 @@ impl IndexExpr {
         Ok((env, cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
-        self.array = self.array.apply(&sub);
-        self.index = self.index.apply(&sub);
+        self.typ = self.typ.apply(sub);
+        self.array = self.array.apply(sub);
+        self.index = self.index.apply(sub);
         self
     }
 }
@@ -1615,14 +1607,14 @@ impl ObjectExpr {
         ))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
+        self.typ = self.typ.apply(sub);
         if let Some(e) = self.with {
-            self.with = Some(e.apply(&sub));
+            self.with = Some(e.apply(sub));
         }
         self.properties = self
             .properties
             .into_iter()
-            .map(|prop| prop.apply(&sub))
+            .map(|prop| prop.apply(sub))
             .collect();
         self
     }
@@ -1685,8 +1677,8 @@ impl UnaryExpr {
         Ok((env, acons + cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
-        self.argument = self.argument.apply(&sub);
+        self.typ = self.typ.apply(sub);
+        self.argument = self.argument.apply(sub);
         self
     }
 }
@@ -1702,7 +1694,7 @@ pub struct Property {
 
 impl Property {
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.value = self.value.apply(&sub);
+        self.value = self.value.apply(sub);
         self
     }
 }
@@ -1739,7 +1731,7 @@ impl IdentifierExpr {
         }
     }
     fn apply(mut self, sub: &Substitution) -> Self {
-        self.typ = self.typ.apply(&sub);
+        self.typ = self.typ.apply(sub);
         self
     }
 }

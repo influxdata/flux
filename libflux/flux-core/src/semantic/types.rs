@@ -1097,7 +1097,7 @@ impl fmt::Display for Function {
             .collect::<BTreeMap<_, _>>()
             .iter()
             .map(|(&k, &v)| Property {
-                k: String::from("?") + &k,
+                k: String::from("?") + k,
                 v: v.clone(),
             })
             .collect::<Vec<_>>();

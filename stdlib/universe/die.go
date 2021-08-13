@@ -2,6 +2,7 @@ package universe
 
 import (
 	"context"
+
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/interpreter"
@@ -26,7 +27,7 @@ func Die() values.Function {
 					return nil, err
 				} else {
 					return nil, &flux.Error{
-						Code: codes.Internal,
+						Code: codes.Invalid,
 						Msg:  msg,
 					}
 				}

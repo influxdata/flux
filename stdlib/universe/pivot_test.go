@@ -1490,6 +1490,16 @@ func TestSortedPivot_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "pivot no data",
+			spec: &universe.SortedPivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{},
+			want: nil,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
