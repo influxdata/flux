@@ -15,7 +15,7 @@ import (
 const SkewKind = "skew"
 
 type SkewOpSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func init() {
@@ -32,7 +32,7 @@ func CreateSkewOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	s := new(SkewOpSpec)
-	if err := s.AggregateConfig.ReadArgs(args); err != nil {
+	if err := s.SimpleAggregateConfig.ReadArgs(args); err != nil {
 		return nil, err
 	}
 
@@ -48,7 +48,7 @@ func (s *SkewOpSpec) Kind() flux.OperationKind {
 }
 
 type SkewProcedureSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func newSkewProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
@@ -57,7 +57,7 @@ func newSkewProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Proced
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &SkewProcedureSpec{
-		AggregateConfig: spec.AggregateConfig,
+		SimpleAggregateConfig: spec.SimpleAggregateConfig,
 	}, nil
 }
 
@@ -66,7 +66,7 @@ func (s *SkewProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *SkewProcedureSpec) Copy() plan.ProcedureSpec {
 	return &SkewProcedureSpec{
-		AggregateConfig: s.AggregateConfig,
+		SimpleAggregateConfig: s.SimpleAggregateConfig,
 	}
 }
 
@@ -84,8 +84,7 @@ func createSkewTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(SkewAgg), s.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, new(SkewAgg), s.SimpleAggregateConfig, a.Allocator())
 }
 
 func (a *SkewAgg) reset() {

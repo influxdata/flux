@@ -235,7 +235,7 @@ func TestFromCSV_NewQuery(t *testing.T) {
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},

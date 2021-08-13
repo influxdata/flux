@@ -318,6 +318,15 @@ func (d *TransportDataset) Set(key flux.GroupKey, value interface{}) {
 func (d *TransportDataset) Delete(key flux.GroupKey) (v interface{}, found bool) {
 	return d.cache.Delete(key)
 }
+func (d *TransportDataset) Range(f func(key flux.GroupKey, value interface{}) error) (err error) {
+	d.cache.Range(func(key flux.GroupKey, value interface{}) {
+		if err != nil {
+			return
+		}
+		err = f(key, value)
+	})
+	return err
+}
 
 func (d *TransportDataset) RetractTable(key flux.GroupKey) error { return nil }
 func (d *TransportDataset) UpdateProcessingTime(t Time) error    { return nil }
@@ -328,5 +337,6 @@ func (d *TransportDataset) Finish(err error) {
 		err:        err,
 	}
 	_ = d.sendMessage(m)
+	d.cache.Clear()
 }
 func (d *TransportDataset) SetTriggerSpec(t plan.TriggerSpec) {}

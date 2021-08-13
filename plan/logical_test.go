@@ -92,12 +92,12 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 			Spec: &toKafkaOpSpec2,
 		}
 		sumSpec = &universe.SumProcedureSpec{
-			AggregateConfig: execute.AggregateConfig{
+			SimpleAggregateConfig: execute.SimpleAggregateConfig{
 				Columns: []string{"_value"},
 			},
 		}
 		meanSpec = &universe.MeanProcedureSpec{
-			AggregateConfig: execute.AggregateConfig{
+			SimpleAggregateConfig: execute.SimpleAggregateConfig{
 				Columns: []string{"_value"},
 			},
 		}

@@ -14,7 +14,7 @@ import (
 const SumKind = "sum"
 
 type SumOpSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func init() {
@@ -31,7 +31,7 @@ func CreateSumOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operatio
 		return nil, err
 	}
 	s := new(SumOpSpec)
-	if err := s.AggregateConfig.ReadArgs(args); err != nil {
+	if err := s.SimpleAggregateConfig.ReadArgs(args); err != nil {
 		return s, err
 	}
 	return s, nil
@@ -46,7 +46,7 @@ func (s *SumOpSpec) Kind() flux.OperationKind {
 }
 
 type SumProcedureSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func newSumProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
@@ -55,7 +55,7 @@ func newSumProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Procedu
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &SumProcedureSpec{
-		AggregateConfig: spec.AggregateConfig,
+		SimpleAggregateConfig: spec.SimpleAggregateConfig,
 	}, nil
 }
 
@@ -65,7 +65,7 @@ func (s *SumProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *SumProcedureSpec) Copy() plan.ProcedureSpec {
 	return &SumProcedureSpec{
-		AggregateConfig: s.AggregateConfig,
+		SimpleAggregateConfig: s.SimpleAggregateConfig,
 	}
 }
 
@@ -88,9 +88,7 @@ func createSumTransformation(id execute.DatasetID, mode execute.AccumulationMode
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(SumAgg), s.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, new(SumAgg), s.SimpleAggregateConfig, a.Allocator())
 }
 
 func (a *SumAgg) NewBoolAgg() execute.DoBoolAgg {

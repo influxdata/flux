@@ -47,7 +47,7 @@ func TestCount_NewQuery(t *testing.T) {
 					{
 						ID: "count2",
 						Spec: &universe.CountOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},

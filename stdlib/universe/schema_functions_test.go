@@ -42,7 +42,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -72,7 +72,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -102,7 +102,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -133,7 +133,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -166,7 +166,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -199,7 +199,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -232,7 +232,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},

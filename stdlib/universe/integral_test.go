@@ -45,9 +45,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -77,9 +77,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "int",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -109,9 +109,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "uint",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -141,9 +141,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with units",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(time.Second),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(time.Second),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -173,9 +173,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with tags",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -208,7 +208,7 @@ func TestIntegral_Process(t *testing.T) {
 			spec: &universe.IntegralProcedureSpec{
 				Unit:       flux.ConvertDuration(1),
 				TimeColumn: execute.DefaultTimeColLabel,
-				AggregateConfig: execute.AggregateConfig{
+				SimpleAggregateConfig: execute.SimpleAggregateConfig{
 					Columns: []string{"x", "y"},
 				},
 			},
@@ -244,9 +244,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with null timestamps",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -268,9 +268,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with null values",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -303,9 +303,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float with out-of-order timestamps",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -329,7 +329,7 @@ func TestIntegral_Process(t *testing.T) {
 			spec: &universe.IntegralProcedureSpec{
 				Unit:       flux.ConvertDuration(1),
 				TimeColumn: execute.DefaultTimeColLabel,
-				AggregateConfig: execute.AggregateConfig{
+				SimpleAggregateConfig: execute.SimpleAggregateConfig{
 					Columns: []string{"t"},
 				},
 			},
@@ -352,9 +352,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "float repeated times",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -386,10 +386,10 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "interpolate0",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				Interpolate:     true,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				Interpolate:           true,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -421,10 +421,10 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "interpolate1",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				Interpolate:     true,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				Interpolate:           true,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -456,10 +456,10 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "interpolate2",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				Interpolate:     true,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				Interpolate:           true,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -493,10 +493,10 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "interpolate3",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				Interpolate:     true,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				Interpolate:           true,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -528,10 +528,10 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "interpolate skip start",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				Interpolate:     true,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				Interpolate:           true,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -564,10 +564,10 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "start and stop not in group key",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				Interpolate:     true,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				Interpolate:           true,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				ColMeta: []flux.ColMeta{
@@ -589,10 +589,10 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "single value interpolation",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				Interpolate:     true,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				Interpolate:           true,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -621,9 +621,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "single value no interpolation",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols: []string{"_start", "_stop"},
@@ -652,9 +652,9 @@ func TestIntegral_Process(t *testing.T) {
 		{
 			name: "no points",
 			spec: &universe.IntegralProcedureSpec{
-				Unit:            flux.ConvertDuration(1),
-				TimeColumn:      execute.DefaultTimeColLabel,
-				AggregateConfig: execute.DefaultAggregateConfig,
+				Unit:                  flux.ConvertDuration(1),
+				TimeColumn:            execute.DefaultTimeColLabel,
+				SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 			},
 			data: []flux.Table{&executetest.Table{
 				KeyCols:   []string{"_start", "_stop"},

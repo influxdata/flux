@@ -18,7 +18,7 @@ type IntegralOpSpec struct {
 	Unit        flux.Duration `json:"unit"`
 	TimeColumn  string        `json:"timeColumn"`
 	Interpolate string        `json:"interpolate"`
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func init() {
@@ -62,7 +62,7 @@ func CreateIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 		spec.Interpolate = ""
 	}
 
-	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
+	if err := spec.SimpleAggregateConfig.ReadArgs(args); err != nil {
 		return nil, err
 	}
 	return spec, nil
@@ -80,7 +80,7 @@ type IntegralProcedureSpec struct {
 	Unit        flux.Duration `json:"unit"`
 	TimeColumn  string        `json:"timeColumn"`
 	Interpolate bool          `json:"interpolate"`
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -90,10 +90,10 @@ func newIntegralProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.P
 	}
 
 	return &IntegralProcedureSpec{
-		Unit:            spec.Unit,
-		TimeColumn:      spec.TimeColumn,
-		Interpolate:     spec.Interpolate == "linear",
-		AggregateConfig: spec.AggregateConfig,
+		Unit:                  spec.Unit,
+		TimeColumn:            spec.TimeColumn,
+		Interpolate:           spec.Interpolate == "linear",
+		SimpleAggregateConfig: spec.SimpleAggregateConfig,
 	}, nil
 }
 
@@ -104,7 +104,7 @@ func (s *IntegralProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(IntegralProcedureSpec)
 	*ns = *s
 
-	ns.AggregateConfig = s.AggregateConfig.Copy()
+	ns.SimpleAggregateConfig = s.SimpleAggregateConfig.Copy()
 
 	return ns
 }

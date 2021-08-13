@@ -65,7 +65,7 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "count3",
 						Spec: &universe.CountOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -126,7 +126,7 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "count3",
 						Spec: &universe.CountOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -183,7 +183,7 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "count3",
 						Spec: &universe.CountOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -240,7 +240,7 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "count3",
 						Spec: &universe.CountOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -297,7 +297,7 @@ func TestFilter_NewQuery(t *testing.T) {
 					{
 						ID: "count3",
 						Spec: &universe.CountOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},

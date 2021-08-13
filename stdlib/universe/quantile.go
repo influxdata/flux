@@ -33,7 +33,7 @@ type QuantileOpSpec struct {
 	Compression float64 `json:"compression"`
 	Method      string  `json:"method"`
 	// quantile is either an aggregate, or a selector based on the options
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 	execute.SelectorConfig
 }
 
@@ -94,7 +94,7 @@ func CreateQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 			return nil, err
 		}
 	case methodEstimateTdigest, methodExactMean:
-		if err := spec.AggregateConfig.ReadArgs(args); err != nil {
+		if err := spec.SimpleAggregateConfig.ReadArgs(args); err != nil {
 			return nil, err
 		}
 	default:
@@ -115,7 +115,7 @@ func (s *QuantileOpSpec) Kind() flux.OperationKind {
 type TDigestQuantileProcedureSpec struct {
 	Quantile    float64 `json:"quantile"`
 	Compression float64 `json:"compression"`
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func (s *TDigestQuantileProcedureSpec) Kind() plan.ProcedureKind {
@@ -123,9 +123,9 @@ func (s *TDigestQuantileProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *TDigestQuantileProcedureSpec) Copy() plan.ProcedureSpec {
 	return &TDigestQuantileProcedureSpec{
-		Quantile:        s.Quantile,
-		Compression:     s.Compression,
-		AggregateConfig: s.AggregateConfig,
+		Quantile:              s.Quantile,
+		Compression:           s.Compression,
+		SimpleAggregateConfig: s.SimpleAggregateConfig,
 	}
 }
 
@@ -136,14 +136,14 @@ func (s *TDigestQuantileProcedureSpec) TriggerSpec() plan.TriggerSpec {
 
 type ExactQuantileAggProcedureSpec struct {
 	Quantile float64 `json:"quantile"`
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func (s *ExactQuantileAggProcedureSpec) Kind() plan.ProcedureKind {
 	return ExactQuantileAggKind
 }
 func (s *ExactQuantileAggProcedureSpec) Copy() plan.ProcedureSpec {
-	return &ExactQuantileAggProcedureSpec{Quantile: s.Quantile, AggregateConfig: s.AggregateConfig}
+	return &ExactQuantileAggProcedureSpec{Quantile: s.Quantile, SimpleAggregateConfig: s.SimpleAggregateConfig}
 }
 
 // TriggerSpec implements plan.TriggerAwareProcedureSpec
@@ -177,8 +177,8 @@ func newQuantileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Pr
 	switch spec.Method {
 	case methodExactMean:
 		return &ExactQuantileAggProcedureSpec{
-			Quantile:        spec.Quantile,
-			AggregateConfig: spec.AggregateConfig,
+			Quantile:              spec.Quantile,
+			SimpleAggregateConfig: spec.SimpleAggregateConfig,
 		}, nil
 	case methodExactSelector:
 		return &ExactQuantileSelectProcedureSpec{
@@ -189,9 +189,9 @@ func newQuantileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Pr
 	default:
 		// default to estimated quantile
 		return &TDigestQuantileProcedureSpec{
-			Quantile:        spec.Quantile,
-			Compression:     spec.Compression,
-			AggregateConfig: spec.AggregateConfig,
+			Quantile:              spec.Quantile,
+			Compression:           spec.Compression,
+			SimpleAggregateConfig: spec.SimpleAggregateConfig,
 		}, nil
 	}
 }
@@ -222,8 +222,7 @@ func createQuantileTransformation(id execute.DatasetID, mode execute.Accumulatio
 	if err != nil {
 		return nil, nil, errors.Newf(codes.Internal, "could not allocate memory for tdigest: %s", err)
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, ps.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, agg, ps.SimpleAggregateConfig, a.Allocator())
 }
 
 func (a *QuantileAgg) Recycle() *QuantileAgg {
@@ -287,8 +286,7 @@ func createExactQuantileAggTransformation(id execute.DatasetID, mode execute.Acc
 	agg := &ExactQuantileAgg{
 		Quantile: ps.Quantile,
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, ps.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, agg, ps.SimpleAggregateConfig, a.Allocator())
 }
 
 func (a *ExactQuantileAgg) Copy() *ExactQuantileAgg {

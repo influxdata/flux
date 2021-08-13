@@ -13,7 +13,7 @@ import (
 const CountKind = "count"
 
 type CountOpSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func init() {
@@ -29,7 +29,7 @@ func CreateCountOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 		return nil, err
 	}
 	s := new(CountOpSpec)
-	if err := s.AggregateConfig.ReadArgs(args); err != nil {
+	if err := s.SimpleAggregateConfig.ReadArgs(args); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -44,7 +44,7 @@ func (s *CountOpSpec) Kind() flux.OperationKind {
 }
 
 type CountProcedureSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func newCountProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
@@ -53,7 +53,7 @@ func newCountProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Proce
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &CountProcedureSpec{
-		AggregateConfig: spec.AggregateConfig,
+		SimpleAggregateConfig: spec.SimpleAggregateConfig,
 	}, nil
 }
 
@@ -63,7 +63,7 @@ func (s *CountProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *CountProcedureSpec) Copy() plan.ProcedureSpec {
 	return &CountProcedureSpec{
-		AggregateConfig: s.AggregateConfig,
+		SimpleAggregateConfig: s.SimpleAggregateConfig,
 	}
 }
 
@@ -88,9 +88,7 @@ func createCountTransformation(id execute.DatasetID, mode execute.AccumulationMo
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(CountAgg), s.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, new(CountAgg), s.SimpleAggregateConfig, a.Allocator())
 }
 
 func (a *CountAgg) NewBoolAgg() execute.DoBoolAgg {

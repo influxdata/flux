@@ -15,3 +15,9 @@
   key: narrowTransformationFilter
   default: false
   contact: Jonathan Sternberg
+
+- name: Aggregate Transformation Transport
+  description: Enable Transport interface for AggregateTransformation
+  key: aggregateTransformationTransport
+  default: false
+  contact: Jonathan Sternberg
