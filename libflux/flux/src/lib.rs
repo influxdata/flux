@@ -1226,12 +1226,13 @@ csv.from(
     //Array package's docs are accessed from their specific index in the vector of DocPackages, ensuring that they are accessible and correct
     fn ensure_docs2() {
         let doc = docs();
-        let mut exact: PackageDoc = PackageDoc{
+        let mut exact: PackageDoc = PackageDoc {
             path: "array".to_string(),
             name: "array".to_string(),
-            headline: "Package array provides functions for building tables from flux arrays.".to_string(),
+            headline: "Package array provides functions for building tables from flux arrays."
+                .to_string(),
             description: None,
-            members: std::collections::HashMap::new()
+            members: std::collections::HashMap::new(),
         };
         exact.members.insert("from".to_string(), fluxcore::semantic::bootstrap::Doc::Function(Box::new(FunctionDoc{
             name: "from".to_string(),
@@ -1272,12 +1273,12 @@ union(tables: [tags, wildcard_tag])
             }],
             flux_type: "".to_string(),
         })));
-        let mut got = PackageDoc{ 
+        let mut got = PackageDoc {
             path: String::new(),
             name: String::new(),
             headline: String::new(),
             description: None,
-            members: std::collections::HashMap::new()
+            members: std::collections::HashMap::new(),
         };
         for d in doc {
             if d.path == "array" {

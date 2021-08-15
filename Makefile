@@ -151,7 +151,7 @@ clean-wasm:
 	rm -rf libflux/flux/pkg
 
 build-wasm:
-	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata
+	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build -t browser --scope influxdata
 
 publish-wasm: clean-wasm build-wasm
 	cd libflux/flux/pkg && npm publish --access public

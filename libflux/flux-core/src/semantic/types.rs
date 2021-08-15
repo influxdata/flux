@@ -1019,16 +1019,13 @@ impl Record {
                     return Some(head.v.clone());
                 }
                 match tail {
-                    MonoType::Record(obj) => {
-                        obj.find_prop(p)
-                    }
+                    MonoType::Record(obj) => obj.find_prop(p),
                     _ => None,
                 }
             }
-                }
-            }
         }
-
+    }
+}
 
 // Unification requires that the current substitution be applied
 // to both sides of a constraint before unifying.

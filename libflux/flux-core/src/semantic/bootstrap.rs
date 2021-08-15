@@ -199,7 +199,7 @@ pub fn stdlib_docs(
 fn generate_docs(
     types: &PolyTypeMap,
     file: &ast::File,
-    pkgpath: &str
+    pkgpath: &str,
 ) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
@@ -339,7 +339,9 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                     if tmp.ends_with('.') {
                         tmp.push_str(&" ");
                     }
-                    if let Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) = &event[1] {
+                    if let Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) =
+                        &event[1]
+                    {
                         tmp.push_str(&"```\n\n");
                     }
                 }
@@ -392,8 +394,7 @@ fn generate_values(
                             }
                         }
                     }
-                }
-                else{
+                } else {
                     panic!();
                 }
             }
@@ -420,8 +421,7 @@ fn generate_values(
                             }
                         }
                     }
-                }
-                else{
+                } else {
                     panic!();
                 }
             }
@@ -449,8 +449,7 @@ fn generate_values(
                                 }
                             }
                         }
-                    }
-                    else{
+                    } else {
                         panic!();
                     }
                 }
