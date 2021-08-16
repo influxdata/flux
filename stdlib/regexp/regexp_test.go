@@ -5,7 +5,10 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -87,6 +90,19 @@ func TestMatchRegexpString(t *testing.T) {
 	}
 }
 
+func TestMatchRegexpStringNullV(t *testing.T) {
+	fluxFunc := SpecialFns["matchRegexpString"]
+	re := regexp.MustCompile(`(gopher){2}`)
+	r := values.NewRegexp(re)
+	vStrNullV := values.NewNull(semantic.BasicString)
+	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": values.NewRegexp(r.Regexp()), "v": vStrNullV})
+	_, err := fluxFunc.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+	wantErr := errors.New(codes.Invalid, "cannot execute function containing argument r of type regexp value (gopher){2} and argument v of type string value <nil>")
+	if !cmp.Equal(wantErr, err) {
+		t.Errorf("input %s: expected %v, got %v", vStrNullV, wantErr, err)
+	}
+}
+
 func TestReplaceAllString(t *testing.T) {
 	fluxFunc := SpecialFns["replaceAllString"]
 	re := regexp.MustCompile(`a(x*)b`)
@@ -101,6 +117,20 @@ func TestReplaceAllString(t *testing.T) {
 	}
 	if want != got.Str() {
 		t.Errorf("input %s: expected %v, got %v", v, want, got.Str())
+	}
+}
+
+func TestReplaceAllStringNullT(t *testing.T) {
+	fluxFunc := SpecialFns["replaceAllString"]
+	re := regexp.MustCompile(`a(x*)b`)
+	r := values.NewRegexp(re)
+	v := values.NewString("-ab-axxb-")
+	tStrNullV := values.NewNull(semantic.BasicString)
+	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": values.NewRegexp(r.Regexp()), "v": values.NewString(v.Str()), "t": tStrNullV})
+	_, err := fluxFunc.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+	wantErr := errors.New(codes.Invalid, "cannot execute function containing argument r of type regexp value a(x*)b, argument v of type string value -ab-axxb-, and argument t of type string value <nil>")
+	if !cmp.Equal(wantErr, err) {
+		t.Errorf("input %s: expected %v, got %v", tStrNullV, wantErr, err)
 	}
 }
 
@@ -137,5 +167,16 @@ func TestGetString(t *testing.T) {
 	}
 	if want != got.Str() {
 		t.Errorf("expected %v, got %v", want, got.Str())
+	}
+}
+
+func TestGetStringNullR(t *testing.T) {
+	fluxFunc := SpecialFns["getString"]
+	regexpNullV := values.NewNull(semantic.BasicRegexp)
+	fluxArg := values.NewObjectWithValues(map[string]values.Value{"r": regexpNullV})
+	wantErr := errors.New(codes.Invalid, "cannot execute function containing argument r of type regexp value <nil>")
+	_, err := fluxFunc.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+	if !cmp.Equal(wantErr, err) {
+		t.Errorf("input %s: expected %v, got %v", regexpNullV, wantErr, err)
 	}
 }
