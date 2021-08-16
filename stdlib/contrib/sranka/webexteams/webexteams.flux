@@ -1,5 +1,6 @@
 package webexteams
 
+
 import "http"
 import "json"
 
@@ -10,7 +11,7 @@ import "json"
 // `text` - string - the message, in plain text.
 // `markdown` - string - the message, in markdown format as explained in https://developer.webex.com/docs/api/basics
 message = (
-        url = "https://webexapis.com",
+        url="https://webexapis.com",
         token,
         roomId,
         text,
@@ -27,6 +28,7 @@ message = (
     }
 
     content = json.encode(v: data)
+
     return http.post(headers: headers, url: url + "/v1/messages", data: content)
 }
 
@@ -35,10 +37,7 @@ message = (
 // `token` - string - [Webex API access token](https://developer.webex.com/docs/api/getting-started).
 // The returned factory function accepts a `mapFn` parameter.
 // The `mapFn` must return an object with `roomId`, `text` and `markdown` properties  as defined in the `message` function arguments.
-endpoint = (
-        url = "https://webexapis.com",
-        token,
-) => (mapFn) => (tables=<-) => tables
+endpoint = (url="https://webexapis.com", token) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
