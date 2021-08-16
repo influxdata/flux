@@ -189,7 +189,7 @@ pub fn stdlib_docs(
 ) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
     let mut docs = Vec::new();
     for (pkgpath, file) in files.iter() {
-        let pkg = generate_docs(&lib, file, pkgpath)?;
+        let pkg = generate_docs(lib, file, pkgpath)?;
         docs.push(pkg);
     }
     Ok(docs)
@@ -204,7 +204,7 @@ fn generate_docs(
     // construct the package documentation
     // use type inference to determine types of all values
     let mut all_comment = String::new();
-    let members = generate_values(&file, &types, &pkgpath)?;
+    let members = generate_values(file, types, pkgpath)?;
     if Some(&file.package) != None {
         all_comment = comments_to_string(&file.package.as_ref().unwrap().base.comments);
     }
@@ -268,7 +268,7 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
     let mut tmp = &mut funcdocs.headline;
     let mut param_flag = false;
 
-    let parser = Parser::new(&all_doc);
+    let parser = Parser::new(all_doc);
     let events: Vec<pulldown_cmark::Event> = parser.collect();
     for (_, event) in events.windows(2).enumerate() {
         match &event[0] {
@@ -277,7 +277,7 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                     if "Parameters".eq(&t.to_string()) {
                         param_flag = true;
                     } else {
-                        tmp.push_str(&"## ");
+                        tmp.push_str("## ");
                     }
                 }
                 _ => {
@@ -293,11 +293,11 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                         required: false,
                     });
                 } else {
-                    tmp.push_str(&" - ");
+                    tmp.push_str(" - ");
                 }
             }
             Event::Start(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) => {
-                tmp.push_str(&"\n```\n");
+                tmp.push_str("\n```\n");
             }
             Event::Code(c) => {
                 if param_flag {
@@ -337,12 +337,12 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                 } else if !("Parameters".eq(&t.to_string())) {
                     tmp.push_str(&t.to_string());
                     if tmp.ends_with('.') {
-                        tmp.push_str(&" ");
+                        tmp.push_str(" ");
                     }
                     if let Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) =
                         &event[1]
                     {
-                        tmp.push_str(&"```\n\n");
+                        tmp.push_str("```\n\n");
                     }
                 }
             }
