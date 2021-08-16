@@ -354,7 +354,7 @@ enum Doc {
 }
 
 struct PackageDoc {
-    path: String,
+       path: String,
 	name: String,
 	headline: String,
 	description: Option<String>,
