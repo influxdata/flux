@@ -337,7 +337,7 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
                 } else if !("Parameters".eq(&t.to_string())) {
                     tmp.push_str(&t.to_string());
                     if tmp.ends_with('.') {
-                        tmp.push_str(" ");
+                        tmp.push_str(&" ".to_string());
                     }
                     if let Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) =
                         &event[1]
