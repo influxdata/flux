@@ -353,8 +353,8 @@ enum Doc {
 	Function(Box<FunctionDoc>),
 }
 
-struct PackageDoc {
-       path: String,
+struct PackageDoc { 
+    path: String,
 	name: String,
 	headline: String,
 	description: Option<String>,
