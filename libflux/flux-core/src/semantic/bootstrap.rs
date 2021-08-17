@@ -67,7 +67,7 @@ pub struct PackageDoc {
 }
 
 /// ValueDoc represents the documentation for a single value within a package.
-/// Values include options or any variable assignment within the top level scope of a
+/// Values include options, builtins, or any variable assignment within the top level scope of a
 /// package.
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct ValueDoc {

@@ -1216,7 +1216,6 @@ csv.from(
         for d in doc {
             if d.path == "csv" {
                 got = d;
-                print!("{:?}", got);
                 break;
             }
         }
