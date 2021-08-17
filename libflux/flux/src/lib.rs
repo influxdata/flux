@@ -1204,7 +1204,7 @@ csv.from(
                 description: Some("Available annotation modes: annotations: Use CSV notations to determine column data types. raw: Parse all columns as strings and use the first row as the header row and all subsequent rows as data.".to_string()),
                 required: false
             }],
-            flux_type: "".to_string(),
+            flux_type: "Fun".to_string(),
         })));
         let mut got = PackageDoc {
             path: String::new(),
@@ -1271,7 +1271,7 @@ union(tables: [tags, wildcard_tag])
                 description: None,
                 required: false
             }],
-            flux_type: "".to_string(),
+            flux_type: "Fun".to_string(),
         })));
         let mut got = PackageDoc {
             path: String::new(),

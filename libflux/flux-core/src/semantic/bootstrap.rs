@@ -374,13 +374,14 @@ fn generate_values(
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
-                let funcdoc = separate_func_docs(&doc, &name);
+                let mut funcdoc = separate_func_docs(&doc, &name);
                 let pkgtype = &types[pkgpath];
                 if let MonoType::Record(r) = &pkgtype.expr {
                     let typ = r.find_prop(&name);
                     if let Some(typ) = typ {
                         match typ {
                             MonoType::Fun(_f) => {
+                                funcdoc.flux_type = "Fun".to_string();
                                 members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                             }
                             _ => {
@@ -401,13 +402,14 @@ fn generate_values(
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
                 let name = s.id.name.clone();
-                let funcdoc = separate_func_docs(&doc, &name);
+                let mut funcdoc = separate_func_docs(&doc, &name);
                 let pkgtype = &types[pkgpath];
                 if let MonoType::Record(r) = &pkgtype.expr {
                     let typ = r.find_prop(&name);
                     if let Some(typ) = typ {
                         match typ {
                             MonoType::Fun(_f) => {
+                                funcdoc.flux_type = "Fun".to_string();
                                 members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                             }
                             _ => {
@@ -429,13 +431,14 @@ fn generate_values(
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
                     let name = v.id.name.clone();
-                    let funcdoc = separate_func_docs(&doc, &name);
+                    let mut funcdoc = separate_func_docs(&doc, &name);
                     let pkgtype = &types[pkgpath];
                     if let MonoType::Record(r) = &pkgtype.expr {
                         let typ = r.find_prop(&name);
                         if let Some(typ) = typ {
                             match typ {
                                 MonoType::Fun(_f) => {
+                                    funcdoc.flux_type = "Fun".to_string();
                                     members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                                 }
                                 _ => {
