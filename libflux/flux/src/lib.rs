@@ -595,6 +595,9 @@ mod tests {
     use fluxcore::ast;
     use fluxcore::ast::get_err_type_expression;
     use fluxcore::parser::Parser;
+    use fluxcore::semantic::bootstrap::FunctionDoc;
+    use fluxcore::semantic::bootstrap::PackageDoc;
+    use fluxcore::semantic::bootstrap::ParameterDoc;
     use fluxcore::semantic::convert::convert_file;
     use fluxcore::semantic::convert::convert_polytype;
     use fluxcore::semantic::env::Environment;
@@ -1119,21 +1122,170 @@ from(bucket: v.bucket)
 
     #[test]
     //CSV package's docs are accessed from their specific index in the vector of DocPackages, ensuring that they are accessible and correct
-    // XXX: rockstar (5 Aug 2021) - This test can be flaky. For example, there was a
-    // failure because another patch was merged that added a new stdlib, which pushed
-    // `csv` from the 19th item to the 20th item.
     fn ensure_docs() {
-        let d = docs();
-        let stat = r#"PackageDoc { name: "csv", headline: "Package csv provides tools for working with data in annotated CSV format.", description: None, members: {"from": Function(FunctionDoc { name: "from", headline: "from is a function that retrieves data from a comma separated value (CSV) data source.", description: "A stream of tables are returned, each unique series contained within its own table. Each record in the table represents a single point in the series. Parameters is CSV data. Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.  is the file path of the CSV file to query. The path can be absolute or relative. If relative, it is relative to the workingdirectory of the  process. The CSV file must exist in the same filesystem running the  process.  is the CSV parsing mode. Default is annotations. Available annotation modes:annotations: Use CSV notations to determine column data types. raw: Parse all columns as strings and use the first row as the header rowand all subsequent rows as data. Query anotated CSV data from fileimport \"csv\"\n\ncsv.from(file: \"path/to/data-file.csv\")\nQuery raw data from CSV fileimport \"csv\"\n\ncsv.from(\n  file: \"/path/to/data-file.csv\",\n  mode: \"raw\"\n)\nQuery an annotated CSV stringimport \"csv\"\n\ncsvData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double\n#group,false,false,false,false,false,false,false,false\n#default,,,,,,,,\n,result,table,_start,_stop,_time,region,host,_value\n,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43\n,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25\n,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62\n\"\n\ncsv.from(csv: csvData)\n\nQuery a raw CSV stringimport \"csv\"\n\ncsvData = \"\n_start,_stop,_time,region,host,_value\n2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43\n2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25\n2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62\n\"\n\ncsv.from(\n  csv: csvData,\n  mode: \"raw\"\n)\n", parameters: [], flux_type: "(?bucket:string, ?bucketID:string, ?host:string, ?org:string, ?orgID:string, ?token:string) => [{A with _value:B, _time:time, _measurement:string, _field:string}]" })} }"#;
-        let got = format!("{:?}", d[20]); // the csv DocPackage location
-        assert_eq!(stat, got);
+        let doc = docs();
+        let mut exact: PackageDoc = PackageDoc {
+            path: "csv".to_string(),
+            name: "csv".to_string(),
+            headline: "Package csv provides tools for working with data in annotated CSV format."
+                .to_string(),
+            description: None,
+            members: std::collections::HashMap::new(),
+        };
+        exact.members.insert("from".to_string(), fluxcore::semantic::bootstrap::Doc::Function(Box::new(FunctionDoc{
+            name: "from".to_string(),
+            headline: "from is a function that retrieves data from a comma separated value (CSV) data source. ".to_string(),
+            description: r#"A stream of tables are returned, each unique series contained within its own table. Each record in the table represents a single point in the series. ## Query anotated CSV data from file
+```
+import "csv"
+
+csv.from(file: "path/to/data-file.csv")
+```
+
+## Query raw data from CSV file
+```
+import "csv"
+
+csv.from(
+  file: "/path/to/data-file.csv",
+  mode: "raw"
+)
+```
+
+## Query an annotated CSV string
+```
+import "csv"
+
+csvData = "
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,false,false,false,false,false,false
+#default,,,,,,,,
+,result,table,_start,_stop,_time,region,host,_value
+,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43
+,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
+,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
+"
+
+csv.from(csv: csvData)
+
+```
+
+## Query a raw CSV string
+```
+import "csv"
+
+csvData = "
+_start,_stop,_time,region,host,_value
+2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43
+2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
+2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
+"
+
+csv.from(
+  csv: csvData,
+  mode: "raw"
+)
+```
+
+"#.to_string(),
+					parameters: vec![ParameterDoc{
+							name: "csv".to_string(),
+							headline: " is CSV data.".to_string(),
+							description: Some("Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.".to_string()),
+                required: false
+            }, ParameterDoc{
+                name: "file".to_string(),
+                headline: " is the file path of the CSV file to query.".to_string(),
+                description: Some("The path can be absolute or relative. If relative, it is relative to the working directory of the  fluxd  process. The CSV file must exist in the same file system running the  fluxd  process.".to_string()),
+                required: false
+            }, ParameterDoc{
+                name: "mode".to_string(),
+                headline: " is the CSV parsing mode. Default is annotations.".to_string(),
+                description: Some("Available annotation modes: annotations: Use CSV notations to determine column data types. raw: Parse all columns as strings and use the first row as the header row and all subsequent rows as data.".to_string()),
+                required: false
+            }],
+            flux_type: "Fun".to_string(),
+        })));
+        let mut got = PackageDoc {
+            path: String::new(),
+            name: String::new(),
+            headline: String::new(),
+            description: None,
+            members: std::collections::HashMap::new(),
+        };
+        for d in doc {
+            if d.path == "csv" {
+                got = d;
+                break;
+            }
+        }
+        assert_eq!(exact, got);
     }
+
     #[test]
     //Array package's docs are accessed from their specific index in the vector of DocPackages, ensuring that they are accessible and correct
     fn ensure_docs2() {
-        let d = docs();
-        let stat = r#"PackageDoc { name: "array", headline: "Package array provides functions for building tables from flux arrays.", description: None, members: {"from": Function(FunctionDoc { name: "from", headline: "from constructs a table from an array of records.", description: "Each record in the array is converted into an output row or record. Allrecords must have the same keys and data types. Parameters is the array of records to construct a table with. Build an arbitrary tableimport \"array\"\n\nrows = [\n  {foo: \"bar\", baz: 21.2},\n  {foo: \"bar\", baz: 23.8}\n]\n\narray.from(rows: rows)\nUnion custom rows with query resultsimport \"influxdata/influxdb/v1\"\nimport \"array\"\n\ntags = v1.tagValues(\n  bucket: \"example-bucket\",\n  tag: \"host\"\n)\n\nwildcard_tag = array.from(rows: [{_value: \"*\"}])\n\nunion(tables: [tags, wildcard_tag])\n", parameters: [], flux_type: "(?bucket:string, ?bucketID:string, ?host:string, ?org:string, ?orgID:string, ?token:string) => [{A with _value:B, _time:time, _measurement:string, _field:string}]" })} }"#;
-        let got = format!("{:?}", d[0]); // the csv DocPackage location
-        assert_eq!(stat, got);
+        let doc = docs();
+        let mut exact: PackageDoc = PackageDoc {
+            path: "array".to_string(),
+            name: "array".to_string(),
+            headline: "Package array provides functions for building tables from flux arrays."
+                .to_string(),
+            description: None,
+            members: std::collections::HashMap::new(),
+        };
+        exact.members.insert("from".to_string(), fluxcore::semantic::bootstrap::Doc::Function(Box::new(FunctionDoc{
+            name: "from".to_string(),
+            headline: "from constructs a table from an array of records. ".to_string(),
+            description: r#"Each record in the array is converted into an output row or record. Allrecords must have the same keys and data types. ## Build an arbitrary table
+```
+import "array"
+
+rows = [
+  {foo: "bar", baz: 21.2},
+  {foo: "bar", baz: 23.8}
+]
+
+array.from(rows: rows)
+```
+
+## Union custom rows with query results
+```
+import "influxdata/influxdb/v1"
+import "array"
+
+tags = v1.tagValues(
+  bucket: "example-bucket",
+  tag: "host"
+)
+
+wildcard_tag = array.from(rows: [{_value: "*"}])
+
+union(tables: [tags, wildcard_tag])
+```
+
+"#.to_string(),
+            parameters: vec![ParameterDoc{
+                name: "rows".to_string(),
+                headline: " is the array of records to construct a table with.".to_string(),
+                description: None,
+                required: false
+            }],
+            flux_type: "Fun".to_string(),
+        })));
+        let mut got = PackageDoc {
+            path: String::new(),
+            name: String::new(),
+            headline: String::new(),
+            description: None,
+            members: std::collections::HashMap::new(),
+        };
+        for d in doc {
+            if d.path == "array" {
+                got = d;
+                break;
+            }
+        }
+        assert_eq!(exact, got);
     }
 }

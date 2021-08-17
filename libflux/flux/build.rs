@@ -70,7 +70,7 @@ fn main() -> Result<(), Error> {
             });
         }
     }
-    let new_docs = stdlib_docs(&pre, &file_map).unwrap();
+    let new_docs = stdlib_docs(&lib, &file_map).unwrap();
     let json_docs = serde_json::to_vec(&new_docs).unwrap();
     let comp_docs = deflate_bytes(&json_docs);
     let path = dir.join("docs.json");

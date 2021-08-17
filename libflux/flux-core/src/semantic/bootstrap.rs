@@ -22,6 +22,7 @@ use crate::semantic::types::{
     MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, TvarKinds,
 };
 
+use pulldown_cmark::CodeBlockKind;
 use pulldown_cmark::{Event, Parser};
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
@@ -38,7 +39,7 @@ pub struct Error {
 }
 
 /// Doc is an enum that can take the form of the various types of flux documentation structures through polymorphism.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub enum Doc {
     /// Package represents documentation for an entire Flux package.
     Package(Box<PackageDoc>),
@@ -53,8 +54,10 @@ pub enum Doc {
 }
 
 /// PackageDoc represents the documentation for a package and its sub packages
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct PackageDoc {
+    /// the relative path to the package
+    pub path: String,
     /// the name of the comments package
     pub name: String,
     /// the headline of the package
@@ -68,7 +71,7 @@ pub struct PackageDoc {
 /// ValueDoc represents the documentation for a single value within a package.
 /// Values include options, builtins or any variable assignment within the top level scope of a
 /// package.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct ValueDoc {
     /// the name of the value
     pub name: String,
@@ -81,50 +84,31 @@ pub struct ValueDoc {
 }
 
 /// FunctionDoc represents the documentation for a single Function within a package.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct FunctionDoc {
     /// the name of the function
     pub name: String,
     /// the headline of the function
-    headline: String,
+    pub headline: String,
     /// the description of the function
-    description: String,
+    pub description: String,
     /// the parameters of the function
-    parameters: Vec<ParameterDoc>,
+    pub parameters: Vec<ParameterDoc>,
     /// the type of the function
-    flux_type: String,
-}
-
-/// Implementation block for FunctionDoc to house future "FunctionDod" methods
-impl FunctionDoc {
-    /// Constructs a new FunctionDoc with the given name, headline, and flux type
-    fn new_with_args(
-        name: String,
-        headline: String,
-        description: String,
-        typ: String,
-    ) -> FunctionDoc {
-        FunctionDoc {
-            name,
-            headline,
-            description,
-            parameters: vec![],
-            flux_type: typ,
-        }
-    }
+    pub flux_type: String,
 }
 
 /// ParameterDoc represents the documentation for a single parameter within a function.
-#[derive(Debug, Serialize, Deserialize)]
-struct ParameterDoc {
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
+pub struct ParameterDoc {
     /// the name of the parameter
-    name: String,
+    pub name: String,
     /// the headline of the parameter
-    headline: String,
+    pub headline: String,
     /// the description of the parameter
-    description: Option<String>,
+    pub description: Option<String>,
     /// a boolean indicating if the parameter is required
-    required: bool,
+    pub required: bool,
 }
 
 impl From<io::Error> for Error {
@@ -204,8 +188,8 @@ pub fn stdlib_docs(
     files: &AstFileMap,
 ) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
     let mut docs = Vec::new();
-    for file in files.values() {
-        let pkg = generate_docs(lib, file)?;
+    for (pkgpath, file) in files.iter() {
+        let pkg = generate_docs(lib, file, pkgpath)?;
         docs.push(pkg);
     }
     Ok(docs)
@@ -215,18 +199,20 @@ pub fn stdlib_docs(
 fn generate_docs(
     types: &PolyTypeMap,
     file: &ast::File,
+    pkgpath: &str,
 ) -> Result<PackageDoc, Box<dyn std::error::Error>> {
     // construct the package documentation
     // use type inference to determine types of all values
     let mut all_comment = String::new();
-    let members = generate_values(file, types)?;
+    let members = generate_values(file, types, pkgpath)?;
     if Some(&file.package) != None {
         all_comment = comments_to_string(&file.package.as_ref().unwrap().base.comments);
     }
-    let (headline, description) = seperate_description(&all_comment);
+    let (headline, description) = separate_description(&all_comment);
 
     //TODO check if package name exists and if it doesn't throw an error message
     Ok(PackageDoc {
+        path: pkgpath.to_string(),
         name: file.package.clone().unwrap().name.name,
         headline,
         description,
@@ -235,7 +221,7 @@ fn generate_docs(
 }
 
 // Separates headline from description
-fn seperate_description(all_comment: &str) -> (String, Option<String>) {
+fn separate_description(all_comment: &str) -> (String, Option<String>) {
     let mut headline: String = "".to_string();
     let mut reached_end: bool = false;
     let mut description_text: String = "".to_string();
@@ -270,117 +256,204 @@ fn seperate_description(all_comment: &str) -> (String, Option<String>) {
     }
 }
 
+// Separates function document parameters and returns a newly generated FuncDoc struct
+fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
+    let mut funcdocs = FunctionDoc {
+        name: name.to_string(),
+        headline: String::new(),
+        description: String::new(),
+        parameters: Vec::new(),
+        flux_type: String::new(),
+    };
+    let mut tmp = &mut funcdocs.headline;
+    let mut param_flag = false;
+
+    let parser = Parser::new(all_doc);
+    let events: Vec<pulldown_cmark::Event> = parser.collect();
+    for (_, event) in events.windows(2).enumerate() {
+        match &event[0] {
+            Event::Start(pulldown_cmark::Tag::Heading(2)) => match &event[1] {
+                Event::Text(t) => {
+                    if "Parameters".eq(&t.to_string()) {
+                        param_flag = true;
+                    } else {
+                        tmp.push_str("## ");
+                    }
+                }
+                _ => {
+                    param_flag = false;
+                }
+            },
+            Event::Start(pulldown_cmark::Tag::Item) => {
+                if param_flag {
+                    funcdocs.parameters.push(ParameterDoc {
+                        name: String::new(),
+                        headline: String::new(),
+                        description: None,
+                        required: false,
+                    });
+                } else {
+                    tmp.push_str(" - ");
+                }
+            }
+            Event::Start(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) => {
+                tmp.push_str("\n```\n");
+            }
+            Event::Code(c) => {
+                if param_flag {
+                    let len = funcdocs.parameters.len() - 1;
+                    if funcdocs.parameters[len].name.is_empty() {
+                        funcdocs.parameters[len].name = c.to_string();
+                    } else {
+                        if funcdocs.parameters[len].headline.is_empty() {
+                            funcdocs.parameters[len].headline.push_str(&c.to_string());
+                        }
+                        if funcdocs.parameters[len].description != None {
+                            let doc = &funcdocs.parameters[len].description;
+                            let x = doc.as_ref().map(|d| format!("{} {}", d, c.to_string()));
+                            funcdocs.parameters[len].description = x;
+                        } else {
+                            funcdocs.parameters[len].description = Some(c.to_string());
+                        }
+                    }
+                } else {
+                    tmp.push_str(&c.to_string());
+                }
+            }
+            Event::Text(t) => {
+                if param_flag && !(funcdocs.parameters.is_empty()) {
+                    let len = funcdocs.parameters.len() - 1;
+                    if funcdocs.parameters[len].headline.is_empty() {
+                        funcdocs.parameters[len].headline = t.to_string();
+                        continue;
+                    }
+                    if funcdocs.parameters[len].description != None {
+                        let doc = &funcdocs.parameters[len].description;
+                        let x = doc.as_ref().map(|d| format!("{} {}", d, t.to_string()));
+                        funcdocs.parameters[len].description = x;
+                    } else {
+                        funcdocs.parameters[len].description = Option::from(t.to_string());
+                    }
+                } else if !("Parameters".eq(&t.to_string())) {
+                    tmp.push_str(&t.to_string());
+                    if tmp.ends_with('.') {
+                        tmp.push_str(&" ".to_string());
+                    }
+                    if let Event::End(pulldown_cmark::Tag::CodeBlock(CodeBlockKind::Fenced(_))) =
+                        &event[1]
+                    {
+                        tmp.push_str("```\n\n");
+                    }
+                }
+            }
+            Event::End(pulldown_cmark::Tag::List(None)) => {
+                if param_flag {
+                    param_flag = false;
+                }
+            }
+            Event::End(_) => {
+                tmp = &mut funcdocs.description;
+            }
+            _ => {
+                // unused event tag found. Can be safely ignored.
+            }
+        }
+    }
+    funcdocs
+}
+
 // Generates docs for the values in a given source file.
 fn generate_values(
     f: &ast::File,
     types: &PolyTypeMap,
+    pkgpath: &str,
 ) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
     let mut members: HashMap<String, Doc> = HashMap::new();
     for stmt in &f.body {
         match stmt {
             ast::Statement::Variable(s) => {
                 let doc = comments_to_string(&s.id.base.comments);
-                let (headline, description) = seperate_description(&doc);
-                let description_string: String;
-                match &description {
-                    Some(x) => description_string = x.to_string(),
-                    None => description_string = "".to_string(),
-                }
                 let name = s.id.name.clone();
-                if !types.contains_key(&name) {
-                    continue;
-                }
-                let typ = format!("{}", types[&name].normal());
-                match &types[&name].expr {
-                    MonoType::Fun(_f) => {
-                        // generate function doc
-                        let function = FunctionDoc::new_with_args(
-                            name.clone(),
-                            headline,
-                            description_string,
-                            typ,
-                        );
-                        members.insert(name.clone(), Doc::Function(Box::new(function)));
+                let mut funcdoc = separate_func_docs(&doc, &name);
+                let pkgtype = &types[pkgpath];
+                if let MonoType::Record(r) = &pkgtype.expr {
+                    let typ = r.find_prop(&name);
+                    if let Some(typ) = typ {
+                        match typ {
+                            MonoType::Fun(_f) => {
+                                funcdoc.flux_type = "Fun".to_string();
+                                members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
+                            }
+                            _ => {
+                                let variable = ValueDoc {
+                                    name: name.clone(),
+                                    headline: funcdoc.headline,
+                                    description: Option::from(funcdoc.description),
+                                    flux_type: format!("{}", typ),
+                                };
+                                members.insert(name.clone(), Doc::Value(Box::new(variable)));
+                            }
+                        }
                     }
-                    _ => {
-                        let variable = ValueDoc {
-                            name: name.clone(),
-                            headline,
-                            description,
-                            flux_type: typ,
-                        };
-                        members.insert(name.clone(), Doc::Value(Box::new(variable)));
-                    }
+                } else {
+                    panic!();
                 }
             }
             ast::Statement::Builtin(s) => {
                 let doc = comments_to_string(&s.base.comments);
-                let (headline, description) = seperate_description(&doc);
-                let description_string: String;
-                match &description {
-                    Some(x) => description_string = x.to_string(),
-                    None => description_string = "".to_string(),
-                }
                 let name = s.id.name.clone();
-                if !types.contains_key(&name) {
-                    continue;
-                }
-                let typ = format!("{}", types[&name].normal());
-                match &types[&name].expr {
-                    MonoType::Fun(_f) => {
-                        let function = FunctionDoc::new_with_args(
-                            name.clone(),
-                            headline,
-                            description_string,
-                            typ,
-                        );
-                        members.insert(name.clone(), Doc::Function(Box::new(function)));
+                let mut funcdoc = separate_func_docs(&doc, &name);
+                let pkgtype = &types[pkgpath];
+                if let MonoType::Record(r) = &pkgtype.expr {
+                    let typ = r.find_prop(&name);
+                    if let Some(typ) = typ {
+                        match typ {
+                            MonoType::Fun(_f) => {
+                                funcdoc.flux_type = "Fun".to_string();
+                                members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
+                            }
+                            _ => {
+                                let builtin = ValueDoc {
+                                    name: name.clone(),
+                                    headline: funcdoc.headline,
+                                    description: Option::from(funcdoc.description),
+                                    flux_type: format!("{}", typ),
+                                };
+                                members.insert(name.clone(), Doc::Value(Box::new(builtin)));
+                            }
+                        }
                     }
-                    _ => {
-                        let builtin = ValueDoc {
-                            name: name.clone(),
-                            headline,
-                            description,
-                            flux_type: typ,
-                        };
-                        members.insert(name.clone(), Doc::Value(Box::new(builtin)));
-                    }
+                } else {
+                    panic!();
                 }
             }
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
                     let doc = comments_to_string(&s.base.comments);
-                    let (headline, description) = seperate_description(&doc);
-                    let description_string: String;
-                    match &description {
-                        Some(x) => description_string = x.to_string(),
-                        None => description_string = "".to_string(),
-                    }
                     let name = v.id.name.clone();
-                    if !types.contains_key(&name) {
-                        continue;
-                    }
-                    let typ = format!("{}", types[&name].normal());
-                    match &types[&name].expr {
-                        MonoType::Fun(_f) => {
-                            // generate function doc
-                            let function = FunctionDoc::new_with_args(
-                                name.clone(),
-                                headline,
-                                description_string,
-                                typ,
-                            );
-                            members.insert(name.clone(), Doc::Function(Box::new(function)));
+                    let mut funcdoc = separate_func_docs(&doc, &name);
+                    let pkgtype = &types[pkgpath];
+                    if let MonoType::Record(r) = &pkgtype.expr {
+                        let typ = r.find_prop(&name);
+                        if let Some(typ) = typ {
+                            match typ {
+                                MonoType::Fun(_f) => {
+                                    funcdoc.flux_type = "Fun".to_string();
+                                    members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
+                                }
+                                _ => {
+                                    let option = ValueDoc {
+                                        name: name.clone(),
+                                        headline: funcdoc.headline,
+                                        description: Option::from(funcdoc.description),
+                                        flux_type: format!("{}", typ),
+                                    };
+                                    members.insert(name.clone(), Doc::Value(Box::new(option)));
+                                }
+                            }
                         }
-                        _ => {
-                            let option = ValueDoc {
-                                name: name.clone(),
-                                headline,
-                                description,
-                                flux_type: typ,
-                            };
-                            members.insert(name.clone(), Doc::Value(Box::new(option)));
-                        }
+                    } else {
+                        panic!();
                     }
                 }
             }
