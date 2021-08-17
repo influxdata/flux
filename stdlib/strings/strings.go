@@ -41,14 +41,14 @@ func generateSingleArgStringFunction(name string, stringFn func(string) string) 
 				return nil, fmt.Errorf("missing argument %q", stringArgV)
 			}
 
-			if v.Type().Nature() == semantic.String {
+			if !v.IsNull() && v.Type().Nature() == semantic.String {
 				str = v.Str()
 
 				str = stringFn(str)
 				return values.NewString(str), nil
 			}
 
-			return nil, fmt.Errorf("cannot convert argument of type %v to upper case", v.Type().Nature())
+			return nil, fmt.Errorf("cannot convert argument of type %v value %v to upper case", v.Type().Nature(), v)
 		}, false,
 	)
 }
@@ -70,8 +70,8 @@ func generateDualArgStringFunction(name string, argNames []string, stringFn func
 					return nil, fmt.Errorf("missing argument %q", name)
 				}
 
-				if val.Type().Nature() != semantic.String {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", name, semantic.String, val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != semantic.String {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", name, semantic.String, val.Type().Nature(), val)
 				}
 
 				argVals[i] = val
@@ -100,8 +100,8 @@ func generateDualArgStringFunctionReturnBool(name string, argNames []string, str
 					return nil, fmt.Errorf("missing argument %q", name)
 				}
 
-				if val.Type().Nature() != semantic.String {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", name, semantic.String, val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != semantic.String {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", name, semantic.String, val.Type().Nature(), val)
 				}
 
 				argVals[i] = val
@@ -130,8 +130,8 @@ func generateDualArgStringFunctionReturnInt(name string, argNames []string, stri
 					return nil, fmt.Errorf("missing argument %q", name)
 				}
 
-				if val.Type().Nature() != semantic.String {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", name, semantic.String, val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != semantic.String {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", name, semantic.String, val.Type().Nature(), val)
 				}
 
 				argVals[i] = val
@@ -156,8 +156,8 @@ func generateSplit(name string, argNames []string, fn func(string, string) []str
 					return nil, fmt.Errorf("missing argument %q", name)
 				}
 
-				if val.Type().Nature() != semantic.String {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", name, semantic.String, val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != semantic.String {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", name, semantic.String, val.Type().Nature(), val)
 				}
 
 				argVals[i] = val
@@ -188,8 +188,8 @@ func generateSplitN(name string, argNames []string, fn func(string, string, int)
 					return nil, fmt.Errorf("missing argument %q", name)
 				}
 
-				if val.Type().Nature() != argTypes[i] {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", name, argTypes[i], val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != argTypes[i] {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", name, argTypes[i], val.Type().Nature(), val)
 				}
 
 				argVals[i] = val
@@ -220,8 +220,8 @@ func generateRepeat(name string, argNames []string, fn func(string, int) string)
 					return nil, fmt.Errorf("missing argument %q", name)
 				}
 
-				if val.Type().Nature() != argType[i] {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", name, argType[i], val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != argType[i] {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", name, argType[i], val.Type().Nature(), val)
 				}
 
 				argVals[i] = val
@@ -247,8 +247,8 @@ func generateReplace(name string, argNames []string, fn func(string, string, str
 					return nil, fmt.Errorf("missing argument %q", name)
 				}
 
-				if val.Type().Nature() != argType[i] {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", name, argType[i], val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != argType[i] {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", name, argType[i], val.Type().Nature(), val)
 				}
 
 				argVals[i] = val
@@ -273,8 +273,8 @@ func generateReplaceAll(name string, argNames []string, fn func(string, string, 
 					return nil, fmt.Errorf("missing argument %q", name)
 				}
 
-				if val.Type().Nature() != semantic.String {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", name, semantic.String, val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != semantic.String {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", name, semantic.String, val.Type().Nature(), val)
 				}
 
 				argVals[i] = val
@@ -298,7 +298,7 @@ func generateUnicodeIsFunction(name string, Fn func(rune) bool) values.Function 
 				return nil, fmt.Errorf("missing argument %q", stringArgV)
 			}
 
-			if v.Type().Nature() == semantic.String {
+			if !v.IsNull() && v.Type().Nature() == semantic.String {
 				str = v.Str()
 
 				b := []byte(str)
@@ -328,7 +328,7 @@ var strlen = values.NewFunction(
 			return nil, fmt.Errorf("missing argument %q", stringArgV)
 		}
 
-		if v.Type().Nature() == semantic.String {
+		if !v.IsNull() && v.Type().Nature() == semantic.String {
 			return values.NewInt(int64(utf8.RuneCountInString(v.Str()))), nil
 		}
 
@@ -459,8 +459,8 @@ func init() {
 				if !ok {
 					return nil, fmt.Errorf("missing argument %q", "v")
 				}
-				if val.Type().Nature() != semantic.String {
-					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v", "v", semantic.String, val.Type().Nature())
+				if val.IsNull() || val.Type().Nature() != semantic.String {
+					return nil, fmt.Errorf("expected argument %q to be of type %v, got type %v value %v", "v", semantic.String, val.Type().Nature(), val)
 				}
 				argVals[1] = val
 
