@@ -2,6 +2,7 @@ package strings
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 	"unicode"
@@ -435,37 +436,51 @@ func TestHasPrefix(t *testing.T) {
 func TestContains(t *testing.T) {
 	testCases := []struct {
 		name   string
-		v      string
-		substr string
-		want   bool
+		v      values.Value
+		substr values.Value
+		want   values.Value
+		err    error
 	}{
 		{
 			name:   "Does contain substr",
-			v:      "seafood",
-			substr: "foo",
-			want:   true,
+			v:      values.NewString("seafood"),
+			substr: values.NewString("foo"),
+			want:   values.NewBool(true),
 		},
 		{
 			name:   "Does not contain substr",
-			v:      "seafood",
-			substr: "bar",
-			want:   false,
+			v:      values.NewString("seafood"),
+			substr: values.NewString("bar"),
+			want:   values.NewBool(false),
+		},
+		{
+			name:   "Does contain nil in v",
+			v:      values.NewNull(semantic.BasicString),
+			substr: values.NewString("bar"),
+			err:    errors.New("expected argument \"v\" to be of type string, got type string value <nil>"),
+		},
+		{
+			name:   "Does contain nil in substr",
+			v:      values.NewString("seafood"),
+			substr: values.NewNull(semantic.BasicString),
+			err:    errors.New("expected argument \"substr\" to be of type string, got type string value <nil>"),
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			containsStr := generateDualArgStringFunctionReturnBool("containsStr", []string{stringArgV, substr}, strings.Contains)
-			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "substr": values.NewString(tc.substr)})
+			testCase := values.NewObjectWithValues(map[string]values.Value{"v": tc.v, "substr": tc.substr})
 			result, err := containsStr.Call(dependenciestest.Default().Inject(context.Background()), testCase)
-			res := result.Bool()
 
-			if err != nil {
+			if tc.err == nil && err != nil {
 				t.Fatal(err)
 			}
 
-			if res != tc.want {
-				t.Errorf("string function result %s expected: %t, got: %s", tc.name, tc.want, result)
+			if tc.err != nil && tc.err.Error() != err.Error() {
+				t.Errorf("string function result '%s' expected: %v, got: %v", tc.name, tc.err, err)
+			} else if tc.want != nil && result != tc.want {
+				t.Errorf("string function result '%s' expected: %v, got: %v", tc.name, tc.want, result)
 			}
 		})
 
@@ -635,37 +650,51 @@ func TestCount(t *testing.T) {
 func TestIndex(t *testing.T) {
 	testCases := []struct {
 		name   string
-		v      string
-		substr string
-		want   int64
+		v      values.Value
+		substr values.Value
+		want   values.Value
+		err    error
 	}{
 		{
 			name:   "Exists",
-			v:      "chicken",
-			substr: "ken",
-			want:   4,
+			v:      values.NewString("chicken"),
+			substr: values.NewString("ken"),
+			want:   values.NewInt(4),
 		},
 		{
 			name:   "Does not exist",
-			v:      "chicken",
-			substr: "dmr",
-			want:   -1,
+			v:      values.NewString("chicken"),
+			substr: values.NewString("dmr"),
+			want:   values.NewInt(-1),
+		},
+		{
+			name:   "v is null",
+			v:      values.NewNull(semantic.BasicString),
+			substr: values.NewString("dmr"),
+			err:    errors.New("expected argument \"v\" to be of type string, got type string value <nil>"),
+		},
+		{
+			name:   "substr is null",
+			v:      values.NewString("chicken"),
+			substr: values.NewNull(semantic.BasicString),
+			err:    errors.New("expected argument \"substr\" to be of type string, got type string value <nil>"),
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			index := generateDualArgStringFunctionReturnInt("index", []string{stringArgV, substr}, strings.Index)
-			testCase := values.NewObjectWithValues(map[string]values.Value{"v": values.NewString(tc.v), "substr": values.NewString(tc.substr)})
+			testCase := values.NewObjectWithValues(map[string]values.Value{"v": tc.v, "substr": tc.substr})
 			result, err := index.Call(dependenciestest.Default().Inject(context.Background()), testCase)
-			res := result.Int()
 
-			if err != nil {
+			if tc.err == nil && err != nil {
 				t.Fatal(err)
 			}
 
-			if res != tc.want {
-				t.Errorf("string function result %s expected: %v, got: %s", tc.name, tc.want, result)
+			if tc.err != nil && tc.err.Error() != err.Error() {
+				t.Errorf("string function result '%s' expected: %v, got: %v", tc.name, tc.err, err)
+			} else if tc.want != nil && result != tc.want {
+				t.Errorf("string function result '%s' expected: %v, got: %v", tc.name, tc.want, result)
 			}
 		})
 
