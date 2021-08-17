@@ -45,8 +45,6 @@ pub enum Doc {
     Package(Box<PackageDoc>),
     /// Value represents documentation for a value exposed from a package.
     Value(Box<ValueDoc>),
-    /// Builtin represents documentation for a builtin value exposed from a package.
-    Builtin(Box<ValueDoc>),
     /// Option represents documentation for a option value exposed from a package.
     Opt(Box<ValueDoc>),
     /// Function represents documentation for a function value exposed from a package.
@@ -69,7 +67,7 @@ pub struct PackageDoc {
 }
 
 /// ValueDoc represents the documentation for a single value within a package.
-/// Values include options, builtins or any variable assignment within the top level scope of a
+/// Values include options or any variable assignment within the top level scope of a
 /// package.
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 pub struct ValueDoc {
