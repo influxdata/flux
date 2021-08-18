@@ -14,6 +14,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/arrowutil"
+	valcompiler "github.com/influxdata/flux/internal/compiler"
 	itable "github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
@@ -25,14 +26,17 @@ var (
 	n                  = 1000
 	mem                = &memory.Allocator{}
 	vectorizedArgsType semantic.MonoType
+	valueArgsType      semantic.MonoType
 
 	mapFnExpr               = mustGetFnExpr(`(r) => ({result: r.a + r.b})`)
 	baselineCompiledMapFn   *execute.RowMapPreparedFn
 	vectorizedCompiledMapFn compiler.Func
 
 	filterFnExpr               = mustGetFnExpr(`(r) => r.a + r.b > 500.0`)
+	valueFilterFnExpr          = mustGetFnExpr(`(a, b) => a + b > 500.0`)
 	baselineCompiledFilterFn   *execute.RowPredicatePreparedFn
 	vectorizedCompiledFilterFn compiler.Func
+	valueCompiledFilterFn      valcompiler.Func
 )
 
 func init() {
@@ -63,6 +67,27 @@ func init() {
 	}
 
 	vectorizedCompiledFilterFn, err = compiler.Compile(nil, filterFnExpr, vectorizedArgsType)
+	if err != nil {
+		panic(err)
+	}
+
+	// valueArgsType = semantic.NewObjectType(
+	// 	[]semantic.PropertyType{
+	// 		{Key: []byte("r"), Value: semantic.NewObjectType(
+	// 			[]semantic.PropertyType{
+	// 				{Key: []byte("a"), Value: semantic.BasicFloat},
+	// 				{Key: []byte("b"), Value: semantic.BasicFloat},
+	// 			},
+	// 		)},
+	// 	},
+	// )
+	valueArgsType = semantic.NewObjectType(
+		[]semantic.PropertyType{
+			{Key: []byte("a"), Value: semantic.BasicFloat},
+			{Key: []byte("b"), Value: semantic.BasicFloat},
+		},
+	)
+	valueCompiledFilterFn, err = valcompiler.Compile(valueFilterFnExpr, valueArgsType)
 	if err != nil {
 		panic(err)
 	}
@@ -142,12 +167,36 @@ func BenchmarkVectorize(b *testing.B) {
 			}
 		}
 	})
-	b.Run("vectorizedfilter", func(b *testing.B) {
+	b.Run("vectorizedFilter", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			arrs := vectorizedFilter(b, inputTable.Copy())
 			if len(arrs) < 1 {
 				b.Fatal("got no arrs")
+			}
+		}
+	})
+	b.Run("valueFilter", func(b *testing.B) {
+		// args := valcompiler.NewObject(valueArgsType)
+		//
+		// var recordType semantic.MonoType
+		// if prop, err := valueArgsType.RecordProperty(0); err != nil {
+		// 	b.Fatal(err)
+		// } else {
+		// 	recordType, err = prop.TypeOf()
+		// 	if err != nil {
+		// 		b.Fatal(err)
+		// 	}
+		// }
+		// record := valcompiler.NewObject(recordType)
+		// args.Set("r", record)
+		args := valcompiler.NewObject(valueArgsType)
+
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			bitsets := valueFilter(b, inputTable.Copy(), args)
+			if len(bitsets) < 1 {
+				b.Fatal("got no bitsets")
 			}
 		}
 	})
@@ -366,4 +415,48 @@ func vectorizedFilter(tb testing.TB, input flux.Table) []values.Array {
 		tb.Fatal(err)
 	}
 	return arrs
+}
+
+type Array interface {
+	Value(i int) valcompiler.Value
+}
+
+type floatArray struct {
+	arr *array.Float
+}
+
+func (a floatArray) Value(i int) valcompiler.Value {
+	return valcompiler.NewFloat(a.arr.Value(i))
+}
+
+func valueFilter(tb testing.TB, input flux.Table, args valcompiler.Value) []*arrowmem.Buffer {
+	var bitsets []*arrowmem.Buffer
+	if err := input.Do(func(cr flux.ColReader) error {
+		l := cr.Len()
+		bitset := arrowmem.NewResizableBuffer(mem)
+		bitset.Resize(l)
+		var (
+			arr0 Array = floatArray{arr: cr.Floats(0)}
+			arr1 Array = floatArray{arr: cr.Floats(1)}
+		)
+		for i := 0; i < l; i++ {
+			args.Set(0, arr0.Value(i))
+			args.Set(1, arr1.Value(i))
+			// args.Set(0, valcompiler.ValueForRow(cr, i, 0))
+			// args.Set(1, valcompiler.ValueForRow(cr, i, 1))
+
+			val, err := valueCompiledFilterFn.Eval(context.Background(), args)
+			if err != nil {
+				bitset.Release()
+				return err
+			}
+			bitutil.SetBitTo(bitset.Buf(), i, val.Bool())
+		}
+		bitsets = append(bitsets, bitset)
+		return nil
+	}); err != nil {
+		tb.Fatal(err)
+	}
+	return bitsets
+
 }
