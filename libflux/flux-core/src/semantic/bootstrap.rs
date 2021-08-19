@@ -40,6 +40,7 @@ pub struct Error {
 
 /// Doc is an enum that can take the form of the various types of flux documentation structures through polymorphism.
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
+#[serde(tag = "kind")]
 pub enum Doc {
     /// Package represents documentation for an entire Flux package.
     Package(Box<PackageDoc>),
