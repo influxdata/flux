@@ -1153,6 +1153,47 @@ Example
 
     builtin filter : (<-tables: [T], fn: (r: T) => bool) => [T]
 
+### Type expressions
+
+Type expressions as defined above describe the type of values.
+Every value have has a known type, its type can be described using type expressions.
+The available types are defined in the [Types](#Types) section.
+
+Here are a set of examples showing various values and their corresponding type using type expressions.
+
+    // A floating point value
+    1.5 // float
+
+    // A string value
+    "this is a string"  // string
+
+    // A boolean value
+    false // bool
+
+    // A record with three properties all of which are integers
+    {x: 1, y: 2, z: 4} // {x: int, y: int, z: int}
+
+    // A record with three properties with different types
+    {x: 1, y: true, z: 5.6} // {x: int, y: bool, z: float}
+
+    // A function that takes an integer and returns an integer
+    (x) => x + 1 // (x: int) => int
+
+    // A function that takes two values of the same type where that type must be Addable.
+    (a, b) => a + b // (a:A, b: A) => A where A: Addable
+
+    // A function that takes two values of any type and returns a record containing those values
+    (n, m) => {x: n, y: m} // (n: A, m: B) => {x: A, y: B}
+
+    // A function that takes a record and returns a new records with additional properties
+    (r) => ({r with z: 0}) // (r: A) => {A with z: int} where A: Record
+
+    // A function that takes a record with a name property and returns it
+    (r) => r.name // (r: {A with name: B}) => B where A: Record
+
+    // A function that takes a record that has at least the status property which is an int and the function returns a boolean value.
+    (r) => r.status == 400 // (r: {A with status: int}) => bool where A: Record
+
 ### Date/Time constants
 
 #### Days of the week
