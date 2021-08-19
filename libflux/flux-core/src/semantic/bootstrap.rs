@@ -222,7 +222,8 @@ fn generate_docs(
         headline,
         description,
         members,
-        link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string()
+        link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned()
+            + &pkgpath.to_string(),
     })
 }
 
@@ -386,9 +387,9 @@ fn generate_values(
                 if let MonoType::Record(r) = &pkgtype.expr {
                     let typ = r.find_prop(&name);
                     if let Some(typ) = typ {
-                        match typ {
+                        match &typ {
                             MonoType::Fun(_f) => {
-                                funcdoc.flux_type = "Fun".to_string();
+                                funcdoc.flux_type = format!("{}", &typ);
                                 funcdoc.link = "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string();
                                 members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                             }
@@ -416,9 +417,9 @@ fn generate_values(
                 if let MonoType::Record(r) = &pkgtype.expr {
                     let typ = r.find_prop(&name);
                     if let Some(typ) = typ {
-                        match typ {
+                        match &typ {
                             MonoType::Fun(_f) => {
-                                funcdoc.flux_type = "Fun".to_string();
+                                funcdoc.flux_type = format!("{}", &typ);
                                 funcdoc.link = "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string();
                                 members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                             }
@@ -447,9 +448,9 @@ fn generate_values(
                     if let MonoType::Record(r) = &pkgtype.expr {
                         let typ = r.find_prop(&name);
                         if let Some(typ) = typ {
-                            match typ {
+                            match &typ {
                                 MonoType::Fun(_f) => {
-                                    funcdoc.flux_type = "Fun".to_string();
+                                    funcdoc.flux_type = format!("{}", &typ);
                                     funcdoc.link = "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string();
                                     members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                                 }

@@ -1131,7 +1131,8 @@ from(bucket: v.bucket)
                 .to_string(),
             description: None,
             members: std::collections::HashMap::new(),
-            link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv".to_string(),
+            link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv"
+                .to_string(),
         };
         exact.members.insert("from".to_string(), fluxcore::semantic::bootstrap::Doc::Function(Box::new(FunctionDoc{
             name: "from".to_string(),
@@ -1205,7 +1206,7 @@ csv.from(
                 description: Some("Available annotation modes: annotations: Use CSV notations to determine column data types. raw: Parse all columns as strings and use the first row as the header row and all subsequent rows as data.".to_string()),
                 required: false
             }],
-            flux_type: "Fun".to_string(),
+            flux_type: "(?csv:string, ?file:string, ?mode:string) => [t8500]".to_string(),
             link:"https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv/from".to_string(),
         })));
         let mut got = PackageDoc {
@@ -1214,7 +1215,7 @@ csv.from(
             headline: String::new(),
             description: None,
             members: std::collections::HashMap::new(),
-            link:String::new(),
+            link: String::new(),
         };
         for d in doc {
             if d.path == "csv" {
@@ -1236,7 +1237,8 @@ csv.from(
                 .to_string(),
             description: None,
             members: std::collections::HashMap::new(),
-            link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array".to_string(),
+            link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array"
+                .to_string(),
         };
         exact.members.insert("from".to_string(), fluxcore::semantic::bootstrap::Doc::Function(Box::new(FunctionDoc{
             name: "from".to_string(),
@@ -1275,7 +1277,7 @@ union(tables: [tags, wildcard_tag])
                 description: None,
                 required: false
             }],
-            flux_type: "Fun".to_string(),
+            flux_type: "(rows:[t1011]) => [t1011]".to_string(),
             link:"https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array/from".to_string(),
         })));
         let mut got = PackageDoc {
@@ -1284,7 +1286,7 @@ union(tables: [tags, wildcard_tag])
             headline: String::new(),
             description: None,
             members: std::collections::HashMap::new(),
-            link:String::new(),
+            link: String::new(),
         };
         for d in doc {
             if d.path == "array" {
