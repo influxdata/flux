@@ -65,6 +65,8 @@ pub struct PackageDoc {
     pub description: Option<String>,
     /// the members are the values and funcitons of a package
     pub members: HashMap<String, Doc>,
+    /// the docs site link for a package
+    pub link: String,
 }
 
 /// ValueDoc represents the documentation for a single value within a package.
@@ -80,6 +82,8 @@ pub struct ValueDoc {
     pub description: Option<String>,
     /// the type of the value
     pub flux_type: String,
+    /// the docs site link for a Value
+    pub link: String,
 }
 
 /// FunctionDoc represents the documentation for a single Function within a package.
@@ -95,6 +99,8 @@ pub struct FunctionDoc {
     pub parameters: Vec<ParameterDoc>,
     /// the type of the function
     pub flux_type: String,
+    /// the docs site link for a function
+    pub link: String,
 }
 
 /// ParameterDoc represents the documentation for a single parameter within a function.
@@ -216,6 +222,7 @@ fn generate_docs(
         headline,
         description,
         members,
+        link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string()
     })
 }
 
@@ -263,6 +270,7 @@ fn separate_func_docs(all_doc: &str, name: &str) -> FunctionDoc {
         description: String::new(),
         parameters: Vec::new(),
         flux_type: String::new(),
+        link: String::new(),
     };
     let mut tmp = &mut funcdocs.headline;
     let mut param_flag = false;
@@ -381,6 +389,7 @@ fn generate_values(
                         match typ {
                             MonoType::Fun(_f) => {
                                 funcdoc.flux_type = "Fun".to_string();
+                                funcdoc.link = "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string();
                                 members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                             }
                             _ => {
@@ -389,6 +398,7 @@ fn generate_values(
                                     headline: funcdoc.headline,
                                     description: Option::from(funcdoc.description),
                                     flux_type: format!("{}", typ),
+                                    link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string(),
                                 };
                                 members.insert(name.clone(), Doc::Value(Box::new(variable)));
                             }
@@ -409,6 +419,7 @@ fn generate_values(
                         match typ {
                             MonoType::Fun(_f) => {
                                 funcdoc.flux_type = "Fun".to_string();
+                                funcdoc.link = "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string();
                                 members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                             }
                             _ => {
@@ -417,6 +428,7 @@ fn generate_values(
                                     headline: funcdoc.headline,
                                     description: Option::from(funcdoc.description),
                                     flux_type: format!("{}", typ),
+                                    link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string(),
                                 };
                                 members.insert(name.clone(), Doc::Value(Box::new(builtin)));
                             }
@@ -438,6 +450,7 @@ fn generate_values(
                             match typ {
                                 MonoType::Fun(_f) => {
                                     funcdoc.flux_type = "Fun".to_string();
+                                    funcdoc.link = "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string();
                                     members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                                 }
                                 _ => {
@@ -446,6 +459,7 @@ fn generate_values(
                                         headline: funcdoc.headline,
                                         description: Option::from(funcdoc.description),
                                         flux_type: format!("{}", typ),
+                                        link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string(),
                                     };
                                     members.insert(name.clone(), Doc::Value(Box::new(option)));
                                 }
