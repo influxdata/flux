@@ -87,6 +87,15 @@ pub fn get_json_documentation(flux_path: &str) -> JsValue {
     doc
 }
 
+/// Gets json docs for all Stdlib
+#[wasm_bindgen]
+pub fn get_all_json() -> JsValue {
+    let d = docs();
+    let param = serde_json::to_string(&d).unwrap();
+    let doc = JsValue::from_serde(&param).unwrap();
+    doc
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
