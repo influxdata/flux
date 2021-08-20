@@ -1,6 +1,6 @@
-use flux::docs;
+use flux::docs_json;
 
 fn main() {
-    let doc = docs();
-    println!("{}", serde_json::to_string(&doc).unwrap());
+    let doc = docs_json().unwrap();
+    println!("{}", std::str::from_utf8(&doc).unwrap());
 }

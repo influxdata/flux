@@ -49,6 +49,11 @@ pub fn docs() -> Vec<PackageDoc> {
     serde_json::from_slice(&inflate_bytes(buf).unwrap()).unwrap()
 }
 
+pub fn docs_json() -> Result<Vec<u8>, String> {
+    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
+    inflate_bytes(buf)
+}
+
 pub fn fresher() -> Fresher {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/fresher.data"));
     flatbuffers::root::<fb::Fresher>(buf).unwrap().into()

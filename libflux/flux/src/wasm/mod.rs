@@ -3,9 +3,9 @@ use std::io;
 
 // module for all flux WASM functions
 pub use crate::ast::*;
-use crate::docs;
 pub use crate::formatter::convert_to_string;
 pub use crate::{ast, find_var_type};
+use crate::{docs, docs_json};
 pub use fluxcore::parser::Parser;
 use fluxcore::semantic::bootstrap;
 pub use fluxcore::semantic::types::{MonoType, Tvar};
@@ -87,13 +87,11 @@ pub fn get_json_documentation(flux_path: &str) -> JsValue {
     doc
 }
 
-/// Gets json docs for all Stdlib
+/// Gets json docs for the entire stdlib
 #[wasm_bindgen]
-pub fn get_all_json() -> JsValue {
-    let d = docs();
-    let param = serde_json::to_string(&d).unwrap();
-    let doc = JsValue::from_serde(&param).unwrap();
-    doc
+pub fn get_all_docs() -> JsValue {
+    let d = docs_json().unwrap();
+    JsValue::from_serde(std::str::from_utf8(&d).unwrap()).unwrap()
 }
 
 #[cfg(test)]
