@@ -94,7 +94,9 @@ list = () => array.from(
     rows: [
         _setInfo(set: "airSensor"),
         _setInfo(set: "birdMigration"),
+        _setInfo(set: "machineProduction"),
         _setInfo(set: "noaa"),
+        _setInfo(set: "noaaWater"),
         _setInfo(set: "usgs"),
     ],
 )
@@ -103,6 +105,7 @@ list = () => array.from(
 // When writing static historical sample datasets to **InfluxDB Cloud**, use alignToNow
 // to avoid losing sample data with timestamps outside of the retention period
 // associated with your InfluxDB Cloud account.
+// Input data must have a `_time` column.
 //
 // ## Align sample data to now
 //
@@ -112,7 +115,6 @@ list = () => array.from(
 // sample.data(set: "birdMigration")
 //    |> sample.alignToNow()
 // ```
-
 alignToNow = (tables=<-) => {
     _lastTime = (tables |> keep(columns: ["_time"]) |> last(column: "_time") |> findRecord(fn: (key) => true, idx: 0))._time
     _offset = int(v: now()) - int(v: _lastTime)
