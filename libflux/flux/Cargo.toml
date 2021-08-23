@@ -8,6 +8,11 @@ edition = "2018"
 name = "flux"
 crate-type = ["rlib", "staticlib", "cdylib"]
 
+[[bin]]
+name = "flux-dump-docs"
+test = false
+bench = false
+
 [features]
 default = ["strict"]
 strict = []
