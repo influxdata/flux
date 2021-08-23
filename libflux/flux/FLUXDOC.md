@@ -359,6 +359,7 @@ struct PackageDoc {
 	headline: String,
 	description: Option<String>,
 	members: HashMap<String, Doc>,
+    link: String,
 }
 
 struct ValueDoc {
@@ -366,6 +367,7 @@ struct ValueDoc {
 	headline: String,
 	description: Option<String>,
 	flux_type: String,
+    link: String,
 }
 
 struct FunctionDoc {
@@ -374,6 +376,7 @@ struct FunctionDoc {
 	description: String,
 	parameters: Vec<ParameterDoc>,
 	flux_type: String,
+    link: String,
 }
 
 struct ParameterDoc {
