@@ -46,7 +46,7 @@ require (
 	github.com/prometheus/common v0.6.0
 	github.com/segmentio/kafka-go v0.1.0
 	github.com/sergi/go-diff v1.0.0 // indirect
-	github.com/snowflakedb/gosnowflake v1.3.13
+	github.com/snowflakedb/gosnowflake v1.6.1
 	github.com/spf13/cobra v0.0.3
 	github.com/uber/athenadriver v1.1.4
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
