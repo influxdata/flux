@@ -28,7 +28,7 @@ func CreateSpreadOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	}
 
 	s := new(SpreadOpSpec)
-	if err := s.AggregateConfig.ReadArgs(args); err != nil {
+	if err := s.SimpleAggregateConfig.ReadArgs(args); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -41,7 +41,7 @@ func newSpreadOp() flux.OperationSpec {
 // SpreadOpSpec defines the required arguments for Flux.  Currently,
 // spread takes no arguments.
 type SpreadOpSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 // Kind is used to lookup createSpreadOpSpec producing SpreadOpSpec
@@ -55,14 +55,14 @@ func newSpreadProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pro
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &SpreadProcedureSpec{
-		AggregateConfig: spec.AggregateConfig,
+		SimpleAggregateConfig: spec.SimpleAggregateConfig,
 	}, nil
 }
 
 // SpreadProcedureSpec is created when mapping from SpreadOpSpec.Kind
 // to a CreateProcedureSpec.
 type SpreadProcedureSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 // Kind is used to lookup CreateTransformation producing SpreadAgg
@@ -71,7 +71,7 @@ func (s *SpreadProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *SpreadProcedureSpec) Copy() plan.ProcedureSpec {
 	return &SpreadProcedureSpec{
-		AggregateConfig: s.AggregateConfig,
+		SimpleAggregateConfig: s.SimpleAggregateConfig,
 	}
 }
 
@@ -85,9 +85,7 @@ func createSpreadTransformation(id execute.DatasetID, mode execute.AccumulationM
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(SpreadAgg), s.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, new(SpreadAgg), s.SimpleAggregateConfig, a.Allocator())
 }
 
 // SpreadAgg finds the difference between the max and min values a table

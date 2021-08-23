@@ -54,7 +54,7 @@ func TestCardinality_NewQuery(t *testing.T) {
 					{
 						ID: "sum1",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},

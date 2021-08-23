@@ -21,7 +21,7 @@ const (
 
 type StddevOpSpec struct {
 	Mode string `json:"mode"`
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func init() {
@@ -50,7 +50,7 @@ func CreateStddevOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		s.Mode = modeSample
 	}
 
-	if err := s.AggregateConfig.ReadArgs(args); err != nil {
+	if err := s.SimpleAggregateConfig.ReadArgs(args); err != nil {
 		return s, err
 	}
 	return s, nil
@@ -66,7 +66,7 @@ func (s *StddevOpSpec) Kind() flux.OperationKind {
 
 type StddevProcedureSpec struct {
 	Mode string `json:"mode"`
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func newStddevProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
@@ -75,8 +75,8 @@ func newStddevProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Proc
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &StddevProcedureSpec{
-		Mode:            spec.Mode,
-		AggregateConfig: spec.AggregateConfig,
+		Mode:                  spec.Mode,
+		SimpleAggregateConfig: spec.SimpleAggregateConfig,
 	}, nil
 }
 
@@ -85,8 +85,8 @@ func (s *StddevProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *StddevProcedureSpec) Copy() plan.ProcedureSpec {
 	return &StddevProcedureSpec{
-		Mode:            s.Mode,
-		AggregateConfig: s.AggregateConfig,
+		Mode:                  s.Mode,
+		SimpleAggregateConfig: s.SimpleAggregateConfig,
 	}
 }
 
@@ -105,8 +105,7 @@ func createStddevTransformation(id execute.DatasetID, mode execute.AccumulationM
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, &StddevAgg{Mode: s.Mode}, s.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, &StddevAgg{Mode: s.Mode}, s.SimpleAggregateConfig, a.Allocator())
 }
 
 func (a *StddevAgg) NewBoolAgg() execute.DoBoolAgg {

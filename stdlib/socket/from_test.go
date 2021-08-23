@@ -67,7 +67,7 @@ socket.from(url: "url", decoder: "line") |> range(start:-4h, stop:-2h) |> sum()`
 					{
 						ID: "sum2",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.DefaultAggregateConfig,
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},

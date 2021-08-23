@@ -96,6 +96,36 @@ func (v Chunk) Values(j int) array.Interface {
 	return v.buf.Values[j]
 }
 
+// Bools is a convenience function for retrieving an array
+// as a boolean array.
+func (v Chunk) Bools(j int) *array.Boolean {
+	return v.Values(j).(*array.Boolean)
+}
+
+// Ints is a convenience function for retrieving an array
+// as an int array.
+func (v Chunk) Ints(j int) *array.Int {
+	return v.Values(j).(*array.Int)
+}
+
+// Uints is a convenience function for retrieving an array
+// as a uint array.
+func (v Chunk) Uints(j int) *array.Uint {
+	return v.Values(j).(*array.Uint)
+}
+
+// Floats is a convenience function for retrieving an array
+// as a float array.
+func (v Chunk) Floats(j int) *array.Float {
+	return v.Values(j).(*array.Float)
+}
+
+// Strings is a convenience function for retrieving an array
+// as a string array.
+func (v Chunk) Strings(j int) *array.String {
+	return v.Values(j).(*array.String)
+}
+
 // Retain will retain a reference to this Chunk.
 func (v Chunk) Retain() {
 	v.buf.Retain()

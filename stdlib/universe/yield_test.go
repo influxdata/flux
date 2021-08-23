@@ -184,7 +184,7 @@ func TestYield_NewQuery(t *testing.T) {
 					{
 						ID: "sum3",
 						Spec: &universe.SumOpSpec{
-							AggregateConfig: execute.AggregateConfig{
+							SimpleAggregateConfig: execute.SimpleAggregateConfig{
 								Columns: []string{"_value"},
 							},
 						},

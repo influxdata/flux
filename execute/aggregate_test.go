@@ -1,31 +1,360 @@
 package execute_test
 
 import (
+	"context"
 	"sort"
 	"testing"
 
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/execute/table/static"
+	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/stdlib/universe"
 )
 
-func TestAggregate_Process(t *testing.T) {
+func TestAggregateTransformation_ProcessChunk(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	// Generate one table chunk using static.Table.
+	// This will only produce one column reader, so we are
+	// extracting that value from the nested iterators.
+	gen := static.Table{
+		static.Times("_time", 0, 10, 20),
+		static.Floats("_value", 1, 2, 3),
+	}
+
+	isAggregated, shouldHaveState := false, false
+	tr, _, err := execute.NewAggregateTransformation(
+		executetest.RandomDatasetID(),
+		&mock.AggregateTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				// Memory should be allocated and should not have been improperly freed.
+				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
+				// of which there are two. 64 bytes is the minimum that arrow will allocate
+				// for a particular data buffer.
+				mem.AssertSize(t, 256)
+
+				if shouldHaveState {
+					if state == nil {
+						t.Error("should have state, but state was nil")
+					} else if want, got := "mystate", state.(string); want != got {
+						t.Errorf("unexpected state -want/+got:\n\t- %s\n\t+ %s", want, got)
+					}
+				} else {
+					if state != nil {
+						t.Error("should not have state, but state was not nil")
+					}
+				}
+				isAggregated = true
+				return "mystate", true, nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				t.Error("did not expect to call compute")
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We can use a TransportDataset as a mock source
+	// to send messages to the transformation we are testing.
+	source := execute.NewTransportDataset(executetest.RandomDatasetID(), mem)
+	source.AddTransformation(tr)
+
+	tbl := gen.Table(mem)
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		chunk := table.ChunkFromReader(cr)
+		chunk.Retain()
+		return source.Process(chunk)
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if !isAggregated {
+		t.Fatal("expected aggregate function to be invoked, but it was not")
+	}
+	// Memory should have been released since we did not retain the data.
+	mem.AssertSize(t, 0)
+
+	isAggregated, shouldHaveState = false, true
+	tbl = gen.Table(mem)
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		chunk := table.ChunkFromReader(cr)
+		chunk.Retain()
+		return source.Process(chunk)
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if !isAggregated {
+		t.Fatal("expected aggregate function to be invoked, but it was not")
+	}
+}
+
+func TestAggregateTransformation_FlushKey(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	isComputed := false
+	tr, _, err := execute.NewAggregateTransformation(
+		executetest.RandomDatasetID(),
+		&mock.AggregateTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				return "mystate", true, nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				if state == nil {
+					t.Error("invoked compute without state")
+				} else if want, got := "mystate", state.(string); want != got {
+					t.Errorf("unexpected state -want/+got:\n\t- %s\n\t+ %s", want, got)
+				}
+				isComputed = true
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We can use a TransportDataset as a mock source
+	// to send messages to the transformation we are testing.
+	source := execute.NewTransportDataset(executetest.RandomDatasetID(), mem)
+	source.AddTransformation(tr)
+
+	// Generate one table chunk using static.Table.
+	// This will only produce one column reader, so we are
+	// extracting that value from the nested iterators.
+	gen := static.Table{
+		static.Times("_time", 0, 10, 20),
+		static.Floats("_value", 1, 2, 3),
+	}
+
+	tbl := gen.Table(mem)
+	if err := source.FlushKey(tbl.Key()); err != nil {
+		t.Fatal(err)
+	} else if isComputed {
+		t.Fatal("did not expect compute to be called")
+	}
+
+	// Now process that table and attempt to send flush key again.
+	// This time, it should work.
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		chunk := table.ChunkFromReader(cr)
+		chunk.Retain()
+		return source.Process(chunk)
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := source.FlushKey(tbl.Key()); err != nil {
+		t.Fatal(err)
+	} else if !isComputed {
+		t.Fatal("expected compute to be called")
+	}
+}
+
+func TestAggregateTransformation_Process(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	// Generate one table chunk using static.Table.
+	// This will only produce one column reader, so we are
+	// extracting that value from the nested iterators.
+	gen := static.Table{
+		static.Times("_time", 0, 10, 20),
+		static.Floats("_value", 1, 2, 3),
+	}
+
+	isAggregated, isComputed := false, false
+	tr, _, err := execute.NewAggregateTransformation(
+		executetest.RandomDatasetID(),
+		&mock.AggregateTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				// Memory should be allocated and should not have been improperly freed.
+				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
+				// of which there are two. 64 bytes is the minimum that arrow will allocate
+				// for a particular data buffer.
+				mem.AssertSize(t, 256)
+				isAggregated = true
+				return "mystate", true, nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				if state == nil {
+					t.Error("invoked compute without state")
+				} else if want, got := "mystate", state.(string); want != got {
+					t.Errorf("unexpected state -want/+got:\n\t- %s\n\t+ %s", want, got)
+				}
+				isComputed = true
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tbl := gen.Table(mem)
+	if err := tr.Process(executetest.RandomDatasetID(), tbl); err != nil {
+		t.Fatal(err)
+	}
+
+	if !isAggregated {
+		t.Fatal("expected aggregate function to be invoked, but it was not")
+	}
+	if !isComputed {
+		t.Fatal("expected compute function to be invoked, but it was not")
+	}
+}
+
+func TestAggregateTransformation_ProcessEmpty(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	// Create an empty table. The table should still send at least
+	// one chunk and the chunk should be empty.
+	tbl := &table.BufferedTable{
+		GroupKey: execute.NewGroupKey(nil, nil),
+		Columns: []flux.ColMeta{
+			{Label: "_time", Type: flux.TTime},
+			{Label: "_value", Type: flux.TFloat},
+		},
+	}
+
+	isAggregated, isComputed := false, false
+	tr, _, err := execute.NewAggregateTransformation(
+		executetest.RandomDatasetID(),
+		&mock.AggregateTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				// Empty table chunks use no memory.
+				mem.AssertSize(t, 0)
+				if chunk.Len() > 0 {
+					t.Errorf("table was not empty, is %d", chunk.Len())
+				}
+				isAggregated = true
+				return "mystate", true, nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				if state == nil {
+					t.Error("invoked compute without state")
+				} else if want, got := "mystate", state.(string); want != got {
+					t.Errorf("unexpected state -want/+got:\n\t- %s\n\t+ %s", want, got)
+				}
+				isComputed = true
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := tr.Process(executetest.RandomDatasetID(), tbl); err != nil {
+		t.Fatal(err)
+	}
+
+	if !isAggregated {
+		t.Fatal("expected aggregate function to be invoked, but it was not")
+	}
+	if !isComputed {
+		t.Fatal("expected compute function to be invoked, but it was not")
+	}
+}
+
+func TestAggregateTransformation_Finish(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	isAggregated, isComputed := false, false
+	tr, _, err := execute.NewAggregateTransformation(
+		executetest.RandomDatasetID(),
+		&mock.AggregateTransformation{
+			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
+				isAggregated = true
+				return "mystate", true, nil
+			},
+			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+				if state == nil {
+					t.Error("invoked compute without state")
+				} else if want, got := "mystate", state.(string); want != got {
+					t.Errorf("unexpected state -want/+got:\n\t- %s\n\t+ %s", want, got)
+				}
+				isComputed = true
+				return nil
+			},
+		},
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We can use a TransportDataset as a mock source
+	// to send messages to the transformation we are testing.
+	source := execute.NewTransportDataset(executetest.RandomDatasetID(), mem)
+	source.AddTransformation(tr)
+
+	// Generate one table chunk using static.Table.
+	// This will only produce one column reader, so we are
+	// extracting that value from the nested iterators.
+	gen := static.Table{
+		static.Times("_time", 0, 10, 20),
+		static.Floats("_value", 1, 2, 3),
+	}
+
+	// Process the table but do not flush the key.
+	tbl := gen.Table(mem)
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		chunk := table.ChunkFromReader(cr)
+		chunk.Retain()
+		return source.Process(chunk)
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if !isAggregated {
+		t.Fatal("expected aggregate function to be called")
+	} else if isComputed {
+		t.Fatal("did not expect compute function to be called")
+	}
+
+	source.Finish(nil)
+	if !isComputed {
+		t.Fatal("expected compute function to be called")
+	}
+}
+
+func TestSimpleAggregate_Process(t *testing.T) {
 	sumAgg := new(universe.SumAgg)
 	countAgg := new(universe.CountAgg)
 	testCases := []struct {
 		name   string
-		agg    execute.Aggregate
-		config execute.AggregateConfig
+		agg    execute.SimpleAggregate
+		config execute.SimpleAggregateConfig
 		data   []*executetest.Table
 		want   []*executetest.Table
 	}{
 		{
 			name:   "single",
-			config: execute.DefaultAggregateConfig,
+			config: execute.DefaultSimpleAggregateConfig,
 			agg:    sumAgg,
 			data: []*executetest.Table{{
 				KeyCols: []string{"_start", "_stop"},
@@ -62,7 +391,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name: "single use start time",
-			config: execute.AggregateConfig{
+			config: execute.SimpleAggregateConfig{
 				Columns: []string{execute.DefaultValueColLabel},
 			},
 			agg: sumAgg,
@@ -101,7 +430,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name:   "multiple tables",
-			config: execute.DefaultAggregateConfig,
+			config: execute.DefaultSimpleAggregateConfig,
 			agg:    sumAgg,
 			data: []*executetest.Table{
 				{
@@ -174,7 +503,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name:   "empty table",
-			config: execute.DefaultAggregateConfig,
+			config: execute.DefaultSimpleAggregateConfig,
 			agg:    sumAgg,
 			data: []*executetest.Table{
 				{
@@ -208,7 +537,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name:   "table count all null",
-			config: execute.DefaultAggregateConfig,
+			config: execute.DefaultSimpleAggregateConfig,
 			agg:    countAgg,
 			data: []*executetest.Table{
 				{
@@ -246,7 +575,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name:   "table sum all null",
-			config: execute.DefaultAggregateConfig,
+			config: execute.DefaultSimpleAggregateConfig,
 			agg:    sumAgg,
 			data: []*executetest.Table{
 				{
@@ -284,7 +613,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name:   "table some null",
-			config: execute.DefaultAggregateConfig,
+			config: execute.DefaultSimpleAggregateConfig,
 			agg:    sumAgg,
 			data: []*executetest.Table{
 				{
@@ -322,7 +651,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name:   "multiple tables with keyed columns",
-			config: execute.DefaultAggregateConfig,
+			config: execute.DefaultSimpleAggregateConfig,
 			agg:    sumAgg,
 			data: []*executetest.Table{
 				{
@@ -467,7 +796,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name: "multiple values",
-			config: execute.AggregateConfig{
+			config: execute.SimpleAggregateConfig{
 				Columns: []string{"x", "y"},
 			},
 			agg: sumAgg,
@@ -508,7 +837,7 @@ func TestAggregate_Process(t *testing.T) {
 		},
 		{
 			name: "multiple values changing types",
-			config: execute.AggregateConfig{
+			config: execute.SimpleAggregateConfig{
 				Columns: []string{"x", "y"},
 			},
 			agg: countAgg,
@@ -551,11 +880,15 @@ func TestAggregate_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			d := executetest.NewDataset(executetest.RandomDatasetID())
-			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
-			c.SetTriggerSpec(plan.DefaultTriggerSpec)
+			ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+			agg, d, err := execute.NewSimpleAggregateTransformation(ctx, executetest.RandomDatasetID(), tc.agg, tc.config, memory.DefaultAllocator)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			agg := execute.NewAggregateTransformation(d, c, tc.agg, tc.config)
+			store := executetest.NewDataStore()
+			d.AddTransformation(store)
+			d.SetTriggerSpec(plan.DefaultTriggerSpec)
 
 			parentID := executetest.RandomDatasetID()
 			for _, b := range tc.data {
@@ -563,8 +896,9 @@ func TestAggregate_Process(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
+			agg.Finish(parentID, nil)
 
-			got, err := executetest.TablesFromCache(c)
+			got, err := executetest.TablesFromCache(store)
 			if err != nil {
 				t.Fatal(err)
 			}

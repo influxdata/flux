@@ -46,10 +46,10 @@ func TestQuantile_NewQuery(t *testing.T) {
 					{
 						ID: "quantile2",
 						Spec: &universe.QuantileOpSpec{
-							Quantile:        0.99,
-							Compression:     1000,
-							Method:          "estimate_tdigest",
-							AggregateConfig: execute.DefaultAggregateConfig,
+							Quantile:              0.99,
+							Compression:           1000,
+							Method:                "estimate_tdigest",
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -88,9 +88,9 @@ func TestQuantile_NewQuery(t *testing.T) {
 					{
 						ID: "quantile2",
 						Spec: &universe.QuantileOpSpec{
-							Quantile:        0.99,
-							Method:          "exact_mean",
-							AggregateConfig: execute.DefaultAggregateConfig,
+							Quantile:              0.99,
+							Method:                "exact_mean",
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -215,7 +215,7 @@ func TestQuantile_NewQuery(t *testing.T) {
 						Spec: &universe.QuantileOpSpec{
 							Quantile: 0.99,
 							Method:   "exact_mean",
-							AggregateConfig: execute.AggregateConfig{
+							SimpleAggregateConfig: execute.SimpleAggregateConfig{
 								Columns: []string{"foo"},
 							},
 						},
@@ -256,10 +256,10 @@ func TestQuantile_NewQuery(t *testing.T) {
 					{
 						ID: "quantile2",
 						Spec: &universe.QuantileOpSpec{
-							Quantile:        0.99,
-							Compression:     1000,
-							Method:          "estimate_tdigest",
-							AggregateConfig: execute.DefaultAggregateConfig,
+							Quantile:              0.99,
+							Compression:           1000,
+							Method:                "estimate_tdigest",
+							SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 						},
 					},
 				},
@@ -454,7 +454,7 @@ func TestQuantile_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			var agg execute.Aggregate
+			var agg execute.SimpleAggregate
 			if tc.exact {
 				agg = &universe.ExactQuantileAgg{Quantile: tc.quantile}
 			} else {

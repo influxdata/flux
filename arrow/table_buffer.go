@@ -83,11 +83,54 @@ func (t *TableBuffer) Validate() error {
 		return nil
 	}
 
-	sz := t.Values[0].Len()
-	for i := 1; i < len(t.Values); i++ {
-		if t.Values[i].Len() != sz {
-			return errors.New(codes.Internal, "column size mismatch")
+	// Retrieve the size of the first column if non-nil to use for checking column size.
+	// If the first column is nil, the check below will catch it so we don't care about
+	// the size then.
+	var sz int
+	if t.Values[0] != nil {
+		sz = t.Values[0].Len()
+	}
+
+	for i := 0; i < len(t.Values); i++ {
+		if t.Values[i] == nil {
+			return errors.New(codes.Internal, "column data was not initialized")
+		}
+		if i > 0 && t.Values[i].Len() != sz {
+			// Some column was mismatched so generate a nicer error message.
+			// We failed anyway. We can spend extra time on this.
+			sizes := make([]interface{}, len(t.Values))
+			for i, arr := range t.Values {
+				if arr != nil {
+					sizes[i] = arr.Len()
+				}
+			}
+			return errors.Newf(codes.Internal, "column size mismatch: %v", sizes)
+		}
+		if ok := t.checkCol(t.Columns[i].Type, t.Values[i]); !ok {
+			return errors.Newf(codes.Internal, "column %s of type %s is incompatible with data array %T", t.Columns[i].Label, t.Columns[i].Type, t.Values[i])
 		}
 	}
 	return nil
+}
+
+func (t *TableBuffer) checkCol(typ flux.ColType, arr array.Interface) bool {
+	switch typ {
+	case flux.TInt, flux.TTime:
+		_, ok := arr.(*array.Int)
+		return ok
+	case flux.TUInt:
+		_, ok := arr.(*array.Uint)
+		return ok
+	case flux.TFloat:
+		_, ok := arr.(*array.Float)
+		return ok
+	case flux.TString:
+		_, ok := arr.(*array.String)
+		return ok
+	case flux.TBool:
+		_, ok := arr.(*array.Boolean)
+		return ok
+	default:
+		return false
+	}
 }

@@ -263,10 +263,10 @@ func TestExecutor_Execute(t *testing.T) {
 						},
 					)),
 					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
-						AggregateConfig: execute.DefaultAggregateConfig,
+						SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("mean", &universe.MeanProcedureSpec{
-						AggregateConfig: execute.DefaultAggregateConfig,
+						SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("sum")),
 					plan.CreatePhysicalNode("yield", executetest.NewYieldProcedureSpec("mean")),
@@ -386,10 +386,10 @@ func TestExecutor_Execute(t *testing.T) {
 						},
 					)),
 					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
-						AggregateConfig: execute.DefaultAggregateConfig,
+						SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("count", &universe.CountProcedureSpec{
-						AggregateConfig: execute.DefaultAggregateConfig,
+						SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("join", &universe.MergeJoinProcedureSpec{
 						On:         []string{"_start", "_stop"},
@@ -470,7 +470,7 @@ func TestExecutor_Execute(t *testing.T) {
 					)),
 					plan.CreatePhysicalNode("yield0", executetest.NewYieldProcedureSpec("from")),
 					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
-						AggregateConfig: execute.DefaultAggregateConfig,
+						SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("yield1", executetest.NewYieldProcedureSpec("sum")),
 				},
@@ -533,7 +533,7 @@ func TestExecutor_Execute(t *testing.T) {
 						}},
 					)),
 					plan.CreatePhysicalNode("sum", &universe.SumProcedureSpec{
-						AggregateConfig: execute.DefaultAggregateConfig,
+						SimpleAggregateConfig: execute.DefaultSimpleAggregateConfig,
 					}),
 					plan.CreatePhysicalNode("yield0", executetest.NewYieldProcedureSpec("sum0")),
 					plan.CreatePhysicalNode("yield1", executetest.NewYieldProcedureSpec("sum1")),

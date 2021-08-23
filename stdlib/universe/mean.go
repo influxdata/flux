@@ -16,7 +16,7 @@ import (
 const MeanKind = "mean"
 
 type MeanOpSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func init() {
@@ -33,7 +33,7 @@ func CreateMeanOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	}
 
 	spec := &MeanOpSpec{}
-	if err := spec.AggregateConfig.ReadArgs(args); err != nil {
+	if err := spec.SimpleAggregateConfig.ReadArgs(args); err != nil {
 		return nil, err
 	}
 	return spec, nil
@@ -48,7 +48,7 @@ func (s *MeanOpSpec) Kind() flux.OperationKind {
 }
 
 type MeanProcedureSpec struct {
-	execute.AggregateConfig
+	execute.SimpleAggregateConfig
 }
 
 func newMeanProcedure(qs flux.OperationSpec, a plan.Administration) (plan.ProcedureSpec, error) {
@@ -57,7 +57,7 @@ func newMeanProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Proced
 		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
 	}
 	return &MeanProcedureSpec{
-		AggregateConfig: spec.AggregateConfig,
+		SimpleAggregateConfig: spec.SimpleAggregateConfig,
 	}, nil
 }
 
@@ -66,7 +66,7 @@ func (s *MeanProcedureSpec) Kind() plan.ProcedureKind {
 }
 func (s *MeanProcedureSpec) Copy() plan.ProcedureSpec {
 	return &MeanProcedureSpec{
-		AggregateConfig: s.AggregateConfig,
+		SimpleAggregateConfig: s.SimpleAggregateConfig,
 	}
 }
 
@@ -85,8 +85,7 @@ func createMeanTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	t, d := execute.NewAggregateTransformationAndDataset(id, mode, new(MeanAgg), s.AggregateConfig, a.Allocator())
-	return t, d, nil
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, new(MeanAgg), s.SimpleAggregateConfig, a.Allocator())
 }
 
 func (a *MeanAgg) NewBoolAgg() execute.DoBoolAgg {

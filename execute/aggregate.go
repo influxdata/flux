@@ -1,33 +1,165 @@
 package execute
 
 import (
+	"context"
+
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/internal/feature"
+	fluxmemory "github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 )
 
-type aggregateTransformation struct {
-	ExecutionNode
-	d     Dataset
-	cache TableBuilderCache
-	agg   Aggregate
+// AggregateTransformation implements a transformation that aggregates
+// the results from multiple TableView values and then outputs a Table
+// with the same group key.
+//
+// This is similar to NarrowTransformation that it does not modify the group key,
+// but different because it will only output a table when the key is flushed.
+type AggregateTransformation interface {
+	// Aggregate will process the table.Chunk with the state from the previous
+	// time a table with this group key was invoked.
+	//
+	// If this group key has never been invoked before, the state will be nil.
+	//
+	// The transformation should return the new state and a boolean
+	// value of true if the state was created or modified. If false is returned,
+	// the new state will be discarded and any old state will be kept.
+	//
+	// It is ok for the transformation to modify the state if it is
+	// a pointer. This is both allowed and recommended.
+	Aggregate(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error)
 
-	config AggregateConfig
+	// Compute will signal the AggregateTransformation to compute
+	// the aggregate for the given key from the provided state.
+	//
+	// The state will be the value that was returned from Aggregate.
+	// If the Aggregate function never returned state, this function
+	// will never be called.
+	Compute(key flux.GroupKey, state interface{}, d *TransportDataset, mem memory.Allocator) error
 }
 
-type AggregateConfig struct {
+type aggregateTransformation struct {
+	t AggregateTransformation
+	d *TransportDataset
+}
+
+// NewAggregateTransformation constructs a Transformation and Dataset
+// using the aggregateTransformation implementation.
+func NewAggregateTransformation(id DatasetID, t AggregateTransformation, mem memory.Allocator) (Transformation, Dataset, error) {
+	tr := &aggregateTransformation{
+		t: t,
+		d: NewTransportDataset(id, mem),
+	}
+	return tr, tr.d, nil
+}
+
+// ProcessMessage will process the incoming message.
+func (t *aggregateTransformation) ProcessMessage(m Message) error {
+	defer m.Ack()
+
+	switch m := m.(type) {
+	case FinishMsg:
+		t.Finish(m.SrcDatasetID(), m.Error())
+		return nil
+	case ProcessChunkMsg:
+		return t.processChunk(m.TableChunk())
+	case FlushKeyMsg:
+		return t.flushKey(m.Key())
+	case ProcessMsg:
+		return t.Process(m.SrcDatasetID(), m.Table())
+	}
+	return nil
+}
+
+// Process is implemented to remain compatible with legacy upstreams.
+// It converts the incoming stream into a set of appropriate messages.
+func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
+	if tbl.Empty() {
+		// Since the table is empty, it won't produce any column readers.
+		// Create an empty buffer which can be processed instead
+		// to force the creation of state.
+		buffer := arrow.EmptyBuffer(tbl.Key(), tbl.Cols())
+		chunk := table.ChunkFromBuffer(buffer)
+		if err := t.processChunk(chunk); err != nil {
+			return err
+		}
+	} else {
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			chunk := table.ChunkFromReader(cr)
+			return t.processChunk(chunk)
+		}); err != nil {
+			return err
+		}
+	}
+	return t.flushKey(tbl.Key())
+}
+
+func (t *aggregateTransformation) processChunk(chunk table.Chunk) error {
+	state, _ := t.d.Lookup(chunk.Key())
+	if newState, ok, err := t.t.Aggregate(chunk, state, t.d.mem); err != nil {
+		return err
+	} else if ok {
+		// Associate the newly returned state with the group key
+		// if we were told to do so by Aggregate.
+		t.d.Set(chunk.Key(), newState)
+	}
+	return nil
+}
+
+func (t *aggregateTransformation) flushKey(key flux.GroupKey) error {
+	// Remove the state for this key from the dataset.
+	// If we find state associated with the key, compute the table.
+	if state, ok := t.d.Delete(key); ok {
+		if err := t.t.Compute(key, state, t.d, t.d.mem); err != nil {
+			return err
+		}
+		return t.d.FlushKey(key)
+	}
+	return nil
+}
+
+// Finish is implemented to remain compatible with legacy upstreams.
+func (t *aggregateTransformation) Finish(id DatasetID, err error) {
+	if err == nil {
+		err = t.d.Range(func(key flux.GroupKey, value interface{}) error {
+			if err := t.t.Compute(key, value, t.d, t.d.mem); err != nil {
+				return err
+			}
+			return t.d.FlushKey(key)
+		})
+	}
+	t.d.Finish(err)
+}
+
+func (t *aggregateTransformation) OperationType() string {
+	return OperationType(t.t)
+}
+func (t *aggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
+	return nil
+}
+func (t *aggregateTransformation) UpdateWatermark(id DatasetID, mark Time) error {
+	return nil
+}
+func (t *aggregateTransformation) UpdateProcessingTime(id DatasetID, ts Time) error {
+	return nil
+}
+
+type SimpleAggregateConfig struct {
 	plan.DefaultCost
 	Columns []string `json:"columns"`
 }
 
-var DefaultAggregateConfig = AggregateConfig{
+var DefaultSimpleAggregateConfig = SimpleAggregateConfig{
 	Columns: []string{DefaultValueColLabel},
 }
 
-func (c AggregateConfig) Copy() AggregateConfig {
+func (c SimpleAggregateConfig) Copy() SimpleAggregateConfig {
 	nc := c
 	if c.Columns != nil {
 		nc.Columns = make([]string, len(c.Columns))
@@ -36,38 +168,57 @@ func (c AggregateConfig) Copy() AggregateConfig {
 	return nc
 }
 
-func (c *AggregateConfig) ReadArgs(args flux.Arguments) error {
+func (c *SimpleAggregateConfig) ReadArgs(args flux.Arguments) error {
 	if col, ok, err := args.GetString("column"); err != nil {
 		return err
 	} else if ok {
 		c.Columns = []string{col}
 	} else {
-		c.Columns = DefaultAggregateConfig.Columns
+		c.Columns = DefaultSimpleAggregateConfig.Columns
 	}
 	return nil
 }
 
-func NewAggregateTransformation(d Dataset, c TableBuilderCache, agg Aggregate, config AggregateConfig) *aggregateTransformation {
-	return &aggregateTransformation{
+func NewSimpleAggregateTransformation(ctx context.Context, id DatasetID, agg SimpleAggregate, config SimpleAggregateConfig, mem memory.Allocator) (Transformation, Dataset, error) {
+	if feature.AggregateTransformationTransport().Enabled(ctx) {
+		tr := &simpleAggregateTransformation2{
+			agg:    agg,
+			config: config,
+		}
+		return NewAggregateTransformation(id, tr, mem)
+	}
+
+	alloc, ok := mem.(*fluxmemory.Allocator)
+	if !ok {
+		alloc = &fluxmemory.Allocator{
+			Allocator: mem,
+		}
+	}
+	cache := NewTableBuilderCache(alloc)
+	d := NewDataset(id, DiscardingMode, cache)
+	return &simpleAggregateTransformation{
 		d:      d,
-		cache:  c,
+		cache:  cache,
 		agg:    agg,
 		config: config,
-	}
+	}, d, nil
 }
 
-func NewAggregateTransformationAndDataset(id DatasetID, mode AccumulationMode, agg Aggregate, config AggregateConfig, a *memory.Allocator) (*aggregateTransformation, Dataset) {
-	cache := NewTableBuilderCache(a)
-	d := NewDataset(id, mode, cache)
-	return NewAggregateTransformation(d, cache, agg, config), d
+type simpleAggregateTransformation struct {
+	ExecutionNode
+	d     Dataset
+	cache TableBuilderCache
+	agg   SimpleAggregate
+
+	config SimpleAggregateConfig
 }
 
-func (t *aggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
+func (t *simpleAggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
 	//TODO(nathanielc): Store intermediate state for retractions
 	return t.d.RetractTable(key)
 }
 
-func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
+func (t *simpleAggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 	builder, created := t.cache.TableBuilder(tbl.Key())
 	if !created {
 		return errors.Newf(codes.FailedPrecondition, "aggregate found duplicate table with key: %v", tbl.Key())
@@ -195,17 +346,156 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 	return AppendKeyValues(tbl.Key(), builder)
 }
 
-func (t *aggregateTransformation) UpdateWatermark(id DatasetID, mark Time) error {
+func (t *simpleAggregateTransformation) UpdateWatermark(id DatasetID, mark Time) error {
 	return t.d.UpdateWatermark(mark)
 }
-func (t *aggregateTransformation) UpdateProcessingTime(id DatasetID, pt Time) error {
+func (t *simpleAggregateTransformation) UpdateProcessingTime(id DatasetID, pt Time) error {
 	return t.d.UpdateProcessingTime(pt)
 }
-func (t *aggregateTransformation) Finish(id DatasetID, err error) {
+func (t *simpleAggregateTransformation) Finish(id DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-type Aggregate interface {
+type simpleAggregateTransformation2 struct {
+	agg    SimpleAggregate
+	config SimpleAggregateConfig
+}
+
+type aggregateState struct {
+	// inType is the column type of the input for this aggregate.
+	inType flux.ColType
+
+	// agg holds the aggregate function and associated state to produce a value.
+	agg ValueFunc
+}
+
+func (t *simpleAggregateTransformation2) initializeState(chunk table.Chunk, current interface{}) ([]aggregateState, error) {
+	if current != nil {
+		return current.([]aggregateState), nil
+	}
+
+	state := make([]aggregateState, len(t.config.Columns))
+	for i, label := range t.config.Columns {
+		j := chunk.Index(label)
+		if j < 0 {
+			return nil, errors.Newf(codes.FailedPrecondition, "column %q does not exist", label)
+		} else if chunk.Key().HasCol(label) {
+			return nil, errors.New(codes.FailedPrecondition, "cannot aggregate columns that are part of the group key")
+		}
+
+		col := chunk.Col(j)
+		switch col.Type {
+		case flux.TBool:
+			state[i].agg = t.agg.NewBoolAgg()
+		case flux.TInt:
+			state[i].agg = t.agg.NewIntAgg()
+		case flux.TUInt:
+			state[i].agg = t.agg.NewUIntAgg()
+		case flux.TFloat:
+			state[i].agg = t.agg.NewFloatAgg()
+		case flux.TString:
+			state[i].agg = t.agg.NewStringAgg()
+		default:
+			return nil, errors.Newf(codes.FailedPrecondition, "unsupported aggregate column type %v", col.Type)
+		}
+		state[i].inType = col.Type
+	}
+	return state, nil
+}
+
+func (t *simpleAggregateTransformation2) Aggregate(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error) {
+	aggregates, err := t.initializeState(chunk, state)
+	if err != nil {
+		return nil, false, err
+	}
+
+	for j, label := range t.config.Columns {
+		idx := chunk.Index(label)
+		if idx < 0 {
+			return nil, false, errors.Newf(codes.FailedPrecondition, "column %q does not exist", label)
+		}
+
+		c := chunk.Col(idx)
+		if inType := aggregates[j].inType; inType != c.Type {
+			return nil, false, errors.Newf(codes.FailedPrecondition, "aggregate type conflict: %s != %s", c.Type, inType)
+		}
+
+		agg := aggregates[j].agg
+		switch c.Type {
+		case flux.TBool:
+			agg.(DoBoolAgg).DoBool(chunk.Bools(idx))
+		case flux.TInt:
+			agg.(DoIntAgg).DoInt(chunk.Ints(idx))
+		case flux.TUInt:
+			agg.(DoUIntAgg).DoUInt(chunk.Uints(idx))
+		case flux.TFloat:
+			agg.(DoFloatAgg).DoFloat(chunk.Floats(idx))
+		case flux.TString:
+			agg.(DoStringAgg).DoString(chunk.Strings(idx))
+		default:
+			// This error should be impossible because loadState should have
+			// already caught invalid input types and we have already verified
+			// that the input type matches the type for this chunk.
+			return nil, false, errors.Newf(codes.Internal, "aggregate of type %s not supported", c.Type)
+		}
+	}
+	return aggregates, true, nil
+}
+
+func (t *simpleAggregateTransformation2) Compute(key flux.GroupKey, state interface{}, d *TransportDataset, mem memory.Allocator) error {
+	aggregates := state.([]aggregateState)
+	buffer := arrow.TableBuffer{
+		GroupKey: key,
+		Columns:  make([]flux.ColMeta, 0, len(key.Cols())+len(aggregates)),
+	}
+	buffer.Columns = append(buffer.Columns, key.Cols()...)
+	for i, s := range aggregates {
+		buffer.Columns = append(buffer.Columns, flux.ColMeta{
+			Label: t.config.Columns[i],
+			Type:  s.agg.Type(),
+		})
+	}
+
+	buffer.Values = make([]array.Interface, len(key.Cols()), len(buffer.Columns))
+	for j := range key.Cols() {
+		buffer.Values[j] = arrow.Repeat(key.Value(j), 1, mem)
+	}
+
+	for _, s := range aggregates {
+		var arr array.Interface
+		if !s.agg.IsNull() {
+			switch s.agg.Type() {
+			case flux.TBool:
+				v := s.agg.(BoolValueFunc).ValueBool()
+				arr = array.BooleanRepeat(v, 1, mem)
+			case flux.TInt:
+				v := s.agg.(IntValueFunc).ValueInt()
+				arr = array.IntRepeat(v, 1, mem)
+			case flux.TUInt:
+				v := s.agg.(UIntValueFunc).ValueUInt()
+				arr = array.UintRepeat(v, 1, mem)
+			case flux.TFloat:
+				v := s.agg.(FloatValueFunc).ValueFloat()
+				arr = array.FloatRepeat(v, 1, mem)
+			case flux.TString:
+				v := s.agg.(StringValueFunc).ValueString()
+				arr = array.StringRepeat(v, 1, mem)
+			}
+		} else {
+			arr = arrow.Nulls(s.agg.Type(), 1, mem)
+		}
+		buffer.Values = append(buffer.Values, arr)
+	}
+
+	if err := buffer.Validate(); err != nil {
+		return err
+	}
+
+	out := table.ChunkFromBuffer(buffer)
+	return d.Process(out)
+}
+
+type SimpleAggregate interface {
 	NewBoolAgg() DoBoolAgg
 	NewIntAgg() DoIntAgg
 	NewUIntAgg() DoUIntAgg

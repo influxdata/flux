@@ -29,6 +29,18 @@ func NarrowTransformationFilter() BoolFlag {
 	return narrowTransformationFilter
 }
 
+var aggregateTransformationTransport = feature.MakeBoolFlag(
+	"Aggregate Transformation Transport",
+	"aggregateTransformationTransport",
+	"Jonathan Sternberg",
+	false,
+)
+
+// AggregateTransformationTransport - Enable Transport interface for AggregateTransformation
+func AggregateTransformationTransport() BoolFlag {
+	return aggregateTransformationTransport
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -36,10 +48,12 @@ func Inject(ctx context.Context, flagger Flagger) context.Context {
 
 var all = []Flag{
 	narrowTransformationFilter,
+	aggregateTransformationTransport,
 }
 
 var byKey = map[string]Flag{
-	"narrowTransformationFilter": narrowTransformationFilter,
+	"narrowTransformationFilter":       narrowTransformationFilter,
+	"aggregateTransformationTransport": aggregateTransformationTransport,
 }
 
 // Flags returns all feature flags.

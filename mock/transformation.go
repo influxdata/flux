@@ -39,3 +39,16 @@ type NarrowTransformation struct {
 func (n *NarrowTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
 	return n.ProcessFn(chunk, d, mem)
 }
+
+type AggregateTransformation struct {
+	AggregateFn func(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error)
+	ComputeFn   func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error
+}
+
+func (a *AggregateTransformation) Aggregate(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error) {
+	return a.AggregateFn(chunk, state, mem)
+}
+
+func (a *AggregateTransformation) Compute(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
+	return a.ComputeFn(key, state, d, mem)
+}
