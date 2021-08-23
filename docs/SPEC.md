@@ -4490,6 +4490,16 @@ Slices v into substrings separated by the expression and returns a slice of the 
 
 Example: `splitRegex(r: regexp.compile("a*"), v: "abaabaccadaaae", i: 5)` returns string array `["", "b", "b", "c", "cadaaae"]`.
 
+#### JSON Operations
+
+##### encode
+
+Convert a value into JSON bytes.
+
+Example: `encode(v: {label: "abcd})` returns JSON encoded value of the record as bytes.
+
+Types `record` and `dictionary` are encoded as JSON objects.
+
 ### Composite data types
 
 A composite data type is a collection of primitive data types that together have a higher meaning.
