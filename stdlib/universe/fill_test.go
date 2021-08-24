@@ -192,6 +192,36 @@ func TestFill_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "missing bool fill col",
+			spec: &universe.FillProcedureSpec{
+				Column: "_value",
+				Value:  values.New(false),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1)},
+					{execute.Time(2)},
+					{execute.Time(3)},
+					{execute.Time(4)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TBool},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), false},
+					{execute.Time(2), false},
+					{execute.Time(3), false},
+					{execute.Time(4), false},
+				},
+			}},
+		},
+		{
 			name: "null int",
 			spec: &universe.FillProcedureSpec{
 				Column: "_value",
@@ -218,6 +248,36 @@ func TestFill_Process(t *testing.T) {
 					{execute.Time(1), int64(2)},
 					{execute.Time(2), int64(-1)},
 					{execute.Time(3), int64(4)},
+					{execute.Time(4), int64(-1)},
+				},
+			}},
+		},
+		{
+			name: "missing int fill col",
+			spec: &universe.FillProcedureSpec{
+				Column: "_value",
+				Value:  values.New(int64(-1)),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1)},
+					{execute.Time(2)},
+					{execute.Time(3)},
+					{execute.Time(4)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), int64(-1)},
+					{execute.Time(2), int64(-1)},
+					{execute.Time(3), int64(-1)},
 					{execute.Time(4), int64(-1)},
 				},
 			}},
@@ -254,6 +314,36 @@ func TestFill_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "missing uint fill col",
+			spec: &universe.FillProcedureSpec{
+				Column: "_value",
+				Value:  values.New(uint64(0)),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1)},
+					{execute.Time(2)},
+					{execute.Time(3)},
+					{execute.Time(4)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(0)},
+					{execute.Time(2), uint64(0)},
+					{execute.Time(3), uint64(0)},
+					{execute.Time(4), uint64(0)},
+				},
+			}},
+		},
+		{
 			name: "null float",
 			spec: &universe.FillProcedureSpec{
 				Column: "_value",
@@ -280,6 +370,36 @@ func TestFill_Process(t *testing.T) {
 					{execute.Time(1), 2.0},
 					{execute.Time(2), 0.0},
 					{execute.Time(3), 4.0},
+					{execute.Time(4), 0.0},
+				},
+			}},
+		},
+		{
+			name: "missing float fill col",
+			spec: &universe.FillProcedureSpec{
+				Column: "_value",
+				Value:  values.New(0.0),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1)},
+					{execute.Time(2)},
+					{execute.Time(3)},
+					{execute.Time(4)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 0.0},
+					{execute.Time(2), 0.0},
+					{execute.Time(3), 0.0},
 					{execute.Time(4), 0.0},
 				},
 			}},
@@ -316,6 +436,36 @@ func TestFill_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "missing string fill col",
+			spec: &universe.FillProcedureSpec{
+				Column: "_value",
+				Value:  values.New("UNK"),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1)},
+					{execute.Time(2)},
+					{execute.Time(3)},
+					{execute.Time(4)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), "UNK"},
+					{execute.Time(2), "UNK"},
+					{execute.Time(3), "UNK"},
+					{execute.Time(4), "UNK"},
+				},
+			}},
+		},
+		{
 			name: "null time",
 			spec: &universe.FillProcedureSpec{
 				Column: "_time",
@@ -342,6 +492,36 @@ func TestFill_Process(t *testing.T) {
 					{execute.Time(1), "A"},
 					{execute.Time(0), "B"},
 					{execute.Time(3), "B"},
+					{execute.Time(0), "C"},
+				},
+			}},
+		},
+		{
+			name: "missing time fill col",
+			spec: &universe.FillProcedureSpec{
+				Column: "_time",
+				Value:  values.New(execute.Time(0)),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{"A"},
+					{"B"},
+					{"B"},
+					{"C"},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), "A"},
+					{execute.Time(0), "B"},
+					{execute.Time(0), "B"},
 					{execute.Time(0), "C"},
 				},
 			}},
