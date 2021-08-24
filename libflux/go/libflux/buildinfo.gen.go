@@ -233,7 +233,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/monitor/state_changes_test.flux":                    "285e8cc3a818c24688432c80ea5fb118b7d74479c5bd49e26b3375466b255f1c",
 	"stdlib/influxdata/influxdb/sample/alignToNow_test.flux":                        "d33d435347ee44af05e51e1b0d9afbd743047979010cd1097ba5326479fd4b5c",
 	"stdlib/influxdata/influxdb/sample/list_test.flux":                              "c1c7d5ef934fb0cfff19d8c3b32fdcbee321a7af82a81fff075fd5874e3d246a",
-	"stdlib/influxdata/influxdb/sample/sample.flux":                                 "912c4c970402669be82189c53bfee67b97f6db575611935e11ca4b5871b328cf",
+	"stdlib/influxdata/influxdb/sample/sample.flux":                                 "09560478562fccc001d0afa7d2ebf6b1bd6bcfcb74a3bf9508a1e02455d1e93f",
 	"stdlib/influxdata/influxdb/schema/influxFieldsAsCols_test.flux":                "df849dac66af2cb8d91398cb009e09cfa0028037b893c2e1a1811ba12959bf98",
 	"stdlib/influxdata/influxdb/schema/influxRawQuery_test.flux":                    "46e6b4670162c92b8ebe73eab99aa3ee84ae19b097a761a68b88fe6913a1bf1b",
 	"stdlib/influxdata/influxdb/schema/schema.flux":                                 "1a7a83a4923fc71d28500bdc789d2a781e304f949707955476071a9685df86e9",
