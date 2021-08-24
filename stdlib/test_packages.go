@@ -35,6 +35,7 @@ import (
 	pagerduty "github.com/influxdata/flux/stdlib/pagerduty"
 	planner "github.com/influxdata/flux/stdlib/planner"
 	regexp "github.com/influxdata/flux/stdlib/regexp"
+	sample1 "github.com/influxdata/flux/stdlib/sample"
 	strings "github.com/influxdata/flux/stdlib/strings"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
 	influxql "github.com/influxdata/flux/stdlib/testing/influxql"
@@ -79,6 +80,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, pagerduty.FluxTestPackages...)
 	pkgs = append(pkgs, planner.FluxTestPackages...)
 	pkgs = append(pkgs, regexp.FluxTestPackages...)
+	pkgs = append(pkgs, sample1.FluxTestPackages...)
 	pkgs = append(pkgs, strings.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
 	pkgs = append(pkgs, influxql.FluxTestPackages...)
