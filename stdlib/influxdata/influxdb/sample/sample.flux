@@ -23,7 +23,7 @@ sets = [
         url: "https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv",
         desc: "Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.",
         size: "~700 KB",
-        type: "live"
+        type: "live",
     },
     "machineProduction": {
         url: "https://influx-testdata.s3.amazonaws.com/machine-production.csv",
