@@ -19,6 +19,12 @@ sets = [
         size: "~1.2 MB",
         type: "static",
     },
+    "bitcoin": {
+        url: "https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv",
+        desc: "Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.",
+        size: "~700 KB",
+        type: "live"
+    },
     "machineProduction": {
         url: "https://influx-testdata.s3.amazonaws.com/machine-production.csv",
         desc: "States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.",
@@ -58,7 +64,10 @@ _setInfo = (set) => {
 // - `set` is the sample data set to download and output. Valid datasets:
 //    - **airSensor**: Simulated temperature, humidity, and CO data from an office building.
 //    - **birdMigration**: 2019 African bird migration data from [Movebank: Animal Tracking](https://www.kaggle.com/pulkit8595/movebank-animal-tracking).
+//    - **bitcoin**: Bitcoin price data from the last 30 days _([Powered by CoinDesk](https://www.coindesk.com/price/bitcoin))_.
 //    - **noaa**: Latest observations from the [NOAA National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/).
+//    - **machineProduction**: States and metrics reported from four automated grinding wheel stations on a production line.
+//    - **noaaWater**: Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services between 2019-08-17 and 2019-09-17.
 //    - **usgs**: USGS earthquake data from the last week.
 //
 // ## Load InfluxDB sample data
@@ -94,6 +103,7 @@ list = () => array.from(
     rows: [
         _setInfo(set: "airSensor"),
         _setInfo(set: "birdMigration"),
+        _setInfo(set: "bitcoin"),
         _setInfo(set: "machineProduction"),
         _setInfo(set: "noaa"),
         _setInfo(set: "noaaWater"),
