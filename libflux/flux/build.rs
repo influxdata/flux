@@ -50,7 +50,7 @@ where
 fn main() -> Result<(), Error> {
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
-    let (pre, lib, fresher, files, file_map) = bootstrap::infer_stdlib()?;
+    let (pre, lib, libmap, fresher, files, file_map) = bootstrap::infer_stdlib()?;
     for f in files.iter() {
         println!("cargo:rerun-if-changed={}", f);
     }
@@ -70,7 +70,7 @@ fn main() -> Result<(), Error> {
             });
         }
     }
-    let new_docs = stdlib_docs(&lib, &file_map).unwrap();
+    let new_docs = stdlib_docs(&libmap, &file_map).unwrap();
     let json_docs = serde_json::to_vec(&new_docs).unwrap();
     let comp_docs = deflate_bytes(&json_docs);
     let path = dir.join("docs.json");
