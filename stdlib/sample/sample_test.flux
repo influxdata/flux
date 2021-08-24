@@ -58,6 +58,8 @@ testcase sample_int_null {
 
     got = sample.int(includeNull: true)
         |> range(start: sample.start, stop: sample.stop)
+    
+    testing.diff(got: got, want: want)
 }
 
 // return sample data with string values
