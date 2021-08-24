@@ -322,7 +322,7 @@ var sourceHashes = map[string]string{
 	"stdlib/regexp/replaceAllString_test.flux":                                      "e1628e446aad247c1c8a2cfa353ddabdf7e2e8593e1889a689550d5e83e0fde7",
 	"stdlib/runtime/runtime.flux":                                                   "d9ad6c2327cf025de4ef46e5b2dbba596da9e5a90fb3d10a3f9cae254e4f0866",
 	"stdlib/sample/sample.flux":                                                     "3f589e4b7ea9be259ee47ce3939627e2edaff3f68de453df28fb9d30b906016b",
-	"stdlib/sample/sample_test.flux":                                                "c08f306505b9f9b326c17337a4797a2df04f610faf52813b3a5020f27b46c124",
+	"stdlib/sample/sample_test.flux":                                                "a6d64eb2357df68748c4a35682059849026fbc9db6c8f2672ada14e5e5e4d800",
 	"stdlib/slack/slack.flux":                                                       "323c7d40a79d1dad8e53f58d75dd02cf26ba04769ebc82bc0b7a4882c1b9e2ae",
 	"stdlib/socket/socket.flux":                                                     "6cba525239585709892d40fdf950d663775049288632c2c98cf9737b4e3a3003",
 	"stdlib/sql/sql.flux":                                                           "a985baeb4189d377074053ef62dc02a5c17251eb74cda5e1bbf173fb544b2577",
