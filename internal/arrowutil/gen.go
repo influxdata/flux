@@ -26,11 +26,21 @@ func (v FloatArrayValue) ElementwiseAdd(mem *memory.Allocator, other values.Arra
 		panic("cannot add arrays of different lengths")
 	}
 	b := NewFloatBuilder(mem)
-	for i := 0; i < v.arr.Len(); i++ {
-		if v.arr.IsValid(i) && ao.arr.IsValid(i) {
-			b.Append(v.arr.Value(i) + ao.arr.Value(i))
-		} else {
-			b.AppendNull()
+
+	if ao.arr.NullN() == 0 && v.arr.NullN() == 0 {
+		l := v.arr.Len()
+		res := make([]float64, v.arr.Len())
+		for i := 0; i < l; i++ {
+			res[i] = v.arr.Value(i) + ao.arr.Value(i)
+		}
+		b.AppendValues(res, nil)
+	} else {
+		for i := 0; i < v.arr.Len(); i++ {
+			if v.arr.IsValid(i) && ao.arr.IsValid(i) {
+				b.Append(v.arr.Value(i) + ao.arr.Value(i))
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 	return NewFloatArrayValue(b.NewFloatArray())
@@ -39,11 +49,21 @@ func (v FloatArrayValue) ElementwiseAdd(mem *memory.Allocator, other values.Arra
 func (v FloatArrayValue) ElementwiseGT(mem *memory.Allocator, rhs values.Value) values.Array {
 	rhsFlt := rhs.Float()
 	b := NewBooleanBuilder(mem)
-	for i := 0; i < v.arr.Len(); i++ {
-		if v.arr.IsValid(i) {
-			b.Append(v.arr.Value(i) > rhsFlt)
-		} else {
-			b.AppendNull()
+
+	if v.arr.NullN() == 0 {
+		l := v.arr.Len()
+		res := make([]bool, v.arr.Len())
+		for i := 0; i < l; i++ {
+			res[i] = v.arr.Value(i) > rhsFlt
+		}
+		b.AppendValues(res, nil)
+	} else {
+		for i := 0; i < v.arr.Len(); i++ {
+			if v.arr.IsValid(i) {
+				b.Append(v.arr.Value(i) > rhsFlt)
+			} else {
+				b.AppendNull()
+			}
 		}
 	}
 	return NewBooleanArrayValue(b.NewBooleanArray())
