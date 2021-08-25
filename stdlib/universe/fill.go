@@ -6,6 +6,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
@@ -202,10 +203,6 @@ func (t *fillTransformation) RetractTable(id execute.DatasetID, key flux.GroupKe
 
 func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	colIdx := execute.ColIdx(t.spec.Column, tbl.Cols())
-	if colIdx < 0 {
-		return errors.Newf(codes.FailedPrecondition, "fill column not found: %s", t.spec.Column)
-	}
-
 	key := tbl.Key()
 	if idx := execute.ColIdx(t.spec.Column, key.Cols()); idx >= 0 {
 		if key.IsNull(idx) {
@@ -223,13 +220,26 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 
 	var fillValue interface{}
 	if !t.spec.UsePrevious {
-		if tbl.Cols()[colIdx].Type != flux.ColumnType(t.spec.Value.Type()) {
+		if colIdx > -1 && tbl.Cols()[colIdx].Type != flux.ColumnType(t.spec.Value.Type()) {
 			return errors.Newf(codes.FailedPrecondition, "fill column type mismatch: %s/%s", tbl.Cols()[colIdx].Type.String(), flux.ColumnType(t.spec.Value.Type()).String())
 		}
 		fillValue = values.Unwrap(t.spec.Value)
 	}
 
-	table, err := table.StreamWithContext(t.ctx, key, tbl.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
+	// In case of missing fill column, add it to the existing columns
+	tableCols := tbl.Cols()
+	if colIdx < 0 {
+		newCols := make([]flux.ColMeta, len(tableCols), len(tableCols)+1)
+		copy(newCols, tableCols)
+		c := flux.ColMeta{
+			Label: t.spec.Column,
+			Type:  flux.ColumnType(t.spec.Value.Type()),
+		}
+		tableCols = append(newCols, c)
+		colIdx = len(tableCols) - 1
+	}
+
+	table, err := table.StreamWithContext(t.ctx, key, tableCols, func(ctx context.Context, w *table.StreamWriter) error {
 		return tbl.Do(func(cr flux.ColReader) error {
 			return t.fillTable(w, cr, colIdx, &fillValue)
 		})
@@ -251,11 +261,14 @@ func (t *fillTransformation) Finish(id execute.DatasetID, err error) {
 }
 
 func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader, colIdx int, fillValue *interface{}) error {
-	if cr.Len() == 0 {
+	crLen := cr.Len()
+	if crLen == 0 {
 		return nil
 	}
 	vs := make([]array.Interface, len(w.Cols()))
-	for i, col := range w.Cols() {
+
+	// Iterate over the existing columns and if column already exist(colIdx matches with i) call fillColumn on it
+	for i, col := range cr.Cols() {
 		arr := table.Values(cr, i)
 		if i != colIdx {
 			vs[i] = arr
@@ -264,5 +277,22 @@ func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader,
 		}
 		vs[i] = t.fillColumn(col.Type, arr, fillValue)
 	}
+
+	// If the fill column is new, create a completely null column and call fillColumn on it
+	if vs[colIdx] == nil {
+		colType := flux.ColumnType(t.spec.Value.Type())
+		arr := t.addNullColumn(colType, crLen)
+		defer arr.Release()
+		vs[colIdx] = t.fillColumn(colType, arr, fillValue)
+	}
 	return w.Write(vs)
+}
+
+func (t *fillTransformation) addNullColumn(typ flux.ColType, l int) array.Interface {
+	builder := arrow.NewBuilder(typ, t.alloc)
+	builder.Resize(l)
+	for i := 0; i < l; i++ {
+		builder.AppendNull()
+	}
+	return builder.NewArray()
 }
