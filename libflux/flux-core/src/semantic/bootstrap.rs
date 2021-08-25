@@ -428,23 +428,33 @@ fn generate_values(
                 let mut funcdoc = separate_func_docs(&doc, &name);
                 let pkgtype = &types[pkgpath];
                 let typ = &pkgtype[name.as_str()];
-                    match &typ.expr {
-                        MonoType::Fun(_f) => {
-                            funcdoc.flux_type = format!("{}", typ.normal());
-                            funcdoc.link = "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string();
-                            members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
-                        }
-                        _ => {
-                            let builtin = ValueDoc {
-                                name: name.clone(),
-                                headline: funcdoc.headline,
-                                description: Option::from(funcdoc.description),
-                                flux_type: format!("{}", typ),
-                                link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string(),
-                            };
-                            members.insert(name.clone(), Doc::Value(Box::new(builtin)));
-                        }
+                match &typ.expr {
+                    MonoType::Fun(_f) => {
+                        funcdoc.flux_type = format!("{}", typ.normal());
+                        funcdoc.link =
+                            "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/"
+                                .to_owned()
+                                + &pkgpath.to_string()
+                                + "/"
+                                + &name.to_string();
+                        members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
                     }
+                    _ => {
+                        let builtin = ValueDoc {
+                            name: name.clone(),
+                            headline: funcdoc.headline,
+                            description: Option::from(funcdoc.description),
+                            flux_type: format!("{}", typ),
+                            link:
+                                "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/"
+                                    .to_owned()
+                                    + &pkgpath.to_string()
+                                    + "/"
+                                    + &name.to_string(),
+                        };
+                        members.insert(name.clone(), Doc::Value(Box::new(builtin)));
+                    }
+                }
             }
             ast::Statement::Option(s) => {
                 if let ast::Assignment::Variable(v) = &s.assignment {
@@ -453,24 +463,29 @@ fn generate_values(
                     let mut funcdoc = separate_func_docs(&doc, &name);
                     let pkgtype = &types[pkgpath];
                     let typ = &pkgtype[name.as_str()];
-                        match &typ.expr {
-                            MonoType::Fun(_f) => {
-                                funcdoc.flux_type = format!("{}", typ.normal());
-                                funcdoc.link = "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string();
-                                members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
-                            }
-                            _ => {
-                                let option = ValueDoc {
+                    match &typ.expr {
+                        MonoType::Fun(_f) => {
+                            funcdoc.flux_type = format!("{}", typ.normal());
+                            funcdoc.link =
+                                "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/"
+                                    .to_owned()
+                                    + &pkgpath.to_string()
+                                    + "/"
+                                    + &name.to_string();
+                            members.insert(name.clone(), Doc::Function(Box::new(funcdoc)));
+                        }
+                        _ => {
+                            let option = ValueDoc {
                                     name: name.clone(),
                                     headline: funcdoc.headline,
                                     description: Option::from(funcdoc.description),
                                     flux_type: format!("{}", typ),
                                     link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_owned() + &pkgpath.to_string() + "/" + &name.to_string(),
                                 };
-                                members.insert(name.clone(), Doc::Value(Box::new(option)));
-                            }
+                            members.insert(name.clone(), Doc::Value(Box::new(option)));
                         }
                     }
+                }
             }
             _ => {}
         }
@@ -533,9 +548,6 @@ fn infer_std(
 ) -> Result<(PolyTypeMap, PolyTypeMapMap), Error> {
     let mut importermap = PolyTypeMapMap::new();
     for (path, _) in files.iter() {
-        if imports.contains_key(path) {
-            continue;
-        }
         let (types, mut importer) = infer_pkg(path, f, files, prelude.clone(), imports)?;
         importermap.insert(path.to_string(), types.clone());
         importer.insert(path.to_string(), build_polytype(types, f)?);
