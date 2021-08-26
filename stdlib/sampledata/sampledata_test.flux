@@ -1,20 +1,20 @@
-package sample_test
+package sampledata_test
 
 
 import "csv"
-import "sample"
+import "sampledata"
 import "testing"
 
-option sample.start = 2021-01-01T00:00:00Z
-option sample.stop = 2021-01-01T00:01:00Z
+option sampledata.start = 2021-01-01T00:00:00Z
+option sampledata.stop = 2021-01-01T00:01:00Z
 
 // return sample data with float values
-testcase sample_float {
+testcase sampledata_float {
     want = csv.from(
         csv: "#group,false,false,true,true,false,true,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double
 #default,_result,,,,,,
-,result,table,_start,_stop,_time,tid,_value
+,result,table,_start,_stop,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:00Z,t1,-2.18
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:10Z,t1,10.92
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:20Z,t1,7.35
@@ -29,19 +29,19 @@ testcase sample_float {
 ,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:50Z,t2,1.86",
     )
 
-    got = sample.float()
-        |> range(start: sample.start, stop: sample.stop)
+    got = sampledata.float()
+        |> range(start: sampledata.start, stop: sampledata.stop)
 
     testing.diff(got: got, want: want)
 }
 
 // return sample data with integer and null values
-testcase sample_int_null {
+testcase sampledata_int_null {
     want = csv.from(
         csv: "#group,false,false,true,true,false,true,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,long
 #default,_result,,,,,,
-,result,table,_start,_stop,_time,tid,_value
+,result,table,_start,_stop,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:00Z,t1,-2
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:10Z,t1,
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:20Z,t1,7
@@ -56,19 +56,19 @@ testcase sample_int_null {
 ,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:50Z,t2,1",
     )
 
-    got = sample.int(includeNull: true)
-        |> range(start: sample.start, stop: sample.stop)
+    got = sampledata.int(includeNull: true)
+        |> range(start: sampledata.start, stop: sampledata.stop)
     
     testing.diff(got: got, want: want)
 }
 
 // return sample data with string values
-testcase sample_string {
+testcase sampledata_string {
     want = csv.from(
         csv: "#group,false,false,true,true,false,true,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string
 #default,_result,,,,,,
-,result,table,_start,_stop,_time,tid,_value
+,result,table,_start,_stop,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:00Z,t1,smpl_g9qczs
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:10Z,t1,smpl_0mgv9n
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:20Z,t1,smpl_phw664
@@ -83,19 +83,19 @@ testcase sample_string {
 ,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:50Z,t2,smpl_dtn2bv",
     )
 
-    got = sample.string()
-        |> range(start: sample.start, stop: sample.stop)
+    got = sampledata.string()
+        |> range(start: sampledata.start, stop: sampledata.stop)
 
     testing.diff(got: got, want: want)
 }
 
 // return sample data with numeric string values
-testcase sample_numeric_string {
+testcase sampledata_numeric_string {
     want = csv.from(
         csv: "#group,false,false,true,true,false,false,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string
 #default,_result,,,,,,
-,result,table,_start,_stop,_time,_value,tid
+,result,table,_start,_stop,_time,_value,tag
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:00Z,-2.18,t1
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:10Z,10.92,t1
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:20Z,7.35,t1
@@ -110,19 +110,19 @@ testcase sample_numeric_string {
 ,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:50Z,1.86,t2",
     )
 
-    got = sample.numericString()
-        |> range(start: sample.start, stop: sample.stop)
+    got = sampledata.numericString()
+        |> range(start: sampledata.start, stop: sampledata.stop)
 
     testing.diff(got: got, want: want)
 }
 
 // return sample data with boolean values
-testcase sample_bool {
+testcase sampledata_bool {
     want = csv.from(
         csv: "#group,false,false,true,true,false,true,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,boolean
 #default,_result,,,,,,
-,result,table,_start,_stop,_time,tid,_value
+,result,table,_start,_stop,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:00Z,t1,true
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:10Z,t1,true
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:20Z,t1,false
@@ -137,19 +137,19 @@ testcase sample_bool {
 ,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:50Z,t2,false",
     )
 
-    got = sample.bool()
-        |> range(start: sample.start, stop: sample.stop)
+    got = sampledata.bool()
+        |> range(start: sampledata.start, stop: sampledata.stop)
 
     testing.diff(got: got, want: want)
 }
 
 // return sample data with numeric boolean values
-testcase sample_numeric_bool {
+testcase sampledata_numeric_bool {
     want = csv.from(
         csv: "#group,false,false,true,true,false,false,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string
 #default,_result,,,,,,
-,result,table,_start,_stop,_time,_value,tid
+,result,table,_start,_stop,_time,_value,tag
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:00Z,1,t1
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:10Z,1,t1
 ,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:20Z,0,t1
@@ -164,8 +164,8 @@ testcase sample_numeric_bool {
 ,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:50Z,0,t2",
     )
 
-    got = sample.numericBool()
-        |> range(start: sample.start, stop: sample.stop)
+    got = sampledata.numericBool()
+        |> range(start: sampledata.start, stop: sampledata.stop)
 
     testing.diff(got: got, want: want)
 }
