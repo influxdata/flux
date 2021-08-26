@@ -80,11 +80,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, pagerduty.FluxTestPackages...)
 	pkgs = append(pkgs, planner.FluxTestPackages...)
 	pkgs = append(pkgs, regexp.FluxTestPackages...)
-<<<<<<< HEAD
 	pkgs = append(pkgs, sampledata.FluxTestPackages...)
-=======
-	pkgs = append(pkgs, sample1.FluxTestPackages...)
->>>>>>> 77fe4d84 (feat(stdlib): add sample package with basic sample datasets)
 	pkgs = append(pkgs, strings.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
 	pkgs = append(pkgs, influxql.FluxTestPackages...)
