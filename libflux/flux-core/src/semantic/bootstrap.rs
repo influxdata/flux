@@ -548,8 +548,15 @@ fn infer_std(
 ) -> Result<(PolyTypeMap, PolyTypeMapMap), Error> {
     let mut importermap = PolyTypeMapMap::new();
     for (path, _) in files.iter() {
-        let (types, mut importer) = infer_pkg(path, f, files, prelude.clone(), imports)?;
+        let (types, mut importer) = infer_pkg(path, f, files, prelude.clone(), imports.clone())?;
+        if importermap.contains_key(path) {
+            continue;
+        }
         importermap.insert(path.to_string(), types.clone());
+
+        if imports.contains_key(path) {
+            continue;
+        }
         importer.insert(path.to_string(), build_polytype(types, f)?);
         imports = importer;
     }
