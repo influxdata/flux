@@ -1211,7 +1211,7 @@ csv.from(
                 description: Some("Available annotation modes: annotations: Use CSV notations to determine column data types. raw: Parse all columns as strings and use the first row as the header row and all subsequent rows as data.".to_string()),
                 required: false
             }],
-            flux_type: "(?csv:string, ?file:string, ?mode:string) => [t8500]".to_string(),
+            flux_type: "(?csv:string, ?file:string, ?mode:string) => [A] where A: Record".to_string(),
             link:"https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv/from".to_string(),
         })));
         let mut got = PackageDoc {
@@ -1282,7 +1282,7 @@ union(tables: [tags, wildcard_tag])
                 description: None,
                 required: false
             }],
-            flux_type: "(rows:[t1011]) => [t1011]".to_string(),
+            flux_type: "(rows:[A]) => [A] where A: Record".to_string(),
             link:"https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array/from".to_string(),
         })));
         let mut got = PackageDoc {
