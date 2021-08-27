@@ -38,6 +38,22 @@ pub struct Error {
     pub msg: String,
 }
 
+/// The return values when running infer_stdlib as a structure
+pub struct StdlibReturnValues {
+    /// The prelude for the Stdlib.
+    pub prelude: PolyTypeMap,
+    /// The importer for the PolyTypeMap.
+    pub importer: PolyTypeMap,
+    /// The map of PolytypeMap: one PolyTypeMap per package.
+    pub importermap: PolyTypeMapMap,
+    /// The Stdlib struct used for incrementing type variable identifiers.
+    pub f: Fresher,
+    /// A vector indicating whether to rerun each package if it is changed.
+    pub rerun_if_changed: Vec<String>,
+    /// The AST map of files for the entire stdlib.
+    pub files: AstFileMap,
+}
+
 /// Doc is an enum that can take the form of the various types of flux documentation structures through polymorphism.
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -173,17 +189,7 @@ fn stdlib_relative_path() -> &'static str {
 /// Infers the types of the standard library returning two [`PolyTypeMap`]s, one for the prelude
 /// and one for the standard library, as well as a type variable [`Fresher`].
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib() -> Result<
-    (
-        PolyTypeMap,
-        PolyTypeMap,
-        PolyTypeMapMap,
-        Fresher,
-        Vec<String>,
-        AstFileMap,
-    ),
-    Error,
-> {
+pub fn infer_stdlib() -> Result<StdlibReturnValues, Error> {
     let mut f = Fresher::default();
 
     let path = stdlib_relative_path();
@@ -193,7 +199,14 @@ pub fn infer_stdlib() -> Result<
     let (prelude, importer) = infer_pre(&mut f, &files)?;
     let (importer, importermap) = infer_std(&mut f, &files, prelude.clone(), importer)?;
 
-    Ok((prelude, importer, importermap, f, rerun_if_changed, files))
+    Ok(StdlibReturnValues {
+        prelude,
+        importer,
+        importermap,
+        f,
+        rerun_if_changed,
+        files,
+    })
 }
 
 /// new stdlib docs function

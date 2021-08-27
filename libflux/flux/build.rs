@@ -50,7 +50,15 @@ where
 fn main() -> Result<(), Error> {
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
-    let (pre, lib, libmap, fresher, files, file_map) = bootstrap::infer_stdlib()?;
+    let std_lib_values = bootstrap::infer_stdlib()?;
+    let (pre, lib, libmap, fresher, files, file_map) = (
+        std_lib_values.prelude,
+        std_lib_values.importer,
+        std_lib_values.importermap,
+        std_lib_values.f,
+        std_lib_values.rerun_if_changed,
+        std_lib_values.files,
+    );
     for f in files.iter() {
         println!("cargo:rerun-if-changed={}", f);
     }
