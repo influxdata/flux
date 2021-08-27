@@ -42,15 +42,16 @@ pub struct Error {
 pub struct StdlibReturnValues {
     /// The prelude for the Stdlib.
     pub prelude: PolyTypeMap,
-    /// The importer for the PolyTypeMap.
+    /// The importer is how the Stdlib is serialized and exposed for type inference. We are keeping it around for now as it
+    /// has the advantage that you could parameterize an entire package (like a functor from SML) which we will revisit later.
     pub importer: PolyTypeMap,
-    /// The map of PolytypeMap: one PolyTypeMap per package.
+    /// The map of PolytypeMap: one PolyTypeMap per package acts as a simpler way to represent types within the package.
     pub importermap: PolyTypeMapMap,
     /// The Stdlib struct used for incrementing type variable identifiers.
     pub f: Fresher,
     /// A vector indicating whether to rerun each package if it is changed.
     pub rerun_if_changed: Vec<String>,
-    /// The AST map of files for the entire stdlib.
+    /// The AST map of files for the entire Stdlib.
     pub files: AstFileMap,
 }
 
