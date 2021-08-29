@@ -17,8 +17,8 @@ Example:
 
 ## hex.int
 
-The `hex.int()` function converts a hexadecimal string representation of a number value to an integer. A string argument 
-can be optionally prefixed by `0x`. 
+The `hex.int()` function converts a hexadecimal string representation of a number value to an integer.
+An input value can be optionally prefixed by `0x`. 
 
 Example:
 
@@ -37,8 +37,8 @@ Example:
 
 ## hex.uint
 
-The `hex.uint()` function converts a hexadecimal string representation of a number to an unsigned integer. A string argument 
-can be optionally prefixed by `0x`. 
+The `hex.uint()` function converts a hexadecimal string representation of a number to an unsigned integer.
+An input value can be optionally prefixed by `0x`. 
 
 Example:
 
