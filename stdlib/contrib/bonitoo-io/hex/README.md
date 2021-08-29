@@ -11,13 +11,14 @@ Example:
 
     a = hex.string(v: 12)
     // a is "c"
-    b = hex.string(v: bytes("hi"))
+    b = hex.string(v: bytes(v: "hi"))
     // b is "6869"
 
 
 ## hex.int
 
-The `hex.int()` function converts a single value to an integer. It is like a standard [int() function](https://docs.influxdata.com/influxdb/v2.0/reference/flux/stdlib/built-in/transformations/type-conversions/int/), but it assumes that a string argument is a hexadecimal representation of an integer, which can be optionally prefixed by `0x`. 
+The `hex.int()` function converts a hexadecimal string representation of a number value to an integer. A string argument 
+can be optionally prefixed by `0x`. 
 
 Example:
 
@@ -36,7 +37,8 @@ Example:
 
 ## hex.uint
 
-The `hex.uint()` function converts a single value to an unsigned integer. It is like a standard [uint() function](https://docs.influxdata.com/influxdb/v2.0/reference/flux/stdlib/built-in/transformations/type-conversions/uint/), but it assumes that a string argument is a hexadecimal representation of an number, which can be optionally prefixed by `0x`. 
+The `hex.uint()` function converts a hexadecimal string representation of a number to an unsigned integer. A string argument 
+can be optionally prefixed by `0x`. 
 
 Example:
 
@@ -75,7 +77,7 @@ Example:
 
 ## hex.toInt
 
-The `hex.toInt()` function converts all values in the `_value` column to integers using `hex.int()` function. It is like a standard [toInt() function](https://docs.influxdata.com/influxdb/v2.0/reference/flux/stdlib/built-in/transformations/type-conversions/toInt/), but string input values are parsed from hexadecimal characters. 
+The `hex.toInt()` function converts string values of the `_value` column to integers using `hex.int()` function.
 
 Example:
 
@@ -89,7 +91,7 @@ Example:
 
 ## hex.toUInt
 
-The `hex.toUInt()` function converts all values in the `_value` column to unsigned integers using `hex.uint()` function. It is like a standard [toUInt() function](https://docs.influxdata.com/influxdb/v2.0/reference/flux/stdlib/built-in/transformations/type-conversions/toUInt/), but string input values are parsed from hexadecimal characters. 
+The `hex.toUInt()` function converts string values of the `_value` column to unsigned integers using `hex.uint()` function.
 
 Example:
 
