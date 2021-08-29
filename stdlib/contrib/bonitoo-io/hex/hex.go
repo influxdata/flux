@@ -96,7 +96,7 @@ var intConv = values.NewFunction(
 			}
 			i = n
 		default:
-			return nil, errors.Newf(codes.Invalid, "cannot convert %v to int", v.Type())
+			return nil, errors.Newf(codes.Invalid, "hex cannot convert %v to int", v.Type())
 		}
 		return values.NewInt(i), nil
 	},
@@ -123,7 +123,7 @@ var uintConv = values.NewFunction(
 			}
 			i = n
 		default:
-			return nil, errors.Newf(codes.Invalid, "cannot convert %v to uint", v.Type())
+			return nil, errors.Newf(codes.Invalid, "hex cannot convert %v to uint", v.Type())
 		}
 		return values.NewUInt(i), nil
 	},
@@ -146,7 +146,7 @@ var bytesConv = values.NewFunction(
 			}
 			return values.NewBytes(bytes), nil
 		default:
-			return nil, errors.Newf(codes.Invalid, "cannot convert %v to bytes", v.Type())
+			return nil, errors.Newf(codes.Invalid, "hex cannot convert %v to bytes", v.Type())
 		}
 	},
 	false,
