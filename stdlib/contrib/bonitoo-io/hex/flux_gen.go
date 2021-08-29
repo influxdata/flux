@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   10,
 				},
 				File:   "hex.flux",
-				Source: "package hex\n\nbuiltin int : (v: A) => int\nbuiltin string : (v: A) => string\nbuiltin uint : (v: A) => uint\nbuiltin bytes : (v: A) => bytes\n\ntoString = (tables=<-) => tables |> map(fn: (r) => ({r with _value: string(v: r._value)}))\ntoInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: int(v: r._value)}))\ntoUInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: uint(v: r._value)}))",
+				Source: "package hex\n\nbuiltin int : (v: string) => int\nbuiltin string : (v: A) => string\nbuiltin uint : (v: string) => uint\nbuiltin bytes : (v: string) => bytes\n\ntoString = (tables=<-) => tables |> map(fn: (r) => ({r with _value: string(v: r._value)}))\ntoInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: int(v: r._value)}))\ntoUInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: uint(v: r._value)}))",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -77,11 +77,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 33,
 							Line:   3,
 						},
 						File:   "hex.flux",
-						Source: "(v: A) => int",
+						Source: "(v: string) => int",
 						Start: ast.Position{
 							Column: 15,
 							Line:   3,
@@ -95,11 +95,11 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 28,
+								Column: 33,
 								Line:   3,
 							},
 							File:   "hex.flux",
-							Source: "(v: A) => int",
+							Source: "(v: string) => int",
 							Start: ast.Position{
 								Column: 15,
 								Line:   3,
@@ -112,11 +112,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 20,
+									Column: 25,
 									Line:   3,
 								},
 								File:   "hex.flux",
-								Source: "v: A",
+								Source: "v: string",
 								Start: ast.Position{
 									Column: 16,
 									Line:   3,
@@ -143,17 +143,17 @@ var pkgAST = &ast.Package{
 							},
 							Name: "v",
 						},
-						Ty: &ast.TvarType{
+						Ty: &ast.NamedType{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 20,
+										Column: 25,
 										Line:   3,
 									},
 									File:   "hex.flux",
-									Source: "A",
+									Source: "string",
 									Start: ast.Position{
 										Column: 19,
 										Line:   3,
@@ -166,18 +166,18 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 20,
+											Column: 25,
 											Line:   3,
 										},
 										File:   "hex.flux",
-										Source: "A",
+										Source: "string",
 										Start: ast.Position{
 											Column: 19,
 											Line:   3,
 										},
 									},
 								},
-								Name: "A",
+								Name: "string",
 							},
 						},
 					}},
@@ -187,13 +187,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
+									Column: 33,
 									Line:   3,
 								},
 								File:   "hex.flux",
 								Source: "int",
 								Start: ast.Position{
-									Column: 25,
+									Column: 30,
 									Line:   3,
 								},
 							},
@@ -204,13 +204,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 28,
+										Column: 33,
 										Line:   3,
 									},
 									File:   "hex.flux",
 									Source: "int",
 									Start: ast.Position{
-										Column: 25,
+										Column: 30,
 										Line:   3,
 									},
 								},
@@ -449,11 +449,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 30,
+							Column: 35,
 							Line:   5,
 						},
 						File:   "hex.flux",
-						Source: "(v: A) => uint",
+						Source: "(v: string) => uint",
 						Start: ast.Position{
 							Column: 16,
 							Line:   5,
@@ -467,11 +467,11 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 30,
+								Column: 35,
 								Line:   5,
 							},
 							File:   "hex.flux",
-							Source: "(v: A) => uint",
+							Source: "(v: string) => uint",
 							Start: ast.Position{
 								Column: 16,
 								Line:   5,
@@ -484,11 +484,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 21,
+									Column: 26,
 									Line:   5,
 								},
 								File:   "hex.flux",
-								Source: "v: A",
+								Source: "v: string",
 								Start: ast.Position{
 									Column: 17,
 									Line:   5,
@@ -515,17 +515,17 @@ var pkgAST = &ast.Package{
 							},
 							Name: "v",
 						},
-						Ty: &ast.TvarType{
+						Ty: &ast.NamedType{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 21,
+										Column: 26,
 										Line:   5,
 									},
 									File:   "hex.flux",
-									Source: "A",
+									Source: "string",
 									Start: ast.Position{
 										Column: 20,
 										Line:   5,
@@ -538,18 +538,18 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 21,
+											Column: 26,
 											Line:   5,
 										},
 										File:   "hex.flux",
-										Source: "A",
+										Source: "string",
 										Start: ast.Position{
 											Column: 20,
 											Line:   5,
 										},
 									},
 								},
-								Name: "A",
+								Name: "string",
 							},
 						},
 					}},
@@ -559,13 +559,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 30,
+									Column: 35,
 									Line:   5,
 								},
 								File:   "hex.flux",
 								Source: "uint",
 								Start: ast.Position{
-									Column: 26,
+									Column: 31,
 									Line:   5,
 								},
 							},
@@ -576,13 +576,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 30,
+										Column: 35,
 										Line:   5,
 									},
 									File:   "hex.flux",
 									Source: "uint",
 									Start: ast.Position{
-										Column: 26,
+										Column: 31,
 										Line:   5,
 									},
 								},
@@ -635,11 +635,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 32,
+							Column: 37,
 							Line:   6,
 						},
 						File:   "hex.flux",
-						Source: "(v: A) => bytes",
+						Source: "(v: string) => bytes",
 						Start: ast.Position{
 							Column: 17,
 							Line:   6,
@@ -653,11 +653,11 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 32,
+								Column: 37,
 								Line:   6,
 							},
 							File:   "hex.flux",
-							Source: "(v: A) => bytes",
+							Source: "(v: string) => bytes",
 							Start: ast.Position{
 								Column: 17,
 								Line:   6,
@@ -670,11 +670,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
+									Column: 27,
 									Line:   6,
 								},
 								File:   "hex.flux",
-								Source: "v: A",
+								Source: "v: string",
 								Start: ast.Position{
 									Column: 18,
 									Line:   6,
@@ -701,17 +701,17 @@ var pkgAST = &ast.Package{
 							},
 							Name: "v",
 						},
-						Ty: &ast.TvarType{
+						Ty: &ast.NamedType{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
+										Column: 27,
 										Line:   6,
 									},
 									File:   "hex.flux",
-									Source: "A",
+									Source: "string",
 									Start: ast.Position{
 										Column: 21,
 										Line:   6,
@@ -724,18 +724,18 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
+											Column: 27,
 											Line:   6,
 										},
 										File:   "hex.flux",
-										Source: "A",
+										Source: "string",
 										Start: ast.Position{
 											Column: 21,
 											Line:   6,
 										},
 									},
 								},
-								Name: "A",
+								Name: "string",
 							},
 						},
 					}},
@@ -745,13 +745,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 32,
+									Column: 37,
 									Line:   6,
 								},
 								File:   "hex.flux",
 								Source: "bytes",
 								Start: ast.Position{
-									Column: 27,
+									Column: 32,
 									Line:   6,
 								},
 							},
@@ -762,13 +762,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 32,
+										Column: 37,
 										Line:   6,
 									},
 									File:   "hex.flux",
 									Source: "bytes",
 									Start: ast.Position{
-										Column: 27,
+										Column: 32,
 										Line:   6,
 									},
 								},

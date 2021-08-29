@@ -95,22 +95,6 @@ var intConv = values.NewFunction(
 				return nil, errors.Newf(codes.Invalid, "cannot convert string %q to int due to invalid syntax", v.Str())
 			}
 			i = n
-		case semantic.Int:
-			i = v.Int()
-		case semantic.UInt:
-			i = int64(v.UInt())
-		case semantic.Float:
-			i = int64(v.Float())
-		case semantic.Bool:
-			if v.Bool() {
-				i = 1
-			} else {
-				i = 0
-			}
-		case semantic.Time:
-			i = int64(v.Time())
-		case semantic.Duration:
-			i = int64(v.Duration().Duration())
 		default:
 			return nil, errors.Newf(codes.Invalid, "cannot convert %v to int", v.Type())
 		}
@@ -138,22 +122,6 @@ var uintConv = values.NewFunction(
 				return nil, errors.Newf(codes.Invalid, "cannot convert string %q to uint due to invalid syntax", v.Str())
 			}
 			i = n
-		case semantic.Int:
-			i = uint64(v.Int())
-		case semantic.UInt:
-			i = v.UInt()
-		case semantic.Float:
-			i = uint64(v.Float())
-		case semantic.Bool:
-			if v.Bool() {
-				i = 1
-			} else {
-				i = 0
-			}
-		case semantic.Time:
-			i = uint64(v.Time())
-		case semantic.Duration:
-			i = uint64(v.Duration().Duration())
 		default:
 			return nil, errors.Newf(codes.Invalid, "cannot convert %v to uint", v.Type())
 		}
