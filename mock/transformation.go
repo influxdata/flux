@@ -32,6 +32,14 @@ func (t *Transformation) Finish(id execute.DatasetID, err error) {
 	t.FinishFn(id, err)
 }
 
+type GroupTransformation struct {
+	ProcessFn func(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error
+}
+
+func (n *GroupTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
+	return n.ProcessFn(chunk, d, mem)
+}
+
 type NarrowTransformation struct {
 	ProcessFn func(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error
 }
