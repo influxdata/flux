@@ -151,7 +151,12 @@ func (t *limitTransformation) limitTable(ctx context.Context, w *table.StreamWri
 			count = n
 			stop = start + count
 		}
+
+		// Reduce the number of rows we will keep from the
+		// next buffer and set the offset to zero as it has been
+		// entirely consumed.
 		n -= count
+		offset = 0
 
 		vs := make([]array.Interface, len(cr.Cols()))
 		for j := range vs {
