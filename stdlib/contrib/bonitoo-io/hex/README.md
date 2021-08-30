@@ -61,48 +61,6 @@ Example:
     a = hex.bytes(v: "6869")
     // a is bytes("hi")
 
-## hex.toString
-
-The `hex.toString()` function converts all values in the `_value` column to strings using `hex.string()` function. It is like a standard [toString() function](https://docs.influxdata.com/influxdb/v2.0/reference/flux/stdlib/built-in/transformations/type-conversions/toString/), but it encodes `int`, `uint` and `bytes` to hexadecimal lowercase characters.
-
-Example:
-
-    import "contrib/bonitoo-io/hex"
-
-    from(bucket: "example")
-      |> filter(fn:(r) =>
-        r._field == "txId"
-      )
-      |> hex.toString()
-
-## hex.toInt
-
-The `hex.toInt()` function converts string values of the `_value` column to integers using `hex.int()` function.
-
-Example:
-
-    import "contrib/bonitoo-io/hex"
-
-    from(bucket: "example")
-      |> filter(fn:(r) =>
-        r._field == "corIdStr"
-      )
-      |> hex.toInt()
-
-## hex.toUInt
-
-The `hex.toUInt()` function converts string values of the `_value` column to unsigned integers using `hex.uint()` function.
-
-Example:
-
-    import "contrib/bonitoo-io/hex"
-
-    from(bucket: "example")
-      |> filter(fn:(r) =>
-        r._field == "corIdStr"
-      )
-      |> hex.toUInt()
-
 ## Contact
 
 - Author: Pavel Zavora
