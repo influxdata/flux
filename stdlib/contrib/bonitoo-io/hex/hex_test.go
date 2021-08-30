@@ -1,11 +1,10 @@
 package hex
 
 import (
-	"context"
 	"errors"
 	"testing"
 
-	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/values"
 )
 
@@ -78,9 +77,8 @@ func Test_String(t *testing.T) {
 			myMap := map[string]values.Value{
 				"v": values.New(tc.v),
 			}
-			args := values.NewObjectWithValues(myMap)
-			c := stringConv
-			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
+			args := interpreter.NewArguments(values.NewObjectWithValues(myMap))
+			got, err := String(args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -182,9 +180,8 @@ func Test_Int(t *testing.T) {
 			myMap := map[string]values.Value{
 				"v": values.New(tc.v),
 			}
-			args := values.NewObjectWithValues(myMap)
-			c := intConv
-			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
+			args := interpreter.NewArguments(values.NewObjectWithValues(myMap))
+			got, err := Int(args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -266,9 +263,8 @@ func Test_UInt(t *testing.T) {
 			myMap := map[string]values.Value{
 				"v": values.New(tc.v),
 			}
-			args := values.NewObjectWithValues(myMap)
-			c := uintConv
-			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
+			args := interpreter.NewArguments(values.NewObjectWithValues(myMap))
+			got, err := UInt(args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
@@ -320,9 +316,8 @@ func Test_Bytes(t *testing.T) {
 			myMap := map[string]values.Value{
 				"v": values.New(tc.v),
 			}
-			args := values.NewObjectWithValues(myMap)
-			c := bytesConv
-			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
+			args := interpreter.NewArguments(values.NewObjectWithValues(myMap))
+			got, err := Bytes(args)
 			if err != nil {
 				if tc.expectErr == nil {
 					t.Errorf("unexpected error - want: <nil>, got: %s", err.Error())
