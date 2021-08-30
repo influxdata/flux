@@ -13,16 +13,16 @@ _numeric = (includeNull=false) => "
 #default,_result,,,,
 ,result,table,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,t1,-2.18
-,,0,2021-01-01T00:00:10Z,t1," + (if not includeNull then "10.92" else "") + "
+,,0,2021-01-01T00:00:10Z,t1," + (if includeNull then "" else "10.92") + "
 ,,0,2021-01-01T00:00:20Z,t1,7.35
-,,0,2021-01-01T00:00:30Z,t1," + (if not includeNull then "17.53" else "") + "
-,,0,2021-01-01T00:00:40Z,t1," + (if not includeNull then "15.23" else "") + "
+,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then "" else "17.53") + "
+,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then "" else "15.23") + "
 ,,0,2021-01-01T00:00:50Z,t1,4.43
-,,1,2021-01-01T00:00:00Z,t2," + (if not includeNull then "19.85" else "") + "
+,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then "" else "19.85") + "
 ,,1,2021-01-01T00:00:10Z,t2,4.97
 ,,1,2021-01-01T00:00:20Z,t2,-3.75
 ,,1,2021-01-01T00:00:30Z,t2,19.77
-,,1,2021-01-01T00:00:40Z,t2," + (if not includeNull then "13.86" else "") + "
+,,1,2021-01-01T00:00:40Z,t2," + (if includeNull then "" else "13.86") + "
 ,,1,2021-01-01T00:00:50Z,t2,1.86
 "
 
@@ -32,16 +32,16 @@ _string = (includeNull=false) => "
 #default,_result,,,,
 ,result,table,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,t1,smpl_g9qczs
-,,0,2021-01-01T00:00:10Z,t1," + (if not includeNull then "smpl_0mgv9n" else "") + "
+,,0,2021-01-01T00:00:10Z,t1," + (if includeNull then "" else "smpl_0mgv9n") + "
 ,,0,2021-01-01T00:00:20Z,t1,smpl_phw664
-,,0,2021-01-01T00:00:30Z,t1," + (if not includeNull then "smpl_guvzy4" else "") + "
-,,0,2021-01-01T00:00:40Z,t1," + (if not includeNull then "smpl_5v3cce" else "") + "
+,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then "" else "smpl_guvzy4") + "
+,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then "" else "smpl_5v3cce") + "
 ,,0,2021-01-01T00:00:50Z,t1,smpl_s9fmgy
-,,1,2021-01-01T00:00:00Z,t2," + (if not includeNull then "smpl_b5eida" else "") + "
+,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then "" else "smpl_b5eida") + "
 ,,1,2021-01-01T00:00:10Z,t2,smpl_eu4oxp
 ,,1,2021-01-01T00:00:20Z,t2,smpl_5g7tz4
 ,,1,2021-01-01T00:00:30Z,t2,smpl_sox1ut
-,,1,2021-01-01T00:00:40Z,t2," + (if not includeNull then "smpl_wfm757" else "") + "
+,,1,2021-01-01T00:00:40Z,t2," + (if includeNull then "" else "smpl_wfm757") + "
 ,,1,2021-01-01T00:00:50Z,t2,smpl_dtn2bv
 "
 
@@ -50,16 +50,16 @@ _bool = (includeNull=false) => "#group,false,false,false,true,false
 #default,_result,,,,
 ,result,table,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,t1,true
-,,0,2021-01-01T00:00:10Z,t1," + (if not includeNull then "true" else "") + "
+,,0,2021-01-01T00:00:10Z,t1," + (if includeNull then "" else "true") + "
 ,,0,2021-01-01T00:00:20Z,t1,false
-,,0,2021-01-01T00:00:30Z,t1," + (if not includeNull then "true" else "") + "
-,,0,2021-01-01T00:00:40Z,t1," + (if not includeNull then "false" else "") + "
+,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then "" else "true") + "
+,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then "" else "false") + "
 ,,0,2021-01-01T00:00:50Z,t1,false
-,,1,2021-01-01T00:00:00Z,t2," + (if not includeNull then "false" else "") + "
+,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then "" else "false") + "
 ,,1,2021-01-01T00:00:10Z,t2,true
 ,,1,2021-01-01T00:00:20Z,t2,false
 ,,1,2021-01-01T00:00:30Z,t2,true
-,,1,2021-01-01T00:00:40Z,t2," + (if not includeNull then "true" else "") + "
+,,1,2021-01-01T00:00:40Z,t2," + (if includeNull then "" else "true") + "
 ,,1,2021-01-01T00:00:50Z,t2,false
 "
 
@@ -266,47 +266,6 @@ bool = (includeNull=false) => {
     _csvData = _bool(includeNull:includeNull)
 
     return csv.from(csv: _csvData)
-}
-
-// numericString returns a sample data set with numeric string values.
-//
-// ## Parameters
-//
-// - `includeNull` indicates whether or not to include null values in the returned dataset.
-//   Default is `false`.
-//
-// ## Output basic sample data with numeric string values
-//
-// ```
-// import "sampledata"
-//
-// sampledata.numericString()
-// ```
-// 
-// ## Output data
-// 
-// | tag | _time                | _value (string) |
-// | :-: | :------------------- | --------------: |
-// | t1  | 2021-01-01T00:00:00Z |              -2 |
-// | t1  | 2021-01-01T00:00:10Z |              10 |
-// | t1  | 2021-01-01T00:00:20Z |               7 |
-// | t1  | 2021-01-01T00:00:30Z |              17 |
-// | t1  | 2021-01-01T00:00:40Z |              15 |
-// | t1  | 2021-01-01T00:00:50Z |               4 |
-// 
-// | tag | _time                | _value (string) |
-// | :-: | :------------------- | --------------: |
-// | t2  | 2021-01-01T00:00:00Z |              19 |
-// | t2  | 2021-01-01T00:00:10Z |               4 |
-// | t2  | 2021-01-01T00:00:20Z |              -3 |
-// | t2  | 2021-01-01T00:00:30Z |              19 |
-// | t2  | 2021-01-01T00:00:40Z |              13 |
-// | t2  | 2021-01-01T00:00:50Z |               1 |
-//
-numericString = (includeNull=false) => {
-    _csvData = _numeric(includeNull:includeNull)
-
-    return csv.from(csv: _csvData) |> toInt() |> toString()
 }
 
 // numericBool returns a sample data set with numeric (integer) boolean values.

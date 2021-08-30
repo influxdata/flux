@@ -89,33 +89,6 @@ testcase sampledata_string {
     testing.diff(got: got, want: want)
 }
 
-// return sample data with numeric string values
-testcase sampledata_numeric_string {
-    want = csv.from(
-        csv: "#group,false,false,true,true,false,false,true
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string
-#default,_result,,,,,,
-,result,table,_start,_stop,_time,_value,tag
-,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:00Z,-2,t1
-,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:10Z,10,t1
-,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:20Z,7,t1
-,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:30Z,17,t1
-,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:40Z,15,t1
-,,0,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:50Z,4,t1
-,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:00Z,19,t2
-,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:10Z,4,t2
-,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:20Z,-3,t2
-,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:30Z,19,t2
-,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:40Z,13,t2
-,,1,2021-01-01T00:00:00Z,2021-01-01T00:01:00Z,2021-01-01T00:00:50Z,1,t2",
-    )
-
-    got = sampledata.numericString()
-        |> range(start: sampledata.start, stop: sampledata.stop)
-
-    testing.diff(got: got, want: want)
-}
-
 // return sample data with boolean values
 testcase sampledata_bool {
     want = csv.from(
