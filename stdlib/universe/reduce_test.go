@@ -5,9 +5,11 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -83,6 +85,30 @@ func TestReduce_Process(t *testing.T) {
 					{25.419999999999998, 10.3},
 				},
 			}},
+		},
+		{
+			name: `null in reduce object`,
+			spec: &universe.ReduceProcedureSpec{
+				Identity: values.NewObjectWithValues(map[string]values.Value{
+					"sum":  values.NewFloat(0.0),
+					"prod": values.NewFloat(1.0),
+				}),
+				Fn: interpreter.ResolvedFunction{
+					Fn:    executetest.FunctionExpression(t, `(r, accumulator) => ({sum: r._value + accumulator.sum, prod: r._value * accumulator.prod})`),
+					Scope: valuestest.Scope(),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 4.1},
+					{execute.Time(2), nil},
+				},
+			}},
+			wantErr: errors.New(codes.Invalid, `reduce object property "prod" is "null" type which is not supported in a flux table`),
 		},
 	}
 	for _, tc := range testCases {
