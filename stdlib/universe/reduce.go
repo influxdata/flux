@@ -183,6 +183,9 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 
 	for _, label := range columns {
 		v, _ := m.Get(label)
+		if v.IsNull() {
+			return errors.Newf(codes.Invalid, `reduce object property "%s" is "%v" type which is not supported in a flux table`, label, v.Type())
+		}
 		if _, err := builder.AddCol(flux.ColMeta{
 			Label: label,
 			Type:  flux.ColumnType(v.Type()),
