@@ -28,7 +28,6 @@ serde_json = "1.0"
 serde-aux = "0.6.1"
 structopt = "0.3.13"
 tera = "1"
-wasm-bindgen = { version = "0.2.62", features = ["serde-serialize"] }
 inflate = "0.4.5"
 
 # `getrandom` is a dependency of the `tera` crate, which does not support
@@ -42,7 +41,6 @@ features = ["js"]
 [dev-dependencies]
 maplit = "1.0.2"
 criterion = "0.3.3"
-wasm-bindgen-test = "0.3.0"
 
 [build-dependencies]
 flux-core = { path = "../flux-core" }
