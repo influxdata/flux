@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/execute/table/static"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/mock"
-	"github.com/influxdata/flux/values"
 )
 
 func TestGroupTransformation_ProcessChunk(t *testing.T) {
@@ -82,35 +81,48 @@ func TestGroupTransformation_ProcessChunk(t *testing.T) {
 }
 
 func TestGroupTransformation_FlushKey(t *testing.T) {
-	want := execute.NewGroupKey(
-		[]flux.ColMeta{
-			{Label: "t0", Type: flux.TString},
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	want := static.Table{
+		static.Times("_time", 0, 10, 20),
+		static.Floats("_value", 1, 2, 3),
+	}
+
+	tr, d, err := execute.NewGroupTransformation(
+		executetest.RandomDatasetID(),
+		&mock.GroupTransformation{
+			ProcessFn: func(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
+				return d.Process(chunk)
+			},
 		},
-		[]values.Value{
-			values.NewString("a"),
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	isProcessed := false
+	d.AddTransformation(
+		&mock.Transport{
+			ProcessMessageFn: func(m execute.Message) error {
+				defer m.Ack()
+				switch m.(type) {
+				case execute.ProcessChunkMsg:
+					isProcessed = true
+				case execute.FlushKeyMsg:
+					t.Error("unexpected flush key message")
+				}
+
+				return nil
+			},
 		},
 	)
 
-	isProcessed := false
-	tr := &mock.Transport{
-		ProcessMessageFn: func(m execute.Message) error {
-			msg, ok := m.(execute.FlushKeyMsg)
-			if !ok {
-				t.Fatalf("expected flush key message, got %T", m)
-			}
-
-			if got := msg.Key(); !want.Equal(got) {
-				t.Fatalf("unexpected group key -want/+got:\n%s", cmp.Diff(want, got))
-			}
-			isProcessed = true
-			return nil
-		},
-	}
-
-	d := execute.NewTransportDataset(executetest.RandomDatasetID(), memory.DefaultAllocator)
-	d.AddTransformation(tr)
-	if err := d.FlushKey(want); err != nil {
-		t.Fatalf("unexpected error: %s", err)
+	tbl := want.Table(mem)
+	parentID := executetest.RandomDatasetID()
+	if err := tr.Process(parentID, tbl); err != nil {
+		t.Fatal(err)
 	}
 
 	if !isProcessed {

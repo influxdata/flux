@@ -13,7 +13,7 @@ import (
 // NarrowTransformation will pass the FlushKeyMsg to the Dataset
 // and GroupTransformation will swallow this Message.
 type GroupTransformation interface {
-	Process(table.Chunk, *TransportDataset, memory.Allocator) error
+	Process(chunk table.Chunk, d *TransportDataset, mem memory.Allocator) error
 }
 
 var _ Transport = (*groupTransformation)(nil)
@@ -55,11 +55,6 @@ func (g *groupTransformation) ProcessMessage(m Message) error {
 	return nil
 }
 
-// Implement the Transformation interface
-func (g *groupTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
-	return nil
-}
-
 func (g *groupTransformation) Process(id DatasetID, tbl flux.Table) error {
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		chunk := table.ChunkFromReader(cr)
@@ -80,14 +75,18 @@ func (g *groupTransformation) Process(id DatasetID, tbl flux.Table) error {
 	return g.ProcessMessage(&m)
 }
 
+func (g *groupTransformation) Finish(id DatasetID, err error) {
+	g.d.Finish(err)
+}
+
+func (g *groupTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
+	return nil
+}
+
 func (g *groupTransformation) UpdateWatermark(id DatasetID, t Time) error {
 	return nil
 }
 
 func (g *groupTransformation) UpdateProcessingTime(id DatasetID, t Time) error {
 	return nil
-}
-
-func (g *groupTransformation) Finish(id DatasetID, err error) {
-	g.d.Finish(err)
 }
