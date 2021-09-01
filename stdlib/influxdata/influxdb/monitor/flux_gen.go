@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   304,
 				},
 				File:   "monitor.flux",
-				Source: "package monitor\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\nimport \"influxdata/influxdb\"\n\nbucket = \"_monitoring\"\n\n// Write persists the check statuses\noption write = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// Log records notification events\noption log = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// logs retrieves notification events stored in the notifications measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `start` is the earliest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `stop` is the latest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `fn` is a single argument predicate function that evaluates true or false.\n//\n//      Records or rows (r) that evaluate to true are included in output tables.\n//      Records that evaluate to null or false are not included in output tables.\n//\n// ## Query notification events from the last hour\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.logs(start: -2h, fn: (r) => true)\n// ```\n//\nlogs = (start, stop=now(), fn) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"notifications\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// from retrieves check statuses stored in the statuses measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `start` is the earliest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `stop` is the latest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `fn` is a single argument predicate function that evaluates true or false.\n//\n//      Records or rows (r) that evaluate to true are included in output tables.\n//      Records that evaluate to null or false are not included in output tables.\n//\n// ## View critical check statuses from the last hour\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.from(\n//  start: -1h,\n//  fn: (r) => r._level == \"crit\"\n// )\n// ```\n//\nfrom = (start, stop=now(), fn=(r) => true) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"statuses\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// levels describing the result of a check\nlevelOK = \"ok\"\nlevelInfo = \"info\"\nlevelWarn = \"warn\"\nlevelCrit = \"crit\"\nlevelUnknown = \"unknown\"\n_stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// Notify will call the endpoint and log the results.\nnotify = (tables=<-, endpoint, data) => tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])\n    |> log()\n\n// stateChangesOnly takes a stream of tables that contains a _level column\n// and returns a stream of tables where each record represents a state change.\n//\n// ## Return records representing state changes\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.from(start: -1h)\n//  |> monitor.stateChangesOnly()\n//\n// ```\n//\nstateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// stateChanges detects state changes in a stream of data with a _level column and outputs records that change from fromLevel to toLevel.\n//\n// ## Parameters\n// - `fromLevel` is the level to detect a change from. Defaults to \"any\".\n// - `toLevel` is the level to detect a change to. The function output records that change to this level\n//\n// ## Detect when the state changes to critical\n// ```\n// monitor.from(start: -1h)\n//    |> monitor.stateChanges(toLevel: \"crit\")\n// ```\n//\nstateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}\n\n// deadman detects when a group stops reporting data.\n// It takes a stream of tables and reports if groups have been observed since time t.\n//\n//      monitor.deadman() retains the most recent row from each input table and adds a dead column.\n//      If a record appears after time t, monitor.deadman() sets dead to false. Otherwise, dead is set to true.\n//\n// ## Parameters\n// - `t` is the time threshold for the deadman check.\n//\n// ## Detect if a host hasn’t reported in the last five minutes\n// ```\n// import \"influxdata/influxdb/monitor\"\n// import \"experimental\"\n//\n// from(bucket: \"example-bucket\")\n//   |> range(start: -10m)\n//   |> group(columns: [\"host\"])\n//   |> monitor.deadman(t: experimental.subDuration(d: 5m, from: now() ))\n// ```\n//\ndeadman = (t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))\n\n// check checks input data and assigns a level (ok, info, warn, or crit) to each row based on predicate functions.\n//\n//      monitor.check() stores statuses in the _level column and writes results to the statuses measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `crit` is the predicate function that determines crit status. Default is (r) => false.\n// - `warn` is the predicate function that determines warn status. Default is (r) => false.\n// - `info` is the predicate function that determines info status. Default is (r) => false.\n// - `ok` is the predicate function that determines ok status. Default is (r) => false.\n// - `messagefn` is the predicate function that constructs a message to append to each row. The message is stored in the _message column.\n// - `data` is meta data used to identify this check.\n//\n// ## Monitor disk usage\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// from(bucket: \"telegraf\")\n//   |> range(start: -1h)\n//   |> filter(fn: (r) =>\n//       r._measurement == \"disk\" and\n//       r._field == \"used_percent\"\n//   )\n//   |> group(columns: [\"_measurement\"])\n//   |> monitor.check(\n//     crit: (r) => r._value > 90.0,\n//     warn: (r) => r._value > 80.0,\n//     info: (r) => r._value > 70.0,\n//     ok:   (r) => r._value <= 60.0,\n//     messageFn: (r) =>\n//       if r._level == \"crit\" then \"Critical alert!! Disk usage is at ${r._value}%!\"\n//       else if r._level == \"warn\" then \"Warning! Disk usage is at ${r._value}%.\"\n//       else if r._level == \"info\" then \"Disk usage is at ${r._value}%.\"\n//       else \"Things are looking good.\",\n//     data: {\n//       _check_name: \"Disk Utilization (Used Percentage)\",\n//       _check_id: \"disk_used_percent\",\n//       _type: \"threshold\",\n//       tags: {}\n//     }\n//   )\n// ```\n//\ncheck = (\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
+				Source: "package monitor\n\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\nimport \"influxdata/influxdb\"\n\nbucket = \"_monitoring\"\n\n// Write persists the check statuses\noption write = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// Log records notification events\noption log = (tables=<-) => tables |> experimental.to(bucket: bucket)\n\n// logs retrieves notification events stored in the notifications measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `start` is the earliest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `stop` is the latest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `fn` is a single argument predicate function that evaluates true or false.\n//\n//      Records or rows (r) that evaluate to true are included in output tables.\n//      Records that evaluate to null or false are not included in output tables.\n//\n// ## Query notification events from the last hour\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.logs(start: -2h, fn: (r) => true)\n// ```\n//\nlogs = (start, stop=now(), fn) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"notifications\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// from retrieves check statuses stored in the statuses measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `start` is the earliest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `stop` is the latest time to include in results\n//\n//      Use a relative duration, absolute time, or integer (Unix timestamp in seconds).\n//      For example, -1h, 2019-08-28T22:00:00Z, or 1567029600. Durations are relative to now().\n//\n// - `fn` is a single argument predicate function that evaluates true or false.\n//\n//      Records or rows (r) that evaluate to true are included in output tables.\n//      Records that evaluate to null or false are not included in output tables.\n//\n// ## View critical check statuses from the last hour\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.from(\n//  start: -1h,\n//  fn: (r) => r._level == \"crit\"\n// )\n// ```\n//\nfrom = (start, stop=now(), fn=(r) => true) => influxdb.from(bucket: bucket)\n    |> range(start: start, stop: stop)\n    |> filter(fn: (r) => r._measurement == \"statuses\")\n    |> filter(fn: fn)\n    |> v1.fieldsAsCols()\n\n// levels describing the result of a check\nlevelOK = \"ok\"\nlevelInfo = \"info\"\nlevelWarn = \"warn\"\nlevelCrit = \"crit\"\nlevelUnknown = \"unknown\"\n_stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// Notify will call the endpoint and log the results.\nnotify = (tables=<-, endpoint, data) => tables\n    |> experimental.set(o: data)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"notifications\",\n            _status_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> endpoint()\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])\n    |> log()\n\n// stateChangesOnly takes a stream of tables that contains a _level column\n// and returns a stream of tables where each record represents a state change.\n//\n// ## Return records representing state changes\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// monitor.from(start: -1h)\n//  |> monitor.stateChangesOnly()\n//\n// ```\n//\nstateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}\n\n// stateChanges detects state changes in a stream of data with a _level column and outputs records that change from fromLevel to toLevel.\n//\n// ## Parameters\n// - `fromLevel` is the level to detect a change from. Defaults to \"any\".\n// - `toLevel` is the level to detect a change to. The function output records that change to this level\n//\n// ## Detect when the state changes to critical\n// ```\n// monitor.from(start: -1h)\n//    |> monitor.stateChanges(toLevel: \"crit\")\n// ```\n//\nstateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    return if fromLevel == \"any\" and toLevel == \"any\" then\n        tables |> stateChangesOnly()\n    else\n        tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)\n}\n\n// deadman detects when a group stops reporting data.\n// It takes a stream of tables and reports if groups have been observed since time t.\n//\n//      monitor.deadman() retains the most recent row from each input table and adds a dead column.\n//      If a record appears after time t, monitor.deadman() sets dead to false. Otherwise, dead is set to true.\n//\n// ## Parameters\n// - `t` is the time threshold for the deadman check.\n//\n// ## Detect if a host hasn’t reported in the last five minutes\n// ```\n// import \"influxdata/influxdb/monitor\"\n// import \"experimental\"\n//\n// from(bucket: \"example-bucket\")\n//   |> range(start: -10m)\n//   |> group(columns: [\"host\"])\n//   |> monitor.deadman(t: experimental.subDuration(d: 5m, from: now() ))\n// ```\n//\ndeadman = (t, tables=<-) => tables\n    |> max(column: \"_time\")\n    |> map(fn: (r) => ({r with dead: r._time < t}))\n\n// check checks input data and assigns a level (ok, info, warn, or crit) to each row based on predicate functions.\n//\n//      monitor.check() stores statuses in the _level column and writes results to the statuses measurement in the _monitoring bucket.\n//\n// ## Parameters\n// - `crit` is the predicate function that determines crit status. Default is (r) => false.\n// - `warn` is the predicate function that determines warn status. Default is (r) => false.\n// - `info` is the predicate function that determines info status. Default is (r) => false.\n// - `ok` is the predicate function that determines ok status. Default is (r) => false.\n// - `messagefn` is the predicate function that constructs a message to append to each row. The message is stored in the _message column.\n// - `data` is meta data used to identify this check.\n//\n// ## Monitor disk usage\n// ```\n// import \"influxdata/influxdb/monitor\"\n//\n// from(bucket: \"telegraf\")\n//   |> range(start: -1h)\n//   |> filter(fn: (r) =>\n//       r._measurement == \"disk\" and\n//       r._field == \"used_percent\"\n//   )\n//   |> group(columns: [\"_measurement\"])\n//   |> monitor.check(\n//     crit: (r) => r._value > 90.0,\n//     warn: (r) => r._value > 80.0,\n//     info: (r) => r._value > 70.0,\n//     ok:   (r) => r._value <= 60.0,\n//     messageFn: (r) =>\n//       if r._level == \"crit\" then \"Critical alert!! Disk usage is at ${r._value}%!\"\n//       else if r._level == \"warn\" then \"Warning! Disk usage is at ${r._value}%.\"\n//       else if r._level == \"info\" then \"Disk usage is at ${r._value}%.\"\n//       else \"Things are looking good.\",\n//     data: {\n//       _check_name: \"Disk Utilization (Used Percentage)\",\n//       _check_id: \"disk_used_percent\",\n//       _type: \"threshold\",\n//       tags: {}\n//     }\n//   )\n// ```\n//\ncheck = (\n        tables=<-,\n        data,\n        messageFn,\n        crit=(r) => false,\n        warn=(r) => false,\n        info=(r) => false,\n        ok=(r) => true,\n) => tables\n    |> experimental.set(o: data.tags)\n    |> experimental.group(mode: \"extend\", columns: experimental.objectKeys(o: data.tags))\n    |> map(\n        fn: (r) => ({r with\n            _measurement: \"statuses\",\n            _source_measurement: r._measurement,\n            _type: data._type,\n            _check_id: data._check_id,\n            _check_name: data._check_name,\n            _level: if crit(r: r) then\n                levelCrit\n            else if warn(r: r) then\n                levelWarn\n            else if info(r: r) then\n                levelInfo\n            else if ok(r: r) then\n                levelOK\n            else\n                levelUnknown,\n            _source_timestamp: int(v: r._time),\n            _time: now(),\n        }),\n    )\n    |> map(\n        fn: (r) => ({r with\n            _message: messageFn(r: r),\n        }),\n    )\n    |> experimental.group(\n        mode: \"extend\",\n        columns: [\n            \"_source_measurement\",\n            \"_type\",\n            \"_check_id\",\n            \"_check_name\",\n            \"_level\",\n        ],\n    )\n    |> write()",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -3243,7 +3243,7 @@ var pkgAST = &ast.Package{
 						Line:   117,
 					},
 					File:   "monitor.flux",
-					Source: "_stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+					Source: "_stateChanges = (fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   88,
@@ -3280,7 +3280,7 @@ var pkgAST = &ast.Package{
 							Line:   117,
 						},
 						File:   "monitor.flux",
-						Source: "(fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+						Source: "(fromLevel=\"any\", toLevel=\"any\", tables=<-) => {\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
 						Start: ast.Position{
 							Column: 17,
 							Line:   88,
@@ -3297,7 +3297,7 @@ var pkgAST = &ast.Package{
 								Line:   117,
 							},
 							File:   "monitor.flux",
-							Source: "{\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+							Source: "{\n    toLevelFilter = if toLevel == \"any\" then\n        (r) => r._level != fromLevel and exists r._level\n    else\n        (r) => r._level == toLevel\n    fromLevelFilter = if fromLevel == \"any\" then\n        (r) => r._level != toLevel and exists r._level\n    else\n        (r) => r._level == fromLevel\n\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
 							Start: ast.Position{
 								Column: 64,
 								Line:   88,
@@ -5557,11 +5557,11 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 70,
+														Column: 61,
 														Line:   112,
 													},
 													File:   "monitor.flux",
-													Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)",
+													Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)",
 													Start: ast.Position{
 														Column: 12,
 														Line:   98,
@@ -5575,11 +5575,11 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 69,
+																Column: 60,
 																Line:   112,
 															},
 															File:   "monitor.flux",
-															Source: "columns: [\"_source_timestamp\", \"_time\"], desc: false",
+															Source: "columns: [\"_source_timestamp\"], desc: false",
 															Start: ast.Position{
 																Column: 17,
 																Line:   112,
@@ -5593,11 +5593,11 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 56,
+																	Column: 47,
 																	Line:   112,
 																},
 																File:   "monitor.flux",
-																Source: "columns: [\"_source_timestamp\", \"_time\"]",
+																Source: "columns: [\"_source_timestamp\"]",
 																Start: ast.Position{
 																	Column: 17,
 																	Line:   112,
@@ -5631,11 +5631,11 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 56,
+																		Column: 47,
 																		Line:   112,
 																	},
 																	File:   "monitor.flux",
-																	Source: "[\"_source_timestamp\", \"_time\"]",
+																	Source: "[\"_source_timestamp\"]",
 																	Start: ast.Position{
 																		Column: 26,
 																		Line:   112,
@@ -5660,24 +5660,6 @@ var pkgAST = &ast.Package{
 																	},
 																},
 																Value: "_source_timestamp",
-															}, &ast.StringLiteral{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 55,
-																			Line:   112,
-																		},
-																		File:   "monitor.flux",
-																		Source: "\"_time\"",
-																		Start: ast.Position{
-																			Column: 48,
-																			Line:   112,
-																		},
-																	},
-																},
-																Value: "_time",
 															}},
 															Lbrack: nil,
 															Rbrack: nil,
@@ -5688,13 +5670,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 69,
+																	Column: 60,
 																	Line:   112,
 																},
 																File:   "monitor.flux",
 																Source: "desc: false",
 																Start: ast.Position{
-																	Column: 58,
+																	Column: 49,
 																	Line:   112,
 																},
 															},
@@ -5706,13 +5688,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 62,
+																		Column: 53,
 																		Line:   112,
 																	},
 																	File:   "monitor.flux",
 																	Source: "desc",
 																	Start: ast.Position{
-																		Column: 58,
+																		Column: 49,
 																		Line:   112,
 																	},
 																},
@@ -5726,13 +5708,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 69,
+																		Column: 60,
 																		Line:   112,
 																	},
 																	File:   "monitor.flux",
 																	Source: "false",
 																	Start: ast.Position{
-																		Column: 64,
+																		Column: 55,
 																		Line:   112,
 																	},
 																},
@@ -5748,11 +5730,11 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 70,
+															Column: 61,
 															Line:   112,
 														},
 														File:   "monitor.flux",
-														Source: "sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)",
+														Source: "sort(columns: [\"_source_timestamp\"], desc: false)",
 														Start: ast.Position{
 															Column: 12,
 															Line:   112,
@@ -5791,7 +5773,7 @@ var pkgAST = &ast.Package{
 													Line:   113,
 												},
 												File:   "monitor.flux",
-												Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])",
+												Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])",
 												Start: ast.Position{
 													Column: 12,
 													Line:   98,
@@ -5946,7 +5928,7 @@ var pkgAST = &ast.Package{
 												Line:   114,
 											},
 											File:   "monitor.flux",
-											Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)",
+											Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)",
 											Start: ast.Position{
 												Column: 12,
 												Line:   98,
@@ -6219,7 +6201,7 @@ var pkgAST = &ast.Package{
 											Line:   115,
 										},
 										File:   "monitor.flux",
-										Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])",
+										Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])",
 										Start: ast.Position{
 											Column: 12,
 											Line:   98,
@@ -6374,7 +6356,7 @@ var pkgAST = &ast.Package{
 										Line:   116,
 									},
 									File:   "monitor.flux",
-									Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
+									Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
 									Start: ast.Position{
 										Column: 12,
 										Line:   98,
@@ -6625,7 +6607,7 @@ var pkgAST = &ast.Package{
 									Line:   116,
 								},
 								File:   "monitor.flux",
-								Source: "return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
+								Source: "return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if toLevelFilter(r: r) then\n                    1\n                else if fromLevelFilter(r: r) then\n                    0\n                else\n                    -10,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value == 1)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
 								Start: ast.Position{
 									Column: 5,
 									Line:   98,
@@ -8508,7 +8490,7 @@ var pkgAST = &ast.Package{
 						Line:   170,
 					},
 					File:   "monitor.flux",
-					Source: "stateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+					Source: "stateChangesOnly = (tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   146,
@@ -8545,7 +8527,7 @@ var pkgAST = &ast.Package{
 							Line:   170,
 						},
 						File:   "monitor.flux",
-						Source: "(tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+						Source: "(tables=<-) => {\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
 						Start: ast.Position{
 							Column: 20,
 							Line:   146,
@@ -8562,7 +8544,7 @@ var pkgAST = &ast.Package{
 								Line:   170,
 							},
 							File:   "monitor.flux",
-							Source: "{\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
+							Source: "{\n    return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])\n}",
 							Start: ast.Position{
 								Column: 35,
 								Line:   146,
@@ -9983,11 +9965,11 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 70,
+														Column: 61,
 														Line:   165,
 													},
 													File:   "monitor.flux",
-													Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)",
+													Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)",
 													Start: ast.Position{
 														Column: 12,
 														Line:   147,
@@ -10001,11 +9983,11 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 69,
+																Column: 60,
 																Line:   165,
 															},
 															File:   "monitor.flux",
-															Source: "columns: [\"_source_timestamp\", \"_time\"], desc: false",
+															Source: "columns: [\"_source_timestamp\"], desc: false",
 															Start: ast.Position{
 																Column: 17,
 																Line:   165,
@@ -10019,11 +10001,11 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 56,
+																	Column: 47,
 																	Line:   165,
 																},
 																File:   "monitor.flux",
-																Source: "columns: [\"_source_timestamp\", \"_time\"]",
+																Source: "columns: [\"_source_timestamp\"]",
 																Start: ast.Position{
 																	Column: 17,
 																	Line:   165,
@@ -10057,11 +10039,11 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 56,
+																		Column: 47,
 																		Line:   165,
 																	},
 																	File:   "monitor.flux",
-																	Source: "[\"_source_timestamp\", \"_time\"]",
+																	Source: "[\"_source_timestamp\"]",
 																	Start: ast.Position{
 																		Column: 26,
 																		Line:   165,
@@ -10086,24 +10068,6 @@ var pkgAST = &ast.Package{
 																	},
 																},
 																Value: "_source_timestamp",
-															}, &ast.StringLiteral{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 55,
-																			Line:   165,
-																		},
-																		File:   "monitor.flux",
-																		Source: "\"_time\"",
-																		Start: ast.Position{
-																			Column: 48,
-																			Line:   165,
-																		},
-																	},
-																},
-																Value: "_time",
 															}},
 															Lbrack: nil,
 															Rbrack: nil,
@@ -10114,13 +10078,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 69,
+																	Column: 60,
 																	Line:   165,
 																},
 																File:   "monitor.flux",
 																Source: "desc: false",
 																Start: ast.Position{
-																	Column: 58,
+																	Column: 49,
 																	Line:   165,
 																},
 															},
@@ -10132,13 +10096,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 62,
+																		Column: 53,
 																		Line:   165,
 																	},
 																	File:   "monitor.flux",
 																	Source: "desc",
 																	Start: ast.Position{
-																		Column: 58,
+																		Column: 49,
 																		Line:   165,
 																	},
 																},
@@ -10152,13 +10116,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 69,
+																		Column: 60,
 																		Line:   165,
 																	},
 																	File:   "monitor.flux",
 																	Source: "false",
 																	Start: ast.Position{
-																		Column: 64,
+																		Column: 55,
 																		Line:   165,
 																	},
 																},
@@ -10174,11 +10138,11 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 70,
+															Column: 61,
 															Line:   165,
 														},
 														File:   "monitor.flux",
-														Source: "sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)",
+														Source: "sort(columns: [\"_source_timestamp\"], desc: false)",
 														Start: ast.Position{
 															Column: 12,
 															Line:   165,
@@ -10217,7 +10181,7 @@ var pkgAST = &ast.Package{
 													Line:   166,
 												},
 												File:   "monitor.flux",
-												Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])",
+												Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])",
 												Start: ast.Position{
 													Column: 12,
 													Line:   147,
@@ -10372,7 +10336,7 @@ var pkgAST = &ast.Package{
 												Line:   167,
 											},
 											File:   "monitor.flux",
-											Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)",
+											Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)",
 											Start: ast.Position{
 												Column: 12,
 												Line:   147,
@@ -10645,7 +10609,7 @@ var pkgAST = &ast.Package{
 											Line:   168,
 										},
 										File:   "monitor.flux",
-										Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])",
+										Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])",
 										Start: ast.Position{
 											Column: 12,
 											Line:   147,
@@ -10800,7 +10764,7 @@ var pkgAST = &ast.Package{
 										Line:   169,
 									},
 									File:   "monitor.flux",
-									Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
+									Source: "tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
 									Start: ast.Position{
 										Column: 12,
 										Line:   147,
@@ -11051,7 +11015,7 @@ var pkgAST = &ast.Package{
 									Line:   169,
 								},
 								File:   "monitor.flux",
-								Source: "return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\", \"_time\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
+								Source: "return tables\n        |> map(\n            fn: (r) => ({r with\n                level_value: if r._level == levelCrit then\n                    4\n                else if r._level == levelWarn then\n                    3\n                else if r._level == levelInfo then\n                    2\n                else if r._level == levelOK then\n                    1\n                else\n                    0,\n            }),\n        )\n        |> duplicate(column: \"_level\", as: \"____temp_level____\")\n        |> drop(columns: [\"_level\"])\n        |> rename(columns: {\"____temp_level____\": \"_level\"})\n        |> sort(columns: [\"_source_timestamp\"], desc: false)\n        |> difference(columns: [\"level_value\"])\n        |> filter(fn: (r) => r.level_value != 0)\n        |> drop(columns: [\"level_value\"])\n        |> experimental.group(mode: \"extend\", columns: [\"_level\"])",
 								Start: ast.Position{
 									Column: 5,
 									Line:   147,
