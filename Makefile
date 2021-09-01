@@ -108,7 +108,7 @@ staticcheck:
 		`go list ./... | grep -v '\/flux\/stdlib\>'`
 	GO111MODULE=on ./gotool.sh honnef.co/go/tools/cmd/staticcheck ./stdlib/...
 
-test: test-go test-rust test-flux test-wasm
+test: test-go test-rust test-flux
 
 test-go: libflux-go
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...

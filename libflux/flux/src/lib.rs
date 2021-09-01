@@ -1,6 +1,5 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
 
-pub mod wasm;
 
 extern crate fluxcore;
 extern crate serde_aux;

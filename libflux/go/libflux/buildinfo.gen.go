@@ -12,7 +12,7 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "70faadf3b77d149bf08f8a5527cd7902e98ac29bab72e4458693c6b96ada4d61",
+	"libflux/Cargo.lock":                                                                          "d9f23baf919497006ca09811dbdda9fbc3f1bc612ed45043102d98c02acb076f",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
 	"libflux/flux-core/Cargo.toml":                                                                "49902a1bd6c4aca947e54ee9db785ff50ba935bc22f836acdadcfbe3496055f6",
 	"libflux/flux-core/benches/scanner.rs":                                                        "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
@@ -60,7 +60,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/walk/test_utils.rs":                                           "ffec273fc2e54c640ba5f2ce5c1faa1516a3d98b1365d6f4cab762f582102650",
 	"libflux/flux-core/src/semantic/walk/walk_mut.rs":                                             "845e0b706c90fd84b1f7ef08ab85d86a5af24392d7973415ed6d1c778a67e012",
 	"libflux/flux-core/tests/analyze_test.rs":                                                     "537fcf7722f940794646d5916e3484262769fd90a7fa5e74e8095fb732136be6",
-	"libflux/flux/Cargo.toml":                                                                     "2deaab6ce1c7d02a40987319ef2f25e9fd9880d9a89343ef9114c5da80f051a6",
+	"libflux/flux/Cargo.toml":                                                                     "c8ae34c66a95d5d1de16e7b20ff618c97ec5a41ad1200a29566ce4904d558426",
 	"libflux/flux/FLUXDOC.md":                                                                     "92e6dd8043bd87b4924e09aa28fb5346630aee1214de28ea2c8fc0687cad0785",
 	"libflux/flux/benches/basic.rs":                                                               "f6b1d133a4edaa38b0ab6e2b63de1bbd62a489e39b77c62d0df6fa8e5462da0e",
 	"libflux/flux/benches/builtins.rs":                                                            "625b3de708d49a3cb758f331a01f41805ac59d22bbadfee417922504f2d5797e",
@@ -68,8 +68,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux/benches/formatter.rs":                                                           "e4838c1428d45205292a9dda1759f804779a4e142db4360ec2a6be1c9ca741b8",
 	"libflux/flux/build.rs":                                                                       "06924d7c98c84ea5e38d446716c7e12cbb60981f21b1eba1e97f278e366a1173",
 	"libflux/flux/src/bin/flux-dump-docs.rs":                                                      "6cb400f216662e64b707b53715cfa428eff3fdae568f4297f4de4ee996984965",
-	"libflux/flux/src/lib.rs":                                                                     "f858325bcb56c123467e42cc54a663b20de3bc7ec970bdecadde774ca723fadd",
-	"libflux/flux/src/wasm/mod.rs":                                                                "a08fa7d1d3a742f2ffbf0e927531154710b02d53c8787929b834fafb069ffb10",
+	"libflux/flux/src/lib.rs":                                                                     "eb6ba89af20ab26ac2c490150c29828044cd7d724f55066006e61334c1efb94a",
 	"libflux/flux/templates/base.html":                                                            "a818747b9621828bb96b94291c60922db54052bbe35d5e354f8e589d2a4ebd02",
 	"libflux/flux/templates/home.html":                                                            "f9927514dd42ca7271b4817ad1ca33ec79c03a77a783581b4dcafabd246ebf3f",
 	"libflux/flux/templates/package.html":                                                         "635e1d638ad1a430f3894ff0a458572ca3c4dc6b9cec2c57fe771443849e1402",
