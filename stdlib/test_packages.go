@@ -8,6 +8,7 @@ import (
 	naivebayesclassifier "github.com/influxdata/flux/stdlib/contrib/RohanSreerama5/naiveBayesClassifier"
 	anomalydetection "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalydetection"
 	statsmodels "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"
+	array1 "github.com/influxdata/flux/stdlib/contrib/bonitoo-io/array"
 	tickscript "github.com/influxdata/flux/stdlib/contrib/bonitoo-io/tickscript"
 	aggregate "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
 	rows "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
@@ -58,6 +59,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, naivebayesclassifier.FluxTestPackages...)
 	pkgs = append(pkgs, anomalydetection.FluxTestPackages...)
 	pkgs = append(pkgs, statsmodels.FluxTestPackages...)
+	pkgs = append(pkgs, array1.FluxTestPackages...)
 	pkgs = append(pkgs, tickscript.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate.FluxTestPackages...)
 	pkgs = append(pkgs, rows.FluxTestPackages...)
