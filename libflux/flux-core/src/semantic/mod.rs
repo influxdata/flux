@@ -2,6 +2,8 @@
 
 pub mod convert;
 
+mod vectorize;
+
 mod import;
 
 mod infer;

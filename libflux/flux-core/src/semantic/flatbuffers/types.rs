@@ -20,6 +20,7 @@ use crate::semantic::types::{
     Tvar,
     TvarKinds,
 };
+use crate::semantic::types::union;
 
 impl From<fb::Fresher<'_>> for Fresher {
     fn from(f: fb::Fresher) -> Fresher {
@@ -431,6 +432,7 @@ pub fn build_type(
             let offset = build_arr(builder, *arr);
             (offset.as_union_value(), fb::MonoType::Arr)
         }
+        MonoType::Vector(_) => unimplemented!("vector flatbuffer serialization"),
         MonoType::Dict(dict) => {
             let offset = build_dict(builder, *dict);
             (offset.as_union_value(), fb::MonoType::Dict)

@@ -1,7 +1,7 @@
 //! "Fresh" type variable identifiers.
 
 use crate::semantic::types::{
-    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
+    Array, Vector, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
     TvarMap,
 };
 use std::collections::BTreeMap;
@@ -92,6 +92,7 @@ impl Fresh for MonoType {
         match self {
             MonoType::Var(tvr) => MonoType::Var(tvr.fresh(f, sub)),
             MonoType::Arr(arr) => MonoType::Arr(arr.fresh(f, sub)),
+            MonoType::Vector(v) => MonoType::Vector(v.fresh(f, sub)),
             MonoType::Record(obj) => MonoType::Record(obj.fresh(f, sub)),
             MonoType::Fun(fun) => MonoType::Fun(fun.fresh(f, sub)),
             _ => self,
@@ -108,6 +109,12 @@ impl Fresh for Tvar {
 impl Fresh for Array {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Array(self.0.fresh(f, sub))
+    }
+}
+
+impl Fresh for Vector {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        Vector(self.0.fresh(f, sub))
     }
 }
 

@@ -252,6 +252,22 @@ where
     Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
 }
 
+#[allow(missing_docs)]
+pub fn infer_pkg_types_with_constraints<T>(
+    pkg: &mut Package,
+    env: Environment,
+    init_cons: Constraints,
+    f: &mut Fresher,
+    importer: &T,
+) -> std::result::Result<(Environment, Substitution), Error>
+    where
+        T: Importer,
+{
+    let (env, mut cons) = pkg.infer(env, f, importer)?;
+    cons = cons + init_cons;
+    Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
+}
+
 /// Infer the types of a Flux source code file.
 #[allow(missing_docs)]
 pub fn infer_file<T>(file: &mut File, env: Environment, f: &mut Fresher, importer: &T) -> Result
