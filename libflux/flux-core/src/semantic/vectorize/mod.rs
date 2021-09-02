@@ -73,6 +73,61 @@ impl walk::VisitorMut for FresheningVisitor {
     }
 }
 
+struct ExpandingVisitor {
+    fresher: Fresher
+}
+
+impl ExpandingVisitor {
+    fn new(fresher: Fresher) -> Self {
+        ExpandingVisitor{fresher}
+    }
+
+    fn finish(self: Self) -> Fresher {
+        self.fresher
+    }
+}
+
+fn is_scalar_literal(e: &nodes::Expression) -> bool {
+    match e {
+        nodes::Expression::Integer(_)
+        | nodes::Expression::Float(_)
+        | nodes::Expression::StringLit(_)
+        | nodes::Expression::Duration(_)
+        | nodes::Expression::Uint(_)
+        | nodes::Expression::Boolean(_)
+        | nodes::Expression::DateTime(_)
+        | nodes::Expression::Regexp(_) => true,
+        _ => false
+    }
+}
+
+impl walk::VisitorMut for ExpandingVisitor {
+    fn visit(&mut self, _node: &mut NodeMut) -> bool {
+        true
+    }
+
+    fn done(&mut self, node: &mut NodeMut) {
+        match node {
+            // literals might appear in lots of places, but this is just a prototype
+            NodeMut::BinaryExpr(be) => {
+                if is_scalar_literal(&be.left) {
+                    be.left = nodes::Expression::Expand(Box::new(nodes::ExpandExpr {
+                        typ: MonoType::Var(self.fresher.fresh()),
+                        argument: be.left.clone(),
+                    }))
+                }
+                if is_scalar_literal(&be.right) {
+                    be.right = nodes::Expression::Expand(Box::new(nodes::ExpandExpr {
+                        typ: MonoType::Var(self.fresher.fresh()),
+                        argument: be.right.clone(),
+                    }))
+                }
+            }
+            _ => ()
+        }
+    }
+}
+
 fn wrap_fn_expr(f: nodes::FunctionExpr, name: &str) -> nodes::Package {
     let id = nodes::Identifier {
         loc: Default::default(),
@@ -118,10 +173,21 @@ fn unwrap_fn_expr(sem_pkg: nodes::Package) -> nodes::FunctionExpr {
 fn vectorize_fn_type(mut fresher: Fresher, fn_type: &MonoType, vector_arg: &str) -> (MonoType, Constraints, Fresher) {
     let mut fn_type = fn_type.clone();
     let mut cons = infer::Constraints::empty();
+
     match &mut fn_type {
         MonoType::Fun(f) => {
             let arg_type = f.req.get_mut(vector_arg).unwrap();
             for_each_property_mut(arg_type, |prop| {
+                let new_tvar = MonoType::Var(fresher.fresh());
+                cons.add(infer::Constraint::Equal {
+                    exp: new_tvar.clone(),
+                    //act: MonoType::Vector(Box::new(types::Vector(prop.v.clone()))),
+                    act: MonoType::Vector(Box::new(types::Vector(MonoType::Var(fresher.fresh())))),
+                    loc: Default::default()
+                });
+                prop.v = new_tvar;
+            });
+            for_each_property_mut(&mut f.retn, |prop| {
                 let new_tvar = MonoType::Var(fresher.fresh());
                 cons.add(infer::Constraint::Equal {
                     exp: new_tvar.clone(),
@@ -151,7 +217,7 @@ pub fn vectorize(f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionEx
     let (vectorized_fn_type, mut init_cons, fresher) = vectorize_fn_type(fresher, &f.typ, vector_arg);
     let vectorized_fn_name = "__vectorized_fn";
 
-    // println!("vectorized_fn_type:\n{:#?}", vectorized_fn_type);
+    println!("vectorized_fn_type:\n{:#?}", vectorized_fn_type);
     // println!("new constraints: {:#?}", init_cons);
 
 
@@ -160,9 +226,13 @@ pub fn vectorize(f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionEx
 
     let mut visitor = FresheningVisitor::new(fresher);
     walk::walk_mut(&mut visitor, &mut NodeMut::Package(&mut sem_pkg));
+    let fresher = visitor.finish();
+
+    let mut visitor = ExpandingVisitor::new(fresher);
+    walk::walk_mut(&mut visitor, &mut NodeMut::Package(&mut sem_pkg));
     let mut fresher = visitor.finish();
 
-    //println!("freshly-typed sem_pkg: \n{:#?}", sem_pkg);
+    //println!("expanded sem_pkg: \n{:#?}", sem_pkg);
 
     let env = Environment::empty(true);
     init_cons = init_cons + infer::Constraints::from(infer::Constraint::Equal {
@@ -184,6 +254,7 @@ pub fn vectorize(f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionEx
 mod test {
     use crate::semantic::vectorize::vectorize;
     use crate::semantic::nodes::{FunctionExpr, Statement, Expression};
+
 
     fn compile(source: &str) -> FunctionExpr {
         if let Result::Ok(mut pkg) = crate::semantic::convert_source(source) {
@@ -231,9 +302,9 @@ mod test {
         match vectorize(f, "r") {
             (fe, Ok(b)) => {
                 assert_eq!(true, b);
-                println!("{:?}", Expression::Function(Box::new(fe)))
+                println!("{:#?}", Expression::Function(Box::new(fe)))
             },
-            (_, Err(e)) => panic!("got error vectorizing: {:?}", e)
+            (_, Err(e)) => panic!("got error vectorizing: {:#?}", e)
         }
     }
 

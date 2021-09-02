@@ -1717,11 +1717,22 @@ pub struct ExpandExpr {
 impl ExpandExpr {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         let (env, acons) = self.argument.infer(env, f)?;
-        Ok((env, acons + Constraints::from(Constraint::Equal {
-            exp: self.typ.clone(),
-            act: MonoType::Vector(Box::new(Vector(self.argument.type_of()))),
-            loc: self.argument.loc().clone()
-        })))
+
+        let elt = MonoType::Var(f.fresh());
+        let cons = Constraints::from(vec![
+            Constraint::Equal {
+                exp: elt.clone(),
+                act: self.argument.type_of(),
+                loc: self.argument.loc().clone()
+            },
+            Constraint::Equal {
+                exp: MonoType::Vector(Box::new(Vector(elt))),
+                act: self.typ.clone(),
+                loc: self.argument.loc().clone()
+            }
+        ]);
+
+        Ok((env, acons + cons))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
