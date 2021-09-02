@@ -25,10 +25,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   313,
+					Line:   193,
 				},
 				File:   "sampledata.flux",
-				Source: "package sampledata\n\n\nimport \"csv\"\n\n// start and stop constants provide start and stop times to be used with `range`\n// when `_start` and `_stop` columns are required to demonstrate a transformation.\n//\nstart = 2021-01-01T00:00:00Z\nstop = 2021-01-01T00:01:00Z\n\n_numeric = (includeNull=false) => \"\n#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,double\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,-2.18\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"10.92\") + \"\n,,0,2021-01-01T00:00:20Z,t1,7.35\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"17.53\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"15.23\") + \"\n,,0,2021-01-01T00:00:50Z,t1,4.43\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"19.85\") + \"\n,,1,2021-01-01T00:00:10Z,t2,4.97\n,,1,2021-01-01T00:00:20Z,t2,-3.75\n,,1,2021-01-01T00:00:30Z,t2,19.77\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"13.86\") + \"\n,,1,2021-01-01T00:00:50Z,t2,1.86\n\"\n\n_string = (includeNull=false) => \"\n#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,smpl_g9qczs\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"smpl_0mgv9n\") + \"\n,,0,2021-01-01T00:00:20Z,t1,smpl_phw664\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"smpl_guvzy4\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"smpl_5v3cce\") + \"\n,,0,2021-01-01T00:00:50Z,t1,smpl_s9fmgy\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"smpl_b5eida\") + \"\n,,1,2021-01-01T00:00:10Z,t2,smpl_eu4oxp\n,,1,2021-01-01T00:00:20Z,t2,smpl_5g7tz4\n,,1,2021-01-01T00:00:30Z,t2,smpl_sox1ut\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"smpl_wfm757\") + \"\n,,1,2021-01-01T00:00:50Z,t2,smpl_dtn2bv\n\"\n\n_bool = (includeNull=false) => \"#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,boolean\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,true\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"true\") + \"\n,,0,2021-01-01T00:00:20Z,t1,false\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"true\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"false\") + \"\n,,0,2021-01-01T00:00:50Z,t1,false\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"false\") + \"\n,,1,2021-01-01T00:00:10Z,t2,true\n,,1,2021-01-01T00:00:20Z,t2,false\n,,1,2021-01-01T00:00:30Z,t2,true\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"true\") + \"\n,,1,2021-01-01T00:00:50Z,t2,false\n\"\n\n// float returns a sample data set with float values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with float values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.float()\n// ```\n// \n// ## Output data\n// \n// | tag | _time                | _value |\n// | :-: | :------------------- | -----: |\n// | t1  | 2021-01-01T00:00:00Z |  -2.18 |\n// | t1  | 2021-01-01T00:00:10Z |  10.92 |\n// | t1  | 2021-01-01T00:00:20Z |   7.35 |\n// | t1  | 2021-01-01T00:00:30Z |  17.53 |\n// | t1  | 2021-01-01T00:00:40Z |  15.23 |\n// | t1  | 2021-01-01T00:00:50Z |   4.43 |\n\n// | tag | _time                | _value |\n// | :-: | :------------------- | -----: |\n// | t2  | 2021-01-01T00:00:00Z |  19.85 |\n// | t2  | 2021-01-01T00:00:10Z |   4.97 |\n// | t2  | 2021-01-01T00:00:20Z |  -3.75 |\n// | t2  | 2021-01-01T00:00:30Z |  19.77 |\n// | t2  | 2021-01-01T00:00:40Z |  13.86 |\n// | t2  | 2021-01-01T00:00:50Z |   1.86 |\n// \nfloat = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// int returns a sample data set with integer values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with integer values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.int()\n// ```\n// \n// ## Output data\n// \n// | tag | _time                | _value |\n// | :-: | :------------------- | -----: |\n// | t1  | 2021-01-01T00:00:00Z |     -2 |\n// | t1  | 2021-01-01T00:00:10Z |     10 |\n// | t1  | 2021-01-01T00:00:20Z |      7 |\n// | t1  | 2021-01-01T00:00:30Z |     17 |\n// | t1  | 2021-01-01T00:00:40Z |     15 |\n// | t1  | 2021-01-01T00:00:50Z |      4 |\n\n// | tag | _time                | _value |\n// | :-: | :------------------- | -----: |\n// | t2  | 2021-01-01T00:00:00Z |     19 |\n// | t2  | 2021-01-01T00:00:10Z |      4 |\n// | t2  | 2021-01-01T00:00:20Z |     -3 |\n// | t2  | 2021-01-01T00:00:30Z |     19 |\n// | t2  | 2021-01-01T00:00:40Z |     13 |\n// | t2  | 2021-01-01T00:00:50Z |      1 |\n//\nint = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}\n\n// uint returns a sample data set with unsigned integer values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with unsigned integer values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.uint()\n// ```\n// \n// ## Output data\n// \n// | tag | _time                |               _value |\n// | :-: | :------------------- | -------------------: |\n// | t1  | 2021-01-01T00:00:00Z | 18446744073709551614 |\n// | t1  | 2021-01-01T00:00:10Z |                   10 |\n// | t1  | 2021-01-01T00:00:20Z |                    7 |\n// | t1  | 2021-01-01T00:00:30Z |                   17 |\n// | t1  | 2021-01-01T00:00:40Z |                   15 |\n// | t1  | 2021-01-01T00:00:50Z |                    4 |\n// \n// | tag | _time                |               _value |\n// | :-: | :------------------- | -------------------: |\n// | t2  | 2021-01-01T00:00:00Z |                   19 |\n// | t2  | 2021-01-01T00:00:10Z |                    4 |\n// | t2  | 2021-01-01T00:00:20Z | 18446744073709551613 |\n// | t2  | 2021-01-01T00:00:30Z |                   19 |\n// | t2  | 2021-01-01T00:00:40Z |                   13 |\n// | t2  | 2021-01-01T00:00:50Z |                    1 |\n//\nuint = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}\n\n// string returns a sample data set with string values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with string values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.string()\n// ```\n//\n// ## Output data\n// \n// | tag | _time                |      _value |\n// | :-- | :------------------- | ----------: |\n// | t1  | 2021-01-01T00:00:00Z | smpl_g9qczs |\n// | t1  | 2021-01-01T00:00:10Z | smpl_0mgv9n |\n// | t1  | 2021-01-01T00:00:20Z | smpl_phw664 |\n// | t1  | 2021-01-01T00:00:30Z | smpl_guvzy4 |\n// | t1  | 2021-01-01T00:00:40Z | smpl_5v3cce |\n// | t1  | 2021-01-01T00:00:50Z | smpl_s9fmgy |\n// \n// | tag | _time                |      _value |\n// | :-- | :------------------- | ----------: |\n// | t2  | 2021-01-01T00:00:00Z | smpl_b5eida |\n// | t2  | 2021-01-01T00:00:10Z | smpl_eu4oxp |\n// | t2  | 2021-01-01T00:00:20Z | smpl_5g7tz4 |\n// | t2  | 2021-01-01T00:00:30Z | smpl_sox1ut |\n// | t2  | 2021-01-01T00:00:40Z | smpl_wfm757 |\n// | t2  | 2021-01-01T00:00:50Z | smpl_dtn2bv |\n// \nstring = (includeNull=false) => {\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// bool returns a sample data set with boolean values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with boolean values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.bool()\n// ```\n//\n// ## Output data\n// \n// | tag | _time                | _value |\n// | :-- | :------------------- | -----: |\n// | t1  | 2021-01-01T00:00:00Z |   true |\n// | t1  | 2021-01-01T00:00:10Z |   true |\n// | t1  | 2021-01-01T00:00:20Z |  false |\n// | t1  | 2021-01-01T00:00:30Z |   true |\n// | t1  | 2021-01-01T00:00:40Z |  false |\n// | t1  | 2021-01-01T00:00:50Z |  false |\n// \n// | tag | _time                | _value |\n// | :-- | :------------------- | -----: |\n// | t2  | 2021-01-01T00:00:00Z |  false |\n// | t2  | 2021-01-01T00:00:10Z |   true |\n// | t2  | 2021-01-01T00:00:20Z |  false |\n// | t2  | 2021-01-01T00:00:30Z |   true |\n// | t2  | 2021-01-01T00:00:40Z |   true |\n// | t2  | 2021-01-01T00:00:50Z |  false |\n// \nbool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// numericBool returns a sample data set with numeric (integer) boolean values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with numeric boolean values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.numericBool()\n// ```\n//\n// ## Output data\n// \n// | tag | _time                | _value |\n// | :-- | :------------------- | -----: |\n// | t1  | 2021-01-01T00:00:00Z |      1 |\n// | t1  | 2021-01-01T00:00:10Z |      1 |\n// | t1  | 2021-01-01T00:00:20Z |      0 |\n// | t1  | 2021-01-01T00:00:30Z |      1 |\n// | t1  | 2021-01-01T00:00:40Z |      0 |\n// | t1  | 2021-01-01T00:00:50Z |      0 |\n// \n// | tag | _time                | _value |\n// | :-- | :------------------- | -----: |\n// | t2  | 2021-01-01T00:00:00Z |      0 |\n// | t2  | 2021-01-01T00:00:10Z |      1 |\n// | t2  | 2021-01-01T00:00:20Z |      0 |\n// | t2  | 2021-01-01T00:00:30Z |      1 |\n// | t2  | 2021-01-01T00:00:40Z |      1 |\n// | t2  | 2021-01-01T00:00:50Z |      0 |\n// \nnumericBool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
+				Source: "package sampledata\n\n\nimport \"csv\"\n\n// start and stop constants provide start and stop times to be used with `range`\n// when `_start` and `_stop` columns are required to demonstrate a transformation.\n//\nstart = 2021-01-01T00:00:00Z\nstop = 2021-01-01T00:01:00Z\n\n_numeric = (includeNull=false) => \"\n#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,double\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,-2.18\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"10.92\") + \"\n,,0,2021-01-01T00:00:20Z,t1,7.35\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"17.53\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"15.23\") + \"\n,,0,2021-01-01T00:00:50Z,t1,4.43\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"19.85\") + \"\n,,1,2021-01-01T00:00:10Z,t2,4.97\n,,1,2021-01-01T00:00:20Z,t2,-3.75\n,,1,2021-01-01T00:00:30Z,t2,19.77\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"13.86\") + \"\n,,1,2021-01-01T00:00:50Z,t2,1.86\n\"\n\n_string = (includeNull=false) => \"\n#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,smpl_g9qczs\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"smpl_0mgv9n\") + \"\n,,0,2021-01-01T00:00:20Z,t1,smpl_phw664\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"smpl_guvzy4\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"smpl_5v3cce\") + \"\n,,0,2021-01-01T00:00:50Z,t1,smpl_s9fmgy\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"smpl_b5eida\") + \"\n,,1,2021-01-01T00:00:10Z,t2,smpl_eu4oxp\n,,1,2021-01-01T00:00:20Z,t2,smpl_5g7tz4\n,,1,2021-01-01T00:00:30Z,t2,smpl_sox1ut\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"smpl_wfm757\") + \"\n,,1,2021-01-01T00:00:50Z,t2,smpl_dtn2bv\n\"\n\n_bool = (includeNull=false) => \"#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,boolean\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,true\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"true\") + \"\n,,0,2021-01-01T00:00:20Z,t1,false\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"true\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"false\") + \"\n,,0,2021-01-01T00:00:50Z,t1,false\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"false\") + \"\n,,1,2021-01-01T00:00:10Z,t2,true\n,,1,2021-01-01T00:00:20Z,t2,false\n,,1,2021-01-01T00:00:30Z,t2,true\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"true\") + \"\n,,1,2021-01-01T00:00:50Z,t2,false\n\"\n\n// float returns a sample data set with float values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with float values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.float()\n// ```\n// \nfloat = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// int returns a sample data set with integer values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with integer values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.int()\n// ```\n//\nint = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}\n\n// uint returns a sample data set with unsigned integer values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with unsigned integer values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.uint()\n// ```\n//\nuint = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}\n\n// string returns a sample data set with string values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with string values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.string()\n// ```\n// \nstring = (includeNull=false) => {\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// bool returns a sample data set with boolean values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with boolean values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.bool()\n// ```\n// \nbool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// numericBool returns a sample data set with numeric (integer) boolean values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with numeric boolean values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.numericBool()\n// ```\n// \nnumericBool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -2879,30 +2879,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   108,
+						Line:   88,
 					},
 					File:   "sampledata.flux",
 					Source: "float = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   104,
+						Line:   84,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// float returns a sample data set with float values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with float values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.float()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// ## Output data\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                | _value |\n"}, ast.Comment{Text: "// | :-: | :------------------- | -----: |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:00Z |  -2.18 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:10Z |  10.92 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:20Z |   7.35 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:30Z |  17.53 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:40Z |  15.23 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:50Z |   4.43 |\n"}, ast.Comment{Text: "// | tag | _time                | _value |\n"}, ast.Comment{Text: "// | :-: | :------------------- | -----: |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:00Z |  19.85 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:10Z |   4.97 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:20Z |  -3.75 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:30Z |  19.77 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:40Z |  13.86 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:50Z |   1.86 |\n"}, ast.Comment{Text: "// \n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// float returns a sample data set with float values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with float values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.float()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// \n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   104,
+							Line:   84,
 						},
 						File:   "sampledata.flux",
 						Source: "float",
 						Start: ast.Position{
 							Column: 1,
-							Line:   104,
+							Line:   84,
 						},
 					},
 				},
@@ -2916,13 +2916,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   108,
+							Line:   88,
 						},
 						File:   "sampledata.flux",
 						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 						Start: ast.Position{
 							Column: 9,
-							Line:   104,
+							Line:   84,
 						},
 					},
 				},
@@ -2933,13 +2933,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   108,
+								Line:   88,
 							},
 							File:   "sampledata.flux",
 							Source: "{\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 							Start: ast.Position{
 								Column: 32,
-								Line:   104,
+								Line:   84,
 							},
 						},
 					},
@@ -2950,13 +2950,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   105,
+									Line:   85,
 								},
 								File:   "sampledata.flux",
 								Source: "_csvData = _numeric(includeNull:includeNull)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   105,
+									Line:   85,
 								},
 							},
 						},
@@ -2967,13 +2967,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   105,
+										Line:   85,
 									},
 									File:   "sampledata.flux",
 									Source: "_csvData",
 									Start: ast.Position{
 										Column: 5,
-										Line:   105,
+										Line:   85,
 									},
 								},
 							},
@@ -2987,13 +2987,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   105,
+											Line:   85,
 										},
 										File:   "sampledata.flux",
 										Source: "includeNull:includeNull",
 										Start: ast.Position{
 											Column: 25,
-											Line:   105,
+											Line:   85,
 										},
 									},
 								},
@@ -3005,13 +3005,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   105,
+												Line:   85,
 											},
 											File:   "sampledata.flux",
 											Source: "includeNull:includeNull",
 											Start: ast.Position{
 												Column: 25,
-												Line:   105,
+												Line:   85,
 											},
 										},
 									},
@@ -3023,13 +3023,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 36,
-													Line:   105,
+													Line:   85,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 25,
-													Line:   105,
+													Line:   85,
 												},
 											},
 										},
@@ -3043,13 +3043,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   105,
+													Line:   85,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 37,
-													Line:   105,
+													Line:   85,
 												},
 											},
 										},
@@ -3065,13 +3065,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   105,
+										Line:   85,
 									},
 									File:   "sampledata.flux",
 									Source: "_numeric(includeNull:includeNull)",
 									Start: ast.Position{
 										Column: 16,
-										Line:   105,
+										Line:   85,
 									},
 								},
 							},
@@ -3082,13 +3082,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   105,
+											Line:   85,
 										},
 										File:   "sampledata.flux",
 										Source: "_numeric",
 										Start: ast.Position{
 											Column: 16,
-											Line:   105,
+											Line:   85,
 										},
 									},
 								},
@@ -3106,13 +3106,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   107,
+											Line:   87,
 										},
 										File:   "sampledata.flux",
 										Source: "csv: _csvData",
 										Start: ast.Position{
 											Column: 21,
-											Line:   107,
+											Line:   87,
 										},
 									},
 								},
@@ -3124,13 +3124,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   107,
+												Line:   87,
 											},
 											File:   "sampledata.flux",
 											Source: "csv: _csvData",
 											Start: ast.Position{
 												Column: 21,
-												Line:   107,
+												Line:   87,
 											},
 										},
 									},
@@ -3142,13 +3142,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   107,
+													Line:   87,
 												},
 												File:   "sampledata.flux",
 												Source: "csv",
 												Start: ast.Position{
 													Column: 21,
-													Line:   107,
+													Line:   87,
 												},
 											},
 										},
@@ -3162,13 +3162,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   107,
+													Line:   87,
 												},
 												File:   "sampledata.flux",
 												Source: "_csvData",
 												Start: ast.Position{
 													Column: 26,
-													Line:   107,
+													Line:   87,
 												},
 											},
 										},
@@ -3184,13 +3184,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   107,
+										Line:   87,
 									},
 									File:   "sampledata.flux",
 									Source: "csv.from(csv: _csvData)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   107,
+										Line:   87,
 									},
 								},
 							},
@@ -3201,13 +3201,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   107,
+											Line:   87,
 										},
 										File:   "sampledata.flux",
 										Source: "csv.from",
 										Start: ast.Position{
 											Column: 12,
-											Line:   107,
+											Line:   87,
 										},
 									},
 								},
@@ -3219,13 +3219,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   107,
+												Line:   87,
 											},
 											File:   "sampledata.flux",
 											Source: "csv",
 											Start: ast.Position{
 												Column: 12,
-												Line:   107,
+												Line:   87,
 											},
 										},
 									},
@@ -3238,13 +3238,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   107,
+												Line:   87,
 											},
 											File:   "sampledata.flux",
 											Source: "from",
 											Start: ast.Position{
 												Column: 16,
-												Line:   107,
+												Line:   87,
 											},
 										},
 									},
@@ -3261,13 +3261,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   107,
+									Line:   87,
 								},
 								File:   "sampledata.flux",
 								Source: "return csv.from(csv: _csvData)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   107,
+									Line:   87,
 								},
 							},
 						},
@@ -3283,13 +3283,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   104,
+								Line:   84,
 							},
 							File:   "sampledata.flux",
 							Source: "includeNull=false",
 							Start: ast.Position{
 								Column: 10,
-								Line:   104,
+								Line:   84,
 							},
 						},
 					},
@@ -3301,13 +3301,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   104,
+									Line:   84,
 								},
 								File:   "sampledata.flux",
 								Source: "includeNull",
 								Start: ast.Position{
 									Column: 10,
-									Line:   104,
+									Line:   84,
 								},
 							},
 						},
@@ -3321,13 +3321,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   104,
+									Line:   84,
 								},
 								File:   "sampledata.flux",
 								Source: "false",
 								Start: ast.Position{
 									Column: 22,
-									Line:   104,
+									Line:   84,
 								},
 							},
 						},
@@ -3343,30 +3343,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   149,
+						Line:   109,
 					},
 					File:   "sampledata.flux",
 					Source: "int = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   145,
+						Line:   105,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// int returns a sample data set with integer values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with integer values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.int()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// ## Output data\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                | _value |\n"}, ast.Comment{Text: "// | :-: | :------------------- | -----: |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:00Z |     -2 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:10Z |     10 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:20Z |      7 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:30Z |     17 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:40Z |     15 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:50Z |      4 |\n"}, ast.Comment{Text: "// | tag | _time                | _value |\n"}, ast.Comment{Text: "// | :-: | :------------------- | -----: |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:00Z |     19 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:10Z |      4 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:20Z |     -3 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:30Z |     19 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:40Z |     13 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:50Z |      1 |\n"}, ast.Comment{Text: "//\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// int returns a sample data set with integer values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with integer values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.int()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   145,
+							Line:   105,
 						},
 						File:   "sampledata.flux",
 						Source: "int",
 						Start: ast.Position{
 							Column: 1,
-							Line:   145,
+							Line:   105,
 						},
 					},
 				},
@@ -3380,13 +3380,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   149,
+							Line:   109,
 						},
 						File:   "sampledata.flux",
 						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 						Start: ast.Position{
 							Column: 7,
-							Line:   145,
+							Line:   105,
 						},
 					},
 				},
@@ -3397,13 +3397,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   149,
+								Line:   109,
 							},
 							File:   "sampledata.flux",
 							Source: "{\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 							Start: ast.Position{
 								Column: 30,
-								Line:   145,
+								Line:   105,
 							},
 						},
 					},
@@ -3414,13 +3414,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   146,
+									Line:   106,
 								},
 								File:   "sampledata.flux",
 								Source: "_csvData = _numeric(includeNull:includeNull)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   146,
+									Line:   106,
 								},
 							},
 						},
@@ -3431,13 +3431,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   146,
+										Line:   106,
 									},
 									File:   "sampledata.flux",
 									Source: "_csvData",
 									Start: ast.Position{
 										Column: 5,
-										Line:   146,
+										Line:   106,
 									},
 								},
 							},
@@ -3451,13 +3451,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   146,
+											Line:   106,
 										},
 										File:   "sampledata.flux",
 										Source: "includeNull:includeNull",
 										Start: ast.Position{
 											Column: 25,
-											Line:   146,
+											Line:   106,
 										},
 									},
 								},
@@ -3469,13 +3469,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   146,
+												Line:   106,
 											},
 											File:   "sampledata.flux",
 											Source: "includeNull:includeNull",
 											Start: ast.Position{
 												Column: 25,
-												Line:   146,
+												Line:   106,
 											},
 										},
 									},
@@ -3487,13 +3487,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 36,
-													Line:   146,
+													Line:   106,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 25,
-													Line:   146,
+													Line:   106,
 												},
 											},
 										},
@@ -3507,13 +3507,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   146,
+													Line:   106,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 37,
-													Line:   146,
+													Line:   106,
 												},
 											},
 										},
@@ -3529,13 +3529,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   146,
+										Line:   106,
 									},
 									File:   "sampledata.flux",
 									Source: "_numeric(includeNull:includeNull)",
 									Start: ast.Position{
 										Column: 16,
-										Line:   146,
+										Line:   106,
 									},
 								},
 							},
@@ -3546,13 +3546,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   146,
+											Line:   106,
 										},
 										File:   "sampledata.flux",
 										Source: "_numeric",
 										Start: ast.Position{
 											Column: 16,
-											Line:   146,
+											Line:   106,
 										},
 									},
 								},
@@ -3571,13 +3571,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   148,
+												Line:   108,
 											},
 											File:   "sampledata.flux",
 											Source: "csv: _csvData",
 											Start: ast.Position{
 												Column: 21,
-												Line:   148,
+												Line:   108,
 											},
 										},
 									},
@@ -3589,13 +3589,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   148,
+													Line:   108,
 												},
 												File:   "sampledata.flux",
 												Source: "csv: _csvData",
 												Start: ast.Position{
 													Column: 21,
-													Line:   148,
+													Line:   108,
 												},
 											},
 										},
@@ -3607,13 +3607,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   148,
+														Line:   108,
 													},
 													File:   "sampledata.flux",
 													Source: "csv",
 													Start: ast.Position{
 														Column: 21,
-														Line:   148,
+														Line:   108,
 													},
 												},
 											},
@@ -3627,13 +3627,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   148,
+														Line:   108,
 													},
 													File:   "sampledata.flux",
 													Source: "_csvData",
 													Start: ast.Position{
 														Column: 26,
-														Line:   148,
+														Line:   108,
 													},
 												},
 											},
@@ -3649,13 +3649,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 35,
-											Line:   148,
+											Line:   108,
 										},
 										File:   "sampledata.flux",
 										Source: "csv.from(csv: _csvData)",
 										Start: ast.Position{
 											Column: 12,
-											Line:   148,
+											Line:   108,
 										},
 									},
 								},
@@ -3666,13 +3666,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   148,
+												Line:   108,
 											},
 											File:   "sampledata.flux",
 											Source: "csv.from",
 											Start: ast.Position{
 												Column: 12,
-												Line:   148,
+												Line:   108,
 											},
 										},
 									},
@@ -3684,13 +3684,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   148,
+													Line:   108,
 												},
 												File:   "sampledata.flux",
 												Source: "csv",
 												Start: ast.Position{
 													Column: 12,
-													Line:   148,
+													Line:   108,
 												},
 											},
 										},
@@ -3703,13 +3703,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   148,
+													Line:   108,
 												},
 												File:   "sampledata.flux",
 												Source: "from",
 												Start: ast.Position{
 													Column: 16,
-													Line:   148,
+													Line:   108,
 												},
 											},
 										},
@@ -3726,13 +3726,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   148,
+										Line:   108,
 									},
 									File:   "sampledata.flux",
 									Source: "csv.from(csv: _csvData) |> toInt()",
 									Start: ast.Position{
 										Column: 12,
-										Line:   148,
+										Line:   108,
 									},
 								},
 							},
@@ -3744,13 +3744,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   148,
+											Line:   108,
 										},
 										File:   "sampledata.flux",
 										Source: "toInt()",
 										Start: ast.Position{
 											Column: 39,
-											Line:   148,
+											Line:   108,
 										},
 									},
 								},
@@ -3761,13 +3761,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   148,
+												Line:   108,
 											},
 											File:   "sampledata.flux",
 											Source: "toInt",
 											Start: ast.Position{
 												Column: 39,
-												Line:   148,
+												Line:   108,
 											},
 										},
 									},
@@ -3783,13 +3783,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   148,
+									Line:   108,
 								},
 								File:   "sampledata.flux",
 								Source: "return csv.from(csv: _csvData) |> toInt()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   148,
+									Line:   108,
 								},
 							},
 						},
@@ -3805,13 +3805,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   145,
+								Line:   105,
 							},
 							File:   "sampledata.flux",
 							Source: "includeNull=false",
 							Start: ast.Position{
 								Column: 8,
-								Line:   145,
+								Line:   105,
 							},
 						},
 					},
@@ -3823,13 +3823,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   145,
+									Line:   105,
 								},
 								File:   "sampledata.flux",
 								Source: "includeNull",
 								Start: ast.Position{
 									Column: 8,
-									Line:   145,
+									Line:   105,
 								},
 							},
 						},
@@ -3843,13 +3843,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   145,
+									Line:   105,
 								},
 								File:   "sampledata.flux",
 								Source: "false",
 								Start: ast.Position{
 									Column: 20,
-									Line:   145,
+									Line:   105,
 								},
 							},
 						},
@@ -3865,30 +3865,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   190,
+						Line:   130,
 					},
 					File:   "sampledata.flux",
 					Source: "uint = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   186,
+						Line:   126,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// uint returns a sample data set with unsigned integer values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with unsigned integer values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.uint()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// ## Output data\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                |               _value |\n"}, ast.Comment{Text: "// | :-: | :------------------- | -------------------: |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:00Z | 18446744073709551614 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:10Z |                   10 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:20Z |                    7 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:30Z |                   17 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:40Z |                   15 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:50Z |                    4 |\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                |               _value |\n"}, ast.Comment{Text: "// | :-: | :------------------- | -------------------: |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:00Z |                   19 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:10Z |                    4 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:20Z | 18446744073709551613 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:30Z |                   19 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:40Z |                   13 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:50Z |                    1 |\n"}, ast.Comment{Text: "//\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// uint returns a sample data set with unsigned integer values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with unsigned integer values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.uint()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   186,
+							Line:   126,
 						},
 						File:   "sampledata.flux",
 						Source: "uint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   186,
+							Line:   126,
 						},
 					},
 				},
@@ -3902,13 +3902,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   190,
+							Line:   130,
 						},
 						File:   "sampledata.flux",
 						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
 						Start: ast.Position{
 							Column: 8,
-							Line:   186,
+							Line:   126,
 						},
 					},
 				},
@@ -3919,13 +3919,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   190,
+								Line:   130,
 							},
 							File:   "sampledata.flux",
 							Source: "{\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
 							Start: ast.Position{
 								Column: 31,
-								Line:   186,
+								Line:   126,
 							},
 						},
 					},
@@ -3936,13 +3936,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   187,
+									Line:   127,
 								},
 								File:   "sampledata.flux",
 								Source: "_csvData = _numeric(includeNull:includeNull)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   187,
+									Line:   127,
 								},
 							},
 						},
@@ -3953,13 +3953,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   187,
+										Line:   127,
 									},
 									File:   "sampledata.flux",
 									Source: "_csvData",
 									Start: ast.Position{
 										Column: 5,
-										Line:   187,
+										Line:   127,
 									},
 								},
 							},
@@ -3973,13 +3973,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   187,
+											Line:   127,
 										},
 										File:   "sampledata.flux",
 										Source: "includeNull:includeNull",
 										Start: ast.Position{
 											Column: 25,
-											Line:   187,
+											Line:   127,
 										},
 									},
 								},
@@ -3991,13 +3991,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   187,
+												Line:   127,
 											},
 											File:   "sampledata.flux",
 											Source: "includeNull:includeNull",
 											Start: ast.Position{
 												Column: 25,
-												Line:   187,
+												Line:   127,
 											},
 										},
 									},
@@ -4009,13 +4009,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 36,
-													Line:   187,
+													Line:   127,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 25,
-													Line:   187,
+													Line:   127,
 												},
 											},
 										},
@@ -4029,13 +4029,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   187,
+													Line:   127,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 37,
-													Line:   187,
+													Line:   127,
 												},
 											},
 										},
@@ -4051,13 +4051,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   187,
+										Line:   127,
 									},
 									File:   "sampledata.flux",
 									Source: "_numeric(includeNull:includeNull)",
 									Start: ast.Position{
 										Column: 16,
-										Line:   187,
+										Line:   127,
 									},
 								},
 							},
@@ -4068,13 +4068,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   187,
+											Line:   127,
 										},
 										File:   "sampledata.flux",
 										Source: "_numeric",
 										Start: ast.Position{
 											Column: 16,
-											Line:   187,
+											Line:   127,
 										},
 									},
 								},
@@ -4093,13 +4093,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   189,
+												Line:   129,
 											},
 											File:   "sampledata.flux",
 											Source: "csv: _csvData",
 											Start: ast.Position{
 												Column: 21,
-												Line:   189,
+												Line:   129,
 											},
 										},
 									},
@@ -4111,13 +4111,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   189,
+													Line:   129,
 												},
 												File:   "sampledata.flux",
 												Source: "csv: _csvData",
 												Start: ast.Position{
 													Column: 21,
-													Line:   189,
+													Line:   129,
 												},
 											},
 										},
@@ -4129,13 +4129,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   189,
+														Line:   129,
 													},
 													File:   "sampledata.flux",
 													Source: "csv",
 													Start: ast.Position{
 														Column: 21,
-														Line:   189,
+														Line:   129,
 													},
 												},
 											},
@@ -4149,13 +4149,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   189,
+														Line:   129,
 													},
 													File:   "sampledata.flux",
 													Source: "_csvData",
 													Start: ast.Position{
 														Column: 26,
-														Line:   189,
+														Line:   129,
 													},
 												},
 											},
@@ -4171,13 +4171,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 35,
-											Line:   189,
+											Line:   129,
 										},
 										File:   "sampledata.flux",
 										Source: "csv.from(csv: _csvData)",
 										Start: ast.Position{
 											Column: 12,
-											Line:   189,
+											Line:   129,
 										},
 									},
 								},
@@ -4188,13 +4188,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   189,
+												Line:   129,
 											},
 											File:   "sampledata.flux",
 											Source: "csv.from",
 											Start: ast.Position{
 												Column: 12,
-												Line:   189,
+												Line:   129,
 											},
 										},
 									},
@@ -4206,13 +4206,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   189,
+													Line:   129,
 												},
 												File:   "sampledata.flux",
 												Source: "csv",
 												Start: ast.Position{
 													Column: 12,
-													Line:   189,
+													Line:   129,
 												},
 											},
 										},
@@ -4225,13 +4225,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   189,
+													Line:   129,
 												},
 												File:   "sampledata.flux",
 												Source: "from",
 												Start: ast.Position{
 													Column: 16,
-													Line:   189,
+													Line:   129,
 												},
 											},
 										},
@@ -4248,13 +4248,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   189,
+										Line:   129,
 									},
 									File:   "sampledata.flux",
 									Source: "csv.from(csv: _csvData) |> toUInt()",
 									Start: ast.Position{
 										Column: 12,
-										Line:   189,
+										Line:   129,
 									},
 								},
 							},
@@ -4266,13 +4266,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   189,
+											Line:   129,
 										},
 										File:   "sampledata.flux",
 										Source: "toUInt()",
 										Start: ast.Position{
 											Column: 39,
-											Line:   189,
+											Line:   129,
 										},
 									},
 								},
@@ -4283,13 +4283,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   189,
+												Line:   129,
 											},
 											File:   "sampledata.flux",
 											Source: "toUInt",
 											Start: ast.Position{
 												Column: 39,
-												Line:   189,
+												Line:   129,
 											},
 										},
 									},
@@ -4305,13 +4305,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   189,
+									Line:   129,
 								},
 								File:   "sampledata.flux",
 								Source: "return csv.from(csv: _csvData) |> toUInt()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   189,
+									Line:   129,
 								},
 							},
 						},
@@ -4327,13 +4327,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   186,
+								Line:   126,
 							},
 							File:   "sampledata.flux",
 							Source: "includeNull=false",
 							Start: ast.Position{
 								Column: 9,
-								Line:   186,
+								Line:   126,
 							},
 						},
 					},
@@ -4345,13 +4345,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   186,
+									Line:   126,
 								},
 								File:   "sampledata.flux",
 								Source: "includeNull",
 								Start: ast.Position{
 									Column: 9,
-									Line:   186,
+									Line:   126,
 								},
 							},
 						},
@@ -4365,13 +4365,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   186,
+									Line:   126,
 								},
 								File:   "sampledata.flux",
 								Source: "false",
 								Start: ast.Position{
 									Column: 21,
-									Line:   186,
+									Line:   126,
 								},
 							},
 						},
@@ -4387,30 +4387,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   231,
+						Line:   151,
 					},
 					File:   "sampledata.flux",
 					Source: "string = (includeNull=false) => {\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   227,
+						Line:   147,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// string returns a sample data set with string values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with string values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.string()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output data\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                |      _value |\n"}, ast.Comment{Text: "// | :-- | :------------------- | ----------: |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:00Z | smpl_g9qczs |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:10Z | smpl_0mgv9n |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:20Z | smpl_phw664 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:30Z | smpl_guvzy4 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:40Z | smpl_5v3cce |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:50Z | smpl_s9fmgy |\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                |      _value |\n"}, ast.Comment{Text: "// | :-- | :------------------- | ----------: |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:00Z | smpl_b5eida |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:10Z | smpl_eu4oxp |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:20Z | smpl_5g7tz4 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:30Z | smpl_sox1ut |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:40Z | smpl_wfm757 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:50Z | smpl_dtn2bv |\n"}, ast.Comment{Text: "// \n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// string returns a sample data set with string values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with string values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.string()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// \n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   227,
+							Line:   147,
 						},
 						File:   "sampledata.flux",
 						Source: "string",
 						Start: ast.Position{
 							Column: 1,
-							Line:   227,
+							Line:   147,
 						},
 					},
 				},
@@ -4424,13 +4424,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   231,
+							Line:   151,
 						},
 						File:   "sampledata.flux",
 						Source: "(includeNull=false) => {\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 						Start: ast.Position{
 							Column: 10,
-							Line:   227,
+							Line:   147,
 						},
 					},
 				},
@@ -4441,13 +4441,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   231,
+								Line:   151,
 							},
 							File:   "sampledata.flux",
 							Source: "{\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 							Start: ast.Position{
 								Column: 33,
-								Line:   227,
+								Line:   147,
 							},
 						},
 					},
@@ -4458,13 +4458,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   228,
+									Line:   148,
 								},
 								File:   "sampledata.flux",
 								Source: "_csvData = _string(includeNull:includeNull)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   228,
+									Line:   148,
 								},
 							},
 						},
@@ -4475,13 +4475,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   228,
+										Line:   148,
 									},
 									File:   "sampledata.flux",
 									Source: "_csvData",
 									Start: ast.Position{
 										Column: 5,
-										Line:   228,
+										Line:   148,
 									},
 								},
 							},
@@ -4495,13 +4495,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   228,
+											Line:   148,
 										},
 										File:   "sampledata.flux",
 										Source: "includeNull:includeNull",
 										Start: ast.Position{
 											Column: 24,
-											Line:   228,
+											Line:   148,
 										},
 									},
 								},
@@ -4513,13 +4513,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 47,
-												Line:   228,
+												Line:   148,
 											},
 											File:   "sampledata.flux",
 											Source: "includeNull:includeNull",
 											Start: ast.Position{
 												Column: 24,
-												Line:   228,
+												Line:   148,
 											},
 										},
 									},
@@ -4531,13 +4531,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
-													Line:   228,
+													Line:   148,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 24,
-													Line:   228,
+													Line:   148,
 												},
 											},
 										},
@@ -4551,13 +4551,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   228,
+													Line:   148,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 36,
-													Line:   228,
+													Line:   148,
 												},
 											},
 										},
@@ -4573,13 +4573,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   228,
+										Line:   148,
 									},
 									File:   "sampledata.flux",
 									Source: "_string(includeNull:includeNull)",
 									Start: ast.Position{
 										Column: 16,
-										Line:   228,
+										Line:   148,
 									},
 								},
 							},
@@ -4590,13 +4590,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   228,
+											Line:   148,
 										},
 										File:   "sampledata.flux",
 										Source: "_string",
 										Start: ast.Position{
 											Column: 16,
-											Line:   228,
+											Line:   148,
 										},
 									},
 								},
@@ -4614,13 +4614,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   230,
+											Line:   150,
 										},
 										File:   "sampledata.flux",
 										Source: "csv: _csvData",
 										Start: ast.Position{
 											Column: 21,
-											Line:   230,
+											Line:   150,
 										},
 									},
 								},
@@ -4632,13 +4632,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   230,
+												Line:   150,
 											},
 											File:   "sampledata.flux",
 											Source: "csv: _csvData",
 											Start: ast.Position{
 												Column: 21,
-												Line:   230,
+												Line:   150,
 											},
 										},
 									},
@@ -4650,13 +4650,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   230,
+													Line:   150,
 												},
 												File:   "sampledata.flux",
 												Source: "csv",
 												Start: ast.Position{
 													Column: 21,
-													Line:   230,
+													Line:   150,
 												},
 											},
 										},
@@ -4670,13 +4670,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   230,
+													Line:   150,
 												},
 												File:   "sampledata.flux",
 												Source: "_csvData",
 												Start: ast.Position{
 													Column: 26,
-													Line:   230,
+													Line:   150,
 												},
 											},
 										},
@@ -4692,13 +4692,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   230,
+										Line:   150,
 									},
 									File:   "sampledata.flux",
 									Source: "csv.from(csv: _csvData)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   230,
+										Line:   150,
 									},
 								},
 							},
@@ -4709,13 +4709,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   230,
+											Line:   150,
 										},
 										File:   "sampledata.flux",
 										Source: "csv.from",
 										Start: ast.Position{
 											Column: 12,
-											Line:   230,
+											Line:   150,
 										},
 									},
 								},
@@ -4727,13 +4727,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   230,
+												Line:   150,
 											},
 											File:   "sampledata.flux",
 											Source: "csv",
 											Start: ast.Position{
 												Column: 12,
-												Line:   230,
+												Line:   150,
 											},
 										},
 									},
@@ -4746,13 +4746,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   230,
+												Line:   150,
 											},
 											File:   "sampledata.flux",
 											Source: "from",
 											Start: ast.Position{
 												Column: 16,
-												Line:   230,
+												Line:   150,
 											},
 										},
 									},
@@ -4769,13 +4769,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   230,
+									Line:   150,
 								},
 								File:   "sampledata.flux",
 								Source: "return csv.from(csv: _csvData)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   230,
+									Line:   150,
 								},
 							},
 						},
@@ -4791,13 +4791,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
-								Line:   227,
+								Line:   147,
 							},
 							File:   "sampledata.flux",
 							Source: "includeNull=false",
 							Start: ast.Position{
 								Column: 11,
-								Line:   227,
+								Line:   147,
 							},
 						},
 					},
@@ -4809,13 +4809,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   227,
+									Line:   147,
 								},
 								File:   "sampledata.flux",
 								Source: "includeNull",
 								Start: ast.Position{
 									Column: 11,
-									Line:   227,
+									Line:   147,
 								},
 							},
 						},
@@ -4829,13 +4829,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   227,
+									Line:   147,
 								},
 								File:   "sampledata.flux",
 								Source: "false",
 								Start: ast.Position{
 									Column: 23,
-									Line:   227,
+									Line:   147,
 								},
 							},
 						},
@@ -4851,30 +4851,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   272,
+						Line:   172,
 					},
 					File:   "sampledata.flux",
 					Source: "bool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   268,
+						Line:   168,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// bool returns a sample data set with boolean values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with boolean values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.bool()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output data\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                | _value |\n"}, ast.Comment{Text: "// | :-- | :------------------- | -----: |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:00Z |   true |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:10Z |   true |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:20Z |  false |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:30Z |   true |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:40Z |  false |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:50Z |  false |\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                | _value |\n"}, ast.Comment{Text: "// | :-- | :------------------- | -----: |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:00Z |  false |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:10Z |   true |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:20Z |  false |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:30Z |   true |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:40Z |   true |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:50Z |  false |\n"}, ast.Comment{Text: "// \n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// bool returns a sample data set with boolean values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with boolean values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.bool()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// \n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   268,
+							Line:   168,
 						},
 						File:   "sampledata.flux",
 						Source: "bool",
 						Start: ast.Position{
 							Column: 1,
-							Line:   268,
+							Line:   168,
 						},
 					},
 				},
@@ -4888,13 +4888,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   272,
+							Line:   172,
 						},
 						File:   "sampledata.flux",
 						Source: "(includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 						Start: ast.Position{
 							Column: 8,
-							Line:   268,
+							Line:   168,
 						},
 					},
 				},
@@ -4905,13 +4905,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   272,
+								Line:   172,
 							},
 							File:   "sampledata.flux",
 							Source: "{\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 							Start: ast.Position{
 								Column: 31,
-								Line:   268,
+								Line:   168,
 							},
 						},
 					},
@@ -4922,13 +4922,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   269,
+									Line:   169,
 								},
 								File:   "sampledata.flux",
 								Source: "_csvData = _bool(includeNull:includeNull)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   269,
+									Line:   169,
 								},
 							},
 						},
@@ -4939,13 +4939,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   269,
+										Line:   169,
 									},
 									File:   "sampledata.flux",
 									Source: "_csvData",
 									Start: ast.Position{
 										Column: 5,
-										Line:   269,
+										Line:   169,
 									},
 								},
 							},
@@ -4959,13 +4959,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   269,
+											Line:   169,
 										},
 										File:   "sampledata.flux",
 										Source: "includeNull:includeNull",
 										Start: ast.Position{
 											Column: 22,
-											Line:   269,
+											Line:   169,
 										},
 									},
 								},
@@ -4977,13 +4977,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   269,
+												Line:   169,
 											},
 											File:   "sampledata.flux",
 											Source: "includeNull:includeNull",
 											Start: ast.Position{
 												Column: 22,
-												Line:   269,
+												Line:   169,
 											},
 										},
 									},
@@ -4995,13 +4995,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   269,
+													Line:   169,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 22,
-													Line:   269,
+													Line:   169,
 												},
 											},
 										},
@@ -5015,13 +5015,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   269,
+													Line:   169,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 34,
-													Line:   269,
+													Line:   169,
 												},
 											},
 										},
@@ -5037,13 +5037,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   269,
+										Line:   169,
 									},
 									File:   "sampledata.flux",
 									Source: "_bool(includeNull:includeNull)",
 									Start: ast.Position{
 										Column: 16,
-										Line:   269,
+										Line:   169,
 									},
 								},
 							},
@@ -5054,13 +5054,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   269,
+											Line:   169,
 										},
 										File:   "sampledata.flux",
 										Source: "_bool",
 										Start: ast.Position{
 											Column: 16,
-											Line:   269,
+											Line:   169,
 										},
 									},
 								},
@@ -5078,13 +5078,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   271,
+											Line:   171,
 										},
 										File:   "sampledata.flux",
 										Source: "csv: _csvData",
 										Start: ast.Position{
 											Column: 21,
-											Line:   271,
+											Line:   171,
 										},
 									},
 								},
@@ -5096,13 +5096,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   271,
+												Line:   171,
 											},
 											File:   "sampledata.flux",
 											Source: "csv: _csvData",
 											Start: ast.Position{
 												Column: 21,
-												Line:   271,
+												Line:   171,
 											},
 										},
 									},
@@ -5114,13 +5114,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   271,
+													Line:   171,
 												},
 												File:   "sampledata.flux",
 												Source: "csv",
 												Start: ast.Position{
 													Column: 21,
-													Line:   271,
+													Line:   171,
 												},
 											},
 										},
@@ -5134,13 +5134,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   271,
+													Line:   171,
 												},
 												File:   "sampledata.flux",
 												Source: "_csvData",
 												Start: ast.Position{
 													Column: 26,
-													Line:   271,
+													Line:   171,
 												},
 											},
 										},
@@ -5156,13 +5156,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   271,
+										Line:   171,
 									},
 									File:   "sampledata.flux",
 									Source: "csv.from(csv: _csvData)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   271,
+										Line:   171,
 									},
 								},
 							},
@@ -5173,13 +5173,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   271,
+											Line:   171,
 										},
 										File:   "sampledata.flux",
 										Source: "csv.from",
 										Start: ast.Position{
 											Column: 12,
-											Line:   271,
+											Line:   171,
 										},
 									},
 								},
@@ -5191,13 +5191,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   271,
+												Line:   171,
 											},
 											File:   "sampledata.flux",
 											Source: "csv",
 											Start: ast.Position{
 												Column: 12,
-												Line:   271,
+												Line:   171,
 											},
 										},
 									},
@@ -5210,13 +5210,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   271,
+												Line:   171,
 											},
 											File:   "sampledata.flux",
 											Source: "from",
 											Start: ast.Position{
 												Column: 16,
-												Line:   271,
+												Line:   171,
 											},
 										},
 									},
@@ -5233,13 +5233,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   271,
+									Line:   171,
 								},
 								File:   "sampledata.flux",
 								Source: "return csv.from(csv: _csvData)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   271,
+									Line:   171,
 								},
 							},
 						},
@@ -5255,13 +5255,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   268,
+								Line:   168,
 							},
 							File:   "sampledata.flux",
 							Source: "includeNull=false",
 							Start: ast.Position{
 								Column: 9,
-								Line:   268,
+								Line:   168,
 							},
 						},
 					},
@@ -5273,13 +5273,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   268,
+									Line:   168,
 								},
 								File:   "sampledata.flux",
 								Source: "includeNull",
 								Start: ast.Position{
 									Column: 9,
-									Line:   268,
+									Line:   168,
 								},
 							},
 						},
@@ -5293,13 +5293,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   268,
+									Line:   168,
 								},
 								File:   "sampledata.flux",
 								Source: "false",
 								Start: ast.Position{
 									Column: 21,
-									Line:   268,
+									Line:   168,
 								},
 							},
 						},
@@ -5315,30 +5315,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   313,
+						Line:   193,
 					},
 					File:   "sampledata.flux",
 					Source: "numericBool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   309,
+						Line:   189,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// numericBool returns a sample data set with numeric (integer) boolean values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with numeric boolean values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.numericBool()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output data\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                | _value |\n"}, ast.Comment{Text: "// | :-- | :------------------- | -----: |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:00Z |      1 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:10Z |      1 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:20Z |      0 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:30Z |      1 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:40Z |      0 |\n"}, ast.Comment{Text: "// | t1  | 2021-01-01T00:00:50Z |      0 |\n"}, ast.Comment{Text: "// \n"}, ast.Comment{Text: "// | tag | _time                | _value |\n"}, ast.Comment{Text: "// | :-- | :------------------- | -----: |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:00Z |      0 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:10Z |      1 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:20Z |      0 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:30Z |      1 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:40Z |      1 |\n"}, ast.Comment{Text: "// | t2  | 2021-01-01T00:00:50Z |      0 |\n"}, ast.Comment{Text: "// \n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// numericBool returns a sample data set with numeric (integer) boolean values.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `includeNull` indicates whether or not to include null values in the returned dataset.\n"}, ast.Comment{Text: "//   Default is `false`.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Output basic sample data with numeric boolean values\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"sampledata\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sampledata.numericBool()\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// \n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   309,
+							Line:   189,
 						},
 						File:   "sampledata.flux",
 						Source: "numericBool",
 						Start: ast.Position{
 							Column: 1,
-							Line:   309,
+							Line:   189,
 						},
 					},
 				},
@@ -5352,13 +5352,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   313,
+							Line:   193,
 						},
 						File:   "sampledata.flux",
 						Source: "(includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 						Start: ast.Position{
 							Column: 15,
-							Line:   309,
+							Line:   189,
 						},
 					},
 				},
@@ -5369,13 +5369,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   313,
+								Line:   193,
 							},
 							File:   "sampledata.flux",
 							Source: "{\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 							Start: ast.Position{
 								Column: 38,
-								Line:   309,
+								Line:   189,
 							},
 						},
 					},
@@ -5386,13 +5386,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   310,
+									Line:   190,
 								},
 								File:   "sampledata.flux",
 								Source: "_csvData = _bool(includeNull:includeNull)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   310,
+									Line:   190,
 								},
 							},
 						},
@@ -5403,13 +5403,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   310,
+										Line:   190,
 									},
 									File:   "sampledata.flux",
 									Source: "_csvData",
 									Start: ast.Position{
 										Column: 5,
-										Line:   310,
+										Line:   190,
 									},
 								},
 							},
@@ -5423,13 +5423,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   310,
+											Line:   190,
 										},
 										File:   "sampledata.flux",
 										Source: "includeNull:includeNull",
 										Start: ast.Position{
 											Column: 22,
-											Line:   310,
+											Line:   190,
 										},
 									},
 								},
@@ -5441,13 +5441,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   310,
+												Line:   190,
 											},
 											File:   "sampledata.flux",
 											Source: "includeNull:includeNull",
 											Start: ast.Position{
 												Column: 22,
-												Line:   310,
+												Line:   190,
 											},
 										},
 									},
@@ -5459,13 +5459,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   310,
+													Line:   190,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 22,
-													Line:   310,
+													Line:   190,
 												},
 											},
 										},
@@ -5479,13 +5479,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   310,
+													Line:   190,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
 													Column: 34,
-													Line:   310,
+													Line:   190,
 												},
 											},
 										},
@@ -5501,13 +5501,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   310,
+										Line:   190,
 									},
 									File:   "sampledata.flux",
 									Source: "_bool(includeNull:includeNull)",
 									Start: ast.Position{
 										Column: 16,
-										Line:   310,
+										Line:   190,
 									},
 								},
 							},
@@ -5518,13 +5518,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   310,
+											Line:   190,
 										},
 										File:   "sampledata.flux",
 										Source: "_bool",
 										Start: ast.Position{
 											Column: 16,
-											Line:   310,
+											Line:   190,
 										},
 									},
 								},
@@ -5543,13 +5543,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   312,
+												Line:   192,
 											},
 											File:   "sampledata.flux",
 											Source: "csv: _csvData",
 											Start: ast.Position{
 												Column: 21,
-												Line:   312,
+												Line:   192,
 											},
 										},
 									},
@@ -5561,13 +5561,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   312,
+													Line:   192,
 												},
 												File:   "sampledata.flux",
 												Source: "csv: _csvData",
 												Start: ast.Position{
 													Column: 21,
-													Line:   312,
+													Line:   192,
 												},
 											},
 										},
@@ -5579,13 +5579,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   312,
+														Line:   192,
 													},
 													File:   "sampledata.flux",
 													Source: "csv",
 													Start: ast.Position{
 														Column: 21,
-														Line:   312,
+														Line:   192,
 													},
 												},
 											},
@@ -5599,13 +5599,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   312,
+														Line:   192,
 													},
 													File:   "sampledata.flux",
 													Source: "_csvData",
 													Start: ast.Position{
 														Column: 26,
-														Line:   312,
+														Line:   192,
 													},
 												},
 											},
@@ -5621,13 +5621,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 35,
-											Line:   312,
+											Line:   192,
 										},
 										File:   "sampledata.flux",
 										Source: "csv.from(csv: _csvData)",
 										Start: ast.Position{
 											Column: 12,
-											Line:   312,
+											Line:   192,
 										},
 									},
 								},
@@ -5638,13 +5638,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   312,
+												Line:   192,
 											},
 											File:   "sampledata.flux",
 											Source: "csv.from",
 											Start: ast.Position{
 												Column: 12,
-												Line:   312,
+												Line:   192,
 											},
 										},
 									},
@@ -5656,13 +5656,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   312,
+													Line:   192,
 												},
 												File:   "sampledata.flux",
 												Source: "csv",
 												Start: ast.Position{
 													Column: 12,
-													Line:   312,
+													Line:   192,
 												},
 											},
 										},
@@ -5675,13 +5675,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   312,
+													Line:   192,
 												},
 												File:   "sampledata.flux",
 												Source: "from",
 												Start: ast.Position{
 													Column: 16,
-													Line:   312,
+													Line:   192,
 												},
 											},
 										},
@@ -5698,13 +5698,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   312,
+										Line:   192,
 									},
 									File:   "sampledata.flux",
 									Source: "csv.from(csv: _csvData) |> toInt()",
 									Start: ast.Position{
 										Column: 12,
-										Line:   312,
+										Line:   192,
 									},
 								},
 							},
@@ -5716,13 +5716,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   312,
+											Line:   192,
 										},
 										File:   "sampledata.flux",
 										Source: "toInt()",
 										Start: ast.Position{
 											Column: 39,
-											Line:   312,
+											Line:   192,
 										},
 									},
 								},
@@ -5733,13 +5733,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   312,
+												Line:   192,
 											},
 											File:   "sampledata.flux",
 											Source: "toInt",
 											Start: ast.Position{
 												Column: 39,
-												Line:   312,
+												Line:   192,
 											},
 										},
 									},
@@ -5755,13 +5755,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   312,
+									Line:   192,
 								},
 								File:   "sampledata.flux",
 								Source: "return csv.from(csv: _csvData) |> toInt()",
 								Start: ast.Position{
 									Column: 5,
-									Line:   312,
+									Line:   192,
 								},
 							},
 						},
@@ -5777,13 +5777,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
-								Line:   309,
+								Line:   189,
 							},
 							File:   "sampledata.flux",
 							Source: "includeNull=false",
 							Start: ast.Position{
 								Column: 16,
-								Line:   309,
+								Line:   189,
 							},
 						},
 					},
@@ -5795,13 +5795,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   309,
+									Line:   189,
 								},
 								File:   "sampledata.flux",
 								Source: "includeNull",
 								Start: ast.Position{
 									Column: 16,
-									Line:   309,
+									Line:   189,
 								},
 							},
 						},
@@ -5815,13 +5815,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   309,
+									Line:   189,
 								},
 								File:   "sampledata.flux",
 								Source: "false",
 								Start: ast.Position{
 									Column: 28,
-									Line:   309,
+									Line:   189,
 								},
 							},
 						},
