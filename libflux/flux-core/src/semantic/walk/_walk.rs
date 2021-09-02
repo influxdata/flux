@@ -28,6 +28,7 @@ pub enum Node<'a> {
     IndexExpr(&'a IndexExpr),
     BinaryExpr(&'a BinaryExpr),
     UnaryExpr(&'a UnaryExpr),
+    ExpandExpr(&'a ExpandExpr),
     CallExpr(&'a CallExpr),
     ConditionalExpr(&'a ConditionalExpr),
     StringExpr(&'a StringExpr),
@@ -76,6 +77,7 @@ impl<'a> fmt::Display for Node<'a> {
             Node::IndexExpr(_) => write!(f, "IndexExpr"),
             Node::BinaryExpr(_) => write!(f, "BinaryExpr"),
             Node::UnaryExpr(_) => write!(f, "UnaryExpr"),
+            Node::ExpandExpr(_) => write!(f, "ExpandExpr"),
             Node::CallExpr(_) => write!(f, "CallExpr"),
             Node::ConditionalExpr(_) => write!(f, "ConditionalExpr"),
             Node::StringExpr(_) => write!(f, "StringExpr"),
@@ -127,6 +129,7 @@ impl<'a> Node<'a> {
             Node::IndexExpr(n) => &n.loc,
             Node::BinaryExpr(n) => &n.loc,
             Node::UnaryExpr(n) => &n.loc,
+            Node::ExpandExpr(n) => &n.argument.loc(),
             Node::CallExpr(n) => &n.loc,
             Node::ConditionalExpr(n) => &n.loc,
             Node::StringExpr(n) => &n.loc,
@@ -198,6 +201,7 @@ impl<'a> Node<'a> {
             Expression::Index(ref e) => Node::IndexExpr(e),
             Expression::Binary(ref e) => Node::BinaryExpr(e),
             Expression::Unary(ref e) => Node::UnaryExpr(e),
+            Expression::Expand(ref e) => Node::ExpandExpr(e),
             Expression::Call(ref e) => Node::CallExpr(e),
             Expression::Conditional(ref e) => Node::ConditionalExpr(e),
             Expression::StringExpr(ref e) => Node::StringExpr(e),
@@ -407,6 +411,9 @@ where
                 walk(v, Rc::new(Node::from_expr(&n.right)));
             }
             Node::UnaryExpr(n) => {
+                walk(v, Rc::new(Node::from_expr(&n.argument)));
+            }
+            Node::ExpandExpr(n) => {
                 walk(v, Rc::new(Node::from_expr(&n.argument)));
             }
             Node::CallExpr(n) => {

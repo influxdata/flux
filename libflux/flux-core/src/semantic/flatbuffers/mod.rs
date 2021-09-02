@@ -259,6 +259,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 ));
             }
 
+            walk::Node::ExpandExpr(e) => unimplemented!("{:?}", e),
+
             walk::Node::ObjectExpr(obj) => {
                 let with = match obj.with {
                     None => None,

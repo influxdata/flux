@@ -32,6 +32,7 @@ use std::fmt::Debug;
 use std::vec::Vec;
 
 use derive_more::Display;
+use crate::semantic::types::Vector;
 
 /// Result returned from the various 'infer' methods defined in this
 /// module. The result of inferring an expression or statment is an
@@ -130,6 +131,8 @@ pub enum Expression {
     Boolean(BooleanLit),
     DateTime(DateTimeLit),
     Regexp(RegexpLit),
+
+    Expand(Box<ExpandExpr>)
 }
 
 impl Expression {
@@ -146,6 +149,7 @@ impl Expression {
             Expression::Index(e) => e.typ.clone(),
             Expression::Binary(e) => e.typ.clone(),
             Expression::Unary(e) => e.typ.clone(),
+            Expression::Expand(e) => e.typ.clone(),
             Expression::Call(e) => e.typ.clone(),
             Expression::Conditional(e) => e.alternate.type_of(),
             Expression::StringExpr(_) => MonoType::String,
@@ -172,6 +176,7 @@ impl Expression {
             Expression::Index(e) => &e.loc,
             Expression::Binary(e) => &e.loc,
             Expression::Unary(e) => &e.loc,
+            Expression::Expand(e) => &e.argument.loc(),
             Expression::Call(e) => &e.loc,
             Expression::Conditional(e) => &e.loc,
             Expression::StringExpr(e) => &e.loc,
@@ -197,6 +202,7 @@ impl Expression {
             Expression::Index(e) => e.infer(env, f),
             Expression::Binary(e) => e.infer(env, f),
             Expression::Unary(e) => e.infer(env, f),
+            Expression::Expand(e) => e.infer(env, f),
             Expression::Call(e) => e.infer(env, f),
             Expression::Conditional(e) => e.infer(env, f),
             Expression::StringExpr(e) => e.infer(env, f),
@@ -222,6 +228,7 @@ impl Expression {
             Expression::Index(e) => Expression::Index(Box::new(e.apply(sub))),
             Expression::Binary(e) => Expression::Binary(Box::new(e.apply(sub))),
             Expression::Unary(e) => Expression::Unary(Box::new(e.apply(sub))),
+            Expression::Expand(e) => Expression::Expand(Box::new(e.apply(sub))),
             Expression::Call(e) => Expression::Call(Box::new(e.apply(sub))),
             Expression::Conditional(e) => Expression::Conditional(Box::new(e.apply(sub))),
             Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.apply(sub))),
@@ -1691,6 +1698,30 @@ impl UnaryExpr {
             }
         };
         Ok((env, acons + cons))
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(sub);
+        self.argument = self.argument.apply(sub);
+        self
+    }
+}
+
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+#[allow(missing_docs)]
+pub struct ExpandExpr {
+    pub typ: MonoType,
+    pub argument: Expression,
+}
+
+impl ExpandExpr {
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        let (env, acons) = self.argument.infer(env, f)?;
+        Ok((env, acons + Constraints::from(Constraint::Equal {
+            exp: self.typ.clone(),
+            act: MonoType::Vector(Box::new(Vector(self.argument.type_of()))),
+            loc: self.argument.loc().clone()
+        })))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
