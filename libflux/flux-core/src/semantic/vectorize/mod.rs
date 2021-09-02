@@ -151,18 +151,18 @@ pub fn vectorize(f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionEx
     let (vectorized_fn_type, mut init_cons, fresher) = vectorize_fn_type(fresher, &f.typ, vector_arg);
     let vectorized_fn_name = "__vectorized_fn";
 
-    println!("vectorized_fn_type:\n{:#?}", vectorized_fn_type);
-    println!("new constraints: {:#?}", init_cons);
+    // println!("vectorized_fn_type:\n{:#?}", vectorized_fn_type);
+    // println!("new constraints: {:#?}", init_cons);
 
 
     let mut sem_pkg = wrap_fn_expr(f, vectorized_fn_name);
-    println!("input function: \n{:#?}", sem_pkg);
+    //println!("input function: \n{:#?}", sem_pkg);
 
     let mut visitor = FresheningVisitor::new(fresher);
     walk::walk_mut(&mut visitor, &mut NodeMut::Package(&mut sem_pkg));
     let mut fresher = visitor.finish();
 
-    println!("freshly-typed sem_pkg: \n{:#?}", sem_pkg);
+    //println!("freshly-typed sem_pkg: \n{:#?}", sem_pkg);
 
     let env = Environment::empty(true);
     init_cons = init_cons + infer::Constraints::from(infer::Constraint::Equal {
@@ -170,19 +170,13 @@ pub fn vectorize(f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionEx
         act: vectorized_fn_type,
         loc: Default::default()
     });
-    // let init_cons = Constraints::from(infer::Constraint::Equal {
-    //     exp: types::MonoType::Var(types::Tvar(8888)),
-    //     act: vectorized_fn_type,
-    //     loc: Default::default()
-    // });
-//    let init_cons = Constraints::empty();
 
     let (_env, subst) = nodes::infer_pkg_types_with_constraints(&mut sem_pkg, env, init_cons, &mut fresher, &None).unwrap();
     let sem_pkg = nodes::inject_pkg_types(sem_pkg, &subst);
 
-    println!("new sem_pkg: \n{:#?}", sem_pkg);
+    //println!("new sem_pkg: \n{:#?}", sem_pkg);
 
-    (unwrap_fn_expr(sem_pkg), Ok(false))
+    (unwrap_fn_expr(sem_pkg), Ok(true))
 }
 
 
@@ -212,21 +206,35 @@ mod test {
         let f = compile("(r) => ({a: r.a, b: r.b})");
         match vectorize(f, "r") {
             (fe, Ok(b)) => {
-                assert_eq!(false, b);
+                assert_eq!(true, b);
                 println!("{:?}", Expression::Function(Box::new(fe)))
             },
             (_, Err(e)) => panic!("got error vectorizing: {:?}", e)
         }
     }
+
     #[test]
     fn test_vectorize_addition() {
         let f = compile("(r) => ({a: r.a, b: r.b, c: r.a + r.b})");
         match vectorize(f, "r") {
             (fe, Ok(b)) => {
-                assert_eq!(false, b);
+                assert_eq!(true, b);
                 println!("{:?}", Expression::Function(Box::new(fe)))
             },
             (_, Err(e)) => panic!("got error vectorizing: {:?}", e)
         }
     }
+
+    #[test]
+    fn test_vectorize_addition_with_constant() {
+        let f = compile("(r) => ({a: r.a + 1})");
+        match vectorize(f, "r") {
+            (fe, Ok(b)) => {
+                assert_eq!(true, b);
+                println!("{:?}", Expression::Function(Box::new(fe)))
+            },
+            (_, Err(e)) => panic!("got error vectorizing: {:?}", e)
+        }
+    }
+
 }
