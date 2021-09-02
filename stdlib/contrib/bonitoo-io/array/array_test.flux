@@ -122,6 +122,7 @@ testcase array_map {
             {_time: 2018-05-22T19:53:26Z, _value: 15204688, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
             {_time: 2018-05-22T19:53:36Z, _value: 15204894, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
             {_time: 2018-05-22T19:53:46Z, _value: 15205102, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
+            {_time: 2018-05-22T19:53:56Z, _value: -1, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
         ],
     )
         |> group(columns: ["_measurement", "_field", "host", "name"])
