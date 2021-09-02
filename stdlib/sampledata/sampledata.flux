@@ -4,8 +4,11 @@ package sampledata
 
 import "csv"
 
-option start = 2021-01-01T00:00:00Z
-option stop = 2021-01-01T00:01:00Z
+// start and stop constants provide start and stop times to be used with `range`
+// when `_start` and `_stop` columns are required to demonstrate a transformation.
+//
+start = 2021-01-01T00:00:00Z
+stop = 2021-01-01T00:01:00Z
 
 _numeric = (includeNull=false) => "
 #group,false,false,false,true,false

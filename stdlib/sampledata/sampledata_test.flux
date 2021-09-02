@@ -5,9 +5,6 @@ import "csv"
 import "sampledata"
 import "testing"
 
-option sampledata.start = 2021-01-01T00:00:00Z
-option sampledata.stop = 2021-01-01T00:01:00Z
-
 // return sample data with float values
 testcase sampledata_float {
     want = csv.from(
