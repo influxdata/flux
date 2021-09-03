@@ -77,3 +77,10 @@ pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
     let (_, sub) = nodes::infer_pkg_types(&mut sem_pkg, Environment::empty(false), &mut f, &None)?;
     Ok(nodes::inject_pkg_types(sem_pkg, &sub))
 }
+
+/// Get a type-inferred semantic package from the given Flux source.
+pub fn convert_source_with_env(fresher: &mut Fresher, env: Environment, source: &str) -> Result<(Environment, nodes::Package), Error> {
+    let mut sem_pkg = get_sem_pkg_from_source(source, fresher)?;
+    let (env, sub) = nodes::infer_pkg_types(&mut sem_pkg, env, fresher, &None)?;
+    Ok((env, nodes::inject_pkg_types(sem_pkg, &sub)))
+}

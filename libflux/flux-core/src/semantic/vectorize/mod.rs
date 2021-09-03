@@ -36,22 +36,19 @@ fn for_each_property_mut<FN, T>(mt: &mut MonoType, mut f: FN)
 //     return MonoType::Vector(Box::new(types::Vector(mt)))
 // }
 
-struct FresheningVisitor {
-    fresher: Fresher
+struct FresheningVisitor<'a> {
+    fresher: &'a mut Fresher
 }
 
-impl FresheningVisitor {
-    fn new(fresher: Fresher) -> Self {
+impl<'a> FresheningVisitor<'a> {
+    fn new(fresher: &'a mut Fresher) -> Self {
         FresheningVisitor {
             fresher
         }
     }
-    fn finish(self: Self) -> Fresher {
-        self.fresher
-    }
 }
 
-impl walk::VisitorMut for FresheningVisitor {
+impl<'a> walk::VisitorMut for FresheningVisitor<'a> {
      fn visit(&mut self, node: &mut NodeMut) -> bool {
          match node {
              NodeMut::IdentifierExpr(ref mut n) => n.typ = MonoType::Var(self.fresher.fresh()),
@@ -73,17 +70,13 @@ impl walk::VisitorMut for FresheningVisitor {
     }
 }
 
-struct ExpandingVisitor {
-    fresher: Fresher
+struct ExpandingVisitor<'a> {
+    fresher: &'a mut Fresher
 }
 
-impl ExpandingVisitor {
-    fn new(fresher: Fresher) -> Self {
+impl<'a> ExpandingVisitor<'a> {
+    fn new(fresher: &'a mut Fresher) -> Self {
         ExpandingVisitor{fresher}
-    }
-
-    fn finish(self: Self) -> Fresher {
-        self.fresher
     }
 }
 
@@ -101,7 +94,7 @@ fn is_scalar_literal(e: &nodes::Expression) -> bool {
     }
 }
 
-impl walk::VisitorMut for ExpandingVisitor {
+impl<'a> walk::VisitorMut for ExpandingVisitor<'a> {
     fn visit(&mut self, _node: &mut NodeMut) -> bool {
         true
     }
@@ -170,7 +163,7 @@ fn unwrap_fn_expr(sem_pkg: nodes::Package) -> nodes::FunctionExpr {
     fe
 }
 
-fn vectorize_fn_type(mut fresher: Fresher, fn_type: &MonoType, vector_arg: &str) -> (MonoType, Constraints, Fresher) {
+fn vectorize_fn_type(fresher: &mut Fresher, fn_type: &MonoType, vector_arg: &str) -> (MonoType, Constraints) {
     let mut fn_type = fn_type.clone();
     let mut cons = infer::Constraints::empty();
 
@@ -200,7 +193,7 @@ fn vectorize_fn_type(mut fresher: Fresher, fn_type: &MonoType, vector_arg: &str)
         },
         _ => panic!("expected a function type!")
     };
-    (fn_type, cons, fresher)
+    (fn_type, cons)
 }
 
 pub fn get_init_type(pkg: &nodes::Package) -> MonoType {
@@ -212,9 +205,8 @@ pub fn get_init_type(pkg: &nodes::Package) -> MonoType {
     }
 }
 
-pub fn vectorize(f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionExpr, Result<bool, Error>) {
-    let fresher = Fresher::from(8888);
-    let (vectorized_fn_type, mut init_cons, fresher) = vectorize_fn_type(fresher, &f.typ, vector_arg);
+pub fn vectorize(env: Environment, fresher: &mut Fresher, f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionExpr, Result<bool, Error>) {
+    let (vectorized_fn_type, mut init_cons) = vectorize_fn_type(fresher, &f.typ, vector_arg);
     let vectorized_fn_name = "__vectorized_fn";
 
     println!("vectorized_fn_type:\n{:#?}", vectorized_fn_type);
@@ -226,22 +218,19 @@ pub fn vectorize(f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionEx
 
     let mut visitor = FresheningVisitor::new(fresher);
     walk::walk_mut(&mut visitor, &mut NodeMut::Package(&mut sem_pkg));
-    let fresher = visitor.finish();
 
     let mut visitor = ExpandingVisitor::new(fresher);
     walk::walk_mut(&mut visitor, &mut NodeMut::Package(&mut sem_pkg));
-    let mut fresher = visitor.finish();
 
     //println!("expanded sem_pkg: \n{:#?}", sem_pkg);
 
-    let env = Environment::empty(true);
     init_cons = init_cons + infer::Constraints::from(infer::Constraint::Equal {
         exp: get_init_type(&sem_pkg),
         act: vectorized_fn_type,
         loc: Default::default()
     });
 
-    let (_env, subst) = nodes::infer_pkg_types_with_constraints(&mut sem_pkg, env, init_cons, &mut fresher, &None).unwrap();
+    let (_env, subst) = nodes::infer_pkg_types_with_constraints(&mut sem_pkg, env, init_cons, fresher, &None).unwrap();
     let sem_pkg = nodes::inject_pkg_types(sem_pkg, &subst);
 
     //println!("new sem_pkg: \n{:#?}", sem_pkg);
@@ -252,16 +241,21 @@ pub fn vectorize(f: nodes::FunctionExpr, vector_arg: &str) -> (nodes::FunctionEx
 
 #[cfg(test)]
 mod test {
+    use crate::semantic;
     use crate::semantic::vectorize::vectorize;
     use crate::semantic::nodes::{FunctionExpr, Statement, Expression};
+    use crate::semantic::env::Environment;
+    use crate::semantic::fresh::Fresher;
+    use crate::semantic::types;
+    use crate::semantic::types::{MonoType, PolyType};
+    use crate::semantic_map;
 
-
-    fn compile(source: &str) -> FunctionExpr {
-        if let Result::Ok(mut pkg) = crate::semantic::convert_source(source) {
+    fn compile(fresher: &mut Fresher, env: Environment, source: &str) -> (Environment, FunctionExpr) {
+        if let Result::Ok((env, mut pkg)) = semantic::convert_source_with_env(fresher, env, source) {
             let stmt = pkg.files[0].body.remove(0);
             match stmt {
                 Statement::Expr(e) => match e.expression {
-                    Expression::Function(fe) => *fe,
+                    Expression::Function(fe) => (env, *fe),
                     _ => panic!("expected function expression")
                 }
                 _ => panic!("expected expression statement")
@@ -271,35 +265,14 @@ mod test {
         }
     }
 
-
-    #[test]
-    fn test_vectorize_identity() {
-        let f = compile("(r) => ({a: r.a, b: r.b})");
-        match vectorize(f, "r") {
-            (fe, Ok(b)) => {
-                assert_eq!(true, b);
-                println!("{:?}", Expression::Function(Box::new(fe)))
-            },
-            (_, Err(e)) => panic!("got error vectorizing: {:?}", e)
-        }
+    fn vectorize_flux_ez(src: &str) {
+        let mut fresher = Fresher::from(8888);
+        vectorize_flux(Environment::empty(false), &mut fresher, src)
     }
 
-    #[test]
-    fn test_vectorize_addition() {
-        let f = compile("(r) => ({a: r.a, b: r.b, c: r.a + r.b})");
-        match vectorize(f, "r") {
-            (fe, Ok(b)) => {
-                assert_eq!(true, b);
-                println!("{:?}", Expression::Function(Box::new(fe)))
-            },
-            (_, Err(e)) => panic!("got error vectorizing: {:?}", e)
-        }
-    }
-
-    #[test]
-    fn test_vectorize_addition_with_constant() {
-        let f = compile("(r) => ({a: r.a + 1})");
-        match vectorize(f, "r") {
+    fn vectorize_flux(env: Environment, fresher: &mut Fresher, src: &str) {
+        let (env, fn_expr) = compile(fresher, env, src);
+        match vectorize(env, fresher, fn_expr, "r") {
             (fe, Ok(b)) => {
                 assert_eq!(true, b);
                 println!("{:#?}", Expression::Function(Box::new(fe)))
@@ -308,4 +281,60 @@ mod test {
         }
     }
 
+    #[test]
+    fn test_vectorize_identity() {
+        vectorize_flux_ez("(r) => ({a: r.a, b: r.b})");
+    }
+
+    #[test]
+    fn test_vectorize_addition() {
+        vectorize_flux_ez("(r) => ({a: r.a, b: r.b, c: r.a + r.b})");
+    }
+
+    #[test]
+    fn test_vectorize_addition_with_constant() {
+        vectorize_flux_ez("(r) => ({a: r.a + 1})");
+    }
+
+    #[test]
+    fn test_vectorize_id_fn() {
+        let mut fresher = Fresher::from(7777);
+        let tv = fresher.fresh();
+        let fnty = PolyType {
+            vars: vec![tv.clone()],
+            cons: Default::default(),
+            expr: types::MonoType::Fun(Box::new(types::Function {
+                req: semantic_map!["v".to_string() => MonoType::Var(tv.clone())],
+                opt: Default::default(),
+                pipe: None,
+                retn: MonoType::Var(tv.clone())
+            }))
+        };
+        let env = Environment::from(semantic_map! {
+            "id_fn".to_string() => fnty
+        });
+        vectorize_flux(env.clone(), &mut fresher, "(r) => ({a: id_fn(v: r.a)})");
+        vectorize_flux(env, &mut fresher, "(r) => ({a: id_fn(v: r.a + 1)})");
+    }
+
+    #[test]
+    fn test_vectorize_int_fn() {
+        let mut fresher = Fresher::from(7777);
+        //let tv = fresher.fresh();
+        let fnty = PolyType {
+            vars: vec![],
+            cons: Default::default(),
+            expr: types::MonoType::Fun(Box::new(types::Function {
+                req: semantic_map!["v".to_string() => MonoType::Int],
+                opt: Default::default(),
+                pipe: None,
+                retn: MonoType::Int
+            }))
+        };
+        let env = Environment::from(semantic_map! {
+            "id_fn".to_string() => fnty
+        });
+        //vectorize_flux(env.clone(), &mut fresher, "(r) => ({a: id_fn(v: r.a)})");
+        vectorize_flux(env, &mut fresher, "(r) => ({a: id_fn(v: r.a + 1)})");
+    }
 }
