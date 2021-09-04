@@ -4377,7 +4377,7 @@ Example: `strlen(v: "汉字")` returns the int `2`.
 
 Returns a new string consisting of i copies of the string v.
 
-Example: `repeat("v: na", i: 2)` returns string `nana`.
+Example: `repeat(v: "na", i: 2)` returns string `nana`.
 
 ##### replace
 
