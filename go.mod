@@ -1,6 +1,6 @@
 module github.com/influxdata/flux
 
-go 1.12
+go 1.16
 
 require (
 	cloud.google.com/go v0.52.0
