@@ -4,8 +4,10 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -34,10 +36,11 @@ func TestDifference_PassThrough(t *testing.T) {
 
 func TestDifference_Process(t *testing.T) {
 	testCases := []struct {
-		name string
-		spec *universe.DifferenceProcedureSpec
-		data []flux.Table
-		want []*executetest.Table
+		name    string
+		spec    *universe.DifferenceProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr error
 	}{
 		{
 			name: "float",
@@ -88,6 +91,23 @@ func TestDifference_Process(t *testing.T) {
 					{execute.Time(2), int64(-10)},
 				},
 			}},
+		},
+		{
+			name: "non-supported string type in difference column",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns: []string{execute.DefaultValueColLabel},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), int64(20)},
+					{execute.Time(2), int64(10)},
+				},
+			}},
+			wantErr: errors.New(codes.Invalid, `difference does not support column "_value" of type "string"`),
 		},
 		{
 			name: "int non negative",
@@ -695,7 +715,7 @@ func TestDifference_Process(t *testing.T) {
 				t,
 				tc.data,
 				tc.want,
-				nil,
+				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewDifferenceTransformation(d, c, tc.spec)
 				},
