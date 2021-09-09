@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
@@ -143,7 +144,13 @@ exists r.b
 				t.Fatalf("unexpected error analyzing source: %s", err)
 			}
 
-			got, err := runtime.AnalyzeSource(ast.Format(semantic.ToAST(want)))
+			toAst := semantic.ToAST(want)
+			fmtdAst, err := astutil.Format(toAst.(*ast.Package).Files[0])
+			if err != nil {
+				t.Fatalf("unexpected error from formatter: %s", err)
+			}
+
+			got, err := runtime.AnalyzeSource(fmtdAst)
 			if err != nil {
 				t.Fatalf("unexpected error analyzing generated AST: %s", err)
 			}

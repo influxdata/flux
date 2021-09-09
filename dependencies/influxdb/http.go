@@ -16,6 +16,7 @@ import (
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/http"
@@ -260,7 +261,11 @@ func (h *HttpClient) newRequestBody(file *ast.File, now time.Time) ([]byte, erro
 		} `json:"dialect"`
 		Now time.Time `json:"now"`
 	}
-	req.Query = ast.Format(file)
+	query, err := astutil.Format(file)
+	if err != nil {
+		return nil, err
+	}
+	req.Query = query
 	req.Dialect.Header = true
 	req.Dialect.DateTimeFormat = "RFC3339Nano"
 	req.Dialect.Annotations = []string{"group", "datatype", "default"}

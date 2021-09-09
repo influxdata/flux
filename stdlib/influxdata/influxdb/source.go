@@ -11,6 +11,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/influxdb"
@@ -159,9 +160,14 @@ func (s *source) newRequestBody() ([]byte, error) {
 			Annotations    []string `json:"annotations"`
 		} `json:"dialect"`
 	}
+	var err error
 	// Build the query. This needs to be done first to build
 	// up the list of imports.
-	req.Query = ast.Format(s.spec.BuildQuery())
+	query, err := astutil.Format(s.spec.BuildQuery())
+	if err != nil {
+		return nil, err
+	}
+	req.Query = query
 	req.Dialect.Header = true
 	req.Dialect.DateTimeFormat = "RFC3339Nano"
 	req.Dialect.Annotations = []string{"group", "datatype", "default"}
