@@ -27,7 +27,7 @@ use pulldown_cmark::{Event, Parser};
 use walkdir::WalkDir;
 use wasm_bindgen::__rt::std::collections::HashMap;
 
-const PRELUDE: [&str; 2] = ["universe", "influxdata/influxdb"];
+const PRELUDE: [&str; 3] = ["internal/boolean", "universe", "influxdata/influxdb"];
 
 type AstFileMap = SemanticMap<String, ast::File>;
 
@@ -544,7 +544,9 @@ fn infer_pre(f: &mut Fresher, files: &AstFileMap) -> Result<(PolyTypeMap, PolyTy
     let mut prelude = PolyTypeMap::new();
     let mut imports = PolyTypeMap::new();
     for name in &PRELUDE {
-        let (types, importer) = infer_pkg(name, f, files, PolyTypeMap::new(), imports)?;
+        // Infer each package in the prelude allowing the earlier packages to be used by later
+        // packages within the prelude list.
+        let (types, importer) = infer_pkg(name, f, files, prelude.clone(), imports)?;
         for (k, v) in types {
             prelude.insert(k, v);
         }

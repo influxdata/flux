@@ -39,15 +39,10 @@ type REPL struct {
 	cancelFunc context.CancelFunc
 }
 
-var prelude = []string{
-	"universe",
-	"influxdata/influxdb",
-}
-
 func New(ctx context.Context, deps flux.Dependencies) *REPL {
 	scope := values.NewScope()
 	importer := runtime.StdLib()
-	for _, p := range prelude {
+	for _, p := range runtime.PreludeList {
 		pkg, err := importer.ImportPackageObject(p)
 		if err != nil {
 			panic(err)

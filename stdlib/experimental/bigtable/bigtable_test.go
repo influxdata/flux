@@ -1,4 +1,4 @@
-package bigtable
+package bigtable_test
 
 import (
 	"context"
@@ -11,25 +11,14 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
+	fbt "github.com/influxdata/flux/stdlib/experimental/bigtable"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
-
-	_ "github.com/influxdata/flux/stdlib/date"
-	_ "github.com/influxdata/flux/stdlib/experimental/table"
-	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"
-	_ "github.com/influxdata/flux/stdlib/math"
-	_ "github.com/influxdata/flux/stdlib/regexp"
-	_ "github.com/influxdata/flux/stdlib/strings"
-	_ "github.com/influxdata/flux/stdlib/system"
 )
-
-func init() {
-	runtime.FinalizeBuiltIns()
-}
 
 func TestBigtableDecode(t *testing.T) {
 	t.Run("Bigtable Mock RowReader", func(t *testing.T) {
@@ -69,7 +58,7 @@ func TestBigtableDecode(t *testing.T) {
 			columnNames: []string{"rowKey", "_time", "family", "a", "b"},
 		}
 
-		decoder := &BigtableDecoder{reader: &reader, administration: &mock.Administration{}}
+		decoder := fbt.NewBigtableDecoder(&reader, &mock.Administration{})
 		table, err := decoder.Decode(context.Background())
 		if err != nil {
 			t.Fatal(err)
@@ -138,7 +127,7 @@ func TestNodeRewrite(t *testing.T) {
 	}{
 		{
 			name:      "|> filter(fn: (r) => r.rowKey == ... )",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -146,13 +135,13 @@ func TestNodeRewrite(t *testing.T) {
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{RowSet: bigtable.SingleRow("single row")}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{RowSet: bigtable.SingleRow("single row")}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => r.rowKey >= ... )",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -160,13 +149,13 @@ func TestNodeRewrite(t *testing.T) {
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{RowSet: bigtable.InfiniteRange("greater than or equal")}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{RowSet: bigtable.InfiniteRange("greater than or equal")}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => r._time >= ... )",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -174,13 +163,13 @@ func TestNodeRewrite(t *testing.T) {
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.TimestampRangeFilter(now, time.Time{}))}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.TimestampRangeFilter(now, time.Time{}))}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => r._time < ... )",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -188,13 +177,13 @@ func TestNodeRewrite(t *testing.T) {
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.TimestampRangeFilter(time.Time{}, now))}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.TimestampRangeFilter(time.Time{}, now))}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => r.rowKey >= ... and r.rowKey < ...)",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -202,13 +191,13 @@ func TestNodeRewrite(t *testing.T) {
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{RowSet: bigtable.NewRange("start", "end"), Filter: bigtable.PassAllFilter()}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{RowSet: bigtable.NewRange("start", "end"), Filter: bigtable.PassAllFilter()}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => r.rowKey < ... and r.rowKey >= ...)",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -216,13 +205,13 @@ func TestNodeRewrite(t *testing.T) {
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{RowSet: bigtable.NewRange("start", "end"), Filter: bigtable.PassAllFilter()}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{RowSet: bigtable.NewRange("start", "end"), Filter: bigtable.PassAllFilter()}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => r._time >= ...)",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -230,13 +219,13 @@ func TestNodeRewrite(t *testing.T) {
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.TimestampRangeFilter(now, time.Time{}))}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.TimestampRangeFilter(now, time.Time{}))}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => r._time >= ...)",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -244,13 +233,13 @@ func TestNodeRewrite(t *testing.T) {
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.TimestampRangeFilter(now, time.Time{}))}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.TimestampRangeFilter(now, time.Time{}))}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => strings.hasPrefix(v: r.rowKey, prefix: ...)",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -261,13 +250,13 @@ import "strings"
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{RowSet: bigtable.PrefixRange("the prefix"), Filter: bigtable.PassAllFilter()}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{RowSet: bigtable.PrefixRange("the prefix"), Filter: bigtable.PassAllFilter()}},
 			wantBool:    true,
 		},
 		{
 			name:      "|> filter(fn: (r) => r.family == ...)",
-			queryNode: &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
+			queryNode: &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter()}},
 			rewriteNode: &plan.PhysicalPlanNode{
 				Spec: &universe.FilterProcedureSpec{
 					Fn: interpreter.ResolvedFunction{
@@ -275,23 +264,23 @@ import "strings"
 					},
 				},
 			},
-			rewriteFunc: AddFilterToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.FamilyFilter("family"))}},
+			rewriteFunc: fbt.AddFilterToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.ChainFilters(bigtable.PassAllFilter(), bigtable.FamilyFilter("family"))}},
 			wantBool:    true,
 		},
 		{
 			name:        "|> limit(n: ...)",
-			queryNode:   &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter(), ReadOptions: make([]bigtable.ReadOption, 0)}},
+			queryNode:   &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter(), ReadOptions: make([]bigtable.ReadOption, 0)}},
 			rewriteNode: &plan.PhysicalPlanNode{Spec: &universe.LimitProcedureSpec{N: 4, Offset: 0}},
-			rewriteFunc: AddLimitToNode,
-			wantNode:    &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{ReadOptions: []bigtable.ReadOption{bigtable.LimitRows(4)}, Filter: bigtable.PassAllFilter()}},
+			rewriteFunc: fbt.AddLimitToNode,
+			wantNode:    &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{ReadOptions: []bigtable.ReadOption{bigtable.LimitRows(4)}, Filter: bigtable.PassAllFilter()}},
 			wantBool:    true,
 		},
 		{
 			name:        "|> limit(n: ..., offset: 2)",
-			queryNode:   &plan.PhysicalPlanNode{Spec: &FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter(), ReadOptions: make([]bigtable.ReadOption, 0)}},
+			queryNode:   &plan.PhysicalPlanNode{Spec: &fbt.FromBigtableProcedureSpec{Filter: bigtable.PassAllFilter(), ReadOptions: make([]bigtable.ReadOption, 0)}},
 			rewriteNode: &plan.PhysicalPlanNode{Spec: &universe.LimitProcedureSpec{N: 4, Offset: 2}},
-			rewriteFunc: AddLimitToNode,
+			rewriteFunc: fbt.AddLimitToNode,
 			wantNode:    &plan.PhysicalPlanNode{Spec: &universe.LimitProcedureSpec{N: 4, Offset: 2}},
 			wantBool:    false,
 		},

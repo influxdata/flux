@@ -50,6 +50,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/tasks"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
+	_ "github.com/influxdata/flux/stdlib/internal/boolean"
 	_ "github.com/influxdata/flux/stdlib/internal/debug"
 	_ "github.com/influxdata/flux/stdlib/internal/gen"
 	_ "github.com/influxdata/flux/stdlib/internal/influxql"

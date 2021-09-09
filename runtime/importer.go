@@ -13,7 +13,8 @@ import (
 var (
 	// list of packages included in the prelude.
 	// Packages must be listed in import order
-	prelude = []string{
+	PreludeList = []string{
+		"internal/boolean",
 		"universe",
 		"influxdata/influxdb",
 	}
@@ -50,7 +51,7 @@ func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, err
 
 	// If this package is part of the prelude, fill in a fake
 	// empty package to resolve cyclical imports.
-	for _, ppath := range prelude {
+	for _, ppath := range PreludeList {
 		if ppath == path {
 			imp.pkgs[path] = interpreter.NewPackage(path)
 			break
