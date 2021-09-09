@@ -141,6 +141,10 @@ type BigtableDecoder struct {
 	reader *execute.RowReader
 }
 
+func NewBigtableDecoder(reader *execute.RowReader, administration execute.Administration) *BigtableDecoder {
+	return &BigtableDecoder{reader: reader, administration: administration}
+}
+
 var _ execute.SourceDecoder = (*BigtableDecoder)(nil)
 
 func (c *BigtableDecoder) Connect(ctx context.Context) error {

@@ -11,10 +11,6 @@ import "experimental/table"
 // now is a function option whose default behaviour is to return the current system time
 option now = system.time
 
-// Booleans
-builtin true : bool
-builtin false : bool
-
 // Transformation functions
 builtin chandeMomentumOscillator : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
 builtin columns : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record

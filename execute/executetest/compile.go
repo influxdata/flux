@@ -32,7 +32,7 @@ func FunctionExpression(t testing.TB, source string, args ...interface{}) *seman
 	}
 	if prelude == nil {
 		prelude = values.NewScope()
-		for _, path := range []string{"universe", "influxdata/influxdb"} {
+		for _, path := range runtime.PreludeList {
 			p, err := stdlib.ImportPackageObject(path)
 			if err != nil {
 				t.Fatalf("error importing prelude package %q: %s", path, err)

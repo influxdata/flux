@@ -40,7 +40,7 @@ func (r *runtime) MergePackages(dst, src flux.ASTHandle) error {
 }
 
 func (r *runtime) IsPreludePackage(pkg string) bool {
-	for _, p := range prelude {
+	for _, p := range PreludeList {
 		if p == pkg {
 			return true
 		}
@@ -154,7 +154,7 @@ func (r *runtime) newScopeFor(pkgpath string, imp interpreter.Importer) (values.
 	// This allows us to import all previous paths when loading
 	// the prelude, but avoid a circular import.
 	preludeScope := values.NewScope()
-	for _, path := range prelude {
+	for _, path := range PreludeList {
 		if path == pkgpath {
 			break
 		}
