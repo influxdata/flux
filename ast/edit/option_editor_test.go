@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/values"
@@ -21,7 +22,7 @@ func TestEditor(t *testing.T) {
 		{
 			name: "no_option",
 			in: `from(bucket: "test")
-	|> range(start: 2018-05-23T13:09:22.885021542Z)`,
+    |> range(start: 2018-05-23T13:09:22.885021542Z)`,
 			unchanged: true,
 			edit: func(node ast.Node) (bool, error) {
 				return edit.Option(node, "from", nil)
@@ -58,20 +59,20 @@ option bar = 42`,
 		{
 			name: "updates_object",
 			in: `option foo = 1
-option task = {
-	name: "bar",
-	every: 1m,
-	delay: 1m,
-	cron: "20 * * *",
-	retry: 5,
+    option task = {
+    name: "bar",
+    every: 1m,
+    delay: 1m,
+    cron: "20 * * *",
+    retry: 5,
 }`,
 			edited: `option foo = 1
 option task = {
-	name: "bar",
-	every: 2h3m10s,
-	delay: 42m,
-	cron: "buz",
-	retry: 10,
+    name: "bar",
+    every: 2h3m10s,
+    delay: 42m,
+    cron: "buz",
+    retry: 10,
 }`,
 			edit: func(node ast.Node) (bool, error) {
 				every, err := parser.ParseDuration("2h3m10s")
@@ -94,19 +95,19 @@ option task = {
 			name: "error_key_not_found",
 			in: `option foo = 1
 option task = {
-	name: "bar",
-	every: 1m,
-	delay: 1m,
-	cron: "20 * * *",
-	retry: 5,
+    name: "bar",
+    every: 1m,
+    delay: 1m,
+    cron: "20 * * *",
+    retry: 5,
 }`, edited: `option foo = 1
 option task = {
-	name: "bar",
-	every: 2h,
-	delay: 1m,
-	cron: "20 * * *",
-	retry: 5,
-	foo: "foo",
+    name: "bar",
+    every: 2h,
+    delay: 1m,
+    cron: "20 * * *",
+    retry: 5,
+    foo: "foo",
 }`,
 			errorWanted: false,
 			edit: func(node ast.Node) (bool, error) {
@@ -211,10 +212,9 @@ option task = {
 			},
 		},
 		{
-			name: "sets_option_to_function",
-			in:   `option now = "edit me"`,
-			edited: `option now = () =>
-	(2018-12-03T20:52:48.464942Z)`,
+			name:   "sets_option_to_function",
+			in:     `option now = "edit me"`,
+			edited: `option now = () => 2018-12-03T20:52:48.464942Z`,
 			edit: func(node ast.Node) (bool, error) {
 				t, err := values.ParseTime("2018-12-03T20:52:48.464942000Z")
 				if err != nil {
@@ -256,7 +256,10 @@ option task = {
 				t.Fatal("unexpected option edit")
 			}
 
-			out := ast.Format(p.Files[0])
+			out, err := astutil.Format(p.Files[0])
+			if err != nil {
+				t.Fatalf("got unexpected error from formatter: %s", err)
+			}
 
 			if out != tc.edited {
 				t.Errorf("\nexpected:\n%s\nedited:\n%s\n", tc.edited, out)

@@ -290,14 +290,9 @@ influxdb.cardinality(bucket: "telegraf", start: 2018-05-30T09:00:00Z, stop: 2018
 
 import influxdb "influxdata/influxdb"
 
-influxdb.cardinality(
-	bucket: "telegraf",
-	start: 2020-10-22T09:29:00Z,
-	stop: 2020-10-22T09:30:00Z,
-	predicate: (r) => {
-		return r["_value"] >= 0.0
-	},
-)`,
+influxdb.cardinality(bucket: "telegraf", start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z, predicate: (r) => {
+    return r["_value"] >= 0.0
+})`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -353,14 +348,9 @@ import "math"
 import influxdb "influxdata/influxdb"
 import math "math"
 
-influxdb.cardinality(
-	bucket: "telegraf",
-	start: 2020-10-22T09:29:00Z,
-	stop: 2020-10-22T09:30:00Z,
-	predicate: (r) => {
-		return r["_value"] >= math["pi"]
-	},
-)`,
+influxdb.cardinality(bucket: "telegraf", start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z, predicate: (r) => {
+    return r["_value"] >= math["pi"]
+})`,
 				Tables: defaultTablesFn,
 			},
 		},

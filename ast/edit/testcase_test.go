@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
+	"github.com/influxdata/flux/ast/astutil"
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/parser"
@@ -126,7 +127,11 @@ testcase b extends "flux/a/a_test" {
 
 	files := make([]string, len(pkgs[0].Files))
 	for i, file := range pkgs[0].Files {
-		files[i] = ast.Format(file)
+		fileStr, err := astutil.Format(file)
+		if err != nil {
+			t.Fatalf("unexpected error from formatter: %s", err)
+		}
+		files[i] = fileStr
 	}
 
 	want := []string{
@@ -135,16 +140,16 @@ testcase b extends "flux/a/a_test" {
 
 import "testing/assert"
 
-a_test = () => {
-	want = 4
-	a = () => {
-		assert.equal(want: want, got: 2 + 2)
+a_test = (() => {
+    want = 4
+    a = () => {
+        assert.equal(want: want, got: 2 + 2)
 
-		return {}
-	}
+        return {}
+    }
 
-	return {want, a}
-}()`,
+    return {want, a}
+})()`,
 		`package main
 
 
