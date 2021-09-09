@@ -1,6 +1,5 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
 
-
 extern crate fluxcore;
 extern crate serde_aux;
 
@@ -21,7 +20,7 @@ pub use fluxcore::scanner;
 pub use fluxcore::semantic;
 pub use fluxcore::*;
 
-use crate::semantic::bootstrap::PackageDoc;
+use crate::semantic::bootstrap::{Doc, PackageDoc};
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
 use inflate::inflate_bytes;
@@ -51,6 +50,62 @@ pub fn docs() -> Vec<PackageDoc> {
 pub fn docs_json() -> Result<Vec<u8>, String> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
     inflate_bytes(buf)
+}
+
+/// Restructures the Vector of PackageDocs into a hierarchical format where subpackages are in the member section
+/// of their parent packages. Ex: monitor.flux docs are in the members section of influxdb docs which are in the members of InfluxData docs.
+pub fn nested_json() -> Vec<u8> {
+    let original_docs = docs();
+    let mut nested_docs = PackageDoc {
+        path: "stdlib".to_string(),
+        name: "stdlib".to_string(),
+        headline: String::new(),
+        description: None,
+        members: std::collections::HashMap::new(),
+        link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_string(),
+    };
+    for current_pkg in original_docs {
+        let parent = find_parent(current_pkg.path.clone(), &mut nested_docs);
+        parent.members.insert(
+            current_pkg.name.clone(),
+            Doc::Package(Box::new(current_pkg)),
+        );
+    }
+    serde_json::to_vec(&nested_docs).unwrap()
+}
+
+/// Find the package directly above the input package and returns it so that
+/// we can insert documentation into its members section.
+/// Creates an empty parent package if one did not exist.
+fn find_parent(path: String, nested_docs: &mut PackageDoc) -> &mut PackageDoc {
+    let mut parents: Vec<&str> = path.split('/').collect();
+    let mut parent = nested_docs;
+    while parents.len() > 1 {
+        let pkg = parents.remove(0);
+        let path = parent.path.clone();
+        let current = parent.members.entry(pkg.to_string()).or_insert_with(|| {
+            let path = path + "/" + pkg;
+            let path = path.trim_start_matches("stdlib/");
+            Doc::Package(Box::new(PackageDoc {
+                path: path.to_string(),
+                name: pkg.to_string(),
+                headline: String::new(),
+                description: None,
+                members: std::collections::HashMap::new(),
+                link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/"
+                    .to_owned()
+                    + path,
+            }))
+        });
+        match current {
+            Doc::Package(current) => parent = current,
+            _ => panic!(
+                "package has a member with the same name as child package: {}",
+                pkg,
+            ),
+        }
+    }
+    parent
 }
 
 pub fn fresher() -> Fresher {
