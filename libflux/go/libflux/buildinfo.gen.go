@@ -481,6 +481,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/group_by_irregular_test.flux":                                                "b74944c8d826a930fcefa1f695d2ac22f9bbaa62f6b5dcc501c3c88001131d62",
 	"stdlib/universe/group_except_test.flux":                                                      "67cd762fca4468e57b16a81119bbf6d413c3397cd841490014d25e9870dd91c1",
 	"stdlib/universe/group_nulls_test.flux":                                                       "1ffe996153793de8f3ef96f88410dda67cabd788afdb357c9420eae376aee5cc",
+	"stdlib/universe/group_perf_test.flux":                                                        "1b76b4d23da4ec6ba21160016c0ca48fc245b852c3fcee0b0d8412809a39d116",
 	"stdlib/universe/group_test.flux":                                                             "f3d583650276343c119f37628c97182e8ea90821c44262b4ee65ab5a9cfae270",
 	"stdlib/universe/group_ungroup_test.flux":                                                     "4bf56972b81aeb61e915148c00350a39873e71aa194fe2ba0823fa9f249ecd45",
 	"stdlib/universe/highestAverage_test.flux":                                                    "19493504f36aaf8fc579339f22f61940b0343848cb893d862276f1937631968e",
