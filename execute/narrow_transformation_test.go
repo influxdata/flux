@@ -45,6 +45,7 @@ func TestNarrowTransformation_ProcessChunk(t *testing.T) {
 				// we are comparing the entirety of the chunk to the entirety
 				// of the wanted output.
 				buffer := chunk.Buffer()
+				buffer.Retain()
 				got := table.Iterator{
 					table.FromBuffer(&buffer),
 				}
@@ -82,39 +83,65 @@ func TestNarrowTransformation_ProcessChunk(t *testing.T) {
 }
 
 func TestNarrowTransformation_FlushKey(t *testing.T) {
-	want := execute.NewGroupKey(
-		[]flux.ColMeta{
-			{Label: "t0", Type: flux.TString},
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
+	want := static.Table{
+		static.StringKey("t0", "a"),
+		static.Times("_time", 0, 10, 20),
+		static.Floats("_value", 1, 2, 3),
+	}
+
+	tr, d, err := execute.NewNarrowTransformation(
+		executetest.RandomDatasetID(),
+		&mock.NarrowTransformation{
+			ProcessFn: func(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
+				chunk.Retain()
+				return d.Process(chunk)
+			},
 		},
-		[]values.Value{
-			values.NewString("a"),
+		mem,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	isProcessed, isFlushed := false, false
+	d.AddTransformation(
+		&mock.Transport{
+			ProcessMessageFn: func(m execute.Message) error {
+				defer m.Ack()
+
+				switch m := m.(type) {
+				case execute.ProcessChunkMsg:
+					isProcessed = true
+				case execute.FlushKeyMsg:
+					want := execute.NewGroupKey(
+						[]flux.ColMeta{{Label: "t0", Type: flux.TString}},
+						[]values.Value{values.NewString("a")},
+					)
+
+					if got := m.Key(); !want.Equal(got) {
+						t.Errorf("unexpected group key -want/+got:\n%s", cmp.Diff(want, got))
+					}
+					isFlushed = true
+				}
+				return nil
+			},
 		},
 	)
 
-	isProcessed := false
-	tr := &mock.Transport{
-		ProcessMessageFn: func(m execute.Message) error {
-			msg, ok := m.(execute.FlushKeyMsg)
-			if !ok {
-				t.Fatalf("expected flush key message, got %T", m)
-			}
-
-			if got := msg.Key(); !want.Equal(got) {
-				t.Fatalf("unexpected group key -want/+got:\n%s", cmp.Diff(want, got))
-			}
-			isProcessed = true
-			return nil
-		},
-	}
-
-	d := execute.NewTransportDataset(executetest.RandomDatasetID(), memory.DefaultAllocator)
-	d.AddTransformation(tr)
-	if err := d.FlushKey(want); err != nil {
-		t.Fatalf("unexpected error: %s", err)
+	tbl := want.Table(mem)
+	parentID := executetest.RandomDatasetID()
+	if err := tr.Process(parentID, tbl); err != nil {
+		t.Fatal(err)
 	}
 
 	if !isProcessed {
-		t.Error("message was never processed")
+		t.Error("process message was never processed")
+	}
+	if !isFlushed {
+		t.Error("flush key message was never processed")
 	}
 }
 
@@ -147,6 +174,7 @@ func TestNarrowTransformation_Process(t *testing.T) {
 				// we are comparing the entirety of the chunk to the entirety
 				// of the wanted output.
 				buffer := chunk.Buffer()
+				buffer.Retain()
 				got := table.Iterator{
 					table.FromBuffer(&buffer),
 				}

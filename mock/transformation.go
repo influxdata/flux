@@ -48,6 +48,14 @@ func (n *NarrowTransformation) Process(chunk table.Chunk, d *execute.TransportDa
 	return n.ProcessFn(chunk, d, mem)
 }
 
+type NarrowStateTransformation struct {
+	ProcessFn func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error)
+}
+
+func (n *NarrowStateTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+	return n.ProcessFn(chunk, state, d, mem)
+}
+
 type AggregateTransformation struct {
 	AggregateFn func(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error)
 	ComputeFn   func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error
