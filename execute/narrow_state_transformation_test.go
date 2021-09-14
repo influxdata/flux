@@ -13,9 +13,10 @@ import (
 	"github.com/influxdata/flux/execute/table/static"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/values"
 )
 
-func TestGroupTransformation_ProcessChunk(t *testing.T) {
+func TestNarrowStateTransformation_ProcessChunk(t *testing.T) {
 	// Ensure we allocate and free all memory correctly.
 	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
@@ -28,11 +29,18 @@ func TestGroupTransformation_ProcessChunk(t *testing.T) {
 		static.Floats("_value", 1, 2, 3),
 	}
 
-	isProcessed := false
-	tr, _, err := execute.NewGroupTransformation(
+	isProcessed, hasState := false, false
+	tr, _, err := execute.NewNarrowStateTransformation(
 		executetest.RandomDatasetID(),
-		&mock.GroupTransformation{
-			ProcessFn: func(chunk table.Chunk, d *execute.TransportDataset, _ memory.Allocator) error {
+		&mock.NarrowStateTransformation{
+			ProcessFn: func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, _ memory.Allocator) (interface{}, bool, error) {
+				if state != nil {
+					if want, got := int64(4), state.(int64); want != got {
+						t.Errorf("unexpected state on second call -want/+got:\n\t- %d\n\t+ %d", want, got)
+					}
+					hasState = true
+				}
+
 				// Memory should be allocated and should not have been improperly freed.
 				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
 				// of which there are two. 64 bytes is the minimum that arrow will allocate
@@ -53,7 +61,7 @@ func TestGroupTransformation_ProcessChunk(t *testing.T) {
 					t.Errorf("unexpected diff -want/+got:\n%s", diff)
 				}
 				isProcessed = true
-				return nil
+				return int64(4), true, nil
 			},
 		},
 		mem,
@@ -71,6 +79,11 @@ func TestGroupTransformation_ProcessChunk(t *testing.T) {
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		chunk := table.ChunkFromReader(cr)
 		chunk.Retain()
+		if err := source.Process(chunk); err != nil {
+			return err
+		}
+
+		chunk.Retain()
 		return source.Process(chunk)
 	}); err != nil {
 		t.Fatal(err)
@@ -79,23 +92,33 @@ func TestGroupTransformation_ProcessChunk(t *testing.T) {
 	if !isProcessed {
 		t.Error("message was never processed")
 	}
+	if !hasState {
+		t.Error("process was never invoked with state")
+	}
 }
 
-func TestGroupTransformation_FlushKey(t *testing.T) {
+func TestNarrowStateTransformation_FlushKey(t *testing.T) {
 	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
 
 	want := static.Table{
+		static.StringKey("t0", "a"),
 		static.Times("_time", 0, 10, 20),
 		static.Floats("_value", 1, 2, 3),
 	}
 
-	tr, d, err := execute.NewGroupTransformation(
+	tr, d, err := execute.NewNarrowStateTransformation(
 		executetest.RandomDatasetID(),
-		&mock.GroupTransformation{
-			ProcessFn: func(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
+		&mock.NarrowStateTransformation{
+			ProcessFn: func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+				if state != nil {
+					t.Error("process unexpectedly invoked with state")
+				}
 				chunk.Retain()
-				return d.Process(chunk)
+				if err := d.Process(chunk); err != nil {
+					return nil, false, err
+				}
+				return int64(4), true, nil
 			},
 		},
 		mem,
@@ -104,35 +127,50 @@ func TestGroupTransformation_FlushKey(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	isProcessed := false
+	isProcessed, isFlushed := false, false
 	d.AddTransformation(
 		&mock.Transport{
 			ProcessMessageFn: func(m execute.Message) error {
 				defer m.Ack()
-				switch m.(type) {
+
+				switch m := m.(type) {
 				case execute.ProcessChunkMsg:
 					isProcessed = true
 				case execute.FlushKeyMsg:
-					t.Error("unexpected flush key message")
-				}
+					want := execute.NewGroupKey(
+						[]flux.ColMeta{{Label: "t0", Type: flux.TString}},
+						[]values.Value{values.NewString("a")},
+					)
 
+					if got := m.Key(); !want.Equal(got) {
+						t.Errorf("unexpected group key -want/+got:\n%s", cmp.Diff(want, got))
+					}
+					isFlushed = true
+				}
 				return nil
 			},
 		},
 	)
 
-	tbl := want.Table(mem)
+	// Flush key should flush the state so the second call to process
+	// should not have any state.
 	parentID := executetest.RandomDatasetID()
-	if err := tr.Process(parentID, tbl); err != nil {
-		t.Fatal(err)
+	for i := 0; i < 2; i++ {
+		tbl := want.Table(mem)
+		if err := tr.Process(parentID, tbl); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	if !isProcessed {
-		t.Error("message was never processed")
+		t.Error("process message was never processed")
+	}
+	if !isFlushed {
+		t.Error("flush key message was never processed")
 	}
 }
 
-func TestGroupTransformation_Process(t *testing.T) {
+func TestNarrowStateTransformation_Process(t *testing.T) {
 	// Ensure we allocate and free all memory correctly.
 	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
@@ -146,10 +184,10 @@ func TestGroupTransformation_Process(t *testing.T) {
 	}
 
 	isProcessed := false
-	tr, _, err := execute.NewGroupTransformation(
+	tr, _, err := execute.NewNarrowStateTransformation(
 		executetest.RandomDatasetID(),
-		&mock.GroupTransformation{
-			ProcessFn: func(chunk table.Chunk, d *execute.TransportDataset, _ memory.Allocator) error {
+		&mock.NarrowStateTransformation{
+			ProcessFn: func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, _ memory.Allocator) (interface{}, bool, error) {
 				// Memory should be allocated and should not have been improperly freed.
 				// This accounts for 64 bytes (data) + 64 bytes (null bitmap) for each column
 				// of which there are two. 64 bytes is the minimum that arrow will allocate
@@ -170,7 +208,7 @@ func TestGroupTransformation_Process(t *testing.T) {
 					t.Errorf("unexpected diff -want/+got:\n%s", diff)
 				}
 				isProcessed = true
-				return nil
+				return int64(4), true, nil
 			},
 		},
 		mem,
@@ -187,6 +225,12 @@ func TestGroupTransformation_Process(t *testing.T) {
 	// but the only transport that has this capability is the consecutive transport.
 	// As we don't want to add the dispatcher or concurrency to this test, we manually
 	// construct the message and send it ourselves.
+	//
+	// This test is identical to the version for narrow transformation
+	// so we don't have anything special regarding state. The tests for
+	// state are around the individual messages rather than this test and
+	// this test is mostly for verifying that process is still equivalent to
+	// process chunk and flush key.
 	m := execute.NewProcessMsg(want.Table(mem))
 	if err := tr.(execute.Transport).ProcessMessage(m); err != nil {
 		t.Fatal(err)
@@ -197,14 +241,14 @@ func TestGroupTransformation_Process(t *testing.T) {
 	}
 }
 
-func TestGroupTransformation_Finish(t *testing.T) {
+func TestNarrowStateTransformation_Finish(t *testing.T) {
 	isFinished := []bool{false, false}
 
 	want := errors.New(codes.Internal, "expected")
 
-	tr, d, err := execute.NewGroupTransformation(
+	tr, d, err := execute.NewNarrowStateTransformation(
 		executetest.RandomDatasetID(),
-		&mock.GroupTransformation{},
+		&mock.NarrowStateTransformation{},
 		memory.DefaultAllocator,
 	)
 	if err != nil {
@@ -259,19 +303,19 @@ func TestGroupTransformation_Finish(t *testing.T) {
 // Ensure that we report the operation type of the type we wrap
 // and ensure that we don't report ourselves as the operation type.
 //
-// This is to prevent opentracing from showing groupTransformation
+// This is to prevent opentracing from showing narrowTransformation
 // as the operation.
-func TestGroupTransformation_OperationType(t *testing.T) {
-	tr, _, err := execute.NewGroupTransformation(
+func TestNarrowStateTransformation_OperationType(t *testing.T) {
+	tr, _, err := execute.NewNarrowStateTransformation(
 		executetest.RandomDatasetID(),
-		&mock.GroupTransformation{},
+		&mock.NarrowStateTransformation{},
 		memory.DefaultAllocator,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if want, got := "*mock.GroupTransformation", execute.OperationType(tr); want != got {
+	if want, got := "*mock.NarrowStateTransformation", execute.OperationType(tr); want != got {
 		t.Errorf("unexpected operation type -want/+got:\n\t- %s\n\t+ %s", want, got)
 	}
 }
