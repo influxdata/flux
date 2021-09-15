@@ -84,6 +84,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                                           "6e1452091ea325c83219c860dbea694ca492feb340aadc04c6381dff12dfc0b8",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                                      "347f8d80901d6f2fa4bb66a1a560fd71a4ea73ea9c4215213f076d12f7c33920",
 	"stdlib/contrib/bonitoo-io/alerta/alerta.flux":                                                "cbcae77dc0fce47c4501882bbea5d7ffca5b81f9aa61de7e34ccb179a5cb8cff",
+	"stdlib/contrib/bonitoo-io/hex/hex.flux":                                                      "1b7fcccc8e4e883e3f3a1df7957448cd4a21a46b21043788d4cb1c23754e4a04",
 	"stdlib/contrib/bonitoo-io/tickscript/alert_test.flux":                                        "5077a1a4939b4907991b4431c634a1da4b33678ba78316bc9fe3ac6cceccbb35",
 	"stdlib/contrib/bonitoo-io/tickscript/alert_with_topic_test.flux":                             "993114277638a0403c7372adb501888003f67d669a830a4620cd259df7f7e298",
 	"stdlib/contrib/bonitoo-io/tickscript/deadman_empty_test.flux":                                "c3daa5f29cd2f1e3c971c848cfb3b029e2e13318862c07ac3f3e1aca4242fd96",
