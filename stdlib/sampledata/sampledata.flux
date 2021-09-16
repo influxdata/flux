@@ -83,7 +83,7 @@ _bool = (includeNull=false) => "#group,false,false,false,true,false
 // ```
 // 
 float = (includeNull=false) => {
-    _csvData = _numeric(includeNull:includeNull)
+    _csvData = _numeric(includeNull: includeNull)
 
     return csv.from(csv: _csvData)
 }
@@ -104,7 +104,7 @@ float = (includeNull=false) => {
 // ```
 //
 int = (includeNull=false) => {
-    _csvData = _numeric(includeNull:includeNull)
+    _csvData = _numeric(includeNull: includeNull)
 
     return csv.from(csv: _csvData) |> toInt()
 }
@@ -125,7 +125,7 @@ int = (includeNull=false) => {
 // ```
 //
 uint = (includeNull=false) => {
-    _csvData = _numeric(includeNull:includeNull)
+    _csvData = _numeric(includeNull: includeNull)
 
     return csv.from(csv: _csvData) |> toUInt()
 }
@@ -146,7 +146,7 @@ uint = (includeNull=false) => {
 // ```
 // 
 string = (includeNull=false) => {
-    _csvData = _string(includeNull:includeNull)
+    _csvData = _string(includeNull: includeNull)
 
     return csv.from(csv: _csvData)
 }
@@ -167,7 +167,7 @@ string = (includeNull=false) => {
 // ```
 // 
 bool = (includeNull=false) => {
-    _csvData = _bool(includeNull:includeNull)
+    _csvData = _bool(includeNull: includeNull)
 
     return csv.from(csv: _csvData)
 }
@@ -188,7 +188,7 @@ bool = (includeNull=false) => {
 // ```
 // 
 numericBool = (includeNull=false) => {
-    _csvData = _bool(includeNull:includeNull)
+    _csvData = _bool(includeNull: includeNull)
 
     return csv.from(csv: _csvData) |> toInt()
 }

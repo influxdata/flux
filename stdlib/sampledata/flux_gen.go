@@ -28,7 +28,7 @@ var pkgAST = &ast.Package{
 					Line:   194,
 				},
 				File:   "sampledata.flux",
-				Source: "package sampledata\n\n\nimport \"csv\"\n\n// start and stop constants provide start and stop times to be used with `range`\n// when `_start` and `_stop` columns are required to demonstrate a transformation.\n// All sample data points are between start and stop.\n//\nstart = 2021-01-01T00:00:00Z\nstop = 2021-01-01T00:01:00Z\n\n_numeric = (includeNull=false) => \"\n#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,double\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,-2.18\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"10.92\") + \"\n,,0,2021-01-01T00:00:20Z,t1,7.35\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"17.53\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"15.23\") + \"\n,,0,2021-01-01T00:00:50Z,t1,4.43\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"19.85\") + \"\n,,1,2021-01-01T00:00:10Z,t2,4.97\n,,1,2021-01-01T00:00:20Z,t2,-3.75\n,,1,2021-01-01T00:00:30Z,t2,19.77\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"13.86\") + \"\n,,1,2021-01-01T00:00:50Z,t2,1.86\n\"\n\n_string = (includeNull=false) => \"\n#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,smpl_g9qczs\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"smpl_0mgv9n\") + \"\n,,0,2021-01-01T00:00:20Z,t1,smpl_phw664\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"smpl_guvzy4\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"smpl_5v3cce\") + \"\n,,0,2021-01-01T00:00:50Z,t1,smpl_s9fmgy\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"smpl_b5eida\") + \"\n,,1,2021-01-01T00:00:10Z,t2,smpl_eu4oxp\n,,1,2021-01-01T00:00:20Z,t2,smpl_5g7tz4\n,,1,2021-01-01T00:00:30Z,t2,smpl_sox1ut\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"smpl_wfm757\") + \"\n,,1,2021-01-01T00:00:50Z,t2,smpl_dtn2bv\n\"\n\n_bool = (includeNull=false) => \"#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,boolean\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,true\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"true\") + \"\n,,0,2021-01-01T00:00:20Z,t1,false\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"true\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"false\") + \"\n,,0,2021-01-01T00:00:50Z,t1,false\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"false\") + \"\n,,1,2021-01-01T00:00:10Z,t2,true\n,,1,2021-01-01T00:00:20Z,t2,false\n,,1,2021-01-01T00:00:30Z,t2,true\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"true\") + \"\n,,1,2021-01-01T00:00:50Z,t2,false\n\"\n\n// float returns a sample data set with float values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with float values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.float()\n// ```\n// \nfloat = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// int returns a sample data set with integer values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with integer values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.int()\n// ```\n//\nint = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}\n\n// uint returns a sample data set with unsigned integer values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with unsigned integer values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.uint()\n// ```\n//\nuint = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}\n\n// string returns a sample data set with string values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with string values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.string()\n// ```\n// \nstring = (includeNull=false) => {\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// bool returns a sample data set with boolean values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with boolean values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.bool()\n// ```\n// \nbool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// numericBool returns a sample data set with numeric (integer) boolean values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with numeric boolean values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.numericBool()\n// ```\n// \nnumericBool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
+				Source: "package sampledata\n\n\nimport \"csv\"\n\n// start and stop constants provide start and stop times to be used with `range`\n// when `_start` and `_stop` columns are required to demonstrate a transformation.\n// All sample data points are between start and stop.\n//\nstart = 2021-01-01T00:00:00Z\nstop = 2021-01-01T00:01:00Z\n\n_numeric = (includeNull=false) => \"\n#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,double\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,-2.18\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"10.92\") + \"\n,,0,2021-01-01T00:00:20Z,t1,7.35\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"17.53\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"15.23\") + \"\n,,0,2021-01-01T00:00:50Z,t1,4.43\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"19.85\") + \"\n,,1,2021-01-01T00:00:10Z,t2,4.97\n,,1,2021-01-01T00:00:20Z,t2,-3.75\n,,1,2021-01-01T00:00:30Z,t2,19.77\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"13.86\") + \"\n,,1,2021-01-01T00:00:50Z,t2,1.86\n\"\n\n_string = (includeNull=false) => \"\n#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,string\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,smpl_g9qczs\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"smpl_0mgv9n\") + \"\n,,0,2021-01-01T00:00:20Z,t1,smpl_phw664\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"smpl_guvzy4\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"smpl_5v3cce\") + \"\n,,0,2021-01-01T00:00:50Z,t1,smpl_s9fmgy\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"smpl_b5eida\") + \"\n,,1,2021-01-01T00:00:10Z,t2,smpl_eu4oxp\n,,1,2021-01-01T00:00:20Z,t2,smpl_5g7tz4\n,,1,2021-01-01T00:00:30Z,t2,smpl_sox1ut\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"smpl_wfm757\") + \"\n,,1,2021-01-01T00:00:50Z,t2,smpl_dtn2bv\n\"\n\n_bool = (includeNull=false) => \"#group,false,false,false,true,false\n#datatype,string,long,dateTime:RFC3339,string,boolean\n#default,_result,,,,\n,result,table,_time,tag,_value\n,,0,2021-01-01T00:00:00Z,t1,true\n,,0,2021-01-01T00:00:10Z,t1,\" + (if includeNull then \"\" else \"true\") + \"\n,,0,2021-01-01T00:00:20Z,t1,false\n,,0,2021-01-01T00:00:30Z,t1,\" + (if includeNull then \"\" else \"true\") + \"\n,,0,2021-01-01T00:00:40Z,t1,\" + (if includeNull then \"\" else \"false\") + \"\n,,0,2021-01-01T00:00:50Z,t1,false\n,,1,2021-01-01T00:00:00Z,t2,\" + (if includeNull then \"\" else \"false\") + \"\n,,1,2021-01-01T00:00:10Z,t2,true\n,,1,2021-01-01T00:00:20Z,t2,false\n,,1,2021-01-01T00:00:30Z,t2,true\n,,1,2021-01-01T00:00:40Z,t2,\" + (if includeNull then \"\" else \"true\") + \"\n,,1,2021-01-01T00:00:50Z,t2,false\n\"\n\n// float returns a sample data set with float values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with float values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.float()\n// ```\n// \nfloat = (includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// int returns a sample data set with integer values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with integer values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.int()\n// ```\n//\nint = (includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}\n\n// uint returns a sample data set with unsigned integer values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with unsigned integer values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.uint()\n// ```\n//\nuint = (includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}\n\n// string returns a sample data set with string values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with string values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.string()\n// ```\n// \nstring = (includeNull=false) => {\n    _csvData = _string(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// bool returns a sample data set with boolean values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with boolean values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.bool()\n// ```\n// \nbool = (includeNull=false) => {\n    _csvData = _bool(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}\n\n// numericBool returns a sample data set with numeric (integer) boolean values.\n//\n// ## Parameters\n//\n// - `includeNull` indicates whether or not to include null values in the returned dataset.\n//   Default is `false`.\n//\n// ## Output basic sample data with numeric boolean values\n//\n// ```\n// import \"sampledata\"\n//\n// sampledata.numericBool()\n// ```\n// \nnumericBool = (includeNull=false) => {\n    _csvData = _bool(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -2882,7 +2882,7 @@ var pkgAST = &ast.Package{
 						Line:   89,
 					},
 					File:   "sampledata.flux",
-					Source: "float = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+					Source: "float = (includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   85,
@@ -2919,7 +2919,7 @@ var pkgAST = &ast.Package{
 							Line:   89,
 						},
 						File:   "sampledata.flux",
-						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 						Start: ast.Position{
 							Column: 9,
 							Line:   85,
@@ -2936,7 +2936,7 @@ var pkgAST = &ast.Package{
 								Line:   89,
 							},
 							File:   "sampledata.flux",
-							Source: "{\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+							Source: "{\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 							Start: ast.Position{
 								Column: 32,
 								Line:   85,
@@ -2949,11 +2949,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 49,
+									Column: 50,
 									Line:   86,
 								},
 								File:   "sampledata.flux",
-								Source: "_csvData = _numeric(includeNull:includeNull)",
+								Source: "_csvData = _numeric(includeNull: includeNull)",
 								Start: ast.Position{
 									Column: 5,
 									Line:   86,
@@ -2986,11 +2986,11 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
+											Column: 49,
 											Line:   86,
 										},
 										File:   "sampledata.flux",
-										Source: "includeNull:includeNull",
+										Source: "includeNull: includeNull",
 										Start: ast.Position{
 											Column: 25,
 											Line:   86,
@@ -3004,11 +3004,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 48,
+												Column: 49,
 												Line:   86,
 											},
 											File:   "sampledata.flux",
-											Source: "includeNull:includeNull",
+											Source: "includeNull: includeNull",
 											Start: ast.Position{
 												Column: 25,
 												Line:   86,
@@ -3042,13 +3042,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 48,
+													Column: 49,
 													Line:   86,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
-													Column: 37,
+													Column: 38,
 													Line:   86,
 												},
 											},
@@ -3064,11 +3064,11 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 49,
+										Column: 50,
 										Line:   86,
 									},
 									File:   "sampledata.flux",
-									Source: "_numeric(includeNull:includeNull)",
+									Source: "_numeric(includeNull: includeNull)",
 									Start: ast.Position{
 										Column: 16,
 										Line:   86,
@@ -3346,7 +3346,7 @@ var pkgAST = &ast.Package{
 						Line:   110,
 					},
 					File:   "sampledata.flux",
-					Source: "int = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
+					Source: "int = (includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   106,
@@ -3383,7 +3383,7 @@ var pkgAST = &ast.Package{
 							Line:   110,
 						},
 						File:   "sampledata.flux",
-						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
+						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 						Start: ast.Position{
 							Column: 7,
 							Line:   106,
@@ -3400,7 +3400,7 @@ var pkgAST = &ast.Package{
 								Line:   110,
 							},
 							File:   "sampledata.flux",
-							Source: "{\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
+							Source: "{\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 							Start: ast.Position{
 								Column: 30,
 								Line:   106,
@@ -3413,11 +3413,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 49,
+									Column: 50,
 									Line:   107,
 								},
 								File:   "sampledata.flux",
-								Source: "_csvData = _numeric(includeNull:includeNull)",
+								Source: "_csvData = _numeric(includeNull: includeNull)",
 								Start: ast.Position{
 									Column: 5,
 									Line:   107,
@@ -3450,11 +3450,11 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
+											Column: 49,
 											Line:   107,
 										},
 										File:   "sampledata.flux",
-										Source: "includeNull:includeNull",
+										Source: "includeNull: includeNull",
 										Start: ast.Position{
 											Column: 25,
 											Line:   107,
@@ -3468,11 +3468,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 48,
+												Column: 49,
 												Line:   107,
 											},
 											File:   "sampledata.flux",
-											Source: "includeNull:includeNull",
+											Source: "includeNull: includeNull",
 											Start: ast.Position{
 												Column: 25,
 												Line:   107,
@@ -3506,13 +3506,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 48,
+													Column: 49,
 													Line:   107,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
-													Column: 37,
+													Column: 38,
 													Line:   107,
 												},
 											},
@@ -3528,11 +3528,11 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 49,
+										Column: 50,
 										Line:   107,
 									},
 									File:   "sampledata.flux",
-									Source: "_numeric(includeNull:includeNull)",
+									Source: "_numeric(includeNull: includeNull)",
 									Start: ast.Position{
 										Column: 16,
 										Line:   107,
@@ -3868,7 +3868,7 @@ var pkgAST = &ast.Package{
 						Line:   131,
 					},
 					File:   "sampledata.flux",
-					Source: "uint = (includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
+					Source: "uint = (includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   127,
@@ -3905,7 +3905,7 @@ var pkgAST = &ast.Package{
 							Line:   131,
 						},
 						File:   "sampledata.flux",
-						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
+						Source: "(includeNull=false) => {\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
 						Start: ast.Position{
 							Column: 8,
 							Line:   127,
@@ -3922,7 +3922,7 @@ var pkgAST = &ast.Package{
 								Line:   131,
 							},
 							File:   "sampledata.flux",
-							Source: "{\n    _csvData = _numeric(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
+							Source: "{\n    _csvData = _numeric(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toUInt()\n}",
 							Start: ast.Position{
 								Column: 31,
 								Line:   127,
@@ -3935,11 +3935,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 49,
+									Column: 50,
 									Line:   128,
 								},
 								File:   "sampledata.flux",
-								Source: "_csvData = _numeric(includeNull:includeNull)",
+								Source: "_csvData = _numeric(includeNull: includeNull)",
 								Start: ast.Position{
 									Column: 5,
 									Line:   128,
@@ -3972,11 +3972,11 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
+											Column: 49,
 											Line:   128,
 										},
 										File:   "sampledata.flux",
-										Source: "includeNull:includeNull",
+										Source: "includeNull: includeNull",
 										Start: ast.Position{
 											Column: 25,
 											Line:   128,
@@ -3990,11 +3990,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 48,
+												Column: 49,
 												Line:   128,
 											},
 											File:   "sampledata.flux",
-											Source: "includeNull:includeNull",
+											Source: "includeNull: includeNull",
 											Start: ast.Position{
 												Column: 25,
 												Line:   128,
@@ -4028,13 +4028,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 48,
+													Column: 49,
 													Line:   128,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
-													Column: 37,
+													Column: 38,
 													Line:   128,
 												},
 											},
@@ -4050,11 +4050,11 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 49,
+										Column: 50,
 										Line:   128,
 									},
 									File:   "sampledata.flux",
-									Source: "_numeric(includeNull:includeNull)",
+									Source: "_numeric(includeNull: includeNull)",
 									Start: ast.Position{
 										Column: 16,
 										Line:   128,
@@ -4390,7 +4390,7 @@ var pkgAST = &ast.Package{
 						Line:   152,
 					},
 					File:   "sampledata.flux",
-					Source: "string = (includeNull=false) => {\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+					Source: "string = (includeNull=false) => {\n    _csvData = _string(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   148,
@@ -4427,7 +4427,7 @@ var pkgAST = &ast.Package{
 							Line:   152,
 						},
 						File:   "sampledata.flux",
-						Source: "(includeNull=false) => {\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+						Source: "(includeNull=false) => {\n    _csvData = _string(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 						Start: ast.Position{
 							Column: 10,
 							Line:   148,
@@ -4444,7 +4444,7 @@ var pkgAST = &ast.Package{
 								Line:   152,
 							},
 							File:   "sampledata.flux",
-							Source: "{\n    _csvData = _string(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+							Source: "{\n    _csvData = _string(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 							Start: ast.Position{
 								Column: 33,
 								Line:   148,
@@ -4457,11 +4457,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 48,
+									Column: 49,
 									Line:   149,
 								},
 								File:   "sampledata.flux",
-								Source: "_csvData = _string(includeNull:includeNull)",
+								Source: "_csvData = _string(includeNull: includeNull)",
 								Start: ast.Position{
 									Column: 5,
 									Line:   149,
@@ -4494,11 +4494,11 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 47,
+											Column: 48,
 											Line:   149,
 										},
 										File:   "sampledata.flux",
-										Source: "includeNull:includeNull",
+										Source: "includeNull: includeNull",
 										Start: ast.Position{
 											Column: 24,
 											Line:   149,
@@ -4512,11 +4512,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 47,
+												Column: 48,
 												Line:   149,
 											},
 											File:   "sampledata.flux",
-											Source: "includeNull:includeNull",
+											Source: "includeNull: includeNull",
 											Start: ast.Position{
 												Column: 24,
 												Line:   149,
@@ -4550,13 +4550,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 47,
+													Column: 48,
 													Line:   149,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
-													Column: 36,
+													Column: 37,
 													Line:   149,
 												},
 											},
@@ -4572,11 +4572,11 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 48,
+										Column: 49,
 										Line:   149,
 									},
 									File:   "sampledata.flux",
-									Source: "_string(includeNull:includeNull)",
+									Source: "_string(includeNull: includeNull)",
 									Start: ast.Position{
 										Column: 16,
 										Line:   149,
@@ -4854,7 +4854,7 @@ var pkgAST = &ast.Package{
 						Line:   173,
 					},
 					File:   "sampledata.flux",
-					Source: "bool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+					Source: "bool = (includeNull=false) => {\n    _csvData = _bool(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   169,
@@ -4891,7 +4891,7 @@ var pkgAST = &ast.Package{
 							Line:   173,
 						},
 						File:   "sampledata.flux",
-						Source: "(includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+						Source: "(includeNull=false) => {\n    _csvData = _bool(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 						Start: ast.Position{
 							Column: 8,
 							Line:   169,
@@ -4908,7 +4908,7 @@ var pkgAST = &ast.Package{
 								Line:   173,
 							},
 							File:   "sampledata.flux",
-							Source: "{\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData)\n}",
+							Source: "{\n    _csvData = _bool(includeNull: includeNull)\n\n    return csv.from(csv: _csvData)\n}",
 							Start: ast.Position{
 								Column: 31,
 								Line:   169,
@@ -4921,11 +4921,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 46,
+									Column: 47,
 									Line:   170,
 								},
 								File:   "sampledata.flux",
-								Source: "_csvData = _bool(includeNull:includeNull)",
+								Source: "_csvData = _bool(includeNull: includeNull)",
 								Start: ast.Position{
 									Column: 5,
 									Line:   170,
@@ -4958,11 +4958,11 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 45,
+											Column: 46,
 											Line:   170,
 										},
 										File:   "sampledata.flux",
-										Source: "includeNull:includeNull",
+										Source: "includeNull: includeNull",
 										Start: ast.Position{
 											Column: 22,
 											Line:   170,
@@ -4976,11 +4976,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 45,
+												Column: 46,
 												Line:   170,
 											},
 											File:   "sampledata.flux",
-											Source: "includeNull:includeNull",
+											Source: "includeNull: includeNull",
 											Start: ast.Position{
 												Column: 22,
 												Line:   170,
@@ -5014,13 +5014,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 45,
+													Column: 46,
 													Line:   170,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
-													Column: 34,
+													Column: 35,
 													Line:   170,
 												},
 											},
@@ -5036,11 +5036,11 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 46,
+										Column: 47,
 										Line:   170,
 									},
 									File:   "sampledata.flux",
-									Source: "_bool(includeNull:includeNull)",
+									Source: "_bool(includeNull: includeNull)",
 									Start: ast.Position{
 										Column: 16,
 										Line:   170,
@@ -5318,7 +5318,7 @@ var pkgAST = &ast.Package{
 						Line:   194,
 					},
 					File:   "sampledata.flux",
-					Source: "numericBool = (includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
+					Source: "numericBool = (includeNull=false) => {\n    _csvData = _bool(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   190,
@@ -5355,7 +5355,7 @@ var pkgAST = &ast.Package{
 							Line:   194,
 						},
 						File:   "sampledata.flux",
-						Source: "(includeNull=false) => {\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
+						Source: "(includeNull=false) => {\n    _csvData = _bool(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 						Start: ast.Position{
 							Column: 15,
 							Line:   190,
@@ -5372,7 +5372,7 @@ var pkgAST = &ast.Package{
 								Line:   194,
 							},
 							File:   "sampledata.flux",
-							Source: "{\n    _csvData = _bool(includeNull:includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
+							Source: "{\n    _csvData = _bool(includeNull: includeNull)\n\n    return csv.from(csv: _csvData) |> toInt()\n}",
 							Start: ast.Position{
 								Column: 38,
 								Line:   190,
@@ -5385,11 +5385,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 46,
+									Column: 47,
 									Line:   191,
 								},
 								File:   "sampledata.flux",
-								Source: "_csvData = _bool(includeNull:includeNull)",
+								Source: "_csvData = _bool(includeNull: includeNull)",
 								Start: ast.Position{
 									Column: 5,
 									Line:   191,
@@ -5422,11 +5422,11 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 45,
+											Column: 46,
 											Line:   191,
 										},
 										File:   "sampledata.flux",
-										Source: "includeNull:includeNull",
+										Source: "includeNull: includeNull",
 										Start: ast.Position{
 											Column: 22,
 											Line:   191,
@@ -5440,11 +5440,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 45,
+												Column: 46,
 												Line:   191,
 											},
 											File:   "sampledata.flux",
-											Source: "includeNull:includeNull",
+											Source: "includeNull: includeNull",
 											Start: ast.Position{
 												Column: 22,
 												Line:   191,
@@ -5478,13 +5478,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 45,
+													Column: 46,
 													Line:   191,
 												},
 												File:   "sampledata.flux",
 												Source: "includeNull",
 												Start: ast.Position{
-													Column: 34,
+													Column: 35,
 													Line:   191,
 												},
 											},
@@ -5500,11 +5500,11 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 46,
+										Column: 47,
 										Line:   191,
 									},
 									File:   "sampledata.flux",
-									Source: "_bool(includeNull:includeNull)",
+									Source: "_bool(includeNull: includeNull)",
 									Start: ast.Position{
 										Column: 16,
 										Line:   191,

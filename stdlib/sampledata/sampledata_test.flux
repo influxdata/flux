@@ -55,7 +55,7 @@ testcase sampledata_int_null {
 
     got = sampledata.int(includeNull: true)
         |> range(start: sampledata.start, stop: sampledata.stop)
-    
+
     testing.diff(got: got, want: want)
 }
 
