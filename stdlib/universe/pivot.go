@@ -744,7 +744,7 @@ func (gr *pivotTableGroup) doPivot(key flux.GroupKey, mem arrowmemory.Allocator)
 	// Add the group key columns to the table.
 	for j, col := range key.Cols() {
 		tb.Columns = append(tb.Columns, col)
-		tb.Values = append(tb.Values, arrow.Repeat(key.Value(j), keys.Len(), mem))
+		tb.Values = append(tb.Values, arrow.Repeat(key.Cols()[j].Type, key.Value(j), keys.Len(), mem))
 	}
 
 	// Build each column by appending a value when it matches

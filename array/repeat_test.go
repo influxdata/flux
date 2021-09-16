@@ -4,38 +4,46 @@ import (
 	"testing"
 
 	"github.com/apache/arrow/go/arrow/memory"
-	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
+	"github.com/influxdata/flux/values"
 )
 
 func TestRepeat(t *testing.T) {
 	for _, tc := range []struct {
 		name string
-		v    interface{}
+		t    flux.ColType
+		v    values.Value
 		sz   int
 	}{
 		{
 			name: "Int",
-			v:    int64(4),
+			t:    flux.TInt,
+			v:    values.NewInt(4),
 			sz:   192, // 128 bytes (ints), 64 bytes (nulls)
 		},
 		{
 			name: "Uint",
-			v:    uint64(4),
+			t:    flux.TUInt,
+			v:    values.NewUInt(4),
 			sz:   192, // 128 bytes (ints), 64 bytes (nulls)
 		},
 		{
 			name: "Float",
-			v:    float64(4),
+			t:    flux.TFloat,
+			v:    values.NewFloat(4),
 			sz:   192, // 128 bytes (ints), 64 bytes (nulls)
 		},
 		{
 			name: "String",
-			v:    "a",
+			t:    flux.TString,
+			v:    values.NewString("a"),
 			sz:   0, // optimized away
 		},
 		{
 			name: "Boolean",
-			v:    true,
+			t:    flux.TBool,
+			v:    values.NewBool(true),
 			sz:   128, // 64 bytes (bools), 64 bytes (nulls)
 		},
 	} {
@@ -43,7 +51,7 @@ func TestRepeat(t *testing.T) {
 			mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
 			defer mem.AssertSize(t, 0)
 
-			arr := array.Repeat(tc.v, 10, mem)
+			arr := arrow.Repeat(tc.t, tc.v, 10, mem)
 			mem.AssertSize(t, tc.sz)
 			arr.Release()
 		})

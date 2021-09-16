@@ -319,7 +319,7 @@ func (s *sortTableMergeHeap) NextBuffer(builders []array.Builder, keys []array.I
 	// Initialize the key buffers if they need to be.
 	for i := range keys {
 		if keys[i] == nil {
-			keys[i] = arrow.Repeat(s.key.Value(i), n, mem)
+			keys[i] = arrow.Repeat(s.key.Cols()[i].Type, s.key.Value(i), n, mem)
 		}
 	}
 

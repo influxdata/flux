@@ -196,7 +196,7 @@ type KeyColumn struct {
 }
 
 func (s KeyColumn) Make(n int, mem memory.Allocator) array.Interface {
-	return arrow.Repeat(s.KeyValue(), n, mem)
+	return arrow.Repeat(s.Type(), s.KeyValue(), n, mem)
 }
 
 func (s KeyColumn) Label() string          { return s.k }

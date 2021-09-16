@@ -458,31 +458,28 @@ func (t *simpleAggregateTransformation2) Compute(key flux.GroupKey, state interf
 
 	buffer.Values = make([]array.Interface, len(key.Cols()), len(buffer.Columns))
 	for j := range key.Cols() {
-		buffer.Values[j] = arrow.Repeat(key.Value(j), 1, mem)
+		buffer.Values[j] = arrow.Repeat(key.Cols()[j].Type, key.Value(j), 1, mem)
 	}
 
 	for _, s := range aggregates {
 		var arr array.Interface
-		if !s.agg.IsNull() {
-			switch s.agg.Type() {
-			case flux.TBool:
-				v := s.agg.(BoolValueFunc).ValueBool()
-				arr = array.BooleanRepeat(v, 1, mem)
-			case flux.TInt:
-				v := s.agg.(IntValueFunc).ValueInt()
-				arr = array.IntRepeat(v, 1, mem)
-			case flux.TUInt:
-				v := s.agg.(UIntValueFunc).ValueUInt()
-				arr = array.UintRepeat(v, 1, mem)
-			case flux.TFloat:
-				v := s.agg.(FloatValueFunc).ValueFloat()
-				arr = array.FloatRepeat(v, 1, mem)
-			case flux.TString:
-				v := s.agg.(StringValueFunc).ValueString()
-				arr = array.StringRepeat(v, 1, mem)
-			}
-		} else {
-			arr = arrow.Nulls(s.agg.Type(), 1, mem)
+		isNull := s.agg.IsNull()
+		switch s.agg.Type() {
+		case flux.TBool:
+			v := s.agg.(BoolValueFunc).ValueBool()
+			arr = array.BooleanRepeat(v, isNull, 1, mem)
+		case flux.TInt:
+			v := s.agg.(IntValueFunc).ValueInt()
+			arr = array.IntRepeat(v, isNull, 1, mem)
+		case flux.TUInt:
+			v := s.agg.(UIntValueFunc).ValueUInt()
+			arr = array.UintRepeat(v, isNull, 1, mem)
+		case flux.TFloat:
+			v := s.agg.(FloatValueFunc).ValueFloat()
+			arr = array.FloatRepeat(v, isNull, 1, mem)
+		case flux.TString:
+			v := s.agg.(StringValueFunc).ValueString()
+			arr = array.StringRepeat(v, 1, mem)
 		}
 		buffer.Values = append(buffer.Values, arr)
 	}
