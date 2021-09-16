@@ -330,7 +330,7 @@ func (t *tableTransformation) buildTable(key flux.GroupKey, cols []flux.ColMeta,
 	// Copy over the group key columns.
 	for i, c := range key.Cols() {
 		buffer.Columns[i] = c
-		buffer.Values[i] = arrow.Repeat(key.Value(i), n, t.mem)
+		buffer.Values[i] = arrow.Repeat(key.Cols()[i].Type, key.Value(i), n, t.mem)
 	}
 
 	if err := buffer.Validate(); err != nil {

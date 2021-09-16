@@ -410,7 +410,7 @@ func (dg *dataGenerator) Do(f func(tbl flux.Table) error) error {
 					ts, start, n = dg.generateBufferTimes(start, n)
 					for i, v := range s.Values() {
 						if keyValues[i] == nil {
-							keyValues[i] = arrow.Repeat(v, ts.Len(), dg.Allocator)
+							keyValues[i] = arrow.Repeat(s.Cols()[i].Type, v, ts.Len(), dg.Allocator)
 						}
 						vs := keyValues[i]
 						if vs.Len() == ts.Len() {

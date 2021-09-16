@@ -35,8 +35,8 @@ func TestStream(t *testing.T) {
 				)
 				tbl1 := MustStreamContext(ctx, key1, cols1, func(ctx context.Context, w *table.StreamWriter) error {
 					vs := make([]array.Interface, len(w.Cols()))
-					vs[0] = arrow.Repeat(w.Key().Value(0), 3, alloc)
-					vs[1] = arrow.Repeat(w.Key().Value(1), 3, alloc)
+					vs[0] = arrow.Repeat(w.Key().Cols()[0].Type, w.Key().Value(0), 3, alloc)
+					vs[1] = arrow.Repeat(w.Key().Cols()[1].Type, w.Key().Value(1), 3, alloc)
 					vs[2] = arrow.NewInt([]int64{0, 1, 2}, alloc)
 					vs[3] = arrow.NewFloat([]float64{4, 8, 7}, alloc)
 					return w.Write(vs)
@@ -58,8 +58,8 @@ func TestStream(t *testing.T) {
 				)
 				tbl2 := MustStreamContext(ctx, key2, cols2, func(ctx context.Context, w *table.StreamWriter) error {
 					vs := make([]array.Interface, len(w.Cols()))
-					vs[0] = arrow.Repeat(w.Key().Value(0), 3, alloc)
-					vs[1] = arrow.Repeat(w.Key().Value(1), 3, alloc)
+					vs[0] = arrow.Repeat(w.Key().Cols()[0].Type, w.Key().Value(0), 3, alloc)
+					vs[1] = arrow.Repeat(w.Key().Cols()[1].Type, w.Key().Value(1), 3, alloc)
 					vs[2] = arrow.NewInt([]int64{0, 1, 2}, alloc)
 					vs[3] = arrow.NewFloat([]float64{4, 8, 7}, alloc)
 					if err := w.Write(vs); err != nil {
@@ -67,8 +67,8 @@ func TestStream(t *testing.T) {
 					}
 
 					vs = make([]array.Interface, len(w.Cols()))
-					vs[0] = arrow.Repeat(w.Key().Value(0), 5, alloc)
-					vs[1] = arrow.Repeat(w.Key().Value(1), 5, alloc)
+					vs[0] = arrow.Repeat(w.Key().Cols()[0].Type, w.Key().Value(0), 5, alloc)
+					vs[1] = arrow.Repeat(w.Key().Cols()[1].Type, w.Key().Value(1), 5, alloc)
 					vs[2] = arrow.NewInt([]int64{3, 4, 5, 6, 7}, alloc)
 					vs[3] = arrow.NewFloat([]float64{2, 9, 4, 6, 2}, alloc)
 					return w.Write(vs)
