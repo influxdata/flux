@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"context"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -9,7 +10,9 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -130,10 +133,7 @@ func createDerivativeTransformation(id execute.DatasetID, mode execute.Accumulat
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewDerivativeTransformation(d, cache, s)
-	return t, d, nil
+	return NewDerivativeTransformation(a.Context(), id, s, a.Allocator())
 }
 
 type derivativeTransformation struct {
@@ -147,8 +147,14 @@ type derivativeTransformation struct {
 	timeCol     string
 }
 
-func NewDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DerivativeProcedureSpec) *derivativeTransformation {
-	return &derivativeTransformation{
+func NewDerivativeTransformation(ctx context.Context, id execute.DatasetID, spec *DerivativeProcedureSpec, mem *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	if feature.OptimizeDerivative().Enabled(ctx) {
+		return newDerivativeTransformation2(id, spec, mem)
+	}
+
+	cache := execute.NewTableBuilderCache(mem)
+	d := execute.NewDataset(id, execute.DiscardingMode, cache)
+	tr := &derivativeTransformation{
 		d:           d,
 		cache:       cache,
 		unit:        float64(values.Duration(spec.Unit).Duration()),
@@ -156,6 +162,7 @@ func NewDerivativeTransformation(d execute.Dataset, cache execute.TableBuilderCa
 		columns:     spec.Columns,
 		timeCol:     spec.TimeColumn,
 	}
+	return tr, tr.d, nil
 }
 
 func (t *derivativeTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {

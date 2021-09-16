@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -24,17 +26,6 @@ func TestDerivativeOperation_Marshaling(t *testing.T) {
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
-func TestDerivative_PassThrough(t *testing.T) {
-	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-		s := universe.NewDerivativeTransformation(
-			d,
-			c,
-			&universe.DerivativeProcedureSpec{},
-		)
-		return s
-	})
 }
 
 func TestDerivative_Process(t *testing.T) {
@@ -1013,13 +1004,17 @@ func TestDerivative_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return universe.NewDerivativeTransformation(d, c, tc.spec)
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					tr, d, err := universe.NewDerivativeTransformation(context.Background(), id, tc.spec, alloc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					return tr, d
 				},
 			)
 		})
