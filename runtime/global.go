@@ -11,6 +11,13 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+// RegisterPackage adds a builtin package
+func RegisterPackage(pkg *ast.Package) {
+	if err := Default.RegisterPackage(pkg); err != nil {
+		panic(err)
+	}
+}
+
 // RegisterPackageValue adds a value for an identifier in a builtin package
 func RegisterPackageValue(pkgpath, name string, value values.Value) {
 	if err := Default.RegisterPackageValue(pkgpath, name, value); err != nil {
