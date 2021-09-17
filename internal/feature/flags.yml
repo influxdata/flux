@@ -21,3 +21,9 @@
   key: aggregateTransformationTransport
   default: false
   contact: Jonathan Sternberg
+
+- name: Group Transformation Group
+  description: Enable GroupTransformation interface for the group function
+  key: groupTransformationGroup
+  default: false
+  contact: Sean Brickley

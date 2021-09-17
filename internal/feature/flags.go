@@ -41,6 +41,18 @@ func AggregateTransformationTransport() BoolFlag {
 	return aggregateTransformationTransport
 }
 
+var groupTransformationGroup = feature.MakeBoolFlag(
+	"Group Transformation Group",
+	"groupTransformationGroup",
+	"Sean Brickley",
+	false,
+)
+
+// GroupTransformationGroup - Enable GroupTransformation interface for the group function
+func GroupTransformationGroup() BoolFlag {
+	return groupTransformationGroup
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -49,11 +61,13 @@ func Inject(ctx context.Context, flagger Flagger) context.Context {
 var all = []Flag{
 	narrowTransformationFilter,
 	aggregateTransformationTransport,
+	groupTransformationGroup,
 }
 
 var byKey = map[string]Flag{
 	"narrowTransformationFilter":       narrowTransformationFilter,
 	"aggregateTransformationTransport": aggregateTransformationTransport,
+	"groupTransformationGroup":         groupTransformationGroup,
 }
 
 // Flags returns all feature flags.

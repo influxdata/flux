@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 14,
-					Line:   6,
+					Line:   7,
 				},
 				File:   "hex.flux",
-				Source: "package hex\n\nbuiltin int : (v: string) => int\nbuiltin string : (v: A) => string\nbuiltin uint : (v: string) => uint\nbuiltin bytes",
+				Source: "package hex\n\n\nbuiltin int : (v: string) => int\nbuiltin string : (v: A) => string\nbuiltin uint : (v: string) => uint\nbuiltin bytes",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "hex.flux",
 					Source: "builtin int",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "hex.flux",
 						Source: "int",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 33,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "hex.flux",
 						Source: "(v: string) => int",
 						Start: ast.Position{
 							Column: 15,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "hex.flux",
 							Source: "(v: string) => int",
 							Start: ast.Position{
 								Column: 15,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "hex.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 16,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 17,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "hex.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 16,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "hex.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 19,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "hex.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 19,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "hex.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 30,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "hex.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 30,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -227,13 +227,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "hex.flux",
 					Source: "builtin string",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -245,13 +245,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "hex.flux",
 						Source: "string",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -264,13 +264,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 34,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "hex.flux",
 						Source: "(v: A) => string",
 						Start: ast.Position{
 							Column: 18,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -282,13 +282,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   4,
+								Line:   5,
 							},
 							File:   "hex.flux",
 							Source: "(v: A) => string",
 							Start: ast.Position{
 								Column: 18,
-								Line:   4,
+								Line:   5,
 							},
 						},
 					},
@@ -299,13 +299,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   4,
+									Line:   5,
 								},
 								File:   "hex.flux",
 								Source: "v: A",
 								Start: ast.Position{
 									Column: 19,
-									Line:   4,
+									Line:   5,
 								},
 							},
 						},
@@ -317,13 +317,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   4,
+										Line:   5,
 									},
 									File:   "hex.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 19,
-										Line:   4,
+										Line:   5,
 									},
 								},
 							},
@@ -336,13 +336,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   4,
+										Line:   5,
 									},
 									File:   "hex.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 22,
-										Line:   4,
+										Line:   5,
 									},
 								},
 							},
@@ -353,13 +353,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   4,
+											Line:   5,
 										},
 										File:   "hex.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 22,
-											Line:   4,
+											Line:   5,
 										},
 									},
 								},
@@ -374,13 +374,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   4,
+									Line:   5,
 								},
 								File:   "hex.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 28,
-									Line:   4,
+									Line:   5,
 								},
 							},
 						},
@@ -391,13 +391,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   4,
+										Line:   5,
 									},
 									File:   "hex.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 28,
-										Line:   4,
+										Line:   5,
 									},
 								},
 							},
@@ -413,13 +413,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "hex.flux",
 					Source: "builtin uint",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -431,13 +431,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "hex.flux",
 						Source: "uint",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -450,13 +450,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "hex.flux",
 						Source: "(v: string) => uint",
 						Start: ast.Position{
 							Column: 16,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -468,13 +468,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   5,
+								Line:   6,
 							},
 							File:   "hex.flux",
 							Source: "(v: string) => uint",
 							Start: ast.Position{
 								Column: 16,
-								Line:   5,
+								Line:   6,
 							},
 						},
 					},
@@ -485,13 +485,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   5,
+									Line:   6,
 								},
 								File:   "hex.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 17,
-									Line:   5,
+									Line:   6,
 								},
 							},
 						},
@@ -503,13 +503,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   5,
+										Line:   6,
 									},
 									File:   "hex.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 17,
-										Line:   5,
+										Line:   6,
 									},
 								},
 							},
@@ -522,13 +522,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   5,
+										Line:   6,
 									},
 									File:   "hex.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 20,
-										Line:   5,
+										Line:   6,
 									},
 								},
 							},
@@ -539,13 +539,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   5,
+											Line:   6,
 										},
 										File:   "hex.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 20,
-											Line:   5,
+											Line:   6,
 										},
 									},
 								},
@@ -560,13 +560,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   5,
+									Line:   6,
 								},
 								File:   "hex.flux",
 								Source: "uint",
 								Start: ast.Position{
 									Column: 31,
-									Line:   5,
+									Line:   6,
 								},
 							},
 						},
@@ -577,13 +577,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   5,
+										Line:   6,
 									},
 									File:   "hex.flux",
 									Source: "uint",
 									Start: ast.Position{
 										Column: 31,
-										Line:   5,
+										Line:   6,
 									},
 								},
 							},
@@ -599,13 +599,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   6,
+						Line:   7,
 					},
 					File:   "hex.flux",
 					Source: "builtin bytes",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -617,13 +617,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "hex.flux",
 						Source: "bytes",
 						Start: ast.Position{
 							Column: 9,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -636,13 +636,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 37,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "hex.flux",
 						Source: "(v: string) => bytes",
 						Start: ast.Position{
 							Column: 17,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -654,13 +654,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   6,
+								Line:   7,
 							},
 							File:   "hex.flux",
 							Source: "(v: string) => bytes",
 							Start: ast.Position{
 								Column: 17,
-								Line:   6,
+								Line:   7,
 							},
 						},
 					},
@@ -671,13 +671,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   6,
+									Line:   7,
 								},
 								File:   "hex.flux",
 								Source: "v: string",
 								Start: ast.Position{
 									Column: 18,
-									Line:   6,
+									Line:   7,
 								},
 							},
 						},
@@ -689,13 +689,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   6,
+										Line:   7,
 									},
 									File:   "hex.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 18,
-										Line:   6,
+										Line:   7,
 									},
 								},
 							},
@@ -708,13 +708,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   6,
+										Line:   7,
 									},
 									File:   "hex.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 21,
-										Line:   6,
+										Line:   7,
 									},
 								},
 							},
@@ -725,13 +725,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   6,
+											Line:   7,
 										},
 										File:   "hex.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 21,
-											Line:   6,
+											Line:   7,
 										},
 									},
 								},
@@ -746,13 +746,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   6,
+									Line:   7,
 								},
 								File:   "hex.flux",
 								Source: "bytes",
 								Start: ast.Position{
 									Column: 32,
-									Line:   6,
+									Line:   7,
 								},
 							},
 						},
@@ -763,13 +763,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   6,
+										Line:   7,
 									},
 									File:   "hex.flux",
 									Source: "bytes",
 									Start: ast.Position{
 										Column: 32,
-										Line:   6,
+										Line:   7,
 									},
 								},
 							},
