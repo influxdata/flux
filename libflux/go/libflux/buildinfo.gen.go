@@ -249,6 +249,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/schema/show_tag_keys_test.flux":                                   "e7fbc9b2a51539bde61153f81c1dd090f72d14d9a3f064d276984c5c818987e1",
 	"stdlib/influxdata/influxdb/schema/show_tag_keys_with_pred_test.flux":                         "ec81c53de89e57af7ac1a5147a3805db2b6e8fed77c0fb608c8f49ade0fde967",
 	"stdlib/influxdata/influxdb/schema/show_tag_values_empty_test.flux":                           "93baa172562c75ed21bc6eb1780341844233ccac3cb09d09ed0c18c81b988c95",
+	"stdlib/influxdata/influxdb/schema/show_tag_values_measurement_or_predicate_test.flux":        "c9acc9c5838c146bb72b1a0806143003a539bdb877bf2dbb2662fadc5fe5d970",
 	"stdlib/influxdata/influxdb/schema/show_tag_values_test.flux":                                 "1c0f7b42dbfd86ce00eff863ed8c66d15a735127e37ca9fd8a86ec14fe8c5555",
 	"stdlib/influxdata/influxdb/schema/show_tag_values_with_pred_test.flux":                       "ec643b6c1b149c18a9a17a6025245a80e8fb076dfd38acd65558d4c879358d4f",
 	"stdlib/influxdata/influxdb/secrets/secrets.flux":                                             "d4aca3c5ff3186665d37ba487e8de0ed13235b3c7802912b34e5502f6dff76e5",
