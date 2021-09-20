@@ -74,7 +74,7 @@ impl Parser {
     }
 
     // peek_with_regex is the same as peek, except that the scan step will allow scanning regexp tokens.
-    fn peek_with_regex(&mut self) -> Token {
+    fn peek_with_regex(&mut self) -> &Token {
         if let Some(token) = &mut self.t {
             if let Token {
                 tok: TokenType::Div,
@@ -86,12 +86,12 @@ impl Parser {
                 self.s.unread();
             }
         }
-        match self.t.clone() {
-            Some(t) => t,
+        match self.t {
+            Some(ref t) => t,
             None => {
                 let t = self.s.scan_with_regex();
-                self.t = Some(t.clone());
-                t
+                self.t = Some(t);
+                self.t.as_ref().unwrap()
             }
         }
     }
@@ -1368,7 +1368,10 @@ impl Parser {
             TokenType::LParen => self.parse_paren_expression(),
             // We got a bad token, do not consume it, but use it in the message.
             // Other methods will match BadExpr and consume the token if needed.
-            _ => self.create_bad_expression(t),
+            _ => {
+                let t = t.clone();
+                self.create_bad_expression(t)
+            }
         }
     }
     fn parse_string_expression(&mut self) -> Result<StringExpr, TokenError> {
