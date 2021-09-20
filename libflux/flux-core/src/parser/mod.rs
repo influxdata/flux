@@ -54,11 +54,8 @@ impl Parser {
     // scan will read the next token from the Scanner. If peek has been used,
     // this will return the peeked token and consume it.
     fn scan(&mut self) -> Token {
-        match self.t.clone() {
-            Some(t) => {
-                self.t = None;
-                t
-            }
+        match self.t.take() {
+            Some(t) => t,
             None => self.s.scan(),
         }
     }
@@ -102,8 +99,8 @@ impl Parser {
     // consume will consume a token that has been retrieve using peek.
     // This will panic if a token has not been buffered with peek.
     fn consume(&mut self) {
-        match self.t.clone() {
-            Some(_) => self.t = None,
+        match self.t.take() {
+            Some(_) => (),
             None => panic!("called consume on an unbuffered input"),
         }
     }
