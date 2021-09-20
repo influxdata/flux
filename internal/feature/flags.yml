@@ -27,3 +27,9 @@
   key: groupTransformationGroup
   default: false
   contact: Sean Brickley
+
+- name: Query Concurrency Limit
+  description: Sets the query concurrency limit for the planner
+  key: queryConcurrencyLimit
+  default: 0
+  contact: Jonathan Sternberg
