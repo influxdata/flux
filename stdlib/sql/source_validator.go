@@ -4,7 +4,7 @@ import (
 	neturl "net/url"
 	"strings"
 
-	"github.com/bonitoo-io/go-sql-bigquery"
+	bigquery "github.com/bonitoo-io/go-sql-bigquery"
 	"github.com/go-sql-driver/mysql"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/url"
@@ -32,6 +32,9 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		cfg, err := mysql.ParseDSN(dataSourceName)
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source dsn: %v", err)
+		}
+		if cfg.AllowAllFiles {
+			return errors.New(codes.Invalid, "invalid data source dsn: may not set allowAllFiles")
 		}
 		u = &neturl.URL{
 			Scheme: cfg.Net,
