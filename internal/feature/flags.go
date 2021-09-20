@@ -53,6 +53,18 @@ func GroupTransformationGroup() BoolFlag {
 	return groupTransformationGroup
 }
 
+var queryConcurrencyLimit = feature.MakeIntFlag(
+	"Query Concurrency Limit",
+	"queryConcurrencyLimit",
+	"Jonathan Sternberg",
+	0,
+)
+
+// QueryConcurrencyLimit - Sets the query concurrency limit for the planner
+func QueryConcurrencyLimit() IntFlag {
+	return queryConcurrencyLimit
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -62,12 +74,14 @@ var all = []Flag{
 	narrowTransformationFilter,
 	aggregateTransformationTransport,
 	groupTransformationGroup,
+	queryConcurrencyLimit,
 }
 
 var byKey = map[string]Flag{
 	"narrowTransformationFilter":       narrowTransformationFilter,
 	"aggregateTransformationTransport": aggregateTransformationTransport,
 	"groupTransformationGroup":         groupTransformationGroup,
+	"queryConcurrencyLimit":            queryConcurrencyLimit,
 }
 
 // Flags returns all feature flags.
