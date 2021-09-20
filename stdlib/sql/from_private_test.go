@@ -151,6 +151,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			V:      url.PrivateIPValidator{},
 			ErrMsg: "data source did not pass url validation",
+		}, {
+			Name: "invalid mysql allowAllFiles parameter",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "mysql",
+				DataSourceName: "username:password@tcp(localhost:3306)/dbname?allowAllFiles=true",
+				Query:          "",
+			},
+			ErrMsg: "invalid data source dsn: may not set allowAllFiles",
 		},
 	}
 	testCases.Run(t, createFromSQLSource)
