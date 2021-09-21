@@ -33,3 +33,9 @@
   key: queryConcurrencyLimit
   default: 0
   contact: Jonathan Sternberg
+
+- name: Optimize Derivative
+  description: Enable derivative optimization
+  key: optimizeDerivative
+  default: false
+  contact: Jonathan Sternberg

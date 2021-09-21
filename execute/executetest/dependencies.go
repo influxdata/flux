@@ -29,6 +29,7 @@ func NewTestExecuteDependencies() flux.Dependency {
 var testFlags = map[string]interface{}{
 	"narrowTransformationFilter":       true,
 	"aggregateTransformationTransport": true,
+	"optimizeDerivative":               true,
 }
 
 type testFlagger struct{}

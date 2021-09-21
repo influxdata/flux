@@ -65,6 +65,18 @@ func QueryConcurrencyLimit() IntFlag {
 	return queryConcurrencyLimit
 }
 
+var optimizeDerivative = feature.MakeBoolFlag(
+	"Optimize Derivative",
+	"optimizeDerivative",
+	"Jonathan Sternberg",
+	false,
+)
+
+// OptimizeDerivative - Enable derivative optimization
+func OptimizeDerivative() BoolFlag {
+	return optimizeDerivative
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -75,6 +87,7 @@ var all = []Flag{
 	aggregateTransformationTransport,
 	groupTransformationGroup,
 	queryConcurrencyLimit,
+	optimizeDerivative,
 }
 
 var byKey = map[string]Flag{
@@ -82,6 +95,7 @@ var byKey = map[string]Flag{
 	"aggregateTransformationTransport": aggregateTransformationTransport,
 	"groupTransformationGroup":         groupTransformationGroup,
 	"queryConcurrencyLimit":            queryConcurrencyLimit,
+	"optimizeDerivative":               optimizeDerivative,
 }
 
 // Flags returns all feature flags.
