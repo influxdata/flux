@@ -93,16 +93,15 @@ impl Substitutable for PolyType {
     }
 }
 
-impl MaxTvar for Vec<Tvar> {
+impl MaxTvar for [Tvar] {
     fn max_tvar(&self) -> Tvar {
-        self.iter()
-            .fold(Tvar(0), |max, tv| if *tv > max { *tv } else { max })
+        self.iter().max().cloned().unwrap_or(Tvar(0))
     }
 }
 
 impl MaxTvar for PolyType {
     fn max_tvar(&self) -> Tvar {
-        vec![self.vars.max_tvar(), self.expr.max_tvar()].max_tvar()
+        [self.vars.max_tvar(), self.expr.max_tvar()].max_tvar()
     }
 }
 
@@ -711,7 +710,7 @@ impl Substitutable for Dictionary {
 
 impl MaxTvar for Dictionary {
     fn max_tvar(&self) -> Tvar {
-        vec![self.key.max_tvar(), self.val.max_tvar()].max_tvar()
+        [self.key.max_tvar(), self.val.max_tvar()].max_tvar()
     }
 }
 
@@ -845,7 +844,7 @@ impl MaxTvar for Record {
     fn max_tvar(&self) -> Tvar {
         match self {
             Record::Empty => Tvar(0),
-            Record::Extension { head, tail } => vec![head.max_tvar(), tail.max_tvar()].max_tvar(),
+            Record::Extension { head, tail } => [head.max_tvar(), tail.max_tvar()].max_tvar(),
         }
     }
 }
@@ -1191,7 +1190,7 @@ impl<T: MaxTvar> MaxTvar for Option<T> {
 
 impl MaxTvar for Function {
     fn max_tvar(&self) -> Tvar {
-        vec![
+        [
             self.req.max_tvar(),
             self.opt.max_tvar(),
             self.pipe.max_tvar(),
