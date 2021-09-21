@@ -2,7 +2,10 @@
 
 package sample
 
-import ast "github.com/influxdata/flux/ast"
+import (
+	ast "github.com/influxdata/flux/ast"
+	parser "github.com/influxdata/flux/internal/parser"
+)
 
 var FluxTestPackages = []*ast.Package{&ast.Package{
 	BaseNode: ast.BaseNode{
@@ -10,7 +13,1331 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Errors:   nil,
 		Loc:      nil,
 	},
-	Files:   []*ast.File{},
+	Files: []*ast.File{&ast.File{
+		BaseNode: ast.BaseNode{
+			Comments: nil,
+			Errors:   nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 138,
+					Line:   39,
+				},
+				File:   "alignToNow_test.flux",
+				Source: "package sample_test\n\n\nimport \"influxdata/influxdb/sample\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"\n\noutData = \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"\n\nt_sample_alignToNow = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)\n    |> sample.alignToNow()\n\ntest _sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   7,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "now = () => 2030-01-01T00:00:00Z",
+						Start: ast.Position{
+							Column: 8,
+							Line:   7,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   7,
+							},
+							File:   "alignToNow_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   7,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					Arrow: nil,
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   7,
+							},
+							File:   "alignToNow_test.flux",
+							Source: "() => 2030-01-01T00:00:00Z",
+							Start: ast.Position{
+								Column: 14,
+								Line:   7,
+							},
+						},
+					},
+					Body: &ast.DateTimeLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   7,
+								},
+								File:   "alignToNow_test.flux",
+								Source: "2030-01-01T00:00:00Z",
+								Start: ast.Position{
+									Column: 20,
+									Line:   7,
+								},
+							},
+						},
+						Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+					},
+					Lparen: nil,
+					Params: []*ast.Property{},
+					Rparan: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   7,
+					},
+					File:   "alignToNow_test.flux",
+					Source: "option now = () => 2030-01-01T00:00:00Z",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   20,
+					},
+					File:   "alignToNow_test.flux",
+					Source: "inData = \"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   9,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   9,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   9,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   20,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "\"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   9,
+						},
+					},
+				},
+				Value: "\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   33,
+					},
+					File:   "alignToNow_test.flux",
+					Source: "outData = \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   22,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   22,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   22,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   33,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "\"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   22,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 27,
+						Line:   37,
+					},
+					File:   "alignToNow_test.flux",
+					Source: "t_sample_alignToNow = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   35,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   35,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "t_sample_alignToNow",
+						Start: ast.Position{
+							Column: 1,
+							Line:   35,
+						},
+					},
+				},
+				Name: "t_sample_alignToNow",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 27,
+							Line:   37,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+						Start: ast.Position{
+							Column: 23,
+							Line:   35,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   35,
+									},
+									File:   "alignToNow_test.flux",
+									Source: "table",
+									Start: ast.Position{
+										Column: 37,
+										Line:   35,
+									},
+								},
+							},
+							Name: "table",
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 69,
+									Line:   36,
+								},
+								File:   "alignToNow_test.flux",
+								Source: "table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)",
+								Start: ast.Position{
+									Column: 37,
+									Line:   35,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 68,
+											Line:   36,
+										},
+										File:   "alignToNow_test.flux",
+										Source: "start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z",
+										Start: ast.Position{
+											Column: 14,
+											Line:   36,
+										},
+									},
+								},
+								Lbrace: nil,
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   36,
+											},
+											File:   "alignToNow_test.flux",
+											Source: "start: 2018-05-22T19:53:26Z",
+											Start: ast.Position{
+												Column: 14,
+												Line:   36,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 19,
+													Line:   36,
+												},
+												File:   "alignToNow_test.flux",
+												Source: "start",
+												Start: ast.Position{
+													Column: 14,
+													Line:   36,
+												},
+											},
+										},
+										Name: "start",
+									},
+									Separator: nil,
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   36,
+												},
+												File:   "alignToNow_test.flux",
+												Source: "2018-05-22T19:53:26Z",
+												Start: ast.Position{
+													Column: 21,
+													Line:   36,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-05-22T19:53:26Z"),
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 68,
+												Line:   36,
+											},
+											File:   "alignToNow_test.flux",
+											Source: "stop:2018-05-22T19:55:00Z",
+											Start: ast.Position{
+												Column: 43,
+												Line:   36,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 47,
+													Line:   36,
+												},
+												File:   "alignToNow_test.flux",
+												Source: "stop",
+												Start: ast.Position{
+													Column: 43,
+													Line:   36,
+												},
+											},
+										},
+										Name: "stop",
+									},
+									Separator: nil,
+									Value: &ast.DateTimeLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   36,
+												},
+												File:   "alignToNow_test.flux",
+												Source: "2018-05-22T19:55:00Z",
+												Start: ast.Position{
+													Column: 48,
+													Line:   36,
+												},
+											},
+										},
+										Value: parser.MustParseTime("2018-05-22T19:55:00Z"),
+									},
+								}},
+								Rbrace: nil,
+								With:   nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 69,
+										Line:   36,
+									},
+									File:   "alignToNow_test.flux",
+									Source: "range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)",
+									Start: ast.Position{
+										Column: 8,
+										Line:   36,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   36,
+										},
+										File:   "alignToNow_test.flux",
+										Source: "range",
+										Start: ast.Position{
+											Column: 8,
+											Line:   36,
+										},
+									},
+								},
+								Name: "range",
+							},
+							Lparen: nil,
+							Rparen: nil,
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 27,
+								Line:   37,
+							},
+							File:   "alignToNow_test.flux",
+							Source: "table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+							Start: ast.Position{
+								Column: 37,
+								Line:   35,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 27,
+									Line:   37,
+								},
+								File:   "alignToNow_test.flux",
+								Source: "sample.alignToNow()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   37,
+								},
+							},
+						},
+						Callee: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   37,
+									},
+									File:   "alignToNow_test.flux",
+									Source: "sample.alignToNow",
+									Start: ast.Position{
+										Column: 8,
+										Line:   37,
+									},
+								},
+							},
+							Lbrack: nil,
+							Object: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   37,
+										},
+										File:   "alignToNow_test.flux",
+										Source: "sample",
+										Start: ast.Position{
+											Column: 8,
+											Line:   37,
+										},
+									},
+								},
+								Name: "sample",
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   37,
+										},
+										File:   "alignToNow_test.flux",
+										Source: "alignToNow",
+										Start: ast.Position{
+											Column: 15,
+											Line:   37,
+										},
+									},
+								},
+								Name: "alignToNow",
+							},
+							Rbrack: nil,
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   35,
+							},
+							File:   "alignToNow_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   35,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   35,
+								},
+								File:   "alignToNow_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 24,
+									Line:   35,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Separator: nil,
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   35,
+							},
+							File:   "alignToNow_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 30,
+								Line:   35,
+							},
+						},
+					}},
+				}},
+				Rparan: nil,
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 138,
+							Line:   39,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "_sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   39,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   39,
+							},
+							File:   "alignToNow_test.flux",
+							Source: "_sample_alignToNow",
+							Start: ast.Position{
+								Column: 6,
+								Line:   39,
+							},
+						},
+					},
+					Name: "_sample_alignToNow",
+				},
+				Init: &ast.FunctionExpression{
+					Arrow: nil,
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 138,
+								Line:   39,
+							},
+							File:   "alignToNow_test.flux",
+							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+							Start: ast.Position{
+								Column: 27,
+								Line:   39,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 138,
+									Line:   39,
+								},
+								File:   "alignToNow_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+								Start: ast.Position{
+									Column: 33,
+									Line:   39,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 137,
+										Line:   39,
+									},
+									File:   "alignToNow_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow}",
+									Start: ast.Position{
+										Column: 34,
+										Line:   39,
+									},
+								},
+							},
+							Lbrace: nil,
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 74,
+											Line:   39,
+										},
+										File:   "alignToNow_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 35,
+											Line:   39,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 40,
+												Line:   39,
+											},
+											File:   "alignToNow_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 35,
+												Line:   39,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Separator: nil,
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 73,
+													Line:   39,
+												},
+												File:   "alignToNow_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 62,
+													Line:   39,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 73,
+														Line:   39,
+													},
+													File:   "alignToNow_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 62,
+														Line:   39,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 65,
+															Line:   39,
+														},
+														File:   "alignToNow_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 62,
+															Line:   39,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Separator: nil,
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   39,
+														},
+														File:   "alignToNow_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 67,
+															Line:   39,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 74,
+												Line:   39,
+											},
+											File:   "alignToNow_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 42,
+												Line:   39,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 61,
+													Line:   39,
+												},
+												File:   "alignToNow_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 42,
+													Line:   39,
+												},
+											},
+										},
+										Lbrack: nil,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 49,
+														Line:   39,
+													},
+													File:   "alignToNow_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 42,
+														Line:   39,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   39,
+													},
+													File:   "alignToNow_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 50,
+														Line:   39,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+										Rbrack: nil,
+									},
+									Lparen: nil,
+									Rparen: nil,
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 111,
+											Line:   39,
+										},
+										File:   "alignToNow_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 76,
+											Line:   39,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   39,
+											},
+											File:   "alignToNow_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 76,
+												Line:   39,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Separator: nil,
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 110,
+													Line:   39,
+												},
+												File:   "alignToNow_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 98,
+													Line:   39,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 110,
+														Line:   39,
+													},
+													File:   "alignToNow_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 98,
+														Line:   39,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 101,
+															Line:   39,
+														},
+														File:   "alignToNow_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 98,
+															Line:   39,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Separator: nil,
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 110,
+															Line:   39,
+														},
+														File:   "alignToNow_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 103,
+															Line:   39,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 111,
+												Line:   39,
+											},
+											File:   "alignToNow_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 82,
+												Line:   39,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 97,
+													Line:   39,
+												},
+												File:   "alignToNow_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 82,
+													Line:   39,
+												},
+											},
+										},
+										Lbrack: nil,
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 89,
+														Line:   39,
+													},
+													File:   "alignToNow_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 82,
+														Line:   39,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 97,
+														Line:   39,
+													},
+													File:   "alignToNow_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 90,
+														Line:   39,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+										Rbrack: nil,
+									},
+									Lparen: nil,
+									Rparen: nil,
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 136,
+											Line:   39,
+										},
+										File:   "alignToNow_test.flux",
+										Source: "fn: t_sample_alignToNow",
+										Start: ast.Position{
+											Column: 113,
+											Line:   39,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 115,
+												Line:   39,
+											},
+											File:   "alignToNow_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 113,
+												Line:   39,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Separator: nil,
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 136,
+												Line:   39,
+											},
+											File:   "alignToNow_test.flux",
+											Source: "t_sample_alignToNow",
+											Start: ast.Position{
+												Column: 117,
+												Line:   39,
+											},
+										},
+									},
+									Name: "t_sample_alignToNow",
+								},
+							}},
+							Rbrace: nil,
+							With:   nil,
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+					Lparen: nil,
+					Params: []*ast.Property{},
+					Rparan: nil,
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 138,
+						Line:   39,
+					},
+					File:   "alignToNow_test.flux",
+					Source: "test _sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   39,
+					},
+				},
+			},
+		}},
+		Eof: nil,
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 36,
+						Line:   4,
+					},
+					File:   "alignToNow_test.flux",
+					Source: "import \"influxdata/influxdb/sample\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 36,
+							Line:   4,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "\"influxdata/influxdb/sample\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/sample",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "alignToNow_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "alignToNow_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   1,
+					},
+					File:   "alignToNow_test.flux",
+					Source: "package sample_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   1,
+						},
+						File:   "alignToNow_test.flux",
+						Source: "sample_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "sample_test",
+			},
+		},
+	}},
 	Package: "sample_test",
 	Path:    "influxdata/influxdb/sample",
 }}

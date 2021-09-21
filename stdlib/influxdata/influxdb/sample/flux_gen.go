@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   84,
+					Line:   134,
 				},
 				File:   "sample.flux",
-				Source: "package sample\n\n\nimport \"array\"\nimport \"dict\"\nimport \"experimental/csv\"\n\nsets = [\n    \"airSensor\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv\",\n        desc: \"Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.\",\n        size: \"~600 KB\",\n    },\n    \"birdMigration\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\",\n        desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\",\n        size: \"~1.2 MB\",\n    },\n    \"noaa\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\",\n        desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\",\n        size: \"~1.3 MB\",\n    },\n    \"usgs\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\",\n        desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\",\n        size: \"~6 MB\",\n    },\n]\n\n_setInfo = (set) => {\n    _setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\"})\n\n    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size}\n}\n\n// data downloads a specified InfluxDB sample dataset.\n//\n// ## Parameters\n//\n// - `set` is the sample data set to download and output. Valid datasets:\n//    - **airSensor**: Simulated temperature, humidity, and CO data from an office building.\n//    - **birdMigration**: 2019 African bird migration data from [Movebank: Animal Tracking](https://www.kaggle.com/pulkit8595/movebank-animal-tracking).\n//    - **noaa**: Latest observations from the [NOAA National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/).\n//    - **usgs**: USGS earthquake data from the last week.\n//\n// ## Load InfluxDB sample data\n//\n// ```\n// import \"influxdata/influxdb/sample\"\n//\n// sample.data(set: \"airSensor\")\n// ```\n//\ndata = (set) => {\n    setInfo = _setInfo(set: set)\n\n    url = if setInfo.url == \"\" then\n        die(msg: \"Invalid sample data set. Use sample.list to view available datasets.\")\n    else\n        setInfo.url\n\n    return csv.from(url: url)\n}\n\n// list outputs information about available InfluxDB sample datasets.\n//\n// ## List available InfluxDB sample datasets\n//\n// ```\n// import \"influxdata/influxdb/sample\"\n//\n// sample.list()\n// ```\n//\nlist = () => array.from(\n    rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"usgs\"),\n    ],\n)",
+				Source: "package sample\n\n\nimport \"array\"\nimport \"dict\"\nimport \"experimental/csv\"\n\nsets = [\n    \"airSensor\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv\",\n        desc: \"Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.\",\n        size: \"~600 KB\",\n        type: \"live\",\n    },\n    \"birdMigration\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\",\n        desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\",\n        size: \"~1.2 MB\",\n        type: \"static\",\n    },\n    \"bitcoin\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv\",\n        desc: \"Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.\",\n        size: \"~700 KB\",\n        type: \"live\",\n    },\n    \"machineProduction\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/machine-production.csv\",\n        desc: \"States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.\",\n        size: \"~11.9 MB\",\n        type: \"static\",\n    },\n    \"noaa\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\",\n        desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\",\n        size: \"~1.3 MB\",\n        type: \"live\",\n    },\n    \"noaaWater\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa.csv\",\n        desc: \"Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.\",\n        size: \"~10.3 MB\",\n        type: \"static\",\n    },\n    \"usgs\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\",\n        desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\",\n        size: \"~6 MB\",\n        type: \"live\",\n    },\n]\n\n_setInfo = (set) => {\n    _setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\", type: \"\"})\n\n    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size, type: _setDict.type}\n}\n\n// data downloads a specified InfluxDB sample dataset.\n//\n// ## Parameters\n//\n// - `set` is the sample data set to download and output. Valid datasets:\n//    - **airSensor**: Simulated temperature, humidity, and CO data from an office building.\n//    - **birdMigration**: 2019 African bird migration data from [Movebank: Animal Tracking](https://www.kaggle.com/pulkit8595/movebank-animal-tracking).\n//    - **bitcoin**: Bitcoin price data from the last 30 days _([Powered by CoinDesk](https://www.coindesk.com/price/bitcoin))_.\n//    - **noaa**: Latest observations from the [NOAA National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/).\n//    - **machineProduction**: States and metrics reported from four automated grinding wheel stations on a production line.\n//    - **noaaWater**: Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services between 2019-08-17 and 2019-09-17.\n//    - **usgs**: USGS earthquake data from the last week.\n//\n// ## Load InfluxDB sample data\n//\n// ```\n// import \"influxdata/influxdb/sample\"\n//\n// sample.data(set: \"airSensor\")\n// ```\n//\ndata = (set) => {\n    setInfo = _setInfo(set: set)\n\n    url = if setInfo.url == \"\" then\n        die(msg: \"Invalid sample data set. Use sample.list to view available datasets.\")\n    else\n        setInfo.url\n\n    return csv.from(url: url)\n}\n\n// list outputs information about available InfluxDB sample datasets.\n//\n// ## List available InfluxDB sample datasets\n//\n// ```\n// import \"influxdata/influxdb/sample\"\n//\n// sample.list()\n// ```\n//\nlist = () => array.from(\n    rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"bitcoin\"),\n        _setInfo(set: \"machineProduction\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"noaaWater\"),\n        _setInfo(set: \"usgs\"),\n    ],\n)\n\n// alignToNow shifts time values in input data to align the chronological last point to _now_.\n// When writing static historical sample datasets to **InfluxDB Cloud**, use alignToNow\n// to avoid losing sample data with timestamps outside of the retention period\n// associated with your InfluxDB Cloud account.\n// Input data must have a `_time` column.\n//\n// ## Align sample data to now\n//\n// ```\n// import \"influxdata/influxdb/sample\"\n//\n// sample.data(set: \"birdMigration\")\n//    |> sample.alignToNow()\n// ```\nalignToNow = (tables=<-) => {\n    _lastTime = (tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\") |> findRecord(fn: (key) => true, idx: 0))._time\n    _offset = int(v: now()) - int(v: _lastTime)\n    _offsetDuration = duration(v: _offset)\n\n    return tables |> timeShift(duration: _offsetDuration)\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -41,10 +41,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   30,
+						Line:   52,
 					},
 					File:   "sample.flux",
-					Source: "sets = [\n    \"airSensor\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv\",\n        desc: \"Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.\",\n        size: \"~600 KB\",\n    },\n    \"birdMigration\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\",\n        desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\",\n        size: \"~1.2 MB\",\n    },\n    \"noaa\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\",\n        desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\",\n        size: \"~1.3 MB\",\n    },\n    \"usgs\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\",\n        desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\",\n        size: \"~6 MB\",\n    },\n]",
+					Source: "sets = [\n    \"airSensor\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv\",\n        desc: \"Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.\",\n        size: \"~600 KB\",\n        type: \"live\",\n    },\n    \"birdMigration\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\",\n        desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\",\n        size: \"~1.2 MB\",\n        type: \"static\",\n    },\n    \"bitcoin\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv\",\n        desc: \"Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.\",\n        size: \"~700 KB\",\n        type: \"live\",\n    },\n    \"machineProduction\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/machine-production.csv\",\n        desc: \"States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.\",\n        size: \"~11.9 MB\",\n        type: \"static\",\n    },\n    \"noaa\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\",\n        desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\",\n        size: \"~1.3 MB\",\n        type: \"live\",\n    },\n    \"noaaWater\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa.csv\",\n        desc: \"Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.\",\n        size: \"~10.3 MB\",\n        type: \"static\",\n    },\n    \"usgs\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\",\n        desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\",\n        size: \"~6 MB\",\n        type: \"live\",\n    },\n]",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -77,10 +77,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   30,
+							Line:   52,
 						},
 						File:   "sample.flux",
-						Source: "[\n    \"airSensor\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv\",\n        desc: \"Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.\",\n        size: \"~600 KB\",\n    },\n    \"birdMigration\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\",\n        desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\",\n        size: \"~1.2 MB\",\n    },\n    \"noaa\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\",\n        desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\",\n        size: \"~1.3 MB\",\n    },\n    \"usgs\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\",\n        desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\",\n        size: \"~6 MB\",\n    },\n]",
+						Source: "[\n    \"airSensor\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv\",\n        desc: \"Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.\",\n        size: \"~600 KB\",\n        type: \"live\",\n    },\n    \"birdMigration\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\",\n        desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\",\n        size: \"~1.2 MB\",\n        type: \"static\",\n    },\n    \"bitcoin\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv\",\n        desc: \"Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.\",\n        size: \"~700 KB\",\n        type: \"live\",\n    },\n    \"machineProduction\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/machine-production.csv\",\n        desc: \"States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.\",\n        size: \"~11.9 MB\",\n        type: \"static\",\n    },\n    \"noaa\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\",\n        desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\",\n        size: \"~1.3 MB\",\n        type: \"live\",\n    },\n    \"noaaWater\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa.csv\",\n        desc: \"Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.\",\n        size: \"~10.3 MB\",\n        type: \"static\",\n    },\n    \"usgs\": {\n        url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\",\n        desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\",\n        size: \"~6 MB\",\n        type: \"live\",\n    },\n]",
 						Start: ast.Position{
 							Column: 8,
 							Line:   9,
@@ -115,10 +115,10 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "sample.flux",
-								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv\",\n        desc: \"Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.\",\n        size: \"~600 KB\",\n    }",
+								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv\",\n        desc: \"Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.\",\n        size: \"~600 KB\",\n        type: \"live\",\n    }",
 								Start: ast.Position{
 									Column: 18,
 									Line:   10,
@@ -297,6 +297,63 @@ var pkgAST = &ast.Package{
 								},
 								Value: "~600 KB",
 							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   14,
+									},
+									File:   "sample.flux",
+									Source: "type: \"live\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   14,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   14,
+										},
+										File:   "sample.flux",
+										Source: "type",
+										Start: ast.Position{
+											Column: 9,
+											Line:   14,
+										},
+									},
+								},
+								Name: "type",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   14,
+										},
+										File:   "sample.flux",
+										Source: "\"live\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   14,
+										},
+									},
+								},
+								Value: "live",
+							},
 						}},
 						Rbrace: nil,
 						With:   nil,
@@ -310,13 +367,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   15,
+									Line:   16,
 								},
 								File:   "sample.flux",
 								Source: "\"birdMigration\"",
 								Start: ast.Position{
 									Column: 5,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -329,13 +386,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   19,
+									Line:   21,
 								},
 								File:   "sample.flux",
-								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\",\n        desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\",\n        size: \"~1.2 MB\",\n    }",
+								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\",\n        desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\",\n        size: \"~1.2 MB\",\n        type: \"static\",\n    }",
 								Start: ast.Position{
 									Column: 22,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -347,13 +404,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 75,
-										Line:   16,
+										Line:   17,
 									},
 									File:   "sample.flux",
 									Source: "url: \"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   16,
+										Line:   17,
 									},
 								},
 							},
@@ -365,13 +422,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   16,
+											Line:   17,
 										},
 										File:   "sample.flux",
 										Source: "url",
 										Start: ast.Position{
 											Column: 9,
-											Line:   16,
+											Line:   17,
 										},
 									},
 								},
@@ -385,13 +442,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 75,
-											Line:   16,
+											Line:   17,
 										},
 										File:   "sample.flux",
 										Source: "\"https://influx-testdata.s3.amazonaws.com/bird-migration.csv\"",
 										Start: ast.Position{
 											Column: 14,
-											Line:   16,
+											Line:   17,
 										},
 									},
 								},
@@ -404,13 +461,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 158,
-										Line:   17,
+										Line:   18,
 									},
 									File:   "sample.flux",
 									Source: "desc: \"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   17,
+										Line:   18,
 									},
 								},
 							},
@@ -422,13 +479,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   17,
+											Line:   18,
 										},
 										File:   "sample.flux",
 										Source: "desc",
 										Start: ast.Position{
 											Column: 9,
-											Line:   17,
+											Line:   18,
 										},
 									},
 								},
@@ -442,13 +499,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 158,
-											Line:   17,
+											Line:   18,
 										},
 										File:   "sample.flux",
 										Source: "\"2019 African bird migration data from the \\\"Movebank: Animal Tracking\\\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.\"",
 										Start: ast.Position{
 											Column: 15,
-											Line:   17,
+											Line:   18,
 										},
 									},
 								},
@@ -461,13 +518,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   18,
+										Line:   19,
 									},
 									File:   "sample.flux",
 									Source: "size: \"~1.2 MB\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   18,
+										Line:   19,
 									},
 								},
 							},
@@ -479,13 +536,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   18,
+											Line:   19,
 										},
 										File:   "sample.flux",
 										Source: "size",
 										Start: ast.Position{
 											Column: 9,
-											Line:   18,
+											Line:   19,
 										},
 									},
 								},
@@ -499,17 +556,616 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   18,
+											Line:   19,
 										},
 										File:   "sample.flux",
 										Source: "\"~1.2 MB\"",
 										Start: ast.Position{
 											Column: 15,
-											Line:   18,
+											Line:   19,
 										},
 									},
 								},
 								Value: "~1.2 MB",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   20,
+									},
+									File:   "sample.flux",
+									Source: "type: \"static\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   20,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   20,
+										},
+										File:   "sample.flux",
+										Source: "type",
+										Start: ast.Position{
+											Column: 9,
+											Line:   20,
+										},
+									},
+								},
+								Name: "type",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   20,
+										},
+										File:   "sample.flux",
+										Source: "\"static\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   20,
+										},
+									},
+								},
+								Value: "static",
+							},
+						}},
+						Rbrace: nil,
+						With:   nil,
+					},
+				}, &ast.DictItem{
+					Comma: nil,
+					Key: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   22,
+								},
+								File:   "sample.flux",
+								Source: "\"bitcoin\"",
+								Start: ast.Position{
+									Column: 5,
+									Line:   22,
+								},
+							},
+						},
+						Value: "bitcoin",
+					},
+					Val: &ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   27,
+								},
+								File:   "sample.flux",
+								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv\",\n        desc: \"Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.\",\n        size: \"~700 KB\",\n        type: \"live\",\n    }",
+								Start: ast.Position{
+									Column: 16,
+									Line:   22,
+								},
+							},
+						},
+						Lbrace: nil,
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 89,
+										Line:   23,
+									},
+									File:   "sample.flux",
+									Source: "url: \"https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   23,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 12,
+											Line:   23,
+										},
+										File:   "sample.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 9,
+											Line:   23,
+										},
+									},
+								},
+								Name: "url",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 89,
+											Line:   23,
+										},
+										File:   "sample.flux",
+										Source: "\"https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv\"",
+										Start: ast.Position{
+											Column: 14,
+											Line:   23,
+										},
+									},
+								},
+								Value: "https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 166,
+										Line:   24,
+									},
+									File:   "sample.flux",
+									Source: "desc: \"Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   24,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   24,
+										},
+										File:   "sample.flux",
+										Source: "desc",
+										Start: ast.Position{
+											Column: 9,
+											Line:   24,
+										},
+									},
+								},
+								Name: "desc",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 166,
+											Line:   24,
+										},
+										File:   "sample.flux",
+										Source: "\"Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   24,
+										},
+									},
+								},
+								Value: "Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 24,
+										Line:   25,
+									},
+									File:   "sample.flux",
+									Source: "size: \"~700 KB\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   25,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   25,
+										},
+										File:   "sample.flux",
+										Source: "size",
+										Start: ast.Position{
+											Column: 9,
+											Line:   25,
+										},
+									},
+								},
+								Name: "size",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 24,
+											Line:   25,
+										},
+										File:   "sample.flux",
+										Source: "\"~700 KB\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   25,
+										},
+									},
+								},
+								Value: "~700 KB",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   26,
+									},
+									File:   "sample.flux",
+									Source: "type: \"live\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   26,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   26,
+										},
+										File:   "sample.flux",
+										Source: "type",
+										Start: ast.Position{
+											Column: 9,
+											Line:   26,
+										},
+									},
+								},
+								Name: "type",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   26,
+										},
+										File:   "sample.flux",
+										Source: "\"live\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   26,
+										},
+									},
+								},
+								Value: "live",
+							},
+						}},
+						Rbrace: nil,
+						With:   nil,
+					},
+				}, &ast.DictItem{
+					Comma: nil,
+					Key: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   28,
+								},
+								File:   "sample.flux",
+								Source: "\"machineProduction\"",
+								Start: ast.Position{
+									Column: 5,
+									Line:   28,
+								},
+							},
+						},
+						Value: "machineProduction",
+					},
+					Val: &ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   33,
+								},
+								File:   "sample.flux",
+								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/machine-production.csv\",\n        desc: \"States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.\",\n        size: \"~11.9 MB\",\n        type: \"static\",\n    }",
+								Start: ast.Position{
+									Column: 26,
+									Line:   28,
+								},
+							},
+						},
+						Lbrace: nil,
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 79,
+										Line:   29,
+									},
+									File:   "sample.flux",
+									Source: "url: \"https://influx-testdata.s3.amazonaws.com/machine-production.csv\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   29,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 12,
+											Line:   29,
+										},
+										File:   "sample.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 9,
+											Line:   29,
+										},
+									},
+								},
+								Name: "url",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   29,
+										},
+										File:   "sample.flux",
+										Source: "\"https://influx-testdata.s3.amazonaws.com/machine-production.csv\"",
+										Start: ast.Position{
+											Column: 14,
+											Line:   29,
+										},
+									},
+								},
+								Value: "https://influx-testdata.s3.amazonaws.com/machine-production.csv",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 141,
+										Line:   30,
+									},
+									File:   "sample.flux",
+									Source: "desc: \"States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   30,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   30,
+										},
+										File:   "sample.flux",
+										Source: "desc",
+										Start: ast.Position{
+											Column: 9,
+											Line:   30,
+										},
+									},
+								},
+								Name: "desc",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 141,
+											Line:   30,
+										},
+										File:   "sample.flux",
+										Source: "\"States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   30,
+										},
+									},
+								},
+								Value: "States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   31,
+									},
+									File:   "sample.flux",
+									Source: "size: \"~11.9 MB\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   31,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   31,
+										},
+										File:   "sample.flux",
+										Source: "size",
+										Start: ast.Position{
+											Column: 9,
+											Line:   31,
+										},
+									},
+								},
+								Name: "size",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   31,
+										},
+										File:   "sample.flux",
+										Source: "\"~11.9 MB\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   31,
+										},
+									},
+								},
+								Value: "~11.9 MB",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   32,
+									},
+									File:   "sample.flux",
+									Source: "type: \"static\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   32,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   32,
+										},
+										File:   "sample.flux",
+										Source: "type",
+										Start: ast.Position{
+											Column: 9,
+											Line:   32,
+										},
+									},
+								},
+								Name: "type",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   32,
+										},
+										File:   "sample.flux",
+										Source: "\"static\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   32,
+										},
+									},
+								},
+								Value: "static",
 							},
 						}},
 						Rbrace: nil,
@@ -524,13 +1180,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   20,
+									Line:   34,
 								},
 								File:   "sample.flux",
 								Source: "\"noaa\"",
 								Start: ast.Position{
 									Column: 5,
-									Line:   20,
+									Line:   34,
 								},
 							},
 						},
@@ -543,13 +1199,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   24,
+									Line:   39,
 								},
 								File:   "sample.flux",
-								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\",\n        desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\",\n        size: \"~1.3 MB\",\n    }",
+								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\",\n        desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\",\n        size: \"~1.3 MB\",\n        type: \"live\",\n    }",
 								Start: ast.Position{
 									Column: 13,
-									Line:   20,
+									Line:   34,
 								},
 							},
 						},
@@ -561,13 +1217,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 100,
-										Line:   21,
+										Line:   35,
 									},
 									File:   "sample.flux",
 									Source: "url: \"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   21,
+										Line:   35,
 									},
 								},
 							},
@@ -579,13 +1235,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   21,
+											Line:   35,
 										},
 										File:   "sample.flux",
 										Source: "url",
 										Start: ast.Position{
 											Column: 9,
-											Line:   21,
+											Line:   35,
 										},
 									},
 								},
@@ -599,13 +1255,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 100,
-											Line:   21,
+											Line:   35,
 										},
 										File:   "sample.flux",
 										Source: "\"https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv\"",
 										Start: ast.Position{
 											Column: 14,
-											Line:   21,
+											Line:   35,
 										},
 									},
 								},
@@ -618,13 +1274,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 190,
-										Line:   22,
+										Line:   36,
 									},
 									File:   "sample.flux",
 									Source: "desc: \"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   22,
+										Line:   36,
 									},
 								},
 							},
@@ -636,13 +1292,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   22,
+											Line:   36,
 										},
 										File:   "sample.flux",
 										Source: "desc",
 										Start: ast.Position{
 											Column: 9,
-											Line:   22,
+											Line:   36,
 										},
 									},
 								},
@@ -656,13 +1312,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 190,
-											Line:   22,
+											Line:   36,
 										},
 										File:   "sample.flux",
 										Source: "\"Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.\"",
 										Start: ast.Position{
 											Column: 15,
-											Line:   22,
+											Line:   36,
 										},
 									},
 								},
@@ -675,13 +1331,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   23,
+										Line:   37,
 									},
 									File:   "sample.flux",
 									Source: "size: \"~1.3 MB\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   23,
+										Line:   37,
 									},
 								},
 							},
@@ -693,13 +1349,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   23,
+											Line:   37,
 										},
 										File:   "sample.flux",
 										Source: "size",
 										Start: ast.Position{
 											Column: 9,
-											Line:   23,
+											Line:   37,
 										},
 									},
 								},
@@ -713,17 +1369,345 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   23,
+											Line:   37,
 										},
 										File:   "sample.flux",
 										Source: "\"~1.3 MB\"",
 										Start: ast.Position{
 											Column: 15,
-											Line:   23,
+											Line:   37,
 										},
 									},
 								},
 								Value: "~1.3 MB",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   38,
+									},
+									File:   "sample.flux",
+									Source: "type: \"live\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   38,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   38,
+										},
+										File:   "sample.flux",
+										Source: "type",
+										Start: ast.Position{
+											Column: 9,
+											Line:   38,
+										},
+									},
+								},
+								Name: "type",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   38,
+										},
+										File:   "sample.flux",
+										Source: "\"live\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   38,
+										},
+									},
+								},
+								Value: "live",
+							},
+						}},
+						Rbrace: nil,
+						With:   nil,
+					},
+				}, &ast.DictItem{
+					Comma: nil,
+					Key: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   40,
+								},
+								File:   "sample.flux",
+								Source: "\"noaaWater\"",
+								Start: ast.Position{
+									Column: 5,
+									Line:   40,
+								},
+							},
+						},
+						Value: "noaaWater",
+					},
+					Val: &ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   45,
+								},
+								File:   "sample.flux",
+								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/noaa.csv\",\n        desc: \"Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.\",\n        size: \"~10.3 MB\",\n        type: \"static\",\n    }",
+								Start: ast.Position{
+									Column: 18,
+									Line:   40,
+								},
+							},
+						},
+						Lbrace: nil,
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 65,
+										Line:   41,
+									},
+									File:   "sample.flux",
+									Source: "url: \"https://influx-testdata.s3.amazonaws.com/noaa.csv\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   41,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 12,
+											Line:   41,
+										},
+										File:   "sample.flux",
+										Source: "url",
+										Start: ast.Position{
+											Column: 9,
+											Line:   41,
+										},
+									},
+								},
+								Name: "url",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 65,
+											Line:   41,
+										},
+										File:   "sample.flux",
+										Source: "\"https://influx-testdata.s3.amazonaws.com/noaa.csv\"",
+										Start: ast.Position{
+											Column: 14,
+											Line:   41,
+										},
+									},
+								},
+								Value: "https://influx-testdata.s3.amazonaws.com/noaa.csv",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 189,
+										Line:   42,
+									},
+									File:   "sample.flux",
+									Source: "desc: \"Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   42,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   42,
+										},
+										File:   "sample.flux",
+										Source: "desc",
+										Start: ast.Position{
+											Column: 9,
+											Line:   42,
+										},
+									},
+								},
+								Name: "desc",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 189,
+											Line:   42,
+										},
+										File:   "sample.flux",
+										Source: "\"Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   42,
+										},
+									},
+								},
+								Value: "Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   43,
+									},
+									File:   "sample.flux",
+									Source: "size: \"~10.3 MB\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   43,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   43,
+										},
+										File:   "sample.flux",
+										Source: "size",
+										Start: ast.Position{
+											Column: 9,
+											Line:   43,
+										},
+									},
+								},
+								Name: "size",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   43,
+										},
+										File:   "sample.flux",
+										Source: "\"~10.3 MB\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   43,
+										},
+									},
+								},
+								Value: "~10.3 MB",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   44,
+									},
+									File:   "sample.flux",
+									Source: "type: \"static\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   44,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   44,
+										},
+										File:   "sample.flux",
+										Source: "type",
+										Start: ast.Position{
+											Column: 9,
+											Line:   44,
+										},
+									},
+								},
+								Name: "type",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 23,
+											Line:   44,
+										},
+										File:   "sample.flux",
+										Source: "\"static\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   44,
+										},
+									},
+								},
+								Value: "static",
 							},
 						}},
 						Rbrace: nil,
@@ -738,13 +1722,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   25,
+									Line:   46,
 								},
 								File:   "sample.flux",
 								Source: "\"usgs\"",
 								Start: ast.Position{
 									Column: 5,
-									Line:   25,
+									Line:   46,
 								},
 							},
 						},
@@ -757,13 +1741,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   29,
+									Line:   51,
 								},
 								File:   "sample.flux",
-								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\",\n        desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\",\n        size: \"~6 MB\",\n    }",
+								Source: "{\n        url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\",\n        desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\",\n        size: \"~6 MB\",\n        type: \"live\",\n    }",
 								Start: ast.Position{
 									Column: 13,
-									Line:   25,
+									Line:   46,
 								},
 							},
 						},
@@ -775,13 +1759,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 95,
-										Line:   26,
+										Line:   47,
 									},
 									File:   "sample.flux",
 									Source: "url: \"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   26,
+										Line:   47,
 									},
 								},
 							},
@@ -793,13 +1777,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   26,
+											Line:   47,
 										},
 										File:   "sample.flux",
 										Source: "url",
 										Start: ast.Position{
 											Column: 9,
-											Line:   26,
+											Line:   47,
 										},
 									},
 								},
@@ -813,13 +1797,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 95,
-											Line:   26,
+											Line:   47,
 										},
 										File:   "sample.flux",
 										Source: "\"https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv\"",
 										Start: ast.Position{
 											Column: 14,
-											Line:   26,
+											Line:   47,
 										},
 									},
 								},
@@ -832,13 +1816,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 178,
-										Line:   27,
+										Line:   48,
 									},
 									File:   "sample.flux",
 									Source: "desc: \"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   27,
+										Line:   48,
 									},
 								},
 							},
@@ -850,13 +1834,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   27,
+											Line:   48,
 										},
 										File:   "sample.flux",
 										Source: "desc",
 										Start: ast.Position{
 											Column: 9,
-											Line:   27,
+											Line:   48,
 										},
 									},
 								},
@@ -870,13 +1854,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 178,
-											Line:   27,
+											Line:   48,
 										},
 										File:   "sample.flux",
 										Source: "\"USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.\"",
 										Start: ast.Position{
 											Column: 15,
-											Line:   27,
+											Line:   48,
 										},
 									},
 								},
@@ -889,13 +1873,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   28,
+										Line:   49,
 									},
 									File:   "sample.flux",
 									Source: "size: \"~6 MB\"",
 									Start: ast.Position{
 										Column: 9,
-										Line:   28,
+										Line:   49,
 									},
 								},
 							},
@@ -907,13 +1891,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   28,
+											Line:   49,
 										},
 										File:   "sample.flux",
 										Source: "size",
 										Start: ast.Position{
 											Column: 9,
-											Line:   28,
+											Line:   49,
 										},
 									},
 								},
@@ -927,17 +1911,74 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   28,
+											Line:   49,
 										},
 										File:   "sample.flux",
 										Source: "\"~6 MB\"",
 										Start: ast.Position{
 											Column: 15,
-											Line:   28,
+											Line:   49,
 										},
 									},
 								},
 								Value: "~6 MB",
+							},
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   50,
+									},
+									File:   "sample.flux",
+									Source: "type: \"live\"",
+									Start: ast.Position{
+										Column: 9,
+										Line:   50,
+									},
+								},
+							},
+							Comma: nil,
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   50,
+										},
+										File:   "sample.flux",
+										Source: "type",
+										Start: ast.Position{
+											Column: 9,
+											Line:   50,
+										},
+									},
+								},
+								Name: "type",
+							},
+							Separator: nil,
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   50,
+										},
+										File:   "sample.flux",
+										Source: "\"live\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   50,
+										},
+									},
+								},
+								Value: "live",
 							},
 						}},
 						Rbrace: nil,
@@ -954,13 +1995,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   36,
+						Line:   58,
 					},
 					File:   "sample.flux",
-					Source: "_setInfo = (set) => {\n    _setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\"})\n\n    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size}\n}",
+					Source: "_setInfo = (set) => {\n    _setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\", type: \"\"})\n\n    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size, type: _setDict.type}\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   32,
+						Line:   54,
 					},
 				},
 			},
@@ -971,13 +2012,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   32,
+							Line:   54,
 						},
 						File:   "sample.flux",
 						Source: "_setInfo",
 						Start: ast.Position{
 							Column: 1,
-							Line:   32,
+							Line:   54,
 						},
 					},
 				},
@@ -991,13 +2032,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   36,
+							Line:   58,
 						},
 						File:   "sample.flux",
-						Source: "(set) => {\n    _setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\"})\n\n    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size}\n}",
+						Source: "(set) => {\n    _setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\", type: \"\"})\n\n    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size, type: _setDict.type}\n}",
 						Start: ast.Position{
 							Column: 12,
-							Line:   32,
+							Line:   54,
 						},
 					},
 				},
@@ -1008,13 +2049,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   36,
+								Line:   58,
 							},
 							File:   "sample.flux",
-							Source: "{\n    _setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\"})\n\n    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size}\n}",
+							Source: "{\n    _setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\", type: \"\"})\n\n    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size, type: _setDict.type}\n}",
 							Start: ast.Position{
 								Column: 21,
-								Line:   32,
+								Line:   54,
 							},
 						},
 					},
@@ -1024,14 +2065,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 86,
-									Line:   33,
+									Column: 96,
+									Line:   55,
 								},
 								File:   "sample.flux",
-								Source: "_setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\"})",
+								Source: "_setDict = dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\", type: \"\"})",
 								Start: ast.Position{
 									Column: 5,
-									Line:   33,
+									Line:   55,
 								},
 							},
 						},
@@ -1042,13 +2083,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   33,
+										Line:   55,
 									},
 									File:   "sample.flux",
 									Source: "_setDict",
 									Start: ast.Position{
 										Column: 5,
-										Line:   33,
+										Line:   55,
 									},
 								},
 							},
@@ -1061,14 +2102,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 85,
-											Line:   33,
+											Column: 95,
+											Line:   55,
 										},
 										File:   "sample.flux",
-										Source: "dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\"}",
+										Source: "dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\", type: \"\"}",
 										Start: ast.Position{
 											Column: 25,
-											Line:   33,
+											Line:   55,
 										},
 									},
 								},
@@ -1080,13 +2121,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   33,
+												Line:   55,
 											},
 											File:   "sample.flux",
 											Source: "dict: sets",
 											Start: ast.Position{
 												Column: 25,
-												Line:   33,
+												Line:   55,
 											},
 										},
 									},
@@ -1098,13 +2139,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   33,
+													Line:   55,
 												},
 												File:   "sample.flux",
 												Source: "dict",
 												Start: ast.Position{
 													Column: 25,
-													Line:   33,
+													Line:   55,
 												},
 											},
 										},
@@ -1118,13 +2159,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
-													Line:   33,
+													Line:   55,
 												},
 												File:   "sample.flux",
 												Source: "sets",
 												Start: ast.Position{
 													Column: 31,
-													Line:   33,
+													Line:   55,
 												},
 											},
 										},
@@ -1137,13 +2178,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   33,
+												Line:   55,
 											},
 											File:   "sample.flux",
 											Source: "key: set",
 											Start: ast.Position{
 												Column: 37,
-												Line:   33,
+												Line:   55,
 											},
 										},
 									},
@@ -1155,13 +2196,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 40,
-													Line:   33,
+													Line:   55,
 												},
 												File:   "sample.flux",
 												Source: "key",
 												Start: ast.Position{
 													Column: 37,
-													Line:   33,
+													Line:   55,
 												},
 											},
 										},
@@ -1175,13 +2216,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   33,
+													Line:   55,
 												},
 												File:   "sample.flux",
 												Source: "set",
 												Start: ast.Position{
 													Column: 42,
-													Line:   33,
+													Line:   55,
 												},
 											},
 										},
@@ -1193,14 +2234,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 85,
-												Line:   33,
+												Column: 95,
+												Line:   55,
 											},
 											File:   "sample.flux",
-											Source: "default: {url: \"\", desc: \"\", size: \"\"}",
+											Source: "default: {url: \"\", desc: \"\", size: \"\", type: \"\"}",
 											Start: ast.Position{
 												Column: 47,
-												Line:   33,
+												Line:   55,
 											},
 										},
 									},
@@ -1212,13 +2253,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   33,
+													Line:   55,
 												},
 												File:   "sample.flux",
 												Source: "default",
 												Start: ast.Position{
 													Column: 47,
-													Line:   33,
+													Line:   55,
 												},
 											},
 										},
@@ -1231,14 +2272,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 85,
-													Line:   33,
+													Column: 95,
+													Line:   55,
 												},
 												File:   "sample.flux",
-												Source: "{url: \"\", desc: \"\", size: \"\"}",
+												Source: "{url: \"\", desc: \"\", size: \"\", type: \"\"}",
 												Start: ast.Position{
 													Column: 56,
-													Line:   33,
+													Line:   55,
 												},
 											},
 										},
@@ -1250,13 +2291,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 64,
-														Line:   33,
+														Line:   55,
 													},
 													File:   "sample.flux",
 													Source: "url: \"\"",
 													Start: ast.Position{
 														Column: 57,
-														Line:   33,
+														Line:   55,
 													},
 												},
 											},
@@ -1268,13 +2309,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   33,
+															Line:   55,
 														},
 														File:   "sample.flux",
 														Source: "url",
 														Start: ast.Position{
 															Column: 57,
-															Line:   33,
+															Line:   55,
 														},
 													},
 												},
@@ -1288,13 +2329,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 64,
-															Line:   33,
+															Line:   55,
 														},
 														File:   "sample.flux",
 														Source: "\"\"",
 														Start: ast.Position{
 															Column: 62,
-															Line:   33,
+															Line:   55,
 														},
 													},
 												},
@@ -1307,13 +2348,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 74,
-														Line:   33,
+														Line:   55,
 													},
 													File:   "sample.flux",
 													Source: "desc: \"\"",
 													Start: ast.Position{
 														Column: 66,
-														Line:   33,
+														Line:   55,
 													},
 												},
 											},
@@ -1325,13 +2366,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 70,
-															Line:   33,
+															Line:   55,
 														},
 														File:   "sample.flux",
 														Source: "desc",
 														Start: ast.Position{
 															Column: 66,
-															Line:   33,
+															Line:   55,
 														},
 													},
 												},
@@ -1345,13 +2386,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 74,
-															Line:   33,
+															Line:   55,
 														},
 														File:   "sample.flux",
 														Source: "\"\"",
 														Start: ast.Position{
 															Column: 72,
-															Line:   33,
+															Line:   55,
 														},
 													},
 												},
@@ -1364,13 +2405,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   33,
+														Line:   55,
 													},
 													File:   "sample.flux",
 													Source: "size: \"\"",
 													Start: ast.Position{
 														Column: 76,
-														Line:   33,
+														Line:   55,
 													},
 												},
 											},
@@ -1382,13 +2423,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
-															Line:   33,
+															Line:   55,
 														},
 														File:   "sample.flux",
 														Source: "size",
 														Start: ast.Position{
 															Column: 76,
-															Line:   33,
+															Line:   55,
 														},
 													},
 												},
@@ -1402,13 +2443,70 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 84,
-															Line:   33,
+															Line:   55,
 														},
 														File:   "sample.flux",
 														Source: "\"\"",
 														Start: ast.Position{
 															Column: 82,
-															Line:   33,
+															Line:   55,
+														},
+													},
+												},
+												Value: "",
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 94,
+														Line:   55,
+													},
+													File:   "sample.flux",
+													Source: "type: \"\"",
+													Start: ast.Position{
+														Column: 86,
+														Line:   55,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 90,
+															Line:   55,
+														},
+														File:   "sample.flux",
+														Source: "type",
+														Start: ast.Position{
+															Column: 86,
+															Line:   55,
+														},
+													},
+												},
+												Name: "type",
+											},
+											Separator: nil,
+											Value: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 94,
+															Line:   55,
+														},
+														File:   "sample.flux",
+														Source: "\"\"",
+														Start: ast.Position{
+															Column: 92,
+															Line:   55,
 														},
 													},
 												},
@@ -1427,14 +2525,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 86,
-										Line:   33,
+										Column: 96,
+										Line:   55,
 									},
 									File:   "sample.flux",
-									Source: "dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\"})",
+									Source: "dict.get(dict: sets, key: set, default: {url: \"\", desc: \"\", size: \"\", type: \"\"})",
 									Start: ast.Position{
 										Column: 16,
-										Line:   33,
+										Line:   55,
 									},
 								},
 							},
@@ -1445,13 +2543,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   33,
+											Line:   55,
 										},
 										File:   "sample.flux",
 										Source: "dict.get",
 										Start: ast.Position{
 											Column: 16,
-											Line:   33,
+											Line:   55,
 										},
 									},
 								},
@@ -1463,13 +2561,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   33,
+												Line:   55,
 											},
 											File:   "sample.flux",
 											Source: "dict",
 											Start: ast.Position{
 												Column: 16,
-												Line:   33,
+												Line:   55,
 											},
 										},
 									},
@@ -1482,13 +2580,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   33,
+												Line:   55,
 											},
 											File:   "sample.flux",
 											Source: "get",
 											Start: ast.Position{
 												Column: 21,
-												Line:   33,
+												Line:   55,
 											},
 										},
 									},
@@ -1506,14 +2604,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 91,
-										Line:   35,
+										Column: 112,
+										Line:   57,
 									},
 									File:   "sample.flux",
-									Source: "{name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size}",
+									Source: "{name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size, type: _setDict.type}",
 									Start: ast.Position{
 										Column: 12,
-										Line:   35,
+										Line:   57,
 									},
 								},
 							},
@@ -1525,13 +2623,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   35,
+											Line:   57,
 										},
 										File:   "sample.flux",
 										Source: "name: set",
 										Start: ast.Position{
 											Column: 13,
-											Line:   35,
+											Line:   57,
 										},
 									},
 								},
@@ -1543,13 +2641,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   35,
+												Line:   57,
 											},
 											File:   "sample.flux",
 											Source: "name",
 											Start: ast.Position{
 												Column: 13,
-												Line:   35,
+												Line:   57,
 											},
 										},
 									},
@@ -1563,13 +2661,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   35,
+												Line:   57,
 											},
 											File:   "sample.flux",
 											Source: "set",
 											Start: ast.Position{
 												Column: 19,
-												Line:   35,
+												Line:   57,
 											},
 										},
 									},
@@ -1582,13 +2680,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 50,
-											Line:   35,
+											Line:   57,
 										},
 										File:   "sample.flux",
 										Source: "description: _setDict.desc",
 										Start: ast.Position{
 											Column: 24,
-											Line:   35,
+											Line:   57,
 										},
 									},
 								},
@@ -1600,13 +2698,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   35,
+												Line:   57,
 											},
 											File:   "sample.flux",
 											Source: "description",
 											Start: ast.Position{
 												Column: 24,
-												Line:   35,
+												Line:   57,
 											},
 										},
 									},
@@ -1620,13 +2718,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 50,
-												Line:   35,
+												Line:   57,
 											},
 											File:   "sample.flux",
 											Source: "_setDict.desc",
 											Start: ast.Position{
 												Column: 37,
-												Line:   35,
+												Line:   57,
 											},
 										},
 									},
@@ -1638,13 +2736,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   35,
+													Line:   57,
 												},
 												File:   "sample.flux",
 												Source: "_setDict",
 												Start: ast.Position{
 													Column: 37,
-													Line:   35,
+													Line:   57,
 												},
 											},
 										},
@@ -1657,13 +2755,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 50,
-													Line:   35,
+													Line:   57,
 												},
 												File:   "sample.flux",
 												Source: "desc",
 												Start: ast.Position{
 													Column: 46,
-													Line:   35,
+													Line:   57,
 												},
 											},
 										},
@@ -1678,13 +2776,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   35,
+											Line:   57,
 										},
 										File:   "sample.flux",
 										Source: "url: _setDict.url",
 										Start: ast.Position{
 											Column: 52,
-											Line:   35,
+											Line:   57,
 										},
 									},
 								},
@@ -1696,13 +2794,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 55,
-												Line:   35,
+												Line:   57,
 											},
 											File:   "sample.flux",
 											Source: "url",
 											Start: ast.Position{
 												Column: 52,
-												Line:   35,
+												Line:   57,
 											},
 										},
 									},
@@ -1716,13 +2814,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   35,
+												Line:   57,
 											},
 											File:   "sample.flux",
 											Source: "_setDict.url",
 											Start: ast.Position{
 												Column: 57,
-												Line:   35,
+												Line:   57,
 											},
 										},
 									},
@@ -1734,13 +2832,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   35,
+													Line:   57,
 												},
 												File:   "sample.flux",
 												Source: "_setDict",
 												Start: ast.Position{
 													Column: 57,
-													Line:   35,
+													Line:   57,
 												},
 											},
 										},
@@ -1753,13 +2851,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   35,
+													Line:   57,
 												},
 												File:   "sample.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 66,
-													Line:   35,
+													Line:   57,
 												},
 											},
 										},
@@ -1774,13 +2872,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 90,
-											Line:   35,
+											Line:   57,
 										},
 										File:   "sample.flux",
 										Source: "size: _setDict.size",
 										Start: ast.Position{
 											Column: 71,
-											Line:   35,
+											Line:   57,
 										},
 									},
 								},
@@ -1792,13 +2890,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   35,
+												Line:   57,
 											},
 											File:   "sample.flux",
 											Source: "size",
 											Start: ast.Position{
 												Column: 71,
-												Line:   35,
+												Line:   57,
 											},
 										},
 									},
@@ -1812,13 +2910,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 90,
-												Line:   35,
+												Line:   57,
 											},
 											File:   "sample.flux",
 											Source: "_setDict.size",
 											Start: ast.Position{
 												Column: 77,
-												Line:   35,
+												Line:   57,
 											},
 										},
 									},
@@ -1830,13 +2928,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 85,
-													Line:   35,
+													Line:   57,
 												},
 												File:   "sample.flux",
 												Source: "_setDict",
 												Start: ast.Position{
 													Column: 77,
-													Line:   35,
+													Line:   57,
 												},
 											},
 										},
@@ -1849,17 +2947,113 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 90,
-													Line:   35,
+													Line:   57,
 												},
 												File:   "sample.flux",
 												Source: "size",
 												Start: ast.Position{
 													Column: 86,
-													Line:   35,
+													Line:   57,
 												},
 											},
 										},
 										Name: "size",
+									},
+									Rbrack: nil,
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 111,
+											Line:   57,
+										},
+										File:   "sample.flux",
+										Source: "type: _setDict.type",
+										Start: ast.Position{
+											Column: 92,
+											Line:   57,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 96,
+												Line:   57,
+											},
+											File:   "sample.flux",
+											Source: "type",
+											Start: ast.Position{
+												Column: 92,
+												Line:   57,
+											},
+										},
+									},
+									Name: "type",
+								},
+								Separator: nil,
+								Value: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 111,
+												Line:   57,
+											},
+											File:   "sample.flux",
+											Source: "_setDict.type",
+											Start: ast.Position{
+												Column: 98,
+												Line:   57,
+											},
+										},
+									},
+									Lbrack: nil,
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 106,
+													Line:   57,
+												},
+												File:   "sample.flux",
+												Source: "_setDict",
+												Start: ast.Position{
+													Column: 98,
+													Line:   57,
+												},
+											},
+										},
+										Name: "_setDict",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 111,
+													Line:   57,
+												},
+												File:   "sample.flux",
+												Source: "type",
+												Start: ast.Position{
+													Column: 107,
+													Line:   57,
+												},
+											},
+										},
+										Name: "type",
 									},
 									Rbrack: nil,
 								},
@@ -1872,14 +3066,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 91,
-									Line:   35,
+									Column: 112,
+									Line:   57,
 								},
 								File:   "sample.flux",
-								Source: "return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size}",
+								Source: "return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size, type: _setDict.type}",
 								Start: ast.Position{
 									Column: 5,
-									Line:   35,
+									Line:   57,
 								},
 							},
 						},
@@ -1895,13 +3089,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   32,
+								Line:   54,
 							},
 							File:   "sample.flux",
 							Source: "set",
 							Start: ast.Position{
 								Column: 13,
-								Line:   32,
+								Line:   54,
 							},
 						},
 					},
@@ -1913,13 +3107,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   32,
+									Line:   54,
 								},
 								File:   "sample.flux",
 								Source: "set",
 								Start: ast.Position{
 									Column: 13,
-									Line:   32,
+									Line:   54,
 								},
 							},
 						},
@@ -1937,30 +3131,30 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   65,
+						Line:   90,
 					},
 					File:   "sample.flux",
 					Source: "data = (set) => {\n    setInfo = _setInfo(set: set)\n\n    url = if setInfo.url == \"\" then\n        die(msg: \"Invalid sample data set. Use sample.list to view available datasets.\")\n    else\n        setInfo.url\n\n    return csv.from(url: url)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   56,
+						Line:   81,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// data downloads a specified InfluxDB sample dataset.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `set` is the sample data set to download and output. Valid datasets:\n"}, ast.Comment{Text: "//    - **airSensor**: Simulated temperature, humidity, and CO data from an office building.\n"}, ast.Comment{Text: "//    - **birdMigration**: 2019 African bird migration data from [Movebank: Animal Tracking](https://www.kaggle.com/pulkit8595/movebank-animal-tracking).\n"}, ast.Comment{Text: "//    - **noaa**: Latest observations from the [NOAA National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/).\n"}, ast.Comment{Text: "//    - **usgs**: USGS earthquake data from the last week.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Load InfluxDB sample data\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/sample\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sample.data(set: \"airSensor\")\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// data downloads a specified InfluxDB sample dataset.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Parameters\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// - `set` is the sample data set to download and output. Valid datasets:\n"}, ast.Comment{Text: "//    - **airSensor**: Simulated temperature, humidity, and CO data from an office building.\n"}, ast.Comment{Text: "//    - **birdMigration**: 2019 African bird migration data from [Movebank: Animal Tracking](https://www.kaggle.com/pulkit8595/movebank-animal-tracking).\n"}, ast.Comment{Text: "//    - **bitcoin**: Bitcoin price data from the last 30 days _([Powered by CoinDesk](https://www.coindesk.com/price/bitcoin))_.\n"}, ast.Comment{Text: "//    - **noaa**: Latest observations from the [NOAA National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/).\n"}, ast.Comment{Text: "//    - **machineProduction**: States and metrics reported from four automated grinding wheel stations on a production line.\n"}, ast.Comment{Text: "//    - **noaaWater**: Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services between 2019-08-17 and 2019-09-17.\n"}, ast.Comment{Text: "//    - **usgs**: USGS earthquake data from the last week.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Load InfluxDB sample data\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/sample\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sample.data(set: \"airSensor\")\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "//\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   56,
+							Line:   81,
 						},
 						File:   "sample.flux",
 						Source: "data",
 						Start: ast.Position{
 							Column: 1,
-							Line:   56,
+							Line:   81,
 						},
 					},
 				},
@@ -1974,13 +3168,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   65,
+							Line:   90,
 						},
 						File:   "sample.flux",
 						Source: "(set) => {\n    setInfo = _setInfo(set: set)\n\n    url = if setInfo.url == \"\" then\n        die(msg: \"Invalid sample data set. Use sample.list to view available datasets.\")\n    else\n        setInfo.url\n\n    return csv.from(url: url)\n}",
 						Start: ast.Position{
 							Column: 8,
-							Line:   56,
+							Line:   81,
 						},
 					},
 				},
@@ -1991,13 +3185,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   65,
+								Line:   90,
 							},
 							File:   "sample.flux",
 							Source: "{\n    setInfo = _setInfo(set: set)\n\n    url = if setInfo.url == \"\" then\n        die(msg: \"Invalid sample data set. Use sample.list to view available datasets.\")\n    else\n        setInfo.url\n\n    return csv.from(url: url)\n}",
 							Start: ast.Position{
 								Column: 17,
-								Line:   56,
+								Line:   81,
 							},
 						},
 					},
@@ -2008,13 +3202,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   57,
+									Line:   82,
 								},
 								File:   "sample.flux",
 								Source: "setInfo = _setInfo(set: set)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   57,
+									Line:   82,
 								},
 							},
 						},
@@ -2025,13 +3219,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   57,
+										Line:   82,
 									},
 									File:   "sample.flux",
 									Source: "setInfo",
 									Start: ast.Position{
 										Column: 5,
-										Line:   57,
+										Line:   82,
 									},
 								},
 							},
@@ -2045,13 +3239,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   57,
+											Line:   82,
 										},
 										File:   "sample.flux",
 										Source: "set: set",
 										Start: ast.Position{
 											Column: 24,
-											Line:   57,
+											Line:   82,
 										},
 									},
 								},
@@ -2063,13 +3257,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   57,
+												Line:   82,
 											},
 											File:   "sample.flux",
 											Source: "set: set",
 											Start: ast.Position{
 												Column: 24,
-												Line:   57,
+												Line:   82,
 											},
 										},
 									},
@@ -2081,13 +3275,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
-													Line:   57,
+													Line:   82,
 												},
 												File:   "sample.flux",
 												Source: "set",
 												Start: ast.Position{
 													Column: 24,
-													Line:   57,
+													Line:   82,
 												},
 											},
 										},
@@ -2101,13 +3295,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
-													Line:   57,
+													Line:   82,
 												},
 												File:   "sample.flux",
 												Source: "set",
 												Start: ast.Position{
 													Column: 29,
-													Line:   57,
+													Line:   82,
 												},
 											},
 										},
@@ -2123,13 +3317,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   57,
+										Line:   82,
 									},
 									File:   "sample.flux",
 									Source: "_setInfo(set: set)",
 									Start: ast.Position{
 										Column: 15,
-										Line:   57,
+										Line:   82,
 									},
 								},
 							},
@@ -2140,13 +3334,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   57,
+											Line:   82,
 										},
 										File:   "sample.flux",
 										Source: "_setInfo",
 										Start: ast.Position{
 											Column: 15,
-											Line:   57,
+											Line:   82,
 										},
 									},
 								},
@@ -2162,13 +3356,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   62,
+									Line:   87,
 								},
 								File:   "sample.flux",
 								Source: "url = if setInfo.url == \"\" then\n        die(msg: \"Invalid sample data set. Use sample.list to view available datasets.\")\n    else\n        setInfo.url",
 								Start: ast.Position{
 									Column: 5,
-									Line:   59,
+									Line:   84,
 								},
 							},
 						},
@@ -2179,13 +3373,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   59,
+										Line:   84,
 									},
 									File:   "sample.flux",
 									Source: "url",
 									Start: ast.Position{
 										Column: 5,
-										Line:   59,
+										Line:   84,
 									},
 								},
 							},
@@ -2199,13 +3393,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   62,
+											Line:   87,
 										},
 										File:   "sample.flux",
 										Source: "setInfo.url",
 										Start: ast.Position{
 											Column: 9,
-											Line:   62,
+											Line:   87,
 										},
 									},
 								},
@@ -2217,13 +3411,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   62,
+												Line:   87,
 											},
 											File:   "sample.flux",
 											Source: "setInfo",
 											Start: ast.Position{
 												Column: 9,
-												Line:   62,
+												Line:   87,
 											},
 										},
 									},
@@ -2236,13 +3430,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   62,
+												Line:   87,
 											},
 											File:   "sample.flux",
 											Source: "url",
 											Start: ast.Position{
 												Column: 17,
-												Line:   62,
+												Line:   87,
 											},
 										},
 									},
@@ -2256,13 +3450,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   62,
+										Line:   87,
 									},
 									File:   "sample.flux",
 									Source: "if setInfo.url == \"\" then\n        die(msg: \"Invalid sample data set. Use sample.list to view available datasets.\")\n    else\n        setInfo.url",
 									Start: ast.Position{
 										Column: 11,
-										Line:   59,
+										Line:   84,
 									},
 								},
 							},
@@ -2274,13 +3468,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 88,
-												Line:   60,
+												Line:   85,
 											},
 											File:   "sample.flux",
 											Source: "msg: \"Invalid sample data set. Use sample.list to view available datasets.\"",
 											Start: ast.Position{
 												Column: 13,
-												Line:   60,
+												Line:   85,
 											},
 										},
 									},
@@ -2292,13 +3486,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 88,
-													Line:   60,
+													Line:   85,
 												},
 												File:   "sample.flux",
 												Source: "msg: \"Invalid sample data set. Use sample.list to view available datasets.\"",
 												Start: ast.Position{
 													Column: 13,
-													Line:   60,
+													Line:   85,
 												},
 											},
 										},
@@ -2310,13 +3504,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 16,
-														Line:   60,
+														Line:   85,
 													},
 													File:   "sample.flux",
 													Source: "msg",
 													Start: ast.Position{
 														Column: 13,
-														Line:   60,
+														Line:   85,
 													},
 												},
 											},
@@ -2330,13 +3524,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 88,
-														Line:   60,
+														Line:   85,
 													},
 													File:   "sample.flux",
 													Source: "\"Invalid sample data set. Use sample.list to view available datasets.\"",
 													Start: ast.Position{
 														Column: 18,
-														Line:   60,
+														Line:   85,
 													},
 												},
 											},
@@ -2352,13 +3546,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 89,
-											Line:   60,
+											Line:   85,
 										},
 										File:   "sample.flux",
 										Source: "die(msg: \"Invalid sample data set. Use sample.list to view available datasets.\")",
 										Start: ast.Position{
 											Column: 9,
-											Line:   60,
+											Line:   85,
 										},
 									},
 								},
@@ -2369,13 +3563,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   60,
+												Line:   85,
 											},
 											File:   "sample.flux",
 											Source: "die",
 											Start: ast.Position{
 												Column: 9,
-												Line:   60,
+												Line:   85,
 											},
 										},
 									},
@@ -2391,13 +3585,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   59,
+											Line:   84,
 										},
 										File:   "sample.flux",
 										Source: "setInfo.url == \"\"",
 										Start: ast.Position{
 											Column: 14,
-											Line:   59,
+											Line:   84,
 										},
 									},
 								},
@@ -2408,13 +3602,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   59,
+												Line:   84,
 											},
 											File:   "sample.flux",
 											Source: "setInfo.url",
 											Start: ast.Position{
 												Column: 14,
-												Line:   59,
+												Line:   84,
 											},
 										},
 									},
@@ -2426,13 +3620,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   59,
+													Line:   84,
 												},
 												File:   "sample.flux",
 												Source: "setInfo",
 												Start: ast.Position{
 													Column: 14,
-													Line:   59,
+													Line:   84,
 												},
 											},
 										},
@@ -2445,13 +3639,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   59,
+													Line:   84,
 												},
 												File:   "sample.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 22,
-													Line:   59,
+													Line:   84,
 												},
 											},
 										},
@@ -2467,13 +3661,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   59,
+												Line:   84,
 											},
 											File:   "sample.flux",
 											Source: "\"\"",
 											Start: ast.Position{
 												Column: 29,
-												Line:   59,
+												Line:   84,
 											},
 										},
 									},
@@ -2493,13 +3687,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   64,
+											Line:   89,
 										},
 										File:   "sample.flux",
 										Source: "url: url",
 										Start: ast.Position{
 											Column: 21,
-											Line:   64,
+											Line:   89,
 										},
 									},
 								},
@@ -2511,13 +3705,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   64,
+												Line:   89,
 											},
 											File:   "sample.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 21,
-												Line:   64,
+												Line:   89,
 											},
 										},
 									},
@@ -2529,13 +3723,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   64,
+													Line:   89,
 												},
 												File:   "sample.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 21,
-													Line:   64,
+													Line:   89,
 												},
 											},
 										},
@@ -2549,13 +3743,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   64,
+													Line:   89,
 												},
 												File:   "sample.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 26,
-													Line:   64,
+													Line:   89,
 												},
 											},
 										},
@@ -2571,13 +3765,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   64,
+										Line:   89,
 									},
 									File:   "sample.flux",
 									Source: "csv.from(url: url)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   64,
+										Line:   89,
 									},
 								},
 							},
@@ -2588,13 +3782,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   64,
+											Line:   89,
 										},
 										File:   "sample.flux",
 										Source: "csv.from",
 										Start: ast.Position{
 											Column: 12,
-											Line:   64,
+											Line:   89,
 										},
 									},
 								},
@@ -2606,13 +3800,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   64,
+												Line:   89,
 											},
 											File:   "sample.flux",
 											Source: "csv",
 											Start: ast.Position{
 												Column: 12,
-												Line:   64,
+												Line:   89,
 											},
 										},
 									},
@@ -2625,13 +3819,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   64,
+												Line:   89,
 											},
 											File:   "sample.flux",
 											Source: "from",
 											Start: ast.Position{
 												Column: 16,
-												Line:   64,
+												Line:   89,
 											},
 										},
 									},
@@ -2648,13 +3842,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   64,
+									Line:   89,
 								},
 								File:   "sample.flux",
 								Source: "return csv.from(url: url)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   64,
+									Line:   89,
 								},
 							},
 						},
@@ -2670,13 +3864,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   56,
+								Line:   81,
 							},
 							File:   "sample.flux",
 							Source: "set",
 							Start: ast.Position{
 								Column: 9,
-								Line:   56,
+								Line:   81,
 							},
 						},
 					},
@@ -2688,13 +3882,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   56,
+									Line:   81,
 								},
 								File:   "sample.flux",
 								Source: "set",
 								Start: ast.Position{
 									Column: 9,
-									Line:   56,
+									Line:   81,
 								},
 							},
 						},
@@ -2712,13 +3906,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   84,
+						Line:   112,
 					},
 					File:   "sample.flux",
-					Source: "list = () => array.from(\n    rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"usgs\"),\n    ],\n)",
+					Source: "list = () => array.from(\n    rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"bitcoin\"),\n        _setInfo(set: \"machineProduction\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"noaaWater\"),\n        _setInfo(set: \"usgs\"),\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   77,
+						Line:   102,
 					},
 				},
 			},
@@ -2729,13 +3923,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   77,
+							Line:   102,
 						},
 						File:   "sample.flux",
 						Source: "list",
 						Start: ast.Position{
 							Column: 1,
-							Line:   77,
+							Line:   102,
 						},
 					},
 				},
@@ -2749,13 +3943,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   84,
+							Line:   112,
 						},
 						File:   "sample.flux",
-						Source: "() => array.from(\n    rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"usgs\"),\n    ],\n)",
+						Source: "() => array.from(\n    rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"bitcoin\"),\n        _setInfo(set: \"machineProduction\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"noaaWater\"),\n        _setInfo(set: \"usgs\"),\n    ],\n)",
 						Start: ast.Position{
 							Column: 8,
-							Line:   77,
+							Line:   102,
 						},
 					},
 				},
@@ -2767,13 +3961,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   83,
+									Line:   111,
 								},
 								File:   "sample.flux",
-								Source: "rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"usgs\"),\n    ]",
+								Source: "rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"bitcoin\"),\n        _setInfo(set: \"machineProduction\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"noaaWater\"),\n        _setInfo(set: \"usgs\"),\n    ]",
 								Start: ast.Position{
 									Column: 5,
-									Line:   78,
+									Line:   103,
 								},
 							},
 						},
@@ -2785,13 +3979,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   83,
+										Line:   111,
 									},
 									File:   "sample.flux",
-									Source: "rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"usgs\"),\n    ]",
+									Source: "rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"bitcoin\"),\n        _setInfo(set: \"machineProduction\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"noaaWater\"),\n        _setInfo(set: \"usgs\"),\n    ]",
 									Start: ast.Position{
 										Column: 5,
-										Line:   78,
+										Line:   103,
 									},
 								},
 							},
@@ -2803,13 +3997,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 9,
-											Line:   78,
+											Line:   103,
 										},
 										File:   "sample.flux",
 										Source: "rows",
 										Start: ast.Position{
 											Column: 5,
-											Line:   78,
+											Line:   103,
 										},
 									},
 								},
@@ -2823,13 +4017,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   83,
+											Line:   111,
 										},
 										File:   "sample.flux",
-										Source: "[\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"usgs\"),\n    ]",
+										Source: "[\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"bitcoin\"),\n        _setInfo(set: \"machineProduction\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"noaaWater\"),\n        _setInfo(set: \"usgs\"),\n    ]",
 										Start: ast.Position{
 											Column: 11,
-											Line:   78,
+											Line:   103,
 										},
 									},
 								},
@@ -2841,13 +4035,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   79,
+													Line:   104,
 												},
 												File:   "sample.flux",
 												Source: "set: \"airSensor\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   79,
+													Line:   104,
 												},
 											},
 										},
@@ -2859,13 +4053,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   79,
+														Line:   104,
 													},
 													File:   "sample.flux",
 													Source: "set: \"airSensor\"",
 													Start: ast.Position{
 														Column: 18,
-														Line:   79,
+														Line:   104,
 													},
 												},
 											},
@@ -2877,13 +4071,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 21,
-															Line:   79,
+															Line:   104,
 														},
 														File:   "sample.flux",
 														Source: "set",
 														Start: ast.Position{
 															Column: 18,
-															Line:   79,
+															Line:   104,
 														},
 													},
 												},
@@ -2897,13 +4091,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   79,
+															Line:   104,
 														},
 														File:   "sample.flux",
 														Source: "\"airSensor\"",
 														Start: ast.Position{
 															Column: 23,
-															Line:   79,
+															Line:   104,
 														},
 													},
 												},
@@ -2919,13 +4113,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   79,
+												Line:   104,
 											},
 											File:   "sample.flux",
 											Source: "_setInfo(set: \"airSensor\")",
 											Start: ast.Position{
 												Column: 9,
-												Line:   79,
+												Line:   104,
 											},
 										},
 									},
@@ -2936,13 +4130,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
-													Line:   79,
+													Line:   104,
 												},
 												File:   "sample.flux",
 												Source: "_setInfo",
 												Start: ast.Position{
 													Column: 9,
-													Line:   79,
+													Line:   104,
 												},
 											},
 										},
@@ -2958,13 +4152,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   80,
+													Line:   105,
 												},
 												File:   "sample.flux",
 												Source: "set: \"birdMigration\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   80,
+													Line:   105,
 												},
 											},
 										},
@@ -2976,13 +4170,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   80,
+														Line:   105,
 													},
 													File:   "sample.flux",
 													Source: "set: \"birdMigration\"",
 													Start: ast.Position{
 														Column: 18,
-														Line:   80,
+														Line:   105,
 													},
 												},
 											},
@@ -2994,13 +4188,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 21,
-															Line:   80,
+															Line:   105,
 														},
 														File:   "sample.flux",
 														Source: "set",
 														Start: ast.Position{
 															Column: 18,
-															Line:   80,
+															Line:   105,
 														},
 													},
 												},
@@ -3014,13 +4208,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
-															Line:   80,
+															Line:   105,
 														},
 														File:   "sample.flux",
 														Source: "\"birdMigration\"",
 														Start: ast.Position{
 															Column: 23,
-															Line:   80,
+															Line:   105,
 														},
 													},
 												},
@@ -3036,13 +4230,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   80,
+												Line:   105,
 											},
 											File:   "sample.flux",
 											Source: "_setInfo(set: \"birdMigration\")",
 											Start: ast.Position{
 												Column: 9,
-												Line:   80,
+												Line:   105,
 											},
 										},
 									},
@@ -3053,13 +4247,247 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
-													Line:   80,
+													Line:   105,
 												},
 												File:   "sample.flux",
 												Source: "_setInfo",
 												Start: ast.Position{
 													Column: 9,
-													Line:   80,
+													Line:   105,
+												},
+											},
+										},
+										Name: "_setInfo",
+									},
+									Lparen: nil,
+									Rparen: nil,
+								}, &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 32,
+													Line:   106,
+												},
+												File:   "sample.flux",
+												Source: "set: \"bitcoin\"",
+												Start: ast.Position{
+													Column: 18,
+													Line:   106,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 32,
+														Line:   106,
+													},
+													File:   "sample.flux",
+													Source: "set: \"bitcoin\"",
+													Start: ast.Position{
+														Column: 18,
+														Line:   106,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 21,
+															Line:   106,
+														},
+														File:   "sample.flux",
+														Source: "set",
+														Start: ast.Position{
+															Column: 18,
+															Line:   106,
+														},
+													},
+												},
+												Name: "set",
+											},
+											Separator: nil,
+											Value: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 32,
+															Line:   106,
+														},
+														File:   "sample.flux",
+														Source: "\"bitcoin\"",
+														Start: ast.Position{
+															Column: 23,
+															Line:   106,
+														},
+													},
+												},
+												Value: "bitcoin",
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   106,
+											},
+											File:   "sample.flux",
+											Source: "_setInfo(set: \"bitcoin\")",
+											Start: ast.Position{
+												Column: 9,
+												Line:   106,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 17,
+													Line:   106,
+												},
+												File:   "sample.flux",
+												Source: "_setInfo",
+												Start: ast.Position{
+													Column: 9,
+													Line:   106,
+												},
+											},
+										},
+										Name: "_setInfo",
+									},
+									Lparen: nil,
+									Rparen: nil,
+								}, &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   107,
+												},
+												File:   "sample.flux",
+												Source: "set: \"machineProduction\"",
+												Start: ast.Position{
+													Column: 18,
+													Line:   107,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   107,
+													},
+													File:   "sample.flux",
+													Source: "set: \"machineProduction\"",
+													Start: ast.Position{
+														Column: 18,
+														Line:   107,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 21,
+															Line:   107,
+														},
+														File:   "sample.flux",
+														Source: "set",
+														Start: ast.Position{
+															Column: 18,
+															Line:   107,
+														},
+													},
+												},
+												Name: "set",
+											},
+											Separator: nil,
+											Value: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   107,
+														},
+														File:   "sample.flux",
+														Source: "\"machineProduction\"",
+														Start: ast.Position{
+															Column: 23,
+															Line:   107,
+														},
+													},
+												},
+												Value: "machineProduction",
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   107,
+											},
+											File:   "sample.flux",
+											Source: "_setInfo(set: \"machineProduction\")",
+											Start: ast.Position{
+												Column: 9,
+												Line:   107,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 17,
+													Line:   107,
+												},
+												File:   "sample.flux",
+												Source: "_setInfo",
+												Start: ast.Position{
+													Column: 9,
+													Line:   107,
 												},
 											},
 										},
@@ -3075,13 +4503,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   81,
+													Line:   108,
 												},
 												File:   "sample.flux",
 												Source: "set: \"noaa\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   81,
+													Line:   108,
 												},
 											},
 										},
@@ -3093,13 +4521,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 29,
-														Line:   81,
+														Line:   108,
 													},
 													File:   "sample.flux",
 													Source: "set: \"noaa\"",
 													Start: ast.Position{
 														Column: 18,
-														Line:   81,
+														Line:   108,
 													},
 												},
 											},
@@ -3111,13 +4539,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 21,
-															Line:   81,
+															Line:   108,
 														},
 														File:   "sample.flux",
 														Source: "set",
 														Start: ast.Position{
 															Column: 18,
-															Line:   81,
+															Line:   108,
 														},
 													},
 												},
@@ -3131,13 +4559,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 29,
-															Line:   81,
+															Line:   108,
 														},
 														File:   "sample.flux",
 														Source: "\"noaa\"",
 														Start: ast.Position{
 															Column: 23,
-															Line:   81,
+															Line:   108,
 														},
 													},
 												},
@@ -3153,13 +4581,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   81,
+												Line:   108,
 											},
 											File:   "sample.flux",
 											Source: "_setInfo(set: \"noaa\")",
 											Start: ast.Position{
 												Column: 9,
-												Line:   81,
+												Line:   108,
 											},
 										},
 									},
@@ -3170,13 +4598,130 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
-													Line:   81,
+													Line:   108,
 												},
 												File:   "sample.flux",
 												Source: "_setInfo",
 												Start: ast.Position{
 													Column: 9,
-													Line:   81,
+													Line:   108,
+												},
+											},
+										},
+										Name: "_setInfo",
+									},
+									Lparen: nil,
+									Rparen: nil,
+								}, &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 34,
+													Line:   109,
+												},
+												File:   "sample.flux",
+												Source: "set: \"noaaWater\"",
+												Start: ast.Position{
+													Column: 18,
+													Line:   109,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 34,
+														Line:   109,
+													},
+													File:   "sample.flux",
+													Source: "set: \"noaaWater\"",
+													Start: ast.Position{
+														Column: 18,
+														Line:   109,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 21,
+															Line:   109,
+														},
+														File:   "sample.flux",
+														Source: "set",
+														Start: ast.Position{
+															Column: 18,
+															Line:   109,
+														},
+													},
+												},
+												Name: "set",
+											},
+											Separator: nil,
+											Value: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   109,
+														},
+														File:   "sample.flux",
+														Source: "\"noaaWater\"",
+														Start: ast.Position{
+															Column: 23,
+															Line:   109,
+														},
+													},
+												},
+												Value: "noaaWater",
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 35,
+												Line:   109,
+											},
+											File:   "sample.flux",
+											Source: "_setInfo(set: \"noaaWater\")",
+											Start: ast.Position{
+												Column: 9,
+												Line:   109,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 17,
+													Line:   109,
+												},
+												File:   "sample.flux",
+												Source: "_setInfo",
+												Start: ast.Position{
+													Column: 9,
+													Line:   109,
 												},
 											},
 										},
@@ -3192,13 +4737,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   82,
+													Line:   110,
 												},
 												File:   "sample.flux",
 												Source: "set: \"usgs\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   82,
+													Line:   110,
 												},
 											},
 										},
@@ -3210,13 +4755,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 29,
-														Line:   82,
+														Line:   110,
 													},
 													File:   "sample.flux",
 													Source: "set: \"usgs\"",
 													Start: ast.Position{
 														Column: 18,
-														Line:   82,
+														Line:   110,
 													},
 												},
 											},
@@ -3228,13 +4773,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 21,
-															Line:   82,
+															Line:   110,
 														},
 														File:   "sample.flux",
 														Source: "set",
 														Start: ast.Position{
 															Column: 18,
-															Line:   82,
+															Line:   110,
 														},
 													},
 												},
@@ -3248,13 +4793,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 29,
-															Line:   82,
+															Line:   110,
 														},
 														File:   "sample.flux",
 														Source: "\"usgs\"",
 														Start: ast.Position{
 															Column: 23,
-															Line:   82,
+															Line:   110,
 														},
 													},
 												},
@@ -3270,13 +4815,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   82,
+												Line:   110,
 											},
 											File:   "sample.flux",
 											Source: "_setInfo(set: \"usgs\")",
 											Start: ast.Position{
 												Column: 9,
-												Line:   82,
+												Line:   110,
 											},
 										},
 									},
@@ -3287,13 +4832,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
-													Line:   82,
+													Line:   110,
 												},
 												File:   "sample.flux",
 												Source: "_setInfo",
 												Start: ast.Position{
 													Column: 9,
-													Line:   82,
+													Line:   110,
 												},
 											},
 										},
@@ -3315,13 +4860,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   84,
+								Line:   112,
 							},
 							File:   "sample.flux",
-							Source: "array.from(\n    rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"usgs\"),\n    ],\n)",
+							Source: "array.from(\n    rows: [\n        _setInfo(set: \"airSensor\"),\n        _setInfo(set: \"birdMigration\"),\n        _setInfo(set: \"bitcoin\"),\n        _setInfo(set: \"machineProduction\"),\n        _setInfo(set: \"noaa\"),\n        _setInfo(set: \"noaaWater\"),\n        _setInfo(set: \"usgs\"),\n    ],\n)",
 							Start: ast.Position{
 								Column: 14,
-								Line:   77,
+								Line:   102,
 							},
 						},
 					},
@@ -3332,13 +4877,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   77,
+									Line:   102,
 								},
 								File:   "sample.flux",
 								Source: "array.from",
 								Start: ast.Position{
 									Column: 14,
-									Line:   77,
+									Line:   102,
 								},
 							},
 						},
@@ -3350,13 +4895,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   77,
+										Line:   102,
 									},
 									File:   "sample.flux",
 									Source: "array",
 									Start: ast.Position{
 										Column: 14,
-										Line:   77,
+										Line:   102,
 									},
 								},
 							},
@@ -3369,13 +4914,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   77,
+										Line:   102,
 									},
 									File:   "sample.flux",
 									Source: "from",
 									Start: ast.Position{
 										Column: 20,
-										Line:   77,
+										Line:   102,
 									},
 								},
 							},
@@ -3388,6 +4933,1437 @@ var pkgAST = &ast.Package{
 				},
 				Lparen: nil,
 				Params: []*ast.Property{},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   134,
+					},
+					File:   "sample.flux",
+					Source: "alignToNow = (tables=<-) => {\n    _lastTime = (tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\") |> findRecord(fn: (key) => true, idx: 0))._time\n    _offset = int(v: now()) - int(v: _lastTime)\n    _offsetDuration = duration(v: _offset)\n\n    return tables |> timeShift(duration: _offsetDuration)\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   128,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// alignToNow shifts time values in input data to align the chronological last point to _now_.\n"}, ast.Comment{Text: "// When writing static historical sample datasets to **InfluxDB Cloud**, use alignToNow\n"}, ast.Comment{Text: "// to avoid losing sample data with timestamps outside of the retention period\n"}, ast.Comment{Text: "// associated with your InfluxDB Cloud account.\n"}, ast.Comment{Text: "// Input data must have a `_time` column.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ## Align sample data to now\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// ```\n"}, ast.Comment{Text: "// import \"influxdata/influxdb/sample\"\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// sample.data(set: \"birdMigration\")\n"}, ast.Comment{Text: "//    |> sample.alignToNow()\n"}, ast.Comment{Text: "// ```\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   128,
+						},
+						File:   "sample.flux",
+						Source: "alignToNow",
+						Start: ast.Position{
+							Column: 1,
+							Line:   128,
+						},
+					},
+				},
+				Name: "alignToNow",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   134,
+						},
+						File:   "sample.flux",
+						Source: "(tables=<-) => {\n    _lastTime = (tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\") |> findRecord(fn: (key) => true, idx: 0))._time\n    _offset = int(v: now()) - int(v: _lastTime)\n    _offsetDuration = duration(v: _offset)\n\n    return tables |> timeShift(duration: _offsetDuration)\n}",
+						Start: ast.Position{
+							Column: 14,
+							Line:   128,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   134,
+							},
+							File:   "sample.flux",
+							Source: "{\n    _lastTime = (tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\") |> findRecord(fn: (key) => true, idx: 0))._time\n    _offset = int(v: now()) - int(v: _lastTime)\n    _offsetDuration = duration(v: _offset)\n\n    return tables |> timeShift(duration: _offsetDuration)\n}",
+							Start: ast.Position{
+								Column: 29,
+								Line:   128,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 125,
+									Line:   129,
+								},
+								File:   "sample.flux",
+								Source: "_lastTime = (tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\") |> findRecord(fn: (key) => true, idx: 0))._time",
+								Start: ast.Position{
+									Column: 5,
+									Line:   129,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 14,
+										Line:   129,
+									},
+									File:   "sample.flux",
+									Source: "_lastTime",
+									Start: ast.Position{
+										Column: 5,
+										Line:   129,
+									},
+								},
+							},
+							Name: "_lastTime",
+						},
+						Init: &ast.MemberExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 125,
+										Line:   129,
+									},
+									File:   "sample.flux",
+									Source: "(tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\") |> findRecord(fn: (key) => true, idx: 0))._time",
+									Start: ast.Position{
+										Column: 17,
+										Line:   129,
+									},
+								},
+							},
+							Lbrack: nil,
+							Object: &ast.ParenExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 119,
+											Line:   129,
+										},
+										File:   "sample.flux",
+										Source: "(tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\") |> findRecord(fn: (key) => true, idx: 0))",
+										Start: ast.Position{
+											Column: 17,
+											Line:   129,
+										},
+									},
+								},
+								Expression: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.PipeExpression{
+											Argument: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   129,
+														},
+														File:   "sample.flux",
+														Source: "tables",
+														Start: ast.Position{
+															Column: 18,
+															Line:   129,
+														},
+													},
+												},
+												Name: "tables",
+											},
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 52,
+														Line:   129,
+													},
+													File:   "sample.flux",
+													Source: "tables |> keep(columns: [\"_time\"])",
+													Start: ast.Position{
+														Column: 18,
+														Line:   129,
+													},
+												},
+											},
+											Call: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 51,
+																Line:   129,
+															},
+															File:   "sample.flux",
+															Source: "columns: [\"_time\"]",
+															Start: ast.Position{
+																Column: 33,
+																Line:   129,
+															},
+														},
+													},
+													Lbrace: nil,
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 51,
+																	Line:   129,
+																},
+																File:   "sample.flux",
+																Source: "columns: [\"_time\"]",
+																Start: ast.Position{
+																	Column: 33,
+																	Line:   129,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 40,
+																		Line:   129,
+																	},
+																	File:   "sample.flux",
+																	Source: "columns",
+																	Start: ast.Position{
+																		Column: 33,
+																		Line:   129,
+																	},
+																},
+															},
+															Name: "columns",
+														},
+														Separator: nil,
+														Value: &ast.ArrayExpression{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 51,
+																		Line:   129,
+																	},
+																	File:   "sample.flux",
+																	Source: "[\"_time\"]",
+																	Start: ast.Position{
+																		Column: 42,
+																		Line:   129,
+																	},
+																},
+															},
+															Elements: []ast.Expression{&ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 50,
+																			Line:   129,
+																		},
+																		File:   "sample.flux",
+																		Source: "\"_time\"",
+																		Start: ast.Position{
+																			Column: 43,
+																			Line:   129,
+																		},
+																	},
+																},
+																Value: "_time",
+															}},
+															Lbrack: nil,
+															Rbrack: nil,
+														},
+													}},
+													Rbrace: nil,
+													With:   nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 52,
+															Line:   129,
+														},
+														File:   "sample.flux",
+														Source: "keep(columns: [\"_time\"])",
+														Start: ast.Position{
+															Column: 28,
+															Line:   129,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 32,
+																Line:   129,
+															},
+															File:   "sample.flux",
+															Source: "keep",
+															Start: ast.Position{
+																Column: 28,
+																Line:   129,
+															},
+														},
+													},
+													Name: "keep",
+												},
+												Lparen: nil,
+												Rparen: nil,
+											},
+										},
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 77,
+													Line:   129,
+												},
+												File:   "sample.flux",
+												Source: "tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\")",
+												Start: ast.Position{
+													Column: 18,
+													Line:   129,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 76,
+															Line:   129,
+														},
+														File:   "sample.flux",
+														Source: "column: \"_time\"",
+														Start: ast.Position{
+															Column: 61,
+															Line:   129,
+														},
+													},
+												},
+												Lbrace: nil,
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 76,
+																Line:   129,
+															},
+															File:   "sample.flux",
+															Source: "column: \"_time\"",
+															Start: ast.Position{
+																Column: 61,
+																Line:   129,
+															},
+														},
+													},
+													Comma: nil,
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 67,
+																	Line:   129,
+																},
+																File:   "sample.flux",
+																Source: "column",
+																Start: ast.Position{
+																	Column: 61,
+																	Line:   129,
+																},
+															},
+														},
+														Name: "column",
+													},
+													Separator: nil,
+													Value: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 76,
+																	Line:   129,
+																},
+																File:   "sample.flux",
+																Source: "\"_time\"",
+																Start: ast.Position{
+																	Column: 69,
+																	Line:   129,
+																},
+															},
+														},
+														Value: "_time",
+													},
+												}},
+												Rbrace: nil,
+												With:   nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 77,
+														Line:   129,
+													},
+													File:   "sample.flux",
+													Source: "last(column: \"_time\")",
+													Start: ast.Position{
+														Column: 56,
+														Line:   129,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 60,
+															Line:   129,
+														},
+														File:   "sample.flux",
+														Source: "last",
+														Start: ast.Position{
+															Column: 56,
+															Line:   129,
+														},
+													},
+												},
+												Name: "last",
+											},
+											Lparen: nil,
+											Rparen: nil,
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 118,
+												Line:   129,
+											},
+											File:   "sample.flux",
+											Source: "tables |> keep(columns: [\"_time\"]) |> last(column: \"_time\") |> findRecord(fn: (key) => true, idx: 0)",
+											Start: ast.Position{
+												Column: 18,
+												Line:   129,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 117,
+														Line:   129,
+													},
+													File:   "sample.flux",
+													Source: "fn: (key) => true, idx: 0",
+													Start: ast.Position{
+														Column: 92,
+														Line:   129,
+													},
+												},
+											},
+											Lbrace: nil,
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 109,
+															Line:   129,
+														},
+														File:   "sample.flux",
+														Source: "fn: (key) => true",
+														Start: ast.Position{
+															Column: 92,
+															Line:   129,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 94,
+																Line:   129,
+															},
+															File:   "sample.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 92,
+																Line:   129,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Separator: nil,
+												Value: &ast.FunctionExpression{
+													Arrow: nil,
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 109,
+																Line:   129,
+															},
+															File:   "sample.flux",
+															Source: "(key) => true",
+															Start: ast.Position{
+																Column: 96,
+																Line:   129,
+															},
+														},
+													},
+													Body: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 109,
+																	Line:   129,
+																},
+																File:   "sample.flux",
+																Source: "true",
+																Start: ast.Position{
+																	Column: 105,
+																	Line:   129,
+																},
+															},
+														},
+														Name: "true",
+													},
+													Lparen: nil,
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 100,
+																	Line:   129,
+																},
+																File:   "sample.flux",
+																Source: "key",
+																Start: ast.Position{
+																	Column: 97,
+																	Line:   129,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 100,
+																		Line:   129,
+																	},
+																	File:   "sample.flux",
+																	Source: "key",
+																	Start: ast.Position{
+																		Column: 97,
+																		Line:   129,
+																	},
+																},
+															},
+															Name: "key",
+														},
+														Separator: nil,
+														Value:     nil,
+													}},
+													Rparan: nil,
+												},
+											}, &ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 117,
+															Line:   129,
+														},
+														File:   "sample.flux",
+														Source: "idx: 0",
+														Start: ast.Position{
+															Column: 111,
+															Line:   129,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 114,
+																Line:   129,
+															},
+															File:   "sample.flux",
+															Source: "idx",
+															Start: ast.Position{
+																Column: 111,
+																Line:   129,
+															},
+														},
+													},
+													Name: "idx",
+												},
+												Separator: nil,
+												Value: &ast.IntegerLiteral{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 117,
+																Line:   129,
+															},
+															File:   "sample.flux",
+															Source: "0",
+															Start: ast.Position{
+																Column: 116,
+																Line:   129,
+															},
+														},
+													},
+													Value: int64(0),
+												},
+											}},
+											Rbrace: nil,
+											With:   nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 118,
+													Line:   129,
+												},
+												File:   "sample.flux",
+												Source: "findRecord(fn: (key) => true, idx: 0)",
+												Start: ast.Position{
+													Column: 81,
+													Line:   129,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 91,
+														Line:   129,
+													},
+													File:   "sample.flux",
+													Source: "findRecord",
+													Start: ast.Position{
+														Column: 81,
+														Line:   129,
+													},
+												},
+											},
+											Name: "findRecord",
+										},
+										Lparen: nil,
+										Rparen: nil,
+									},
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+							Property: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 125,
+											Line:   129,
+										},
+										File:   "sample.flux",
+										Source: "_time",
+										Start: ast.Position{
+											Column: 120,
+											Line:   129,
+										},
+									},
+								},
+								Name: "_time",
+							},
+							Rbrack: nil,
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 48,
+									Line:   130,
+								},
+								File:   "sample.flux",
+								Source: "_offset = int(v: now()) - int(v: _lastTime)",
+								Start: ast.Position{
+									Column: 5,
+									Line:   130,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   130,
+									},
+									File:   "sample.flux",
+									Source: "_offset",
+									Start: ast.Position{
+										Column: 5,
+										Line:   130,
+									},
+								},
+							},
+							Name: "_offset",
+						},
+						Init: &ast.BinaryExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 48,
+										Line:   130,
+									},
+									File:   "sample.flux",
+									Source: "int(v: now()) - int(v: _lastTime)",
+									Start: ast.Position{
+										Column: 15,
+										Line:   130,
+									},
+								},
+							},
+							Left: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 27,
+												Line:   130,
+											},
+											File:   "sample.flux",
+											Source: "v: now()",
+											Start: ast.Position{
+												Column: 19,
+												Line:   130,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 27,
+													Line:   130,
+												},
+												File:   "sample.flux",
+												Source: "v: now()",
+												Start: ast.Position{
+													Column: 19,
+													Line:   130,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 20,
+														Line:   130,
+													},
+													File:   "sample.flux",
+													Source: "v",
+													Start: ast.Position{
+														Column: 19,
+														Line:   130,
+													},
+												},
+											},
+											Name: "v",
+										},
+										Separator: nil,
+										Value: &ast.CallExpression{
+											Arguments: nil,
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 27,
+														Line:   130,
+													},
+													File:   "sample.flux",
+													Source: "now()",
+													Start: ast.Position{
+														Column: 22,
+														Line:   130,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 25,
+															Line:   130,
+														},
+														File:   "sample.flux",
+														Source: "now",
+														Start: ast.Position{
+															Column: 22,
+															Line:   130,
+														},
+													},
+												},
+												Name: "now",
+											},
+											Lparen: nil,
+											Rparen: nil,
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 28,
+											Line:   130,
+										},
+										File:   "sample.flux",
+										Source: "int(v: now())",
+										Start: ast.Position{
+											Column: 15,
+											Line:   130,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   130,
+											},
+											File:   "sample.flux",
+											Source: "int",
+											Start: ast.Position{
+												Column: 15,
+												Line:   130,
+											},
+										},
+									},
+									Name: "int",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+							Operator: 6,
+							Right: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 47,
+												Line:   130,
+											},
+											File:   "sample.flux",
+											Source: "v: _lastTime",
+											Start: ast.Position{
+												Column: 35,
+												Line:   130,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 47,
+													Line:   130,
+												},
+												File:   "sample.flux",
+												Source: "v: _lastTime",
+												Start: ast.Position{
+													Column: 35,
+													Line:   130,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 36,
+														Line:   130,
+													},
+													File:   "sample.flux",
+													Source: "v",
+													Start: ast.Position{
+														Column: 35,
+														Line:   130,
+													},
+												},
+											},
+											Name: "v",
+										},
+										Separator: nil,
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 47,
+														Line:   130,
+													},
+													File:   "sample.flux",
+													Source: "_lastTime",
+													Start: ast.Position{
+														Column: 38,
+														Line:   130,
+													},
+												},
+											},
+											Name: "_lastTime",
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 48,
+											Line:   130,
+										},
+										File:   "sample.flux",
+										Source: "int(v: _lastTime)",
+										Start: ast.Position{
+											Column: 31,
+											Line:   130,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 34,
+												Line:   130,
+											},
+											File:   "sample.flux",
+											Source: "int",
+											Start: ast.Position{
+												Column: 31,
+												Line:   130,
+											},
+										},
+									},
+									Name: "int",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 43,
+									Line:   131,
+								},
+								File:   "sample.flux",
+								Source: "_offsetDuration = duration(v: _offset)",
+								Start: ast.Position{
+									Column: 5,
+									Line:   131,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   131,
+									},
+									File:   "sample.flux",
+									Source: "_offsetDuration",
+									Start: ast.Position{
+										Column: 5,
+										Line:   131,
+									},
+								},
+							},
+							Name: "_offsetDuration",
+						},
+						Init: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   131,
+										},
+										File:   "sample.flux",
+										Source: "v: _offset",
+										Start: ast.Position{
+											Column: 32,
+											Line:   131,
+										},
+									},
+								},
+								Lbrace: nil,
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   131,
+											},
+											File:   "sample.flux",
+											Source: "v: _offset",
+											Start: ast.Position{
+												Column: 32,
+												Line:   131,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   131,
+												},
+												File:   "sample.flux",
+												Source: "v",
+												Start: ast.Position{
+													Column: 32,
+													Line:   131,
+												},
+											},
+										},
+										Name: "v",
+									},
+									Separator: nil,
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   131,
+												},
+												File:   "sample.flux",
+												Source: "_offset",
+												Start: ast.Position{
+													Column: 35,
+													Line:   131,
+												},
+											},
+										},
+										Name: "_offset",
+									},
+								}},
+								Rbrace: nil,
+								With:   nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   131,
+									},
+									File:   "sample.flux",
+									Source: "duration(v: _offset)",
+									Start: ast.Position{
+										Column: 23,
+										Line:   131,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 31,
+											Line:   131,
+										},
+										File:   "sample.flux",
+										Source: "duration",
+										Start: ast.Position{
+											Column: 23,
+											Line:   131,
+										},
+									},
+								},
+								Name: "duration",
+							},
+							Lparen: nil,
+							Rparen: nil,
+						},
+					}, &ast.ReturnStatement{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 18,
+											Line:   133,
+										},
+										File:   "sample.flux",
+										Source: "tables",
+										Start: ast.Position{
+											Column: 12,
+											Line:   133,
+										},
+									},
+								},
+								Name: "tables",
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 58,
+										Line:   133,
+									},
+									File:   "sample.flux",
+									Source: "tables |> timeShift(duration: _offsetDuration)",
+									Start: ast.Position{
+										Column: 12,
+										Line:   133,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 57,
+												Line:   133,
+											},
+											File:   "sample.flux",
+											Source: "duration: _offsetDuration",
+											Start: ast.Position{
+												Column: 32,
+												Line:   133,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 57,
+													Line:   133,
+												},
+												File:   "sample.flux",
+												Source: "duration: _offsetDuration",
+												Start: ast.Position{
+													Column: 32,
+													Line:   133,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 40,
+														Line:   133,
+													},
+													File:   "sample.flux",
+													Source: "duration",
+													Start: ast.Position{
+														Column: 32,
+														Line:   133,
+													},
+												},
+											},
+											Name: "duration",
+										},
+										Separator: nil,
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 57,
+														Line:   133,
+													},
+													File:   "sample.flux",
+													Source: "_offsetDuration",
+													Start: ast.Position{
+														Column: 42,
+														Line:   133,
+													},
+												},
+											},
+											Name: "_offsetDuration",
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 58,
+											Line:   133,
+										},
+										File:   "sample.flux",
+										Source: "timeShift(duration: _offsetDuration)",
+										Start: ast.Position{
+											Column: 22,
+											Line:   133,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   133,
+											},
+											File:   "sample.flux",
+											Source: "timeShift",
+											Start: ast.Position{
+												Column: 22,
+												Line:   133,
+											},
+										},
+									},
+									Name: "timeShift",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 58,
+									Line:   133,
+								},
+								File:   "sample.flux",
+								Source: "return tables |> timeShift(duration: _offsetDuration)",
+								Start: ast.Position{
+									Column: 5,
+									Line:   133,
+								},
+							},
+						},
+					}},
+					Lbrace: nil,
+					Rbrace: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   128,
+							},
+							File:   "sample.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 15,
+								Line:   128,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 21,
+									Line:   128,
+								},
+								File:   "sample.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 15,
+									Line:   128,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Separator: nil,
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   128,
+							},
+							File:   "sample.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 22,
+								Line:   128,
+							},
+						},
+					}},
+				}},
 				Rparan: nil,
 			},
 		}},
