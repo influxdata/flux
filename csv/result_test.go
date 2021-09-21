@@ -1618,8 +1618,6 @@ func TestResultEncoder(t *testing.T) {
 			encoded: toCRLF(`,result,table,_start,_stop,_time,_measurement,host,_value
 ,_result,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
 ,_result,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,43
-
-,result,table,_start,_stop,_time,_measurement,host,_value
 ,_result,1,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,mem,A,42
 ,_result,1,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,mem,A,43
 `),
@@ -1775,7 +1773,7 @@ func TestMultiResultEncoder(t *testing.T) {
 `),
 		},
 		{
-			name:   "group key change",
+			name:   "group key column change",
 			config: csv.DefaultEncoderConfig(),
 			results: flux.NewSliceResultIterator([]flux.Result{&executetest.Result{
 				Nm: "_result",
@@ -1889,6 +1887,83 @@ func TestMultiResultEncoder(t *testing.T) {
 ,result,table,_start,_stop,_time,_measurement,host,_value
 ,,2,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,B,46
 ,,2,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,B,47
+
+`),
+		},
+		{
+			name:   "group key value change",
+			config: csv.DefaultEncoderConfig(),
+			results: flux.NewSliceResultIterator([]flux.Result{&executetest.Result{
+				Nm: "_result",
+				Tbls: []*executetest.Table{
+					{
+						KeyCols: []string{"_start", "_stop", "_measurement", "host"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_measurement", Type: flux.TString},
+							{Label: "host", Type: flux.TString},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								"cpu",
+								"A",
+								42.0,
+							},
+							{
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
+								"cpu",
+								"A",
+								43.0,
+							},
+						},
+					},
+					{
+						KeyCols: []string{"_start", "_stop", "_measurement", "host"},
+						ColMeta: []flux.ColMeta{
+							{Label: "_start", Type: flux.TTime},
+							{Label: "_stop", Type: flux.TTime},
+							{Label: "_time", Type: flux.TTime},
+							{Label: "_measurement", Type: flux.TString},
+							{Label: "host", Type: flux.TString},
+							{Label: "_value", Type: flux.TFloat},
+						},
+						Data: [][]interface{}{
+							{
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								"cpu",
+								"B",
+								44.0,
+							},
+							{
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+								values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
+								"cpu",
+								"B",
+								45.0,
+							},
+						},
+					},
+				},
+			}}),
+			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_measurement,host,_value
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,43
+,,1,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,B,44
+,,1,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,B,45
 
 `),
 		},

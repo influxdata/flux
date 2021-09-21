@@ -1310,8 +1310,17 @@ func decodeType(datatype string) (t flux.ColType, desc string, err error) {
 }
 
 func schemaChanged(cols, lastCols []colMeta, groupKey, lastGroupKey flux.GroupKey) bool {
-	if lastGroupKey == nil || !groupKey.Equal(lastGroupKey) {
+	if lastGroupKey == nil {
 		return true
+	}
+	gkCols, lastGkCols := groupKey.Cols(), lastGroupKey.Cols()
+	if len(gkCols) != len(lastGkCols) {
+		return true
+	}
+	for j := range gkCols {
+		if gkCols[j] != lastGkCols[j] {
+			return true
+		}
 	}
 
 	if len(cols) != len(lastCols) {
