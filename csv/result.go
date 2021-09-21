@@ -407,14 +407,15 @@ func readMetadata(r *bufferedCSVReader, c ResultDecoderConfig) (tableMetadata, e
 				if !strings.HasPrefix(line[annotationIdx], commentPrefix) {
 					switch {
 					case datatypes == nil:
-						return tableMetadata{}, fmt.Errorf("missing expected annotation datatype")
+						return tableMetadata{}, errors.New(codes.Invalid, "missing expected annotation datatype")
 					case groups == nil:
-						return tableMetadata{}, fmt.Errorf("missing expected annotation group")
+						return tableMetadata{}, errors.New(codes.Invalid, "missing expected annotation group")
 					case defaults == nil:
-						return tableMetadata{}, fmt.Errorf("missing expected annotation default")
+						return tableMetadata{}, errors.New(codes.Invalid, "missing expected annotation default")
 					}
+				} else {
+					return tableMetadata{}, errors.Newf(codes.Invalid, "unsupported annotation %q", line[annotationIdx])
 				}
-				// Ignore unsupported/unknown annotations.
 			}
 		}
 	}

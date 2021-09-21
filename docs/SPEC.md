@@ -4761,6 +4761,9 @@ It is not possible to encode/decode a non-null string value that is the same as 
 
 When the `default` annotation value of a column is the same as the `null` annotation value of a column, it is interpreted as the column's default value is null.
 
+Only the specified annotations may be present. Any extra annotations will result in an error.
+This strick handling of annotations allows for clear error messages during decoding.
+
 ##### Errors
 
 When an error occurs during execution a table will be returned with the first column label as `error` and the second column label as `reference`.

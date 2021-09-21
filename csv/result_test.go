@@ -1522,6 +1522,19 @@ data1,data2,data3
 				Err: errors.New("failed to read metadata: failed to read \"default\" annotation: wrong number of fields"),
 			},
 		},
+		{
+			name:          "error on bad annoations",
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded: toCRLF(`#datatype measurement,tag,double,dateTime:RFC3339
+m,host,used_percent,time
+mem,host1,64.23,2020-01-01T00:00:00Z
+mem,host2,72.01,2020-01-01T00:00:00Z
+`),
+			result: &executetest.Result{
+				Nm:  "_result",
+				Err: errors.New("failed to read metadata: unsupported annotation \"#datatype measurement\""),
+			},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
