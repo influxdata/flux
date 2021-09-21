@@ -54,30 +54,27 @@ impl Parser {
     // scan will read the next token from the Scanner. If peek has been used,
     // this will return the peeked token and consume it.
     fn scan(&mut self) -> Token {
-        match self.t.clone() {
-            Some(t) => {
-                self.t = None;
-                t
-            }
+        match self.t.take() {
+            Some(t) => t,
             None => self.s.scan(),
         }
     }
 
     // peek will read the next token from the Scanner and then buffer it.
     // It will return information about the token.
-    fn peek(&mut self) -> Token {
-        match self.t.clone() {
-            Some(t) => t,
+    fn peek(&mut self) -> &Token {
+        match self.t {
+            Some(ref t) => t,
             None => {
                 let t = self.s.scan();
-                self.t = Some(t.clone());
-                t
+                self.t = Some(t);
+                self.t.as_ref().unwrap()
             }
         }
     }
 
     // peek_with_regex is the same as peek, except that the scan step will allow scanning regexp tokens.
-    fn peek_with_regex(&mut self) -> Token {
+    fn peek_with_regex(&mut self) -> &Token {
         if let Some(token) = &mut self.t {
             if let Token {
                 tok: TokenType::Div,
@@ -89,21 +86,21 @@ impl Parser {
                 self.s.unread();
             }
         }
-        match self.t.clone() {
-            Some(t) => t,
+        match self.t {
+            Some(ref t) => t,
             None => {
                 let t = self.s.scan_with_regex();
-                self.t = Some(t.clone());
-                t
+                self.t = Some(t);
+                self.t.as_ref().unwrap()
             }
         }
     }
 
     // consume will consume a token that has been retrieve using peek.
     // This will panic if a token has not been buffered with peek.
-    fn consume(&mut self) {
-        match self.t.clone() {
-            Some(_) => self.t = None,
+    fn consume(&mut self) -> Token {
+        match self.t.take() {
+            Some(t) => t,
             None => panic!("called consume on an unbuffered input"),
         }
     }
@@ -150,11 +147,11 @@ impl Parser {
     // current block. This is true when the next token is not EOF and
     // the next token is also not one that would close a block.
     fn more(&mut self) -> bool {
-        let t = self.peek();
-        if t.tok == TokenType::Eof {
+        let t_tok = self.peek().tok;
+        if t_tok == TokenType::Eof {
             return false;
         }
-        let cnt = self.blocks.get(&t.tok);
+        let cnt = self.blocks.get(&t_tok);
         match cnt {
             Some(cnt) => *cnt == 0,
             None => true,
@@ -190,14 +187,14 @@ impl Parser {
         // Read the next token.
         let tok = self.peek();
         if tok.tok == end {
-            self.consume();
-            return tok;
+            return self.consume();
         }
 
         // TODO(jsternberg): Return NoPos when the positioning code
         // is prepared for that.
 
         // Append an error to the current node.
+        let tok = tok.clone();
         self.errs.push(format!(
             "expected {}, got {}",
             format!("{}", end),
@@ -293,7 +290,7 @@ impl Parser {
     /// Parses a file of Flux source code, returning a [`File`].
     pub fn parse_file(&mut self, fname: String) -> File {
         self.fname = fname;
-        let t = self.peek();
+        let start_pos = ast::Position::from(&self.peek().start_pos);
         let mut end = ast::Position::invalid();
         let pkg = self.parse_package_clause();
         if let Some(pkg) = &pkg {
@@ -307,10 +304,10 @@ impl Parser {
         if let Some(stmt) = body.last() {
             end = stmt.base().location.end;
         }
-        let eof = self.peek();
+        let eof = self.peek().comments.clone();
         File {
             base: BaseNode {
-                location: self.source_location(&ast::Position::from(&t.start_pos), &end),
+                location: self.source_location(&start_pos, &end),
                 ..BaseNode::default()
             },
             name: self.fname.clone(),
@@ -318,14 +315,14 @@ impl Parser {
             package: pkg,
             imports,
             body,
-            eof: eof.comments,
+            eof,
         }
     }
 
     fn parse_package_clause(&mut self) -> Option<PackageClause> {
         let t = self.peek();
         if t.tok == TokenType::Package {
-            self.consume();
+            let t = self.consume();
             let ident = self.parse_identifier();
             return Some(PackageClause {
                 base: self.base_node_from_other_end_c(&t, &ident.base, &t),
@@ -397,7 +394,7 @@ impl Parser {
             TokenType::TestCase => self.parse_testcase_statement(),
             TokenType::Return => self.parse_return_statement(),
             _ => {
-                self.consume();
+                let t = self.consume();
                 Statement::Bad(Box::new(BadStmt {
                     base: self.base_node_from_token(&t),
                     text: t.lit,
@@ -424,6 +421,7 @@ impl Parser {
         let t = self.peek();
         match t.tok {
             TokenType::Assign => {
+                let t = t.clone();
                 let init = self.parse_assign_statement();
                 Ok(Assignment::Variable(Box::new(VariableAssgn {
                     base: self.base_node_from_others_c(&id.base, init.base(), &t),
@@ -432,7 +430,7 @@ impl Parser {
                 })))
             }
             TokenType::Dot => {
-                self.consume();
+                let t = self.consume();
                 let prop = self.parse_identifier();
                 let assign = self.expect(TokenType::Assign);
                 let init = self.parse_expression();
@@ -522,7 +520,7 @@ impl Parser {
     }
 
     fn parse_basic_type(&mut self) -> MonoType {
-        let t = self.peek();
+        let t = self.peek().clone();
         MonoType::Basic(NamedType {
             base: self.base_node_from_token(&t),
             name: self.parse_identifier(),
@@ -725,7 +723,7 @@ impl Parser {
     fn parse_test_statement(&mut self) -> Statement {
         let t = self.expect(TokenType::Test);
         let id = self.parse_identifier();
-        let assign = self.peek();
+        let assign = self.peek().clone();
         let assignment = self.parse_assign_statement();
         Statement::Test(Box::new(TestStmt {
             base: self.base_node_from_other_end_c(&t, assignment.base(), &t),
@@ -765,6 +763,7 @@ impl Parser {
         let t = self.peek();
         match t.tok {
             TokenType::Assign => {
+                let t = t.clone();
                 let init = self.parse_assign_statement();
                 Statement::Variable(Box::new(VariableAssgn {
                     base: self.base_node_from_others_c(&id.base, init.base(), &t),
@@ -877,6 +876,7 @@ impl Parser {
     fn parse_conditional_expression(&mut self) -> Expression {
         let t = self.peek();
         if t.tok == TokenType::If {
+            let t = t.clone();
             let if_tok = self.scan();
             let test = self.parse_expression();
             let then_tok = self.expect(TokenType::Then);
@@ -960,7 +960,7 @@ impl Parser {
         }
     }
     fn parse_logical_unary_expression(&mut self) -> Expression {
-        let t = self.peek();
+        let t = self.peek().clone();
         let op = self.parse_logical_unary_operator();
         match op {
             Some(op) => {
@@ -1184,7 +1184,7 @@ impl Parser {
         t == TokenType::PipeForward
     }
     fn parse_unary_expression(&mut self) -> Expression {
-        let t = self.peek();
+        let t = self.peek().clone();
         let op = self.parse_additive_operator();
         if let Some(op) = op {
             self.consume();
@@ -1368,7 +1368,10 @@ impl Parser {
             TokenType::LParen => self.parse_paren_expression(),
             // We got a bad token, do not consume it, but use it in the message.
             // Other methods will match BadExpr and consume the token if needed.
-            _ => self.create_bad_expression(t),
+            _ => {
+                let t = t.clone();
+                self.create_bad_expression(t)
+            }
         }
     }
     fn parse_string_expression(&mut self) -> Result<StringExpr, TokenError> {
@@ -1691,7 +1694,7 @@ impl Parser {
         let t = self.peek();
         match t.tok {
             TokenType::RParen => {
-                self.close(TokenType::RParen);
+                let t = self.close(TokenType::RParen);
                 self.parse_function_expression(lparen, t, Vec::new())
             }
             TokenType::Ident => {
@@ -1699,6 +1702,7 @@ impl Parser {
                 self.parse_paren_ident_expression(lparen, ident)
             }
             _ => {
+                let t = t.clone();
                 let mut expr = self.parse_expression_while_more(None, &[]);
                 match expr {
                     None => {
@@ -1732,7 +1736,7 @@ impl Parser {
         let t = self.peek();
         match t.tok {
             TokenType::RParen => {
-                self.close(TokenType::RParen);
+                let t = self.close(TokenType::RParen);
                 let next = self.peek();
                 match next.tok {
                     TokenType::Arrow => {
@@ -1754,7 +1758,7 @@ impl Parser {
                 }
             }
             TokenType::Assign => {
-                self.consume();
+                let t = self.consume();
                 let value = self.parse_expression();
                 let mut params = vec![Property {
                     base: self.base_node_from_others(&key.base, value.base()),
@@ -1773,7 +1777,7 @@ impl Parser {
                 self.parse_function_expression(lparen, rparen, params)
             }
             TokenType::Comma => {
-                self.consume();
+                let t = self.consume();
                 let mut params = vec![Property {
                     base: self.base_node(key.base.location.clone()),
                     key: PropertyKey::Identifier(key),
@@ -1853,7 +1857,7 @@ impl Parser {
                 if t.lit != "with" {
                     self.errs.push("".to_string())
                 }
-                self.consume();
+                let t = self.consume();
                 let props = self.parse_property_list();
                 ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
@@ -1889,14 +1893,15 @@ impl Parser {
         }
         let t = self.peek();
         if t.tok != TokenType::Comma {
-            self.errs.push(format!(
+            let err = format!(
                 "expected comma in property list, got {}",
                 format!("{}", t.tok)
-            ))
+            );
+            self.errs.push(err);
         } else {
             let last = props.len() - 1;
+            let t = self.consume();
             props[last].comma = t.comments;
-            self.consume();
         }
         props.append(&mut self.parse_property_list());
         props
@@ -1920,8 +1925,8 @@ impl Parser {
                         format!("{}", t.tok)
                     ))
                 } else {
+                    let t = self.consume();
                     p.comma = t.comments;
-                    self.consume();
                 }
             }
 
@@ -1943,7 +1948,7 @@ impl Parser {
         let mut separator = vec![];
         let t = self.peek();
         if t.tok == TokenType::Colon {
-            self.consume();
+            let t = self.consume();
             value = self.parse_property_value();
             separator = t.comments;
         };
@@ -1962,7 +1967,7 @@ impl Parser {
     fn parse_invalid_property(&mut self) -> Property {
         let mut errs = Vec::new();
         let mut value = None;
-        let t = self.peek();
+        let t = self.peek().clone();
         match t.tok {
             TokenType::Colon => {
                 errs.push(String::from("missing property key"));
@@ -1989,12 +1994,9 @@ impl Parser {
             }
         }
         self.errs.append(&mut errs);
-        let end = self.peek();
+        let end_start_pos = ast::Position::from(&self.peek().start_pos);
         Property {
-            base: self.base_node_from_pos(
-                &ast::Position::from(&t.start_pos),
-                &ast::Position::from(&end.start_pos),
-            ),
+            base: self.base_node_from_pos(&ast::Position::from(&t.start_pos), &end_start_pos),
             key: PropertyKey::StringLit(StringLit {
                 base: self.base_node_from_pos(
                     &ast::Position::from(&t.start_pos),
