@@ -297,7 +297,7 @@ fn dependencies<'a>(
 pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Error> {
     let (r, cons) = build_record(from, f);
     let mut kinds = TvarKinds::new();
-    let sub = infer::solve(&cons, &mut kinds, f)?;
+    let sub = infer::solve(cons, &mut kinds, f)?;
     Ok(infer::generalize(
         &Environment::empty(false),
         &kinds,

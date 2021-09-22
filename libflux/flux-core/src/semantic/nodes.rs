@@ -253,7 +253,8 @@ where
     T: Importer,
 {
     let (env, cons) = pkg.infer(env, f, importer)?;
-    Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
+    let sub = infer::solve(cons, &mut TvarKinds::new(), f)?;
+    Ok((env, sub))
 }
 
 /// Infer the types of a Flux source code file.
@@ -499,8 +500,8 @@ pub struct ExprStmt {
 impl ExprStmt {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
         let (env, cons) = self.expression.infer(env, f)?;
-        let sub = infer::solve(&cons, &mut TvarKinds::new(), f)?;
-        Ok((env.apply(&sub), cons))
+        let sub = infer::solve(cons, &mut TvarKinds::new(), f)?;
+        Ok((env.apply(&sub), Constraints::empty()))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.expression = self.expression.apply(sub);
@@ -575,7 +576,7 @@ impl VariableAssgn {
         let (env, constraints) = self.init.infer(env, f)?;
 
         let mut kinds = TvarKinds::new();
-        let sub = infer::solve(&constraints, &mut kinds, f)?;
+        let sub = infer::solve(constraints, &mut kinds, f)?;
 
         // Apply substitution to the type environment
         let mut env = env.apply(&sub);
@@ -593,7 +594,7 @@ impl VariableAssgn {
 
         // Update the type environment
         env.add(String::from(&self.id.name), p);
-        Ok((env, constraints))
+        Ok((env, Constraints::empty()))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.init = self.init.apply(sub);

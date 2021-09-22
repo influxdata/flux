@@ -85,38 +85,34 @@ pub struct Error {
 
 // Solve a set of type constraints
 pub fn solve(
-    cons: &Constraints,
+    cons: Constraints,
     with: &mut TvarKinds,
     fresher: &mut Fresher,
 ) -> Result<Substitution, Error> {
-    cons.0
-        .iter()
-        .try_fold(Substitution::empty(), |sub, constraint| match constraint {
+    let mut sub = Substitution::empty();
+    for constraint in cons.0 {
+        match constraint {
             Constraint::Kind { exp, act, loc } => {
                 // Apply the current substitution to the type, then constrain
-                let s = match act.clone().apply(&sub).constrain(*exp, with) {
-                    Err(e) => Err(Error {
-                        loc: loc.clone(),
-                        err: e,
-                    }),
-                    Ok(s) => Ok(s),
-                }?;
-                Ok(sub.merge(s))
+                let s = match act.clone().apply(&sub).constrain(exp, with) {
+                    Err(err) => return Err(Error { loc, err }),
+                    Ok(s) => s,
+                };
+                sub = sub.merge(s);
             }
             Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                let exp = exp.clone().apply(&sub);
-                let act = act.clone().apply(&sub);
-                let s = match exp.unify(act, with, fresher) {
-                    Err(e) => Err(Error {
-                        loc: loc.clone(),
-                        err: e,
-                    }),
-                    Ok(s) => Ok(s),
-                }?;
-                Ok(sub.merge(s))
+                let exp = exp.apply(&sub);
+                let act = act.apply(&sub);
+                let s = match exp.clone().unify(act.clone(), with, fresher) {
+                    Err(err) => return Err(Error { loc, err }),
+                    Ok(s) => s,
+                };
+                sub = sub.merge(s);
             }
-        })
+        }
+    }
+    Ok(sub)
 }
 
 // Create a parametric type from a monotype by universally quantifying
