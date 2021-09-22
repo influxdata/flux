@@ -3364,6 +3364,28 @@ fn function_default_arguments_and_pipes() {
 }
 
 #[test]
+fn issue_4051() {
+    test_infer! {
+        env: map![
+            "r" => "A where A: Record",
+        ],
+        src: r#"
+        f = (r) => {
+            a = r.a
+            b = r.b + 1
+            c = r.c * 1.0
+            return r
+        }
+        x = f(r:r)
+        "#,
+        exp: map![
+            "f" => "(r:{S with a:X, b: int, c: float) => {S with a:X, b: int, c: float}",
+            "x" => "{S with a: X, b: int, c: float}",
+        ],
+    }
+}
+
+#[test]
 fn copy_bindings_from_other_env() {
     let mut env = Environment::empty(true);
     let mut f = Fresher::default();
