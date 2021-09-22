@@ -281,10 +281,7 @@ func (t *derivativeTransformation2) derivativeStateFor(col flux.ColMeta, state *
 				initialized: state.initialized,
 			}, nil
 		default:
-			// TODO(jsternberg): This is the fix for issue #914.
-			// To add this code is a breaking change so it is commented
-			// out until we decide to pull the trigger.
-			// return nil, errors.Newf(codes.FailedPrecondition, "attempted to perform derivative over non-numeric column %q of type %s", col.Label, col.Type)
+			return nil, errors.Newf(codes.FailedPrecondition, "unsupported derivative column type %s:%s", col.Label, col.Type)
 		}
 	}
 
