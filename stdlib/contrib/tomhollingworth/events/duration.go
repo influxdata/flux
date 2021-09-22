@@ -206,9 +206,14 @@ func (t *durationTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		return errors.Newf(codes.FailedPrecondition, "column %q does not exist", t.timeColumn)
 	}
 
-	stopIdx := execute.ColIdx(t.stopColumn, cols)
-	if stopIdx < 0 && !t.isStop {
-		return errors.Newf(codes.FailedPrecondition, "column %q does not exist", t.stopColumn)
+	var stopIdx int
+	if !t.isStop {
+		stopIdx = execute.ColIdx(t.stopColumn, cols)
+		if stopIdx < 0 {
+			return errors.Newf(codes.FailedPrecondition, "column %q does not exist", t.stopColumn)
+		} else if c := tbl.Cols()[stopIdx]; c.Type != flux.TTime {
+			return errors.Newf(codes.FailedPrecondition, "stop column %q must be of type %s, got %s", c.Label, flux.TTime, c.Type)
+		}
 	}
 
 	timeCol := cols[timeIdx]
@@ -223,52 +228,69 @@ func (t *durationTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 
 	colMap := execute.ColMap([]int{0}, builder, tbl.Cols())
 
-	return tbl.Do(func(cr flux.ColReader) error {
+	var (
+		cTime      int64
+		cTimeValid bool
+		sTime      int64
+	)
+
+	// If we have specified a stop value, record it here.
+	if t.isStop {
+		sTime = int64(t.stop)
+	}
+
+	if err := tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
-		if l != 0 {
-			// If no stop timestamp is provided, get last value in stopColumn
-			if !t.isStop {
-				for j, c := range cols {
-					if c.Type == flux.TTime && c.Label == t.stopColumn {
-						stopColumn := cr.Times(j)
-						t.stop = execute.Time(stopColumn.Value(l - 1))
-					}
+
+		ts := cr.Times(timeIdx)
+		for i := 0; i < l; i++ {
+			// Read the current time value. If we have a current time to compare
+			// it to, then append the difference between them.
+			//
+			// This section will always append the previous row. During the first
+			// invocation of this section, it is skipped.
+			nTime := ts.Value(i)
+			if cTimeValid {
+				currentTime := float64(cTime)
+				nextTime := float64(nTime)
+				if err := builder.AppendInt(numCol, int64((nextTime-currentTime)/t.unit)); err != nil {
+					return err
 				}
 			}
-			for j, c := range cols {
-				if c.Type == flux.TTime && c.Label == t.timeColumn {
-					ts := cr.Times(j)
-					for i := 0; i < l-1; i++ {
-						if err := execute.AppendMappedRecordExplicit(i, cr, builder, colMap); err != nil {
-							return err
-						}
+			cTime, cTimeValid = nTime, true
 
-						// Calculate difference between this record and next
-						cTime := execute.Time(ts.Value(i))
-						nTime := execute.Time(ts.Value(i + 1))
-						currentTime := float64(cTime)
-						nextTime := float64(nTime)
-						if err := builder.AppendInt(numCol, int64((nextTime-currentTime)/t.unit)); err != nil {
-							return err
-						}
-					}
-
-					if err := execute.AppendMappedRecordExplicit(l-1, cr, builder, colMap); err != nil {
-						return err
-					}
-
-					// Calculate difference between last record and stop
-					cTime := execute.Time(ts.Value(l - 1))
-					sTime := t.stop
-					currentTime := float64(cTime)
-					stopTime := float64(sTime)
-					if err := builder.AppendInt(numCol, int64((stopTime-currentTime)/t.unit)); err != nil {
-						return err
-					}
-				}
+			// Append the existing columns. We always append the currently
+			// processed row except for the duration between the two.
+			// The reason is we need to copy over these values, but
+			// we don't know the duration comparison until we read the next row
+			// which may exist in a separate buffer.
+			if err := execute.AppendMappedRecordExplicit(i, cr, builder, colMap); err != nil {
+				return err
 			}
 		}
 
+		// If no stop timestamp is provided, get last value in stopColumn.
+		// We just record this as the actual append happens outside this loop.
+		// We do not know if this is the final buffer until we have already
+		// finished reading the buffers so we just record this in case it is the
+		// proper value.
+		if !t.isStop {
+			stopTimes := cr.Times(stopIdx)
+			sTime = stopTimes.Value(l - 1)
+		}
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
+
+	// If there was at least one valid time, append the difference between
+	// the last time and the stop time.
+	if cTimeValid {
+		currentTime := float64(cTime)
+		nextTime := float64(sTime)
+		if err := builder.AppendInt(numCol, int64((nextTime-currentTime)/t.unit)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
