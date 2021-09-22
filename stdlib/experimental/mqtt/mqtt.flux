@@ -7,6 +7,7 @@ builtin to : (
     ?topic: string,
     ?message: string,
     ?qos: int,
+    ?retain: bool,
     ?clientid: string,
     ?username: string,
     ?password: string,

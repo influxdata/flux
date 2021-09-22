@@ -51,6 +51,7 @@ type ToMQTTOpSpec struct {
 	Username     string        `json:"username"`
 	Password     string        `json:"password"`
 	QoS          int           `json:"qos"`
+	Retain       bool          `json:"retain"`
 	NameColumn   string        `json:"nameColumn"` // either name or name_column must be set, if none is set try to use the "_measurement" column.
 	Timeout      time.Duration `json:"timeout"`    // default to something reasonable if zero
 	NoKeepAlive  bool          `json:"noKeepAlive"`
@@ -64,15 +65,18 @@ type ToMQTTOpSpec struct {
 // If the value_column isn't set it defaults to a []string{execute.DefaultValueColLabel}.
 func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	var err error
+	var ok bool
+
 	o.Broker, err = args.GetRequiredString("broker")
 	if err != nil {
 		return err
 	}
-	var ok bool
+
 	o.Message, _, err = args.GetString("message")
 	if err != nil {
 		return err
 	}
+
 	o.Topic, _, err = args.GetString("topic")
 	if err != nil {
 		return err
@@ -126,6 +130,13 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	if o.QoS < 0 || o.QoS > 3 {
 		o.QoS = 0 // default to 0 if some random value is passed
 	}
+
+	retain, ok, err := args.GetBool("retain")
+	if err != nil {
+		return err
+	}
+	o.Retain = ok && retain
+
 	timeout, ok, err := args.GetDuration("timeout")
 	if err != nil {
 		return err
@@ -221,6 +232,7 @@ func (o *ToMQTTProcedureSpec) Copy() plan.ProcedureSpec {
 			Topic:        s.Topic,
 			Name:         s.Name,
 			QoS:          s.QoS,
+			Retain:       s.Retain,
 			Username:     s.Username,
 			Password:     s.Password,
 			NameColumn:   s.NameColumn,
@@ -282,6 +294,7 @@ type toMqttMetric struct {
 func (m *toMqttMetric) TagList() []*protocol.Tag {
 	return m.tags
 }
+
 func (m *toMqttMetric) FieldList() []*protocol.Field {
 	return m.fields
 }
@@ -322,23 +335,28 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		opts.SetPassword(t.spec.Spec.Password)
 	}
 	mqttTopic := t.spec.Spec.Topic
+	qos := t.spec.Spec.QoS
+	retain := t.spec.Spec.Retain
+	message := t.spec.Spec.Message
 
 	client := MQTT.NewClient(opts)
-	if t.spec.Spec.Message != "" {
-		//create and start a client using the above ClientOptions
+	if message != "" {
+		// create and start a client using the above ClientOptions
 		if token := client.Connect(); token.Wait() && token.Error() != nil {
 			return token.Error()
 		}
-		token := client.Publish(t.spec.Spec.Topic, 0, false, t.spec.Spec.Message)
+		token := client.Publish(mqttTopic, byte(qos), retain, message)
 		token.Wait()
 		client.Disconnect(250)
 		return nil
 	}
+
 	pr, pw := io.Pipe() // TODO: replce the pipe with something faster
 	m := &toMqttMetric{}
 	e := protocol.NewEncoder(pw)
 	e.FailOnFieldErr(true)
 	e.SetFieldSortOrder(protocol.SortFields)
+
 	cols := tbl.Cols()
 	labels := make(map[string]idxType, len(cols))
 	for i, col := range cols {
@@ -353,6 +371,7 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	if timeColIdx.Type != flux.TTime {
 		return fmt.Errorf("column %s is not of type %s", timeColLabel, timeColIdx.Type)
 	}
+
 	var measurementNameCol string
 	if t.spec.Spec.Name == "" {
 		measurementNameCol = t.spec.Spec.NameColumn
@@ -436,38 +455,41 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 		return err
 	})
 
-	//start a client using the above ClientOptions
+	// start a client using the above ClientOptions
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
+
 	p := make([]byte, 2024)
-	var message strings.Builder
+	var sb strings.Builder
 	for {
 		n, err := pr.Read(p)
 		if err != nil {
 			if err == io.EOF {
-				message.WriteString(string(p[:n]))
+				sb.WriteString(string(p[:n]))
 				break
 			}
 			client.Disconnect(250)
 			return err
 		}
-		message.WriteString(string(p[:n]))
+		sb.WriteString(string(p[:n]))
 	}
-	if message.String() != "" {
+	message = sb.String()
+	if message != "" {
 		if mqttTopic == "" {
-			mqttTopic = m.createTopic(message.String())
+			mqttTopic = m.createTopic(message)
 		}
-		token := client.Publish(mqttTopic, 0, false, message.String())
+		token := client.Publish(mqttTopic, byte(qos), retain, message)
 		token.Wait()
 	}
+
 	if err := wg.Wait(); err != nil {
 		client.Disconnect(250)
 		return err
 	}
+
 	client.Disconnect(250)
 	return nil
-
 }
 
 // creates a topic consisting of measurement/tagname/tagvalue for all tags

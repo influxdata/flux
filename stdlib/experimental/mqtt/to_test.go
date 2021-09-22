@@ -1,7 +1,7 @@
 package mqtt_test
 
 import (
-	"fmt"
+	"context"
 	"testing"
 	"time"
 
@@ -10,7 +10,10 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
+	"github.com/influxdata/flux/lang"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/experimental/mqtt"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 )
@@ -18,7 +21,7 @@ import (
 func TestToMQTT_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
-			Name: "from with database with range",
+			Name: "from bucket",
 			Raw: `
 import "experimental/mqtt"
 from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", timeout: 0s)`,
@@ -46,6 +49,38 @@ from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", timeout
 				},
 			},
 		},
+		{
+			Name: "from bucket with message and retain",
+			Raw: `
+import "experimental/mqtt"
+from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", retain: true, message: "hi there")`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
+						},
+					},
+					{
+						ID: "toMQTT1",
+						Spec: &mqtt.ToMQTTOpSpec{
+							Broker:       "tcp://iot.eclipse.org:1883",
+							ClientID:     "flux-mqtt",
+							Retain:       true,
+							Timeout:      1 * time.Second,
+							Message:      "hi there",
+							TimeColumn:   execute.DefaultTimeColLabel,
+							NameColumn:   "_measurement",
+							ValueColumns: []string{execute.DefaultValueColLabel},
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "toMQTT1"},
+				},
+			},
+		},
 	}
 	for _, tc := range tests {
 		tc := tc
@@ -55,6 +90,9 @@ from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", timeout
 		})
 	}
 }
+
+const broker = "tcp://mqtt.eclipseprojects.io:1883" // "tcp://iot.eclipse.org:1883" not available anymore?
+const topic = "test-influxdb"
 
 type wanted struct {
 	Table  []*executetest.Table
@@ -71,8 +109,8 @@ var testCases = []struct {
 		name: "coltable with name in _measurement",
 		spec: &mqtt.ToMQTTProcedureSpec{
 			Spec: &mqtt.ToMQTTOpSpec{
-				Broker:       "tcp://iot.eclipse.org:1883",
-				Topic:        "test-influxdb",
+				Broker:       broker,
+				Topic:        topic,
 				Timeout:      50 * time.Second,
 				TimeColumn:   execute.DefaultTimeColLabel,
 				ValueColumns: []string{"_value"},
@@ -116,8 +154,8 @@ var testCases = []struct {
 		name: "one table with measurement name in _measurement",
 		spec: &mqtt.ToMQTTProcedureSpec{
 			Spec: &mqtt.ToMQTTOpSpec{
-				Broker:       "tcp://iot.eclipse.org:1883",
-				Topic:        "test-influxdb",
+				Broker:       broker,
+				Topic:        topic,
 				Timeout:      50 * time.Second,
 				TimeColumn:   execute.DefaultTimeColLabel,
 				NameColumn:   "_measurement",
@@ -161,8 +199,8 @@ var testCases = []struct {
 		name: "one table with measurement name in _measurement and tag",
 		spec: &mqtt.ToMQTTProcedureSpec{
 			Spec: &mqtt.ToMQTTOpSpec{
-				Broker:       "tcp://iot.eclipse.org:1883",
-				Topic:        "test-influxdb",
+				Broker:       broker,
+				Topic:        topic,
 				Timeout:      50 * time.Second,
 				TimeColumn:   execute.DefaultTimeColLabel,
 				ValueColumns: []string{"_value"},
@@ -207,8 +245,8 @@ var testCases = []struct {
 		name: "one table",
 		spec: &mqtt.ToMQTTProcedureSpec{
 			Spec: &mqtt.ToMQTTOpSpec{
-				Broker:       "tcp://iot.eclipse.org:1883",
-				Topic:        "test-influxdb",
+				Broker:       broker,
+				Topic:        topic,
 				Timeout:      50 * time.Second,
 				TimeColumn:   execute.DefaultTimeColLabel,
 				ValueColumns: []string{"_value"},
@@ -249,8 +287,8 @@ var testCases = []struct {
 		name: "one table with unused tag",
 		spec: &mqtt.ToMQTTProcedureSpec{
 			Spec: &mqtt.ToMQTTOpSpec{
-				Broker:       "tcp://iot.eclipse.org:1883",
-				Topic:        "test-influxdb",
+				Broker:       broker,
+				Topic:        topic,
 				Timeout:      50 * time.Second,
 				TimeColumn:   execute.DefaultTimeColLabel,
 				ValueColumns: []string{"_value"},
@@ -293,8 +331,8 @@ var testCases = []struct {
 		name: "one table with tag",
 		spec: &mqtt.ToMQTTProcedureSpec{
 			Spec: &mqtt.ToMQTTOpSpec{
-				Broker:       "tcp://iot.eclipse.org:1883",
-				Topic:        "test-influxdb",
+				Broker:       broker,
+				Topic:        topic,
 				Timeout:      50 * time.Second,
 				TimeColumn:   execute.DefaultTimeColLabel,
 				ValueColumns: []string{"_value"},
@@ -381,6 +419,7 @@ func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 			},
 			wantErr: true,
 		}}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			o := &mqtt.ToMQTTOpSpec{
@@ -400,29 +439,23 @@ func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 	}
 }
 
-var k = 0
-
 func TestToMQTT_Process(t *testing.T) {
 	t.Skip("test does not work inside of CI environment.")
-	opts := MQTT.NewClientOptions().AddBroker("tcp://iot.eclipse.org:1883")
+	received := make(chan MQTT.Message)
+	opts := MQTT.NewClientOptions().AddBroker(broker)
 	opts.SetClientID("influxdb-test")
 	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
-		serverData := msg.Payload()
-		fmt.Printf("Read Message (%d): %s\n", k, serverData)
-		if string(serverData) != string(testCases[k].want.Result) {
-			t.Logf("expected %s, got %s", testCases[k].want.Result, serverData)
-			t.Fail()
-		}
-		k += 1
+		received <- msg
 	})
 	c := MQTT.NewClient(opts)
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+		t.Fatal(token.Error())
 	}
-	if token := c.Subscribe("test-influxdb", 0, nil); token.Wait() &&
-		token.Error() != nil {
-		t.Log(token.Error())
-		t.FailNow()
+	t.Cleanup(func() {
+		c.Disconnect(250)
+	})
+	if token := c.Subscribe(topic, 0, nil); token.Wait() && token.Error() != nil {
+		t.Fatal(token.Error())
 	}
 
 	for _, tc := range testCases {
@@ -438,5 +471,81 @@ func TestToMQTT_Process(t *testing.T) {
 				},
 			)
 		})
+		msg := <- received
+		payload := msg.Payload()
+		retained := msg.Retained()
+		if string(payload) != string(tc.want.Result) {
+			t.Fatalf("expected %s, got %s", tc.want.Result, payload)
+		}
+		if retained != tc.spec.Spec.Retain {
+			t.Fatalf("expected retained %t, got %t", tc.spec.Spec.Retain, retained)
+		}
+	}
+}
+
+func TestToMQTT_ToWithRetain(t *testing.T) {
+	t.Skip("test does not work inside of CI environment.")
+	/*
+	 Send the message before subscribing to truly test if it is retained. Also, live subscribers
+	 receive the message without retained flag set.
+	*/
+	message := "hi there"
+	script := `import "generate"
+import "experimental/mqtt"
+
+generate.from(count: 1, fn: (n) => n, start: 2021-01-01T00:00:00Z, stop: 2021-01-02T00:00:00Z)
+  |> mqtt.to(broker: "` + broker + `", message: "` + message + `", retain: true, topic: "` + topic + `")
+`
+	run := func(script string) {
+		prog, err := lang.Compile(script, runtime.Default, time.Now())
+		if err != nil {
+			t.Error(err)
+		}
+		ctx := flux.NewDefaultDependencies().Inject(context.Background())
+		query, err := prog.Start(ctx, &memory.Allocator{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		res := <-query.Results()
+		err = res.Tables().Do(func(table flux.Table) error {
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		query.Done()
+		if err := query.Err(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	run(script)
+	/*
+	 Now subscribe and get the retained message.
+	*/
+	received := make(chan MQTT.Message)
+	opts := MQTT.NewClientOptions().AddBroker(broker)
+	opts.SetClientID("influxdb-test")
+	opts.SetDefaultPublishHandler(func(client MQTT.Client, msg MQTT.Message) {
+		received <- msg
+	})
+	c := MQTT.NewClient(opts)
+	if token := c.Connect(); token.Wait() && token.Error() != nil {
+		t.Fatal(token.Error())
+	}
+	t.Cleanup(func() {
+		c.Publish(topic, 0, true, []byte{}) // delete the retained message
+		c.Disconnect(250)
+	})
+	if token := c.Subscribe(topic, 0, nil); token.Wait() && token.Error() != nil {
+		t.Fatal(token.Error())
+	}
+	msg := <- received
+	payload := msg.Payload()
+	retained := msg.Retained()
+	if string(payload) != message {
+		t.Fatalf("expected %s, got %s", message, payload)
+	}
+	if !retained {
+		t.Fatalf("expected retained %t, got %t", true, retained)
 	}
 }
