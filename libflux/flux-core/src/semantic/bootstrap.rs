@@ -1,5 +1,6 @@
 //! Flux start-up.
 
+use std::collections::BTreeMap;
 use std::collections::HashSet;
 use std::env::consts;
 use std::fs;
@@ -25,7 +26,6 @@ use crate::semantic::types::{
 use pulldown_cmark::CodeBlockKind;
 use pulldown_cmark::{Event, Parser};
 use walkdir::WalkDir;
-use wasm_bindgen::__rt::std::collections::HashMap;
 
 const PRELUDE: [&str; 3] = ["internal/boolean", "universe", "influxdata/influxdb"];
 
@@ -80,8 +80,8 @@ pub struct PackageDoc {
     pub headline: String,
     /// the description of the package
     pub description: Option<String>,
-    /// the members are the values and funcitons of a package
-    pub members: HashMap<String, Doc>,
+    /// the members are the values and functions of a package
+    pub members: BTreeMap<String, Doc>,
     /// the docs site link for a package
     pub link: String,
 }
@@ -215,7 +215,7 @@ pub fn stdlib_docs(
     lib: &PolyTypeMapMap,
     files: &AstFileMap,
 ) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
-    let mut docs = Vec::new();
+    let mut docs = Vec::with_capacity(files.len());
     for (pkgpath, file) in files.iter() {
         let pkg = generate_docs(lib, file, pkgpath)?;
         docs.push(pkg);
@@ -398,8 +398,8 @@ fn generate_values(
     f: &ast::File,
     types: &PolyTypeMapMap,
     pkgpath: &str,
-) -> Result<HashMap<String, Doc>, Box<dyn std::error::Error>> {
-    let mut members: HashMap<String, Doc> = HashMap::new();
+) -> Result<BTreeMap<String, Doc>, Box<dyn std::error::Error>> {
+    let mut members: BTreeMap<String, Doc> = BTreeMap::new();
     for stmt in &f.body {
         match stmt {
             ast::Statement::Variable(s) => {
