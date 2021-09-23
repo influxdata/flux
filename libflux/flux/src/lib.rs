@@ -20,7 +20,7 @@ pub use fluxcore::scanner;
 pub use fluxcore::semantic;
 pub use fluxcore::*;
 
-use crate::semantic::bootstrap::{Doc, PackageDoc};
+use crate::semantic::doc::{nest_docs, PackageDoc};
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
 use inflate::inflate_bytes;
@@ -56,56 +56,8 @@ pub fn docs_json() -> Result<Vec<u8>, String> {
 /// of their parent packages. Ex: monitor.flux docs are in the members section of influxdb docs which are in the members of InfluxData docs.
 pub fn nested_json() -> Vec<u8> {
     let original_docs = docs();
-    let mut nested_docs = PackageDoc {
-        path: "stdlib".to_string(),
-        name: "stdlib".to_string(),
-        headline: String::new(),
-        description: None,
-        members: std::collections::BTreeMap::new(),
-        link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_string(),
-    };
-    for current_pkg in original_docs {
-        let parent = find_parent(current_pkg.path.clone(), &mut nested_docs);
-        parent.members.insert(
-            current_pkg.name.clone(),
-            Doc::Package(Box::new(current_pkg)),
-        );
-    }
+    let nested_docs = nest_docs(original_docs);
     serde_json::to_vec(&nested_docs).unwrap()
-}
-
-/// Find the package directly above the input package and returns it so that
-/// we can insert documentation into its members section.
-/// Creates an empty parent package if one did not exist.
-fn find_parent(path: String, nested_docs: &mut PackageDoc) -> &mut PackageDoc {
-    let mut parents: Vec<&str> = path.split('/').collect();
-    let mut parent = nested_docs;
-    while parents.len() > 1 {
-        let pkg = parents.remove(0);
-        let path = parent.path.clone();
-        let current = parent.members.entry(pkg.to_string()).or_insert_with(|| {
-            let path = path + "/" + pkg;
-            let path = path.trim_start_matches("stdlib/");
-            Doc::Package(Box::new(PackageDoc {
-                path: path.to_string(),
-                name: pkg.to_string(),
-                headline: String::new(),
-                description: None,
-                members: std::collections::BTreeMap::new(),
-                link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/"
-                    .to_owned()
-                    + path,
-            }))
-        });
-        match current {
-            Doc::Package(current) => parent = current,
-            _ => panic!(
-                "package has a member with the same name as child package: {}",
-                pkg,
-            ),
-        }
-    }
-    parent
 }
 
 pub fn fresher() -> Fresher {
@@ -654,11 +606,9 @@ mod tests {
     use fluxcore::ast;
     use fluxcore::ast::get_err_type_expression;
     use fluxcore::parser::Parser;
-    use fluxcore::semantic::bootstrap::FunctionDoc;
-    use fluxcore::semantic::bootstrap::PackageDoc;
-    use fluxcore::semantic::bootstrap::ParameterDoc;
     use fluxcore::semantic::convert::convert_file;
     use fluxcore::semantic::convert::convert_polytype;
+    use fluxcore::semantic::doc::{FunctionDoc, PackageDoc, ParameterDoc};
     use fluxcore::semantic::env::Environment;
     use fluxcore::semantic::fresh::Fresher;
     use fluxcore::semantic::nodes::infer_file;
@@ -1193,7 +1143,7 @@ from(bucket: v.bucket)
             link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv"
                 .to_string(),
         };
-        exact.members.insert("from".to_string(), fluxcore::semantic::bootstrap::Doc::Function(Box::new(FunctionDoc{
+        exact.members.insert("from".to_string(), fluxcore::semantic::doc::Doc::Function(Box::new(FunctionDoc{
             name: "from".to_string(),
             headline: "from is a function that retrieves data from a comma separated value (CSV) data source. ".to_string(),
             description: r#"A stream of tables are returned, each unique series contained within its own table. Each record in the table represents a single point in the series. ## Query anotated CSV data from file
@@ -1299,7 +1249,7 @@ csv.from(
             link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array"
                 .to_string(),
         };
-        exact.members.insert("from".to_string(), fluxcore::semantic::bootstrap::Doc::Function(Box::new(FunctionDoc{
+        exact.members.insert("from".to_string(), fluxcore::semantic::doc::Doc::Function(Box::new(FunctionDoc{
             name: "from".to_string(),
             headline: "from constructs a table from an array of records. ".to_string(),
             description: r#"Each record in the array is converted into an output row or record. Allrecords must have the same keys and data types. ## Build an arbitrary table
