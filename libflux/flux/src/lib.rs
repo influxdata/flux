@@ -61,7 +61,7 @@ pub fn nested_json() -> Vec<u8> {
         name: "stdlib".to_string(),
         headline: String::new(),
         description: None,
-        members: std::collections::HashMap::new(),
+        members: std::collections::BTreeMap::new(),
         link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/".to_string(),
     };
     for current_pkg in original_docs {
@@ -91,7 +91,7 @@ fn find_parent(path: String, nested_docs: &mut PackageDoc) -> &mut PackageDoc {
                 name: pkg.to_string(),
                 headline: String::new(),
                 description: None,
-                members: std::collections::HashMap::new(),
+                members: std::collections::BTreeMap::new(),
                 link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/"
                     .to_owned()
                     + path,
@@ -1189,7 +1189,7 @@ from(bucket: v.bucket)
             headline: "Package csv provides tools for working with data in annotated CSV format."
                 .to_string(),
             description: None,
-            members: std::collections::HashMap::new(),
+            members: std::collections::BTreeMap::new(),
             link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv"
                 .to_string(),
         };
@@ -1273,7 +1273,7 @@ csv.from(
             name: String::new(),
             headline: String::new(),
             description: None,
-            members: std::collections::HashMap::new(),
+            members: std::collections::BTreeMap::new(),
             link: String::new(),
         };
         for d in doc {
@@ -1295,7 +1295,7 @@ csv.from(
             headline: "Package array provides functions for building tables from flux arrays."
                 .to_string(),
             description: None,
-            members: std::collections::HashMap::new(),
+            members: std::collections::BTreeMap::new(),
             link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array"
                 .to_string(),
         };
@@ -1344,7 +1344,7 @@ union(tables: [tags, wildcard_tag])
             name: String::new(),
             headline: String::new(),
             description: None,
-            members: std::collections::HashMap::new(),
+            members: std::collections::BTreeMap::new(),
             link: String::new(),
         };
         for d in doc {
