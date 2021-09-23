@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -33,6 +34,7 @@ func init() {
 
 func formatFile(cmd *cobra.Command, args []string) error {
 	script := args[0]
+	var bad []string
 	err := filepath.Walk(script,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -41,50 +43,63 @@ func formatFile(cmd *cobra.Command, args []string) error {
 			if info.IsDir() || filepath.Ext(info.Name()) != ".flux" {
 				return nil
 			}
-			return format(path)
-		})
+			ok, err := format(path)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				bad = append(bad, path)
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return err
+	}
+
+	if analyzeCurrentDirectory && len(bad) != 0 {
+		for _, p := range bad {
+			fmt.Println(p)
+		}
+		return errors.New("found files that are not formatted")
 	}
 
 	return nil
 }
 
-func format(script string) error {
+func format(script string) (bool, error) {
 
 	fromFile, err := ioutil.ReadFile(script)
 	if err != nil {
-		return err
+		return false, err
 	}
 	curFileStr := strings.TrimSpace(string(fromFile))
 	ast := libflux.ParseString(curFileStr)
 	defer ast.Free()
 	if err := ast.GetError(); err != nil {
-		return fmt.Errorf("parse error: %s, %s", script, err)
+		return false, fmt.Errorf("parse error: %s, %s", script, err)
 
 	}
 
 	formattedStr, err := ast.Format()
 	if err != nil {
-		return fmt.Errorf("failed to format the query: %s, %v", script, err)
+		return false, fmt.Errorf("failed to format the query: %s, %v", script, err)
 	}
 
+	formatted := curFileStr == formattedStr
 	if analyzeCurrentDirectory {
-		if curFileStr != formattedStr {
-			return fmt.Errorf("flux file(s) are not fluxfmt-ed, run \"make fmt\"")
-		}
-		return nil
+		return formatted, nil
 	}
 
 	if writeResultToSource {
 		if curFileStr != formattedStr {
-			return updateScript(script, formattedStr)
+			return formatted, updateScript(script, formattedStr)
 		}
 	} else {
 		fmt.Println(formattedStr)
 	}
 
-	return nil
+	return formatted, nil
 }
 
 func updateScript(fname string, script string) error {
