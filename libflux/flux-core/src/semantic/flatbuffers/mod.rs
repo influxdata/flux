@@ -23,25 +23,39 @@ use chrono::Duration as ChronoDuration;
 const UNKNOWNVARIANTNAME: &str = "UNKNOWNSEMANTIC";
 
 /// Serializes a [`semantic::nodes::Package`].
-pub fn serialize(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, usize)> {
-    let mut v = new_serializing_visitor_with_capacity(1024);
+pub fn serialize_pkg(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, usize)> {
+    let mut builder = flatbuffers::FlatBufferBuilder::with_capacity(1024);
+    let offset = serialize(semantic_pkg, &mut builder)?;
+    builder.finish(offset, None);
+    // Collapse releases ownership of the byte vector and returns it to caller.
+    Ok(builder.collapse())
+}
+
+/// Serializes a [`semantic::nodes::Package`] into an existing builder.
+pub fn serialize_pkg_into<'a>(
+    semantic_pkg: &semantic::nodes::Package,
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {
+    serialize(semantic_pkg, builder)
+}
+
+/// Serializes a [`semantic::nodes::Package`] into an existing builder.
+fn serialize<'a, 'b>(
+    semantic_pkg: &semantic::nodes::Package,
+    builder: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {
+    let mut v = SerializingVisitor {
+        inner: Rc::new(RefCell::new(SerializingVisitorState::with_builder(builder))),
+    };
     walk::walk(&mut v, Rc::new(walk::Node::Package(semantic_pkg)));
-    v.finish()
+    v.offset()
 }
 
-fn new_serializing_visitor_with_capacity<'a>(_capacity: usize) -> SerializingVisitor<'a> {
-    SerializingVisitor {
-        inner: Rc::new(RefCell::new(SerializingVisitorState::with_capacity(
-            _capacity,
-        ))),
-    }
+struct SerializingVisitor<'a, 'b> {
+    inner: Rc<RefCell<SerializingVisitorState<'a, 'b>>>,
 }
 
-struct SerializingVisitor<'a> {
-    inner: Rc<RefCell<SerializingVisitorState<'a>>>,
-}
-
-impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
+impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
     fn visit(&mut self, _node: Rc<walk::Node<'_>>) -> bool {
         let v = self.inner.borrow();
         if v.err.is_some() {
@@ -896,8 +910,10 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
     }
 }
 
-impl<'a> SerializingVisitor<'a> {
-    fn finish(self) -> Result<(Vec<u8>, usize)> {
+impl<'a, 'b> SerializingVisitor<'a, 'b> {
+    // Return the offset for the package, checking for any error that may have occurred during
+    // serialization.
+    fn offset(self) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {
         let v = match Rc::try_unwrap(self.inner) {
             Ok(sv) => sv,
             Err(_) => bail!("error unwrapping rc"),
@@ -906,22 +922,18 @@ impl<'a> SerializingVisitor<'a> {
         if let Some(e) = v.err {
             return Err(e);
         };
-        let pkg = match v.package {
-            None => bail!("missing serialized package"),
-            Some(pkg) => pkg,
-        };
-        v.builder.finish(pkg, None);
-
-        // Collapse releases ownership of the byte vector and returns it to caller.
-        Ok(v.builder.collapse())
+        match v.package {
+            None => Err(anyhow!("missing serialized package")),
+            Some(offset) => Ok(offset),
+        }
     }
 }
 
-struct SerializingVisitorState<'a> {
-    // Any error that occurred during serialization, returned by the visitor's finish method.
+struct SerializingVisitorState<'a: 'b, 'b> {
+    // Any error that occurred during serialization, returned by the visitor's check method.
     err: Option<Error>,
 
-    builder: flatbuffers::FlatBufferBuilder<'a>,
+    builder: &'b mut flatbuffers::FlatBufferBuilder<'a>,
 
     package: Option<WIPOffset<fbsemantic::Package<'a>>>,
     package_clause: Option<WIPOffset<fbsemantic::PackageClause<'a>>>,
@@ -939,11 +951,13 @@ struct SerializingVisitorState<'a> {
     string_expr_parts: Vec<WIPOffset<fbsemantic::StringExpressionPart<'a>>>,
 }
 
-impl<'a> SerializingVisitorState<'a> {
-    fn with_capacity(capacity: usize) -> SerializingVisitorState<'a> {
+impl<'a, 'b> SerializingVisitorState<'a, 'b> {
+    fn with_builder(
+        builder: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+    ) -> SerializingVisitorState<'a, 'b> {
         SerializingVisitorState {
             err: None,
-            builder: flatbuffers::FlatBufferBuilder::with_capacity(capacity),
+            builder,
             package: None,
             package_clause: None,
             import_decls: Vec::new(),

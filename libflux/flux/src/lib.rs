@@ -7,14 +7,18 @@ extern crate serde_derive;
 
 use anyhow::{self, bail, Result};
 
-use fluxcore::parser::Parser;
-use fluxcore::semantic::check;
-use fluxcore::semantic::env::Environment;
-use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
-use fluxcore::semantic::flatbuffers::types::{build_env, build_type};
-use fluxcore::semantic::fresh::Fresher;
-use fluxcore::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
-use fluxcore::semantic::sub::Substitution;
+use fluxcore::{
+    parser::Parser,
+    semantic::{
+        env::Environment,
+        flatbuffers::semantic_generated::fbsemantic as fb,
+        flatbuffers::types::{build_env, build_type},
+        fresh::Fresher,
+        nodes::Package,
+        types::{MonoType, PolyType, TvarKinds},
+        Analyzer,
+    },
+};
 
 pub use fluxcore::ast;
 pub use fluxcore::formatter;
@@ -22,13 +26,12 @@ pub use fluxcore::scanner;
 pub use fluxcore::semantic;
 pub use fluxcore::*;
 
-use crate::semantic::doc::{nest_docs, PackageDoc};
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
-use inflate::inflate_bytes;
 use std::ffi::*;
+use std::mem;
 use std::os::raw::c_char;
 
+/// Prelude are the names and types of values that are inscope in all Flux scripts.
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
@@ -36,6 +39,7 @@ pub fn prelude() -> Option<Environment> {
         .into()
 }
 
+/// Imports is a map of import path to types of packages.
 pub fn imports() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
@@ -43,29 +47,19 @@ pub fn imports() -> Option<Environment> {
         .into()
 }
 
-pub fn docs() -> Vec<PackageDoc> {
-    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
-    serde_json::from_slice(&inflate_bytes(buf).unwrap()).unwrap()
-}
-
-pub fn docs_json() -> Result<Vec<u8>> {
-    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
-    match inflate_bytes(buf) {
-        Err(s) => bail!("{}", s),
-        Ok(bytes) => Ok(bytes),
-    }
-}
-
-/// Restructures the Vector of PackageDocs into a hierarchical format where subpackages are in the member section
-/// of their parent packages. Ex: monitor.flux docs are in the members section of influxdb docs which are in the members of InfluxData docs.
-pub fn nested_json() -> Vec<u8> {
-    let original_docs = docs();
-    let nested_docs = nest_docs(original_docs);
-    serde_json::to_vec(&nested_docs).unwrap()
-}
-
-pub fn fresher() -> Fresher {
-    Fresher::default()
+/// Creates a new analyzer that can semantically analyze Flux source code.
+///
+/// The analyzer is aware of the stdlib and prelude.
+pub fn new_semantic_analyzer() -> Result<Analyzer<Environment>> {
+    let env = match prelude() {
+        Some(prelude) => Environment::new(prelude),
+        None => bail!("missing prelude"),
+    };
+    let importer = match imports() {
+        Some(imports) => imports,
+        None => bail!("missing stdlib imports"),
+    };
+    Ok(Analyzer::new(env, importer))
 }
 
 /// An error handle designed to allow passing `Error` instances to library
@@ -131,9 +125,14 @@ pub unsafe extern "C" fn flux_parse(
 ) -> Box<ast::Package> {
     let fname = String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap();
     let src = String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap();
-    let mut p = Parser::new(&src);
-    let pkg: ast::Package = p.parse_file(fname).into();
+    let pkg = parse(fname, &src);
     Box::new(pkg)
+}
+
+/// Parse the contents of a string.
+pub fn parse(fname: String, src: &str) -> ast::Package {
+    let mut p = Parser::new(src);
+    p.parse_file(fname).into()
 }
 
 #[no_mangle]
@@ -170,12 +169,9 @@ pub unsafe extern "C" fn flux_ast_get_error(
     ast_pkg: *const ast::Package,
 ) -> Option<Box<ErrorHandle>> {
     let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
-    let mut errs = ast::check::check(ast_pkg);
-    if !errs.is_empty() {
-        let err = Vec::remove(&mut errs, 0);
-        Some(anyhow::Error::from(err).into())
-    } else {
-        None
+    match ast::check::check(ast_pkg) {
+        Err(e) => Some(anyhow::Error::from(e).into()),
+        Ok(_) => None,
     }
 }
 
@@ -276,7 +272,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
     buf: *mut flux_buffer_t,
 ) -> Option<Box<ErrorHandle>> {
     let sem_pkg = &*sem_pkg;
-    let (mut vec, offset) = match semantic::flatbuffers::serialize(sem_pkg) {
+    let (mut vec, offset) = match semantic::flatbuffers::serialize_pkg(sem_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
             return Some(err.into());
@@ -386,12 +382,7 @@ pub unsafe extern "C" fn flux_find_var_type(
     )
 }
 
-pub struct SemanticAnalyzer {
-    env: Environment,
-    imports: Environment,
-}
-
-fn new_semantic_analyzer() -> Result<SemanticAnalyzer> {
+fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
     let env = match prelude() {
         Some(prelude) => Environment::new(prelude),
         None => bail!("missing prelude"),
@@ -400,29 +391,39 @@ fn new_semantic_analyzer() -> Result<SemanticAnalyzer> {
         Some(imports) => imports,
         None => bail!("missing stdlib imports"),
     };
-    Ok(SemanticAnalyzer { env, imports })
+    Ok(StatefulAnalyzer { env, imports })
 }
 
-impl SemanticAnalyzer {
+/// StatefulAnalyzer updates its environment with the contents of any previously analyzed package.
+/// This enables uses cases where analysis is performed iteratively, for example in a REPL.
+pub struct StatefulAnalyzer {
+    env: Environment,
+    imports: Environment,
+}
+
+impl StatefulAnalyzer {
     fn analyze(&mut self, ast_pkg: ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
-        let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
-        if !errs.is_empty() {
-            bail!("{}", &errs[0]);
-        }
+        let mut analyzer = Analyzer::new(mem::take(&mut self.env), mem::take(&mut self.imports));
+        let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
+            Ok(r) => r,
+            Err(e) => {
+                // In the face of an error we need to get the env and imports
+                // back from the analyzer.
+                let (env, imports) = analyzer.drop();
+                self.env = env;
+                self.imports = imports;
+                return Err(e.into());
+            }
+        };
+        // Restore the imports.
+        // We restore the env below.
+        let (_, imports) = analyzer.drop();
+        self.imports = imports;
 
-        let mut fresher = fresher();
-        let mut sem_pkg = fluxcore::semantic::convert::convert_with(ast_pkg, &mut fresher)?;
-        check::check(&sem_pkg)?;
-
-        // Clone the environment. The environment may not be returned but we need to maintain
-        // a copy of it for this function to be re-entrant.
-        let env = self.env.clone();
-        let (mut env, sub) = infer_pkg_types(&mut sem_pkg, env, &mut fresher, &self.imports)?;
-        // TODO(jsternberg): This part is hacky and can be improved
-        // by refactoring infer file so we can use the internals without
-        // infering the file itself.
-        // Look at the imports that were part of this semantic package
-        // and re-add them to the environment.
+        // Re-export any imported names into the env.
+        // Normally we do not do this but we need to remember
+        // any previous import statements since
+        // each line of source is analyzed independently.
         for file in &sem_pkg.files {
             for dec in &file.imports {
                 let path = &dec.path.value;
@@ -430,12 +431,13 @@ impl SemanticAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                let poly = self.imports.lookup(path).unwrap();
-                env.add(name.to_owned(), poly.to_owned());
+                if let Some(poly) = self.imports.lookup(path) {
+                    env.add(name.to_owned(), poly.to_owned());
+                }
             }
         }
         self.env = env;
-        Ok(inject_pkg_types(sem_pkg, &sub))
+        Ok(sem_pkg)
     }
 }
 
@@ -445,13 +447,13 @@ impl SemanticAnalyzer {
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
-pub unsafe extern "C" fn flux_new_semantic_analyzer() -> Box<Result<SemanticAnalyzer>> {
-    Box::new(new_semantic_analyzer())
+pub unsafe extern "C" fn flux_new_stateful_analyzer() -> Box<Result<StatefulAnalyzer>> {
+    Box::new(new_stateful_analyzer())
 }
 
 /// Free a previously allocated semantic analyzer
 #[no_mangle]
-pub extern "C" fn flux_free_semantic_analyzer(_: Option<Box<Result<SemanticAnalyzer>>>) {}
+pub extern "C" fn flux_free_stateful_analyzer(_: Option<Box<Result<StatefulAnalyzer>>>) {}
 
 /// # Safety
 ///
@@ -459,7 +461,7 @@ pub extern "C" fn flux_free_semantic_analyzer(_: Option<Box<Result<SemanticAnaly
 #[no_mangle]
 #[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_analyze_with(
-    analyzer: *mut Result<SemanticAnalyzer>,
+    analyzer: *mut Result<StatefulAnalyzer>,
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
@@ -486,8 +488,9 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
-    let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
-    Ok(inject_pkg_types(sem_pkg, &sub))
+    let mut analyzer = new_semantic_analyzer()?;
+    let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg)?;
+    Ok(sem_pkg)
 }
 
 /// infer_with_env consumes the given AST package, inject the type bindings from the given
@@ -498,17 +501,7 @@ pub fn infer_with_env(
     ast_pkg: ast::Package,
     mut f: Fresher,
     env: Option<Environment>,
-) -> Result<(Package, Environment, Substitution)> {
-    // First check to see if there are any errors in the AST.
-    let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
-    if !errs.is_empty() {
-        bail!("{}", &errs[0]);
-    }
-
-    let mut sem_pkg = fluxcore::semantic::convert::convert_with(ast_pkg, &mut f)?;
-
-    check::check(&sem_pkg)?;
-
+) -> Result<(Environment, Package)> {
     let mut prelude = match prelude() {
         Some(prelude) => Environment::new(prelude),
         None => bail!("missing prelude"),
@@ -516,13 +509,14 @@ pub fn infer_with_env(
     if let Some(e) = env {
         prelude.copy_bindings_from(&e);
     }
-    let imports = match imports() {
+    let importer = match imports() {
         Some(imports) => imports,
         None => bail!("missing stdlib imports"),
     };
-
-    let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports)?;
-    Ok((sem_pkg, env, sub))
+    let mut analyzer = Analyzer::new(prelude, importer);
+    analyzer
+        .analyze_ast_with_fresher(ast_pkg, &mut f)
+        .map_err(anyhow::Error::from)
 }
 
 /// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
@@ -531,7 +525,7 @@ pub fn infer_with_env(
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
 pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType> {
-    let mut f = fresher();
+    let mut f = Fresher::default();
     let tvar = f.fresh();
     let mut env = Environment::empty(true);
     env.add(
@@ -543,7 +537,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
         },
     );
     infer_with_env(ast_pkg, f, Some(env))
-        .map(|(_, env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
+        .map(|(env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
 }
 
 /// # Safety
@@ -567,18 +561,14 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
-    use crate::docs;
+    use super::new_semantic_analyzer;
     use crate::parser;
     use crate::{analyze, find_var_type, flux_ast_get_error};
     use fluxcore::ast;
     use fluxcore::ast::get_err_type_expression;
     use fluxcore::parser::Parser;
-    use fluxcore::semantic::convert::convert_file;
     use fluxcore::semantic::convert::convert_polytype;
-    use fluxcore::semantic::doc::{FunctionDoc, PackageDoc, ParameterDoc};
-    use fluxcore::semantic::env::Environment;
     use fluxcore::semantic::fresh::Fresher;
-    use fluxcore::semantic::nodes::infer_file;
     use fluxcore::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
 
     pub struct MonoTypeNormalizer {
@@ -797,19 +787,19 @@ from(bucket: v.bucket)
 
     #[test]
     fn test_ast_get_error() {
-        let ast = crate::parser::parse_string("test", "x = 3 + / 10 - \"");
+        let ast = crate::parser::parse_string("test".to_string(), "x = 3 + / 10 - \"");
         let ast = Box::into_raw(Box::new(ast.into()));
         let errh = unsafe { flux_ast_get_error(ast) };
         assert_eq!(
-            "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV",
+            "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
+error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF",
             errh.unwrap().err.into_string().unwrap()
         );
     }
 
     #[test]
     fn deserialize_and_infer() {
-        let prelude = Environment::new(super::prelude().unwrap());
-        let imports = super::imports().unwrap();
+        let mut analyzer = new_semantic_analyzer().unwrap();
 
         let src = r#"
             x = from(bucket: "b")
@@ -817,11 +807,9 @@ from(bucket: v.bucket)
                 |> map(fn: (r) => ({r with _value: r._value + r._value}))
         "#;
 
-        let ast = fluxcore::parser::parse_string("main.flux", src);
-        let mut f = super::fresher();
-
-        let mut file = convert_file(ast, &mut f).unwrap();
-        let (got, _) = infer_file(&mut file, prelude, &mut f, &imports).unwrap();
+        let (got, _) = analyzer
+            .analyze_source("".to_string(), "main.flux".to_string(), src)
+            .unwrap();
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466
@@ -848,8 +836,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn infer_union() {
-        let prelude = Environment::new(super::prelude().unwrap());
-        let imports = super::imports().unwrap();
+        let mut analyzer = new_semantic_analyzer().unwrap();
 
         let src = r#"
             a = from(bucket: "b")
@@ -859,11 +846,9 @@ from(bucket: v.bucket)
             c = union(tables: [a, b])
         "#;
 
-        let ast = fluxcore::parser::parse_string("main.flux", src);
-        let mut f = super::fresher();
-
-        let mut file = convert_file(ast, &mut f).unwrap();
-        let (got, _) = infer_file(&mut file, prelude, &mut f, &imports).unwrap();
+        let (got, _) = analyzer
+            .analyze_source("".to_string(), "main.flux".to_string(), src)
+            .unwrap();
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466
@@ -927,193 +912,16 @@ from(bucket: v.bucket)
 
     #[test]
     fn analyze_error() {
-        let ast: ast::Package = fluxcore::parser::parse_string("", "x = ()").into();
+        let ast: ast::Package = fluxcore::parser::parse_string("".to_string(), "x = ()").into();
         match analyze(ast) {
             Ok(_) => panic!("expected an error, got none"),
             Err(e) => {
-                let want = "error at @1:5-1:7: expected ARROW, got EOF";
+                let want = "error at @1:5-1:7: expected ARROW, got EOF\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF";
                 let got = format!("{}", e);
                 if want != got {
                     panic!(r#"expected error "{}", got "{}""#, want, got)
                 }
             }
         }
-    }
-
-    #[test]
-    //CSV package's docs are accessed from their specific index in the vector of DocPackages, ensuring that they are accessible and correct
-    fn ensure_docs() {
-        let doc = docs();
-        let mut exact: PackageDoc = PackageDoc {
-            path: "csv".to_string(),
-            name: "csv".to_string(),
-            headline: "Package csv provides tools for working with data in annotated CSV format."
-                .to_string(),
-            description: None,
-            members: std::collections::BTreeMap::new(),
-            link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv"
-                .to_string(),
-        };
-        exact.members.insert("from".to_string(), fluxcore::semantic::doc::Doc::Function(Box::new(FunctionDoc{
-            name: "from".to_string(),
-            headline: "from is a function that retrieves data from a comma separated value (CSV) data source. ".to_string(),
-            description: r#"A stream of tables are returned, each unique series contained within its own table. Each record in the table represents a single point in the series. ## Query anotated CSV data from file
-```
-import "csv"
-
-csv.from(file: "path/to/data-file.csv")
-```
-
-## Query raw data from CSV file
-```
-import "csv"
-
-csv.from(
-  file: "/path/to/data-file.csv",
-  mode: "raw"
-)
-```
-
-## Query an annotated CSV string
-```
-import "csv"
-
-csvData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
-#group,false,false,false,false,false,false,false,false
-#default,,,,,,,,
-,result,table,_start,_stop,_time,region,host,_value
-,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43
-,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
-,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
-"
-
-csv.from(csv: csvData)
-
-```
-
-## Query a raw CSV string
-```
-import "csv"
-
-csvData = "
-_start,_stop,_time,region,host,_value
-2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43
-2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
-2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
-"
-
-csv.from(
-  csv: csvData,
-  mode: "raw"
-)
-```
-
-"#.to_string(),
-					parameters: vec![ParameterDoc{
-							name: "csv".to_string(),
-							headline: " is CSV data.".to_string(),
-							description: Some("Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.".to_string()),
-                required: false
-            }, ParameterDoc{
-                name: "file".to_string(),
-                headline: " is the file path of the CSV file to query.".to_string(),
-                description: Some("The path can be absolute or relative. If relative, it is relative to the working directory of the  fluxd  process. The CSV file must exist in the same file system running the  fluxd  process.".to_string()),
-                required: false
-            }, ParameterDoc{
-                name: "mode".to_string(),
-                headline: " is the CSV parsing mode. Default is annotations.".to_string(),
-                description: Some("Available annotation modes: annotations: Use CSV notations to determine column data types. raw: Parse all columns as strings and use the first row as the header row and all subsequent rows as data.".to_string()),
-                required: false
-            }],
-            flux_type: "(?csv:string, ?file:string, ?mode:string) => [A] where A: Record".to_string(),
-            link:"https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv/from".to_string(),
-        })));
-        let mut got = PackageDoc {
-            path: String::new(),
-            name: String::new(),
-            headline: String::new(),
-            description: None,
-            members: std::collections::BTreeMap::new(),
-            link: String::new(),
-        };
-        for d in doc {
-            if d.path == "csv" {
-                got = d;
-                break;
-            }
-        }
-        assert_eq!(exact, got);
-    }
-
-    #[test]
-    //Array package's docs are accessed from their specific index in the vector of DocPackages, ensuring that they are accessible and correct
-    fn ensure_docs2() {
-        let doc = docs();
-        let mut exact: PackageDoc = PackageDoc {
-            path: "array".to_string(),
-            name: "array".to_string(),
-            headline: "Package array provides functions for building tables from flux arrays."
-                .to_string(),
-            description: None,
-            members: std::collections::BTreeMap::new(),
-            link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array"
-                .to_string(),
-        };
-        exact.members.insert("from".to_string(), fluxcore::semantic::doc::Doc::Function(Box::new(FunctionDoc{
-            name: "from".to_string(),
-            headline: "from constructs a table from an array of records. ".to_string(),
-            description: r#"Each record in the array is converted into an output row or record. Allrecords must have the same keys and data types. ## Build an arbitrary table
-```
-import "array"
-
-rows = [
-  {foo: "bar", baz: 21.2},
-  {foo: "bar", baz: 23.8}
-]
-
-array.from(rows: rows)
-```
-
-## Union custom rows with query results
-```
-import "influxdata/influxdb/v1"
-import "array"
-
-tags = v1.tagValues(
-  bucket: "example-bucket",
-  tag: "host"
-)
-
-wildcard_tag = array.from(rows: [{_value: "*"}])
-
-union(tables: [tags, wildcard_tag])
-```
-
-"#.to_string(),
-            parameters: vec![ParameterDoc{
-                name: "rows".to_string(),
-                headline: " is the array of records to construct a table with.".to_string(),
-                description: None,
-                required: false
-            }],
-            flux_type: "(rows:[A]) => [A] where A: Record".to_string(),
-            link:"https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array/from".to_string(),
-        })));
-        let mut got = PackageDoc {
-            path: String::new(),
-            name: String::new(),
-            headline: String::new(),
-            description: None,
-            members: std::collections::BTreeMap::new(),
-            link: String::new(),
-        };
-        for d in doc {
-            if d.path == "array" {
-                got = d;
-                break;
-            }
-        }
-        assert_eq!(exact, got);
     }
 }

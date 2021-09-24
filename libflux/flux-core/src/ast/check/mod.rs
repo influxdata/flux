@@ -1,12 +1,13 @@
 //! Checking the AST.
 
-use derive_more::Display;
+use std::fmt;
+use thiserror::Error;
 
 use crate::ast::{walk, PropertyKey, SourceLocation};
 
 /// Inspects an AST node and returns a list of found AST errors plus
 /// any errors existed before `ast.check()` is performed.
-pub fn check(node: walk::Node) -> Vec<Error> {
+pub fn check(node: walk::Node) -> Result<(), Errors> {
     let mut errors = vec![];
     walk::walk(
         &walk::create_visitor(&mut |n| {
@@ -63,12 +64,16 @@ pub fn check(node: walk::Node) -> Vec<Error> {
         }),
         node,
     );
-    errors
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(Errors(errors))
+    }
 }
 
 /// An error that can be returned while checking the AST.
-#[derive(Debug, Display, PartialEq)] // derive std::fmt::Debug on AppError
-#[display(fmt = "error at {}: {}", location, message)]
+#[derive(Error, Debug, PartialEq)]
+#[error("error at {}: {}", location, message)]
 pub struct Error {
     /// Location of the error in source code.
     pub location: SourceLocation,
@@ -76,7 +81,24 @@ pub struct Error {
     pub message: String,
 }
 
-impl std::error::Error for Error {}
+/// Set of any errors encountered when checking the AST.
+#[derive(Debug, PartialEq)]
+pub struct Errors(pub Vec<Error>);
+
+impl fmt::Display for Errors {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            self.0
+                .iter()
+                .map(|err| err.to_string())
+                .collect::<Vec<_>>()
+                .join("\n")
+        )
+    }
+}
+impl std::error::Error for Errors {}
 
 #[cfg(test)]
 mod tests;

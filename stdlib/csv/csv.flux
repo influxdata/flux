@@ -21,9 +21,9 @@ package csv
 // - `mode` is the CSV parsing mode. Default is annotations.
 //
 //   Available annotation modes:
-//    annotations: Use CSV notations to determine column data types.
-//    raw: Parse all columns as strings and use the first row as the header row
-//    and all subsequent rows as data.
+//    - annotations: Use CSV notations to determine column data types.
+//    - raw: Parse all columns as strings and use the first row as the header row
+//    - and all subsequent rows as data.
 //
 // ## Query anotated CSV data from file
 //
@@ -64,6 +64,7 @@ package csv
 // ```
 //
 // ## Query a raw CSV string
+//
 // ```
 // import "csv"
 //

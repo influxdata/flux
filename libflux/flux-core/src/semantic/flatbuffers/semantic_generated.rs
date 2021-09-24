@@ -24108,6 +24108,134 @@ pub mod fbsemantic {
             ds.finish()
         }
     }
+    pub enum ModuleOffset {}
+    #[derive(Copy, Clone, PartialEq)]
+
+    pub struct Module<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Module<'a> {
+        type Inner = Module<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf, loc },
+            }
+        }
+    }
+
+    impl<'a> Module<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Module { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args ModuleArgs<'args>,
+        ) -> flatbuffers::WIPOffset<Module<'bldr>> {
+            let mut builder = ModuleBuilder::new(_fbb);
+            if let Some(x) = args.code {
+                builder.add_code(x);
+            }
+            if let Some(x) = args.polytype {
+                builder.add_polytype(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_POLYTYPE: flatbuffers::VOffsetT = 4;
+        pub const VT_CODE: flatbuffers::VOffsetT = 6;
+
+        #[inline]
+        pub fn polytype(&self) -> Option<PolyType<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<PolyType>>(Module::VT_POLYTYPE, None)
+        }
+        #[inline]
+        pub fn code(&self) -> Option<Package<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<Package>>(Module::VT_CODE, None)
+        }
+    }
+
+    impl flatbuffers::Verifiable for Module<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<flatbuffers::ForwardsUOffset<PolyType>>(
+                    &"polytype",
+                    Self::VT_POLYTYPE,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<Package>>(
+                    &"code",
+                    Self::VT_CODE,
+                    false,
+                )?
+                .finish();
+            Ok(())
+        }
+    }
+    pub struct ModuleArgs<'a> {
+        pub polytype: Option<flatbuffers::WIPOffset<PolyType<'a>>>,
+        pub code: Option<flatbuffers::WIPOffset<Package<'a>>>,
+    }
+    impl<'a> Default for ModuleArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            ModuleArgs {
+                polytype: None,
+                code: None,
+            }
+        }
+    }
+    pub struct ModuleBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> ModuleBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_polytype(&mut self, polytype: flatbuffers::WIPOffset<PolyType<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<PolyType>>(
+                    Module::VT_POLYTYPE,
+                    polytype,
+                );
+        }
+        #[inline]
+        pub fn add_code(&mut self, code: flatbuffers::WIPOffset<Package<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<Package>>(Module::VT_CODE, code);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ModuleBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            ModuleBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Module<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    impl std::fmt::Debug for Module<'_> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let mut ds = f.debug_struct("Module");
+            ds.field("polytype", &self.polytype());
+            ds.field("code", &self.code());
+            ds.finish()
+        }
+    }
     #[inline]
     #[deprecated(since = "2.0.0", note = "Deprecated in favor of `root_as...` methods.")]
     pub fn get_root_as_package<'a>(buf: &'a [u8]) -> Package<'a> {

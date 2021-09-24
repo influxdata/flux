@@ -6,20 +6,24 @@ use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use crate::semantic::fresh::Fresher;
 
 #[rustfmt::skip]
-use crate::semantic::types::{
-    Array,
-    Dictionary,
-    Function,
-    Kind,
-    MonoType,
-    MonoTypeMap,
-    PolyType,
-    PolyTypeMap,
-    Property,
-    Record,
-    Tvar,
-    TvarKinds,
-    Vector,
+use crate::semantic::{
+    bootstrap::Module,
+    types::{
+        Array,
+        Dictionary,
+        Function,
+        Kind,
+        MonoType,
+        MonoTypeMap,
+        PolyType,
+        PolyTypeMap,
+        Property,
+        Record,
+        Tvar,
+        TvarKinds,
+        Vector,
+    },
+    flatbuffers::serialize_pkg_into,
 };
 
 impl From<fb::Fresher<'_>> for Fresher {
@@ -260,6 +264,14 @@ impl From<fb::Argument<'_>> for Option<(String, MonoType, bool, bool)> {
     }
 }
 
+pub fn finish_serialize<'a, 'b, S>(
+    builder: &'a mut flatbuffers::FlatBufferBuilder<'b>,
+    offset: flatbuffers::WIPOffset<S>,
+) -> &'a [u8] {
+    builder.finish(offset, None);
+    builder.finished_data()
+}
+
 pub fn serialize<'a, 'b, T, S, F>(
     builder: &'a mut flatbuffers::FlatBufferBuilder<'b>,
     t: T,
@@ -292,13 +304,6 @@ where
     mapped
 }
 
-pub fn build_fresher<'a>(
-    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    f: Fresher,
-) -> flatbuffers::WIPOffset<fb::Fresher<'a>> {
-    fb::Fresher::create(builder, &fb::FresherArgs { u: f.0 })
-}
-
 pub fn build_env<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     env: Environment,
@@ -315,6 +320,17 @@ pub fn build_env<'a>(
             assignments: Some(assignments),
         },
     )
+}
+
+pub fn build_module<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    module: Module,
+) -> flatbuffers::WIPOffset<fb::Module<'a>> {
+    let polytype = module.polytype.map(|pt| build_polytype(builder, pt));
+    let code = module
+        .code
+        .map(|pkg| serialize_pkg_into(&pkg, builder).expect("serialize package"));
+    fb::Module::create(builder, &fb::ModuleArgs { polytype, code })
 }
 
 fn build_type_assignment<'a>(

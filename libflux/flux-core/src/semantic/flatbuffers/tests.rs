@@ -14,7 +14,7 @@ use anyhow::{anyhow, Result};
 fn test_serialize() {
     let f = vec![
         crate::parser::parse_string(
-            "test1",
+            "test1".to_string(),
             r#"
 package testpkg
 import other "my_other_pkg"
@@ -34,7 +34,7 @@ test aggregate_window_empty = () => ({
 "#,
         ),
         crate::parser::parse_string(
-            "test2",
+            "test2".to_string(),
             r#"
 a
 
@@ -87,14 +87,14 @@ re !~ /foo/
         package: String::from("test"),
         files: f,
     };
-    let mut pkg = match convert::convert_with(pkg, &mut fresh::Fresher::default()) {
+    let mut pkg = match convert::convert_package(pkg, &mut fresh::Fresher::default()) {
         Ok(pkg) => pkg,
         Err(e) => {
             assert!(false, "{}", e);
             return;
         }
     };
-    let (vec, offset) = match super::serialize(&mut pkg) {
+    let (vec, offset) = match super::serialize_pkg(&mut pkg) {
         Ok((v, o)) => (v, o),
         Err(e) => {
             assert!(false, "{}", e);

@@ -1,23 +1,28 @@
 use fluxcore::ast;
-use fluxcore::semantic::convert_source;
+use fluxcore::semantic::env::Environment;
 use fluxcore::semantic::nodes::*;
-use fluxcore::semantic::types::{Function, MonoType, SemanticMap, Tvar};
+use fluxcore::semantic::types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar};
 use fluxcore::semantic::walk::{walk_mut, NodeMut};
+use fluxcore::semantic::Analyzer;
 
 use pretty_assertions::assert_eq;
 
 #[test]
 fn analyze_end_to_end() {
-    let mut got = convert_source(
-        r#"
+    let mut analyzer = Analyzer::new(Environment::default(), PolyTypeMap::new());
+    let (_, mut got) = analyzer
+        .analyze_source(
+            "main".to_string(),
+            "main.flux".to_string(),
+            r#"
 n = 1
 s = "string"
 f = (a) => a + a
 f(a: n)
 f(a: s)
         "#,
-    )
-    .unwrap();
+        )
+        .unwrap();
     let f_type = Function {
         req: fluxcore::semantic_map! {
             "a".to_string() => MonoType::Var(Tvar(4)),

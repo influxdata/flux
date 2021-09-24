@@ -5341,3 +5341,69 @@ func UnsignedIntegerLiteralAddValue(builder *flatbuffers.Builder, value uint64) 
 func UnsignedIntegerLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
+
+type Module struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsModule(buf []byte, offset flatbuffers.UOffsetT) *Module {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Module{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsModule(buf []byte, offset flatbuffers.UOffsetT) *Module {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Module{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *Module) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Module) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Module) Polytype(obj *PolyType) *PolyType {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(PolyType)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *Module) Code(obj *Package) *Package {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Package)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func ModuleStart(builder *flatbuffers.Builder) {
+	builder.StartObject(2)
+}
+func ModuleAddPolytype(builder *flatbuffers.Builder, polytype flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(polytype), 0)
+}
+func ModuleAddCode(builder *flatbuffers.Builder, code flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(code), 0)
+}
+func ModuleEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}

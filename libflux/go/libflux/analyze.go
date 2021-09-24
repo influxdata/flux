@@ -105,11 +105,11 @@ func FindVarType(astPkg *ASTPkg, varName string) (semantic.MonoType, error) {
 }
 
 type Analyzer struct {
-	ptr *C.struct_flux_semantic_analyzer_t
+	ptr *C.struct_flux_stateful_analyzer_t
 }
 
 func NewAnalyzer() *Analyzer {
-	ptr := C.flux_new_semantic_analyzer()
+	ptr := C.flux_new_stateful_analyzer()
 	p := &Analyzer{ptr: ptr}
 	runtime.SetFinalizer(p, free)
 	return p
@@ -140,7 +140,7 @@ func (p *Analyzer) Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 // Free frees the memory allocated by Rust for the semantic graph.
 func (p *Analyzer) Free() {
 	if p.ptr != nil {
-		C.flux_free_semantic_analyzer(p.ptr)
+		C.flux_free_stateful_analyzer(p.ptr)
 	}
 	p.ptr = nil
 
