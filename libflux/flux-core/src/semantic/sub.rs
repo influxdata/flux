@@ -58,6 +58,13 @@ impl Substitution {
 pub trait Substitutable {
     /// Apply a substitution to a type variable.
     fn apply(self, sub: &Substitution) -> Self;
+    /// Apply a substitution to a type variable.
+    fn apply_ref(&self, sub: &Substitution) -> Self
+    where
+        Self: Clone,
+    {
+        self.clone().apply(sub)
+    }
     /// Get all free type variables in a type.
     fn free_vars(&self) -> Vec<Tvar>;
 }

@@ -88,6 +88,13 @@ impl Substitutable for PolyType {
             expr: self.expr.apply(sub),
         }
     }
+    fn apply_ref(&self, sub: &Substitution) -> Self {
+        PolyType {
+            vars: self.vars.clone(),
+            cons: self.cons.clone(),
+            expr: self.expr.apply_ref(sub),
+        }
+    }
     fn free_vars(&self) -> Vec<Tvar> {
         minus(&self.vars, self.expr.free_vars())
     }
@@ -326,6 +333,24 @@ impl Substitutable for MonoType {
             MonoType::Dict(dict) => MonoType::Dict(Ptr::new(dict.apply(sub))),
             MonoType::Record(obj) => MonoType::Record(Ptr::new(obj.apply(sub))),
             MonoType::Fun(fun) => MonoType::Fun(Ptr::new(fun.apply(sub))),
+        }
+    }
+    fn apply_ref(&self, sub: &Substitution) -> Self {
+        match self {
+            MonoType::Bool
+            | MonoType::Int
+            | MonoType::Uint
+            | MonoType::Float
+            | MonoType::String
+            | MonoType::Duration
+            | MonoType::Time
+            | MonoType::Regexp
+            | MonoType::Bytes => self.clone(),
+            MonoType::Var(tvr) => sub.apply(*tvr),
+            MonoType::Arr(arr) => MonoType::Arr(Ptr::new(arr.apply_ref(sub))),
+            MonoType::Dict(dict) => MonoType::Dict(Ptr::new(dict.apply_ref(sub))),
+            MonoType::Record(obj) => MonoType::Record(Ptr::new(obj.apply_ref(sub))),
+            MonoType::Fun(fun) => MonoType::Fun(Ptr::new(fun.apply_ref(sub))),
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -698,6 +723,9 @@ impl Substitutable for Array {
     fn apply(self, sub: &Substitution) -> Self {
         Array(self.0.apply(sub))
     }
+    fn apply_ref(&self, sub: &Substitution) -> Self {
+        Array(self.0.apply_ref(sub))
+    }
     fn free_vars(&self) -> Vec<Tvar> {
         self.0.free_vars()
     }
@@ -790,6 +818,12 @@ impl Substitutable for Dictionary {
         Dictionary {
             key: self.key.apply(sub),
             val: self.val.apply(sub),
+        }
+    }
+    fn apply_ref(&self, sub: &Substitution) -> Self {
+        Dictionary {
+            key: self.key.apply_ref(sub),
+            val: self.val.apply_ref(sub),
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -918,6 +952,15 @@ impl Substitutable for Record {
             Record::Extension { head, tail } => Record::Extension {
                 head: head.apply(sub),
                 tail: tail.apply(sub),
+            },
+        }
+    }
+    fn apply_ref(&self, sub: &Substitution) -> Self {
+        match self {
+            Record::Empty => Record::Empty,
+            Record::Extension { head, tail } => Record::Extension {
+                head: head.apply_ref(sub),
+                tail: tail.apply_ref(sub),
             },
         }
     }
@@ -1136,6 +1179,12 @@ impl Substitutable for Property {
             v: self.v.apply(sub),
         }
     }
+    fn apply_ref(&self, sub: &Substitution) -> Self {
+        Property {
+            k: self.k.clone(),
+            v: self.v.apply_ref(sub),
+        }
+    }
     fn free_vars(&self) -> Vec<Tvar> {
         self.v.free_vars()
     }
@@ -1232,6 +1281,10 @@ impl<T: Substitutable> Substitutable for Option<T> {
     fn apply(self, sub: &Substitution) -> Self {
         self.map(|t| t.apply(sub))
     }
+    // TODO
+    // fn apply_ref(&self, sub: &Substitution) -> Self {
+    //     self.as_ref().map(|t| t.apply_ref(sub))
+    // }
     fn free_vars(&self) -> Vec<Tvar> {
         match self {
             Some(t) => t.free_vars(),
@@ -1247,6 +1300,14 @@ impl Substitutable for Function {
             opt: self.opt.apply(sub),
             pipe: self.pipe.apply(sub),
             retn: self.retn.apply(sub),
+        }
+    }
+    fn apply_ref(&self, sub: &Substitution) -> Self {
+        Function {
+            req: self.req.apply_ref(sub),
+            opt: self.opt.apply_ref(sub),
+            pipe: self.pipe.apply_ref(sub),
+            retn: self.retn.apply_ref(sub),
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
