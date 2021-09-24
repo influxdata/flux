@@ -37,10 +37,13 @@ impl Substitution {
 
     /// Apply a substitution to a type variable.
     pub fn apply(&self, tv: Tvar) -> MonoType {
-        match self.0.get(&tv) {
-            Some(t) => t.clone(),
-            None => MonoType::Var(tv),
-        }
+        self.try_apply(tv).unwrap_or_else(|| MonoType::Var(tv))
+    }
+
+    /// Apply a substitution to a type variable, returning None if there is no substitution for the
+    /// variable.
+    pub fn try_apply(&self, tv: Tvar) -> Option<MonoType> {
+        self.0.get(&tv).cloned()
     }
 
     /// Merge two substitutions.
@@ -59,11 +62,11 @@ pub trait Substitutable {
     /// Apply a substitution to a type variable.
     fn apply(self, sub: &Substitution) -> Self;
     /// Apply a substitution to a type variable.
-    fn apply_ref(&self, sub: &Substitution) -> Self
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self>
     where
         Self: Clone,
     {
-        self.clone().apply(sub)
+        Some(self.clone().apply(sub))
     }
     /// Get all free type variables in a type.
     fn free_vars(&self) -> Vec<Tvar>;

@@ -88,12 +88,12 @@ impl Substitutable for PolyType {
             expr: self.expr.apply(sub),
         }
     }
-    fn apply_ref(&self, sub: &Substitution) -> Self {
-        PolyType {
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        self.expr.apply_ref(sub).map(|expr| PolyType {
             vars: self.vars.clone(),
             cons: self.cons.clone(),
-            expr: self.expr.apply_ref(sub),
-        }
+            expr,
+        })
     }
     fn free_vars(&self) -> Vec<Tvar> {
         minus(&self.vars, self.expr.free_vars())
@@ -335,7 +335,7 @@ impl Substitutable for MonoType {
             MonoType::Fun(fun) => MonoType::Fun(Ptr::new(fun.apply(sub))),
         }
     }
-    fn apply_ref(&self, sub: &Substitution) -> Self {
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         match self {
             MonoType::Bool
             | MonoType::Int
@@ -345,12 +345,12 @@ impl Substitutable for MonoType {
             | MonoType::Duration
             | MonoType::Time
             | MonoType::Regexp
-            | MonoType::Bytes => self.clone(),
-            MonoType::Var(tvr) => sub.apply(*tvr),
-            MonoType::Arr(arr) => MonoType::Arr(Ptr::new(arr.apply_ref(sub))),
-            MonoType::Dict(dict) => MonoType::Dict(Ptr::new(dict.apply_ref(sub))),
-            MonoType::Record(obj) => MonoType::Record(Ptr::new(obj.apply_ref(sub))),
-            MonoType::Fun(fun) => MonoType::Fun(Ptr::new(fun.apply_ref(sub))),
+            | MonoType::Bytes => None,
+            MonoType::Var(tvr) => sub.try_apply(*tvr),
+            MonoType::Arr(arr) => arr.apply_ref(sub).map(MonoType::arr),
+            MonoType::Dict(dict) => dict.apply_ref(sub).map(MonoType::dict),
+            MonoType::Record(obj) => obj.apply_ref(sub).map(MonoType::record),
+            MonoType::Fun(fun) => fun.apply_ref(sub).map(MonoType::fun),
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -723,8 +723,8 @@ impl Substitutable for Array {
     fn apply(self, sub: &Substitution) -> Self {
         Array(self.0.apply(sub))
     }
-    fn apply_ref(&self, sub: &Substitution) -> Self {
-        Array(self.0.apply_ref(sub))
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        self.0.apply_ref(sub).map(Array)
     }
     fn free_vars(&self) -> Vec<Tvar> {
         self.0.free_vars()
@@ -820,11 +820,8 @@ impl Substitutable for Dictionary {
             val: self.val.apply(sub),
         }
     }
-    fn apply_ref(&self, sub: &Substitution) -> Self {
-        Dictionary {
-            key: self.key.apply_ref(sub),
-            val: self.val.apply_ref(sub),
-        }
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
     }
     fn free_vars(&self) -> Vec<Tvar> {
         union(self.key.free_vars(), self.val.free_vars())
@@ -955,13 +952,12 @@ impl Substitutable for Record {
             },
         }
     }
-    fn apply_ref(&self, sub: &Substitution) -> Self {
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         match self {
-            Record::Empty => Record::Empty,
-            Record::Extension { head, tail } => Record::Extension {
-                head: head.apply_ref(sub),
-                tail: tail.apply_ref(sub),
-            },
+            Record::Empty => None,
+            Record::Extension { head, tail } => {
+                apply2(head, tail, sub).map(|(head, tail)| Record::Extension { head, tail })
+            }
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -1179,11 +1175,11 @@ impl Substitutable for Property {
             v: self.v.apply(sub),
         }
     }
-    fn apply_ref(&self, sub: &Substitution) -> Self {
-        Property {
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        self.v.apply_ref(sub).map(|v| Property {
             k: self.k.clone(),
-            v: self.v.apply_ref(sub),
-        }
+            v,
+        })
     }
     fn free_vars(&self) -> Vec<Tvar> {
         self.v.free_vars()
@@ -1302,13 +1298,19 @@ impl Substitutable for Function {
             retn: self.retn.apply(sub),
         }
     }
-    fn apply_ref(&self, sub: &Substitution) -> Self {
-        Function {
-            req: self.req.apply_ref(sub),
-            opt: self.opt.apply_ref(sub),
-            pipe: self.pipe.apply_ref(sub),
-            retn: self.retn.apply_ref(sub),
-        }
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        let Function {
+            req,
+            opt,
+            pipe,
+            retn,
+        } = self;
+        apply4(req, opt, pipe, retn, sub).map(|(req, opt, pipe, retn)| Function {
+            req,
+            opt,
+            pipe,
+            retn,
+        })
     }
     fn free_vars(&self) -> Vec<Tvar> {
         union(
@@ -1513,6 +1515,138 @@ impl Function {
 pub trait MaxTvar {
     /// Return the maximum type variable of a type.
     fn max_tvar(&self) -> Tvar;
+}
+
+fn apply4<A, B, C, D>(a: &A, b: &B, c: &C, d: &D, sub: &Substitution) -> Option<(A, B, C, D)>
+where
+    A: Substitutable + Clone,
+    B: Substitutable + Clone,
+    C: Substitutable + Clone,
+    D: Substitutable + Clone,
+{
+    merge4(
+        a,
+        a.apply_ref(sub),
+        b,
+        b.apply_ref(sub),
+        c,
+        c.apply_ref(sub),
+        d,
+        d.apply_ref(sub),
+        |a, b, c, d| (a, b, c, d),
+    )
+}
+
+fn apply2<A, B>(a: &A, b: &B, sub: &Substitution) -> Option<(A, B)>
+where
+    A: Substitutable + Clone,
+    B: Substitutable + Clone,
+{
+    merge(a, a.apply_ref(sub), b, b.apply_ref(sub), |a, b| (a, b))
+}
+
+fn merge4<F, A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized, R>(
+    a_original: &A,
+    a: Option<A::Owned>,
+    b_original: &B,
+    b: Option<B::Owned>,
+    c_original: &C,
+    c: Option<C::Owned>,
+    d_original: &D,
+    d: Option<D::Owned>,
+    f: F,
+) -> Option<R>
+where
+    A: ToOwned,
+    B: ToOwned,
+    C: ToOwned,
+    D: ToOwned,
+    F: FnOnce(A::Owned, B::Owned, C::Owned, D::Owned) -> R,
+{
+    let a_b_c = merge3(a_original, a, b_original, b, c_original, c, |a, b, c| {
+        (a, b, c)
+    });
+    merge_fn(
+        &(a_original, b_original, c_original),
+        |_| {
+            (
+                a_original.to_owned(),
+                b_original.to_owned(),
+                c_original.to_owned(),
+            )
+        },
+        a_b_c,
+        d_original,
+        D::to_owned,
+        d,
+        |(a, b, c), d| f(a, b, c, d),
+    )
+}
+
+fn merge3<F, A: ?Sized, B: ?Sized, C: ?Sized, R>(
+    a_original: &A,
+    a: Option<A::Owned>,
+    b_original: &B,
+    b: Option<B::Owned>,
+    c_original: &C,
+    c: Option<C::Owned>,
+    f: F,
+) -> Option<R>
+where
+    A: ToOwned,
+    B: ToOwned,
+    C: ToOwned,
+    F: FnOnce(A::Owned, B::Owned, C::Owned) -> R,
+{
+    let a_b = merge(a_original, a, b_original, b, |a, b| (a, b));
+    merge_fn(
+        &(a_original, b_original),
+        |_| (a_original.to_owned(), b_original.to_owned()),
+        a_b,
+        c_original,
+        C::to_owned,
+        c,
+        |(a, b), c| f(a, b, c),
+    )
+}
+
+/// Merges two values using `f` if either or both them is `Some(..)`.
+/// If both are `None`, `None` is returned.
+fn merge<F, A: ?Sized, B: ?Sized, R>(
+    a_original: &A,
+    a: Option<A::Owned>,
+    b_original: &B,
+    b: Option<B::Owned>,
+    f: F,
+) -> Option<R>
+where
+    A: ToOwned,
+    B: ToOwned,
+    F: FnOnce(A::Owned, B::Owned) -> R,
+{
+    merge_fn(a_original, A::to_owned, a, b_original, B::to_owned, b, f)
+}
+
+fn merge_fn<'a, 'b, F, G, H, A: ?Sized, B: ?Sized, A1, B1, R>(
+    a_original: &'a A,
+    g: G,
+    a: Option<A1>,
+    b_original: &'b B,
+    h: H,
+    b: Option<B1>,
+    merger: F,
+) -> Option<R>
+where
+    F: FnOnce(A1, B1) -> R,
+    G: FnOnce(&'a A) -> A1,
+    H: FnOnce(&'b B) -> B1,
+{
+    match (a, b) {
+        (Some(a), Some(b)) => Some(merger(a, b)),
+        (Some(a), None) => Some(merger(a, h(b_original))),
+        (None, Some(b)) => Some(merger(g(a_original), b)),
+        (None, None) => None,
+    }
 }
 
 #[cfg(test)]
