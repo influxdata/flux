@@ -470,16 +470,16 @@ func TestToMQTT_Process(t *testing.T) {
 					return mqtt.NewToMQTTTransformation(d, c, tc.spec)
 				},
 			)
+			msg := <- received
+			payload := msg.Payload()
+			retained := msg.Retained()
+			if string(payload) != string(tc.want.Result) {
+				t.Fatalf("expected %s, got %s", tc.want.Result, payload)
+			}
+			if retained != tc.spec.Spec.Retain {
+				t.Fatalf("expected retained %t, got %t", tc.spec.Spec.Retain, retained)
+			}
 		})
-		msg := <- received
-		payload := msg.Payload()
-		retained := msg.Retained()
-		if string(payload) != string(tc.want.Result) {
-			t.Fatalf("expected %s, got %s", tc.want.Result, payload)
-		}
-		if retained != tc.spec.Spec.Retain {
-			t.Fatalf("expected retained %t, got %t", tc.spec.Spec.Retain, retained)
-		}
 	}
 }
 
