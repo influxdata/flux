@@ -1219,7 +1219,7 @@ impl fmt::Display for Function {
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: Substitutable + Clone> Substitutable for SemanticMap<String, T> {
+impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         merge_collect(
             &mut (),

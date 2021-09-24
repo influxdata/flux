@@ -49,11 +49,7 @@ impl Substitution {
 
     /// Merge two substitutions.
     pub fn merge(self, with: Substitution) -> Substitution {
-        let applied: SubstitutionMap = self
-            .0
-            .into_iter()
-            .map(|(k, v)| (k, v.apply(&with)))
-            .collect();
+        let applied: SubstitutionMap = self.0.apply(&with);
         Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
     }
 }
