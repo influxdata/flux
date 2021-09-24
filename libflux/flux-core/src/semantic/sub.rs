@@ -262,7 +262,7 @@ where
 }
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
-fn merge4<A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized>(
+pub(crate) fn merge4<A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,
@@ -296,7 +296,7 @@ where
     .map(|((a, b, c), d)| (a, b, c, d))
 }
 
-fn merge3<A: ?Sized, B: ?Sized, C: ?Sized>(
+pub(crate) fn merge3<A: ?Sized, B: ?Sized, C: ?Sized>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,

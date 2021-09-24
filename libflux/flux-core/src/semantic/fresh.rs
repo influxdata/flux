@@ -1,8 +1,11 @@
 //! "Fresh" type variable identifiers.
 
-use crate::semantic::types::{
-    Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
-    TvarMap,
+use crate::semantic::{
+    sub::{merge3, merge4, merge_collect},
+    types::{
+        Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
+        TvarMap,
+    },
 };
 use std::{collections::BTreeMap, hash::Hash};
 
@@ -30,11 +33,18 @@ impl Fresher {
 pub trait Fresh {
     #[allow(missing_docs)]
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self;
+    #[allow(missing_docs)]
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self>
+    where
+        Self: Sized;
 }
 
-impl<T: Fresh> Fresh for Vec<T> {
+impl<T: Fresh + Clone> Fresh for Vec<T> {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.into_iter().map(|t| t.fresh(f, sub)).collect::<Self>()
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        merge_collect(&mut (), self, |_, v| v.fresh_ref(f, sub), |_, v| v.clone())
     }
 }
 
@@ -42,10 +52,16 @@ impl<T: Fresh> Fresh for Option<T> {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.map(|t| t.fresh(f, sub))
     }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        match self {
+            None => None,
+            Some(t) => t.fresh_ref(f, sub).map(Some),
+        }
+    }
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: Fresh> Fresh for SemanticMap<String, T> {
+impl<T: Fresh + Clone> Fresh for SemanticMap<String, T> {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.into_iter()
             .collect::<BTreeMap<String, T>>()
@@ -53,10 +69,18 @@ impl<T: Fresh> Fresh for SemanticMap<String, T> {
             .map(|(s, t)| (s, t.fresh(f, sub)))
             .collect::<Self>()
     }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self,
+            |_, (k, v)| v.fresh_ref(f, sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
+    }
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: Hash + Ord + Eq + Fresh, S> Fresh for SemanticMap<T, S> {
+impl<T: Hash + Ord + Eq + Fresh + Clone, S: Clone> Fresh for SemanticMap<T, S> {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.into_iter()
             .collect::<BTreeMap<T, S>>()
@@ -64,11 +88,22 @@ impl<T: Hash + Ord + Eq + Fresh, S> Fresh for SemanticMap<T, S> {
             .map(|(t, s)| (t.fresh(f, sub), s))
             .collect::<Self>()
     }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self,
+            |_, (k, v)| k.fresh_ref(f, sub).map(|k| (k, v.clone())),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
+    }
 }
 
 impl<T: Fresh> Fresh for Box<T> {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Box::new((*self).fresh(f, sub))
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        T::fresh_ref(self, f, sub).map(Box::new)
     }
 }
 
@@ -78,6 +113,18 @@ impl Fresh for PolyType {
         let vars = self.vars.fresh(f, sub);
         let cons = self.cons.fresh(f, sub);
         PolyType { vars, cons, expr }
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        let PolyType { vars, cons, expr } = self;
+        merge3(
+            expr,
+            expr.fresh_ref(f, sub),
+            vars,
+            vars.fresh_ref(f, sub),
+            cons,
+            cons.fresh_ref(f, sub),
+        )
+        .map(|(expr, vars, cons)| PolyType { expr, vars, cons })
     }
 }
 
@@ -91,11 +138,23 @@ impl Fresh for MonoType {
             _ => self,
         }
     }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        match self {
+            MonoType::Var(tvr) => tvr.fresh_ref(f, sub).map(MonoType::Var),
+            MonoType::Arr(arr) => arr.fresh_ref(f, sub).map(MonoType::arr),
+            MonoType::Record(obj) => obj.fresh_ref(f, sub).map(MonoType::record),
+            MonoType::Fun(fun) => fun.fresh_ref(f, sub).map(MonoType::fun),
+            _ => None,
+        }
+    }
 }
 
 impl Fresh for Tvar {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         *sub.entry(self).or_insert_with(|| f.fresh())
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        Some(*sub.entry(*self).or_insert_with(|| f.fresh()))
     }
 }
 
@@ -103,15 +162,22 @@ impl Fresh for Array {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Array(self.0.fresh(f, sub))
     }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        self.0.fresh_ref(f, sub).map(Array)
+    }
 }
 
 impl Fresh for Record {
-    fn fresh(mut self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        self.fresh_ref(f, sub).unwrap_or(self)
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         let mut props = MonoTypeVecMap::new();
         let mut extends = false;
         let mut tv = Tvar(0);
+        let mut cur = self;
         loop {
-            match self {
+            match cur {
                 Record::Empty => {
                     break;
                 }
@@ -119,16 +185,22 @@ impl Fresh for Record {
                     head,
                     tail: MonoType::Record(b),
                 } => {
-                    props.entry(head.k).or_insert_with(Vec::new).push(head.v);
-                    self = *b;
+                    props
+                        .entry(head.k.clone())
+                        .or_insert_with(Vec::new)
+                        .push(head.v.clone());
+                    cur = b;
                 }
                 Record::Extension {
                     head,
                     tail: MonoType::Var(t),
                 } => {
                     extends = true;
-                    tv = t;
-                    props.entry(head.k).or_insert_with(Vec::new).push(head.v);
+                    tv = *t;
+                    props
+                        .entry(head.k.clone())
+                        .or_insert_with(Vec::new)
+                        .push(head.v.clone());
                     break;
                 }
                 _ => {
@@ -158,10 +230,11 @@ impl Fresh for Record {
                 r = MonoType::from(extension);
             }
         }
-        match r {
-            MonoType::Record(b) => *b,
+        // TODO Should optimize when no variables needs freshening
+        Some(match r {
+            MonoType::Record(b) => (*b).clone(),
             _ => Record::Empty,
-        }
+        })
     }
 }
 
@@ -171,6 +244,12 @@ impl Fresh for Property {
             k: self.k,
             v: self.v.fresh(f, sub),
         }
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        self.v.fresh_ref(f, sub).map(|v| Property {
+            k: self.k.clone(),
+            v,
+        })
     }
 }
 
@@ -182,5 +261,29 @@ impl Fresh for Function {
             pipe: self.pipe.fresh(f, sub),
             retn: self.retn.fresh(f, sub),
         }
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        let Function {
+            req,
+            opt,
+            pipe,
+            retn,
+        } = self;
+        merge4(
+            req,
+            req.fresh_ref(f, sub),
+            opt,
+            opt.fresh_ref(f, sub),
+            pipe,
+            pipe.fresh_ref(f, sub),
+            retn,
+            retn.fresh_ref(f, sub),
+        )
+        .map(|(req, opt, pipe, retn)| Function {
+            req,
+            opt,
+            pipe,
+            retn,
+        })
     }
 }
