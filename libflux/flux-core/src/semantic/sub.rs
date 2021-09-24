@@ -1,5 +1,5 @@
 //! Substitutions during type inference.
-use std::{cell::RefCell, iter::FusedIterator};
+use std::{borrow::Cow, cell::RefCell, iter::FusedIterator};
 
 use crate::semantic::types::{union, Error, MonoType, SubstitutionMap, Tvar, TvarKinds};
 
@@ -151,6 +151,18 @@ pub trait Substitutable {
             *self = new;
         }
     }
+
+    /// Apply a substitution to a type variable.
+    fn apply_cow(&self, sub: &dyn Substituter) -> Cow<'_, Self>
+    where
+        Self: Clone + Sized,
+    {
+        match self.apply_ref(sub) {
+            Some(t) => Cow::Owned(t),
+            None => Cow::Borrowed(self),
+        }
+    }
+
     /// Apply a substitution to a type variable. Should return `None` if there was nothing to apply
     /// which allows for optimizations.
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self>
