@@ -61,7 +61,7 @@ testcase record_get_primitive {
 
 testcase record_get_record {
     obj = {
-        details: {x: 1}
+        details: {x: 1},
     }
 
     want = array.from(
