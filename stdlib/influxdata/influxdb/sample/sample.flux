@@ -54,7 +54,13 @@ sets = [
 _setInfo = (set) => {
     _setDict = dict.get(dict: sets, key: set, default: {url: "", desc: "", size: "", type: ""})
 
-    return {name: set, description: _setDict.desc, url: _setDict.url, size: _setDict.size, type: _setDict.type}
+    return {
+        name: set,
+        description: _setDict.desc,
+        url: _setDict.url,
+        size: _setDict.size,
+        type: _setDict.type,
+    }
 }
 
 // data downloads a specified InfluxDB sample dataset.
@@ -126,7 +132,8 @@ list = () => array.from(
 //    |> sample.alignToNow()
 // ```
 alignToNow = (tables=<-) => {
-    _lastTime = (tables |> keep(columns: ["_time"]) |> last(column: "_time") |> findRecord(fn: (key) => true, idx: 0))._time
+    _lastTime = (tables |> keep(columns: ["_time"]) |> last(column: "_time")
+        |> findRecord(fn: (key) => true, idx: 0))._time
     _offset = int(v: now()) - int(v: _lastTime)
     _offsetDuration = duration(v: _offset)
 
