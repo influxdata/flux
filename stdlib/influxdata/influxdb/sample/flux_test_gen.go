@@ -23,7 +23,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   39,
 				},
 				File:   "alignToNow_test.flux",
-				Source: "package sample_test\n\n\nimport \"influxdata/influxdb/sample\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"\n\noutData = \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"\n\nt_sample_alignToNow = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)\n    |> sample.alignToNow()\n\ntest _sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
+				Source: "package sample_test\n\n\nimport \"influxdata/influxdb/sample\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\ndatatype,string,long,dateTime:RFC3339,double,string,string,string\n#group,false,false,false,false,true,true,true\n#default,_result,,,,,,\n,result,table,_time,_value,_field,_measurement,host\n,,0,2018-05-22T19:53:26Z,50.12,used_percent,mem,host.local\n,,0,2018-05-22T19:53:36Z,51.45,used_percent,mem,host.local\n,,0,2018-05-22T19:53:46Z,48.3,used_percent,mem,host.local\n,,0,2018-05-22T19:53:56Z,49.34,used_percent,mem,host.local\n,,0,2018-05-22T19:54:06Z,49.06,used_percent,mem,host.local\n,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local\n\"\n\noutData = \"\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:10Z,50.12,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:20Z,51.45,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:30Z,48.3,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:40Z,49.34,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2029-12-31T23:59:50Z,49.06,used_percent,mem,host.local\n,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local\n\"\n\nt_sample_alignToNow = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n    |> sample.alignToNow()\n\ntest _sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -245,7 +245,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   37,
 					},
 					File:   "alignToNow_test.flux",
-					Source: "t_sample_alignToNow = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+					Source: "t_sample_alignToNow = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
 					Start: ast.Position{
 						Column: 1,
 						Line:   35,
@@ -282,7 +282,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   37,
 						},
 						File:   "alignToNow_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
 						Start: ast.Position{
 							Column: 23,
 							Line:   35,
@@ -315,11 +315,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 69,
+									Column: 70,
 									Line:   36,
 								},
 								File:   "alignToNow_test.flux",
-								Source: "table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)",
+								Source: "table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)",
 								Start: ast.Position{
 									Column: 37,
 									Line:   35,
@@ -333,11 +333,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 68,
+											Column: 69,
 											Line:   36,
 										},
 										File:   "alignToNow_test.flux",
-										Source: "start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z",
+										Source: "start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z",
 										Start: ast.Position{
 											Column: 14,
 											Line:   36,
@@ -408,11 +408,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 68,
+												Column: 69,
 												Line:   36,
 											},
 											File:   "alignToNow_test.flux",
-											Source: "stop:2018-05-22T19:55:00Z",
+											Source: "stop: 2018-05-22T19:55:00Z",
 											Start: ast.Position{
 												Column: 43,
 												Line:   36,
@@ -446,13 +446,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 68,
+													Column: 69,
 													Line:   36,
 												},
 												File:   "alignToNow_test.flux",
 												Source: "2018-05-22T19:55:00Z",
 												Start: ast.Position{
-													Column: 48,
+													Column: 49,
 													Line:   36,
 												},
 											},
@@ -468,11 +468,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 69,
+										Column: 70,
 										Line:   36,
 									},
 									File:   "alignToNow_test.flux",
-									Source: "range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)",
+									Source: "range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)",
 									Start: ast.Position{
 										Column: 8,
 										Line:   36,
@@ -511,7 +511,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Line:   37,
 							},
 							File:   "alignToNow_test.flux",
-							Source: "table\n    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
+							Source: "table\n    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)\n    |> sample.alignToNow()",
 							Start: ast.Position{
 								Column: 37,
 								Line:   35,

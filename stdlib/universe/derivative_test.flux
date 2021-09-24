@@ -16,7 +16,7 @@ inData = array.from(
         {_time: 2018-05-22T20:00:20Z, _value: 1.57, _measurement: "m0", _field: "f0", t0: "b"},
         {_time: 2018-05-22T20:00:30Z, _value: 0.97, _measurement: "m0", _field: "f0", t0: "b"},
         {_time: 2018-05-22T20:00:40Z, _value: 3.01, _measurement: "m0", _field: "f0", t0: "b"},
-    ]
+    ],
 )
     |> group(columns: ["_measurement", "_field", "t0"])
 
@@ -31,7 +31,7 @@ testcase default {
             {_time: 2018-05-22T20:00:20Z, _value: 0.091, _measurement: "m0", _field: "f0", t0: "b"},
             {_time: 2018-05-22T20:00:30Z, _value: -0.06, _measurement: "m0", _field: "f0", t0: "b"},
             {_time: 2018-05-22T20:00:40Z, _value: 0.204, _measurement: "m0", _field: "f0", t0: "b"},
-        ]
+        ],
     )
         |> group(columns: ["_measurement", "_field", "t0"])
 
@@ -49,7 +49,7 @@ testcase non_negative {
             {_time: 2018-05-22T20:00:10Z, _value: 0.336, _measurement: "m0", _field: "f0", t0: "a"},
             {_time: 2018-05-22T20:00:20Z, _value: 0.091, _measurement: "m0", _field: "f0", t0: "b"},
             {_time: 2018-05-22T20:00:40Z, _value: 0.204, _measurement: "m0", _field: "f0", t0: "b"},
-        ]
+        ],
     )
         |> group(columns: ["_measurement", "_field", "t0"])
 
@@ -69,7 +69,7 @@ testcase duplicate_times {
             {_time: 2018-05-22T20:00:20Z, _value: -0.276, _measurement: "m0", _field: "f0", t0: "a"},
             {_time: 2018-05-22T20:00:30Z, _value: -0.228, _measurement: "m0", _field: "f0", t0: "a"},
             {_time: 2018-05-22T20:00:40Z, _value: -0.012, _measurement: "m0", _field: "f0", t0: "a"},
-        ]
+        ],
     )
         |> group(columns: ["_measurement", "_field"])
 

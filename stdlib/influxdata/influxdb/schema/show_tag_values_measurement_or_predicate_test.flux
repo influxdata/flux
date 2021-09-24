@@ -69,13 +69,15 @@ testcase show_tag_values_measurement_or_predicate {
         |> limit(n: 200)
         |> sort()
 
-    want = csv.from(csv: "#datatype,string,long,string
+    want = csv.from(
+        csv: "#datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,north
 ,,0,south
-")
+",
+    )
 
     testing.diff(got, want)
 }
@@ -91,12 +93,14 @@ testcase show_tag_values_measurement_or_negation {
         |> limit(n: 200)
         |> sort()
 
-    want = csv.from(csv: "#datatype,string,long,string
+    want = csv.from(
+        csv: "#datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,hfs
-")
+",
+    )
 
     testing.diff(got, want)
 }
@@ -112,13 +116,15 @@ testcase show_tag_values_measurement_or_regex {
         |> limit(n: 200)
         |> sort()
 
-    want = csv.from(csv: "#datatype,string,long,string
+    want = csv.from(
+        csv: "#datatype,string,long,string
 #group,false,false,false
 #default,0,,
 ,result,table,_value
 ,,0,north
 ,,0,south
-")
+",
+    )
 
     testing.diff(got, want)
 }

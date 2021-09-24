@@ -33,7 +33,7 @@ outData = "
 "
 
 t_sample_alignToNow = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z, stop:2018-05-22T19:55:00Z)
+    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
     |> sample.alignToNow()
 
 test _sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})
