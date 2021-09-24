@@ -13,6 +13,7 @@ use fluxcore::semantic::flatbuffers::types::{build_env, build_type};
 use fluxcore::semantic::fresh::Fresher;
 use fluxcore::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
 use fluxcore::semantic::sub::Substitution;
+use fluxcore::semantic::types::PolyTypeMap;
 
 pub use fluxcore::ast;
 pub use fluxcore::formatter;
@@ -122,9 +123,14 @@ pub unsafe extern "C" fn flux_parse(
 ) -> Box<ast::Package> {
     let fname = String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap();
     let src = String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap();
-    let mut p = Parser::new(&src);
-    let pkg: ast::Package = p.parse_file(fname).into();
+    let pkg = parse(fname, &src);
     Box::new(pkg)
+}
+
+/// Parse the contents of a string.
+pub fn parse(fname: String, src: &str) -> ast::Package {
+    let mut p = Parser::new(src);
+    p.parse_file(fname).into()
 }
 
 #[no_mangle]
@@ -519,6 +525,14 @@ pub unsafe extern "C" fn flux_analyze_with(
 pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
     let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
     Ok(inject_pkg_types(sem_pkg, &sub))
+}
+
+/// analyze_to_map consumes the given AST package and returns
+/// a map of types exported from the package.
+/// This function is aware of the standard library and prelude.
+pub fn analyze_to_map(ast_pkg: ast::Package) -> Result<PolyTypeMap, Error> {
+    let (_pkg, env, _sub) = infer_with_env(ast_pkg, fresher(), None)?;
+    Ok(env.values)
 }
 
 /// infer_with_env consumes the given AST package, inject the type bindings from the given
@@ -1134,17 +1148,20 @@ from(bucket: v.bucket)
         let mut exact: PackageDoc = PackageDoc {
             path: "csv".to_string(),
             name: "csv".to_string(),
-            headline: "Package csv provides tools for working with data in annotated CSV format."
+            headline: "Package csv provides tools for working with data in annotated CSV format.\n"
                 .to_string(),
             description: None,
             members: std::collections::BTreeMap::new(),
-            link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv"
-                .to_string(),
         };
         exact.members.insert("from".to_string(), fluxcore::semantic::doc::Doc::Function(Box::new(FunctionDoc{
             name: "from".to_string(),
-            headline: "from is a function that retrieves data from a comma separated value (CSV) data source. ".to_string(),
-            description: r#"A stream of tables are returned, each unique series contained within its own table. Each record in the table represents a single point in the series. ## Query anotated CSV data from file
+            headline: "from is a function that retrieves data from a comma separated value (CSV) data source.\n".to_string(),
+            description: r#"
+A stream of tables are returned, each unique series contained within its own table.
+Each record in the table represents a single point in the series.
+
+## Query anotated CSV data from file
+
 ```
 import "csv"
 
@@ -1152,6 +1169,7 @@ csv.from(file: "path/to/data-file.csv")
 ```
 
 ## Query raw data from CSV file
+
 ```
 import "csv"
 
@@ -1162,6 +1180,7 @@ csv.from(
 ```
 
 ## Query an annotated CSV string
+
 ```
 import "csv"
 
@@ -1180,6 +1199,7 @@ csv.from(csv: csvData)
 ```
 
 ## Query a raw CSV string
+
 ```
 import "csv"
 
@@ -1195,26 +1215,41 @@ csv.from(
   mode: "raw"
 )
 ```
-
 "#.to_string(),
-					parameters: vec![ParameterDoc{
-							name: "csv".to_string(),
-							headline: " is CSV data.".to_string(),
-							description: Some("Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.".to_string()),
+            parameters: vec![ParameterDoc{
+                name: "csv".to_string(),
+                headline: "`csv` is CSV data.".to_string(),
+                description: Some(r#"
+
+  Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.
+
+"#.to_string()),
                 required: false
             }, ParameterDoc{
                 name: "file".to_string(),
-                headline: " is the file path of the CSV file to query.".to_string(),
-                description: Some("The path can be absolute or relative. If relative, it is relative to the working directory of the  fluxd  process. The CSV file must exist in the same file system running the  fluxd  process.".to_string()),
+                headline: "`file` is the file path of the CSV file to query.".to_string(),
+                description: Some(r#"
+
+  The path can be absolute or relative. If relative, it is relative to the working
+  directory of the `fluxd` process. The CSV file must exist in the same file
+  system running the `fluxd` process.
+
+"#.to_string()),
                 required: false
             }, ParameterDoc{
                 name: "mode".to_string(),
-                headline: " is the CSV parsing mode. Default is annotations.".to_string(),
-                description: Some("Available annotation modes: annotations: Use CSV notations to determine column data types. raw: Parse all columns as strings and use the first row as the header row and all subsequent rows as data.".to_string()),
+                headline: "`mode` is the CSV parsing mode. Default is annotations.".to_string(),
+                description: Some(r#"
+
+  Available annotation modes:
+   - annotations: Use CSV notations to determine column data types.
+   - raw: Parse all columns as strings and use the first row as the header row
+   - and all subsequent rows as data.
+
+"#.to_string()),
                 required: false
             }],
             flux_type: "(?csv:string, ?file:string, ?mode:string) => [A] where A: Record".to_string(),
-            link:"https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/csv/from".to_string(),
         })));
         let mut got = PackageDoc {
             path: String::new(),
@@ -1222,7 +1257,6 @@ csv.from(
             headline: String::new(),
             description: None,
             members: std::collections::BTreeMap::new(),
-            link: String::new(),
         };
         for d in doc {
             if d.path == "csv" {
@@ -1230,7 +1264,7 @@ csv.from(
                 break;
             }
         }
-        assert_eq!(exact, got);
+        assert_eq!(exact, got, "want:\n{:#?}\ngot:\n{:#?}\n", exact, got);
     }
 
     #[test]
@@ -1240,17 +1274,22 @@ csv.from(
         let mut exact: PackageDoc = PackageDoc {
             path: "array".to_string(),
             name: "array".to_string(),
-            headline: "Package array provides functions for building tables from flux arrays."
+            headline: "Package array provides functions for building tables from flux arrays.\n"
                 .to_string(),
             description: None,
             members: std::collections::BTreeMap::new(),
-            link: "https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array"
-                .to_string(),
         };
-        exact.members.insert("from".to_string(), fluxcore::semantic::doc::Doc::Function(Box::new(FunctionDoc{
-            name: "from".to_string(),
-            headline: "from constructs a table from an array of records. ".to_string(),
-            description: r#"Each record in the array is converted into an output row or record. Allrecords must have the same keys and data types. ## Build an arbitrary table
+        exact.members.insert(
+            "from".to_string(),
+            fluxcore::semantic::doc::Doc::Function(Box::new(FunctionDoc {
+                name: "from".to_string(),
+                headline: "from constructs a table from an array of records.\n".to_string(),
+                description: r#"
+Each record in the array is converted into an output row or record. All
+records must have the same keys and data types.
+
+## Build an arbitrary table
+
 ```
 import "array"
 
@@ -1263,6 +1302,7 @@ array.from(rows: rows)
 ```
 
 ## Union custom rows with query results
+
 ```
 import "influxdata/influxdb/v1"
 import "array"
@@ -1276,24 +1316,24 @@ wildcard_tag = array.from(rows: [{_value: "*"}])
 
 union(tables: [tags, wildcard_tag])
 ```
-
-"#.to_string(),
-            parameters: vec![ParameterDoc{
-                name: "rows".to_string(),
-                headline: " is the array of records to construct a table with.".to_string(),
-                description: None,
-                required: false
-            }],
-            flux_type: "(rows:[A]) => [A] where A: Record".to_string(),
-            link:"https://docs.influxdata.com/influxdb/cloud/reference/flux/stdlib/array/from".to_string(),
-        })));
+"#
+                .to_string(),
+                parameters: vec![ParameterDoc {
+                    name: "rows".to_string(),
+                    headline: "`rows` is the array of records to construct a table with."
+                        .to_string(),
+                    description: None,
+                    required: true,
+                }],
+                flux_type: "(rows:[A]) => [A] where A: Record".to_string(),
+            })),
+        );
         let mut got = PackageDoc {
             path: String::new(),
             name: String::new(),
             headline: String::new(),
             description: None,
             members: std::collections::BTreeMap::new(),
-            link: String::new(),
         };
         for d in doc {
             if d.path == "array" {
@@ -1301,6 +1341,6 @@ union(tables: [tags, wildcard_tag])
                 break;
             }
         }
-        assert_eq!(exact, got);
+        assert_eq!(exact, got, "want:\n{:#?}\ngot:\n{:#?}\n", exact, got);
     }
 }

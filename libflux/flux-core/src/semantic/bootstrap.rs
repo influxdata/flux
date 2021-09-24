@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use crate::ast;
 use crate::parser;
 use crate::semantic::convert::convert_file;
-use crate::semantic::doc::{generate_docs, PackageDoc};
+use crate::semantic::doc::{self, parse_file_doc_comments, PackageDoc};
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
@@ -99,6 +99,12 @@ impl From<&str> for Error {
     }
 }
 
+impl From<doc::Error> for Error {
+    fn from(err: doc::Error) -> Error {
+        Error { msg: err.msg }
+    }
+}
+
 fn stdlib_relative_path() -> &'static str {
     if consts::OS == "windows" {
         "..\\..\\stdlib"
@@ -130,15 +136,39 @@ pub fn infer_stdlib() -> Result<StdlibReturnValues, Error> {
     })
 }
 
-/// new stdlib docs function
+/// Generate documentation for the entire stdlib.
+/// HACK: The stdlib is not completely documented, until it is we have a list of package
+/// exceptions. Any package listed in the exception list will ignore any diagnostics.
+/// The expectation is that once a package passes without any diagnostic errors it is removed from
+/// the list of exceptions.
 pub fn stdlib_docs(
     lib: &PolyTypeMapMap,
     files: &AstFileMap,
-) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
+    exceptions: Vec<&str>,
+) -> Result<Vec<PackageDoc>, Error> {
     let mut docs = Vec::with_capacity(files.len());
+    let mut diagnostics = Vec::new();
     for (pkgpath, file) in files.iter() {
-        let pkg = generate_docs(lib, file, pkgpath)?;
+        let pkgtypes = &lib[pkgpath];
+        let (pkg, mut diags) = parse_file_doc_comments(file, pkgpath, pkgtypes)?;
+        eprintln!("{} has {} diagnostics", pkgpath, diags.len());
+        if !exceptions.contains(&pkgpath.as_str()) {
+            diagnostics.append(&mut diags);
+        }
         docs.push(pkg);
+    }
+    if !diagnostics.is_empty() {
+        return Err(Error {
+            msg: format!(
+                "found {} errors when building documentation: {}",
+                diagnostics.len(),
+                diagnostics
+                    .iter()
+                    .map(|d| format!("{}", d))
+                    .collect::<Vec<String>>()
+                    .join("\n"),
+            ),
+        });
     }
     Ok(docs)
 }
