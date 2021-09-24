@@ -10,6 +10,7 @@ mod infer;
 pub mod types;
 pub mod bootstrap;
 pub mod check;
+pub mod doc;
 pub mod env;
 pub mod fresh;
 pub mod nodes;
