@@ -20,6 +20,7 @@ union MonoType {
   Record,
   Fun,
   Dict,
+  Vector,
 }
 
 table MonoTypeHolder {
@@ -53,6 +54,10 @@ table Basic {
 // been released.
 
 table Arr {
+  t:MonoType /*(required)*/;
+}
+
+table Vector {
   t:MonoType /*(required)*/;
 }
 

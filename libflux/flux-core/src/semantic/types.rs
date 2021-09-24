@@ -294,6 +294,8 @@ pub enum MonoType {
     Record(Box<Record>),
     #[display(fmt = "{}", _0)]
     Fun(Box<Function>),
+    #[display(fmt = "{}", _0)]
+    Vector(Box<Vector>),
 }
 
 /// An ordered map of string identifiers to monotypes.
@@ -317,6 +319,7 @@ impl Substitutable for MonoType {
             | MonoType::Bytes => self,
             MonoType::Var(tvr) => sub.apply(tvr),
             MonoType::Arr(arr) => MonoType::Arr(Box::new(arr.apply(sub))),
+            MonoType::Vector(vector) => MonoType::Vector(Box::new(vector.apply(sub))),
             MonoType::Dict(dict) => MonoType::Dict(Box::new(dict.apply(sub))),
             MonoType::Record(obj) => MonoType::Record(Box::new(obj.apply(sub))),
             MonoType::Fun(fun) => MonoType::Fun(Box::new(fun.apply(sub))),
@@ -335,6 +338,7 @@ impl Substitutable for MonoType {
             | MonoType::Bytes => Vec::new(),
             MonoType::Var(tvr) => vec![*tvr],
             MonoType::Arr(arr) => arr.free_vars(),
+            MonoType::Vector(vector) => vector.free_vars(),
             MonoType::Dict(dict) => dict.free_vars(),
             MonoType::Record(obj) => obj.free_vars(),
             MonoType::Fun(fun) => fun.free_vars(),
@@ -356,6 +360,7 @@ impl MaxTvar for MonoType {
             | MonoType::Bytes => Tvar(0),
             MonoType::Var(tvr) => tvr.max_tvar(),
             MonoType::Arr(arr) => arr.max_tvar(),
+            MonoType::Vector(vector) => vector.max_tvar(),
             MonoType::Dict(dict) => dict.max_tvar(),
             MonoType::Record(obj) => obj.max_tvar(),
             MonoType::Fun(fun) => fun.max_tvar(),
@@ -393,6 +398,7 @@ impl MonoType {
             (MonoType::Var(tv), t) => tv.unify(t, cons),
             (t, MonoType::Var(tv)) => tv.unify(t, cons),
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
+            (MonoType::Vector(t), MonoType::Vector(s)) => t.unify(*s, cons, f),
             (MonoType::Dict(t), MonoType::Dict(s)) => t.unify(*s, cons, f),
             (MonoType::Record(t), MonoType::Record(s)) => t.unify(*s, cons, f),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons, f),
@@ -505,6 +511,7 @@ impl MonoType {
                 Ok(Substitution::empty())
             }
             MonoType::Arr(arr) => arr.constrain(with, cons),
+            MonoType::Vector(vector) => vector.constrain(with, cons),
             MonoType::Dict(dict) => dict.constrain(with, cons),
             MonoType::Record(obj) => obj.constrain(with, cons),
             MonoType::Fun(fun) => fun.constrain(with, cons),
@@ -524,6 +531,7 @@ impl MonoType {
             | MonoType::Bytes => false,
             MonoType::Var(tvr) => tv == *tvr,
             MonoType::Arr(arr) => arr.contains(tv),
+            MonoType::Vector(vector) => vector.contains(tv),
             MonoType::Dict(dict) => dict.contains(tv),
             MonoType::Record(row) => row.contains(tv),
             MonoType::Fun(fun) => fun.contains(tv),
@@ -679,6 +687,46 @@ impl Array {
                 exp: with,
             }),
         }
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        self.0.contains(tv)
+    }
+}
+
+/// monotype vector used by vectorization transformation
+#[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[display(fmt = "v[{}]", _0)]
+pub struct Vector(pub MonoType);
+
+impl Substitutable for Vector {
+    fn apply(self, sub: &Substitution) -> Self {
+        Vector(self.0.apply(sub))
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.0.free_vars()
+    }
+}
+
+impl MaxTvar for Vector {
+    fn max_tvar(&self) -> Tvar {
+        self.0.max_tvar()
+    }
+}
+
+impl Vector {
+    // self represents the expected type.
+    fn unify(
+        self,
+        with: Self,
+        cons: &mut TvarKinds,
+        f: &mut Fresher,
+    ) -> Result<Substitution, Error> {
+        self.0.unify(with.0, cons, f)
+    }
+
+    fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
+        self.0.constrain(with, cons)
     }
 
     fn contains(&self, tv: Tvar) -> bool {
@@ -1469,6 +1517,13 @@ mod tests {
         );
     }
     #[test]
+    fn display_type_vector() {
+        assert_eq!(
+            "v[int]",
+            MonoType::Vector(Box::new(Vector(MonoType::Int))).to_string()
+        );
+    }
+    #[test]
     fn display_type_record() {
         assert_eq!(
             "{A with a:int, b:string}",
@@ -2034,6 +2089,69 @@ mod tests {
                 }),
                 sub
             );
+        }
+    }
+    #[test]
+    fn constrain_vectors() {
+        // kind constraints allowed for Vector(MonoType::Int)
+        let allowable_cons_int = vec![
+            Kind::Addable,
+            Kind::Subtractable,
+            Kind::Divisible,
+            Kind::Numeric,
+            Kind::Comparable,
+            Kind::Equatable,
+            Kind::Nullable,
+            Kind::Stringable,
+        ];
+
+        for c in allowable_cons_int {
+            let vector_int = MonoType::Vector(Box::new(Vector(MonoType::Int)));
+            let sub = vector_int.constrain(c, &mut TvarKinds::new());
+            assert_eq!(Ok(Substitution::empty()), sub);
+        }
+
+        // kind constraints not allowed for Vector(MonoType::String)
+        let unallowable_cons_string = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
+        for c in unallowable_cons_string {
+            let vector_string = MonoType::Vector(Box::new(Vector(MonoType::String)));
+            let sub = vector_string.constrain(c, &mut TvarKinds::new());
+            assert_eq!(
+                Err(Error::CannotConstrain {
+                    act: MonoType::String,
+                    exp: c
+                }),
+                sub
+            );
+        }
+
+        // kind constraints not allowed for Vector(MonoType::Time)
+        let unallowable_cons_time = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
+        for c in unallowable_cons_time {
+            let vector_time = MonoType::Vector(Box::new(Vector(MonoType::Time)));
+            let sub = vector_time.constrain(c, &mut TvarKinds::new());
+            assert_eq!(
+                Err(Error::CannotConstrain {
+                    act: MonoType::Time,
+                    exp: c
+                }),
+                sub
+            );
+        }
+
+        // kind constraints allowed for Vector(MonoType::Time)
+        let allowable_cons_time = vec![
+            Kind::Comparable,
+            Kind::Equatable,
+            Kind::Nullable,
+            Kind::Stringable,
+            Kind::Timeable,
+        ];
+
+        for c in allowable_cons_time {
+            let vector_time = MonoType::Vector(Box::new(Vector(MonoType::Time)));
+            let sub = vector_time.constrain(c, &mut TvarKinds::new());
+            assert_eq!(Ok(Substitution::empty()), sub);
         }
     }
     #[test]
