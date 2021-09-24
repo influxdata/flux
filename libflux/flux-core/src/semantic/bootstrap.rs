@@ -301,7 +301,7 @@ pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Er
     Ok(infer::generalize(
         &Environment::empty(false),
         &kinds,
-        MonoType::Record(Box::new(r)).apply(&sub),
+        MonoType::record(r).apply(&sub),
     ))
 }
 
@@ -322,7 +322,7 @@ fn build_record(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
         );
         r = Record::Extension {
             head: Property { k: name, v: ty },
-            tail: MonoType::Record(Box::new(r)),
+            tail: MonoType::record(r),
         };
         cons = cons + constraints;
     }

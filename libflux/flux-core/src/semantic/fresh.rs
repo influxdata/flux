@@ -91,9 +91,9 @@ impl Fresh for MonoType {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         match self {
             MonoType::Var(tvr) => MonoType::Var(tvr.fresh(f, sub)),
-            MonoType::Arr(arr) => MonoType::Arr(arr.fresh(f, sub)),
-            MonoType::Record(obj) => MonoType::Record(obj.fresh(f, sub)),
-            MonoType::Fun(fun) => MonoType::Fun(fun.fresh(f, sub)),
+            MonoType::Arr(arr) => MonoType::arr(arr.fresh(f, sub)),
+            MonoType::Record(obj) => MonoType::record(obj.fresh(f, sub)),
+            MonoType::Fun(fun) => MonoType::fun(fun.fresh(f, sub)),
             _ => self,
         }
     }
@@ -147,7 +147,7 @@ impl Fresh for Record {
         let mut r: MonoType = if extends {
             MonoType::Var(tv.fresh(f, sub))
         } else {
-            MonoType::Record(Box::new(Record::Empty))
+            MonoType::from(Record::Empty)
         };
         // Freshen record properties in deterministic order
         props = props.fresh(f, sub);
@@ -161,7 +161,7 @@ impl Fresh for Record {
                     },
                     tail: r,
                 };
-                r = MonoType::Record(Box::new(extension));
+                r = MonoType::from(extension);
             }
         }
         match r {
