@@ -20,36 +20,6 @@ pub struct Environment {
 }
 
 impl Substitutable for Environment {
-    fn apply(self, sub: &Substitution) -> Self {
-        match (self.readwrite, self.parent) {
-            // This is a performance optimization where false implies
-            // this is the top-level of the type environment and apply
-            // is a no-op.
-            (false, None) => Environment {
-                parent: None,
-                values: self.values,
-                readwrite: false,
-            },
-            (false, parent) => Environment {
-                parent,
-                values: self.values,
-                readwrite: false,
-            },
-            // Even though this is the top-level of the type environment
-            // and apply should be a no-op, readwrite is set to true so
-            // we apply anyway.
-            (true, None) => Environment {
-                parent: None,
-                values: self.values.apply(sub),
-                readwrite: true,
-            },
-            (true, Some(env)) => Environment {
-                parent: Some(Box::new(env.apply(sub))),
-                values: self.values.apply(sub),
-                readwrite: true,
-            },
-        }
-    }
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
         match (self.readwrite, &self.parent) {
             // This is a performance optimization where false implies

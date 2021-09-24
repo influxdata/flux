@@ -61,8 +61,14 @@ impl Substitution {
 /// A type is `Substitutable` if a substitution can be applied to it.
 pub trait Substitutable {
     /// Apply a substitution to a type variable.
-    fn apply(self, sub: &Substitution) -> Self;
-    /// Apply a substitution to a type variable.
+    fn apply(self, sub: &Substitution) -> Self
+    where
+        Self: Sized,
+    {
+        self.apply_ref(sub).unwrap_or(self)
+    }
+    /// Apply a substitution to a type variable. Should return `None` if there was nothing to apply
+    /// which allows for optimizations.
     fn apply_ref(&self, sub: &Substitution) -> Option<Self>
     where
         Self: Sized;
