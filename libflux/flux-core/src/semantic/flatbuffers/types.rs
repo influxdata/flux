@@ -19,6 +19,7 @@ use crate::semantic::types::{
     Record,
     Tvar,
     TvarKinds,
+    Vector,
 };
 
 impl From<fb::Fresher<'_>> for Fresher {
@@ -128,6 +129,10 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             let opt: Option<Array> = fb::Arr::init_from_table(table).into();
             Some(MonoType::Arr(Box::new(opt?)))
         }
+        fb::MonoType::Vector => {
+            let opt: Option<Vector> = fb::Vector::init_from_table(table).into();
+            Some(MonoType::Vector(Box::new(opt?)))
+        }
         fb::MonoType::Fun => {
             let opt: Option<Function> = fb::Fun::init_from_table(table).into();
             Some(MonoType::Fun(Box::new(opt?)))
@@ -168,6 +173,12 @@ impl From<fb::Var<'_>> for Tvar {
 impl From<fb::Arr<'_>> for Option<Array> {
     fn from(t: fb::Arr) -> Option<Array> {
         Some(Array(from_table(t.t()?, t.t_type())?))
+    }
+}
+
+impl From<fb::Vector<'_>> for Option<Vector> {
+    fn from(t: fb::Vector) -> Option<Vector> {
+        Some(Vector(from_table(t.t()?, t.t_type())?))
     }
 }
 
@@ -431,6 +442,10 @@ pub fn build_type(
             let offset = build_arr(builder, *arr);
             (offset.as_union_value(), fb::MonoType::Arr)
         }
+        MonoType::Vector(vector) => {
+            let offset = build_vect(builder, *vector);
+            (offset.as_union_value(), fb::MonoType::Vector)
+        }
         MonoType::Dict(dict) => {
             let offset = build_dict(builder, *dict);
             (offset.as_union_value(), fb::MonoType::Dict)
@@ -461,6 +476,20 @@ fn build_arr<'a>(
     fb::Arr::create(
         builder,
         &fb::ArrArgs {
+            t_type: typ,
+            t: Some(off),
+        },
+    )
+}
+
+fn build_vect<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    mut vector: Vector,
+) -> flatbuffers::WIPOffset<fb::Vector<'a>> {
+    let (off, typ) = build_type(builder, vector.0);
+    fb::Vector::create(
+        builder,
+        &fb::VectorArgs {
             t_type: typ,
             t: Some(off),
         },
@@ -678,6 +707,19 @@ mod tests {
     #[test]
     fn serde_array_type() {
         test_serde("[A]");
+    }
+    #[test]
+    fn serde_vector_type() {
+        let want = PolyType {
+            vars: vec![],
+            cons: TvarKinds::new(),
+            expr: MonoType::Vector(Box::new(Vector(MonoType::Int))),
+        };
+
+        let mut builder = flatbuffers::FlatBufferBuilder::new();
+        let buf = serialize(&mut builder, want.clone(), build_polytype);
+        let got = deserialize::<fb::PolyType, Option<PolyType>>(buf);
+        assert_eq!(want, got.unwrap())
     }
     #[test]
     fn serde_function_types() {

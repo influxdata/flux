@@ -22,6 +22,7 @@ const (
 	Object
 	Function
 	Dictionary
+	Vector
 )
 
 var natureNames = []string{
@@ -39,6 +40,7 @@ var natureNames = []string{
 	Object:     "object",
 	Function:   "function",
 	Dictionary: "dictionary",
+	Vector:     "vector",
 }
 
 func (n Nature) String() string {

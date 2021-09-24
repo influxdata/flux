@@ -18,6 +18,7 @@ const (
 	MonoTypeRecord MonoType = 4
 	MonoTypeFun    MonoType = 5
 	MonoTypeDict   MonoType = 6
+	MonoTypeVector MonoType = 7
 )
 
 var EnumNamesMonoType = map[MonoType]string{
@@ -28,6 +29,7 @@ var EnumNamesMonoType = map[MonoType]string{
 	MonoTypeRecord: "Record",
 	MonoTypeFun:    "Fun",
 	MonoTypeDict:   "Dict",
+	MonoTypeVector: "Vector",
 }
 
 var EnumValuesMonoType = map[string]MonoType{
@@ -38,6 +40,7 @@ var EnumValuesMonoType = map[string]MonoType{
 	"Record": MonoTypeRecord,
 	"Fun":    MonoTypeFun,
 	"Dict":   MonoTypeDict,
+	"Vector": MonoTypeVector,
 }
 
 func (v MonoType) String() string {
@@ -788,6 +791,67 @@ func ArrAddT(builder *flatbuffers.Builder, t flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(t), 0)
 }
 func ArrEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type Vector struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsVector(buf []byte, offset flatbuffers.UOffsetT) *Vector {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Vector{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsVector(buf []byte, offset flatbuffers.UOffsetT) *Vector {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Vector{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
+func (rcv *Vector) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Vector) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Vector) TType() MonoType {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
+	}
+	return 0
+}
+
+func (rcv *Vector) MutateTType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(4, byte(n))
+}
+
+func (rcv *Vector) T(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func VectorStart(builder *flatbuffers.Builder) {
+	builder.StartObject(2)
+}
+func VectorAddTType(builder *flatbuffers.Builder, tType MonoType) {
+	builder.PrependByteSlot(0, byte(tType), 0)
+}
+func VectorAddT(builder *flatbuffers.Builder, t flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(t), 0)
+}
+func VectorEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
