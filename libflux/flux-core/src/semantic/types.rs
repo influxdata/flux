@@ -1,7 +1,7 @@
 //! Semantic representations of types.
 
 use crate::semantic::fresh::{Fresh, Fresher};
-use crate::semantic::sub::{Substitutable, Substitution};
+use crate::semantic::sub::{apply2, apply4, merge_collect, Substitutable, Substitution};
 use derive_more::Display;
 use std::fmt::Write;
 
@@ -1263,9 +1263,17 @@ impl fmt::Display for Function {
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: Substitutable> Substitutable for SemanticMap<String, T> {
+impl<T: Substitutable + Clone> Substitutable for SemanticMap<String, T> {
     fn apply(self, sub: &Substitution) -> Self {
         self.into_iter().map(|(k, v)| (k, v.apply(sub))).collect()
+    }
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self,
+            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v.clone())),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
     }
     fn free_vars(&self) -> Vec<Tvar> {
         self.values()
@@ -1277,10 +1285,12 @@ impl<T: Substitutable> Substitutable for Option<T> {
     fn apply(self, sub: &Substitution) -> Self {
         self.map(|t| t.apply(sub))
     }
-    // TODO
-    // fn apply_ref(&self, sub: &Substitution) -> Self {
-    //     self.as_ref().map(|t| t.apply_ref(sub))
-    // }
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        match self {
+            None => None,
+            Some(t) => t.apply_ref(sub).map(Some),
+        }
+    }
     fn free_vars(&self) -> Vec<Tvar> {
         match self {
             Some(t) => t.free_vars(),
@@ -1516,139 +1526,6 @@ pub trait MaxTvar {
     /// Return the maximum type variable of a type.
     fn max_tvar(&self) -> Tvar;
 }
-
-fn apply4<A, B, C, D>(a: &A, b: &B, c: &C, d: &D, sub: &Substitution) -> Option<(A, B, C, D)>
-where
-    A: Substitutable + Clone,
-    B: Substitutable + Clone,
-    C: Substitutable + Clone,
-    D: Substitutable + Clone,
-{
-    merge4(
-        a,
-        a.apply_ref(sub),
-        b,
-        b.apply_ref(sub),
-        c,
-        c.apply_ref(sub),
-        d,
-        d.apply_ref(sub),
-        |a, b, c, d| (a, b, c, d),
-    )
-}
-
-fn apply2<A, B>(a: &A, b: &B, sub: &Substitution) -> Option<(A, B)>
-where
-    A: Substitutable + Clone,
-    B: Substitutable + Clone,
-{
-    merge(a, a.apply_ref(sub), b, b.apply_ref(sub), |a, b| (a, b))
-}
-
-fn merge4<F, A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized, R>(
-    a_original: &A,
-    a: Option<A::Owned>,
-    b_original: &B,
-    b: Option<B::Owned>,
-    c_original: &C,
-    c: Option<C::Owned>,
-    d_original: &D,
-    d: Option<D::Owned>,
-    f: F,
-) -> Option<R>
-where
-    A: ToOwned,
-    B: ToOwned,
-    C: ToOwned,
-    D: ToOwned,
-    F: FnOnce(A::Owned, B::Owned, C::Owned, D::Owned) -> R,
-{
-    let a_b_c = merge3(a_original, a, b_original, b, c_original, c, |a, b, c| {
-        (a, b, c)
-    });
-    merge_fn(
-        &(a_original, b_original, c_original),
-        |_| {
-            (
-                a_original.to_owned(),
-                b_original.to_owned(),
-                c_original.to_owned(),
-            )
-        },
-        a_b_c,
-        d_original,
-        D::to_owned,
-        d,
-        |(a, b, c), d| f(a, b, c, d),
-    )
-}
-
-fn merge3<F, A: ?Sized, B: ?Sized, C: ?Sized, R>(
-    a_original: &A,
-    a: Option<A::Owned>,
-    b_original: &B,
-    b: Option<B::Owned>,
-    c_original: &C,
-    c: Option<C::Owned>,
-    f: F,
-) -> Option<R>
-where
-    A: ToOwned,
-    B: ToOwned,
-    C: ToOwned,
-    F: FnOnce(A::Owned, B::Owned, C::Owned) -> R,
-{
-    let a_b = merge(a_original, a, b_original, b, |a, b| (a, b));
-    merge_fn(
-        &(a_original, b_original),
-        |_| (a_original.to_owned(), b_original.to_owned()),
-        a_b,
-        c_original,
-        C::to_owned,
-        c,
-        |(a, b), c| f(a, b, c),
-    )
-}
-
-/// Merges two values using `f` if either or both them is `Some(..)`.
-/// If both are `None`, `None` is returned.
-fn merge<F, A: ?Sized, B: ?Sized, R>(
-    a_original: &A,
-    a: Option<A::Owned>,
-    b_original: &B,
-    b: Option<B::Owned>,
-    f: F,
-) -> Option<R>
-where
-    A: ToOwned,
-    B: ToOwned,
-    F: FnOnce(A::Owned, B::Owned) -> R,
-{
-    merge_fn(a_original, A::to_owned, a, b_original, B::to_owned, b, f)
-}
-
-fn merge_fn<'a, 'b, F, G, H, A: ?Sized, B: ?Sized, A1, B1, R>(
-    a_original: &'a A,
-    g: G,
-    a: Option<A1>,
-    b_original: &'b B,
-    h: H,
-    b: Option<B1>,
-    merger: F,
-) -> Option<R>
-where
-    F: FnOnce(A1, B1) -> R,
-    G: FnOnce(&'a A) -> A1,
-    H: FnOnce(&'b B) -> B1,
-{
-    match (a, b) {
-        (Some(a), Some(b)) => Some(merger(a, b)),
-        (Some(a), None) => Some(merger(a, h(b_original))),
-        (None, Some(b)) => Some(merger(g(a_original), b)),
-        (None, None) => None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

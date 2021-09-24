@@ -1,7 +1,7 @@
 //! Type environments.
 
 use crate::semantic::import::Importer;
-use crate::semantic::sub::{Substitutable, Substitution};
+use crate::semantic::sub::{apply2, Substitutable, Substitution};
 use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
 
 /// A type environment maps program identifiers to their polymorphic types.
@@ -48,6 +48,29 @@ impl Substitutable for Environment {
                 values: self.values.apply(sub),
                 readwrite: true,
             },
+        }
+    }
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        match (self.readwrite, &self.parent) {
+            // This is a performance optimization where false implies
+            // this is the top-level of the type environment and apply
+            // is a no-op.
+            (false, None) | (false, Some(_)) => None,
+            // Even though this is the top-level of the type environment
+            // and apply should be a no-op, readwrite is set to true so
+            // we apply anyway.
+            (true, None) => self.values.apply_ref(sub).map(|values| Environment {
+                parent: None,
+                values,
+                readwrite: true,
+            }),
+            (true, Some(env)) => {
+                apply2(&**env, &self.values, sub).map(|(parent, values)| Environment {
+                    parent: Some(Box::new(parent)),
+                    values,
+                    readwrite: true,
+                })
+            }
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {
