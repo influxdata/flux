@@ -575,7 +575,7 @@ mod tests {
     use fluxcore::semantic::convert::convert_polytype;
     use fluxcore::semantic::fresh::Fresher;
     use fluxcore::semantic::sub::Substitution;
-    use fluxcore::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
+    use fluxcore::semantic::types::{MonoType, Property, Ptr, Record, Tvar, TvarMap};
 
     pub struct MonoTypeNormalizer {
         tv_map: TvarMap,
@@ -601,15 +601,16 @@ mod tests {
                     *tv = *v;
                 }
                 MonoType::Arr(arr) => {
-                    self.normalize(&mut arr.as_mut().0);
+                    self.normalize(&mut Ptr::make_mut(arr).0);
                 }
                 MonoType::Record(r) => {
-                    if let Record::Extension { head, tail } = r.as_mut() {
+                    if let Record::Extension { head, tail } = Ptr::make_mut(r) {
                         self.normalize(&mut head.v);
                         self.normalize(tail);
                     }
                 }
                 MonoType::Fun(f) => {
+                    let f = Ptr::make_mut(f);
                     for (_, mut v) in f.req.iter_mut() {
                         self.normalize(&mut v);
                     }

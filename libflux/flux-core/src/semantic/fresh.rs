@@ -32,7 +32,12 @@ impl Fresher {
 /// Trait for implementing `fresh` for various types.
 pub trait Fresh {
     #[allow(missing_docs)]
-    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self;
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self
+    where
+        Self: Sized,
+    {
+        self.fresh_ref(f, sub).unwrap_or(self)
+    }
     #[allow(missing_docs)]
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self>
     where
@@ -129,15 +134,6 @@ impl Fresh for PolyType {
 }
 
 impl Fresh for MonoType {
-    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
-        match self {
-            MonoType::Var(tvr) => MonoType::Var(tvr.fresh(f, sub)),
-            MonoType::Arr(arr) => MonoType::arr(arr.fresh(f, sub)),
-            MonoType::Record(obj) => MonoType::record(obj.fresh(f, sub)),
-            MonoType::Fun(fun) => MonoType::fun(fun.fresh(f, sub)),
-            _ => self,
-        }
-    }
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         match self {
             MonoType::Var(tvr) => tvr.fresh_ref(f, sub).map(MonoType::Var),

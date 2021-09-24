@@ -324,7 +324,16 @@ pub enum Kind {
 }
 
 /// Pointer type used in `MonoType`
-pub type Ptr<T> = Box<T>;
+pub type Ptr<T> = std::sync::Arc<T>;
+
+impl<T: Substitutable> Substitutable for Ptr<T> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        T::apply_ref(self, sub).map(Ptr::new)
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        T::free_vars(self)
+    }
+}
 
 /// Represents a Flux type. The type may be unknown, represented as a type variable,
 /// or may be a known concrete type.
@@ -464,6 +473,11 @@ impl From<Array> for MonoType {
     }
 }
 
+impl From<Vector> for MonoType {
+    fn from(v: Vector) -> MonoType {
+        MonoType::Vector(Ptr::new(v))
+    }
+}
 impl From<Dictionary> for MonoType {
     fn from(d: Dictionary) -> MonoType {
         MonoType::Dict(Ptr::new(d))
@@ -561,13 +575,13 @@ impl MonoType {
     }
 
     /// Validates that the current type meets the constraints of the specified kind.
-    pub fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
+    pub fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
         match self {
             MonoType::Error => Ok(()),
             MonoType::Bool => match with {
                 Kind::Equatable | Kind::Nullable | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
-                    act: self,
+                    act: self.clone(),
                     exp: with,
                 }),
             },
@@ -582,7 +596,7 @@ impl MonoType {
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
-                    act: self,
+                    act: self.clone(),
                     exp: with,
                 }),
             },
@@ -597,7 +611,7 @@ impl MonoType {
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
-                    act: self,
+                    act: self.clone(),
                     exp: with,
                 }),
             },
@@ -612,7 +626,7 @@ impl MonoType {
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
-                    act: self,
+                    act: self.clone(),
                     exp: with,
                 }),
             },
@@ -623,7 +637,7 @@ impl MonoType {
                 | Kind::Nullable
                 | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
-                    act: self,
+                    act: self.clone(),
                     exp: with,
                 }),
             },
@@ -635,7 +649,7 @@ impl MonoType {
                 | Kind::Stringable
                 | Kind::Timeable => Ok(()),
                 _ => Err(Error::CannotConstrain {
-                    act: self,
+                    act: self.clone(),
                     exp: with,
                 }),
             },
@@ -646,18 +660,18 @@ impl MonoType {
                 | Kind::Timeable
                 | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
-                    act: self,
+                    act: self.clone(),
                     exp: with,
                 }),
             },
             MonoType::Regexp => Err(Error::CannotConstrain {
-                act: self,
+                act: self.clone(),
                 exp: with,
             }),
             MonoType::Bytes => match with {
                 Kind::Equatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
-                    act: self,
+                    act: self.clone(),
                     exp: with,
                 }),
             },
@@ -806,7 +820,7 @@ impl Tvar {
         sub.union_type(self, t)
     }
 
-    fn constrain(self, with: Kind, cons: &mut TvarKinds) {
+    fn constrain(&self, with: Kind, cons: &mut TvarKinds) {
         match cons.get_mut(&self) {
             Some(kinds) => {
                 if !kinds.contains(&with) {
@@ -814,7 +828,7 @@ impl Tvar {
                 }
             }
             None => {
-                cons.insert(self, vec![with]);
+                cons.insert(self.clone(), vec![with]);
             }
         }
     }
@@ -846,11 +860,11 @@ impl Array {
         self.0.unify(&with.0, f)
     }
 
-    fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
         match with {
             Kind::Equatable => self.0.constrain(with, cons),
             _ => Err(Error::CannotConstrain {
-                act: MonoType::arr(self),
+                act: MonoType::arr(self.clone()),
                 exp: with,
             }),
         }
@@ -887,7 +901,7 @@ impl Vector {
         self.0.unify(&with.0, f)
     }
 
-    fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
         self.0.constrain(with, cons)
     }
 
@@ -927,9 +941,9 @@ impl Dictionary {
         apply_then_unify(&self.val, &actual.val, sub)
     }
 
-    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
         Err(Error::CannotConstrain {
-            act: MonoType::dict(self),
+            act: MonoType::dict(self.clone()),
             exp: with,
         })
     }
@@ -1194,7 +1208,7 @@ impl Record {
         }
     }
 
-    fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
         match with {
             Kind::Record => Ok(()),
             Kind::Equatable => match self {
@@ -1205,7 +1219,7 @@ impl Record {
                 }
             },
             _ => Err(Error::CannotConstrain {
-                act: MonoType::from(self),
+                act: MonoType::from(self.clone()),
                 exp: with,
             }),
         }
@@ -1567,9 +1581,9 @@ impl Function {
         }
     }
 
-    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
+    fn constrain(&self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
         Err(Error::CannotConstrain {
-            act: MonoType::fun(self),
+            act: MonoType::fun(self.clone()),
             exp: with,
         })
     }
@@ -1716,10 +1730,7 @@ mod tests {
     }
     #[test]
     fn display_type_vector() {
-        assert_eq!(
-            "v[int]",
-            MonoType::Vector(Box::new(Vector(MonoType::Int))).to_string()
-        );
+        assert_eq!("v[int]", MonoType::from(Vector(MonoType::Int)).to_string());
     }
     #[test]
     fn display_type_record() {
@@ -2287,14 +2298,14 @@ mod tests {
         ];
 
         for c in allowable_cons_int {
-            let vector_int = MonoType::Vector(Box::new(Vector(MonoType::Int)));
+            let vector_int = MonoType::from(Vector(MonoType::Int));
             vector_int.constrain(c, &mut TvarKinds::new()).unwrap();
         }
 
         // kind constraints not allowed for Vector(MonoType::String)
         let unallowable_cons_string = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_string {
-            let vector_string = MonoType::Vector(Box::new(Vector(MonoType::String)));
+            let vector_string = MonoType::from(Vector(MonoType::String));
             let sub = vector_string
                 .constrain(c, &mut TvarKinds::new())
                 .map(|_| ());
@@ -2310,7 +2321,7 @@ mod tests {
         // kind constraints not allowed for Vector(MonoType::Time)
         let unallowable_cons_time = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_time {
-            let vector_time = MonoType::Vector(Box::new(Vector(MonoType::Time)));
+            let vector_time = MonoType::from(Vector(MonoType::Time));
             let sub = vector_time.constrain(c, &mut TvarKinds::new()).map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
@@ -2331,7 +2342,7 @@ mod tests {
         ];
 
         for c in allowable_cons_time {
-            let vector_time = MonoType::Vector(Box::new(Vector(MonoType::Time)));
+            let vector_time = MonoType::from(Vector(MonoType::Time));
             vector_time.constrain(c, &mut TvarKinds::new()).unwrap();
         }
     }

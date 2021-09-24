@@ -135,7 +135,7 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
         }
         fb::MonoType::Vector => {
             let opt: Option<Vector> = fb::Vector::init_from_table(table).into();
-            Some(MonoType::Vector(Box::new(opt?)))
+            Some(MonoType::from(opt?))
         }
         fb::MonoType::Fun => {
             let opt: Option<Function> = fb::Fun::init_from_table(table).into();
@@ -456,23 +456,23 @@ pub fn build_type(
             (offset.as_union_value(), fb::MonoType::Var)
         }
         MonoType::Arr(arr) => {
-            let offset = build_arr(builder, *arr);
+            let offset = build_arr(builder, (*arr).clone());
             (offset.as_union_value(), fb::MonoType::Arr)
         }
         MonoType::Vector(vector) => {
-            let offset = build_vect(builder, *vector);
+            let offset = build_vect(builder, (*vector).clone());
             (offset.as_union_value(), fb::MonoType::Vector)
         }
         MonoType::Dict(dict) => {
-            let offset = build_dict(builder, *dict);
+            let offset = build_dict(builder, (*dict).clone());
             (offset.as_union_value(), fb::MonoType::Dict)
         }
         MonoType::Record(record) => {
-            let offset = build_record(builder, *record);
+            let offset = build_record(builder, (*record).clone());
             (offset.as_union_value(), fb::MonoType::Record)
         }
         MonoType::Fun(fun) => {
-            let offset = build_fun(builder, *fun);
+            let offset = build_fun(builder, (*fun).clone());
             (offset.as_union_value(), fb::MonoType::Fun)
         }
     }
@@ -546,7 +546,7 @@ fn build_record<'a>(
                 tail: MonoType::Record(o),
             } => {
                 props.push(head);
-                record = *o;
+                record = (*o).clone();
             }
             Record::Extension {
                 head,
@@ -731,7 +731,7 @@ mod tests {
         let want = PolyType {
             vars: vec![],
             cons: TvarKinds::new(),
-            expr: MonoType::Vector(Box::new(Vector(MonoType::Int))),
+            expr: MonoType::from(Vector(MonoType::Int)),
         };
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
