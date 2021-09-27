@@ -869,7 +869,11 @@ impl FunctionExpr {
         let (nenv, bcons) = self.body.infer(nenv, f)?;
         // HACK Remove once substitutions are persisted correctly
         // Update the argument variable with the types inferred from the body
-        for (k, t) in req.iter_mut().chain(opt.iter_mut()) {
+        for (k, t) in req
+            .iter_mut()
+            .chain(opt.iter_mut())
+            .chain(pipe.as_mut().map(|p| (&p.k, &mut p.v)))
+        {
             *t = nenv
                 .lookup(k)
                 .expect("The binding should have been added above")
