@@ -874,11 +874,9 @@ impl FunctionExpr {
             .chain(opt.iter_mut())
             .chain(pipe.as_mut().map(|p| (&p.k, &mut p.v)))
         {
-            *t = nenv
-                .lookup(k)
-                .expect("The binding should have been added above")
-                .expr
-                .clone();
+            if let Some(new_t) = nenv.lookup(k) {
+                *t = new_t.expr.clone();
+            }
         }
         // Now pop the nested environment, we don't need it anymore.
         let env = nenv.pop();
