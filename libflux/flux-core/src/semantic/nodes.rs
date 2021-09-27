@@ -55,6 +55,8 @@ pub enum Error {
     InvalidImportPath(String, ast::SourceLocation),
     #[display(fmt = "error {}: return not valid in file block", _0)]
     InvalidReturn(ast::SourceLocation),
+    #[display(fmt = "error {}. This is a bug in type inference", _0)]
+    Bug(String),
 }
 
 impl From<infer::Error> for Error {
@@ -876,6 +878,8 @@ impl FunctionExpr {
         {
             if let Some(new_t) = nenv.lookup(k) {
                 *t = new_t.expr.clone();
+            } else {
+                return Err(Error::Bug(format!("Missing function parameter `{}`", k)));
             }
         }
         // Now pop the nested environment, we don't need it anymore.
