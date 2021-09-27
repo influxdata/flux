@@ -179,15 +179,15 @@ fn convert_monotype(
             "bytes" => Ok(MonoType::Bytes),
             _ => Err(format!("invalid named type {}", basic.name.name)),
         },
-        ast::MonoType::Array(arr) => Ok(MonoType::Arr(Box::new(types::Array(convert_monotype(
+        ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(convert_monotype(
             arr.element,
             tvars,
             f,
-        )?)))),
+        )?))),
         ast::MonoType::Dict(dict) => {
             let key = convert_monotype(dict.key, tvars, f)?;
             let val = convert_monotype(dict.val, tvars, f)?;
-            Ok(MonoType::Dict(Box::new(types::Dictionary { key, val })))
+            Ok(MonoType::from(types::Dictionary { key, val }))
         }
         ast::MonoType::Function(func) => {
             let mut req = MonoTypeMap::new();
@@ -220,16 +220,16 @@ fn convert_monotype(
                     }
                 }
             }
-            Ok(MonoType::Fun(Box::new(types::Function {
+            Ok(MonoType::from(types::Function {
                 req,
                 opt,
                 pipe: _pipe,
                 retn: convert_monotype(func.monotype, tvars, f)?,
-            })))
+            }))
         }
         ast::MonoType::Record(rec) => {
             let mut r = match rec.tvar {
-                None => MonoType::Record(Box::new(types::Record::Empty)),
+                None => MonoType::from(types::Record::Empty),
                 Some(id) => {
                     let tv = ast::MonoType::Tvar(ast::TvarType {
                         base: id.clone().base,
@@ -243,10 +243,10 @@ fn convert_monotype(
                     k: prop.name.name,
                     v: convert_monotype(prop.monotype, tvars, f)?,
                 };
-                r = MonoType::Record(Box::new(types::Record::Extension {
+                r = MonoType::from(types::Record::Extension {
                     head: property,
                     tail: r,
-                }))
+                })
             }
             Ok(r)
         }
@@ -2972,13 +2972,13 @@ mod tests {
         });
         let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
-        let want = MonoType::Record(Box::new(types::Record::Extension {
+        let want = MonoType::from(types::Record::Extension {
             head: types::Property {
                 k: "B".to_string(),
                 v: MonoType::Int,
             },
             tail: MonoType::Var(Tvar(0)),
-        }));
+        });
         assert_eq!(want, got);
     }
     #[test]
@@ -3012,12 +3012,12 @@ mod tests {
         let got = convert_monotype(monotype_ex, &mut m, &mut fresh::Fresher::default()).unwrap();
         let mut opt = MonoTypeMap::new();
         opt.insert(String::from("A"), MonoType::Int);
-        let want = MonoType::Fun(Box::new(types::Function {
+        let want = MonoType::from(types::Function {
             req: MonoTypeMap::new(),
             opt,
             pipe: None,
             retn: MonoType::Int,
-        }));
+        });
         assert_eq!(want, got);
     }
 
@@ -3108,14 +3108,12 @@ mod tests {
         let mut req = MonoTypeMap::new();
         req.insert("A".to_string(), MonoType::Var(Tvar(0)));
         req.insert("B".to_string(), MonoType::Var(Tvar(1)));
-        let expr = MonoType::Fun(Box::new({
-            types::Function {
-                req,
-                opt: MonoTypeMap::new(),
-                pipe: None,
-                retn: MonoType::Var(Tvar(0)),
-            }
-        }));
+        let expr = MonoType::from(types::Function {
+            req,
+            opt: MonoTypeMap::new(),
+            pipe: None,
+            retn: MonoType::Var(Tvar(0)),
+        });
         let want = types::PolyType { vars, cons, expr };
         assert_eq!(want, got);
     }
@@ -3190,14 +3188,12 @@ mod tests {
         let mut req = MonoTypeMap::new();
         req.insert("A".to_string(), MonoType::Var(Tvar(0)));
         req.insert("B".to_string(), MonoType::Var(Tvar(1)));
-        let expr = MonoType::Fun(Box::new({
-            types::Function {
-                req,
-                opt: MonoTypeMap::new(),
-                pipe: None,
-                retn: MonoType::Var(Tvar(0)),
-            }
-        }));
+        let expr = MonoType::from(types::Function {
+            req,
+            opt: MonoTypeMap::new(),
+            pipe: None,
+            retn: MonoType::Var(Tvar(0)),
+        });
         let want = types::PolyType { vars, cons, expr };
         assert_eq!(want, got);
     }

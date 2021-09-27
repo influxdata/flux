@@ -1,7 +1,7 @@
 //! Type environments.
 
 use crate::semantic::import::Importer;
-use crate::semantic::sub::{Substitutable, Substitution};
+use crate::semantic::sub::{apply2, Substitutable, Substitution};
 use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
 
 /// A type environment maps program identifiers to their polymorphic types.
@@ -20,34 +20,27 @@ pub struct Environment {
 }
 
 impl Substitutable for Environment {
-    fn apply(self, sub: &Substitution) -> Self {
-        match (self.readwrite, self.parent) {
+    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+        match (self.readwrite, &self.parent) {
             // This is a performance optimization where false implies
             // this is the top-level of the type environment and apply
             // is a no-op.
-            (false, None) => Environment {
-                parent: None,
-                values: self.values,
-                readwrite: false,
-            },
-            (false, parent) => Environment {
-                parent,
-                values: self.values,
-                readwrite: false,
-            },
+            (false, None) | (false, Some(_)) => None,
             // Even though this is the top-level of the type environment
             // and apply should be a no-op, readwrite is set to true so
             // we apply anyway.
-            (true, None) => Environment {
+            (true, None) => self.values.apply_ref(sub).map(|values| Environment {
                 parent: None,
-                values: self.values.apply(sub),
+                values,
                 readwrite: true,
-            },
-            (true, Some(env)) => Environment {
-                parent: Some(Box::new(env.apply(sub))),
-                values: self.values.apply(sub),
-                readwrite: true,
-            },
+            }),
+            (true, Some(env)) => {
+                apply2(&**env, &self.values, sub).map(|(parent, values)| Environment {
+                    parent: Some(Box::new(parent)),
+                    values,
+                    readwrite: true,
+                })
+            }
         }
     }
     fn free_vars(&self) -> Vec<Tvar> {

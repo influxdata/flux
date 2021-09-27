@@ -14,12 +14,22 @@ use flux::parser::Parser;
 // done
 fn everything(c: &mut Criterion) {
     let flux = include_str!("./everything.flux");
-    c.bench_function("everything.flux", |b| {
+    let mut group = c.benchmark_group("parse");
+    group.bench_function("everything.flux", |b| {
         b.iter(black_box(|| {
             let mut parser = Parser::new(flux);
             parser.parse_file("".to_string());
         }));
     });
+    group.finish();
+
+    let mut group = c.benchmark_group("infer");
+    group.sample_size(10).bench_function("bootstrap", |b| {
+        b.iter(black_box(|| {
+            flux::semantic::bootstrap::infer_stdlib().unwrap();
+        }));
+    });
+    group.finish();
 }
 
 criterion_group!(basic, everything,);

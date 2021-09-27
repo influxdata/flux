@@ -710,7 +710,7 @@ impl ArrayExpr {
             });
             env = e;
         }
-        let at = MonoType::Arr(Box::new(Array(elt)));
+        let at = MonoType::from(Array(elt));
         cons.push(Constraint::Equal {
             exp: at,
             act: self.typ.clone(),
@@ -768,10 +768,10 @@ impl DictExpr {
             env = e;
         }
 
-        let ty = MonoType::Dict(Box::new(Dictionary {
+        let ty = MonoType::from(Dictionary {
             key: key.clone(),
             val,
-        }));
+        });
 
         let eq = Constraint::Equal {
             exp: ty,
@@ -870,12 +870,12 @@ impl FunctionExpr {
         // Now pop the nested environment, we don't need it anymore.
         let env = nenv.pop();
         let retn = self.body.type_of();
-        let func = MonoType::Fun(Box::new(Function {
+        let func = MonoType::from(Function {
             req,
             opt,
             pipe,
             retn,
-        }));
+        });
         cons = cons + bcons;
         cons.add(Constraint::Equal {
             exp: self.typ.clone(),
@@ -1356,7 +1356,7 @@ impl CallExpr {
         // Constrain the callee to be a Function.
         cons.add(Constraint::Equal {
             exp: self.callee.type_of(),
-            act: MonoType::Fun(Box::new(Function {
+            act: MonoType::from(Function {
                 opt: MonoTypeMap::new(),
                 req,
                 pipe,
@@ -1370,7 +1370,7 @@ impl CallExpr {
                 // Upon unification a substitution "t0 => int" is created, so that the compiler
                 // can infer that, for instance, `f(a: 0) + 1` is legal.
                 retn: self.typ.clone(),
-            })),
+            }),
             loc: self.loc.clone(),
         });
         Ok((env, cons))
@@ -1543,7 +1543,7 @@ impl IndexExpr {
                 },
                 Constraint::Equal {
                     act: self.array.type_of(),
-                    exp: MonoType::Arr(Box::new(Array(self.typ.clone()))),
+                    exp: MonoType::from(Array(self.typ.clone())),
                     loc: self.array.loc().clone(),
                 },
             ]);
@@ -1578,23 +1578,20 @@ impl ObjectExpr {
                 env = e;
                 (expr.typ.to_owned(), cons)
             }
-            None => (
-                MonoType::Record(Box::new(types::Record::Empty)),
-                Constraints::empty(),
-            ),
+            None => (MonoType::from(types::Record::Empty), Constraints::empty()),
         };
         // Infer constraints for properties
         for prop in self.properties.iter_mut().rev() {
             let (e, rest) = prop.value.infer(env, f)?;
             env = e;
             cons = cons + rest;
-            r = MonoType::Record(Box::new(types::Record::Extension {
+            r = MonoType::from(types::Record::Extension {
                 head: types::Property {
                     k: prop.key.name.to_owned(),
                     v: prop.value.type_of(),
                 },
                 tail: r,
-            }));
+            });
         }
         Ok((
             env,
