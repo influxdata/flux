@@ -1224,7 +1224,7 @@ impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, 
         merge_collect(
             &mut (),
             self,
-            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v.clone())),
+            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v)),
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }

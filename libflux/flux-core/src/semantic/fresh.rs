@@ -8,6 +8,7 @@ use std::collections::BTreeMap;
 use std::hash::Hash;
 
 /// A struct used for incrementing type variable identifiers.
+#[derive(Default)]
 pub struct Fresher(pub u64);
 
 /// Creates a type variable [`Fresher`] from a `u64`.
@@ -23,12 +24,6 @@ impl Fresher {
         let u = self.0;
         self.0 += 1;
         Tvar(u)
-    }
-}
-
-impl Default for Fresher {
-    fn default() -> Self {
-        Self(0)
     }
 }
 

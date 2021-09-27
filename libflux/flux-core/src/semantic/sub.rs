@@ -38,7 +38,7 @@ impl Substitution {
 
     /// Apply a substitution to a type variable.
     pub fn apply(&self, tv: Tvar) -> MonoType {
-        self.try_apply(tv).unwrap_or_else(|| MonoType::Var(tv))
+        self.try_apply(tv).unwrap_or(MonoType::Var(tv))
     }
 
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
@@ -106,6 +106,7 @@ where
     merge(a, a.apply_ref(sub), b, b.apply_ref(sub), |a, b| (a, b))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn merge4<F, A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized, R>(
     a_original: &A,
     a: Option<A::Owned>,
@@ -115,7 +116,7 @@ fn merge4<F, A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized, R>(
     c: Option<C::Owned>,
     d_original: &D,
     d: Option<D::Owned>,
-    f: F,
+    action: F,
 ) -> Option<R>
 where
     A: ToOwned,
@@ -140,7 +141,7 @@ where
         d_original,
         D::to_owned,
         d,
-        |(a, b, c), d| f(a, b, c, d),
+        |(a, b, c), d| action(a, b, c, d),
     )
 }
 
