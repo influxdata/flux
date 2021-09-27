@@ -198,7 +198,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/mean_test.flux":                                                          "f0b1307dd1d0f4d34445bd5b166c596800be158415043c29224f255197ab9686",
 	"stdlib/experimental/min_test.flux":                                                           "e38f1fbe199118fb081ee8173ae6deb5680f9aa63e634a0f14e5f91d92fdce4b",
 	"stdlib/experimental/mode_test.flux":                                                          "bee8cfeefccb3ba1654ce22f0a043e7cfda4230a90bd9eee9d0a3a1de80a90a8",
-	"stdlib/experimental/mqtt/mqtt.flux":                                                          "701a1ad53318f5fb47c10996f3bbed53aa490f4192d72f0263297a0969489d09",
+	"stdlib/experimental/mqtt/mqtt.flux":                                                          "fa9d4288b2b8e6f7bfe47ac75108d3f46ff1e13cc9efdacdda9fad230da0d2e5",
 	"stdlib/experimental/oee/apq_test.flux":                                                       "b84f79dc34d491e21937ce1f46ad7985254dcb782aff7ace578b1a0a70b182e5",
 	"stdlib/experimental/oee/computeapq_test.flux":                                                "93e7be1f222d7c4ae73f79187f171fbb3f3201eb432e9e388ccbada298a82a42",
 	"stdlib/experimental/oee/oee.flux":                                                            "35e7bc400e530716f87e15f7ea2333d549c03ba01d1693518633ae574fb8e5c8",
