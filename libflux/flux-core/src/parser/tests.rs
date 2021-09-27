@@ -3148,6 +3148,16 @@ fn test_parse_record_type_tvar_properties() {
 }
 
 #[test]
+fn test_parse_record_unclosed_error() {
+    let mut p = Parser::new(r#"(r:{A with a:int) => int"#);
+    let parsed = p.parse_type_expression();
+    assert_eq!(
+        get_err_type_expression(parsed),
+        "expected RBRACE, got RPAREN".to_string()
+    );
+}
+
+#[test]
 fn test_statement() {
     let mut p = Parser::new(r#"test mean = {want: 0, got: 0}"#);
     let parsed = p.parse_file("".to_string());

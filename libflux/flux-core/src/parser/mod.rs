@@ -1,6 +1,7 @@
 //! The Flux parser.
 
 use std::collections::HashMap;
+use std::mem;
 use std::str;
 
 use super::DefaultHasher;
@@ -204,8 +205,7 @@ impl Parser {
     }
 
     fn base_node(&mut self, location: SourceLocation) -> BaseNode {
-        let errors = self.errs.clone();
-        self.errs = vec![];
+        let errors = mem::take(&mut self.errs);
         BaseNode {
             location,
             errors,
