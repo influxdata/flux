@@ -81,7 +81,7 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 	buffers := make([]flux.BufferedTable, 0, len(src.data))
 	for _, tbl := range src.data {
 		bufTable, _ := execute.CopyTable(tbl)
-		buffers = append(buffers, bufTable.(flux.BufferedTable))
+		buffers = append(buffers, bufTable)
 	}
 
 	// Ensure that the buffers are released after the source has finished.
