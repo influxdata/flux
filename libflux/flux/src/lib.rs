@@ -61,8 +61,7 @@ pub fn nested_json() -> Vec<u8> {
 }
 
 pub fn fresher() -> Fresher {
-    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/fresher.data"));
-    flatbuffers::root::<fb::Fresher>(buf).unwrap().into()
+    Fresher::default()
 }
 
 /// An error handle designed to allow passing `Error` instances to library

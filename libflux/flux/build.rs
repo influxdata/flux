@@ -51,11 +51,10 @@ fn main() -> Result<(), Error> {
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
     let std_lib_values = bootstrap::infer_stdlib()?;
-    let (pre, lib, libmap, fresher, files, file_map) = (
+    let (pre, lib, libmap, files, file_map) = (
         std_lib_values.prelude,
         std_lib_values.importer,
         std_lib_values.importermap,
-        std_lib_values.f,
         std_lib_values.rerun_if_changed,
         std_lib_values.files,
     );
@@ -90,9 +89,6 @@ fn main() -> Result<(), Error> {
 
     let path = dir.join("stdlib.data");
     serialize(Environment::from(lib), fb::build_env, &path)?;
-
-    let path = dir.join("fresher.data");
-    serialize(fresher, fb::build_fresher, &path)?;
 
     Ok(())
 }
