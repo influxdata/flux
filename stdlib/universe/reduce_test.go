@@ -108,7 +108,7 @@ func TestReduce_Process(t *testing.T) {
 					{execute.Time(2), nil},
 				},
 			}},
-			wantErr: errors.New(codes.Invalid, `reduce object property "prod" is "null" type which is not supported in a flux table`),
+			wantErr: errors.New(codes.Invalid, `null values are not supported for "prod" in the reduce() function`),
 		},
 	}
 	for _, tc := range testCases {
