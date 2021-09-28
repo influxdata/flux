@@ -663,37 +663,31 @@ mod tests {
 
     #[test]
     fn monotype_normalizer() {
-        let mut ty = MonoType::Record(Box::new(Record::Extension {
-            head: Property {
-                k: "a".to_string(),
-                v: MonoType::Var(Tvar(4949)),
-            },
-            tail: MonoType::Record(Box::new(Record::Extension {
-                head: Property {
+        let mut ty = MonoType::from(Record::new(
+            [
+                Property {
+                    k: "a".to_string(),
+                    v: MonoType::Var(Tvar(4949)),
+                },
+                Property {
                     k: "b".to_string(),
                     v: MonoType::Var(Tvar(4949)),
                 },
-                tail: MonoType::Record(Box::new(Record::Extension {
-                    head: Property {
-                        k: "e".to_string(),
-                        v: MonoType::Var(Tvar(4957)),
-                    },
-                    tail: MonoType::Record(Box::new(Record::Extension {
-                        head: Property {
-                            k: "f".to_string(),
-                            v: MonoType::Var(Tvar(4957)),
-                        },
-                        tail: MonoType::Record(Box::new(Record::Extension {
-                            head: Property {
-                                k: "g".to_string(),
-                                v: MonoType::Var(Tvar(4957)),
-                            },
-                            tail: MonoType::Var(Tvar(4972)),
-                        })),
-                    })),
-                })),
-            })),
-        }));
+                Property {
+                    k: "e".to_string(),
+                    v: MonoType::Var(Tvar(4957)),
+                },
+                Property {
+                    k: "f".to_string(),
+                    v: MonoType::Var(Tvar(4957)),
+                },
+                Property {
+                    k: "g".to_string(),
+                    v: MonoType::Var(Tvar(4957)),
+                },
+            ],
+            Some(MonoType::Var(Tvar(4972))),
+        ));
         assert_eq!(
             format!("{}", ty),
             "{t4972 with a:t4949, b:t4949, e:t4957, f:t4957, g:t4957}"

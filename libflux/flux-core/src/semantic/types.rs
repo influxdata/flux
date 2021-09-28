@@ -951,6 +951,30 @@ impl MaxTvar for Record {
 
 #[allow(clippy::many_single_char_names)]
 impl Record {
+    /// Creates a new `Record`
+    pub fn new<I>(props: I, tail: Option<MonoType>) -> Self
+    where
+        I: IntoIterator<Item = Property>,
+        I::IntoIter: std::iter::DoubleEndedIterator,
+    {
+        let mut props = props.into_iter().rev();
+        let ret = match tail {
+            None => Record::Empty,
+            Some(tail) => {
+                let head = props
+                    .next()
+                    .expect("extensible records must have at least one field");
+
+                Record::Extension { head, tail }
+            }
+        };
+
+        props.fold(ret, |ret, head| Record::Extension {
+            head,
+            tail: MonoType::record(ret),
+        })
+    }
+
     // Below are the rules for record unification. In what follows monotypes
     // are denoted using lowercase letters, and type variables are denoted
     // by a lowercase letter preceded by an apostrophe `'`.
@@ -1589,36 +1613,36 @@ mod tests {
     fn display_type_record() {
         assert_eq!(
             "{A with a:int, b:string}",
-            Record::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
+            Record::new(
+                [
+                    Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    },
+                    Property {
                         k: String::from("b"),
                         v: MonoType::String,
-                    },
-                    tail: MonoType::Var(Tvar(0)),
-                }),
-            }
+                    }
+                ],
+                Some(MonoType::Var(Tvar(0))),
+            )
             .to_string()
         );
         assert_eq!(
             "{a:int, b:string}",
-            Record::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
+            Record::new(
+                [
+                    Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    },
+                    Property {
                         k: String::from("b"),
                         v: MonoType::String,
-                    },
-                    tail: MonoType::from(Record::Empty),
-                }),
-            }
+                    }
+                ],
+                Some(MonoType::from(Record::Empty)),
+            )
             .to_string()
         );
     }
@@ -1784,19 +1808,19 @@ mod tests {
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::from(Record::Extension {
-                        head: Property {
-                            k: String::from("x"),
-                            v: MonoType::Var(Tvar(0)),
-                        },
-                        tail: MonoType::from(Record::Extension {
-                            head: Property {
+                    retn: MonoType::from(Record::new(
+                        [
+                            Property {
+                                k: String::from("x"),
+                                v: MonoType::Var(Tvar(0)),
+                            },
+                            Property {
                                 k: String::from("y"),
                                 v: MonoType::Var(Tvar(1)),
-                            },
-                            tail: MonoType::from(Record::Empty),
-                        }),
-                    }),
+                            }
+                        ],
+                        Some(MonoType::from(Record::Empty)),
+                    )),
                 }),
             }
             .to_string(),
@@ -1833,19 +1857,19 @@ mod tests {
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::from(Record::Extension {
-                        head: Property {
-                            k: String::from("x"),
-                            v: MonoType::Var(Tvar(0)),
-                        },
-                        tail: MonoType::from(Record::Extension {
-                            head: Property {
+                    retn: MonoType::from(Record::new(
+                        [
+                            Property {
+                                k: String::from("x"),
+                                v: MonoType::Var(Tvar(0)),
+                            },
+                            Property {
                                 k: String::from("y"),
                                 v: MonoType::Var(Tvar(1)),
-                            },
-                            tail: MonoType::from(Record::Empty),
-                        }),
-                    }),
+                            }
+                        ],
+                        Some(MonoType::from(Record::Empty)),
+                    )),
                 }),
             }
             .to_string(),
@@ -1865,19 +1889,19 @@ mod tests {
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::from(Record::Extension {
-                        head: Property {
-                            k: String::from("x"),
-                            v: MonoType::Var(Tvar(0)),
-                        },
-                        tail: MonoType::from(Record::Extension {
-                            head: Property {
+                    retn: MonoType::from(Record::new(
+                        [
+                            Property {
+                                k: String::from("x"),
+                                v: MonoType::Var(Tvar(0)),
+                            },
+                            Property {
                                 k: String::from("y"),
                                 v: MonoType::Var(Tvar(1)),
-                            },
-                            tail: MonoType::from(Record::Empty),
-                        }),
-                    }),
+                            }
+                        ],
+                        Some(MonoType::from(Record::Empty))
+                    )),
                 }),
             }
             .to_string(),
@@ -1888,171 +1912,155 @@ mod tests {
     fn compare_records() {
         assert_eq!(
             // {A with a:int, b:string}
-            MonoType::from(Record::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
-                        k: String::from("b"),
-                        v: MonoType::String,
-                    },
-                    tail: MonoType::Var(Tvar(0)),
-                }),
-            }),
-            // {A with b:string, a:int}
-            MonoType::from(Record::Extension {
-                head: Property {
-                    k: String::from("b"),
-                    v: MonoType::String,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
+            MonoType::from(Record::new(
+                [
+                    Property {
                         k: String::from("a"),
                         v: MonoType::Int,
                     },
-                    tail: MonoType::Var(Tvar(0)),
-                }),
-            }),
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    }
+                ],
+                Some(MonoType::Var(Tvar(0))),
+            )),
+            // {A with b:string, a:int}
+            MonoType::from(Record::new(
+                [
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    }
+                ],
+                Some(MonoType::Var(Tvar(0))),
+            )),
         );
         assert_eq!(
             // {A with a:int, b:string, b:int, c:float}
-            MonoType::from(Record::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
-                        k: String::from("b"),
-                        v: MonoType::String,
-                    },
-                    tail: MonoType::from(Record::Extension {
-                        head: Property {
-                            k: String::from("b"),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::from(Record::Extension {
-                            head: Property {
-                                k: String::from("c"),
-                                v: MonoType::Float,
-                            },
-                            tail: MonoType::Var(Tvar(0)),
-                        }),
-                    }),
-                }),
-            }),
-            // {A with c:float, b:string, b:int, a:int}
-            MonoType::from(Record::Extension {
-                head: Property {
-                    k: String::from("c"),
-                    v: MonoType::Float,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
-                        k: String::from("b"),
-                        v: MonoType::String,
-                    },
-                    tail: MonoType::from(Record::Extension {
-                        head: Property {
-                            k: String::from("b"),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::from(Record::Extension {
-                            head: Property {
-                                k: String::from("a"),
-                                v: MonoType::Int,
-                            },
-                            tail: MonoType::Var(Tvar(0)),
-                        }),
-                    }),
-                }),
-            }),
-        );
-        assert_ne!(
-            // {A with a:int, b:string, b:int, c:float}
-            MonoType::from(Record::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
-                        k: String::from("b"),
-                        v: MonoType::String,
-                    },
-                    tail: MonoType::from(Record::Extension {
-                        head: Property {
-                            k: String::from("b"),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::from(Record::Extension {
-                            head: Property {
-                                k: String::from("c"),
-                                v: MonoType::Float,
-                            },
-                            tail: MonoType::Var(Tvar(0)),
-                        }),
-                    }),
-                }),
-            }),
-            // {A with a:int, b:int, b:string, c:float}
-            MonoType::from(Record::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
-                        k: String::from("b"),
-                        v: MonoType::Int,
-                    },
-                    tail: MonoType::from(Record::Extension {
-                        head: Property {
-                            k: String::from("b"),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::from(Record::Extension {
-                            head: Property {
-                                k: String::from("c"),
-                                v: MonoType::Float,
-                            },
-                            tail: MonoType::Var(Tvar(0)),
-                        }),
-                    }),
-                }),
-            }),
-        );
-        assert_ne!(
-            // {a:int, b:string}
-            MonoType::from(Record::Extension {
-                head: Property {
-                    k: String::from("a"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
-                        k: String::from("b"),
-                        v: MonoType::String,
-                    },
-                    tail: MonoType::from(Record::Empty),
-                }),
-            }),
-            // {b:int, a:int}
-            MonoType::from(Record::Extension {
-                head: Property {
-                    k: String::from("b"),
-                    v: MonoType::Int,
-                },
-                tail: MonoType::from(Record::Extension {
-                    head: Property {
+            MonoType::from(Record::new(
+                [
+                    Property {
                         k: String::from("a"),
                         v: MonoType::Int,
                     },
-                    tail: MonoType::from(Record::Empty),
-                }),
-            }),
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::Int,
+                    },
+                    Property {
+                        k: String::from("c"),
+                        v: MonoType::Float,
+                    }
+                ],
+                Some(MonoType::Var(Tvar(0))),
+            )),
+            // {A with c:float, b:string, b:int, a:int}
+            MonoType::from(Record::new(
+                [
+                    Property {
+                        k: String::from("c"),
+                        v: MonoType::Float,
+                    },
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::Int,
+                    },
+                    Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    }
+                ],
+                Some(MonoType::Var(Tvar(0))),
+            ))
+        );
+        assert_ne!(
+            // {A with a:int, b:string, b:int, c:float}
+            MonoType::from(Record::new(
+                [
+                    Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    },
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::Int,
+                    },
+                    Property {
+                        k: String::from("c"),
+                        v: MonoType::Float,
+                    }
+                ],
+                Some(MonoType::Var(Tvar(0))),
+            )),
+            // {A with a:int, b:int, b:string, c:float}
+            MonoType::from(Record::new(
+                [
+                    Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    },
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::Int,
+                    },
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    },
+                    Property {
+                        k: String::from("c"),
+                        v: MonoType::Float,
+                    }
+                ],
+                Some(MonoType::Var(Tvar(0))),
+            ))
+        );
+        assert_ne!(
+            // {a:int, b:string}
+            MonoType::from(Record::new(
+                [
+                    Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    },
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::String,
+                    }
+                ],
+                Some(MonoType::from(Record::Empty)),
+            )),
+            // {b:int, a:int}
+            MonoType::from(Record::new(
+                [
+                    Property {
+                        k: String::from("b"),
+                        v: MonoType::Int,
+                    },
+                    Property {
+                        k: String::from("a"),
+                        v: MonoType::Int,
+                    }
+                ],
+                Some(MonoType::from(Record::Empty)),
+            ))
         );
         assert_ne!(
             // {a:int}
