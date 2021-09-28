@@ -229,6 +229,9 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 	// In case of missing fill column, add it to the existing columns
 	tableCols := tbl.Cols()
 	if colIdx < 0 {
+		if t.spec.UsePrevious {
+			return errors.New(codes.Invalid, "fill column does not exist; cannot usePrevious")
+		}
 		newCols := make([]flux.ColMeta, len(tableCols), len(tableCols)+1)
 		copy(newCols, tableCols)
 		c := flux.ColMeta{
