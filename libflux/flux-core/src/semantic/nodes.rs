@@ -55,6 +55,8 @@ pub enum Error {
     InvalidImportPath(String, ast::SourceLocation),
     #[display(fmt = "error {}: return not valid in file block", _0)]
     InvalidReturn(ast::SourceLocation),
+    #[display(fmt = "error {}. This is a bug in type inference", _0)]
+    Bug(String),
 }
 
 impl From<infer::Error> for Error {
@@ -867,6 +869,19 @@ impl FunctionExpr {
         }
         // And use it to infer the body.
         let (nenv, bcons) = self.body.infer(nenv, f)?;
+        // HACK Remove once substitutions are persisted correctly
+        // Update the argument variable with the types inferred from the body
+        for (k, t) in req
+            .iter_mut()
+            .chain(opt.iter_mut())
+            .chain(pipe.as_mut().map(|p| (&p.k, &mut p.v)))
+        {
+            if let Some(new_t) = nenv.lookup(k) {
+                *t = new_t.expr.clone();
+            } else {
+                return Err(Error::Bug(format!("Missing function parameter `{}`", k)));
+            }
+        }
         // Now pop the nested environment, we don't need it anymore.
         let env = nenv.pop();
         let retn = self.body.type_of();
