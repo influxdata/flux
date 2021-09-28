@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  build-tools: circleci/build-tools@2.9.1
 jobs:
   test:
     docker:
@@ -12,6 +14,10 @@ jobs:
       SCCACHE_CACHE_SIZE: 1G
     steps:
       - checkout
+      # Merge the current branch with its parent (in most cases this should be master)
+      # Then run tests etc in that merged commit. This helps catch issues due to a
+      # branch that hasn't recently been rebased off master.
+      - build-tools/merge-with-parent
       # Populate GOPATH/pkg.
       - restore_cache:
           name: Restoring GOPATH/pkg/mod
@@ -53,6 +59,10 @@ jobs:
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
     steps:
       - checkout
+      # Merge the current branch with its parent (in most cases this should be master)
+      # Then run tests etc in that merged commit. This helps catch issues due to a
+      # branch that hasn't recently been rebased off master.
+      - build-tools/merge-with-parent
       # Building go with -race does not use the cache
       # Populate GOPATH/pkg.
       - restore_cache:
@@ -71,6 +81,10 @@ jobs:
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
     steps:
       - checkout
+      # Merge the current branch with its parent (in most cases this should be master)
+      # Then run tests etc in that merged commit. This helps catch issues due to a
+      # branch that hasn't recently been rebased off master.
+      - build-tools/merge-with-parent
       - restore_cache:
           name: Restoring GOPATH/pkg/mod
           keys:
@@ -83,6 +97,10 @@ jobs:
       - image: quay.io/influxdb/flux-build:latest
     steps:
       - checkout
+      # Merge the current branch with its parent (in most cases this should be master)
+      # Then run tests etc in that merged commit. This helps catch issues due to a
+      # branch that hasn't recently been rebased off master.
+      - build-tools/merge-with-parent
       - run: make test-valgrind
   build-windows:
     machine:
@@ -106,6 +124,10 @@ jobs:
 
             echo 'export PATH="${HOME}/.cargo/bin:/c/Program Files/Go/bin:${PATH}"' >> $BASH_ENV
       - checkout
+      # Merge the current branch with its parent (in most cases this should be master)
+      # Then run tests etc in that merged commit. This helps catch issues due to a
+      # branch that hasn't recently been rebased off master.
+      - build-tools/merge-with-parent
       - run:
           name: Pin rust version and install mingw rustup target
           command: |
