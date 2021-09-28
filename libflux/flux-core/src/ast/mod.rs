@@ -764,7 +764,10 @@ fn get_err_monotype(mt: MonoType) -> String {
 }
 fn get_err_parameters(prs: Vec<ParameterType>) -> String {
     for pr in prs {
-        get_err_parameter(pr);
+        let e = get_err_parameter(pr);
+        if !e.is_empty() {
+            return e;
+        }
     }
     "".to_string()
 }
