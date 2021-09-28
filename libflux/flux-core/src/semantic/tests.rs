@@ -3379,7 +3379,7 @@ fn issue_4051() {
         x = f(r:r)
         "#,
         exp: map![
-            "f" => "(r:{S with a:X, b: int, c: float) => {S with a:X, b: int, c: float}",
+            "f" => "(r:{S with a:X, b: int, c: float}) => {S with a:X, b: int, c: float}",
             "x" => "{S with a: X, b: int, c: float}",
         ],
     }
