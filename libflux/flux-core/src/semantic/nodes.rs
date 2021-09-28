@@ -10,18 +10,18 @@
 extern crate chrono;
 extern crate derivative;
 
-use crate::ast;
-use crate::semantic::infer;
-use crate::semantic::types;
-use crate::semantic::{
-    env::Environment,
-    fresh::Fresher,
-    import::Importer,
-    infer::{Constraint, Constraints},
-    sub::{Substitutable, Substitution},
-    types::{
-        Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
-        TvarKinds,
+use crate::{
+    ast,
+    semantic::{
+        env::Environment,
+        fresh::{Fresh, Fresher},
+        import::Importer,
+        infer::{self, Constraint, Constraints},
+        sub::{Substitutable, Substitution},
+        types::{
+            self, Array, Dictionary, Function, Kind, MaxTvar, MonoType, MonoTypeMap, PolyType,
+            PolyTypeMap, Tvar, TvarKinds,
+        },
     },
 };
 
@@ -250,6 +250,16 @@ pub fn infer_pkg_types<T>(
 where
     T: Importer,
 {
+    if env.readwrite {
+        if let Some(max) = env.values.max_tvar() {
+            if max.0 >= f.0 {
+                return Err(Error::Bug(
+                    "The variable environment and variable fresher seems to be out of sync"
+                        .to_string(),
+                ));
+            }
+        }
+    }
     let (env, cons) = pkg.infer(env, f, importer)?;
     Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
 }
@@ -319,7 +329,12 @@ impl File {
             imports.push(name);
 
             match importer.import(path) {
-                Some(poly) => env.add(name.to_owned(), poly),
+                Some(poly) => {
+                    // Types imported from other pacakges may have the same variables so we need
+                    // fresh ones
+                    let poly = poly.fresh(f, &mut Default::default());
+                    env.add(name.to_owned(), poly)
+                }
                 None => return Err(Error::InvalidImportPath(path.clone(), dec.loc.clone())),
             };
         }

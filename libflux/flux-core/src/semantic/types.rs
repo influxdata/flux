@@ -55,10 +55,11 @@ impl fmt::Display for PolyType {
 
 impl PartialEq for PolyType {
     fn eq(&self, poly: &Self) -> bool {
-        let a: Tvar = self.max_tvar();
-        let b: Tvar = poly.max_tvar();
+        let a = self.max_tvar();
+        let b = poly.max_tvar();
 
-        let max = if a > b { a.0 } else { b.0 };
+        let max = if a > b { a } else { b };
+        let max = max.map(|t| t.0).unwrap_or_default();
 
         let mut f = Fresher::from(max + 1);
         let mut g = Fresher::from(max + 1);
@@ -94,13 +95,19 @@ impl Substitutable for PolyType {
 }
 
 impl MaxTvar for [Tvar] {
-    fn max_tvar(&self) -> Tvar {
-        self.iter().max().cloned().unwrap_or(Tvar(0))
+    fn max_tvar(&self) -> Option<Tvar> {
+        self.iter().max().cloned()
+    }
+}
+
+impl MaxTvar for [Option<Tvar>] {
+    fn max_tvar(&self) -> Option<Tvar> {
+        self.iter().max().and_then(|t| *t)
     }
 }
 
 impl MaxTvar for PolyType {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         [self.vars.max_tvar(), self.expr.max_tvar()].max_tvar()
     }
 }
@@ -350,7 +357,7 @@ impl Substitutable for MonoType {
 }
 
 impl MaxTvar for MonoType {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         match self {
             MonoType::Bool
             | MonoType::Int
@@ -360,7 +367,7 @@ impl MaxTvar for MonoType {
             | MonoType::Duration
             | MonoType::Time
             | MonoType::Regexp
-            | MonoType::Bytes => Tvar(0),
+            | MonoType::Bytes => None,
             MonoType::Var(tvr) => tvr.max_tvar(),
             MonoType::Arr(arr) => arr.max_tvar(),
             MonoType::Vector(vector) => vector.max_tvar(),
@@ -616,8 +623,8 @@ impl fmt::Display for Tvar {
 }
 
 impl MaxTvar for Tvar {
-    fn max_tvar(&self) -> Tvar {
-        *self
+    fn max_tvar(&self) -> Option<Tvar> {
+        Some(*self)
     }
 }
 
@@ -709,7 +716,7 @@ impl Substitutable for Array {
 }
 
 impl MaxTvar for Array {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         self.0.max_tvar()
     }
 }
@@ -755,7 +762,7 @@ impl Substitutable for Vector {
 }
 
 impl MaxTvar for Vector {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         self.0.max_tvar()
     }
 }
@@ -800,7 +807,7 @@ impl Substitutable for Dictionary {
 }
 
 impl MaxTvar for Dictionary {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         [self.key.max_tvar(), self.val.max_tvar()].max_tvar()
     }
 }
@@ -931,9 +938,9 @@ impl Substitutable for Record {
 }
 
 impl MaxTvar for Record {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         match self {
-            Record::Empty => Tvar(0),
+            Record::Empty => None,
             Record::Extension { head, tail } => [head.max_tvar(), tail.max_tvar()].max_tvar(),
         }
     }
@@ -1143,7 +1150,7 @@ impl Substitutable for Property {
 }
 
 impl MaxTvar for Property {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         self.v.max_tvar()
     }
 }
@@ -1276,24 +1283,24 @@ impl Substitutable for Function {
 }
 
 impl<U, T: MaxTvar> MaxTvar for SemanticMap<U, T> {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         self.iter()
             .map(|(_, t)| t.max_tvar())
-            .fold(Tvar(0), |max, tv| if tv > max { tv } else { max })
+            .fold(None, |max, tv| if tv > max { tv } else { max })
     }
 }
 
 impl<T: MaxTvar> MaxTvar for Option<T> {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         match self {
-            None => Tvar(0),
+            None => None,
             Some(t) => t.max_tvar(),
         }
     }
 }
 
 impl MaxTvar for Function {
-    fn max_tvar(&self) -> Tvar {
+    fn max_tvar(&self) -> Option<Tvar> {
         [
             self.req.max_tvar(),
             self.opt.max_tvar(),
@@ -1466,7 +1473,7 @@ impl Function {
 /// Trait for returning the maximum type variable of a type.
 pub trait MaxTvar {
     /// Return the maximum type variable of a type.
-    fn max_tvar(&self) -> Tvar;
+    fn max_tvar(&self) -> Option<Tvar>;
 }
 #[cfg(test)]
 mod tests {
