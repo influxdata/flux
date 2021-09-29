@@ -141,10 +141,7 @@ jobs:
             # Cargo's built-in support for fetching dependencies from GitHub requires
             # an ssh agent to be set up, which doesn't work on Circle's Windows executors.
             # See https://github.com/rust-lang/cargo/issues/1851#issuecomment-450130685
-            cat <<EOF >> ~/.cargo/config
-            [net]
-            git-fetch-with-cli = true
-            EOF
+            echo -e "\n[net]\ngit-fetch-with-cli = true\n">> ~/.cargo/config
       - run:
           name: Install pkg-config wrapper
           command: |
