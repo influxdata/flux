@@ -2,12 +2,27 @@ package libflux_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
+    "os/exec"
 
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
+
+func TestLibFluxIsUpToDate(t *testing.T) {
+    cmd := exec.Command("git", "rev-parse", "HEAD")
+    stdout, err := cmd.Output()
+    if err != nil {
+        t.Error(err)
+        return
+    }
+    currentHash := strings.TrimSpace(string(stdout))
+    if currentHash != libflux.GitHash() {
+        t.Errorf("libflux appears to be out of date. Please run `make generate` before rebuilding : %q != %q", currentHash, libflux.GitHash())
+    }
+}
 
 func TestAnalyze(t *testing.T) {
 	tcs := []struct {

@@ -14,6 +14,7 @@
 /libflux/site/node_modules
 /libflux/.cache
 /libflux/go/libflux/hack.gen.go
+/libflux/go/libflux/buildinfo.gen.go
 /release-notes.txt
 cmake-build-debug
 

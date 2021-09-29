@@ -52,6 +52,10 @@ pub fn docs_json() -> Result<Vec<u8>, String> {
     inflate_bytes(buf)
 }
 
+pub fn git_hash() -> &'static str {
+    env!("GIT_HASH")
+}
+
 /// Restructures the Vector of PackageDocs into a hierarchical format where subpackages are in the member section
 /// of their parent packages. Ex: monitor.flux docs are in the members section of influxdb docs which are in the members of InfluxData docs.
 pub fn nested_json() -> Vec<u8> {
@@ -78,6 +82,13 @@ impl<T: 'static + error::Error> From<T> for Box<ErrorHandle> {
             err: CString::new(format!("{}", err)).unwrap(),
         })
     }
+}
+
+#[no_mangle]
+pub extern "C" fn flux_git_hash(out: &mut flux_buffer_t) {
+    let git_hash = env!("GIT_HASH");
+    out.data = git_hash.as_ptr();
+    out.len = git_hash.len();
 }
 
 /// Frees a previously allocated error.

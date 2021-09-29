@@ -19,6 +19,8 @@ struct flux_buffer_t {
 // flux_error_t represents a flux error.
 struct flux_error_t;
 
+void flux_git_hash(struct flux_buffer_t *);
+
 // flux_free_error will release memory associated with an error.
 void flux_free_error(struct flux_error_t *);
 

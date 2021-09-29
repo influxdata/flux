@@ -1,6 +1,6 @@
 extern crate fluxcore;
 
-use std::{env, fs, io, io::Write, path};
+use std::{env, fs, io, io::Write, path, process::Command};
 
 use deflate::deflate_bytes;
 use fluxcore::semantic::bootstrap;
@@ -36,6 +36,12 @@ impl From<bootstrap::Error> for Error {
     }
 }
 
+impl From<String> for Error {
+    fn from(msg: String) -> Error {
+        Error { msg }
+    }
+}
+
 fn serialize<'a, T, S, F>(ty: T, f: F, path: &path::Path) -> Result<(), Error>
 where
     F: Fn(&mut flatbuffers::FlatBufferBuilder<'a>, T) -> flatbuffers::WIPOffset<S>,
@@ -47,7 +53,16 @@ where
     Ok(())
 }
 
+fn git_hash_env() -> Result<(), Error> {
+    let output = Command::new("git").args(&["rev-parse", "HEAD"]).output()?;
+    let git_hash = String::from_utf8(output.stdout).map_err(|err| err.to_string())?;
+    println!("cargo:rustc-env=GIT_HASH={}", git_hash);
+    Ok(())
+}
+
 fn main() -> Result<(), Error> {
+    git_hash_env()?;
+
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
     let std_lib_values = bootstrap::infer_stdlib()?;

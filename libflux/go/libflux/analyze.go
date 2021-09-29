@@ -20,6 +20,12 @@ type SemanticPkg struct {
 	ptr *C.struct_flux_semantic_pkg_t
 }
 
+func GitHash() string {
+	var buf C.struct_flux_buffer_t
+	C.flux_git_hash(&buf);
+	return C.GoStringN(buf.data, C.int(buf.len))
+}
+
 // MarshalFB serializes the given semantic package into a flatbuffer.
 func (p *SemanticPkg) MarshalFB() ([]byte, error) {
 	var buf C.struct_flux_buffer_t
