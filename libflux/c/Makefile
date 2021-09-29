@@ -16,7 +16,7 @@ test-valgrind: $(BIN_STATIC) $(BIN_DYNAMIC)
 $(BIN_STATIC): $(SOURCES)
 	$(CC) -g -Wall -Werror $(SOURCES) -I$(INCLUDE_DIR) \
 		$(TARGET_DIR)/debug/libflux.a \
-		-o $@ -lpthread -ldl
+		-o $@ -lpthread -lm -ldl
 
 $(BIN_DYNAMIC): $(SOURCES)
 	$(CC) -g -Wall -Werror $(SOURCES) -I$(INCLUDE_DIR) \
