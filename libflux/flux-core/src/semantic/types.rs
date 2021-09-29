@@ -83,7 +83,10 @@ impl PartialEq for PolyType {
 
 impl Substitutable for PolyType {
     fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
-        self.expr.apply_ref(sub).map(|expr| PolyType {
+        // `vars` defines new distinct variables for `expr` so any substitutions applied on a
+        // variable named the same must not be applied in `expr`
+        let sub = sub.without(&self.vars);
+        self.expr.apply_ref(&sub).map(|expr| PolyType {
             vars: self.vars.clone(),
             cons: self.cons.clone(),
             expr,
