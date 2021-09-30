@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/values"
 )
 
@@ -118,4 +119,20 @@ func (b Bounds) Union(o Bounds) Bounds {
 	}
 
 	return *u
+}
+
+// in translates the start and stop time for this Bounds
+// into one where the times are transposed to their equivalent
+// clock time in the zoneinfo.Location.
+//
+// This method is not idempotent. It expects the Bounds to have
+// been created with the utc location.
+func (b Bounds) in(loc *zoneinfo.Location) Bounds {
+	start := loc.ToLocalClock(int64(b.start))
+	stop := loc.ToLocalClock(int64(b.stop))
+	return Bounds{
+		start: values.Time(start),
+		stop:  values.Time(stop),
+		index: b.index,
+	}
 }
