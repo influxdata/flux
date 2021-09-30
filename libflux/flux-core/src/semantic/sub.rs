@@ -1,5 +1,5 @@
 //! Substitutions during type inference.
-use std::iter::FusedIterator;
+use std::{borrow::Cow, iter::FusedIterator};
 
 use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 
@@ -9,7 +9,7 @@ use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 ///
 /// Substitutions are idempotent. Given a substitution *s* and an input
 /// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Substitution(SubstitutionMap);
 
 impl From<SubstitutionMap> for Substitution {
@@ -51,6 +51,18 @@ impl Substitution {
     pub fn merge(self, with: Substitution) -> Substitution {
         let applied: SubstitutionMap = self.0.apply(&with);
         Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
+    }
+
+    pub(crate) fn without(&self, vars: &[Tvar]) -> Cow<'_, Substitution> {
+        if vars.iter().any(|var| self.0.contains_key(var)) {
+            let mut sub = self.clone();
+            for var in vars {
+                sub.0.remove(var);
+            }
+            Cow::Owned(sub)
+        } else {
+            Cow::Borrowed(self)
+        }
     }
 }
 

@@ -10,18 +10,18 @@
 extern crate chrono;
 extern crate derivative;
 
-use crate::ast;
-use crate::semantic::infer;
-use crate::semantic::types;
-use crate::semantic::{
-    env::Environment,
-    fresh::Fresher,
-    import::Importer,
-    infer::{Constraint, Constraints},
-    sub::{Substitutable, Substitution},
-    types::{
-        Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
-        TvarKinds,
+use crate::{
+    ast,
+    semantic::{
+        env::Environment,
+        fresh::Fresher,
+        import::Importer,
+        infer::{self, Constraint, Constraints},
+        sub::{Substitutable, Substitution},
+        types::{
+            self, Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap,
+            Tvar, TvarKinds,
+        },
     },
 };
 

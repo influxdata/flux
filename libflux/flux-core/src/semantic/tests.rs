@@ -29,7 +29,7 @@ use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
 use crate::semantic::nodes;
-use crate::semantic::types::{MaxTvar, MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds};
+use crate::semantic::types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds};
 
 use crate::ast;
 use crate::ast::get_err_type_expression;
@@ -90,38 +90,23 @@ fn infer_types(
         .map(|(path, pkg)| (path, parse_map(pkg)))
         .collect();
 
-    // Compute the maximum type variable and init fresher
-    let mut max = imports.max_tvar();
-    let mut f = Fresher::from(max.0 + 1);
-
     // Instantiate package importer using generic objects
     let importer: HashMap<&str, PolyType> = imports
         .into_iter()
-        .map(|(path, types)| (path, build_polytype(types, &mut f).unwrap()))
+        .map(|(path, types)| {
+            (
+                path,
+                build_polytype(types, &mut Fresher::default()).unwrap(),
+            )
+        })
         .collect();
-
-    for (_, t) in &importer {
-        max = if t.max_tvar() > max {
-            t.max_tvar()
-        } else {
-            max
-        };
-    }
 
     // Parse polytype expressions in initial environment.
     let env = parse_map(env);
 
-    // Compute the maximum type variable and init fresher
-    let max = if env.max_tvar() > max {
-        env.max_tvar()
-    } else {
-        max
-    };
+    let env: Environment = env.into();
 
-    let mut env: Environment = env.into();
-    env.readwrite = true;
-
-    let mut f = Fresher::from(max.0 + 1);
+    let mut f = Fresher::default();
 
     let pkg = parse_program(src);
 

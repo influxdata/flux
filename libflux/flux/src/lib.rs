@@ -61,8 +61,7 @@ pub fn nested_json() -> Vec<u8> {
 }
 
 pub fn fresher() -> Fresher {
-    let buf = include_bytes!(concat!(env!("OUT_DIR"), "/fresher.data"));
-    flatbuffers::root::<fb::Fresher>(buf).unwrap().into()
+    Fresher::default()
 }
 
 /// An error handle designed to allow passing `Error` instances to library
@@ -412,7 +411,6 @@ pub unsafe extern "C" fn flux_find_var_type(
 }
 
 pub struct SemanticAnalyzer {
-    f: Fresher,
     env: Environment,
     imports: Environment,
 }
@@ -426,8 +424,7 @@ fn new_semantic_analyzer() -> Result<SemanticAnalyzer, fluxcore::Error> {
         Some(imports) => imports,
         None => return Err(fluxcore::Error::from("missing stdlib imports")),
     };
-    let f = fresher();
-    Ok(SemanticAnalyzer { f, env, imports })
+    Ok(SemanticAnalyzer { env, imports })
 }
 
 impl SemanticAnalyzer {
@@ -440,13 +437,14 @@ impl SemanticAnalyzer {
             return Err(fluxcore::Error::from(format!("{}", &errs[0])));
         }
 
-        let mut sem_pkg = fluxcore::semantic::convert::convert_with(ast_pkg, &mut self.f)?;
+        let mut fresher = fresher();
+        let mut sem_pkg = fluxcore::semantic::convert::convert_with(ast_pkg, &mut fresher)?;
         check::check(&sem_pkg)?;
 
         // Clone the environment. The environment may not be returned but we need to maintain
         // a copy of it for this function to be re-entrant.
         let env = self.env.clone();
-        let (mut env, sub) = infer_pkg_types(&mut sem_pkg, env, &mut self.f, &self.imports)?;
+        let (mut env, sub) = infer_pkg_types(&mut sem_pkg, env, &mut fresher, &self.imports)?;
         // TODO(jsternberg): This part is hacky and can be improved
         // by refactoring infer file so we can use the internals without
         // infering the file itself.
