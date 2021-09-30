@@ -104,9 +104,11 @@ from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", usernam
 	}
 }
 
-const broker = "tcp://mqtt.eclipseprojects.io:1883" // "tcp://iot.eclipse.org:1883" seems not available anymore
-const topic = "test-influxdb"
-const receiveTimeout = 15 * time.Second
+const (
+	broker = "tcp://mqtt.eclipseprojects.io:1883" // "tcp://iot.eclipse.org:1883" seems not available anymore
+	topic = "test-influxdb"
+	receiveTimeout = 15 * time.Second
+)
 
 var runScript = func(script string) error {
 	ctx := flux.NewDefaultDependencies().Inject(context.Background())
