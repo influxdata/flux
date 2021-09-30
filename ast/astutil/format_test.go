@@ -279,11 +279,9 @@ func TestFormatWithComments(t *testing.T) {
 
 	if want := `// hi
 // there
-{
-    _time: r._time,
-    io_time: r._value,
-// this is the end
-}
+{_time: r._time, io_time: r._value
+    // this is the end
+    }
 
 // minimal
 foo = (arg=[1, 2]) => 1
@@ -292,10 +290,10 @@ foo = (arg=[1, 2]) => 1
 left = from(bucket: "test")
     |> range(
         start: 2018-05-22T19:53:00Z
-            // i write too many comments
-            ,
-            stop: 2018-05-22T19:55:00Z,
-        )
+        // i write too many comments
+        ,
+        stop: 2018-05-22T19:55:00Z,
+    )
     // and put them in strange places
     |> drop
         // this hurts my eyes
@@ -321,17 +319,15 @@ right = from(bucket: "test")
     |> drop(
         // spare me the pain
         // this hurts
-        columns: [
-            "_start",
-            "_stop",
+        columns: ["_start", "_stop"
         // what
         ],
     )
     |> filter(
         // just why
         fn: (r) => 
-            // user 2 is the best user
-            (r.user == "user2"),
+        // user 2 is the best user
+        (r.user == "user2"),
     )
     |> group(
         by: 
@@ -341,9 +337,12 @@ right = from(bucket: "test")
 
 join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
 
-from(bucket, _option
+from(
+    bucket,
+    _option
     // friends
-    // stick together
+    ,
+// stick together
 )
 
 i = 

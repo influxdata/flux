@@ -34,16 +34,13 @@ statusFromLevel = (level) => {
 // `status` - string - Status of the BigPanda alert. One of ok, critical, warning, acknowledged.
 // `rec` - record - additional data appended to alert
 sendAlert = (
-        url,
-        token,
-        appKey,
-        status,
-        rec,
+    url,
+    token,
+    appKey,
+    status,
+    rec,
 ) => {
-    headers = {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization": defaultTokenPrefix + " " + token,
-    }
+    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": defaultTokenPrefix + " " + token}
     data = {rec with app_key: appKey, status: status}
 
     return http.post(headers: headers, url: url, data: json.encode(v: data))
@@ -59,7 +56,7 @@ endpoint = (url=defaultUrl, token, appKey) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == sendAlert(

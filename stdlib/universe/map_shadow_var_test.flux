@@ -36,7 +36,7 @@ t_shadow_var = (table=<-) => table
     |> map(
         fn: (r) => {
             myVal = "const"
-
+    
             return {r with _value: myVal}
         },
     )

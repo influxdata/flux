@@ -45,15 +45,15 @@ outData = "
 
 // select load1, load15
 rawQuery = (
-        stream=<-,
-        start,
-        stop,
-        measurement,
-        fields=[],
-        groupBy=["_time", "_value"],
-        groupMode="except",
-        every=inf,
-        period=0s,
+    stream=<-,
+    start,
+    stop,
+    measurement,
+    fields=[],
+    groupBy=["_time", "_value"],
+    groupMode="except",
+    every=inf,
+    period=0s,
 ) => stream
     |> range(start: start, stop: stop)
     |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))
@@ -61,8 +61,4 @@ rawQuery = (
     |> v1.fieldsAsCols()
     |> window(every: every, period: period)
 
-test influx_raw_query = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: (table=<-) => table |> rawQuery(measurement: "system", fields: ["load1", "load15", "load5"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z),
-})
+test influx_raw_query = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: (table=<-) => table |> rawQuery(measurement: "system", fields: ["load1", "load15", "load5"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)})

@@ -95,8 +95,4 @@ t_map = (table=<-) => table
     |> drop(columns: ["_start", "_stop"])
     |> rows.map(fn: (r) => ({_time: r._time, _value: -r._value}))
 
-test _map = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_map,
-})
+test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})

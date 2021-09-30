@@ -70,10 +70,7 @@ builtin window : (
     every: duration,
     ?period: duration,
     columns: C,
-) => [B] where
-    A: Record,
-    B: Record,
-    C: Record
+) => [B] where A: Record, B: Record, C: Record
 
 // null is a sentinel value for fill that will fill
 // in a null value if there were no values for an interval.
@@ -95,7 +92,7 @@ _make_selector = (fn) => define(
     init: (values) => fn(values),
     reduce: (values, state) => {
         v = fn(values)
-
+    
         return fn(values: [state, v])
     },
     compute: (state) => state,
@@ -127,14 +124,4 @@ count = define(
 )
 
 // mean constructs a mean aggregate for the column.
-mean = define(
-    init: (values) => ({
-        sum: math.sum(values),
-        count: length(arr: values),
-    }),
-    reduce: (values, state) => ({
-        sum: state.sum + math.sum(values),
-        count: state.count + length(arr: values),
-    }),
-    compute: (state) => float(v: state.sum) / float(v: state.count),
-)
+mean = define(init: (values) => ({sum: math.sum(values), count: length(arr: values)}), reduce: (values, state) => ({sum: state.sum + math.sum(values), count: state.count + length(arr: values)}), compute: (state) => float(v: state.sum) / float(v: state.count))

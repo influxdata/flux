@@ -21,21 +21,21 @@ import "strings"
 // `timestamp` - time - time alert was generated.
 // `timeout` - int - seconds before alert is considered stale.
 alert = (
-        url,
-        apiKey,
-        resource,
-        event,
-        environment="",
-        severity,
-        service=[],
-        group="",
-        value="",
-        text="",
-        tags=[],
-        attributes,
-        origin="InfluxDB",
-        type="",
-        timestamp=now(),
+    url,
+    apiKey,
+    resource,
+    event,
+    environment="",
+    severity,
+    service=[],
+    group="",
+    value="",
+    text="",
+    tags=[],
+    attributes,
+    origin="InfluxDB",
+    type="",
+    timestamp=now(),
 ) => {
     alert = {
         resource: resource,
@@ -53,10 +53,7 @@ alert = (
         createTime: strings.substring(v: string(v: timestamp), start: 0, end: 23) + "Z",
     // Alerta supports ISO 8601 date format YYYY-MM-DDThh:mm:ss.sssZ only
     }
-    headers = {
-        "Authorization": "Key " + apiKey,
-        "Content-Type": "application/json",
-    }
+    headers = {"Authorization": "Key " + apiKey, "Content-Type": "application/json"}
     body = json.encode(v: alert)
 
     return http.post(headers: headers, url: url, data: body)
@@ -74,7 +71,7 @@ endpoint = (url, apiKey, environment="", origin="") => (mapFn) => (tables=<-) =>
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == alert(

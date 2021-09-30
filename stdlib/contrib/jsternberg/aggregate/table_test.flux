@@ -44,8 +44,4 @@ aggregate_table = (table=<-) => table
         },
     )
 
-test _aggregate_table = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: aggregate_table,
-})
+test _aggregate_table = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: aggregate_table})

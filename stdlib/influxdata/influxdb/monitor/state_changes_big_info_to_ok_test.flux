@@ -252,9 +252,6 @@ outData = "
 "
 t_state_changes_big_info_to_ok = (table=<-) => table
     |> v1.fieldsAsCols()
-    |> monitor.stateChanges(
-        fromLevel: "info",
-        toLevel: "ok",
-    )
+    |> monitor.stateChanges(fromLevel: "info", toLevel: "ok")
 
 test monitor_state_changes_big_info_to_ok = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_info_to_ok})

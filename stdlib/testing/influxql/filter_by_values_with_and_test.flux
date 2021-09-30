@@ -55,8 +55,4 @@ t_filter_by_values_with_and = (tables=<-) => tables
     |> keep(columns: ["_time", "_value", "_measurement"])
     |> rename(columns: {_time: "time", _value: "n"})
 
-test _filter_by_values_with_and = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_filter_by_values_with_and,
-})
+test _filter_by_values_with_and = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_values_with_and})

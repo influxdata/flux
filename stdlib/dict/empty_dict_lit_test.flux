@@ -26,8 +26,4 @@ t_dict = (table=<-) => table
     |> drop(columns: ["_start", "_stop"])
     |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))
 
-test _dict = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_dict,
-})
+test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})

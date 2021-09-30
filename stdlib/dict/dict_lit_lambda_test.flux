@@ -28,13 +28,9 @@ t_dict = (table=<-) => table
     |> map(
         fn: (r) => {
             codes = [0: "a", 1: "b"]
-
+    
             return {r with code: dict.get(dict: codes, key: r._value, default: "c")}
         },
     )
 
-test _dict = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_dict,
-})
+test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})

@@ -695,8 +695,4 @@ t_elapsed = (tables=<-) => tables
     |> drop(columns: ["_start", "_stop", "_field", "_value"])
     |> rename(columns: {_time: "time"})
 
-test _elapsed = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_elapsed,
-})
+test _elapsed = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_elapsed})

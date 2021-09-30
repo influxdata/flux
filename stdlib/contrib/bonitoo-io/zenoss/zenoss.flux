@@ -21,21 +21,21 @@ import "json"
 // `collector` - string - collector. Default is empty string.
 // `message` - string - event message. Default is empty string.
 event = (
-        url,
-        username,
-        password,
-        action="EventsRouter",
-        method="add_event",
-        type="rpc",
-        tid=1,
-        summary="",
-        device="",
-        component="",
-        severity,
-        eventClass="",
-        eventClassKey="",
-        collector="",
-        message="",
+    url,
+    username,
+    password,
+    action="EventsRouter",
+    method="add_event",
+    type="rpc",
+    tid=1,
+    summary="",
+    device="",
+    component="",
+    severity,
+    eventClass="",
+    eventClassKey="",
+    collector="",
+    message="",
 ) => {
     event = {
         summary: summary,
@@ -50,16 +50,11 @@ event = (
     payload = {
         action: action,
         method: method,
-        data: [
-            event,
-        ],
+        data: [event],
         type: type,
         tid: tid,
     }
-    headers = {
-        "Authorization": http.basicAuth(u: username, p: password),
-        "Content-Type": "application/json",
-    }
+    headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
     body = json.encode(v: payload)
 
     return http.post(headers: headers, url: url, data: body)
@@ -77,18 +72,18 @@ event = (
 // The returned factory function accepts a `mapFn` parameter.
 // The `mapFn` must return record with `summary`, `device`, `component`, `severity`, `eventClass`, `eventClassKey`, `collector` and `message` fields as defined in the `event` function arguments.
 endpoint = (
-        url,
-        username,
-        password,
-        action="EventsRouter",
-        method="add_event",
-        type="rpc",
-        tid=1,
+    url,
+    username,
+    password,
+    action="EventsRouter",
+    method="add_event",
+    type="rpc",
+    tid=1,
 ) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == event(

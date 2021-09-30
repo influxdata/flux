@@ -22,23 +22,20 @@ builtin respondersToJSON : (v: [string]) => string
 // `details`     - string - Additional details of an alert, it must be a JSON-encoded map of key-value string pairs. 
 // `visibleTo`   - array  - Arrays of teams and users that the alert will become visible to without sending any notification. Optional. 
 sendAlert = (
-        url="https://api.opsgenie.com/v2/alerts",
-        apiKey,
-        message,
-        alias="",
-        description="",
-        priority="P3",
-        responders=[],
-        tags=[],
-        entity="",
-        actions=[],
-        visibleTo=[],
-        details="{}",
+    url="https://api.opsgenie.com/v2/alerts",
+    apiKey,
+    message,
+    alias="",
+    description="",
+    priority="P3",
+    responders=[],
+    tags=[],
+    entity="",
+    actions=[],
+    visibleTo=[],
+    details="{}",
 ) => {
-    headers = {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "GenieKey " + apiKey,
-    }
+    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "GenieKey " + apiKey}
     cutEncode = (v, max, defV="") => {
         v2 = if strings.strlen(v: v) != 0 then v else defV
 
@@ -73,7 +70,7 @@ endpoint = (url="https://api.opsgenie.com/v2/alerts", apiKey, entity="") => (map
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == sendAlert(

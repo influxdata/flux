@@ -428,8 +428,4 @@ t_selector = (tables=<-) => tables
     |> keep(columns: ["_time", "_value", "_measurement"])
     |> rename(columns: {_time: "time", _value: "max"})
 
-test _selector = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_selector,
-})
+test _selector = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_selector})

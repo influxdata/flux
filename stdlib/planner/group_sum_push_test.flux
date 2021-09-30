@@ -46,8 +46,4 @@ group_sum_fn = (tables=<-) => tables
     |> group(columns: ["_start", "_stop", "host"])
     |> sum()
 
-test group_count_pushdown = () => ({
-    input: testing.loadStorage(csv: input),
-    want: testing.loadMem(csv: output),
-    fn: group_sum_fn,
-})
+test group_count_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_sum_fn})

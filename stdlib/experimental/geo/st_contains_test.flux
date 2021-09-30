@@ -228,11 +228,7 @@ t_stContains = (table=<-) => table
     |> v1.fieldsAsCols()
     // optional but it helps to see the train crossing defined region
     |> geo.asTracks(groupBy: ["id", "trip_id"])
-    |> map(
-        fn: (r) => ({r with
-            _st_contains: geo.ST_Contains(region: bt, geometry: {lat: r.lat, lon: r.lon}),
-        }),
-    )
+    |> map(fn: (r) => ({r with _st_contains: geo.ST_Contains(region: bt, geometry: {lat: r.lat, lon: r.lon})}))
     |> drop(columns: ["_start", "_stop"])
 
 test _stContains = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stContains})

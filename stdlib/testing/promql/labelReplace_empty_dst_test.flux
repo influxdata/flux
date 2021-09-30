@@ -29,11 +29,6 @@ outData = "
 t_labelReplace = (table=<-) => table
     |> range(start: 1980-01-01T00:00:00Z)
     |> drop(columns: ["_start", "_stop"])
-    |> promql.labelReplace(
-        source: "src",
-        destination: "dst",
-        regex: ".*",
-        replacement: "",
-    )
+    |> promql.labelReplace(source: "src", destination: "dst", regex: ".*", replacement: "")
 
 test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})

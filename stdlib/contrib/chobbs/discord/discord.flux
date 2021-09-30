@@ -12,20 +12,14 @@ option discordURL = "https://discordapp.com/api/webhooks/"
 // `content` - string - the text to display in discord.
 // `avatar_url` -  override the default avatar of the webhook.
 send = (
-        webhookToken,
-        webhookID,
-        username,
-        content,
-        avatar_url="",
+    webhookToken,
+    webhookID,
+    username,
+    content,
+    avatar_url="",
 ) => {
-    data = {
-        username: username,
-        content: content,
-        avatar_url: avatar_url,
-    }
-    headers = {
-        "Content-Type": "application/json",
-    }
+    data = {username: username, content: content, avatar_url: avatar_url}
+    headers = {"Content-Type": "application/json"}
     encode = json.encode(v: data)
 
     return http.post(headers: headers, url: discordURL + webhookID + "/" + webhookToken, data: encode)
@@ -42,7 +36,7 @@ endpoint = (webhookToken, webhookID, username, avatar_url="") => (mapFn) => (tab
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == send(

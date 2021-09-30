@@ -229,11 +229,7 @@ t_stDWithin = (table=<-) => table
     |> v1.fieldsAsCols()
     // optional but it helps to see the train closing in
     |> geo.asTracks(groupBy: ["id", "trip_id"])
-    |> map(
-        fn: (r) => ({r with
-            _st_dwithin: geo.ST_DWithin(region: refPoint, geometry: {lat: r.lat, lon: r.lon}, distance: 20.0),
-        }),
-    )
+    |> map(fn: (r) => ({r with _st_dwithin: geo.ST_DWithin(region: refPoint, geometry: {lat: r.lat, lon: r.lon}, distance: 20.0)}))
     |> drop(columns: ["_start", "_stop"])
 
 test _stDWithin = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDWithin})

@@ -49,8 +49,4 @@ group_max_fn = (tables=<-) => tables
     |> max()
     |> drop(columns: ["_measurement", "_time"])
 
-test group_max_evaluate = () => ({
-    input: testing.loadStorage(csv: input),
-    want: testing.loadMem(csv: output),
-    fn: group_max_fn,
-})
+test group_max_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_max_fn})

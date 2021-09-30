@@ -13,12 +13,12 @@ import "http"
 // Note that unlike the range function, the stop argument is required here,
 // pending implementation of https://github.com/influxdata/flux/issues/3629.
 from = (
-        start,
-        stop,
-        host="",
-        orgID="",
-        token="",
-        raw=false,
+    start,
+    stop,
+    host="",
+    orgID="",
+    token="",
+    raw=false,
 ) => {
     id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
     response = influxdb.api(
@@ -26,11 +26,7 @@ from = (
         path: "/api/v2/orgs/" + id + "/usage",
         host: host,
         token: token,
-        query: [
-            "start": string(v: start),
-            "stop": string(v: stop),
-            "raw": string(v: raw),
-        ],
+        query: ["start": string(v: start), "stop": string(v: stop), "raw": string(v: raw)],
     )
 
     return if response.statusCode > 299 then
@@ -43,12 +39,7 @@ from = (
 // and token arguments allow cross-org and/or cross-cluster calls.
 limits = (host="", orgID="", token="") => {
     id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
-    response = influxdb.api(
-        method: "get",
-        path: "/api/v2/orgs/" + id + "/limits",
-        host: host,
-        token: token,
-    )
+    response = influxdb.api(method: "get", path: "/api/v2/orgs/" + id + "/limits", host: host, token: token)
 
     return if response.statusCode > 299 then
         die(msg: "organization limits request returned status " + string(v: response.statusCode) + ": " + string(v: response.body))

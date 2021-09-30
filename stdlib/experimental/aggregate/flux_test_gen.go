@@ -19,11 +19,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 3,
-					Line:   47,
+					Column: 111,
+					Line:   43,
 				},
 				File:   "aggregate_test.flux",
-				Source: "package aggregate_test\n\n\nimport \"experimental\"\nimport \"experimental/aggregate\"\nimport \"testing\"\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,in-data,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host,interface\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:00Z,1,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:10Z,2,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:20Z,3,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:30Z,4,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:40Z,5,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:50Z,6,bytes_recv,net,host.local,en7\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:00Z,10,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:10Z,20,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:20Z,30,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:30Z,40,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:40Z,50,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:50Z,60,bytes_recv,net,host.local,utun2\n\"\noutData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double,dateTime:RFC3339\n#default,out-data,,,,,,,\n,result,table,_start,_stop,host,interface,_value,_time\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,en7,0.1,2020-02-20T23:00:20Z\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,en7,0.1,2020-02-20T23:00:40Z\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,en7,0.1,2020-02-20T23:01:00Z\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:00:20Z\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:00:40Z\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:01:00Z\n\"\nt_rate = (table=<-) => table\n    |> range(start: 2020-02-20T23:00:00Z, stop: 2020-02-20T23:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"net\" and r._field == \"bytes_recv\")\n    |> aggregate.rate(every: 20s, groupColumns: [\"host\", \"interface\"], unit: 1s)\n\ntest rate = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_rate,\n})",
+				Source: "package aggregate_test\n\n\nimport \"experimental\"\nimport \"experimental/aggregate\"\nimport \"testing\"\n\ninData = \"\n#group,false,false,true,true,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string\n#default,in-data,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,host,interface\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:00Z,1,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:10Z,2,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:20Z,3,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:30Z,4,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:40Z,5,bytes_recv,net,host.local,en7\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:50Z,6,bytes_recv,net,host.local,en7\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:00Z,10,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:10Z,20,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:20Z,30,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:30Z,40,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:40Z,50,bytes_recv,net,host.local,utun2\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:50Z,60,bytes_recv,net,host.local,utun2\n\"\noutData = \"\n#group,false,false,true,true,true,true,false,false\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double,dateTime:RFC3339\n#default,out-data,,,,,,,\n,result,table,_start,_stop,host,interface,_value,_time\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,en7,0.1,2020-02-20T23:00:20Z\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,en7,0.1,2020-02-20T23:00:40Z\n,,0,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,en7,0.1,2020-02-20T23:01:00Z\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:00:20Z\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:00:40Z\n,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:01:00Z\n\"\nt_rate = (table=<-) => table\n    |> range(start: 2020-02-20T23:00:00Z, stop: 2020-02-20T23:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"net\" and r._field == \"bytes_recv\")\n    |> aggregate.rate(every: 20s, groupColumns: [\"host\", \"interface\"], unit: 1s)\n\ntest rate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rate})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1193,11 +1193,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 3,
-							Line:   47,
+							Column: 111,
+							Line:   43,
 						},
 						File:   "aggregate_test.flux",
-						Source: "rate = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_rate,\n})",
+						Source: "rate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rate})",
 						Start: ast.Position{
 							Column: 6,
 							Line:   43,
@@ -1230,11 +1230,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 3,
-								Line:   47,
+								Column: 111,
+								Line:   43,
 							},
 							File:   "aggregate_test.flux",
-							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_rate,\n})",
+							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rate})",
 							Start: ast.Position{
 								Column: 13,
 								Line:   43,
@@ -1247,11 +1247,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
-									Line:   47,
+									Column: 111,
+									Line:   43,
 								},
 								File:   "aggregate_test.flux",
-								Source: "({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_rate,\n})",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rate})",
 								Start: ast.Position{
 									Column: 19,
 									Line:   43,
@@ -1264,11 +1264,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 2,
-										Line:   47,
+										Column: 110,
+										Line:   43,
 									},
 									File:   "aggregate_test.flux",
-									Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_rate,\n}",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rate}",
 									Start: ast.Position{
 										Column: 20,
 										Line:   43,
@@ -1282,14 +1282,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 44,
-											Line:   44,
+											Column: 60,
+											Line:   43,
 										},
 										File:   "aggregate_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 5,
-											Line:   44,
+											Column: 21,
+											Line:   43,
 										},
 									},
 								},
@@ -1300,14 +1300,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 10,
-												Line:   44,
+												Column: 26,
+												Line:   43,
 											},
 											File:   "aggregate_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 5,
-												Line:   44,
+												Column: 21,
+												Line:   43,
 											},
 										},
 									},
@@ -1321,14 +1321,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 43,
-													Line:   44,
+													Column: 59,
+													Line:   43,
 												},
 												File:   "aggregate_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 32,
-													Line:   44,
+													Column: 48,
+													Line:   43,
 												},
 											},
 										},
@@ -1339,14 +1339,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
-														Line:   44,
+														Column: 59,
+														Line:   43,
 													},
 													File:   "aggregate_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 32,
-														Line:   44,
+														Column: 48,
+														Line:   43,
 													},
 												},
 											},
@@ -1357,14 +1357,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 35,
-															Line:   44,
+															Column: 51,
+															Line:   43,
 														},
 														File:   "aggregate_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 32,
-															Line:   44,
+															Column: 48,
+															Line:   43,
 														},
 													},
 												},
@@ -1377,14 +1377,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 43,
-															Line:   44,
+															Column: 59,
+															Line:   43,
 														},
 														File:   "aggregate_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 37,
-															Line:   44,
+															Column: 53,
+															Line:   43,
 														},
 													},
 												},
@@ -1399,14 +1399,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
-												Line:   44,
+												Column: 60,
+												Line:   43,
 											},
 											File:   "aggregate_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 12,
-												Line:   44,
+												Column: 28,
+												Line:   43,
 											},
 										},
 									},
@@ -1416,14 +1416,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 31,
-													Line:   44,
+													Column: 47,
+													Line:   43,
 												},
 												File:   "aggregate_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 12,
-													Line:   44,
+													Column: 28,
+													Line:   43,
 												},
 											},
 										},
@@ -1434,14 +1434,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 19,
-														Line:   44,
+														Column: 35,
+														Line:   43,
 													},
 													File:   "aggregate_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 12,
-														Line:   44,
+														Column: 28,
+														Line:   43,
 													},
 												},
 											},
@@ -1453,14 +1453,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 31,
-														Line:   44,
+														Column: 47,
+														Line:   43,
 													},
 													File:   "aggregate_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 20,
-														Line:   44,
+														Column: 36,
+														Line:   43,
 													},
 												},
 											},
@@ -1477,14 +1477,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 40,
-											Line:   45,
+											Column: 97,
+											Line:   43,
 										},
 										File:   "aggregate_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 5,
-											Line:   45,
+											Column: 62,
+											Line:   43,
 										},
 									},
 								},
@@ -1495,14 +1495,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 9,
-												Line:   45,
+												Column: 66,
+												Line:   43,
 											},
 											File:   "aggregate_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 5,
-												Line:   45,
+												Column: 62,
+												Line:   43,
 											},
 										},
 									},
@@ -1516,14 +1516,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 39,
-													Line:   45,
+													Column: 96,
+													Line:   43,
 												},
 												File:   "aggregate_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 27,
-													Line:   45,
+													Column: 84,
+													Line:   43,
 												},
 											},
 										},
@@ -1534,14 +1534,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 39,
-														Line:   45,
+														Column: 96,
+														Line:   43,
 													},
 													File:   "aggregate_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 27,
-														Line:   45,
+														Column: 84,
+														Line:   43,
 													},
 												},
 											},
@@ -1552,14 +1552,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 30,
-															Line:   45,
+															Column: 87,
+															Line:   43,
 														},
 														File:   "aggregate_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 27,
-															Line:   45,
+															Column: 84,
+															Line:   43,
 														},
 													},
 												},
@@ -1572,14 +1572,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
-															Line:   45,
+															Column: 96,
+															Line:   43,
 														},
 														File:   "aggregate_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 32,
-															Line:   45,
+															Column: 89,
+															Line:   43,
 														},
 													},
 												},
@@ -1594,14 +1594,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 40,
-												Line:   45,
+												Column: 97,
+												Line:   43,
 											},
 											File:   "aggregate_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 11,
-												Line:   45,
+												Column: 68,
+												Line:   43,
 											},
 										},
 									},
@@ -1611,14 +1611,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 26,
-													Line:   45,
+													Column: 83,
+													Line:   43,
 												},
 												File:   "aggregate_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 11,
-													Line:   45,
+													Column: 68,
+													Line:   43,
 												},
 											},
 										},
@@ -1629,14 +1629,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 18,
-														Line:   45,
+														Column: 75,
+														Line:   43,
 													},
 													File:   "aggregate_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 11,
-														Line:   45,
+														Column: 68,
+														Line:   43,
 													},
 												},
 											},
@@ -1648,14 +1648,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 26,
-														Line:   45,
+														Column: 83,
+														Line:   43,
 													},
 													File:   "aggregate_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 19,
-														Line:   45,
+														Column: 76,
+														Line:   43,
 													},
 												},
 											},
@@ -1672,14 +1672,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   46,
+											Column: 109,
+											Line:   43,
 										},
 										File:   "aggregate_test.flux",
 										Source: "fn: t_rate",
 										Start: ast.Position{
-											Column: 5,
-											Line:   46,
+											Column: 99,
+											Line:   43,
 										},
 									},
 								},
@@ -1690,14 +1690,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   46,
+												Column: 101,
+												Line:   43,
 											},
 											File:   "aggregate_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 5,
-												Line:   46,
+												Column: 99,
+												Line:   43,
 											},
 										},
 									},
@@ -1710,14 +1710,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   46,
+												Column: 109,
+												Line:   43,
 											},
 											File:   "aggregate_test.flux",
 											Source: "t_rate",
 											Start: ast.Position{
-												Column: 9,
-												Line:   46,
+												Column: 103,
+												Line:   43,
 											},
 										},
 									},
@@ -1740,11 +1740,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 3,
-						Line:   47,
+						Column: 111,
+						Line:   43,
 					},
 					File:   "aggregate_test.flux",
-					Source: "test rate = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: t_rate,\n})",
+					Source: "test rate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rate})",
 					Start: ast.Position{
 						Column: 1,
 						Line:   43,
