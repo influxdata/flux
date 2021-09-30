@@ -3,6 +3,7 @@ package interval
 import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/values"
 )
 
@@ -34,6 +35,7 @@ type Window struct {
 	period     values.Duration
 	zero       values.Time
 	zeroMonths int64
+	loc        *zoneinfo.Location
 }
 
 // NewWindow creates a window which can be used to determine the boundaries for a given point.
@@ -42,12 +44,20 @@ type Window struct {
 // Each window's length is the start boundary plus the period.
 // Every must not be a mix of months and nanoseconds in order to preserve constant time bounds lookup.
 func NewWindow(every, period, offset values.Duration) (Window, error) {
+	return NewWindowInLocation(every, period, offset, nil)
+}
+
+// NewWindowInLocation creates a window the same as NewWindow within the given location.
+// Windows that are location-aware will take into account zone offset changes such
+// as daylight savings time and other changes that occur to the location's clock time.
+func NewWindowInLocation(every, period, offset values.Duration, loc *zoneinfo.Location) (Window, error) {
 	zero := epoch.Add(offset)
 	w := Window{
 		every:      every,
 		period:     period,
 		zero:       zero,
 		zeroMonths: monthsSince(zero),
+		loc:        loc,
 	}
 	if err := w.isValid(); err != nil {
 		return Window{}, err
@@ -68,6 +78,10 @@ func (w Window) Period() values.Duration {
 	return w.period
 }
 
+func (w Window) Location() *zoneinfo.Location {
+	return w.loc
+}
+
 func (w Window) isValid() error {
 	if w.every.IsZero() {
 		return errors.New(codes.Invalid, "duration used as an interval cannot be zero")
@@ -86,6 +100,10 @@ func (w Window) isValid() error {
 // GetLatestBounds returns the bounds for the latest window bounds that contains the given time t.
 // For underlapping windows that do not contain time t, the window directly before time t will be returned.
 func (w Window) GetLatestBounds(t values.Time) Bounds {
+	if w.loc != nil {
+		t = values.Time(w.loc.FromLocalClock(int64(t)))
+	}
+
 	// Get the latest index that should contain the time t
 	index := w.lastIndex(t)
 	// Construct the bounds from the index
@@ -117,12 +135,18 @@ func (w Window) GetLatestBounds(t values.Time) Bounds {
 				index += int(indexDelta)
 			}
 		}
-		// Now do a direct search
-		next := w.NextBounds(b)
+		// Now do a direct search.
+		// We use the utc version of these methods because
+		// we will adjust for the location at the end.
+		next := w.nextBounds(b)
 		for next.Contains(t) {
 			b = next
-			next = w.NextBounds(next)
+			next = w.nextBounds(next)
 		}
+	}
+
+	if w.loc != nil {
+		b = b.in(w.loc)
 	}
 	return b
 }
@@ -155,6 +179,19 @@ func (w Window) GetOverlappingBounds(start, stop values.Time) []Bounds {
 
 // NextBounds returns the next boundary in sequence from the given boundary.
 func (w Window) NextBounds(b Bounds) Bounds {
+	// We pass in the bounds as-is because nextBounds
+	// only uses the index to move to the next interval, so we
+	// do not have to adjust the start and stop time back to utc.
+	bounds := w.nextBounds(b)
+	if w.loc != nil {
+		bounds = bounds.in(w.loc)
+	}
+	return bounds
+}
+
+// nextBounds returns the next boundary in sequence from the given boundary.
+// It does not adjust the start and stop time for the location.
+func (w Window) nextBounds(b Bounds) Bounds {
 	index := b.index + 1
 	start := w.zero.Add(w.every.Mul(index))
 	stop := start.Add(w.period)
@@ -170,6 +207,19 @@ func (w Window) NextBounds(b Bounds) Bounds {
 
 // PrevBounds returns the previous boundary in sequence from the given boundary.
 func (w Window) PrevBounds(b Bounds) Bounds {
+	// We pass in the bounds as-is because prevBounds
+	// only uses the index to move to the previous interval, so we
+	// do not have to adjust the start and stop time back to utc.
+	bounds := w.prevBounds(b)
+	if w.loc != nil {
+		bounds = bounds.in(w.loc)
+	}
+	return bounds
+}
+
+// prevBounds returns the previous boundary in sequence from the given boundary.
+// It does not adjust the start and stop time for the location.
+func (w Window) prevBounds(b Bounds) Bounds {
 	index := b.index - 1
 	start := w.zero.Add(w.every.Mul(index))
 	stop := start.Add(w.period)
