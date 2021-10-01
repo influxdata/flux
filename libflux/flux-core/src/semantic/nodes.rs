@@ -29,6 +29,7 @@ use crate::{
             self, Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap,
             Tvar, TvarKinds,
         },
+        walk,
     },
 };
 
@@ -964,21 +965,26 @@ impl FunctionExpr {
         // This params will build the nested env when inferring the function body.
         let mut params = PolyTypeMap::new();
         for param in &mut self.params {
-            match param.default {
-                Some(ref mut e) => {
-                    let ncons = e.infer(infer)?;
-                    cons = cons + ncons;
+            match &mut param.default {
+                Some(e) => {
                     let id = param.key.name.clone();
                     // We are here: `infer = (a=1) => {...}`.
                     // So, this PolyType is actually a MonoType, whose type
                     // is the one of the default value ("1" in "a=1").
+                    let param_type = if must_constrain_default_argument(e) {
+                        let ncons = e.infer(infer)?;
+                        cons = cons + ncons;
+                        e.type_of()
+                    } else {
+                        MonoType::Var(infer.sub.fresh())
+                    };
                     let typ = PolyType {
                         vars: Vec::new(),
                         cons: TvarKinds::new(),
-                        expr: e.type_of(),
+                        expr: param_type.clone(),
                     };
                     params.insert(id.clone(), typ);
-                    opt.insert(id.to_string(), e.type_of());
+                    opt.insert(id.to_string(), param_type);
                 }
                 None => {
                     // We are here: `infer = (a) => {...}`.
@@ -1002,7 +1008,7 @@ impl FunctionExpr {
                         req.insert(id.to_string(), MonoType::Var(ftvar));
                     }
                 }
-            };
+            }
         }
         // Add the parameters to some nested environment.
         infer.env.enter_scope();
@@ -1013,6 +1019,9 @@ impl FunctionExpr {
         let bcons = self.body.infer(infer)?;
         // Now pop the nested environment, we don't need it anymore.
         infer.env.exit_scope();
+
+        cons = cons + bcons;
+
         let retn = self.body.type_of();
         let func = MonoType::from(Function {
             req,
@@ -1020,14 +1029,83 @@ impl FunctionExpr {
             pipe,
             retn,
         });
-        cons = cons + bcons;
         cons.add(Constraint::Equal {
             exp: self.typ.clone(),
-            act: func,
+            act: func.clone(),
             loc: self.loc.clone(),
         });
+
+        let ncons = if self.params.iter().any(|param| param.default.is_some()) {
+            let t = func.clone().apply(infer.sub);
+            let p = infer::generalize(&infer.env, infer.sub.cons(), t);
+            self.infer_default_params(infer, p)?
+        } else {
+            Constraints::empty()
+        };
+
+        Ok(cons + ncons)
+    }
+
+    fn infer_default_params(
+        &mut self,
+        infer: &mut InferState<'_>,
+        function_type: PolyType,
+    ) -> Result {
+        let mut cons = Constraints::empty();
+        let mut pipe = None;
+        let mut req = MonoTypeMap::new();
+        let mut opt = MonoTypeMap::new();
+
+        for param in &mut self.params {
+            match param.default {
+                Some(ref mut e) => {
+                    let param_type = if must_constrain_default_argument(e) {
+                        MonoType::Var(infer.sub.fresh())
+                    } else {
+                        let ncons = e.infer(infer)?;
+                        cons = cons + ncons;
+                        e.type_of()
+                    };
+                    let id = param.key.name.clone();
+                    opt.insert(id, param_type);
+                }
+                None => {
+                    let id = param.key.name.clone();
+                    let ftvar = infer.sub.fresh();
+                    // Piped arguments cannot have a default value.
+                    // So check if this is a piped argument.
+                    if param.is_pipe {
+                        pipe = Some(types::Property {
+                            k: id,
+                            v: MonoType::Var(ftvar),
+                        });
+                    } else {
+                        req.insert(id, MonoType::Var(ftvar));
+                    }
+                }
+            }
+        }
+
+        let retn = MonoType::Var(infer.sub.fresh());
+        let default_func = MonoType::from(Function {
+            req,
+            opt,
+            pipe,
+            retn,
+        });
+
+        let (exp, ncons) = infer::instantiate(function_type, infer.sub, self.loc.clone());
+        cons = cons + ncons;
+
+        cons.add(Constraint::Equal {
+            exp,
+            act: default_func,
+            loc: self.loc.clone(),
+        });
+
         Ok(cons)
     }
+
     #[allow(missing_docs)]
     pub fn pipe(&self) -> Option<&FunctionParameter> {
         for p in &self.params {
@@ -2072,6 +2150,33 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
         nanoseconds,
         negative,
     })
+}
+
+/// Since functions without piped arguments may be used in places where a piped function is
+/// expected as long as the name of the arguments match, a default argument that contains a pipe
+/// argument ends up being a necessary part of inference. So we keep the old behavior for these
+/// default arguments.
+///
+/// ```flux
+/// f = (arg=(x=<-) => x) => 0 |> arg()
+/// g = () => f(arg: (x) => 5 + x)
+/// ```
+fn must_constrain_default_argument(expr: &Expression) -> bool {
+    let mut must_constrain = false;
+
+    walk::walk(
+        &mut |node| {
+            if let walk::Node::FunctionExpr(func) = node {
+                for param in &func.params {
+                    if param.is_pipe {
+                        must_constrain = true;
+                    }
+                }
+            }
+        },
+        walk::Node::from_expr(expr),
+    );
+    must_constrain
 }
 
 #[cfg(test)]

@@ -46,6 +46,7 @@ maplit = "1.0.2"
 flatbuffers = "2.0.0"
 derivative = "2.1.1"
 walkdir = "2.2.9"
+log = "0.4"
 lsp-types = { version = "0.89.2", optional = true }
 pulldown-cmark = { version = "0.8", default-features = false }
 structopt = "0.3"
@@ -54,9 +55,9 @@ lazy_static = "1"
 csv = "1.1"
 pad = "0.1.6"
 tempfile = "3"
-log = "0.4"
 
 [dev-dependencies]
+env_logger = "0.9"
 colored = "1.8"
 pretty_assertions = "0.7.2"
 criterion = "0.3.3"

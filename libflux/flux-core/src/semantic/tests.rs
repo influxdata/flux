@@ -114,6 +114,7 @@ fn infer_types(
     want: Option<HashMap<&str, &str>>,
     config: AnalyzerConfig,
 ) -> Result<Environment, Error> {
+    let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp
         .into_iter()
@@ -2877,6 +2878,10 @@ fn call_expr() {
             "f" => "(x:(arg:C) => E, y:C) => E",
         ]
     }
+}
+
+#[test]
+fn infer_pipe() {
     test_infer! {
         src: r#"
             f = (arg=(x=<-) => x) => 0 |> arg()
@@ -3360,7 +3365,7 @@ fn function_default_arguments_1() {
             y = f(a: x, b: f(a:x))
         "#,
         exp: map![
-            "f" => "(a: int, ?b: int) => int",
+            "f" => "(a: A, ?b: A) => A where A: Addable",
             "x" => "int",
             "y" => "int",
         ],
@@ -3377,7 +3382,7 @@ fn function_default_arguments_2() {
             z = f(a: 3.3, b: 3)
         "#,
         exp: map![
-            "f" => "(a: float, b: int, ?c: float, ?d: int) => {r: float , s: int}",
+            "f" => "(a: A, b: B, ?c: A, ?d: B) => {r: A, s: B} where A: Addable, B: Addable",
             "w" => "{r: float , s: int}",
             "x" => "{r: float , s: int}",
             "y" => "{r: float , s: int}",
@@ -3412,10 +3417,24 @@ fn function_default_arguments_and_pipes() {
         "#,
         exp: map![
             "f" => "(<-t: B, f: (<-: B, a: A) => C, g: A) => C",
-            "x" => "(a: int, ?b: int, <-m: int) => int",
-            "z" => "(a: {B with m: A}, ?b: float, ?c: float, <-m: float) => {r: A , s: float}",
+            "x" => "(a: D, ?b: D, <-m: D) => D where D: Addable",
+            "z" => "(a: {B with m: A}, ?b: E, ?c: E, <-m: E) => {r: A , s: E} where E: Addable",
             "y" => "int",
             "v" => "{s: float, r: string}",
+        ],
+    }
+}
+
+#[test]
+fn function_default_arguments_polymorphic() {
+    test_infer! {
+        src: r#"
+            f = (x = "default") => x
+            g = (x = 0) => x + x
+        "#,
+        exp: map![
+            "f" => "(?x: A) => A",
+            "g" => "(?x: B) => B where B: Addable",
         ],
     }
 }
