@@ -46,14 +46,31 @@ alignTime = (tables=<-, alignTo=time(v: 0)) => tables
     |> map(fn: (r) => ({r with _time: time(v: int(v: alignTo) + r.timeDiff)}))
     |> drop(columns: ["timeDiff"])
 
-// An experimental version of window.
-builtin window : (
+builtin _window : (
     <-tables: [{T with _start: time, _stop: time, _time: time}],
-    ?every: duration,
-    ?period: duration,
-    ?offset: duration,
-    ?createEmpty: bool,
+    every: duration,
+    period: duration,
+    offset: duration,
+    location: string,
+    createEmpty: bool,
 ) => [{T with _start: time, _stop: time, _time: time}]
+
+// An experimental version of window.
+window = (
+        tables=<-,
+        every=0s,
+        period=0s,
+        offset=0s,
+        location=location,
+        createEmpty=false,
+) => tables
+    |> _window(
+        every,
+        period,
+        offset,
+        location,
+        createEmpty,
+    )
 
 // An experimental version of integral.
 builtin integral : (<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]

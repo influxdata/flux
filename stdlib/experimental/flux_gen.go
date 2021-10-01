@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 18,
-					Line:   113,
+					Line:   130,
 				},
 				File:   "experimental.flux",
-				Source: "package experimental\n\n\nbuiltin addDuration : (d: duration, to: time) => time\nbuiltin subDuration : (d: duration, from: time) => time\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group : (<-tables: [A], mode: string, columns: [string]) => [A] where A: Record\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys : (o: A) => [string] where A: Record\n\n// set adds the values from the object onto each row of a table\nbuiltin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record\n\n// An experimental version of \"to\" that:\n// - Expects pivoted data\n// - Any column in the group key is made a tag in storage\n// - All other columns are fields\n// - An error will be thrown for incompatible data types\nbuiltin to : (\n    <-tables: [A],\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [A] where\n    A: Record\n\n// An experimental version of join.\nbuiltin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record\nbuiltin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record\n\n// Aligns all tables to a common start time by using the same _time value for\n// the first record in each table and incrementing all subsequent _time values\n// using time elapsed between input records.\n// By default, it aligns to tables to 1970-01-01T00:00:00Z UTC.\nalignTime = (tables=<-, alignTo=time(v: 0)) => tables\n    |> stateDuration(\n        fn: (r) => true,\n        column: \"timeDiff\",\n        unit: 1ns,\n    )\n    |> map(fn: (r) => ({r with _time: time(v: int(v: alignTo) + r.timeDiff)}))\n    |> drop(columns: [\"timeDiff\"])\n\n// An experimental version of window.\nbuiltin window : (\n    <-tables: [{T with _start: time, _stop: time, _time: time}],\n    ?every: duration,\n    ?period: duration,\n    ?offset: duration,\n    ?createEmpty: bool,\n) => [{T with _start: time, _stop: time, _time: time}]\n\n// An experimental version of integral.\nbuiltin integral : (<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]\n\n// An experimental version of count.\nbuiltin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]\n\n// An experimental version of histogramQuantile\nbuiltin histogramQuantile : (<-tables: [{T with _value: float, le: float}], ?quantile: float, ?minValue: float) => [{T with _value: float}]\n\n// An experimental version of mean.\nbuiltin mean : (<-tables: [{T with _value: float}]) => [{T with _value: float}]\n\n// An experimental version of mode.\nbuiltin mode : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of quantile.\nbuiltin quantile : (<-tables: [{T with _value: float}], q: float, ?compression: float, ?method: string) => [{T with _value: float}]\n\n// An experimental version of skew.\nbuiltin skew : (<-tables: [{T with _value: float}]) => [{T with _value: float}]\n\n// An experimental version of spread.\nbuiltin spread : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric\n\n// An experimental version of stddev.\nbuiltin stddev : (<-tables: [{T with _value: float}], ?mode: string) => [{T with _value: float}]\n\n// An experimental version of sum.\nbuiltin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric\n\n// An experimental version of kaufmansAMA.\nbuiltin kaufmansAMA : (<-tables: [{T with _value: A}], n: int) => [{T with _value: float}] where A: Numeric\n\n// An experimental version of distinct\nbuiltin distinct : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of fill\nbuiltin fill : (<-tables: [{T with _value: A}], ?value: A, ?usePrevious: bool) => [{T with _value: A}]\n\n// An experimental version of first\nbuiltin first : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of last\nbuiltin last : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of max\nbuiltin max : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of min\nbuiltin min : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of unique\nbuiltin unique : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of histogram\nbuiltin histogram",
+				Source: "package experimental\n\n\nbuiltin addDuration : (d: duration, to: time) => time\nbuiltin subDuration : (d: duration, from: time) => time\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group : (<-tables: [A], mode: string, columns: [string]) => [A] where A: Record\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys : (o: A) => [string] where A: Record\n\n// set adds the values from the object onto each row of a table\nbuiltin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record\n\n// An experimental version of \"to\" that:\n// - Expects pivoted data\n// - Any column in the group key is made a tag in storage\n// - All other columns are fields\n// - An error will be thrown for incompatible data types\nbuiltin to : (\n    <-tables: [A],\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [A] where\n    A: Record\n\n// An experimental version of join.\nbuiltin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record\nbuiltin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record\n\n// Aligns all tables to a common start time by using the same _time value for\n// the first record in each table and incrementing all subsequent _time values\n// using time elapsed between input records.\n// By default, it aligns to tables to 1970-01-01T00:00:00Z UTC.\nalignTime = (tables=<-, alignTo=time(v: 0)) => tables\n    |> stateDuration(\n        fn: (r) => true,\n        column: \"timeDiff\",\n        unit: 1ns,\n    )\n    |> map(fn: (r) => ({r with _time: time(v: int(v: alignTo) + r.timeDiff)}))\n    |> drop(columns: [\"timeDiff\"])\n\nbuiltin _window : (\n    <-tables: [{T with _start: time, _stop: time, _time: time}],\n    every: duration,\n    period: duration,\n    offset: duration,\n    location: string,\n    createEmpty: bool,\n) => [{T with _start: time, _stop: time, _time: time}]\n\n// An experimental version of window.\nwindow = (\n        tables=<-,\n        every=0s,\n        period=0s,\n        offset=0s,\n        location=location,\n        createEmpty=false,\n) => tables\n    |> _window(\n        every,\n        period,\n        offset,\n        location,\n        createEmpty,\n    )\n\n// An experimental version of integral.\nbuiltin integral : (<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]\n\n// An experimental version of count.\nbuiltin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]\n\n// An experimental version of histogramQuantile\nbuiltin histogramQuantile : (<-tables: [{T with _value: float, le: float}], ?quantile: float, ?minValue: float) => [{T with _value: float}]\n\n// An experimental version of mean.\nbuiltin mean : (<-tables: [{T with _value: float}]) => [{T with _value: float}]\n\n// An experimental version of mode.\nbuiltin mode : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of quantile.\nbuiltin quantile : (<-tables: [{T with _value: float}], q: float, ?compression: float, ?method: string) => [{T with _value: float}]\n\n// An experimental version of skew.\nbuiltin skew : (<-tables: [{T with _value: float}]) => [{T with _value: float}]\n\n// An experimental version of spread.\nbuiltin spread : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric\n\n// An experimental version of stddev.\nbuiltin stddev : (<-tables: [{T with _value: float}], ?mode: string) => [{T with _value: float}]\n\n// An experimental version of sum.\nbuiltin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric\n\n// An experimental version of kaufmansAMA.\nbuiltin kaufmansAMA : (<-tables: [{T with _value: A}], n: int) => [{T with _value: float}] where A: Numeric\n\n// An experimental version of distinct\nbuiltin distinct : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of fill\nbuiltin fill : (<-tables: [{T with _value: A}], ?value: A, ?usePrevious: bool) => [{T with _value: A}]\n\n// An experimental version of first\nbuiltin first : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of last\nbuiltin last : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of max\nbuiltin max : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of min\nbuiltin min : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of unique\nbuiltin unique : (<-tables: [{T with _value: A}]) => [{T with _value: A}]\n\n// An experimental version of histogram\nbuiltin histogram",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -4911,18 +4911,18 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
-				Comments: []ast.Comment{ast.Comment{Text: "// An experimental version of window.\n"}},
+				Comments: nil,
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 15,
-						Line:   50,
+						Column: 16,
+						Line:   49,
 					},
 					File:   "experimental.flux",
-					Source: "builtin window",
+					Source: "builtin _window",
 					Start: ast.Position{
 						Column: 1,
-						Line:   50,
+						Line:   49,
 					},
 				},
 			},
@@ -4933,18 +4933,18 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 15,
-							Line:   50,
+							Column: 16,
+							Line:   49,
 						},
 						File:   "experimental.flux",
-						Source: "window",
+						Source: "_window",
 						Start: ast.Position{
 							Column: 9,
-							Line:   50,
+							Line:   49,
 						},
 					},
 				},
-				Name: "window",
+				Name: "_window",
 			},
 			Ty: ast.TypeExpression{
 				BaseNode: ast.BaseNode{
@@ -4956,10 +4956,10 @@ var pkgAST = &ast.Package{
 							Line:   56,
 						},
 						File:   "experimental.flux",
-						Source: "(\n    <-tables: [{T with _start: time, _stop: time, _time: time}],\n    ?every: duration,\n    ?period: duration,\n    ?offset: duration,\n    ?createEmpty: bool,\n) => [{T with _start: time, _stop: time, _time: time}]",
+						Source: "(\n    <-tables: [{T with _start: time, _stop: time, _time: time}],\n    every: duration,\n    period: duration,\n    offset: duration,\n    location: string,\n    createEmpty: bool,\n) => [{T with _start: time, _stop: time, _time: time}]",
 						Start: ast.Position{
-							Column: 18,
-							Line:   50,
+							Column: 19,
+							Line:   49,
 						},
 					},
 				},
@@ -4974,10 +4974,10 @@ var pkgAST = &ast.Package{
 								Line:   56,
 							},
 							File:   "experimental.flux",
-							Source: "(\n    <-tables: [{T with _start: time, _stop: time, _time: time}],\n    ?every: duration,\n    ?period: duration,\n    ?offset: duration,\n    ?createEmpty: bool,\n) => [{T with _start: time, _stop: time, _time: time}]",
+							Source: "(\n    <-tables: [{T with _start: time, _stop: time, _time: time}],\n    every: duration,\n    period: duration,\n    offset: duration,\n    location: string,\n    createEmpty: bool,\n) => [{T with _start: time, _stop: time, _time: time}]",
 							Start: ast.Position{
-								Column: 18,
-								Line:   50,
+								Column: 19,
+								Line:   49,
 							},
 						},
 					},
@@ -4988,13 +4988,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 64,
-									Line:   51,
+									Line:   50,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _start: time, _stop: time, _time: time}]",
 								Start: ast.Position{
 									Column: 5,
-									Line:   51,
+									Line:   50,
 								},
 							},
 						},
@@ -5006,13 +5006,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   51,
+										Line:   50,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 7,
-										Line:   51,
+										Line:   50,
 									},
 								},
 							},
@@ -5025,13 +5025,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 64,
-										Line:   51,
+										Line:   50,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _start: time, _stop: time, _time: time}]",
 									Start: ast.Position{
 										Column: 15,
-										Line:   51,
+										Line:   50,
 									},
 								},
 							},
@@ -5042,13 +5042,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 63,
-											Line:   51,
+											Line:   50,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _start: time, _stop: time, _time: time}",
 										Start: ast.Position{
 											Column: 16,
-											Line:   51,
+											Line:   50,
 										},
 									},
 								},
@@ -5059,13 +5059,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   51,
+												Line:   50,
 											},
 											File:   "experimental.flux",
 											Source: "_start: time",
 											Start: ast.Position{
 												Column: 24,
-												Line:   51,
+												Line:   50,
 											},
 										},
 									},
@@ -5076,13 +5076,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   51,
+													Line:   50,
 												},
 												File:   "experimental.flux",
 												Source: "_start",
 												Start: ast.Position{
 													Column: 24,
-													Line:   51,
+													Line:   50,
 												},
 											},
 										},
@@ -5095,13 +5095,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 36,
-													Line:   51,
+													Line:   50,
 												},
 												File:   "experimental.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 32,
-													Line:   51,
+													Line:   50,
 												},
 											},
 										},
@@ -5112,13 +5112,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
-														Line:   51,
+														Line:   50,
 													},
 													File:   "experimental.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 32,
-														Line:   51,
+														Line:   50,
 													},
 												},
 											},
@@ -5132,13 +5132,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
-												Line:   51,
+												Line:   50,
 											},
 											File:   "experimental.flux",
 											Source: "_stop: time",
 											Start: ast.Position{
 												Column: 38,
-												Line:   51,
+												Line:   50,
 											},
 										},
 									},
@@ -5149,13 +5149,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   51,
+													Line:   50,
 												},
 												File:   "experimental.flux",
 												Source: "_stop",
 												Start: ast.Position{
 													Column: 38,
-													Line:   51,
+													Line:   50,
 												},
 											},
 										},
@@ -5168,13 +5168,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   51,
+													Line:   50,
 												},
 												File:   "experimental.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 45,
-													Line:   51,
+													Line:   50,
 												},
 											},
 										},
@@ -5185,13 +5185,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   51,
+														Line:   50,
 													},
 													File:   "experimental.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 45,
-														Line:   51,
+														Line:   50,
 													},
 												},
 											},
@@ -5205,13 +5205,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 62,
-												Line:   51,
+												Line:   50,
 											},
 											File:   "experimental.flux",
 											Source: "_time: time",
 											Start: ast.Position{
 												Column: 51,
-												Line:   51,
+												Line:   50,
 											},
 										},
 									},
@@ -5222,13 +5222,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   51,
+													Line:   50,
 												},
 												File:   "experimental.flux",
 												Source: "_time",
 												Start: ast.Position{
 													Column: 51,
-													Line:   51,
+													Line:   50,
 												},
 											},
 										},
@@ -5241,13 +5241,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 62,
-													Line:   51,
+													Line:   50,
 												},
 												File:   "experimental.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 58,
-													Line:   51,
+													Line:   50,
 												},
 											},
 										},
@@ -5258,13 +5258,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 62,
-														Line:   51,
+														Line:   50,
 													},
 													File:   "experimental.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 58,
-														Line:   51,
+														Line:   50,
 													},
 												},
 											},
@@ -5279,13 +5279,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   51,
+												Line:   50,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 17,
-												Line:   51,
+												Line:   50,
 											},
 										},
 									},
@@ -5299,18 +5299,92 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
+									Column: 20,
+									Line:   51,
+								},
+								File:   "experimental.flux",
+								Source: "every: duration",
+								Start: ast.Position{
+									Column: 5,
+									Line:   51,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   51,
+									},
+									File:   "experimental.flux",
+									Source: "every",
+									Start: ast.Position{
+										Column: 5,
+										Line:   51,
+									},
+								},
+							},
+							Name: "every",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   51,
+									},
+									File:   "experimental.flux",
+									Source: "duration",
+									Start: ast.Position{
+										Column: 12,
+										Line:   51,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   51,
+										},
+										File:   "experimental.flux",
+										Source: "duration",
+										Start: ast.Position{
+											Column: 12,
+											Line:   51,
+										},
+									},
+								},
+								Name: "duration",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
 									Column: 21,
 									Line:   52,
 								},
 								File:   "experimental.flux",
-								Source: "?every: duration",
+								Source: "period: duration",
 								Start: ast.Position{
 									Column: 5,
 									Line:   52,
 								},
 							},
 						},
-						Kind: "Optional",
+						Kind: "Required",
 						Name: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -5321,14 +5395,14 @@ var pkgAST = &ast.Package{
 										Line:   52,
 									},
 									File:   "experimental.flux",
-									Source: "every",
+									Source: "period",
 									Start: ast.Position{
-										Column: 6,
+										Column: 5,
 										Line:   52,
 									},
 								},
 							},
-							Name: "every",
+							Name: "period",
 						},
 						Ty: &ast.NamedType{
 							BaseNode: ast.BaseNode{
@@ -5373,106 +5447,32 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
+									Column: 21,
 									Line:   53,
 								},
 								File:   "experimental.flux",
-								Source: "?period: duration",
+								Source: "offset: duration",
 								Start: ast.Position{
 									Column: 5,
 									Line:   53,
 								},
 							},
 						},
-						Kind: "Optional",
+						Kind: "Required",
 						Name: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 11,
 										Line:   53,
-									},
-									File:   "experimental.flux",
-									Source: "period",
-									Start: ast.Position{
-										Column: 6,
-										Line:   53,
-									},
-								},
-							},
-							Name: "period",
-						},
-						Ty: &ast.NamedType{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 22,
-										Line:   53,
-									},
-									File:   "experimental.flux",
-									Source: "duration",
-									Start: ast.Position{
-										Column: 14,
-										Line:   53,
-									},
-								},
-							},
-							ID: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 22,
-											Line:   53,
-										},
-										File:   "experimental.flux",
-										Source: "duration",
-										Start: ast.Position{
-											Column: 14,
-											Line:   53,
-										},
-									},
-								},
-								Name: "duration",
-							},
-						},
-					}, &ast.ParameterType{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 22,
-									Line:   54,
-								},
-								File:   "experimental.flux",
-								Source: "?offset: duration",
-								Start: ast.Position{
-									Column: 5,
-									Line:   54,
-								},
-							},
-						},
-						Kind: "Optional",
-						Name: &ast.Identifier{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 12,
-										Line:   54,
 									},
 									File:   "experimental.flux",
 									Source: "offset",
 									Start: ast.Position{
-										Column: 6,
-										Line:   54,
+										Column: 5,
+										Line:   53,
 									},
 								},
 							},
@@ -5484,14 +5484,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
-										Line:   54,
+										Column: 21,
+										Line:   53,
 									},
 									File:   "experimental.flux",
 									Source: "duration",
 									Start: ast.Position{
-										Column: 14,
-										Line:   54,
+										Column: 13,
+										Line:   53,
 									},
 								},
 							},
@@ -5501,14 +5501,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   54,
+											Column: 21,
+											Line:   53,
 										},
 										File:   "experimental.flux",
 										Source: "duration",
 										Start: ast.Position{
-											Column: 14,
-											Line:   54,
+											Column: 13,
+											Line:   53,
 										},
 									},
 								},
@@ -5521,31 +5521,105 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 23,
-									Line:   55,
+									Column: 21,
+									Line:   54,
 								},
 								File:   "experimental.flux",
-								Source: "?createEmpty: bool",
+								Source: "location: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   55,
+									Line:   54,
 								},
 							},
 						},
-						Kind: "Optional",
+						Kind: "Required",
 						Name: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 17,
+										Column: 13,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "location",
+									Start: ast.Position{
+										Column: 5,
+										Line:   54,
+									},
+								},
+							},
+							Name: "location",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 21,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 15,
+										Line:   54,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 21,
+											Line:   54,
+										},
+										File:   "experimental.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 15,
+											Line:   54,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   55,
+								},
+								File:   "experimental.flux",
+								Source: "createEmpty: bool",
+								Start: ast.Position{
+									Column: 5,
+									Line:   55,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 16,
 										Line:   55,
 									},
 									File:   "experimental.flux",
 									Source: "createEmpty",
 									Start: ast.Position{
-										Column: 6,
+										Column: 5,
 										Line:   55,
 									},
 								},
@@ -5558,13 +5632,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 23,
+										Column: 22,
 										Line:   55,
 									},
 									File:   "experimental.flux",
 									Source: "bool",
 									Start: ast.Position{
-										Column: 19,
+										Column: 18,
 										Line:   55,
 									},
 								},
@@ -5575,13 +5649,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 23,
+											Column: 22,
 											Line:   55,
 										},
 										File:   "experimental.flux",
 										Source: "bool",
 										Start: ast.Position{
-											Column: 19,
+											Column: 18,
 											Line:   55,
 										},
 									},
@@ -5867,6 +5941,705 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 6,
+						Line:   73,
+					},
+					File:   "experimental.flux",
+					Source: "window = (\n        tables=<-,\n        every=0s,\n        period=0s,\n        offset=0s,\n        location=location,\n        createEmpty=false,\n) => tables\n    |> _window(\n        every,\n        period,\n        offset,\n        location,\n        createEmpty,\n    )",
+					Start: ast.Position{
+						Column: 1,
+						Line:   59,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// An experimental version of window.\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   59,
+						},
+						File:   "experimental.flux",
+						Source: "window",
+						Start: ast.Position{
+							Column: 1,
+							Line:   59,
+						},
+					},
+				},
+				Name: "window",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   73,
+						},
+						File:   "experimental.flux",
+						Source: "(\n        tables=<-,\n        every=0s,\n        period=0s,\n        offset=0s,\n        location=location,\n        createEmpty=false,\n) => tables\n    |> _window(\n        every,\n        period,\n        offset,\n        location,\n        createEmpty,\n    )",
+						Start: ast.Position{
+							Column: 10,
+							Line:   59,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 12,
+									Line:   66,
+								},
+								File:   "experimental.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 6,
+									Line:   66,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 6,
+								Line:   73,
+							},
+							File:   "experimental.flux",
+							Source: "tables\n    |> _window(\n        every,\n        period,\n        offset,\n        location,\n        createEmpty,\n    )",
+							Start: ast.Position{
+								Column: 6,
+								Line:   66,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 20,
+										Line:   72,
+									},
+									File:   "experimental.flux",
+									Source: "every,\n        period,\n        offset,\n        location,\n        createEmpty",
+									Start: ast.Position{
+										Column: 9,
+										Line:   68,
+									},
+								},
+							},
+							Lbrace: nil,
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   68,
+										},
+										File:   "experimental.flux",
+										Source: "every",
+										Start: ast.Position{
+											Column: 9,
+											Line:   68,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   68,
+											},
+											File:   "experimental.flux",
+											Source: "every",
+											Start: ast.Position{
+												Column: 9,
+												Line:   68,
+											},
+										},
+									},
+									Name: "every",
+								},
+								Separator: nil,
+								Value:     nil,
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   69,
+										},
+										File:   "experimental.flux",
+										Source: "period",
+										Start: ast.Position{
+											Column: 9,
+											Line:   69,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   69,
+											},
+											File:   "experimental.flux",
+											Source: "period",
+											Start: ast.Position{
+												Column: 9,
+												Line:   69,
+											},
+										},
+									},
+									Name: "period",
+								},
+								Separator: nil,
+								Value:     nil,
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   70,
+										},
+										File:   "experimental.flux",
+										Source: "offset",
+										Start: ast.Position{
+											Column: 9,
+											Line:   70,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   70,
+											},
+											File:   "experimental.flux",
+											Source: "offset",
+											Start: ast.Position{
+												Column: 9,
+												Line:   70,
+											},
+										},
+									},
+									Name: "offset",
+								},
+								Separator: nil,
+								Value:     nil,
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 17,
+											Line:   71,
+										},
+										File:   "experimental.flux",
+										Source: "location",
+										Start: ast.Position{
+											Column: 9,
+											Line:   71,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   71,
+											},
+											File:   "experimental.flux",
+											Source: "location",
+											Start: ast.Position{
+												Column: 9,
+												Line:   71,
+											},
+										},
+									},
+									Name: "location",
+								},
+								Separator: nil,
+								Value:     nil,
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 20,
+											Line:   72,
+										},
+										File:   "experimental.flux",
+										Source: "createEmpty",
+										Start: ast.Position{
+											Column: 9,
+											Line:   72,
+										},
+									},
+								},
+								Comma: nil,
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   72,
+											},
+											File:   "experimental.flux",
+											Source: "createEmpty",
+											Start: ast.Position{
+												Column: 9,
+												Line:   72,
+											},
+										},
+									},
+									Name: "createEmpty",
+								},
+								Separator: nil,
+								Value:     nil,
+							}},
+							Rbrace: nil,
+							With:   nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   73,
+								},
+								File:   "experimental.flux",
+								Source: "_window(\n        every,\n        period,\n        offset,\n        location,\n        createEmpty,\n    )",
+								Start: ast.Position{
+									Column: 8,
+									Line:   67,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   67,
+									},
+									File:   "experimental.flux",
+									Source: "_window",
+									Start: ast.Position{
+										Column: 8,
+										Line:   67,
+									},
+								},
+							},
+							Name: "_window",
+						},
+						Lparen: nil,
+						Rparen: nil,
+					},
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   60,
+							},
+							File:   "experimental.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 9,
+								Line:   60,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   60,
+								},
+								File:   "experimental.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 9,
+									Line:   60,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Separator: nil,
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   60,
+							},
+							File:   "experimental.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 16,
+								Line:   60,
+							},
+						},
+					}},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   61,
+							},
+							File:   "experimental.flux",
+							Source: "every=0s",
+							Start: ast.Position{
+								Column: 9,
+								Line:   61,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   61,
+								},
+								File:   "experimental.flux",
+								Source: "every",
+								Start: ast.Position{
+									Column: 9,
+									Line:   61,
+								},
+							},
+						},
+						Name: "every",
+					},
+					Separator: nil,
+					Value: &ast.DurationLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   61,
+								},
+								File:   "experimental.flux",
+								Source: "0s",
+								Start: ast.Position{
+									Column: 15,
+									Line:   61,
+								},
+							},
+						},
+						Values: []ast.Duration{ast.Duration{
+							Magnitude: int64(0),
+							Unit:      "s",
+						}},
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   62,
+							},
+							File:   "experimental.flux",
+							Source: "period=0s",
+							Start: ast.Position{
+								Column: 9,
+								Line:   62,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   62,
+								},
+								File:   "experimental.flux",
+								Source: "period",
+								Start: ast.Position{
+									Column: 9,
+									Line:   62,
+								},
+							},
+						},
+						Name: "period",
+					},
+					Separator: nil,
+					Value: &ast.DurationLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   62,
+								},
+								File:   "experimental.flux",
+								Source: "0s",
+								Start: ast.Position{
+									Column: 16,
+									Line:   62,
+								},
+							},
+						},
+						Values: []ast.Duration{ast.Duration{
+							Magnitude: int64(0),
+							Unit:      "s",
+						}},
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   63,
+							},
+							File:   "experimental.flux",
+							Source: "offset=0s",
+							Start: ast.Position{
+								Column: 9,
+								Line:   63,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   63,
+								},
+								File:   "experimental.flux",
+								Source: "offset",
+								Start: ast.Position{
+									Column: 9,
+									Line:   63,
+								},
+							},
+						},
+						Name: "offset",
+					},
+					Separator: nil,
+					Value: &ast.DurationLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   63,
+								},
+								File:   "experimental.flux",
+								Source: "0s",
+								Start: ast.Position{
+									Column: 16,
+									Line:   63,
+								},
+							},
+						},
+						Values: []ast.Duration{ast.Duration{
+							Magnitude: int64(0),
+							Unit:      "s",
+						}},
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   64,
+							},
+							File:   "experimental.flux",
+							Source: "location=location",
+							Start: ast.Position{
+								Column: 9,
+								Line:   64,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 17,
+									Line:   64,
+								},
+								File:   "experimental.flux",
+								Source: "location",
+								Start: ast.Position{
+									Column: 9,
+									Line:   64,
+								},
+							},
+						},
+						Name: "location",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   64,
+								},
+								File:   "experimental.flux",
+								Source: "location",
+								Start: ast.Position{
+									Column: 18,
+									Line:   64,
+								},
+							},
+						},
+						Name: "location",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   65,
+							},
+							File:   "experimental.flux",
+							Source: "createEmpty=false",
+							Start: ast.Position{
+								Column: 9,
+								Line:   65,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   65,
+								},
+								File:   "experimental.flux",
+								Source: "createEmpty",
+								Start: ast.Position{
+									Column: 9,
+									Line:   65,
+								},
+							},
+						},
+						Name: "createEmpty",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   65,
+								},
+								File:   "experimental.flux",
+								Source: "false",
+								Start: ast.Position{
+									Column: 21,
+									Line:   65,
+								},
+							},
+						},
+						Name: "false",
+					},
+				}},
+				Rparan: nil,
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Comments: []ast.Comment{ast.Comment{Text: "// An experimental version of integral.\n"}},
@@ -5874,13 +6647,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   59,
+						Line:   76,
 					},
 					File:   "experimental.flux",
 					Source: "builtin integral",
 					Start: ast.Position{
 						Column: 1,
-						Line:   59,
+						Line:   76,
 					},
 				},
 			},
@@ -5892,13 +6665,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   59,
+							Line:   76,
 						},
 						File:   "experimental.flux",
 						Source: "integral",
 						Start: ast.Position{
 							Column: 9,
-							Line:   59,
+							Line:   76,
 						},
 					},
 				},
@@ -5911,13 +6684,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 128,
-							Line:   59,
+							Line:   76,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]",
 						Start: ast.Position{
 							Column: 20,
-							Line:   59,
+							Line:   76,
 						},
 					},
 				},
@@ -5929,13 +6702,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 128,
-								Line:   59,
+								Line:   76,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]",
 							Start: ast.Position{
 								Column: 20,
-								Line:   59,
+								Line:   76,
 							},
 						},
 					},
@@ -5946,13 +6719,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 64,
-									Line:   59,
+									Line:   76,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _time: time, _value: B}]",
 								Start: ast.Position{
 									Column: 21,
-									Line:   59,
+									Line:   76,
 								},
 							},
 						},
@@ -5964,13 +6737,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   59,
+										Line:   76,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 23,
-										Line:   59,
+										Line:   76,
 									},
 								},
 							},
@@ -5983,13 +6756,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 64,
-										Line:   59,
+										Line:   76,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _time: time, _value: B}]",
 									Start: ast.Position{
 										Column: 31,
-										Line:   59,
+										Line:   76,
 									},
 								},
 							},
@@ -6000,13 +6773,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 63,
-											Line:   59,
+											Line:   76,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _time: time, _value: B}",
 										Start: ast.Position{
 											Column: 32,
-											Line:   59,
+											Line:   76,
 										},
 									},
 								},
@@ -6017,13 +6790,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   59,
+												Line:   76,
 											},
 											File:   "experimental.flux",
 											Source: "_time: time",
 											Start: ast.Position{
 												Column: 40,
-												Line:   59,
+												Line:   76,
 											},
 										},
 									},
@@ -6034,13 +6807,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   59,
+													Line:   76,
 												},
 												File:   "experimental.flux",
 												Source: "_time",
 												Start: ast.Position{
 													Column: 40,
-													Line:   59,
+													Line:   76,
 												},
 											},
 										},
@@ -6053,13 +6826,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
-													Line:   59,
+													Line:   76,
 												},
 												File:   "experimental.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 47,
-													Line:   59,
+													Line:   76,
 												},
 											},
 										},
@@ -6070,13 +6843,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 51,
-														Line:   59,
+														Line:   76,
 													},
 													File:   "experimental.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 47,
-														Line:   59,
+														Line:   76,
 													},
 												},
 											},
@@ -6090,13 +6863,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 62,
-												Line:   59,
+												Line:   76,
 											},
 											File:   "experimental.flux",
 											Source: "_value: B",
 											Start: ast.Position{
 												Column: 53,
-												Line:   59,
+												Line:   76,
 											},
 										},
 									},
@@ -6107,13 +6880,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 59,
-													Line:   59,
+													Line:   76,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 53,
-													Line:   59,
+													Line:   76,
 												},
 											},
 										},
@@ -6126,13 +6899,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 62,
-													Line:   59,
+													Line:   76,
 												},
 												File:   "experimental.flux",
 												Source: "B",
 												Start: ast.Position{
 													Column: 61,
-													Line:   59,
+													Line:   76,
 												},
 											},
 										},
@@ -6143,13 +6916,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 62,
-														Line:   59,
+														Line:   76,
 													},
 													File:   "experimental.flux",
 													Source: "B",
 													Start: ast.Position{
 														Column: 61,
-														Line:   59,
+														Line:   76,
 													},
 												},
 											},
@@ -6164,13 +6937,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   59,
+												Line:   76,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 33,
-												Line:   59,
+												Line:   76,
 											},
 										},
 									},
@@ -6185,13 +6958,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 81,
-									Line:   59,
+									Line:   76,
 								},
 								File:   "experimental.flux",
 								Source: "?unit: duration",
 								Start: ast.Position{
 									Column: 66,
-									Line:   59,
+									Line:   76,
 								},
 							},
 						},
@@ -6203,13 +6976,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 71,
-										Line:   59,
+										Line:   76,
 									},
 									File:   "experimental.flux",
 									Source: "unit",
 									Start: ast.Position{
 										Column: 67,
-										Line:   59,
+										Line:   76,
 									},
 								},
 							},
@@ -6222,13 +6995,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 81,
-										Line:   59,
+										Line:   76,
 									},
 									File:   "experimental.flux",
 									Source: "duration",
 									Start: ast.Position{
 										Column: 73,
-										Line:   59,
+										Line:   76,
 									},
 								},
 							},
@@ -6239,13 +7012,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
-											Line:   59,
+											Line:   76,
 										},
 										File:   "experimental.flux",
 										Source: "duration",
 										Start: ast.Position{
 											Column: 73,
-											Line:   59,
+											Line:   76,
 										},
 									},
 								},
@@ -6259,13 +7032,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 103,
-									Line:   59,
+									Line:   76,
 								},
 								File:   "experimental.flux",
 								Source: "?interpolate: string",
 								Start: ast.Position{
 									Column: 83,
-									Line:   59,
+									Line:   76,
 								},
 							},
 						},
@@ -6277,13 +7050,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 95,
-										Line:   59,
+										Line:   76,
 									},
 									File:   "experimental.flux",
 									Source: "interpolate",
 									Start: ast.Position{
 										Column: 84,
-										Line:   59,
+										Line:   76,
 									},
 								},
 							},
@@ -6296,13 +7069,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 103,
-										Line:   59,
+										Line:   76,
 									},
 									File:   "experimental.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 97,
-										Line:   59,
+										Line:   76,
 									},
 								},
 							},
@@ -6313,13 +7086,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 103,
-											Line:   59,
+											Line:   76,
 										},
 										File:   "experimental.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 97,
-											Line:   59,
+											Line:   76,
 										},
 									},
 								},
@@ -6334,13 +7107,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 128,
-									Line:   59,
+									Line:   76,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: B}]",
 								Start: ast.Position{
 									Column: 108,
-									Line:   59,
+									Line:   76,
 								},
 							},
 						},
@@ -6351,13 +7124,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
-										Line:   59,
+										Line:   76,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: B}",
 									Start: ast.Position{
 										Column: 109,
-										Line:   59,
+										Line:   76,
 									},
 								},
 							},
@@ -6368,13 +7141,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
-											Line:   59,
+											Line:   76,
 										},
 										File:   "experimental.flux",
 										Source: "_value: B",
 										Start: ast.Position{
 											Column: 117,
-											Line:   59,
+											Line:   76,
 										},
 									},
 								},
@@ -6385,13 +7158,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 123,
-												Line:   59,
+												Line:   76,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 117,
-												Line:   59,
+												Line:   76,
 											},
 										},
 									},
@@ -6404,13 +7177,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
-												Line:   59,
+												Line:   76,
 											},
 											File:   "experimental.flux",
 											Source: "B",
 											Start: ast.Position{
 												Column: 125,
-												Line:   59,
+												Line:   76,
 											},
 										},
 									},
@@ -6421,13 +7194,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 126,
-													Line:   59,
+													Line:   76,
 												},
 												File:   "experimental.flux",
 												Source: "B",
 												Start: ast.Position{
 													Column: 125,
-													Line:   59,
+													Line:   76,
 												},
 											},
 										},
@@ -6442,13 +7215,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 111,
-											Line:   59,
+											Line:   76,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 110,
-											Line:   59,
+											Line:   76,
 										},
 									},
 								},
@@ -6465,13 +7238,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   62,
+						Line:   79,
 					},
 					File:   "experimental.flux",
 					Source: "builtin count",
 					Start: ast.Position{
 						Column: 1,
-						Line:   62,
+						Line:   79,
 					},
 				},
 			},
@@ -6483,13 +7256,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   62,
+							Line:   79,
 						},
 						File:   "experimental.flux",
 						Source: "count",
 						Start: ast.Position{
 							Column: 9,
-							Line:   62,
+							Line:   79,
 						},
 					},
 				},
@@ -6502,13 +7275,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 75,
-							Line:   62,
+							Line:   79,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: int}]",
 						Start: ast.Position{
 							Column: 17,
-							Line:   62,
+							Line:   79,
 						},
 					},
 				},
@@ -6520,13 +7293,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 75,
-								Line:   62,
+								Line:   79,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: int}]",
 							Start: ast.Position{
 								Column: 17,
-								Line:   62,
+								Line:   79,
 							},
 						},
 					},
@@ -6537,13 +7310,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   62,
+									Line:   79,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 18,
-									Line:   62,
+									Line:   79,
 								},
 							},
 						},
@@ -6555,13 +7328,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   62,
+										Line:   79,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 20,
-										Line:   62,
+										Line:   79,
 									},
 								},
 							},
@@ -6574,13 +7347,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   62,
+										Line:   79,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 28,
-										Line:   62,
+										Line:   79,
 									},
 								},
 							},
@@ -6591,13 +7364,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   62,
+											Line:   79,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 29,
-											Line:   62,
+											Line:   79,
 										},
 									},
 								},
@@ -6608,13 +7381,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   62,
+												Line:   79,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 37,
-												Line:   62,
+												Line:   79,
 											},
 										},
 									},
@@ -6625,13 +7398,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   62,
+													Line:   79,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 37,
-													Line:   62,
+													Line:   79,
 												},
 											},
 										},
@@ -6644,13 +7417,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   62,
+													Line:   79,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 45,
-													Line:   62,
+													Line:   79,
 												},
 											},
 										},
@@ -6661,13 +7434,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 46,
-														Line:   62,
+														Line:   79,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 45,
-														Line:   62,
+														Line:   79,
 													},
 												},
 											},
@@ -6682,13 +7455,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   62,
+												Line:   79,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 30,
-												Line:   62,
+												Line:   79,
 											},
 										},
 									},
@@ -6704,13 +7477,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 75,
-									Line:   62,
+									Line:   79,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: int}]",
 								Start: ast.Position{
 									Column: 53,
-									Line:   62,
+									Line:   79,
 								},
 							},
 						},
@@ -6721,13 +7494,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 74,
-										Line:   62,
+										Line:   79,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: int}",
 									Start: ast.Position{
 										Column: 54,
-										Line:   62,
+										Line:   79,
 									},
 								},
 							},
@@ -6738,13 +7511,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 73,
-											Line:   62,
+											Line:   79,
 										},
 										File:   "experimental.flux",
 										Source: "_value: int",
 										Start: ast.Position{
 											Column: 62,
-											Line:   62,
+											Line:   79,
 										},
 									},
 								},
@@ -6755,13 +7528,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 68,
-												Line:   62,
+												Line:   79,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 62,
-												Line:   62,
+												Line:   79,
 											},
 										},
 									},
@@ -6774,13 +7547,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   62,
+												Line:   79,
 											},
 											File:   "experimental.flux",
 											Source: "int",
 											Start: ast.Position{
 												Column: 70,
-												Line:   62,
+												Line:   79,
 											},
 										},
 									},
@@ -6791,13 +7564,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 73,
-													Line:   62,
+													Line:   79,
 												},
 												File:   "experimental.flux",
 												Source: "int",
 												Start: ast.Position{
 													Column: 70,
-													Line:   62,
+													Line:   79,
 												},
 											},
 										},
@@ -6812,13 +7585,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 56,
-											Line:   62,
+											Line:   79,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 55,
-											Line:   62,
+											Line:   79,
 										},
 									},
 								},
@@ -6835,13 +7608,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 26,
-						Line:   65,
+						Line:   82,
 					},
 					File:   "experimental.flux",
 					Source: "builtin histogramQuantile",
 					Start: ast.Position{
 						Column: 1,
-						Line:   65,
+						Line:   82,
 					},
 				},
 			},
@@ -6853,13 +7626,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 26,
-							Line:   65,
+							Line:   82,
 						},
 						File:   "experimental.flux",
 						Source: "histogramQuantile",
 						Start: ast.Position{
 							Column: 9,
-							Line:   65,
+							Line:   82,
 						},
 					},
 				},
@@ -6872,13 +7645,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 140,
-							Line:   65,
+							Line:   82,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: float, le: float}], ?quantile: float, ?minValue: float) => [{T with _value: float}]",
 						Start: ast.Position{
 							Column: 29,
-							Line:   65,
+							Line:   82,
 						},
 					},
 				},
@@ -6890,13 +7663,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 140,
-								Line:   65,
+								Line:   82,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: float, le: float}], ?quantile: float, ?minValue: float) => [{T with _value: float}]",
 							Start: ast.Position{
 								Column: 29,
-								Line:   65,
+								Line:   82,
 							},
 						},
 					},
@@ -6907,13 +7680,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 75,
-									Line:   65,
+									Line:   82,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: float, le: float}]",
 								Start: ast.Position{
 									Column: 30,
-									Line:   65,
+									Line:   82,
 								},
 							},
 						},
@@ -6925,13 +7698,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   65,
+										Line:   82,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 32,
-										Line:   65,
+										Line:   82,
 									},
 								},
 							},
@@ -6944,13 +7717,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 75,
-										Line:   65,
+										Line:   82,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: float, le: float}]",
 									Start: ast.Position{
 										Column: 40,
-										Line:   65,
+										Line:   82,
 									},
 								},
 							},
@@ -6961,13 +7734,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 74,
-											Line:   65,
+											Line:   82,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: float, le: float}",
 										Start: ast.Position{
 											Column: 41,
-											Line:   65,
+											Line:   82,
 										},
 									},
 								},
@@ -6978,13 +7751,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 62,
-												Line:   65,
+												Line:   82,
 											},
 											File:   "experimental.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 49,
-												Line:   65,
+												Line:   82,
 											},
 										},
 									},
@@ -6995,13 +7768,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 55,
-													Line:   65,
+													Line:   82,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 49,
-													Line:   65,
+													Line:   82,
 												},
 											},
 										},
@@ -7014,13 +7787,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 62,
-													Line:   65,
+													Line:   82,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 57,
-													Line:   65,
+													Line:   82,
 												},
 											},
 										},
@@ -7031,13 +7804,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 62,
-														Line:   65,
+														Line:   82,
 													},
 													File:   "experimental.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 57,
-														Line:   65,
+														Line:   82,
 													},
 												},
 											},
@@ -7051,13 +7824,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   65,
+												Line:   82,
 											},
 											File:   "experimental.flux",
 											Source: "le: float",
 											Start: ast.Position{
 												Column: 64,
-												Line:   65,
+												Line:   82,
 											},
 										},
 									},
@@ -7068,13 +7841,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 66,
-													Line:   65,
+													Line:   82,
 												},
 												File:   "experimental.flux",
 												Source: "le",
 												Start: ast.Position{
 													Column: 64,
-													Line:   65,
+													Line:   82,
 												},
 											},
 										},
@@ -7087,13 +7860,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 73,
-													Line:   65,
+													Line:   82,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 68,
-													Line:   65,
+													Line:   82,
 												},
 											},
 										},
@@ -7104,13 +7877,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 73,
-														Line:   65,
+														Line:   82,
 													},
 													File:   "experimental.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 68,
-														Line:   65,
+														Line:   82,
 													},
 												},
 											},
@@ -7125,13 +7898,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   65,
+												Line:   82,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 42,
-												Line:   65,
+												Line:   82,
 											},
 										},
 									},
@@ -7146,13 +7919,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 93,
-									Line:   65,
+									Line:   82,
 								},
 								File:   "experimental.flux",
 								Source: "?quantile: float",
 								Start: ast.Position{
 									Column: 77,
-									Line:   65,
+									Line:   82,
 								},
 							},
 						},
@@ -7164,13 +7937,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 86,
-										Line:   65,
+										Line:   82,
 									},
 									File:   "experimental.flux",
 									Source: "quantile",
 									Start: ast.Position{
 										Column: 78,
-										Line:   65,
+										Line:   82,
 									},
 								},
 							},
@@ -7183,13 +7956,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 93,
-										Line:   65,
+										Line:   82,
 									},
 									File:   "experimental.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 88,
-										Line:   65,
+										Line:   82,
 									},
 								},
 							},
@@ -7200,13 +7973,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 93,
-											Line:   65,
+											Line:   82,
 										},
 										File:   "experimental.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 88,
-											Line:   65,
+											Line:   82,
 										},
 									},
 								},
@@ -7220,13 +7993,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 111,
-									Line:   65,
+									Line:   82,
 								},
 								File:   "experimental.flux",
 								Source: "?minValue: float",
 								Start: ast.Position{
 									Column: 95,
-									Line:   65,
+									Line:   82,
 								},
 							},
 						},
@@ -7238,13 +8011,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 104,
-										Line:   65,
+										Line:   82,
 									},
 									File:   "experimental.flux",
 									Source: "minValue",
 									Start: ast.Position{
 										Column: 96,
-										Line:   65,
+										Line:   82,
 									},
 								},
 							},
@@ -7257,13 +8030,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 111,
-										Line:   65,
+										Line:   82,
 									},
 									File:   "experimental.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 106,
-										Line:   65,
+										Line:   82,
 									},
 								},
 							},
@@ -7274,13 +8047,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 111,
-											Line:   65,
+											Line:   82,
 										},
 										File:   "experimental.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 106,
-											Line:   65,
+											Line:   82,
 										},
 									},
 								},
@@ -7295,13 +8068,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 140,
-									Line:   65,
+									Line:   82,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: float}]",
 								Start: ast.Position{
 									Column: 116,
-									Line:   65,
+									Line:   82,
 								},
 							},
 						},
@@ -7312,13 +8085,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 139,
-										Line:   65,
+										Line:   82,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: float}",
 									Start: ast.Position{
 										Column: 117,
-										Line:   65,
+										Line:   82,
 									},
 								},
 							},
@@ -7329,13 +8102,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 138,
-											Line:   65,
+											Line:   82,
 										},
 										File:   "experimental.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 125,
-											Line:   65,
+											Line:   82,
 										},
 									},
 								},
@@ -7346,13 +8119,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 131,
-												Line:   65,
+												Line:   82,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 125,
-												Line:   65,
+												Line:   82,
 											},
 										},
 									},
@@ -7365,13 +8138,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 138,
-												Line:   65,
+												Line:   82,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 133,
-												Line:   65,
+												Line:   82,
 											},
 										},
 									},
@@ -7382,13 +8155,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 138,
-													Line:   65,
+													Line:   82,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 133,
-													Line:   65,
+													Line:   82,
 												},
 											},
 										},
@@ -7403,13 +8176,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 119,
-											Line:   65,
+											Line:   82,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 118,
-											Line:   65,
+											Line:   82,
 										},
 									},
 								},
@@ -7426,13 +8199,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   68,
+						Line:   85,
 					},
 					File:   "experimental.flux",
 					Source: "builtin mean",
 					Start: ast.Position{
 						Column: 1,
-						Line:   68,
+						Line:   85,
 					},
 				},
 			},
@@ -7444,13 +8217,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   68,
+							Line:   85,
 						},
 						File:   "experimental.flux",
 						Source: "mean",
 						Start: ast.Position{
 							Column: 9,
-							Line:   68,
+							Line:   85,
 						},
 					},
 				},
@@ -7463,13 +8236,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 80,
-							Line:   68,
+							Line:   85,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: float}]) => [{T with _value: float}]",
 						Start: ast.Position{
 							Column: 16,
-							Line:   68,
+							Line:   85,
 						},
 					},
 				},
@@ -7481,13 +8254,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 80,
-								Line:   68,
+								Line:   85,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: float}]) => [{T with _value: float}]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   68,
+								Line:   85,
 							},
 						},
 					},
@@ -7498,13 +8271,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   68,
+									Line:   85,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: float}]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   68,
+									Line:   85,
 								},
 							},
 						},
@@ -7516,13 +8289,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   68,
+										Line:   85,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 19,
-										Line:   68,
+										Line:   85,
 									},
 								},
 							},
@@ -7535,13 +8308,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   68,
+										Line:   85,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: float}]",
 									Start: ast.Position{
 										Column: 27,
-										Line:   68,
+										Line:   85,
 									},
 								},
 							},
@@ -7552,13 +8325,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 50,
-											Line:   68,
+											Line:   85,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: float}",
 										Start: ast.Position{
 											Column: 28,
-											Line:   68,
+											Line:   85,
 										},
 									},
 								},
@@ -7569,13 +8342,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
-												Line:   68,
+												Line:   85,
 											},
 											File:   "experimental.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 36,
-												Line:   68,
+												Line:   85,
 											},
 										},
 									},
@@ -7586,13 +8359,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   68,
+													Line:   85,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 36,
-													Line:   68,
+													Line:   85,
 												},
 											},
 										},
@@ -7605,13 +8378,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   68,
+													Line:   85,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 44,
-													Line:   68,
+													Line:   85,
 												},
 											},
 										},
@@ -7622,13 +8395,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   68,
+														Line:   85,
 													},
 													File:   "experimental.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 44,
-														Line:   68,
+														Line:   85,
 													},
 												},
 											},
@@ -7643,13 +8416,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   68,
+												Line:   85,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 29,
-												Line:   68,
+												Line:   85,
 											},
 										},
 									},
@@ -7665,13 +8438,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 80,
-									Line:   68,
+									Line:   85,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: float}]",
 								Start: ast.Position{
 									Column: 56,
-									Line:   68,
+									Line:   85,
 								},
 							},
 						},
@@ -7682,13 +8455,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 79,
-										Line:   68,
+										Line:   85,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: float}",
 									Start: ast.Position{
 										Column: 57,
-										Line:   68,
+										Line:   85,
 									},
 								},
 							},
@@ -7699,13 +8472,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 78,
-											Line:   68,
+											Line:   85,
 										},
 										File:   "experimental.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 65,
-											Line:   68,
+											Line:   85,
 										},
 									},
 								},
@@ -7716,13 +8489,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 71,
-												Line:   68,
+												Line:   85,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 65,
-												Line:   68,
+												Line:   85,
 											},
 										},
 									},
@@ -7735,13 +8508,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 78,
-												Line:   68,
+												Line:   85,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 73,
-												Line:   68,
+												Line:   85,
 											},
 										},
 									},
@@ -7752,13 +8525,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 78,
-													Line:   68,
+													Line:   85,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 73,
-													Line:   68,
+													Line:   85,
 												},
 											},
 										},
@@ -7773,13 +8546,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   68,
+											Line:   85,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 58,
-											Line:   68,
+											Line:   85,
 										},
 									},
 								},
@@ -7796,13 +8569,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   71,
+						Line:   88,
 					},
 					File:   "experimental.flux",
 					Source: "builtin mode",
 					Start: ast.Position{
 						Column: 1,
-						Line:   71,
+						Line:   88,
 					},
 				},
 			},
@@ -7814,13 +8587,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   71,
+							Line:   88,
 						},
 						File:   "experimental.flux",
 						Source: "mode",
 						Start: ast.Position{
 							Column: 9,
-							Line:   71,
+							Line:   88,
 						},
 					},
 				},
@@ -7833,13 +8606,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 72,
-							Line:   71,
+							Line:   88,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 						Start: ast.Position{
 							Column: 16,
-							Line:   71,
+							Line:   88,
 						},
 					},
 				},
@@ -7851,13 +8624,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 72,
-								Line:   71,
+								Line:   88,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   71,
+								Line:   88,
 							},
 						},
 					},
@@ -7868,13 +8641,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   71,
+									Line:   88,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   71,
+									Line:   88,
 								},
 							},
 						},
@@ -7886,13 +8659,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   71,
+										Line:   88,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 19,
-										Line:   71,
+										Line:   88,
 									},
 								},
 							},
@@ -7905,13 +8678,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   71,
+										Line:   88,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 27,
-										Line:   71,
+										Line:   88,
 									},
 								},
 							},
@@ -7922,13 +8695,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   71,
+											Line:   88,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 28,
-											Line:   71,
+											Line:   88,
 										},
 									},
 								},
@@ -7939,13 +8712,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   71,
+												Line:   88,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 36,
-												Line:   71,
+												Line:   88,
 											},
 										},
 									},
@@ -7956,13 +8729,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   71,
+													Line:   88,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 36,
-													Line:   71,
+													Line:   88,
 												},
 											},
 										},
@@ -7975,13 +8748,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   71,
+													Line:   88,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 44,
-													Line:   71,
+													Line:   88,
 												},
 											},
 										},
@@ -7992,13 +8765,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   71,
+														Line:   88,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 44,
-														Line:   71,
+														Line:   88,
 													},
 												},
 											},
@@ -8013,13 +8786,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   71,
+												Line:   88,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 29,
-												Line:   71,
+												Line:   88,
 											},
 										},
 									},
@@ -8035,13 +8808,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 72,
-									Line:   71,
+									Line:   88,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 52,
-									Line:   71,
+									Line:   88,
 								},
 							},
 						},
@@ -8052,13 +8825,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 71,
-										Line:   71,
+										Line:   88,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 53,
-										Line:   71,
+										Line:   88,
 									},
 								},
 							},
@@ -8069,13 +8842,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 70,
-											Line:   71,
+											Line:   88,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 61,
-											Line:   71,
+											Line:   88,
 										},
 									},
 								},
@@ -8086,13 +8859,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 67,
-												Line:   71,
+												Line:   88,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 61,
-												Line:   71,
+												Line:   88,
 											},
 										},
 									},
@@ -8105,13 +8878,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 70,
-												Line:   71,
+												Line:   88,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 69,
-												Line:   71,
+												Line:   88,
 											},
 										},
 									},
@@ -8122,13 +8895,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
-													Line:   71,
+													Line:   88,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 69,
-													Line:   71,
+													Line:   88,
 												},
 											},
 										},
@@ -8143,13 +8916,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 55,
-											Line:   71,
+											Line:   88,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 54,
-											Line:   71,
+											Line:   88,
 										},
 									},
 								},
@@ -8166,13 +8939,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   74,
+						Line:   91,
 					},
 					File:   "experimental.flux",
 					Source: "builtin quantile",
 					Start: ast.Position{
 						Column: 1,
-						Line:   74,
+						Line:   91,
 					},
 				},
 			},
@@ -8184,13 +8957,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   74,
+							Line:   91,
 						},
 						File:   "experimental.flux",
 						Source: "quantile",
 						Start: ast.Position{
 							Column: 9,
-							Line:   74,
+							Line:   91,
 						},
 					},
 				},
@@ -8203,13 +8976,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 132,
-							Line:   74,
+							Line:   91,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: float}], q: float, ?compression: float, ?method: string) => [{T with _value: float}]",
 						Start: ast.Position{
 							Column: 20,
-							Line:   74,
+							Line:   91,
 						},
 					},
 				},
@@ -8221,13 +8994,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 132,
-								Line:   74,
+								Line:   91,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: float}], q: float, ?compression: float, ?method: string) => [{T with _value: float}]",
 							Start: ast.Position{
 								Column: 20,
-								Line:   74,
+								Line:   91,
 							},
 						},
 					},
@@ -8238,13 +9011,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 55,
-									Line:   74,
+									Line:   91,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: float}]",
 								Start: ast.Position{
 									Column: 21,
-									Line:   74,
+									Line:   91,
 								},
 							},
 						},
@@ -8256,13 +9029,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 23,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8275,13 +9048,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 55,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: float}]",
 									Start: ast.Position{
 										Column: 31,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8292,13 +9065,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   74,
+											Line:   91,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: float}",
 										Start: ast.Position{
 											Column: 32,
-											Line:   74,
+											Line:   91,
 										},
 									},
 								},
@@ -8309,13 +9082,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 53,
-												Line:   74,
+												Line:   91,
 											},
 											File:   "experimental.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 40,
-												Line:   74,
+												Line:   91,
 											},
 										},
 									},
@@ -8326,13 +9099,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   74,
+													Line:   91,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 40,
-													Line:   74,
+													Line:   91,
 												},
 											},
 										},
@@ -8345,13 +9118,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 53,
-													Line:   74,
+													Line:   91,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 48,
-													Line:   74,
+													Line:   91,
 												},
 											},
 										},
@@ -8362,13 +9135,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 53,
-														Line:   74,
+														Line:   91,
 													},
 													File:   "experimental.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 48,
-														Line:   74,
+														Line:   91,
 													},
 												},
 											},
@@ -8383,13 +9156,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   74,
+												Line:   91,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 33,
-												Line:   74,
+												Line:   91,
 											},
 										},
 									},
@@ -8404,13 +9177,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 65,
-									Line:   74,
+									Line:   91,
 								},
 								File:   "experimental.flux",
 								Source: "q: float",
 								Start: ast.Position{
 									Column: 57,
-									Line:   74,
+									Line:   91,
 								},
 							},
 						},
@@ -8422,13 +9195,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 58,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "q",
 									Start: ast.Position{
 										Column: 57,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8441,13 +9214,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 65,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 60,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8458,13 +9231,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 65,
-											Line:   74,
+											Line:   91,
 										},
 										File:   "experimental.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 60,
-											Line:   74,
+											Line:   91,
 										},
 									},
 								},
@@ -8478,13 +9251,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 86,
-									Line:   74,
+									Line:   91,
 								},
 								File:   "experimental.flux",
 								Source: "?compression: float",
 								Start: ast.Position{
 									Column: 67,
-									Line:   74,
+									Line:   91,
 								},
 							},
 						},
@@ -8496,13 +9269,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 79,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "compression",
 									Start: ast.Position{
 										Column: 68,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8515,13 +9288,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 86,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 81,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8532,13 +9305,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 86,
-											Line:   74,
+											Line:   91,
 										},
 										File:   "experimental.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 81,
-											Line:   74,
+											Line:   91,
 										},
 									},
 								},
@@ -8552,13 +9325,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 103,
-									Line:   74,
+									Line:   91,
 								},
 								File:   "experimental.flux",
 								Source: "?method: string",
 								Start: ast.Position{
 									Column: 88,
-									Line:   74,
+									Line:   91,
 								},
 							},
 						},
@@ -8570,13 +9343,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 95,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "method",
 									Start: ast.Position{
 										Column: 89,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8589,13 +9362,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 103,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 97,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8606,13 +9379,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 103,
-											Line:   74,
+											Line:   91,
 										},
 										File:   "experimental.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 97,
-											Line:   74,
+											Line:   91,
 										},
 									},
 								},
@@ -8627,13 +9400,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 132,
-									Line:   74,
+									Line:   91,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: float}]",
 								Start: ast.Position{
 									Column: 108,
-									Line:   74,
+									Line:   91,
 								},
 							},
 						},
@@ -8644,13 +9417,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 131,
-										Line:   74,
+										Line:   91,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: float}",
 									Start: ast.Position{
 										Column: 109,
-										Line:   74,
+										Line:   91,
 									},
 								},
 							},
@@ -8661,13 +9434,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 130,
-											Line:   74,
+											Line:   91,
 										},
 										File:   "experimental.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 117,
-											Line:   74,
+											Line:   91,
 										},
 									},
 								},
@@ -8678,13 +9451,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 123,
-												Line:   74,
+												Line:   91,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 117,
-												Line:   74,
+												Line:   91,
 											},
 										},
 									},
@@ -8697,13 +9470,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 130,
-												Line:   74,
+												Line:   91,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 125,
-												Line:   74,
+												Line:   91,
 											},
 										},
 									},
@@ -8714,13 +9487,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 130,
-													Line:   74,
+													Line:   91,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 125,
-													Line:   74,
+													Line:   91,
 												},
 											},
 										},
@@ -8735,13 +9508,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 111,
-											Line:   74,
+											Line:   91,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 110,
-											Line:   74,
+											Line:   91,
 										},
 									},
 								},
@@ -8758,13 +9531,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   77,
+						Line:   94,
 					},
 					File:   "experimental.flux",
 					Source: "builtin skew",
 					Start: ast.Position{
 						Column: 1,
-						Line:   77,
+						Line:   94,
 					},
 				},
 			},
@@ -8776,13 +9549,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   77,
+							Line:   94,
 						},
 						File:   "experimental.flux",
 						Source: "skew",
 						Start: ast.Position{
 							Column: 9,
-							Line:   77,
+							Line:   94,
 						},
 					},
 				},
@@ -8795,13 +9568,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 80,
-							Line:   77,
+							Line:   94,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: float}]) => [{T with _value: float}]",
 						Start: ast.Position{
 							Column: 16,
-							Line:   77,
+							Line:   94,
 						},
 					},
 				},
@@ -8813,13 +9586,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 80,
-								Line:   77,
+								Line:   94,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: float}]) => [{T with _value: float}]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   77,
+								Line:   94,
 							},
 						},
 					},
@@ -8830,13 +9603,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   77,
+									Line:   94,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: float}]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   77,
+									Line:   94,
 								},
 							},
 						},
@@ -8848,13 +9621,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   77,
+										Line:   94,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 19,
-										Line:   77,
+										Line:   94,
 									},
 								},
 							},
@@ -8867,13 +9640,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   77,
+										Line:   94,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: float}]",
 									Start: ast.Position{
 										Column: 27,
-										Line:   77,
+										Line:   94,
 									},
 								},
 							},
@@ -8884,13 +9657,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 50,
-											Line:   77,
+											Line:   94,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: float}",
 										Start: ast.Position{
 											Column: 28,
-											Line:   77,
+											Line:   94,
 										},
 									},
 								},
@@ -8901,13 +9674,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
-												Line:   77,
+												Line:   94,
 											},
 											File:   "experimental.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 36,
-												Line:   77,
+												Line:   94,
 											},
 										},
 									},
@@ -8918,13 +9691,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   77,
+													Line:   94,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 36,
-													Line:   77,
+													Line:   94,
 												},
 											},
 										},
@@ -8937,13 +9710,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   77,
+													Line:   94,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 44,
-													Line:   77,
+													Line:   94,
 												},
 											},
 										},
@@ -8954,13 +9727,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   77,
+														Line:   94,
 													},
 													File:   "experimental.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 44,
-														Line:   77,
+														Line:   94,
 													},
 												},
 											},
@@ -8975,13 +9748,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   77,
+												Line:   94,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 29,
-												Line:   77,
+												Line:   94,
 											},
 										},
 									},
@@ -8997,13 +9770,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 80,
-									Line:   77,
+									Line:   94,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: float}]",
 								Start: ast.Position{
 									Column: 56,
-									Line:   77,
+									Line:   94,
 								},
 							},
 						},
@@ -9014,13 +9787,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 79,
-										Line:   77,
+										Line:   94,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: float}",
 									Start: ast.Position{
 										Column: 57,
-										Line:   77,
+										Line:   94,
 									},
 								},
 							},
@@ -9031,13 +9804,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 78,
-											Line:   77,
+											Line:   94,
 										},
 										File:   "experimental.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 65,
-											Line:   77,
+											Line:   94,
 										},
 									},
 								},
@@ -9048,13 +9821,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 71,
-												Line:   77,
+												Line:   94,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 65,
-												Line:   77,
+												Line:   94,
 											},
 										},
 									},
@@ -9067,13 +9840,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 78,
-												Line:   77,
+												Line:   94,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 73,
-												Line:   77,
+												Line:   94,
 											},
 										},
 									},
@@ -9084,13 +9857,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 78,
-													Line:   77,
+													Line:   94,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 73,
-													Line:   77,
+													Line:   94,
 												},
 											},
 										},
@@ -9105,13 +9878,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   77,
+											Line:   94,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 58,
-											Line:   77,
+											Line:   94,
 										},
 									},
 								},
@@ -9128,13 +9901,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   80,
+						Line:   97,
 					},
 					File:   "experimental.flux",
 					Source: "builtin spread",
 					Start: ast.Position{
 						Column: 1,
-						Line:   80,
+						Line:   97,
 					},
 				},
 			},
@@ -9146,13 +9919,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   80,
+							Line:   97,
 						},
 						File:   "experimental.flux",
 						Source: "spread",
 						Start: ast.Position{
 							Column: 9,
-							Line:   80,
+							Line:   97,
 						},
 					},
 				},
@@ -9165,13 +9938,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 91,
-							Line:   80,
+							Line:   97,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric",
 						Start: ast.Position{
 							Column: 18,
-							Line:   80,
+							Line:   97,
 						},
 					},
 				},
@@ -9182,13 +9955,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 91,
-								Line:   80,
+								Line:   97,
 							},
 							File:   "experimental.flux",
 							Source: "A: Numeric",
 							Start: ast.Position{
 								Column: 81,
-								Line:   80,
+								Line:   97,
 							},
 						},
 					},
@@ -9199,13 +9972,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 91,
-									Line:   80,
+									Line:   97,
 								},
 								File:   "experimental.flux",
 								Source: "Numeric",
 								Start: ast.Position{
 									Column: 84,
-									Line:   80,
+									Line:   97,
 								},
 							},
 						},
@@ -9218,13 +9991,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 82,
-									Line:   80,
+									Line:   97,
 								},
 								File:   "experimental.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 81,
-									Line:   80,
+									Line:   97,
 								},
 							},
 						},
@@ -9238,13 +10011,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 74,
-								Line:   80,
+								Line:   97,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   80,
+								Line:   97,
 							},
 						},
 					},
@@ -9255,13 +10028,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   80,
+									Line:   97,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 19,
-									Line:   80,
+									Line:   97,
 								},
 							},
 						},
@@ -9273,13 +10046,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   80,
+										Line:   97,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 21,
-										Line:   80,
+										Line:   97,
 									},
 								},
 							},
@@ -9292,13 +10065,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   80,
+										Line:   97,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 29,
-										Line:   80,
+										Line:   97,
 									},
 								},
 							},
@@ -9309,13 +10082,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   80,
+											Line:   97,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 30,
-											Line:   80,
+											Line:   97,
 										},
 									},
 								},
@@ -9326,13 +10099,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 47,
-												Line:   80,
+												Line:   97,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 38,
-												Line:   80,
+												Line:   97,
 											},
 										},
 									},
@@ -9343,13 +10116,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   80,
+													Line:   97,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 38,
-													Line:   80,
+													Line:   97,
 												},
 											},
 										},
@@ -9362,13 +10135,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   80,
+													Line:   97,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 46,
-													Line:   80,
+													Line:   97,
 												},
 											},
 										},
@@ -9379,13 +10152,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 47,
-														Line:   80,
+														Line:   97,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 46,
-														Line:   80,
+														Line:   97,
 													},
 												},
 											},
@@ -9400,13 +10173,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   80,
+												Line:   97,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 31,
-												Line:   80,
+												Line:   97,
 											},
 										},
 									},
@@ -9422,13 +10195,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 74,
-									Line:   80,
+									Line:   97,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 54,
-									Line:   80,
+									Line:   97,
 								},
 							},
 						},
@@ -9439,13 +10212,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 73,
-										Line:   80,
+										Line:   97,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 55,
-										Line:   80,
+										Line:   97,
 									},
 								},
 							},
@@ -9456,13 +10229,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 72,
-											Line:   80,
+											Line:   97,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 63,
-											Line:   80,
+											Line:   97,
 										},
 									},
 								},
@@ -9473,13 +10246,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   80,
+												Line:   97,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 63,
-												Line:   80,
+												Line:   97,
 											},
 										},
 									},
@@ -9492,13 +10265,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 72,
-												Line:   80,
+												Line:   97,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 71,
-												Line:   80,
+												Line:   97,
 											},
 										},
 									},
@@ -9509,13 +10282,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   80,
+													Line:   97,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 71,
-													Line:   80,
+													Line:   97,
 												},
 											},
 										},
@@ -9530,13 +10303,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 57,
-											Line:   80,
+											Line:   97,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 56,
-											Line:   80,
+											Line:   97,
 										},
 									},
 								},
@@ -9553,13 +10326,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   83,
+						Line:   100,
 					},
 					File:   "experimental.flux",
 					Source: "builtin stddev",
 					Start: ast.Position{
 						Column: 1,
-						Line:   83,
+						Line:   100,
 					},
 				},
 			},
@@ -9571,13 +10344,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   83,
+							Line:   100,
 						},
 						File:   "experimental.flux",
 						Source: "stddev",
 						Start: ast.Position{
 							Column: 9,
-							Line:   83,
+							Line:   100,
 						},
 					},
 				},
@@ -9590,13 +10363,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 97,
-							Line:   83,
+							Line:   100,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: float}], ?mode: string) => [{T with _value: float}]",
 						Start: ast.Position{
 							Column: 18,
-							Line:   83,
+							Line:   100,
 						},
 					},
 				},
@@ -9608,13 +10381,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 97,
-								Line:   83,
+								Line:   100,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: float}], ?mode: string) => [{T with _value: float}]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   83,
+								Line:   100,
 							},
 						},
 					},
@@ -9625,13 +10398,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   83,
+									Line:   100,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: float}]",
 								Start: ast.Position{
 									Column: 19,
-									Line:   83,
+									Line:   100,
 								},
 							},
 						},
@@ -9643,13 +10416,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   83,
+										Line:   100,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 21,
-										Line:   83,
+										Line:   100,
 									},
 								},
 							},
@@ -9662,13 +10435,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   83,
+										Line:   100,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: float}]",
 									Start: ast.Position{
 										Column: 29,
-										Line:   83,
+										Line:   100,
 									},
 								},
 							},
@@ -9679,13 +10452,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 52,
-											Line:   83,
+											Line:   100,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: float}",
 										Start: ast.Position{
 											Column: 30,
-											Line:   83,
+											Line:   100,
 										},
 									},
 								},
@@ -9696,13 +10469,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   83,
+												Line:   100,
 											},
 											File:   "experimental.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 38,
-												Line:   83,
+												Line:   100,
 											},
 										},
 									},
@@ -9713,13 +10486,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   83,
+													Line:   100,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 38,
-													Line:   83,
+													Line:   100,
 												},
 											},
 										},
@@ -9732,13 +10505,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
-													Line:   83,
+													Line:   100,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 46,
-													Line:   83,
+													Line:   100,
 												},
 											},
 										},
@@ -9749,13 +10522,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 51,
-														Line:   83,
+														Line:   100,
 													},
 													File:   "experimental.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 46,
-														Line:   83,
+														Line:   100,
 													},
 												},
 											},
@@ -9770,13 +10543,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   83,
+												Line:   100,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 31,
-												Line:   83,
+												Line:   100,
 											},
 										},
 									},
@@ -9791,13 +10564,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 68,
-									Line:   83,
+									Line:   100,
 								},
 								File:   "experimental.flux",
 								Source: "?mode: string",
 								Start: ast.Position{
 									Column: 55,
-									Line:   83,
+									Line:   100,
 								},
 							},
 						},
@@ -9809,13 +10582,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 60,
-										Line:   83,
+										Line:   100,
 									},
 									File:   "experimental.flux",
 									Source: "mode",
 									Start: ast.Position{
 										Column: 56,
-										Line:   83,
+										Line:   100,
 									},
 								},
 							},
@@ -9828,13 +10601,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 68,
-										Line:   83,
+										Line:   100,
 									},
 									File:   "experimental.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 62,
-										Line:   83,
+										Line:   100,
 									},
 								},
 							},
@@ -9845,13 +10618,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 68,
-											Line:   83,
+											Line:   100,
 										},
 										File:   "experimental.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 62,
-											Line:   83,
+											Line:   100,
 										},
 									},
 								},
@@ -9866,13 +10639,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 97,
-									Line:   83,
+									Line:   100,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: float}]",
 								Start: ast.Position{
 									Column: 73,
-									Line:   83,
+									Line:   100,
 								},
 							},
 						},
@@ -9883,13 +10656,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 96,
-										Line:   83,
+										Line:   100,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: float}",
 									Start: ast.Position{
 										Column: 74,
-										Line:   83,
+										Line:   100,
 									},
 								},
 							},
@@ -9900,13 +10673,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 95,
-											Line:   83,
+											Line:   100,
 										},
 										File:   "experimental.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 82,
-											Line:   83,
+											Line:   100,
 										},
 									},
 								},
@@ -9917,13 +10690,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 88,
-												Line:   83,
+												Line:   100,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 82,
-												Line:   83,
+												Line:   100,
 											},
 										},
 									},
@@ -9936,13 +10709,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 95,
-												Line:   83,
+												Line:   100,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 90,
-												Line:   83,
+												Line:   100,
 											},
 										},
 									},
@@ -9953,13 +10726,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 95,
-													Line:   83,
+													Line:   100,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 90,
-													Line:   83,
+													Line:   100,
 												},
 											},
 										},
@@ -9974,13 +10747,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 76,
-											Line:   83,
+											Line:   100,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 75,
-											Line:   83,
+											Line:   100,
 										},
 									},
 								},
@@ -9997,13 +10770,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   86,
+						Line:   103,
 					},
 					File:   "experimental.flux",
 					Source: "builtin sum",
 					Start: ast.Position{
 						Column: 1,
-						Line:   86,
+						Line:   103,
 					},
 				},
 			},
@@ -10015,13 +10788,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   86,
+							Line:   103,
 						},
 						File:   "experimental.flux",
 						Source: "sum",
 						Start: ast.Position{
 							Column: 9,
-							Line:   86,
+							Line:   103,
 						},
 					},
 				},
@@ -10034,13 +10807,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 88,
-							Line:   86,
+							Line:   103,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric",
 						Start: ast.Position{
 							Column: 15,
-							Line:   86,
+							Line:   103,
 						},
 					},
 				},
@@ -10051,13 +10824,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 88,
-								Line:   86,
+								Line:   103,
 							},
 							File:   "experimental.flux",
 							Source: "A: Numeric",
 							Start: ast.Position{
 								Column: 78,
-								Line:   86,
+								Line:   103,
 							},
 						},
 					},
@@ -10068,13 +10841,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 88,
-									Line:   86,
+									Line:   103,
 								},
 								File:   "experimental.flux",
 								Source: "Numeric",
 								Start: ast.Position{
 									Column: 81,
-									Line:   86,
+									Line:   103,
 								},
 							},
 						},
@@ -10087,13 +10860,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 79,
-									Line:   86,
+									Line:   103,
 								},
 								File:   "experimental.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 78,
-									Line:   86,
+									Line:   103,
 								},
 							},
 						},
@@ -10107,13 +10880,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 71,
-								Line:   86,
+								Line:   103,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 15,
-								Line:   86,
+								Line:   103,
 							},
 						},
 					},
@@ -10124,13 +10897,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   86,
+									Line:   103,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 16,
-									Line:   86,
+									Line:   103,
 								},
 							},
 						},
@@ -10142,13 +10915,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   86,
+										Line:   103,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 18,
-										Line:   86,
+										Line:   103,
 									},
 								},
 							},
@@ -10161,13 +10934,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   86,
+										Line:   103,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 26,
-										Line:   86,
+										Line:   103,
 									},
 								},
 							},
@@ -10178,13 +10951,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   86,
+											Line:   103,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 27,
-											Line:   86,
+											Line:   103,
 										},
 									},
 								},
@@ -10195,13 +10968,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   86,
+												Line:   103,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 35,
-												Line:   86,
+												Line:   103,
 											},
 										},
 									},
@@ -10212,13 +10985,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   86,
+													Line:   103,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 35,
-													Line:   86,
+													Line:   103,
 												},
 											},
 										},
@@ -10231,13 +11004,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   86,
+													Line:   103,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 43,
-													Line:   86,
+													Line:   103,
 												},
 											},
 										},
@@ -10248,13 +11021,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   86,
+														Line:   103,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 43,
-														Line:   86,
+														Line:   103,
 													},
 												},
 											},
@@ -10269,13 +11042,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   86,
+												Line:   103,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 28,
-												Line:   86,
+												Line:   103,
 											},
 										},
 									},
@@ -10291,13 +11064,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   86,
+									Line:   103,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 51,
-									Line:   86,
+									Line:   103,
 								},
 							},
 						},
@@ -10308,13 +11081,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   86,
+										Line:   103,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 52,
-										Line:   86,
+										Line:   103,
 									},
 								},
 							},
@@ -10325,13 +11098,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   86,
+											Line:   103,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 60,
-											Line:   86,
+											Line:   103,
 										},
 									},
 								},
@@ -10342,13 +11115,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   86,
+												Line:   103,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 60,
-												Line:   86,
+												Line:   103,
 											},
 										},
 									},
@@ -10361,13 +11134,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   86,
+												Line:   103,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 68,
-												Line:   86,
+												Line:   103,
 											},
 										},
 									},
@@ -10378,13 +11151,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   86,
+													Line:   103,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 68,
-													Line:   86,
+													Line:   103,
 												},
 											},
 										},
@@ -10399,13 +11172,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   86,
+											Line:   103,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 53,
-											Line:   86,
+											Line:   103,
 										},
 									},
 								},
@@ -10422,13 +11195,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   89,
+						Line:   106,
 					},
 					File:   "experimental.flux",
 					Source: "builtin kaufmansAMA",
 					Start: ast.Position{
 						Column: 1,
-						Line:   89,
+						Line:   106,
 					},
 				},
 			},
@@ -10440,13 +11213,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   89,
+							Line:   106,
 						},
 						File:   "experimental.flux",
 						Source: "kaufmansAMA",
 						Start: ast.Position{
 							Column: 9,
-							Line:   89,
+							Line:   106,
 						},
 					},
 				},
@@ -10459,13 +11232,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 108,
-							Line:   89,
+							Line:   106,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}], n: int) => [{T with _value: float}] where A: Numeric",
 						Start: ast.Position{
 							Column: 23,
-							Line:   89,
+							Line:   106,
 						},
 					},
 				},
@@ -10476,13 +11249,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 108,
-								Line:   89,
+								Line:   106,
 							},
 							File:   "experimental.flux",
 							Source: "A: Numeric",
 							Start: ast.Position{
 								Column: 98,
-								Line:   89,
+								Line:   106,
 							},
 						},
 					},
@@ -10493,13 +11266,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 108,
-									Line:   89,
+									Line:   106,
 								},
 								File:   "experimental.flux",
 								Source: "Numeric",
 								Start: ast.Position{
 									Column: 101,
-									Line:   89,
+									Line:   106,
 								},
 							},
 						},
@@ -10512,13 +11285,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 99,
-									Line:   89,
+									Line:   106,
 								},
 								File:   "experimental.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 98,
-									Line:   89,
+									Line:   106,
 								},
 							},
 						},
@@ -10532,13 +11305,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 91,
-								Line:   89,
+								Line:   106,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}], n: int) => [{T with _value: float}]",
 							Start: ast.Position{
 								Column: 23,
-								Line:   89,
+								Line:   106,
 							},
 						},
 					},
@@ -10549,13 +11322,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   89,
+									Line:   106,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 24,
-									Line:   89,
+									Line:   106,
 								},
 							},
 						},
@@ -10567,13 +11340,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   89,
+										Line:   106,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 26,
-										Line:   89,
+										Line:   106,
 									},
 								},
 							},
@@ -10586,13 +11359,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   89,
+										Line:   106,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 34,
-										Line:   89,
+										Line:   106,
 									},
 								},
 							},
@@ -10603,13 +11376,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
-											Line:   89,
+											Line:   106,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 35,
-											Line:   89,
+											Line:   106,
 										},
 									},
 								},
@@ -10620,13 +11393,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 52,
-												Line:   89,
+												Line:   106,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 43,
-												Line:   89,
+												Line:   106,
 											},
 										},
 									},
@@ -10637,13 +11410,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   89,
+													Line:   106,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 43,
-													Line:   89,
+													Line:   106,
 												},
 											},
 										},
@@ -10656,13 +11429,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 52,
-													Line:   89,
+													Line:   106,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 51,
-													Line:   89,
+													Line:   106,
 												},
 											},
 										},
@@ -10673,13 +11446,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 52,
-														Line:   89,
+														Line:   106,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 51,
-														Line:   89,
+														Line:   106,
 													},
 												},
 											},
@@ -10694,13 +11467,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   89,
+												Line:   106,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 36,
-												Line:   89,
+												Line:   106,
 											},
 										},
 									},
@@ -10715,13 +11488,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 62,
-									Line:   89,
+									Line:   106,
 								},
 								File:   "experimental.flux",
 								Source: "n: int",
 								Start: ast.Position{
 									Column: 56,
-									Line:   89,
+									Line:   106,
 								},
 							},
 						},
@@ -10733,13 +11506,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 57,
-										Line:   89,
+										Line:   106,
 									},
 									File:   "experimental.flux",
 									Source: "n",
 									Start: ast.Position{
 										Column: 56,
-										Line:   89,
+										Line:   106,
 									},
 								},
 							},
@@ -10752,13 +11525,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 62,
-										Line:   89,
+										Line:   106,
 									},
 									File:   "experimental.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 59,
-										Line:   89,
+										Line:   106,
 									},
 								},
 							},
@@ -10769,13 +11542,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 62,
-											Line:   89,
+											Line:   106,
 										},
 										File:   "experimental.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 59,
-											Line:   89,
+											Line:   106,
 										},
 									},
 								},
@@ -10790,13 +11563,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 91,
-									Line:   89,
+									Line:   106,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: float}]",
 								Start: ast.Position{
 									Column: 67,
-									Line:   89,
+									Line:   106,
 								},
 							},
 						},
@@ -10807,13 +11580,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 90,
-										Line:   89,
+										Line:   106,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: float}",
 									Start: ast.Position{
 										Column: 68,
-										Line:   89,
+										Line:   106,
 									},
 								},
 							},
@@ -10824,13 +11597,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 89,
-											Line:   89,
+											Line:   106,
 										},
 										File:   "experimental.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 76,
-											Line:   89,
+											Line:   106,
 										},
 									},
 								},
@@ -10841,13 +11614,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 82,
-												Line:   89,
+												Line:   106,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 76,
-												Line:   89,
+												Line:   106,
 											},
 										},
 									},
@@ -10860,13 +11633,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 89,
-												Line:   89,
+												Line:   106,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 84,
-												Line:   89,
+												Line:   106,
 											},
 										},
 									},
@@ -10877,13 +11650,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 89,
-													Line:   89,
+													Line:   106,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 84,
-													Line:   89,
+													Line:   106,
 												},
 											},
 										},
@@ -10898,13 +11671,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 70,
-											Line:   89,
+											Line:   106,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 69,
-											Line:   89,
+											Line:   106,
 										},
 									},
 								},
@@ -10921,13 +11694,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   92,
+						Line:   109,
 					},
 					File:   "experimental.flux",
 					Source: "builtin distinct",
 					Start: ast.Position{
 						Column: 1,
-						Line:   92,
+						Line:   109,
 					},
 				},
 			},
@@ -10939,13 +11712,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   92,
+							Line:   109,
 						},
 						File:   "experimental.flux",
 						Source: "distinct",
 						Start: ast.Position{
 							Column: 9,
-							Line:   92,
+							Line:   109,
 						},
 					},
 				},
@@ -10958,13 +11731,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 76,
-							Line:   92,
+							Line:   109,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 						Start: ast.Position{
 							Column: 20,
-							Line:   92,
+							Line:   109,
 						},
 					},
 				},
@@ -10976,13 +11749,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 76,
-								Line:   92,
+								Line:   109,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 20,
-								Line:   92,
+								Line:   109,
 							},
 						},
 					},
@@ -10993,13 +11766,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   92,
+									Line:   109,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 21,
-									Line:   92,
+									Line:   109,
 								},
 							},
 						},
@@ -11011,13 +11784,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   92,
+										Line:   109,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 23,
-										Line:   92,
+										Line:   109,
 									},
 								},
 							},
@@ -11030,13 +11803,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   92,
+										Line:   109,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 31,
-										Line:   92,
+										Line:   109,
 									},
 								},
 							},
@@ -11047,13 +11820,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 50,
-											Line:   92,
+											Line:   109,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 32,
-											Line:   92,
+											Line:   109,
 										},
 									},
 								},
@@ -11064,13 +11837,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
-												Line:   92,
+												Line:   109,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 40,
-												Line:   92,
+												Line:   109,
 											},
 										},
 									},
@@ -11081,13 +11854,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   92,
+													Line:   109,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 40,
-													Line:   92,
+													Line:   109,
 												},
 											},
 										},
@@ -11100,13 +11873,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   92,
+													Line:   109,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 48,
-													Line:   92,
+													Line:   109,
 												},
 											},
 										},
@@ -11117,13 +11890,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   92,
+														Line:   109,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 48,
-														Line:   92,
+														Line:   109,
 													},
 												},
 											},
@@ -11138,13 +11911,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   92,
+												Line:   109,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 33,
-												Line:   92,
+												Line:   109,
 											},
 										},
 									},
@@ -11160,13 +11933,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 76,
-									Line:   92,
+									Line:   109,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 56,
-									Line:   92,
+									Line:   109,
 								},
 							},
 						},
@@ -11177,13 +11950,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 75,
-										Line:   92,
+										Line:   109,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 57,
-										Line:   92,
+										Line:   109,
 									},
 								},
 							},
@@ -11194,13 +11967,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 74,
-											Line:   92,
+											Line:   109,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 65,
-											Line:   92,
+											Line:   109,
 										},
 									},
 								},
@@ -11211,13 +11984,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 71,
-												Line:   92,
+												Line:   109,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 65,
-												Line:   92,
+												Line:   109,
 											},
 										},
 									},
@@ -11230,13 +12003,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 74,
-												Line:   92,
+												Line:   109,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 73,
-												Line:   92,
+												Line:   109,
 											},
 										},
 									},
@@ -11247,13 +12020,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 74,
-													Line:   92,
+													Line:   109,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 73,
-													Line:   92,
+													Line:   109,
 												},
 											},
 										},
@@ -11268,13 +12041,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   92,
+											Line:   109,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 58,
-											Line:   92,
+											Line:   109,
 										},
 									},
 								},
@@ -11291,13 +12064,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   95,
+						Line:   112,
 					},
 					File:   "experimental.flux",
 					Source: "builtin fill",
 					Start: ast.Position{
 						Column: 1,
-						Line:   95,
+						Line:   112,
 					},
 				},
 			},
@@ -11309,13 +12082,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   95,
+							Line:   112,
 						},
 						File:   "experimental.flux",
 						Source: "fill",
 						Start: ast.Position{
 							Column: 9,
-							Line:   95,
+							Line:   112,
 						},
 					},
 				},
@@ -11328,13 +12101,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 103,
-							Line:   95,
+							Line:   112,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}], ?value: A, ?usePrevious: bool) => [{T with _value: A}]",
 						Start: ast.Position{
 							Column: 16,
-							Line:   95,
+							Line:   112,
 						},
 					},
 				},
@@ -11346,13 +12119,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 103,
-								Line:   95,
+								Line:   112,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}], ?value: A, ?usePrevious: bool) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   95,
+								Line:   112,
 							},
 						},
 					},
@@ -11363,13 +12136,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   95,
+									Line:   112,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   95,
+									Line:   112,
 								},
 							},
 						},
@@ -11381,13 +12154,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   95,
+										Line:   112,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 19,
-										Line:   95,
+										Line:   112,
 									},
 								},
 							},
@@ -11400,13 +12173,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   95,
+										Line:   112,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 27,
-										Line:   95,
+										Line:   112,
 									},
 								},
 							},
@@ -11417,13 +12190,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   95,
+											Line:   112,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 28,
-											Line:   95,
+											Line:   112,
 										},
 									},
 								},
@@ -11434,13 +12207,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   95,
+												Line:   112,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 36,
-												Line:   95,
+												Line:   112,
 											},
 										},
 									},
@@ -11451,13 +12224,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   95,
+													Line:   112,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 36,
-													Line:   95,
+													Line:   112,
 												},
 											},
 										},
@@ -11470,13 +12243,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   95,
+													Line:   112,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 44,
-													Line:   95,
+													Line:   112,
 												},
 											},
 										},
@@ -11487,13 +12260,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   95,
+														Line:   112,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 44,
-														Line:   95,
+														Line:   112,
 													},
 												},
 											},
@@ -11508,13 +12281,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   95,
+												Line:   112,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 29,
-												Line:   95,
+												Line:   112,
 											},
 										},
 									},
@@ -11529,13 +12302,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   95,
+									Line:   112,
 								},
 								File:   "experimental.flux",
 								Source: "?value: A",
 								Start: ast.Position{
 									Column: 49,
-									Line:   95,
+									Line:   112,
 								},
 							},
 						},
@@ -11547,13 +12320,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 55,
-										Line:   95,
+										Line:   112,
 									},
 									File:   "experimental.flux",
 									Source: "value",
 									Start: ast.Position{
 										Column: 50,
-										Line:   95,
+										Line:   112,
 									},
 								},
 							},
@@ -11566,13 +12339,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 58,
-										Line:   95,
+										Line:   112,
 									},
 									File:   "experimental.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 57,
-										Line:   95,
+										Line:   112,
 									},
 								},
 							},
@@ -11583,13 +12356,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   95,
+											Line:   112,
 										},
 										File:   "experimental.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 57,
-											Line:   95,
+											Line:   112,
 										},
 									},
 								},
@@ -11603,13 +12376,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 78,
-									Line:   95,
+									Line:   112,
 								},
 								File:   "experimental.flux",
 								Source: "?usePrevious: bool",
 								Start: ast.Position{
 									Column: 60,
-									Line:   95,
+									Line:   112,
 								},
 							},
 						},
@@ -11621,13 +12394,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 72,
-										Line:   95,
+										Line:   112,
 									},
 									File:   "experimental.flux",
 									Source: "usePrevious",
 									Start: ast.Position{
 										Column: 61,
-										Line:   95,
+										Line:   112,
 									},
 								},
 							},
@@ -11640,13 +12413,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 78,
-										Line:   95,
+										Line:   112,
 									},
 									File:   "experimental.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 74,
-										Line:   95,
+										Line:   112,
 									},
 								},
 							},
@@ -11657,13 +12430,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 78,
-											Line:   95,
+											Line:   112,
 										},
 										File:   "experimental.flux",
 										Source: "bool",
 										Start: ast.Position{
 											Column: 74,
-											Line:   95,
+											Line:   112,
 										},
 									},
 								},
@@ -11678,13 +12451,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 103,
-									Line:   95,
+									Line:   112,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 83,
-									Line:   95,
+									Line:   112,
 								},
 							},
 						},
@@ -11695,13 +12468,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 102,
-										Line:   95,
+										Line:   112,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 84,
-										Line:   95,
+										Line:   112,
 									},
 								},
 							},
@@ -11712,13 +12485,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 101,
-											Line:   95,
+											Line:   112,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 92,
-											Line:   95,
+											Line:   112,
 										},
 									},
 								},
@@ -11729,13 +12502,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 98,
-												Line:   95,
+												Line:   112,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 92,
-												Line:   95,
+												Line:   112,
 											},
 										},
 									},
@@ -11748,13 +12521,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 101,
-												Line:   95,
+												Line:   112,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 100,
-												Line:   95,
+												Line:   112,
 											},
 										},
 									},
@@ -11765,13 +12538,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 101,
-													Line:   95,
+													Line:   112,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 100,
-													Line:   95,
+													Line:   112,
 												},
 											},
 										},
@@ -11786,13 +12559,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 86,
-											Line:   95,
+											Line:   112,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 85,
-											Line:   95,
+											Line:   112,
 										},
 									},
 								},
@@ -11809,13 +12582,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   98,
+						Line:   115,
 					},
 					File:   "experimental.flux",
 					Source: "builtin first",
 					Start: ast.Position{
 						Column: 1,
-						Line:   98,
+						Line:   115,
 					},
 				},
 			},
@@ -11827,13 +12600,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   98,
+							Line:   115,
 						},
 						File:   "experimental.flux",
 						Source: "first",
 						Start: ast.Position{
 							Column: 9,
-							Line:   98,
+							Line:   115,
 						},
 					},
 				},
@@ -11846,13 +12619,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 73,
-							Line:   98,
+							Line:   115,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 						Start: ast.Position{
 							Column: 17,
-							Line:   98,
+							Line:   115,
 						},
 					},
 				},
@@ -11864,13 +12637,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 73,
-								Line:   98,
+								Line:   115,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 17,
-								Line:   98,
+								Line:   115,
 							},
 						},
 					},
@@ -11881,13 +12654,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   98,
+									Line:   115,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 18,
-									Line:   98,
+									Line:   115,
 								},
 							},
 						},
@@ -11899,13 +12672,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   98,
+										Line:   115,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 20,
-										Line:   98,
+										Line:   115,
 									},
 								},
 							},
@@ -11918,13 +12691,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   98,
+										Line:   115,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 28,
-										Line:   98,
+										Line:   115,
 									},
 								},
 							},
@@ -11935,13 +12708,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   98,
+											Line:   115,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 29,
-											Line:   98,
+											Line:   115,
 										},
 									},
 								},
@@ -11952,13 +12725,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   98,
+												Line:   115,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 37,
-												Line:   98,
+												Line:   115,
 											},
 										},
 									},
@@ -11969,13 +12742,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   98,
+													Line:   115,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 37,
-													Line:   98,
+													Line:   115,
 												},
 											},
 										},
@@ -11988,13 +12761,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   98,
+													Line:   115,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 45,
-													Line:   98,
+													Line:   115,
 												},
 											},
 										},
@@ -12005,13 +12778,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 46,
-														Line:   98,
+														Line:   115,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 45,
-														Line:   98,
+														Line:   115,
 													},
 												},
 											},
@@ -12026,13 +12799,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   98,
+												Line:   115,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 30,
-												Line:   98,
+												Line:   115,
 											},
 										},
 									},
@@ -12048,13 +12821,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 73,
-									Line:   98,
+									Line:   115,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 53,
-									Line:   98,
+									Line:   115,
 								},
 							},
 						},
@@ -12065,13 +12838,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 72,
-										Line:   98,
+										Line:   115,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 54,
-										Line:   98,
+										Line:   115,
 									},
 								},
 							},
@@ -12082,13 +12855,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 71,
-											Line:   98,
+											Line:   115,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 62,
-											Line:   98,
+											Line:   115,
 										},
 									},
 								},
@@ -12099,13 +12872,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 68,
-												Line:   98,
+												Line:   115,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 62,
-												Line:   98,
+												Line:   115,
 											},
 										},
 									},
@@ -12118,13 +12891,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 71,
-												Line:   98,
+												Line:   115,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 70,
-												Line:   98,
+												Line:   115,
 											},
 										},
 									},
@@ -12135,13 +12908,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 71,
-													Line:   98,
+													Line:   115,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 70,
-													Line:   98,
+													Line:   115,
 												},
 											},
 										},
@@ -12156,13 +12929,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 56,
-											Line:   98,
+											Line:   115,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 55,
-											Line:   98,
+											Line:   115,
 										},
 									},
 								},
@@ -12179,13 +12952,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   101,
+						Line:   118,
 					},
 					File:   "experimental.flux",
 					Source: "builtin last",
 					Start: ast.Position{
 						Column: 1,
-						Line:   101,
+						Line:   118,
 					},
 				},
 			},
@@ -12197,13 +12970,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   101,
+							Line:   118,
 						},
 						File:   "experimental.flux",
 						Source: "last",
 						Start: ast.Position{
 							Column: 9,
-							Line:   101,
+							Line:   118,
 						},
 					},
 				},
@@ -12216,13 +12989,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 72,
-							Line:   101,
+							Line:   118,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 						Start: ast.Position{
 							Column: 16,
-							Line:   101,
+							Line:   118,
 						},
 					},
 				},
@@ -12234,13 +13007,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 72,
-								Line:   101,
+								Line:   118,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   101,
+								Line:   118,
 							},
 						},
 					},
@@ -12251,13 +13024,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   101,
+									Line:   118,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   101,
+									Line:   118,
 								},
 							},
 						},
@@ -12269,13 +13042,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   101,
+										Line:   118,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 19,
-										Line:   101,
+										Line:   118,
 									},
 								},
 							},
@@ -12288,13 +13061,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   101,
+										Line:   118,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 27,
-										Line:   101,
+										Line:   118,
 									},
 								},
 							},
@@ -12305,13 +13078,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   101,
+											Line:   118,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 28,
-											Line:   101,
+											Line:   118,
 										},
 									},
 								},
@@ -12322,13 +13095,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   101,
+												Line:   118,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 36,
-												Line:   101,
+												Line:   118,
 											},
 										},
 									},
@@ -12339,13 +13112,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   101,
+													Line:   118,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 36,
-													Line:   101,
+													Line:   118,
 												},
 											},
 										},
@@ -12358,13 +13131,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   101,
+													Line:   118,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 44,
-													Line:   101,
+													Line:   118,
 												},
 											},
 										},
@@ -12375,13 +13148,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   101,
+														Line:   118,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 44,
-														Line:   101,
+														Line:   118,
 													},
 												},
 											},
@@ -12396,13 +13169,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   101,
+												Line:   118,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 29,
-												Line:   101,
+												Line:   118,
 											},
 										},
 									},
@@ -12418,13 +13191,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 72,
-									Line:   101,
+									Line:   118,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 52,
-									Line:   101,
+									Line:   118,
 								},
 							},
 						},
@@ -12435,13 +13208,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 71,
-										Line:   101,
+										Line:   118,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 53,
-										Line:   101,
+										Line:   118,
 									},
 								},
 							},
@@ -12452,13 +13225,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 70,
-											Line:   101,
+											Line:   118,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 61,
-											Line:   101,
+											Line:   118,
 										},
 									},
 								},
@@ -12469,13 +13242,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 67,
-												Line:   101,
+												Line:   118,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 61,
-												Line:   101,
+												Line:   118,
 											},
 										},
 									},
@@ -12488,13 +13261,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 70,
-												Line:   101,
+												Line:   118,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 69,
-												Line:   101,
+												Line:   118,
 											},
 										},
 									},
@@ -12505,13 +13278,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
-													Line:   101,
+													Line:   118,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 69,
-													Line:   101,
+													Line:   118,
 												},
 											},
 										},
@@ -12526,13 +13299,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 55,
-											Line:   101,
+											Line:   118,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 54,
-											Line:   101,
+											Line:   118,
 										},
 									},
 								},
@@ -12549,13 +13322,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   104,
+						Line:   121,
 					},
 					File:   "experimental.flux",
 					Source: "builtin max",
 					Start: ast.Position{
 						Column: 1,
-						Line:   104,
+						Line:   121,
 					},
 				},
 			},
@@ -12567,13 +13340,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   104,
+							Line:   121,
 						},
 						File:   "experimental.flux",
 						Source: "max",
 						Start: ast.Position{
 							Column: 9,
-							Line:   104,
+							Line:   121,
 						},
 					},
 				},
@@ -12586,13 +13359,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 71,
-							Line:   104,
+							Line:   121,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 						Start: ast.Position{
 							Column: 15,
-							Line:   104,
+							Line:   121,
 						},
 					},
 				},
@@ -12604,13 +13377,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 71,
-								Line:   104,
+								Line:   121,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 15,
-								Line:   104,
+								Line:   121,
 							},
 						},
 					},
@@ -12621,13 +13394,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   104,
+									Line:   121,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 16,
-									Line:   104,
+									Line:   121,
 								},
 							},
 						},
@@ -12639,13 +13412,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   104,
+										Line:   121,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 18,
-										Line:   104,
+										Line:   121,
 									},
 								},
 							},
@@ -12658,13 +13431,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   104,
+										Line:   121,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 26,
-										Line:   104,
+										Line:   121,
 									},
 								},
 							},
@@ -12675,13 +13448,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   104,
+											Line:   121,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 27,
-											Line:   104,
+											Line:   121,
 										},
 									},
 								},
@@ -12692,13 +13465,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   104,
+												Line:   121,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 35,
-												Line:   104,
+												Line:   121,
 											},
 										},
 									},
@@ -12709,13 +13482,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   104,
+													Line:   121,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 35,
-													Line:   104,
+													Line:   121,
 												},
 											},
 										},
@@ -12728,13 +13501,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   104,
+													Line:   121,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 43,
-													Line:   104,
+													Line:   121,
 												},
 											},
 										},
@@ -12745,13 +13518,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   104,
+														Line:   121,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 43,
-														Line:   104,
+														Line:   121,
 													},
 												},
 											},
@@ -12766,13 +13539,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   104,
+												Line:   121,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 28,
-												Line:   104,
+												Line:   121,
 											},
 										},
 									},
@@ -12788,13 +13561,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   104,
+									Line:   121,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 51,
-									Line:   104,
+									Line:   121,
 								},
 							},
 						},
@@ -12805,13 +13578,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   104,
+										Line:   121,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 52,
-										Line:   104,
+										Line:   121,
 									},
 								},
 							},
@@ -12822,13 +13595,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   104,
+											Line:   121,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 60,
-											Line:   104,
+											Line:   121,
 										},
 									},
 								},
@@ -12839,13 +13612,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   104,
+												Line:   121,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 60,
-												Line:   104,
+												Line:   121,
 											},
 										},
 									},
@@ -12858,13 +13631,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   104,
+												Line:   121,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 68,
-												Line:   104,
+												Line:   121,
 											},
 										},
 									},
@@ -12875,13 +13648,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   104,
+													Line:   121,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 68,
-													Line:   104,
+													Line:   121,
 												},
 											},
 										},
@@ -12896,13 +13669,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   104,
+											Line:   121,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 53,
-											Line:   104,
+											Line:   121,
 										},
 									},
 								},
@@ -12919,13 +13692,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   107,
+						Line:   124,
 					},
 					File:   "experimental.flux",
 					Source: "builtin min",
 					Start: ast.Position{
 						Column: 1,
-						Line:   107,
+						Line:   124,
 					},
 				},
 			},
@@ -12937,13 +13710,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   107,
+							Line:   124,
 						},
 						File:   "experimental.flux",
 						Source: "min",
 						Start: ast.Position{
 							Column: 9,
-							Line:   107,
+							Line:   124,
 						},
 					},
 				},
@@ -12956,13 +13729,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 71,
-							Line:   107,
+							Line:   124,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 						Start: ast.Position{
 							Column: 15,
-							Line:   107,
+							Line:   124,
 						},
 					},
 				},
@@ -12974,13 +13747,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 71,
-								Line:   107,
+								Line:   124,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 15,
-								Line:   107,
+								Line:   124,
 							},
 						},
 					},
@@ -12991,13 +13764,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   107,
+									Line:   124,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 16,
-									Line:   107,
+									Line:   124,
 								},
 							},
 						},
@@ -13009,13 +13782,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   107,
+										Line:   124,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 18,
-										Line:   107,
+										Line:   124,
 									},
 								},
 							},
@@ -13028,13 +13801,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   107,
+										Line:   124,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 26,
-										Line:   107,
+										Line:   124,
 									},
 								},
 							},
@@ -13045,13 +13818,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   107,
+											Line:   124,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 27,
-											Line:   107,
+											Line:   124,
 										},
 									},
 								},
@@ -13062,13 +13835,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   107,
+												Line:   124,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 35,
-												Line:   107,
+												Line:   124,
 											},
 										},
 									},
@@ -13079,13 +13852,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   107,
+													Line:   124,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 35,
-													Line:   107,
+													Line:   124,
 												},
 											},
 										},
@@ -13098,13 +13871,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   107,
+													Line:   124,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 43,
-													Line:   107,
+													Line:   124,
 												},
 											},
 										},
@@ -13115,13 +13888,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   107,
+														Line:   124,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 43,
-														Line:   107,
+														Line:   124,
 													},
 												},
 											},
@@ -13136,13 +13909,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   107,
+												Line:   124,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 28,
-												Line:   107,
+												Line:   124,
 											},
 										},
 									},
@@ -13158,13 +13931,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   107,
+									Line:   124,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 51,
-									Line:   107,
+									Line:   124,
 								},
 							},
 						},
@@ -13175,13 +13948,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   107,
+										Line:   124,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 52,
-										Line:   107,
+										Line:   124,
 									},
 								},
 							},
@@ -13192,13 +13965,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   107,
+											Line:   124,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 60,
-											Line:   107,
+											Line:   124,
 										},
 									},
 								},
@@ -13209,13 +13982,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   107,
+												Line:   124,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 60,
-												Line:   107,
+												Line:   124,
 											},
 										},
 									},
@@ -13228,13 +14001,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   107,
+												Line:   124,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 68,
-												Line:   107,
+												Line:   124,
 											},
 										},
 									},
@@ -13245,13 +14018,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   107,
+													Line:   124,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 68,
-													Line:   107,
+													Line:   124,
 												},
 											},
 										},
@@ -13266,13 +14039,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   107,
+											Line:   124,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 53,
-											Line:   107,
+											Line:   124,
 										},
 									},
 								},
@@ -13289,13 +14062,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   110,
+						Line:   127,
 					},
 					File:   "experimental.flux",
 					Source: "builtin unique",
 					Start: ast.Position{
 						Column: 1,
-						Line:   110,
+						Line:   127,
 					},
 				},
 			},
@@ -13307,13 +14080,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   110,
+							Line:   127,
 						},
 						File:   "experimental.flux",
 						Source: "unique",
 						Start: ast.Position{
 							Column: 9,
-							Line:   110,
+							Line:   127,
 						},
 					},
 				},
@@ -13326,13 +14099,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 74,
-							Line:   110,
+							Line:   127,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 						Start: ast.Position{
 							Column: 18,
-							Line:   110,
+							Line:   127,
 						},
 					},
 				},
@@ -13344,13 +14117,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 74,
-								Line:   110,
+								Line:   127,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: A}]) => [{T with _value: A}]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   110,
+								Line:   127,
 							},
 						},
 					},
@@ -13361,13 +14134,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   110,
+									Line:   127,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: A}]",
 								Start: ast.Position{
 									Column: 19,
-									Line:   110,
+									Line:   127,
 								},
 							},
 						},
@@ -13379,13 +14152,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   110,
+										Line:   127,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 21,
-										Line:   110,
+										Line:   127,
 									},
 								},
 							},
@@ -13398,13 +14171,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   110,
+										Line:   127,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: A}]",
 									Start: ast.Position{
 										Column: 29,
-										Line:   110,
+										Line:   127,
 									},
 								},
 							},
@@ -13415,13 +14188,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   110,
+											Line:   127,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: A}",
 										Start: ast.Position{
 											Column: 30,
-											Line:   110,
+											Line:   127,
 										},
 									},
 								},
@@ -13432,13 +14205,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 47,
-												Line:   110,
+												Line:   127,
 											},
 											File:   "experimental.flux",
 											Source: "_value: A",
 											Start: ast.Position{
 												Column: 38,
-												Line:   110,
+												Line:   127,
 											},
 										},
 									},
@@ -13449,13 +14222,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   110,
+													Line:   127,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 38,
-													Line:   110,
+													Line:   127,
 												},
 											},
 										},
@@ -13468,13 +14241,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   110,
+													Line:   127,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 46,
-													Line:   110,
+													Line:   127,
 												},
 											},
 										},
@@ -13485,13 +14258,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 47,
-														Line:   110,
+														Line:   127,
 													},
 													File:   "experimental.flux",
 													Source: "A",
 													Start: ast.Position{
 														Column: 46,
-														Line:   110,
+														Line:   127,
 													},
 												},
 											},
@@ -13506,13 +14279,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   110,
+												Line:   127,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 31,
-												Line:   110,
+												Line:   127,
 											},
 										},
 									},
@@ -13528,13 +14301,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 74,
-									Line:   110,
+									Line:   127,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: A}]",
 								Start: ast.Position{
 									Column: 54,
-									Line:   110,
+									Line:   127,
 								},
 							},
 						},
@@ -13545,13 +14318,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 73,
-										Line:   110,
+										Line:   127,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: A}",
 									Start: ast.Position{
 										Column: 55,
-										Line:   110,
+										Line:   127,
 									},
 								},
 							},
@@ -13562,13 +14335,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 72,
-											Line:   110,
+											Line:   127,
 										},
 										File:   "experimental.flux",
 										Source: "_value: A",
 										Start: ast.Position{
 											Column: 63,
-											Line:   110,
+											Line:   127,
 										},
 									},
 								},
@@ -13579,13 +14352,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   110,
+												Line:   127,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 63,
-												Line:   110,
+												Line:   127,
 											},
 										},
 									},
@@ -13598,13 +14371,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 72,
-												Line:   110,
+												Line:   127,
 											},
 											File:   "experimental.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 71,
-												Line:   110,
+												Line:   127,
 											},
 										},
 									},
@@ -13615,13 +14388,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   110,
+													Line:   127,
 												},
 												File:   "experimental.flux",
 												Source: "A",
 												Start: ast.Position{
 													Column: 71,
-													Line:   110,
+													Line:   127,
 												},
 											},
 										},
@@ -13636,13 +14409,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 57,
-											Line:   110,
+											Line:   127,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 56,
-											Line:   110,
+											Line:   127,
 										},
 									},
 								},
@@ -13659,13 +14432,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   113,
+						Line:   130,
 					},
 					File:   "experimental.flux",
 					Source: "builtin histogram",
 					Start: ast.Position{
 						Column: 1,
-						Line:   113,
+						Line:   130,
 					},
 				},
 			},
@@ -13677,13 +14450,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   113,
+							Line:   130,
 						},
 						File:   "experimental.flux",
 						Source: "histogram",
 						Start: ast.Position{
 							Column: 9,
-							Line:   113,
+							Line:   130,
 						},
 					},
 				},
@@ -13696,13 +14469,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 129,
-							Line:   113,
+							Line:   130,
 						},
 						File:   "experimental.flux",
 						Source: "(<-tables: [{T with _value: float}], bins: [float], ?normalize: bool) => [{T with _value: float, le: float}]",
 						Start: ast.Position{
 							Column: 21,
-							Line:   113,
+							Line:   130,
 						},
 					},
 				},
@@ -13714,13 +14487,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 129,
-								Line:   113,
+								Line:   130,
 							},
 							File:   "experimental.flux",
 							Source: "(<-tables: [{T with _value: float}], bins: [float], ?normalize: bool) => [{T with _value: float, le: float}]",
 							Start: ast.Position{
 								Column: 21,
-								Line:   113,
+								Line:   130,
 							},
 						},
 					},
@@ -13731,13 +14504,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
-									Line:   113,
+									Line:   130,
 								},
 								File:   "experimental.flux",
 								Source: "<-tables: [{T with _value: float}]",
 								Start: ast.Position{
 									Column: 22,
-									Line:   113,
+									Line:   130,
 								},
 							},
 						},
@@ -13749,13 +14522,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   113,
+										Line:   130,
 									},
 									File:   "experimental.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 24,
-										Line:   113,
+										Line:   130,
 									},
 								},
 							},
@@ -13768,13 +14541,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 56,
-										Line:   113,
+										Line:   130,
 									},
 									File:   "experimental.flux",
 									Source: "[{T with _value: float}]",
 									Start: ast.Position{
 										Column: 32,
-										Line:   113,
+										Line:   130,
 									},
 								},
 							},
@@ -13785,13 +14558,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 55,
-											Line:   113,
+											Line:   130,
 										},
 										File:   "experimental.flux",
 										Source: "{T with _value: float}",
 										Start: ast.Position{
 											Column: 33,
-											Line:   113,
+											Line:   130,
 										},
 									},
 								},
@@ -13802,13 +14575,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   113,
+												Line:   130,
 											},
 											File:   "experimental.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 41,
-												Line:   113,
+												Line:   130,
 											},
 										},
 									},
@@ -13819,13 +14592,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   113,
+													Line:   130,
 												},
 												File:   "experimental.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 41,
-													Line:   113,
+													Line:   130,
 												},
 											},
 										},
@@ -13838,13 +14611,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   113,
+													Line:   130,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 49,
-													Line:   113,
+													Line:   130,
 												},
 											},
 										},
@@ -13855,13 +14628,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 54,
-														Line:   113,
+														Line:   130,
 													},
 													File:   "experimental.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 49,
-														Line:   113,
+														Line:   130,
 													},
 												},
 											},
@@ -13876,13 +14649,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   113,
+												Line:   130,
 											},
 											File:   "experimental.flux",
 											Source: "T",
 											Start: ast.Position{
 												Column: 34,
-												Line:   113,
+												Line:   130,
 											},
 										},
 									},
@@ -13897,13 +14670,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   113,
+									Line:   130,
 								},
 								File:   "experimental.flux",
 								Source: "bins: [float]",
 								Start: ast.Position{
 									Column: 58,
-									Line:   113,
+									Line:   130,
 								},
 							},
 						},
@@ -13915,13 +14688,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 62,
-										Line:   113,
+										Line:   130,
 									},
 									File:   "experimental.flux",
 									Source: "bins",
 									Start: ast.Position{
 										Column: 58,
-										Line:   113,
+										Line:   130,
 									},
 								},
 							},
@@ -13934,13 +14707,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 71,
-										Line:   113,
+										Line:   130,
 									},
 									File:   "experimental.flux",
 									Source: "[float]",
 									Start: ast.Position{
 										Column: 64,
-										Line:   113,
+										Line:   130,
 									},
 								},
 							},
@@ -13951,13 +14724,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 70,
-											Line:   113,
+											Line:   130,
 										},
 										File:   "experimental.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 65,
-											Line:   113,
+											Line:   130,
 										},
 									},
 								},
@@ -13968,13 +14741,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 70,
-												Line:   113,
+												Line:   130,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 65,
-												Line:   113,
+												Line:   130,
 											},
 										},
 									},
@@ -13989,13 +14762,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 89,
-									Line:   113,
+									Line:   130,
 								},
 								File:   "experimental.flux",
 								Source: "?normalize: bool",
 								Start: ast.Position{
 									Column: 73,
-									Line:   113,
+									Line:   130,
 								},
 							},
 						},
@@ -14007,13 +14780,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 83,
-										Line:   113,
+										Line:   130,
 									},
 									File:   "experimental.flux",
 									Source: "normalize",
 									Start: ast.Position{
 										Column: 74,
-										Line:   113,
+										Line:   130,
 									},
 								},
 							},
@@ -14026,13 +14799,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 89,
-										Line:   113,
+										Line:   130,
 									},
 									File:   "experimental.flux",
 									Source: "bool",
 									Start: ast.Position{
 										Column: 85,
-										Line:   113,
+										Line:   130,
 									},
 								},
 							},
@@ -14043,13 +14816,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 89,
-											Line:   113,
+											Line:   130,
 										},
 										File:   "experimental.flux",
 										Source: "bool",
 										Start: ast.Position{
 											Column: 85,
-											Line:   113,
+											Line:   130,
 										},
 									},
 								},
@@ -14064,13 +14837,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 129,
-									Line:   113,
+									Line:   130,
 								},
 								File:   "experimental.flux",
 								Source: "[{T with _value: float, le: float}]",
 								Start: ast.Position{
 									Column: 94,
-									Line:   113,
+									Line:   130,
 								},
 							},
 						},
@@ -14081,13 +14854,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 128,
-										Line:   113,
+										Line:   130,
 									},
 									File:   "experimental.flux",
 									Source: "{T with _value: float, le: float}",
 									Start: ast.Position{
 										Column: 95,
-										Line:   113,
+										Line:   130,
 									},
 								},
 							},
@@ -14098,13 +14871,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 116,
-											Line:   113,
+											Line:   130,
 										},
 										File:   "experimental.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 103,
-											Line:   113,
+											Line:   130,
 										},
 									},
 								},
@@ -14115,13 +14888,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 109,
-												Line:   113,
+												Line:   130,
 											},
 											File:   "experimental.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 103,
-												Line:   113,
+												Line:   130,
 											},
 										},
 									},
@@ -14134,13 +14907,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 116,
-												Line:   113,
+												Line:   130,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 111,
-												Line:   113,
+												Line:   130,
 											},
 										},
 									},
@@ -14151,13 +14924,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 116,
-													Line:   113,
+													Line:   130,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 111,
-													Line:   113,
+													Line:   130,
 												},
 											},
 										},
@@ -14171,13 +14944,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 127,
-											Line:   113,
+											Line:   130,
 										},
 										File:   "experimental.flux",
 										Source: "le: float",
 										Start: ast.Position{
 											Column: 118,
-											Line:   113,
+											Line:   130,
 										},
 									},
 								},
@@ -14188,13 +14961,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 120,
-												Line:   113,
+												Line:   130,
 											},
 											File:   "experimental.flux",
 											Source: "le",
 											Start: ast.Position{
 												Column: 118,
-												Line:   113,
+												Line:   130,
 											},
 										},
 									},
@@ -14207,13 +14980,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 127,
-												Line:   113,
+												Line:   130,
 											},
 											File:   "experimental.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 122,
-												Line:   113,
+												Line:   130,
 											},
 										},
 									},
@@ -14224,13 +14997,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 127,
-													Line:   113,
+													Line:   130,
 												},
 												File:   "experimental.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 122,
-													Line:   113,
+													Line:   130,
 												},
 											},
 										},
@@ -14245,13 +15018,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 97,
-											Line:   113,
+											Line:   130,
 										},
 										File:   "experimental.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 96,
-											Line:   113,
+											Line:   130,
 										},
 									},
 								},

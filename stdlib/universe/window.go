@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -17,21 +18,22 @@ import (
 const WindowKind = "window"
 
 type WindowOpSpec struct {
-	Every       flux.Duration `json:"every"`
-	Period      flux.Duration `json:"period"`
-	Offset      flux.Duration `json:"offset"`
-	TimeColumn  string        `json:"timeColumn"`
-	StopColumn  string        `json:"stopColumn"`
-	StartColumn string        `json:"startColumn"`
-	CreateEmpty bool          `json:"createEmpty"`
+	Every       flux.Duration
+	Period      flux.Duration
+	Offset      flux.Duration
+	Location    string
+	TimeColumn  string
+	StopColumn  string
+	StartColumn string
+	CreateEmpty bool
 }
 
 var infinityVar = values.NewDuration(values.ConvertDurationNsecs(math.MaxInt64))
 
 func init() {
-	windowSignature := runtime.MustLookupBuiltinType("universe", "window")
+	windowSignature := runtime.MustLookupBuiltinType("universe", "_window")
 
-	runtime.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, CreateWindowOpSpec, windowSignature)))
+	runtime.RegisterPackageValue("universe", "_"+WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, CreateWindowOpSpec, windowSignature)))
 	flux.RegisterOpSpec(WindowKind, newWindowOp)
 	runtime.RegisterPackageValue("universe", "inf", infinityVar)
 	plan.RegisterProcedureSpec(WindowKind, newWindowProcedure, WindowKind)
@@ -46,43 +48,45 @@ func CreateWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 
 	spec := new(WindowOpSpec)
 
-	every, everySet, err := func() (flux.Duration, bool, error) {
-		d, ok, err := args.GetDuration("every")
-		if err != nil || !ok {
-			return flux.Duration{}, ok, err
+	if every, err := func() (flux.Duration, error) {
+		d, err := args.GetRequiredDuration("every")
+		if err != nil {
+			return flux.Duration{}, err
 		}
 
 		if d.IsNegative() {
-			return flux.Duration{}, false, errors.New(codes.Invalid, `parameter "every" must be non-negative`)
-		} else if d.IsZero() {
-			return flux.Duration{}, false, errors.New(codes.Invalid, `parameter "every" must be nonzero`)
+			return flux.Duration{}, errors.New(codes.Invalid, `parameter "every" must be non-negative`)
 		}
-		return d, true, nil
-	}()
-	if err != nil {
+		return d, nil
+	}(); err != nil {
 		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#every"
 		return nil, errors.WithDocURL(err, docURL)
-	} else if everySet {
+	} else {
 		spec.Every = every
 	}
 
-	period, periodSet, err := args.GetDuration("period")
-	if err != nil {
+	if period, err := args.GetRequiredDuration("period"); err != nil {
 		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#period"
 		return nil, errors.WithDocURL(err, docURL)
-	}
-	if periodSet {
+	} else {
 		spec.Period = period
 	}
-	if offset, ok, err := args.GetDuration("offset"); err != nil {
+
+	if offset, err := args.GetRequiredDuration("offset"); err != nil {
 		return nil, err
-	} else if ok {
+	} else {
 		spec.Offset = offset
 	}
 
-	if !everySet && !periodSet {
+	if location, err := args.GetRequiredString("location"); err != nil {
+		return nil, err
+	} else {
+		spec.Location = location
+	}
+
+	if spec.Every.IsZero() && spec.Period.IsZero() {
 		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/"
-		return nil, errors.New(codes.Invalid, `window function requires at least one of "every" or "period" to be set`).
+		return nil, errors.New(codes.Invalid, `window function requires at least one of "every" or "period" to be set and non-zero`).
 			WithDocURL(docURL)
 	}
 
@@ -107,19 +111,17 @@ func CreateWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	} else {
 		spec.StopColumn = execute.DefaultStopColLabel
 	}
-	if createEmpty, ok, err := args.GetBool("createEmpty"); err != nil {
+	if createEmpty, err := args.GetRequiredBool("createEmpty"); err != nil {
 		return nil, err
-	} else if ok {
-		spec.CreateEmpty = createEmpty
 	} else {
-		spec.CreateEmpty = false
+		spec.CreateEmpty = createEmpty
 	}
 
 	// Apply defaults
-	if !everySet {
+	if spec.Every.IsZero() {
 		spec.Every = spec.Period
 	}
-	if !periodSet {
+	if spec.Period.IsZero() {
 		spec.Period = spec.Every
 	}
 	return spec, nil
@@ -152,9 +154,10 @@ func newWindowProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pro
 	}
 	p := &WindowProcedureSpec{
 		Window: plan.WindowSpec{
-			Every:  s.Every,
-			Period: s.Period,
-			Offset: s.Offset,
+			Every:    s.Every,
+			Period:   s.Period,
+			Offset:   s.Offset,
+			Location: s.Location,
 		},
 		TimeColumn:  s.TimeColumn,
 		StartColumn: s.StartColumn,
@@ -194,10 +197,20 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 
 	newBounds := interval.NewBounds(bounds.Start, bounds.Stop)
 
-	w, err := interval.NewWindow(
+	var loc *zoneinfo.Location
+	if name := s.Window.Location; name != "UTC" {
+		l, err := zoneinfo.LoadLocation(name)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, codes.Invalid, "cannot load location %q", name)
+		}
+		loc = l
+	}
+
+	w, err := interval.NewWindowInLocation(
 		s.Window.Every,
 		s.Window.Period,
 		s.Window.Offset,
+		loc,
 	)
 
 	if err != nil {

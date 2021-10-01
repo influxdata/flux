@@ -39,6 +39,7 @@ func TestWindow_NewQuery(t *testing.T) {
 							Every:       flux.ConvertDuration(time.Hour),
 							Period:      flux.ConvertDuration(time.Hour),
 							Offset:      flux.ConvertDuration(time.Minute * -5),
+							Location:    "UTC",
 							TimeColumn:  execute.DefaultTimeColLabel,
 							StartColumn: execute.DefaultStartColLabel,
 							StopColumn:  execute.DefaultStopColLabel,

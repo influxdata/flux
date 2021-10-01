@@ -685,7 +685,12 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 	ctx = withStackEntry(ctx, fname, call.Location())
 	value, err := f.Call(ctx, argObj)
 	if err != nil {
-		return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
+		// If a function has an underscore as a prefix, consider it
+		// as an internal call and don't add it to the error message.
+		if !strings.HasPrefix(fname, "_") {
+			err = errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
+		}
+		return nil, err
 	}
 
 	if f.HasSideEffect() {
@@ -1637,7 +1642,11 @@ func Stack(ctx context.Context) []StackEntry {
 
 	stack := make([]StackEntry, 0, e.depth+1)
 	for e != nil {
-		stack = append(stack, e.entry)
+		// If the function name starts with an underscore,
+		// do not include it in the stacktrace.
+		if !strings.HasPrefix(e.entry.FunctionName, "_") {
+			stack = append(stack, e.entry)
+		}
 		e = e.parent
 	}
 	return stack

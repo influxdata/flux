@@ -142,18 +142,46 @@ builtin sum : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
 builtin tripleExponentialDerivative : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric, B: Record
 builtin union : (tables: [[A]]) => [A] where A: Record
 builtin unique : (<-tables: [A], ?column: string) => [A] where A: Record
-builtin window : (
+
+builtin _window : (
     <-tables: [A],
-    ?every: duration,
-    ?period: duration,
-    ?offset: duration,
-    ?timeColumn: string,
-    ?startColumn: string,
-    ?stopColumn: string,
-    ?createEmpty: bool,
+    every: duration,
+    period: duration,
+    offset: duration,
+    location: string,
+    timeColumn: string,
+    startColumn: string,
+    stopColumn: string,
+    createEmpty: bool,
 ) => [B] where
     A: Record,
     B: Record
+
+utc = "UTC"
+
+option location = utc
+
+window = (
+        tables=<-,
+        every=0s,
+        period=0s,
+        offset=0s,
+        location=location,
+        timeColumn="_time",
+        startColumn="_start",
+        stopColumn="_stop",
+        createEmpty=false,
+) => tables
+    |> _window(
+        every,
+        period,
+        offset,
+        location,
+        timeColumn,
+        startColumn,
+        stopColumn,
+        createEmpty,
+    )
 
 builtin yield : (<-tables: [A], ?name: string) => [A] where A: Record
 
@@ -210,15 +238,23 @@ else
 // and then undo the windowing to produce an output table for every input table.
 aggregateWindow = (
         every,
+        period=0s,
         fn,
         offset=0s,
+        location=location,
         column="_value",
         timeSrc="_stop",
         timeDst="_time",
         createEmpty=true,
         tables=<-,
 ) => tables
-    |> window(every: every, offset: offset, createEmpty: createEmpty)
+    |> window(
+        every: every,
+        period: period,
+        offset: offset,
+        location: location,
+        createEmpty: createEmpty,
+    )
     |> fn(column: column)
     |> _fillEmpty(createEmpty: createEmpty)
     |> duplicate(column: timeSrc, as: timeDst)
