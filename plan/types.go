@@ -337,7 +337,8 @@ func ReplaceNode(oldNode, newNode Node) {
 }
 
 type WindowSpec struct {
-	Every  flux.Duration
-	Period flux.Duration
-	Offset flux.Duration
+	Every    flux.Duration
+	Period   flux.Duration
+	Offset   flux.Duration
+	Location string
 }

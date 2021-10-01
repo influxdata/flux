@@ -15,6 +15,7 @@ import (
 	"github.com/influxdata/flux/internal/execute/dataset"
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/internal/mutable"
+	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/values"
@@ -33,7 +34,21 @@ type windowTransformation2 struct {
 }
 
 func newWindowTransformation2(id execute.DatasetID, spec *WindowProcedureSpec, bounds *execute.Bounds, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	window, err := interval.NewWindow(spec.Window.Every, spec.Window.Period, spec.Window.Offset)
+	var loc *zoneinfo.Location
+	if name := spec.Window.Location; name != "UTC" {
+		l, err := zoneinfo.LoadLocation(name)
+		if err != nil {
+			return nil, nil, errors.Wrapf(err, codes.Invalid, "cannot load location %q", name)
+		}
+		loc = l
+	}
+
+	window, err := interval.NewWindowInLocation(
+		spec.Window.Every,
+		spec.Window.Period,
+		spec.Window.Offset,
+		loc,
+	)
 	if err != nil {
 		return nil, nil, err
 	}

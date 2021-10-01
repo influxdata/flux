@@ -421,7 +421,7 @@ func TestEval(t *testing.T) {
 		{
 			name:    "invalid function parameter",
 			query:   `from(bucket: "telegraf") |> window(every: 0s)`,
-			wantErr: `error calling function "window" @\d+:\d+-\d+:\d+: parameter "every" must be nonzero`,
+			wantErr: `error calling function "window" @\d+:\d+-\d+:\d+: window function requires at least one of "every" or "period" to be set and non-zero`,
 		},
 		{
 			// tests that we don't nest error messages when
@@ -429,7 +429,7 @@ func TestEval(t *testing.T) {
 			// function.
 			name:    "nested function error",
 			query:   `from(bucket: "telegraf") |> window(every: 0s) |> mean()`,
-			wantErr: `error calling function "window" @\d+:\d+-\d+:\d+: parameter "every" must be nonzero`,
+			wantErr: `error calling function "window" @\d+:\d+-\d+:\d+: window function requires at least one of "every" or "period" to be set and non-zero`,
 		},
 	}
 
@@ -870,8 +870,8 @@ func TestStack(t *testing.T) {
 			FunctionName: "window",
 			Location: ast.SourceLocation{
 				File:   "universe.flux",
-				Start:  ast.Position{Line: 225, Column: 8},
-				End:    ast.Position{Line: 225, Column: 47},
+				Start:  ast.Position{Line: 261, Column: 8},
+				End:    ast.Position{Line: 261, Column: 47},
 				Source: `window(every: inf, timeColumn: timeDst)`,
 			},
 		},

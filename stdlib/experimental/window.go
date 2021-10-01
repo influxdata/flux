@@ -7,6 +7,6 @@ import (
 )
 
 func init() {
-	windowSignature := runtime.MustLookupBuiltinType("experimental", "window")
-	runtime.RegisterPackageValue("experimental", "window", flux.MustValue(flux.FunctionValue("window", universe.CreateWindowOpSpec, windowSignature)))
+	windowSignature := runtime.MustLookupBuiltinType("experimental", "_window")
+	runtime.RegisterPackageValue("experimental", "_window", flux.MustValue(flux.FunctionValue("window", universe.CreateWindowOpSpec, windowSignature)))
 }
