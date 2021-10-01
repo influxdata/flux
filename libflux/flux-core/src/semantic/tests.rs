@@ -38,6 +38,7 @@ use crate::parser::parse_string;
 use crate::semantic::convert::convert_polytype;
 
 use colored::*;
+use derive_more::Display;
 
 fn parse_program(src: &str) -> ast::Package {
     let file = parse_string("", src);
@@ -78,12 +79,27 @@ impl Importer for HashMap<&str, PolyType> {
     }
 }
 
+#[derive(Debug, Display, PartialEq)]
+enum Error {
+    #[display(
+        fmt = "{}",
+        r#"_0
+            .iter()
+            .map(|err| err.to_string())
+            .collect::<Vec<_>>()
+            .join("\n")"#
+    )]
+    Parse(Vec<ast::check::Error>),
+    #[display(fmt = "{}", _0)]
+    Infer(nodes::Error),
+}
+
 fn infer_types(
     src: &str,
     env: HashMap<&str, &str>,
     imp: HashMap<&str, HashMap<&str, &str>>,
     want: Option<HashMap<&str, &str>>,
-) -> Result<Environment, nodes::Error> {
+) -> Result<Environment, Error> {
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp
         .into_iter()
@@ -109,16 +125,19 @@ fn infer_types(
     let mut f = Fresher::default();
 
     let pkg = parse_program(src);
+    let errors = ast::check::check(ast::walk::Node::Package(&pkg));
+    if !errors.is_empty() {
+        return Err(Error::Parse(errors));
+    }
 
-    let got = match nodes::infer_pkg_types(
+    let (env, _) = nodes::infer_pkg_types(
         &mut convert_with(pkg, &mut f).expect("analysis failed"),
         Environment::new(env),
         &mut f,
         &importer,
-    ) {
-        Ok((env, _)) => env.values,
-        Err(e) => return Err(e),
-    };
+    )
+    .map_err(Error::Infer)?;
+    let got = env.values;
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
@@ -236,17 +255,25 @@ macro_rules! test_infer_err {
         $(
             env = $env;
         )?
-        if let Ok(env) = infer_types($src, env, imp, None) {
-            panic!(
-                "\n\n{}\n\n{}\n",
-                "expected type error but instead inferred the: following types:"
-                    .red()
-                    .bold(),
-                env.values
-                    .iter()
-                    .fold(String::new(), |acc, (name, poly)| acc
-                        + &format!("\t{}: {}\n", name, poly))
-            )
+        match infer_types($src, env, imp, None) {
+            Ok(env) => {
+                panic!(
+                    "\n\n{}\n\n{}\n",
+                    "expected type error but instead inferred the: following types:"
+                        .red()
+                        .bold(),
+                    env.values
+                        .iter()
+                        .fold(String::new(), |acc, (name, poly)| acc
+                            + &format!("\t{}: {}\n", name, poly))
+                )
+            }
+            Err(err @ Error::Parse(_)) => {
+                panic!("{}", err)
+            }
+            Err(Error::Infer(_)) => {
+
+            }
         }
     }};
 }
@@ -2828,7 +2855,7 @@ fn polymorphic_instantiation() {
             c = f(x: "0")
             d = f(x: 10h)
             e = f(x: 2019-10-31T00:00:00Z)
-            g = f(x: /*/)
+            g = f(x: /.*/)
             h = f(x: [0])
             i = f(x: [])
             j = f(x: {a:0, b:0.1})
@@ -2920,7 +2947,7 @@ fn constrained_generics_addable() {
     test_infer_err! {
         src: r#"
             f = (a, b) => a + b
-            f(a: /*/, b: /*/)
+            f(a: /.*/, b: /.*/)
         "#,
     }
     test_infer_err! {
@@ -2977,7 +3004,7 @@ fn constrained_generics_subtractable() {
     test_infer_err! {
         src: r#"
             f = (a, b) => a - b
-            f(a: /*/, b: /*/)
+            f(a: /.*/, b: /.*/)
         "#,
     }
     test_infer_err! {
@@ -3028,7 +3055,7 @@ fn constrained_generics_divisible() {
     test_infer_err! {
         src: r#"
             f = (a, b) => a / b
-            f(a: /*/, b: /*/)
+            f(a: /.*/, b: /.*/)
         "#,
     }
     test_infer_err! {
@@ -3079,7 +3106,7 @@ fn constrained_generics_comparable() {
     test_infer_err! {
         src: r#"
             f = (a, b) => a < b
-            f(a: /*/, b: /*/)
+            f(a: /.*/, b: /.*/)
         "#,
     }
     test_infer_err! {
@@ -3126,7 +3153,7 @@ fn constrained_generics_equatable() {
     test_infer_err! {
         src: r#"
             f = (a, b) => a < b
-            f(a: /*/, b: /*/)
+            f(a: /.*/, b: /.*/)
         "#,
     }
     test_infer_err! {
@@ -3177,7 +3204,7 @@ fn multiple_constraints() {
     test_infer_err! {
         src: r#"
             f = (a, b) => a < b
-            f(a: /*/, b: /*/)
+            f(a: /.*/, b: /.*/)
         "#,
     }
     test_infer_err! {

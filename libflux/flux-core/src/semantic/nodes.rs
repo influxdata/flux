@@ -10,18 +10,18 @@
 extern crate chrono;
 extern crate derivative;
 
-use crate::{
-    ast,
-    semantic::{
-        env::Environment,
-        fresh::Fresher,
-        import::Importer,
-        infer::{self, Constraint, Constraints},
-        sub::{Substitutable, Substitution},
-        types::{
-            self, Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap,
-            Tvar, TvarKinds,
-        },
+use crate::ast;
+use crate::semantic::infer;
+use crate::semantic::types;
+use crate::semantic::{
+    env::Environment,
+    fresh::Fresher,
+    import::Importer,
+    infer::{Constraint, Constraints},
+    sub::{Substitutable, Substitution},
+    types::{
+        Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
+        TvarKinds,
     },
 };
 
@@ -58,6 +58,8 @@ pub enum Error {
     #[display(fmt = "error {}. This is a bug in type inference", _0)]
     Bug(String),
 }
+
+impl std::error::Error for Error {}
 
 impl From<infer::Error> for Error {
     fn from(err: infer::Error) -> Error {
@@ -391,7 +393,7 @@ impl ImportDeclaration {
     pub fn import_name(&self) -> &str {
         let path = &self.path.value;
         match &self.alias {
-            None => path.rsplitn(2, '/').collect::<Vec<&str>>()[0],
+            None => path.rsplitn(2, '/').next().unwrap(),
             Some(id) => &id.name[..],
         }
     }
