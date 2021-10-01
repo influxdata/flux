@@ -618,7 +618,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/window_default_test.flux":                                                    "498abfd9ef15964cb425521d36c1324e02d416a71004d8954f1106d2a9ec0abc",
 	"stdlib/universe/window_generate_empty_test.flux":                                             "9c0ab9048145d6c967f03242348101571b92e67f0bfd3f591f65553c34c90691",
 	"stdlib/universe/window_group_mean_ungroup_test.flux":                                         "4ad43dd3ddaaa69e069a225e11310ced6e3cde266dc200cb691a3c4ec6238a89",
-	"stdlib/universe/window_location_test.flux":                                                   "57661175610c53721a5aa7013964a00478a8e0e252440f068444fc585ac6501b",
+	"stdlib/universe/window_location_test.flux":                                                   "5bedba10648ad5ff2396ae8ef10ff9640b81ffde051ff52c56d32d6bc1c76ff5",
 	"stdlib/universe/window_null_test.flux":                                                       "7facbcee778f33ef733017b39c82d7b10eb339fa299f84f02502549e9f065127",
 	"stdlib/universe/window_start_bound_test.flux":                                                "9df0b6c5b286762bb36d7900e507c02fb6882bd0af56361a62058cced25ca854",
 	"stdlib/universe/window_test.flux":                                                            "3a7267214389c94a90defa625a896527a3c1f79cf1e26bb82f549f92aacb3fe0",

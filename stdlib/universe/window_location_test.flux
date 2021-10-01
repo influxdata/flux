@@ -16,6 +16,7 @@ testcase us_pacific_daily {
             {_time: 2017-11-05T01:30:00-08:00},
         ],
     )
+        |> range(start: 2017-01-01T00:00:00-08:00, stop: 2018-01-01T00:00:00-08:00)
         |> window(every: 1d)
 
     want = array.from(
@@ -40,6 +41,7 @@ testcase us_pacific_offset {
             {_time: 2017-11-05T01:45:00-08:00},
         ],
     )
+        |> range(start: 2017-01-01T00:00:00-08:00, stop: 2018-01-01T00:00:00-08:00)
         |> window(every: 1h, offset: 30m)
 
     want = array.from(
@@ -64,6 +66,7 @@ testcase australia_east_daily {
             {_time: 2017-04-02T02:30:00+10:00},
         ],
     )
+        |> range(start: 2017-01-01T00:00:00+11:00, stop: 2018-01-01T00:00:00+11:00)
         |> window(every: 1d)
 
     want = array.from(
@@ -88,6 +91,7 @@ testcase australia_east_offset {
             {_time: 2017-04-02T02:45:00+10:00},
         ],
     )
+        |> range(start: 2017-01-01T00:00:00+11:00, stop: 2018-01-01T00:00:00+11:00)
         |> window(every: 1h, offset: 30m)
 
     want = array.from(
@@ -110,6 +114,7 @@ testcase american_samoa_day_skip {
             {_time: 2011-12-31T04:00:00+14:00},
         ],
     )
+        |> range(start: 2011-11-01T00:00:00-10:00, stop: 2012-02-01T00:00:00+14:00)
         |> window(every: 1d, offset: 12h)
 
     want = array.from(
