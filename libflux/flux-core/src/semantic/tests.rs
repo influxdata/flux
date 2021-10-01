@@ -92,6 +92,20 @@ enum Error {
     Parse(Vec<ast::check::Error>),
     #[display(fmt = "{}", _0)]
     Infer(nodes::Error),
+    #[display(
+        fmt = "\n\n{}\n\n{}\n{}\n{}\n{}\n",
+        r#""unexpected types:".red().bold()"#,
+        r#""want:".green().bold()"#,
+        r#"want.iter().fold(String::new(), |acc, (name, poly)| acc
+            + &format!("\t{}: {}\n", name, poly))"#,
+        r#""got:".red().bold()"#,
+        r#"got.iter().fold(String::new(), |acc, (name, poly)| acc
+                    + &format!("\t{}: {}\n", name, poly))"#
+    )]
+    TypeMismatch {
+        want: SemanticMap<String, PolyType>,
+        got: SemanticMap<String, PolyType>,
+    },
 }
 
 fn infer_types(
@@ -144,16 +158,7 @@ fn infer_types(
     if let Some(env) = want {
         let want = parse_map(env);
         if want != got {
-            panic!(
-                "\n\n{}\n\n{}\n{}\n{}\n{}\n",
-                "unexpected types:".red().bold(),
-                "want:".green().bold(),
-                want.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly)),
-                "got:".red().bold(),
-                got.iter().fold(String::new(), |acc, (name, poly)| acc
-                    + &format!("\t{}: {}\n", name, poly)),
-            );
+            return Err(Error::TypeMismatch { want, got });
         }
     }
     return Ok(got.into());
@@ -268,7 +273,8 @@ macro_rules! test_infer_err {
                             + &format!("\t{}: {}\n", name, poly))
                 )
             }
-            Err(err @ Error::Parse(_)) => {
+            Err(err @ Error::Parse(_))
+            | Err(err @ Error::TypeMismatch {.. }) => {
                 panic!("{}", err)
             }
             Err(Error::Infer(_)) => {
