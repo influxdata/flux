@@ -205,7 +205,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/prometheus/prometheus.flux":                                              "6c8234657c1f70469f87e2f81729efd7f00f6977bd5dff437b900eb0a6c0cbc5",
 	"stdlib/experimental/quantile_test.flux":                                                      "bd9820e444fdbf4042236dad4e8f45eeeae6170563155f3f26cd671cff161490",
 	"stdlib/experimental/query/from.flux":                                                         "5b3c21aa711551fa9ec102f0bcc3ab79efc70ee6434e4025336f991312e742cd",
-	"stdlib/experimental/record/record.flux":                                                      "58b19139ad5e773b3f9df085ddc9b083cf8c854856e55ef9fb406ccf14886e53",
+	"stdlib/experimental/record/record.flux":                                                      "c878f36cd95a7da8891ce617af6139755f28fbbb8b383dd4b8600c3cb5bde66e",
 	"stdlib/experimental/record/record_test.flux":                                                 "20617d8608aab6d4e99b801e7dfc107f7315d30424b6f062ed7586bbb0fce7f1",
 	"stdlib/experimental/set_test.flux":                                                           "4f6fce8e5db6601076b0c1f65d246ed621232ec0d705d2f5988bf121e161f8a2",
 	"stdlib/experimental/skew_test.flux":                                                          "26fbb16fbe1114df87dbc59e03faa4c43a9fa9fe0daf87296f35bd798f4afbd6",
