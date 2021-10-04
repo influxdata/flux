@@ -162,7 +162,7 @@ type RuleTestCase struct {
 }
 
 // PhysicalRuleTestHelper will run a rule test case.
-func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
+func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase, options ...cmp.Option) {
 	t.Helper()
 
 	before := CreatePlanSpec(tc.Before)
@@ -222,14 +222,15 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		return nil
 	})
 
-	if !cmp.Equal(want, got, CmpOptions...) {
+	tempOptions := append(CmpOptions, options...)
+	if !cmp.Equal(want, got, tempOptions...) {
 		t.Errorf("transformed plan not as expected, -want/+got:\n%v",
-			cmp.Diff(want, got, CmpOptions...))
+			cmp.Diff(want, got, tempOptions...))
 	}
 }
 
 // LogicalRuleTestHelper will run a rule test case.
-func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
+func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase, options ...cmp.Option) {
 	t.Helper()
 
 	before := CreatePlanSpec(tc.Before)
@@ -276,8 +277,9 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		return nil
 	})
 
-	if !cmp.Equal(want, got, CmpOptions...) {
+	tempOptions := append(CmpOptions, options...)
+	if !cmp.Equal(want, got, tempOptions...) {
 		t.Errorf("transformed plan not as expected, -want/+got:\n%v",
-			cmp.Diff(want, got, CmpOptions...))
+			cmp.Diff(want, got, tempOptions...))
 	}
 }

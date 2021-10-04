@@ -3,8 +3,6 @@ package plantest
 import (
 	"fmt"
 	"reflect"
-	"unicode"
-	"unicode/utf8"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -14,7 +12,6 @@ import (
 	"github.com/influxdata/flux/stdlib/kafka"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values/valuestest"
-	"google.golang.org/protobuf/proto"
 )
 
 // CmpOptions are the options needed to compare plan.ProcedureSpecs inside plan.Spec.
@@ -27,7 +24,6 @@ var CmpOptions = append(
 	cmp.AllowUnexported(kafka.ToKafkaProcedureSpec{}),
 	cmpopts.IgnoreUnexported(kafka.ToKafkaProcedureSpec{}),
 	valuestest.ScopeTransformer,
-	IgnoreProtobufUnexported(),
 )
 
 // ComparePlans compares two query plans using an arbitrary comparator function f
@@ -181,31 +177,4 @@ func cmpPlanNodeShallow(p, q plan.Node) error {
 	}
 
 	return nil
-}
-
-func IgnoreProtobufUnexported() cmp.Option {
-	return cmp.FilterPath(filterProtobufUnexported, cmp.Ignore())
-}
-
-func filterProtobufUnexported(p cmp.Path) bool {
-	// Determine if the path is pointing to a struct field.
-	sf, ok := p.Index(-1).(cmp.StructField)
-	if !ok {
-		return false
-	}
-
-	// Return true if it is a proto.Message and the field is unexported.
-	return implementsProtoMessage(p.Index(-2).Type()) && !isExported(sf.Name())
-}
-
-// isExported reports whether the identifier is exported.
-func isExported(id string) bool {
-	r, _ := utf8.DecodeRuneInString(id)
-	return unicode.IsUpper(r)
-}
-
-var messageType = reflect.TypeOf((*proto.Message)(nil)).Elem()
-
-func implementsProtoMessage(t reflect.Type) bool {
-	return t.Implements(messageType) || reflect.PtrTo(t).Implements(messageType)
 }
