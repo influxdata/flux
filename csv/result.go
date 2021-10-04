@@ -894,6 +894,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 	writer := e.csvWriter(writeCounter)
 
 	var lastCols []colMeta
+	var lastGroupCols []flux.ColMeta
 	var lastEmpty bool
 
 	resultName := result.Name()
@@ -911,9 +912,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 		// pre-allocate row slice
 		row := make([]string, len(cols))
 
-		schemaChanged := !equalCols(cols, lastCols)
-
-		if lastEmpty || schemaChanged || tbl.Empty() {
+		if lastEmpty || tbl.Empty() || schemaChanged(cols, lastCols, tbl.Key().Cols(), lastGroupCols) {
 			if len(lastCols) > 0 {
 				// Write out empty line if not first table
 				writer.Write(nil)
@@ -974,6 +973,7 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 		tableID++
 		tableIDStr = strconv.Itoa(tableID)
 		lastCols = cols
+		lastGroupCols = tbl.Key().Cols()
 		lastEmpty = tbl.Empty()
 		writer.Flush()
 		return wrapEncodingError(writer.Error())
@@ -1309,16 +1309,28 @@ func decodeType(datatype string) (t flux.ColType, desc string, err error) {
 	return
 }
 
-func equalCols(a, b []colMeta) bool {
-	if len(a) != len(b) {
-		return false
+func schemaChanged(cols, lastCols []colMeta, groupCols, lastGroupCols []flux.ColMeta) bool {
+	if lastGroupCols == nil {
+		return true
 	}
-	for j := range a {
-		if a[j] != b[j] {
-			return false
+	if len(groupCols) != len(lastGroupCols) {
+		return true
+	}
+	for j := range groupCols {
+		if groupCols[j] != lastGroupCols[j] {
+			return true
 		}
 	}
-	return true
+
+	if len(cols) != len(lastCols) {
+		return true
+	}
+	for j := range cols {
+		if cols[j] != lastCols[j] {
+			return true
+		}
+	}
+	return false
 }
 
 func NewMultiResultEncoder(c ResultEncoderConfig) flux.MultiResultEncoder {
