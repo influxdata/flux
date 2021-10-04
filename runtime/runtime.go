@@ -2,11 +2,12 @@ package runtime
 
 import (
 	"context"
-	"encoding/json"
+	"io/fs"
+	"strings"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/embed"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/libflux/go/libflux"
@@ -21,7 +22,6 @@ var Default = &runtime{}
 // runtime contains the flux runtime for interpreting and
 // executing queries.
 type runtime struct {
-	astPkgs   map[string]*ast.Package
 	pkgs      map[string]*semantic.Package
 	builtins  map[string]map[string]values.Value
 	finalized bool
@@ -50,27 +50,6 @@ func (r *runtime) IsPreludePackage(pkg string) bool {
 
 func (r *runtime) LookupBuiltinType(pkg, name string) (semantic.MonoType, error) {
 	return LookupBuiltinType(pkg, name)
-}
-
-func (r *runtime) RegisterPackage(pkg *ast.Package) error {
-	if r.finalized {
-		return errors.New(codes.Internal, "already finalized, cannot register builtin package")
-	}
-
-	if r.astPkgs == nil {
-		r.astPkgs = make(map[string]*ast.Package)
-	}
-
-	if _, ok := r.astPkgs[pkg.Path]; ok {
-		return errors.Newf(codes.Internal, "duplicate builtin package %q", pkg.Path)
-	}
-
-	if ast.Check(pkg) > 0 {
-		err := ast.GetError(pkg)
-		return errors.Wrapf(err, codes.Inherit, "failed to parse builtin package %q", pkg.Path)
-	}
-	r.astPkgs[pkg.Path] = pkg
-	return nil
 }
 
 func (r *runtime) RegisterPackageValue(pkgpath, name string, value values.Value) error {
@@ -182,23 +161,31 @@ func (r *runtime) Stdlib() interpreter.Importer {
 
 func (r *runtime) compilePackages() error {
 	pkgs := make(map[string]*semantic.Package)
-	for _, pkg := range r.astPkgs {
-		bs, err := json.Marshal(pkg)
+	if err := fs.WalkDir(embed.FS, "stdlib", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		} else if d.IsDir() {
+			return nil
+		}
+		data, err := fs.ReadFile(embed.FS, path)
 		if err != nil {
 			return err
 		}
-		hdl, err := r.JSONToHandle(bs)
+
+		spkg, err := semantic.DeserializeFromFlatBuffer(data)
 		if err != nil {
 			return err
 		}
-		root, err := AnalyzePackage(hdl)
-		if err != nil {
-			return err
-		}
-		pkgs[pkg.Path] = root
+		name := strings.TrimPrefix(
+			strings.TrimSuffix(path, ".fc"),
+			"stdlib/",
+		)
+		pkgs[name] = spkg
+		return nil
+	}); err != nil {
+		return err
 	}
 	r.pkgs = pkgs
-	r.astPkgs = nil
 	return nil
 }
 
