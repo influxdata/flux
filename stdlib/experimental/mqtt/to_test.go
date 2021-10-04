@@ -105,8 +105,8 @@ from(bucket:"mybucket") |> mqtt.to(broker: "tcp://iot.eclipse.org:1883", usernam
 }
 
 const (
-	broker = "tcp://mqtt.eclipseprojects.io:1883" // "tcp://iot.eclipse.org:1883" seems not available anymore
-	topic = "test-influxdb"
+	broker         = "tcp://mqtt.eclipseprojects.io:1883" // "tcp://iot.eclipse.org:1883" seems not available anymore
+	topic          = "test-influxdb"
 	receiveTimeout = 15 * time.Second
 )
 
