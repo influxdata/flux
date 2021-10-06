@@ -4,6 +4,7 @@ package record_test
 import "testing"
 import "array"
 import "experimental/record"
+import "json"
 
 // Currently in Flux the defaults values constrain the type of function parameters.
 // This is normally good except when you want a polymorphic parameter with a default.
@@ -35,5 +36,47 @@ testcase polymorphic_default {
 
     // TODO(nathanielc): When we have the ability to test using assertions change this code to use them.
     // Instead of using tables with testing.diff
+    testing.diff(got: got, want: want)
+}
+
+testcase record_get_primitive {
+    obj = {x: 1}
+
+    want = array.from(
+        rows: [
+            {x: 1},
+            {x: 0},
+        ],
+    )
+
+    got = array.from(
+        rows: [
+            {x: record.get(r: obj, key: "x", default: 0)},
+            {x: record.get(r: obj, key: "y", default: 0)},
+        ],
+    )
+
+    testing.diff(got: got, want: want)
+}
+
+testcase record_get_record {
+    obj = {
+        details: {x: 1},
+    }
+
+    want = array.from(
+        rows: [
+            {details: "{\"x\":1}"},
+            {details: "{}"},
+        ],
+    )
+
+    got = array.from(
+        rows: [
+            {details: string(v: json.encode(v: record.get(r: obj, key: "details", default: record.any)))},
+            {details: string(v: json.encode(v: record.get(r: obj, key: "nosuchfield", default: record.any)))},
+        ],
+    )
+
     testing.diff(got: got, want: want)
 }
