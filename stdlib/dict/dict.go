@@ -1,12 +1,10 @@
 package dict
 
 import (
-	"context"
-
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/function"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -136,26 +134,10 @@ func Remove(args interpreter.Arguments) (values.Value, error) {
 	return dict.Remove(key), nil
 }
 
-// function is a function definition.
-type function func(args interpreter.Arguments) (values.Value, error)
-
-// makeFunction will construct a values.Function from a function definition.
-func makeFunction(name string, fn function) values.Function {
-	mt := runtime.MustLookupBuiltinType(pkgpath, name)
-	return values.NewFunction(name, mt, func(ctx context.Context, args values.Object) (values.Value, error) {
-		return interpreter.DoFunctionCall(fn, args)
-	}, false)
-}
-
-// registerFunction will create a function from the function definition
-// and register it in this package with the given name.
-func registerFunction(name string, fn function) {
-	runtime.RegisterPackageValue(pkgpath, name, makeFunction(name, fn))
-}
-
 func init() {
-	registerFunction("fromList", FromList)
-	registerFunction("get", Get)
-	registerFunction("insert", Insert)
-	registerFunction("remove", Remove)
+	b := function.ForPackage(pkgpath)
+	b.Register("fromList", FromList)
+	b.Register("get", Get)
+	b.Register("insert", Insert)
+	b.Register("remove", Remove)
 }

@@ -506,7 +506,8 @@ mod tests {
                 "math",
                 "strings",
                 "regexp",
-                "experimental/table"
+                "experimental/table",
+                "timezone",
             ],
             names,
         );

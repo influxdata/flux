@@ -44,20 +44,23 @@ type Window struct {
 // Each window's length is the start boundary plus the period.
 // Every must not be a mix of months and nanoseconds in order to preserve constant time bounds lookup.
 func NewWindow(every, period, offset values.Duration) (Window, error) {
-	return NewWindowInLocation(every, period, offset, nil)
+	return NewWindowInLocation(every, period, offset, UTC)
 }
 
 // NewWindowInLocation creates a window the same as NewWindow within the given location.
 // Windows that are location-aware will take into account zone offset changes such
 // as daylight savings time and other changes that occur to the location's clock time.
-func NewWindowInLocation(every, period, offset values.Duration, loc *zoneinfo.Location) (Window, error) {
-	zero := epoch.Add(offset)
+func NewWindowInLocation(every, period, offset values.Duration, loc Location) (Window, error) {
+	zero := epoch.Add(loc.Offset.Mul(-1)).Add(offset)
 	w := Window{
 		every:      every,
 		period:     period,
 		zero:       zero,
 		zeroMonths: monthsSince(zero),
-		loc:        loc,
+		loc:        loc.zone,
+	}
+	if w.loc == nil {
+		w.loc = zoneinfo.UTC
 	}
 	if err := w.isValid(); err != nil {
 		return Window{}, err
@@ -371,4 +374,40 @@ func isBeforeWithinMonth(a, b values.Time) bool {
 		return true
 	}
 	return false
+}
+
+// UTC is the UTC zone with no additional offset.
+var UTC = Location{zone: zoneinfo.UTC}
+
+// Location is a Location that can be passed to Window to make the window timezone-aware.
+type Location struct {
+	zone *zoneinfo.Location
+
+	// Offset declares an additional offset that will be applied.
+	Offset values.Duration
+}
+
+func LoadLocation(name string) (Location, error) {
+	if name == "UTC" {
+		return UTC, nil
+	}
+
+	loc, err := zoneinfo.LoadLocation(name)
+	if err != nil {
+		return UTC, errors.Wrap(err, codes.Invalid)
+	}
+	return Location{
+		zone: loc,
+	}, nil
+}
+
+func (l Location) Equal(other Location) bool {
+	zone, otherZone := l.zone, other.zone
+	if zone == nil {
+		zone = zoneinfo.UTC
+	}
+	if otherZone == nil {
+		otherZone = zoneinfo.UTC
+	}
+	return zone.String() == otherZone.String() && l.Offset == other.Offset
 }

@@ -51,7 +51,7 @@ builtin _window : (
     every: duration,
     period: duration,
     offset: duration,
-    location: string,
+    location: {zone: string, offset: duration},
     createEmpty: bool,
 ) => [{T with _start: time, _stop: time, _time: time}]
 
