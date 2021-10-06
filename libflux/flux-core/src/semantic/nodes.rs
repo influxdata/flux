@@ -320,10 +320,10 @@ impl File {
 
             imports.push(name);
 
-            match importer.import(path) {
-                Some(poly) => env.add(name.to_owned(), poly),
-                None => return Err(Error::InvalidImportPath(path.clone(), dec.loc.clone())),
-            };
+            let poly = importer
+                .import(path)
+                .ok_or_else(|| Error::InvalidImportPath(path.clone(), dec.loc.clone()))?;
+            env.add(name.to_owned(), poly);
         }
 
         let (mut env, constraints) =
@@ -878,11 +878,10 @@ impl FunctionExpr {
             .chain(opt.iter_mut())
             .chain(pipe.as_mut().map(|p| (&p.k, &mut p.v)))
         {
-            if let Some(new_t) = nenv.lookup(k) {
-                *t = new_t.expr.clone();
-            } else {
-                return Err(Error::Bug(format!("Missing function parameter `{}`", k)));
-            }
+            let new_t = nenv
+                .lookup(k)
+                .ok_or_else(|| Error::Bug(format!("Missing function parameter `{}`", k)))?;
+            *t = new_t.expr.clone();
         }
         // Now pop the nested environment, we don't need it anymore.
         let env = nenv.pop();
@@ -1726,23 +1725,19 @@ pub struct IdentifierExpr {
 
 impl IdentifierExpr {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        match env.lookup(&self.name) {
-            Some(poly) => {
-                let (t, cons) = infer::instantiate(poly.clone(), f, self.loc.clone());
-                Ok((
-                    env,
-                    cons + Constraints::from(vec![Constraint::Equal {
-                        act: t,
-                        exp: self.typ.clone(),
-                        loc: self.loc.clone(),
-                    }]),
-                ))
-            }
-            None => Err(Error::UndefinedIdentifier(
-                self.name.to_string(),
-                self.loc.clone(),
-            )),
-        }
+        let poly = env
+            .lookup(&self.name)
+            .ok_or_else(|| Error::UndefinedIdentifier(self.name.to_string(), self.loc.clone()))?;
+
+        let (t, cons) = infer::instantiate(poly.clone(), f, self.loc.clone());
+        Ok((
+            env,
+            cons + Constraints::from(vec![Constraint::Equal {
+                act: t,
+                exp: self.typ.clone(),
+                loc: self.loc.clone(),
+            }]),
+        ))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);

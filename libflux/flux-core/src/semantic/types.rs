@@ -1015,14 +1015,15 @@ impl Record {
                     head: Property { k: b, v: u },
                     tail: MonoType::Var(r),
                 },
-            ) if a == b && l == r => match t.clone().unify(u.clone(), cons, f) {
-                Err(_) => Err(Error::CannotUnifyLabel {
-                    lab: a,
-                    exp: t,
-                    act: u,
-                }),
-                Ok(sub) => Ok(sub),
-            },
+            ) if a == b && l == r => {
+                t.clone()
+                    .unify(u.clone(), cons, f)
+                    .map_err(|_| Error::CannotUnifyLabel {
+                        lab: a,
+                        exp: t,
+                        act: u,
+                    })
+            }
             (
                 Record::Extension {
                     head: Property { k: a, .. },
@@ -1435,35 +1436,22 @@ impl Function {
         }
         let mut sub = Substitution::empty();
         // Unify f's required arguments.
+
+        let g_opt = &mut g.opt;
         for (name, exp) in f.req.into_iter() {
-            if let Some(act) = g.req.remove(&name) {
+            if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
                 // The required argument is in g's required arguments.
-                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
-                    Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
-                    Ok(sub) => Ok(sub),
-                }?;
-            } else if let Some(act) = g.opt.remove(&name) {
-                // The required argument is in g's optional arguments.
-                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
-                    Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
-                    Ok(sub) => Ok(sub),
-                }?;
+                sub = apply_then_unify(exp, act, sub, cons, fresh)
+                    .map_err(|e| Error::CannotUnifyArgument(name, Box::new(e)))?;
             } else {
                 return Err(Error::MissingArgument(name));
             }
         }
         // Unify f's optional arguments.
         for (name, exp) in f.opt.into_iter() {
-            if let Some(act) = g.req.remove(&name) {
-                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
-                    Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
-                    Ok(sub) => Ok(sub),
-                }?;
-            } else if let Some(act) = g.opt.remove(&name) {
-                sub = match apply_then_unify(exp.clone(), act.clone(), sub, cons, fresh) {
-                    Err(e) => Err(Error::CannotUnifyArgument(name, Box::new(e))),
-                    Ok(sub) => Ok(sub),
-                }?;
+            if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
+                sub = apply_then_unify(exp, act, sub, cons, fresh)
+                    .map_err(|e| Error::CannotUnifyArgument(name, Box::new(e)))?;
             }
         }
         // Unify return types.
