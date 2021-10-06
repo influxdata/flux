@@ -76,5 +76,6 @@ import (
 	_ "github.com/influxdata/flux/stdlib/system"
 	_ "github.com/influxdata/flux/stdlib/testing"
 	_ "github.com/influxdata/flux/stdlib/testing/expect"
+	_ "github.com/influxdata/flux/stdlib/timezone"
 	_ "github.com/influxdata/flux/stdlib/universe"
 )

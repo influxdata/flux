@@ -8,6 +8,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/interval"
 )
 
 type Planner interface {
@@ -340,5 +341,5 @@ type WindowSpec struct {
 	Every    flux.Duration
 	Period   flux.Duration
 	Offset   flux.Duration
-	Location string
+	Location interval.Location
 }

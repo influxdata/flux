@@ -8,10 +8,10 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -21,7 +21,7 @@ type WindowOpSpec struct {
 	Every       flux.Duration
 	Period      flux.Duration
 	Offset      flux.Duration
-	Location    string
+	Location    interval.Location
 	TimeColumn  string
 	StopColumn  string
 	StartColumn string
@@ -78,10 +78,28 @@ func CreateWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		spec.Offset = offset
 	}
 
-	if location, err := args.GetRequiredString("location"); err != nil {
+	if location, err := args.GetRequiredObject("location"); err != nil {
 		return nil, err
 	} else {
-		spec.Location = location
+		name, ok := location.Get("zone")
+		if !ok {
+			return nil, errors.New(codes.Invalid, "zone property missing from location record")
+		} else if got := name.Type().Nature(); got != semantic.String {
+			return nil, errors.Newf(codes.Invalid, "zone property for location must be of type %s, got %s", semantic.String, got)
+		}
+
+		loc, err := interval.LoadLocation(name.Str())
+		if err != nil {
+			return nil, err
+		}
+
+		if offset, ok := location.Get("offset"); ok {
+			if got := offset.Type().Nature(); got != semantic.Duration {
+				return nil, errors.Newf(codes.Invalid, "offset property for location must be of type %s, got %s", semantic.Duration, got)
+			}
+			loc.Offset = offset.Duration()
+		}
+		spec.Location = loc
 	}
 
 	if spec.Every.IsZero() && spec.Period.IsZero() {
@@ -197,20 +215,11 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 
 	newBounds := interval.NewBounds(bounds.Start, bounds.Stop)
 
-	var loc *zoneinfo.Location
-	if name := s.Window.Location; name != "UTC" {
-		l, err := zoneinfo.LoadLocation(name)
-		if err != nil {
-			return nil, nil, errors.Wrapf(err, codes.Invalid, "cannot load location %q", name)
-		}
-		loc = l
-	}
-
 	w, err := interval.NewWindowInLocation(
 		s.Window.Every,
 		s.Window.Period,
 		s.Window.Offset,
-		loc,
+		s.Window.Location,
 	)
 
 	if err != nil {

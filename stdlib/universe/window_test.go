@@ -39,7 +39,7 @@ func TestWindow_NewQuery(t *testing.T) {
 							Every:       flux.ConvertDuration(time.Hour),
 							Period:      flux.ConvertDuration(time.Hour),
 							Offset:      flux.ConvertDuration(time.Minute * -5),
-							Location:    "UTC",
+							Location:    interval.UTC,
 							TimeColumn:  execute.DefaultTimeColLabel,
 							StartColumn: execute.DefaultStartColLabel,
 							StopColumn:  execute.DefaultStopColLabel,
@@ -69,20 +69,6 @@ func TestWindow_NewQuery(t *testing.T) {
 			querytest.NewQueryTestHelper(t, tc)
 		})
 	}
-}
-
-func TestWindowOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"window","kind":"window","spec":{"every":"1m","period":"1h","offset":"30m"}}`)
-	op := &flux.Operation{
-		ID: "window",
-		Spec: &universe.WindowOpSpec{
-			Every:  flux.ConvertDuration(time.Minute),
-			Period: flux.ConvertDuration(time.Hour),
-			Offset: flux.ConvertDuration(30 * time.Minute),
-		},
-	}
-
-	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
 func TestFixedWindow_PassThrough(t *testing.T) {

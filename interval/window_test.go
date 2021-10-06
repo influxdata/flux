@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/internal/zoneinfo"
 	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/values"
 )
@@ -748,7 +747,7 @@ func TestWindow_GetLatestBounds_InLocation(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			loc, err := zoneinfo.LoadLocation(tc.loc)
+			loc, err := interval.LoadLocation(tc.loc)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -1248,7 +1247,7 @@ func TestWindow_GetOverlappingBounds_InLocation(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			loc, err := zoneinfo.LoadLocation(tc.loc)
+			loc, err := interval.LoadLocation(tc.loc)
 			if err != nil {
 				t.Fatal(err)
 			}
