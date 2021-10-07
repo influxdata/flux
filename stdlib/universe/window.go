@@ -21,7 +21,7 @@ type WindowOpSpec struct {
 	Every       flux.Duration
 	Period      flux.Duration
 	Offset      flux.Duration
-	Location    interval.Location
+	Location    plan.Location
 	TimeColumn  string
 	StopColumn  string
 	StartColumn string
@@ -87,19 +87,14 @@ func CreateWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		} else if got := name.Type().Nature(); got != semantic.String {
 			return nil, errors.Newf(codes.Invalid, "zone property for location must be of type %s, got %s", semantic.String, got)
 		}
-
-		loc, err := interval.LoadLocation(name.Str())
-		if err != nil {
-			return nil, err
-		}
+		spec.Location.Name = name.Str()
 
 		if offset, ok := location.Get("offset"); ok {
 			if got := offset.Type().Nature(); got != semantic.Duration {
 				return nil, errors.Newf(codes.Invalid, "offset property for location must be of type %s, got %s", semantic.Duration, got)
 			}
-			loc.Offset = offset.Duration()
+			spec.Location.Offset = offset.Duration()
 		}
-		spec.Location = loc
 	}
 
 	if spec.Every.IsZero() && spec.Period.IsZero() {
@@ -215,11 +210,16 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 
 	newBounds := interval.NewBounds(bounds.Start, bounds.Stop)
 
+	loc, err := s.Window.LoadLocation()
+	if err != nil {
+		return nil, nil, err
+	}
+
 	w, err := interval.NewWindowInLocation(
 		s.Window.Every,
 		s.Window.Period,
 		s.Window.Offset,
-		s.Window.Location,
+		loc,
 	)
 
 	if err != nil {

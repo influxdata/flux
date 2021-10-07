@@ -33,11 +33,16 @@ type windowTransformation2 struct {
 }
 
 func newWindowTransformation2(id execute.DatasetID, spec *WindowProcedureSpec, bounds *execute.Bounds, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	loc, err := spec.Window.LoadLocation()
+	if err != nil {
+		return nil, nil, err
+	}
+
 	window, err := interval.NewWindowInLocation(
 		spec.Window.Every,
 		spec.Window.Period,
 		spec.Window.Offset,
-		spec.Window.Location,
+		loc,
 	)
 	if err != nil {
 		return nil, nil, err
