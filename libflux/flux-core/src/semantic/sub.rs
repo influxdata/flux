@@ -117,7 +117,7 @@ where
     merge(a, a.apply_ref(sub), b, b.apply_ref(sub))
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn merge4<A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized>(
     a_original: &A,
     a: Option<A::Owned>,
