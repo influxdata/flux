@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
@@ -20,8 +21,13 @@ import (
 )
 
 func TestPagerduty(t *testing.T) {
-	ctx := dependenciestest.Default().Inject(context.Background())
-	_, _, err := runtime.Eval(ctx, `
+	testCases := []struct {
+		name   string
+		script string
+	}{
+		{
+			name: "existing scripts",
+			script: `
 import "csv"
 import "pagerduty"
 option url = "http://fakeurl.com/fakeyfake"
@@ -34,14 +40,67 @@ data = "
 "
 process = pagerduty.endpoint(url:url)( mapFn:
 	(r) => {
-		return {routingKey:r._routingKey,client:r._client,clientURL:r._clientURL,class:r._class,group:r._group,eventAction:r._eventAction,severity:r._severity,source:r._source,summary:r._summary,timestamp:r._timestamp}
+		return {
+			routingKey:r._routingKey,
+			client:r._client,
+			clientURL:r._clientURL,
+			class:r._class,
+			group:r._group,
+			eventAction:r._eventAction,
+			severity:r._severity,
+			source:r._source,
+			summary:r._summary,
+			timestamp:r._timestamp,
+		}
 	}
 )
 csv.from(csv:data) |> process()
-`)
-
-	if err != nil {
-		t.Error(err)
+`,
+		},
+		{
+			name: "script with new parameters",
+			script: `
+import "csv"
+import "pagerduty"
+option url = "http://fakeurl.com/fakeyfake"
+data = "
+#datatype,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string
+#group,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false
+#default,_result,,,,,,,,,,,,,,
+,result,_routingKey,_client,_clientURL,_class,_group,_severity,_source,_component,_summary,_timestamp,_load,_ping
+,,fakeRoutingKey,fakeClient,fakeClientURL,fakeClass,fakeGroup,fakeSeverity,fakeSource,fakeComponent,fakeSummary,fakeTimestamp,fakeLoad,fakePing
+"
+process = pagerduty.endpoint(url:url)( mapFn:
+	(r) => {
+		return {
+			routingKey:r._routingKey,
+			client:r._client,
+			clientURL:r._clientURL,
+			class:r._class,
+			group:r._group,
+			eventAction:r._eventAction,
+			severity:r._severity,
+			source:r._source,
+			component:r._component,
+			summary:r._summary,
+			timestamp:r._timestamp,
+			customDetails:{ping:r._ping,load:r._load}
+		}
+	}
+)
+csv.from(csv:data) |> process()
+`,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := dependenciestest.Default().Inject(context.Background())
+			_, _, err := runtime.Eval(ctx, tc.script)
+			if err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }
 
@@ -98,6 +157,9 @@ type Payload struct {
 	Source    string `json:"source"`
 	Class     string `json:"class"`
 	Group     string `json:"group"`
+	// new optional parameters
+	Component     string      `json:"component,omitempty"`
+	CustomDetails interface{} `json:"custom_details,omitempty"`
 }
 
 type PostData struct {
@@ -128,6 +190,12 @@ func TestPagerdutySendEvent(t *testing.T) {
 		timestamp     string
 		eventAction   string
 		level         string
+		// new parameters and supporting script part and vars
+		component     string
+		load          string
+		ping          string
+		customDetails map[string]interface{}
+		mapFnExt      string
 	}{
 		{
 			name:          "warning",
@@ -177,6 +245,34 @@ func TestPagerdutySendEvent(t *testing.T) {
 			eventAction:   "resolve",
 			level:         "ok",
 		},
+		{
+			name:          "resolve with new parameters",
+			otherGroupKey: "foo2",
+			pagerdutyURL:  s.URL,
+			routingKey:    "fakeRoutingKey",
+			client:        "fakeClient2",
+			clientURL:     "http://fakepagerduty.com",
+			class:         "deploy",
+			group:         "app-stack",
+			severity:      "info",
+			source:        "monitoringtool:vendor:region",
+			summary:       "this is another testing summary",
+			timestamp:     "2016-07-17T08:42:58.315+0000",
+			eventAction:   "resolve",
+			level:         "ok",
+			// new parameters testing
+			component: "mysql",
+			load:      "0.5",
+			ping:      "150000000",
+			customDetails: map[string]interface{}{
+				"ping time": "150ms",
+				"load":      0.5,
+			},
+			mapFnExt: `
+		component:r.wcomponent,
+		customDetails:{"ping time":duration(v:r.ping),load:r.load},
+`,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -199,6 +295,7 @@ endpoint = pagerduty.endpoint(url:url)(mapFn: (r) => {
 		source:r.wsource,
 		summary:r.wsummary,
 		timestamp:r.wtimestamp,
+` + tc.mapFnExt + `
 	}
 })
 
@@ -208,10 +305,10 @@ csv.from(csv:data) |> endpoint()
 			extern := `
 url = "` + tc.pagerdutyURL + `"
 data = "
-#datatype,string,string,string,string,string,string,string,string,string,string,string,string,string,long
-#group,false,false,false,true,false,false,false,false,false,false,false,true,true,true
-#default,_result,,,,,,,,,,,,,
-,result,,froutingKey,qclient,qclientURL,wclass,wgroup,wlevel,wsource,wsummary,wtimestamp,name,otherGroupKey,groupKey2
+#datatype,string,string,string,string,string,string,string,string,string,string,string,string,double,long,string,string,long
+#group,false,false,false,true,false,false,false,false,false,false,false,false,false,false,true,true,true
+#default,_result,,,,,,,,,,,,,,,,
+,result,,froutingKey,qclient,qclientURL,wclass,wgroup,wlevel,wsource,wcomponent,wsummary,wtimestamp,load,ping,name,otherGroupKey,groupKey2
 ,,,` + strings.Join([]string{
 				tc.routingKey,
 				tc.client,
@@ -220,8 +317,11 @@ data = "
 				tc.group,
 				tc.level,
 				tc.source,
+				tc.component,
 				tc.summary,
 				tc.timestamp,
+				tc.load,
+				tc.ping,
 				tc.name,
 				tc.otherGroupKey,
 				"0"}, ",") + `"`
@@ -316,6 +416,22 @@ data = "
 
 			if req.PostData.Payload.Severity != tc.severity {
 				t.Errorf("got severity %s, expected %s", req.PostData.Payload.Severity, tc.severity)
+			}
+
+			// new parameters
+
+			if req.PostData.Payload.Component != tc.component {
+				t.Errorf("got component %s, expected %s", req.PostData.Payload.Component, tc.component)
+			}
+
+			if tc.customDetails == nil {
+				if req.PostData.Payload.CustomDetails != nil {
+					t.Errorf("got customDetails %v, expected nil", req.PostData.Payload.CustomDetails)
+				}
+			} else {
+				if diff := cmp.Diff(req.PostData.Payload.CustomDetails, tc.customDetails); diff != "" {
+					t.Errorf("custom details differ:\n%s", diff)
+				}
 			}
 
 		})
