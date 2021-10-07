@@ -81,10 +81,6 @@ func (w Window) Period() values.Duration {
 	return w.period
 }
 
-func (w Window) Location() *zoneinfo.Location {
-	return w.loc
-}
-
 func (w Window) isValid() error {
 	if w.every.IsZero() {
 		return errors.New(codes.Invalid, "duration used as an interval cannot be zero")

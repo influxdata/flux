@@ -341,5 +341,35 @@ type WindowSpec struct {
 	Every    flux.Duration
 	Period   flux.Duration
 	Offset   flux.Duration
-	Location interval.Location
+	Location Location
+}
+
+func (w WindowSpec) LoadLocation() (interval.Location, error) {
+	return w.Location.Load()
+}
+
+type Location struct {
+	Name   string
+	Offset flux.Duration
+}
+
+func (l Location) IsUTC() bool {
+	name := l.Name
+	if name == "" {
+		name = "UTC"
+	}
+	return name == "UTC" && l.Offset.IsZero()
+}
+
+func (l Location) Load() (interval.Location, error) {
+	name := l.Name
+	if name == "" {
+		name = "UTC"
+	}
+	loc, err := interval.LoadLocation(name)
+	if err != nil {
+		return interval.Location{}, err
+	}
+	loc.Offset = l.Offset
+	return loc, nil
 }

@@ -36,10 +36,12 @@ func TestWindow_NewQuery(t *testing.T) {
 					{
 						ID: "window1",
 						Spec: &universe.WindowOpSpec{
-							Every:       flux.ConvertDuration(time.Hour),
-							Period:      flux.ConvertDuration(time.Hour),
-							Offset:      flux.ConvertDuration(time.Minute * -5),
-							Location:    interval.UTC,
+							Every:  flux.ConvertDuration(time.Hour),
+							Period: flux.ConvertDuration(time.Hour),
+							Offset: flux.ConvertDuration(time.Minute * -5),
+							Location: plan.Location{
+								Name: "UTC",
+							},
 							TimeColumn:  execute.DefaultTimeColLabel,
 							StartColumn: execute.DefaultStartColLabel,
 							StopColumn:  execute.DefaultStopColLabel,
