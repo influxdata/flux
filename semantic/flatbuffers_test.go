@@ -940,11 +940,11 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name: "binary expression",
 			fluxSrc: `
                 x = 1 * 2 / 3 - 1 + 7 % 8^9
-                lt = 1 < 3                
-                lte = 1 <= 3                
-                gt = 1 > 3                
-                gte = 1 >= 3                
-                eq = 1 == 3                
+                lt = 1 < 3
+                lte = 1 <= 3
+                gt = 1 > 3
+                gte = 1 >= 3
+                eq = 1 == 3
                 neq = 1 != 3
                 rem = "foo" =~ /foo/
                 renm = "food" !~ /foog/`,
@@ -1060,7 +1060,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name:    "exists operator",
 			fluxSrc: `e = exists {foo: 30}.bar`,
-			err:     errors.New("type error @1:12-1:21: record is missing label bar"),
+			err:     errors.New("error @1:12-1:21: record is missing label bar"),
 		},
 		{
 			name:    "exists operator with tvar",

@@ -26,7 +26,7 @@ func TestAnalyze(t *testing.T) {
 		{
 			name: "failure",
 			flx:  `x = "foo" + 10`,
-			err:  errors.New("type error @1:13-1:15: expected string but found int"),
+			err:  errors.New("error @1:13-1:15: expected string but found int"),
 		},
 	}
 	for _, tc := range tcs {
@@ -91,7 +91,7 @@ p = s.timeRangeStop                // transitive reference
 		{
 			name: "failure",
 			flx:  `x = "foo" + 10`,
-			err:  errors.New("type error @1:13-1:15: expected string but found int"),
+			err:  errors.New("error @1:13-1:15: expected string but found int"),
 		},
 	}
 	for _, tc := range tcs {

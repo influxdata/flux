@@ -66,9 +66,9 @@ func TestFluxCompiler(t *testing.T) {
 			compilerErr: "expected RBRACE",
 		},
 		{
-			name:     "type error",
+			name:     "error",
 			q:        `t=0 t.s`,
-			startErr: "type error @1:5-1:6",
+			startErr: "error @1:5-1:6",
 		},
 		{
 			name:     "from with no streaming data",
@@ -693,7 +693,7 @@ option planner.disableLogicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error @4:38-4:52: expected [string] but found string`,
+			wantErr: `error @4:38-4:52: expected [string] but found string`,
 		},
 		{
 			name: "physical planner option must be an array",
@@ -704,7 +704,7 @@ option planner.disablePhysicalRules = "not an array"
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error @4:39-4:53: expected [string] but found string`,
+			wantErr: `error @4:39-4:53: expected [string] but found string`,
 		},
 		{
 			name: "logical planner option must be an array of strings",
@@ -715,7 +715,7 @@ option planner.disableLogicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error @4:38-4:43: expected string but found float`,
+			wantErr: `error @4:38-4:43: expected string but found float`,
 		},
 		{
 			name: "physical planner option must be an array of strings",
@@ -726,7 +726,7 @@ option planner.disablePhysicalRules = [1.0]
 
 // remember to return streaming data
 from(bucket: "does_not_matter")`},
-			wantErr: `type error @4:39-4:44: expected string but found float`,
+			wantErr: `error @4:39-4:44: expected string but found float`,
 		},
 		{
 			name: "planner is an object defined by the user",
