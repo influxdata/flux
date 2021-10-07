@@ -241,34 +241,21 @@ impl fmt::Display for Error {
 }
 
 /// Represents a constraint on a type variable to a specific kind (*i.e.*, a type class).
-#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[allow(missing_docs)]
+// Kinds are ordered by name so that polytypes are displayed deterministically
 pub enum Kind {
     Addable,
-    Subtractable,
-    Divisible,
-    Numeric,
     Comparable,
+    Divisible,
     Equatable,
-    Nullable,
-    Record,
     Negatable,
-    Timeable,
+    Nullable,
+    Numeric,
+    Record,
     Stringable,
-}
-
-// Kinds are ordered by name so that polytypes are displayed deterministically
-impl cmp::Ord for Kind {
-    fn cmp(&self, other: &Self) -> cmp::Ordering {
-        self.to_string().cmp(&other.to_string())
-    }
-}
-
-// Kinds are ordered by name so that polytypes are displayed deterministically
-impl cmp::PartialOrd for Kind {
-    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
-        Some(self.cmp(other))
-    }
+    Subtractable,
+    Timeable,
 }
 
 /// Pointer type used in `MonoType`
@@ -2382,5 +2369,46 @@ mod tests {
         } else {
             panic!("the monotypes under examination are not functions");
         }
+    }
+
+    #[test]
+    fn kind_order_is_lexical() {
+        macro_rules! complete_list {
+            ($($path: path),* $(,)?) => { {
+                if false {
+                    // Verifies that the list contains all variants
+                    #[allow(unreachable_code)]
+                    match panic!() {
+                        $(
+                            $path => (),
+                        )*
+                    }
+                }
+                [$($path),*]
+            } }
+        }
+        let mut kinds = complete_list![
+            Kind::Addable,
+            Kind::Subtractable,
+            Kind::Divisible,
+            Kind::Numeric,
+            Kind::Comparable,
+            Kind::Equatable,
+            Kind::Nullable,
+            Kind::Record,
+            Kind::Negatable,
+            Kind::Timeable,
+            Kind::Stringable,
+        ];
+        let mut str_kinds: Vec<_> = kinds.iter().map(|k| k.to_string()).collect();
+        str_kinds.sort();
+
+        kinds.sort();
+
+        assert_eq!(
+            kinds.iter().map(|k| k.to_string()).collect::<Vec<_>>(),
+            str_kinds,
+            "Expected that `Kind`s were specified in lexical order"
+        );
     }
 }
