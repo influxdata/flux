@@ -3447,7 +3447,7 @@ fn copy_bindings_from_other_env() {
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
-            expr: MonoType::Bool,
+            expr: MonoType::BOOL,
         },
     );
     let mut sub_env = Environment::new(env.clone());
@@ -3475,7 +3475,7 @@ fn copy_bindings_from_other_env() {
                 Symbol::from("a") => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
-                    expr: MonoType::Bool,
+                    expr: MonoType::BOOL,
                 }
             )
         }

@@ -685,7 +685,7 @@ impl Formatter {
             walk::Node::LogicalExpr(n),
             walk::Node::from_expr(&n.left),
             walk::Node::from_expr(&n.right),
-            &MonoType::Bool,
+            &MonoType::BOOL,
         );
     }
 
