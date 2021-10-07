@@ -59,9 +59,6 @@ func NewWindowInLocation(every, period, offset values.Duration, loc Location) (W
 		zeroMonths: monthsSince(zero),
 		loc:        loc.zone,
 	}
-	if w.loc == nil {
-		w.loc = zoneinfo.UTC
-	}
 	if err := w.isValid(); err != nil {
 		return Window{}, err
 	}
@@ -373,7 +370,7 @@ func isBeforeWithinMonth(a, b values.Time) bool {
 }
 
 // UTC is the UTC zone with no additional offset.
-var UTC = Location{zone: zoneinfo.UTC}
+var UTC = Location{}
 
 // Location is a Location that can be passed to Window to make the window timezone-aware.
 type Location struct {
@@ -398,12 +395,10 @@ func LoadLocation(name string) (Location, error) {
 }
 
 func (l Location) Equal(other Location) bool {
-	zone, otherZone := l.zone, other.zone
-	if zone == nil {
-		zone = zoneinfo.UTC
+	if l.zone == nil && other.zone == nil {
+		return l.Offset == other.Offset
+	} else if l.zone == nil || other.zone == nil {
+		return false
 	}
-	if otherZone == nil {
-		otherZone = zoneinfo.UTC
-	}
-	return zone.String() == otherZone.String() && l.Offset == other.Offset
+	return l.zone.String() == other.zone.String() && l.Offset == other.Offset
 }
