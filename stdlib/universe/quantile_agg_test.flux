@@ -29,7 +29,7 @@ inData = array.from(
     ],
 )
 
-testcase with_group {
+testcase quantile_with_group {
     want = array.from(
         rows: [
             {_value: 7.34, t0: "a"},
@@ -49,7 +49,7 @@ testcase with_group {
     testing.diff(want: want, got: got) |> yield()
 }
 
-testcase without_group {
+testcase quantile_without_group {
     want = array.from(
         rows: [
             {_value: 6.5},
