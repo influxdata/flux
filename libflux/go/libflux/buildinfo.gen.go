@@ -385,7 +385,7 @@ var sourceHashes = map[string]string{
 	"stdlib/testing/pandas/startswith_strings_regexp_hasPrefix_test.flux":                         "a3a119c4b98619b332d11b4e2fefa2d71fa2cc81ddc0ce26b3181e0a60445d8a",
 	"stdlib/testing/pandas/strip_strings_trimLeftRight_test.flux":                                 "2b8478acb300f8ae7ddc2c2ad07ca7134d00474a557182f823cca45da512e7a8",
 	"stdlib/testing/pandas/title_strings_title_test.flux":                                         "8e8fad3140e589b8dd90ef606dd41805475081230b410ba7bc9339ed79756c12",
-	"stdlib/testing/prometheus/histogramQuantile_test.flux":                                       "afeda5e3fba3d7ed26feea0c5f6b18733cd2439d0c48e018b626090b0d6ef403",
+	"stdlib/testing/prometheus/histogramQuantile_test.flux":                                       "028bdaf52c1a934cc9995b4199bbc05cbe75816a8793cc9815ff868675f0b522",
 	"stdlib/testing/promql/changes_test.flux":                                                     "86268bc11fdb74327c6f0c63ed37c91b1885fd16798ed6ad6d484304dd1a97a9",
 	"stdlib/testing/promql/dayOfMonth_test.flux":                                                  "04d2868ccb807f8efed6b54f31a0244ecc483f61481ca0025230ca4cae54947f",
 	"stdlib/testing/promql/dayOfWeek_test.flux":                                                   "84947d568f217da8e1a829a58565a6e53049439579019632d04831bfd62a1790",
