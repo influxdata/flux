@@ -1,7 +1,6 @@
 package universe
 
 import (
-	"context"
 	"math"
 	"sort"
 
@@ -203,13 +202,15 @@ type QuantileAgg struct {
 
 	digest *tdigest.TDigest
 	ok     bool
+	mem    *memory.Allocator
 }
 
-func NewQuantileAgg(q, comp float64) *QuantileAgg {
+func NewQuantileAgg(q, comp float64, mem *memory.Allocator) *QuantileAgg {
 	return &QuantileAgg{
 		Quantile:    q,
 		Compression: comp,
 		digest:      tdigest.NewWithCompression(comp),
+		mem:         mem,
 	}
 }
 
@@ -218,31 +219,21 @@ func createQuantileTransformation(id execute.DatasetID, mode execute.Accumulatio
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
-	agg := NewQuantileAgg(ps.Quantile, ps.Compression)
+	agg := NewQuantileAgg(ps.Quantile, ps.Compression, a.Allocator())
 	err := a.Allocator().Account(tdigest.ByteSizeForCompression(agg.Compression))
 	if err != nil {
 		return nil, nil, errors.Newf(codes.Internal, "could not allocate memory for tdigest: %s", err)
 	}
-	// TODO(sean): The quantile transformation is not compatible with the new aggregate transport.
-	// For now, we are passing it an empty context so that the new transport can't be enabled via feature flag.
-	// Once we've done some work to refactor quantile, we can try enabling the new transport again to see if the problem
-	// has been fixed.
-	//
-	// The reason quantile breaks when using the new aggregate state transport is that it reuses
-	// a buffer and overwrites memory necessary to get the correct result (see the Recycle method).
-	// However, recycling that memory is necessary in certain cases to avoid exorbitant memory use.
-	// We will want to modify quantile's behavior so that it only reuses memory when there isn't important
-	// state information to keep track of.
-	//
-	// See https://github.com/influxdata/flux/issues/4042 for more details.
-	return execute.NewSimpleAggregateTransformation(context.Background(), id, agg, ps.SimpleAggregateConfig, a.Allocator())
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, agg, ps.SimpleAggregateConfig, a.Allocator())
 }
 
-func (a *QuantileAgg) Recycle() *QuantileAgg {
-	na := new(QuantileAgg)
-	*na = *a
-	na.digest.Reset()
-	return na
+func (a *QuantileAgg) Recycle() {
+	a.digest.Reset()
+	a.ok = false
+}
+
+func (a *QuantileAgg) Drop() {
+	a.mem.Account(tdigest.ByteSizeForCompression(a.Compression) * -1)
 }
 
 func (a *QuantileAgg) NewBoolAgg() execute.DoBoolAgg {
@@ -257,8 +248,12 @@ func (a *QuantileAgg) NewUIntAgg() execute.DoUIntAgg {
 	return nil
 }
 
+// Not sure what to do here. NewFloatAgg is called in a number of places,
+// and could cause state to be recycled erroneously. Need to understand more
+// about when/how this is used.
 func (a *QuantileAgg) NewFloatAgg() execute.DoFloatAgg {
-	return a.Recycle()
+	a.Recycle()
+	return a
 }
 
 func (a *QuantileAgg) NewStringAgg() execute.DoStringAgg {

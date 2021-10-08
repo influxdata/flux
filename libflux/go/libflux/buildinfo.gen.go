@@ -563,6 +563,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/pivot_table_test.flux":                                                       "cd31c461f16f11fff0455f696b290aac70833eab64be99f907de15ec581aeed9",
 	"stdlib/universe/pivot_task_test_test.flux":                                                   "c835cd8c74220c3352c7540f5f5fc53b9cad14ecaedafb25f438267c65aa3666",
 	"stdlib/universe/pivot_test.flux":                                                             "4568aa37ad4d203a4c72270f851b015a4eadc9a8baf255cb6f088c7ff0dcc63e",
+	"stdlib/universe/quantile_agg_test.flux":                                                      "fb717b38c4f17525b5f0eb8aefbda1398028d1292a4061de69c91c0775ab739a",
 	"stdlib/universe/quantile_aggregate_test.flux":                                                "596256940c3a3f011f09abb322bfb6c3a666cc08cd09518e5a54b6512c6ed221",
 	"stdlib/universe/quantile_defaults_test.flux":                                                 "18bf66ecd7af89aa303c3094ad3591dc38cfee1c65729b9e646fe601e4558efe",
 	"stdlib/universe/quantile_tdigest_test.flux":                                                  "92821a1cabb67d8a0b5b72e284047792617f29d5efd9192570f7bf4bd3fd1711",

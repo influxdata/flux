@@ -45,16 +45,18 @@ type AggregateTransformation interface {
 }
 
 type aggregateTransformation struct {
-	t AggregateTransformation
-	d *TransportDataset
+	t          AggregateTransformation
+	d          *TransportDataset
+	freeStates []interface{}
 }
 
 // NewAggregateTransformation constructs a Transformation and Dataset
 // using the aggregateTransformation implementation.
 func NewAggregateTransformation(id DatasetID, t AggregateTransformation, mem memory.Allocator) (Transformation, Dataset, error) {
 	tr := &aggregateTransformation{
-		t: t,
-		d: NewTransportDataset(id, mem),
+		t:          t,
+		d:          NewTransportDataset(id, mem),
+		freeStates: make([]interface{}, 10),
 	}
 	return tr, tr.d, nil
 }
@@ -102,6 +104,29 @@ func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
 
 func (t *aggregateTransformation) processChunk(chunk table.Chunk) error {
 	state, _ := t.d.Lookup(chunk.Key())
+	// XXX: sean (Oct 7, 2021) - I am not entirely sure why, but checking `ok`
+	// here before setting `state` to the return value of `popFreeState()` avoids
+	// some major bugs. Without it, some aggregates produce wrong answers, and tests
+	// start to fail.
+	//
+	// My hunch is that while `multiState` and `aggregateState` implement
+	// `Recyclable`, the underlying aggregate may not. So we append states to
+	// `t.freeStates` (see the `flushKey` function) in all circumstances, even
+	// if the underlying aggregate cannot be recycled. This causes some aggregates
+	// (sum in particular) to re-use state erroneously.
+	//
+	// Still, I don't know why checking if it's recyclable here solves the problem.
+	// If the state wasn't recyclable, t.freeStates should be empty anyway, so this check
+	// shouldn't make a difference.
+	//
+	// Also, if `state` is nil, wouldn't `ok` always be false? In which case, the below
+	// `if` block would never trigger, which means that the fix would not work.
+	// Something strange is going on here.
+	_, ok := state.(Recyclable)
+	if ok && state == nil {
+		// If no reusable state is available, state will remain nil
+		state = t.popFreeState()
+	}
 	if newState, ok, err := t.t.Aggregate(chunk, state, t.d.mem); err != nil {
 		return err
 	} else if ok {
@@ -119,6 +144,16 @@ func (t *aggregateTransformation) flushKey(key flux.GroupKey) error {
 		if err := t.t.Compute(key, state, t.d, t.d.mem); err != nil {
 			return err
 		}
+		if state, ok := state.(Recyclable); ok {
+			// If freeStates hasn't reached capacity, recycle the state
+			// and store it. Otherwise, drop it.
+			if len(t.freeStates) < cap(t.freeStates) {
+				state.Recycle()
+				t.freeStates = append(t.freeStates, state)
+			} else {
+				state.Drop()
+			}
+		}
 		return t.d.FlushKey(key)
 	}
 	return nil
@@ -130,6 +165,12 @@ func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 		err = t.d.Range(func(key flux.GroupKey, value interface{}) error {
 			if err := t.t.Compute(key, value, t.d, t.d.mem); err != nil {
 				return err
+			}
+			// Finish() means that we no longer need to store any state,
+			// so if we have any aggregates that were recycling state objects ,
+			// now is the time to drop them.
+			if value, ok := value.(Recyclable); ok {
+				value.Drop()
 			}
 			return t.d.FlushKey(key)
 		})
@@ -148,6 +189,17 @@ func (t *aggregateTransformation) UpdateWatermark(id DatasetID, mark Time) error
 }
 func (t *aggregateTransformation) UpdateProcessingTime(id DatasetID, ts Time) error {
 	return nil
+}
+
+// Check if there is a reusable state available
+// If so, return it. If not, return nil.
+func (t *aggregateTransformation) popFreeState() interface{} {
+	if len(t.freeStates) <= 0 {
+		return nil
+	}
+	state := t.freeStates[len(t.freeStates)-1]
+	t.freeStates = t.freeStates[:len(t.freeStates)-1]
+	return state
 }
 
 type SimpleAggregateConfig struct {
@@ -369,12 +421,53 @@ type aggregateState struct {
 	agg ValueFunc
 }
 
-func (t *simpleAggregateTransformation2) initializeState(chunk table.Chunk, current interface{}) ([]aggregateState, error) {
+// Recyclable represents an aggregate that can reuse state.
+// This is especially useful for transformations like quantile
+// which could potentially consume an inordinate amount of memory
+// if they didn't recycle resources.
+type Recyclable interface {
+	// Recycle should set an aggregate back to it's default state so that it
+	// can be used to calculate another result, and thereby prevent flux from
+	// having to allocate additional memory.
+	Recycle()
+
+	// Drop should decrement the amount of memory set aside for the aggregate.
+	// The value itself will be cleaned up by the garbage collector.
+	Drop()
+}
+
+func (a *aggregateState) Recycle() {
+	if agg, ok := a.agg.(Recyclable); ok {
+		agg.Recycle()
+	}
+}
+
+func (a *aggregateState) Drop() {
+	if agg, ok := a.agg.(Recyclable); ok {
+		agg.Drop()
+	}
+}
+
+type multiState []aggregateState
+
+func (m multiState) Recycle() {
+	for _, state := range m {
+		state.Recycle()
+	}
+}
+
+func (m multiState) Drop() {
+	for _, state := range m {
+		state.Drop()
+	}
+}
+
+func (t *simpleAggregateTransformation2) initializeState(chunk table.Chunk, current interface{}) (multiState, error) {
 	if current != nil {
-		return current.([]aggregateState), nil
+		return current.(multiState), nil
 	}
 
-	state := make([]aggregateState, len(t.config.Columns))
+	state := make(multiState, len(t.config.Columns))
 	for i, label := range t.config.Columns {
 		j := chunk.Index(label)
 		if j < 0 {
@@ -443,7 +536,7 @@ func (t *simpleAggregateTransformation2) Aggregate(chunk table.Chunk, state inte
 }
 
 func (t *simpleAggregateTransformation2) Compute(key flux.GroupKey, state interface{}, d *TransportDataset, mem memory.Allocator) error {
-	aggregates := state.([]aggregateState)
+	aggregates := state.(multiState)
 	buffer := arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  make([]flux.ColMeta, 0, len(key.Cols())+len(aggregates)),
