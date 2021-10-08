@@ -2,17 +2,88 @@ package prometheus
 
 
 import "universe"
+import "experimental"
 
-// scrape enables scraping of a prometheus metrics endpoint and converts 
-// that input into flux tables. Each metric is put into an individual flux 
-// table, including each histogram and summary value.  
+// scrape scrapes Prometheus metrics from an HTTP-accessible endpoint and returns 
+// them as a stream of tables.
+//
+// ## Parameters
+//
+// - url: URL to scrape Prometheus metrics from.
+//
+// ## Examples
+//
+// ### Scrape InfluxDB OSS internal metrics
+//
+// ```
+//  import "experimental/prometheus"
+//
+//  prometheus.scrape(url: "http://localhost:8086/metrics")
+// ```
+//
 builtin scrape : (url: string) => [A] where A: Record
 
-// histogramQuantile enables the user to calculate quantiles on a set of given values
-// This function assumes that the given histogram data is being scraped or read from a 
-// Prometheus source. 
-histogramQuantile = (tables=<-, quantile) => tables
-    |> filter(fn: (r) => r._measurement == "prometheus")
-    |> group(mode: "except", columns: ["le", "_value", "_time"])
-    |> map(fn: (r) => ({r with le: float(v: r.le)}))
-    |> universe.histogramQuantile(quantile: quantile)
+// histogramQuantile calculates a quantile on a set of Prometheus histogram values.
+// 
+// This function supports [Prometheus metric parsing formats](https://docs.influxdata.com/influxdb/latest/reference/prometheus-metrics/)
+// used by `prometheus.scrape()`, the Telegraf `promtheus` input plugin, and 
+// InfluxDB scrapers available in InfluxDB OSS.
+// 
+// ## Paramters
+// 
+// - tables: Input data.
+// - quantile: Quantile to compute. Must be a float value between 0.0 and 1.0.
+// - metricVersion: [Prometheus metric parsing format](https://docs.influxdata.com/influxdb/latest/reference/prometheus-metrics/)
+//   used to parse queried Prometheus data.
+//   Available versions are `1` and `2`.
+//   Default is `2`.
+// 
+// ## Examples
+//
+// ### Compute the 0.99 quantile of a Prometheus histogram
+// ```
+// import "experimental/prometheus"
+//
+// prometheus.scrape(url: "http://localhost:8086/metrics")
+//     |> filter(fn: (r) => r._measurement == "prometheus")
+//     |> filter(fn: (r) => r._field == "qc_all_duration_seconds")
+//     |> prometheus.histogramQuantile(quantile: 0.99)
+// ```
+//
+// ### Compute the 0.99 quantile of a Prometheus histogram parsed with metric version 1
+// ```
+// import "experimental/prometheus"
+//
+// from(bucket: "example-bucket")
+//     |> range(start: -1h)
+//     |> filter(fn: (r) => r._measurement == "qc_all_duration_seconds")
+//     |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 1)
+// ```
+//
+histogramQuantile = (tables=<-, quantile, metricVersion=2) => {    
+    _version2 = () => tables
+        |> group(mode: "except", columns: ["le", "_value"])
+        |> map(fn: (r) => ({r with le: float(v: r.le)}))
+        |> universe.histogramQuantile(quantile: quantile)
+        |> group(mode: "except", columns: ["le", "_value", "_time"])
+        |> set(key: "quantile", value: string(v: quantile))
+        |> experimental.group(columns: ["quantile"], mode: "extend")
+
+    _version1 = () => tables
+        |> filter(fn: (r) => r._field != "sum" and r._field != "count")
+        |> map(fn: (r) => ({ r with le: float(v: r._field)}))
+        |> group(mode: "except", columns: ["_field", "le", "_value"])
+        |> universe.histogramQuantile(quantile: quantile)
+        |> group(mode: "except", columns: ["le", "_value", "_time"])
+        |> set(key: "quantile", value: string(v: quantile))
+        |> experimental.group(columns: ["quantile"], mode: "extend")
+
+    output = if metricVersion == 2 then
+        _version2()
+    else if metricVersion == 1 then
+        _version1()
+    else
+        universe.die(msg: "Invalid metricVersion. Available versions are 1 and 2.")
+
+    return output
+}
