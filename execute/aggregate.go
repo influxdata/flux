@@ -56,7 +56,7 @@ func NewAggregateTransformation(id DatasetID, t AggregateTransformation, mem mem
 	tr := &aggregateTransformation{
 		t:          t,
 		d:          NewTransportDataset(id, mem),
-		freeStates: make([]interface{}, 10),
+		freeStates: make([]interface{}, 0, 10),
 	}
 	return tr, tr.d, nil
 }
@@ -122,8 +122,7 @@ func (t *aggregateTransformation) processChunk(chunk table.Chunk) error {
 	// Also, if `state` is nil, wouldn't `ok` always be false? In which case, the below
 	// `if` block would never trigger, which means that the fix would not work.
 	// Something strange is going on here.
-	_, ok := state.(Recyclable)
-	if ok && state == nil {
+	if state == nil {
 		// If no reusable state is available, state will remain nil
 		state = t.popFreeState()
 	}
@@ -147,7 +146,7 @@ func (t *aggregateTransformation) flushKey(key flux.GroupKey) error {
 		if state, ok := state.(Recyclable); ok {
 			// If freeStates hasn't reached capacity, recycle the state
 			// and store it. Otherwise, drop it.
-			if len(t.freeStates) < cap(t.freeStates) {
+			if len(t.freeStates) < cap(t.freeStates) && state.(multiState).isRecyclable() {
 				state.Recycle()
 				t.freeStates = append(t.freeStates, state)
 			} else {
@@ -171,6 +170,9 @@ func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 			// now is the time to drop them.
 			if value, ok := value.(Recyclable); ok {
 				value.Drop()
+				for _, state := range t.freeStates {
+					state.(Recyclable).Drop()
+				}
 			}
 			return t.d.FlushKey(key)
 		})
@@ -460,6 +462,19 @@ func (m multiState) Drop() {
 	for _, state := range m {
 		state.Drop()
 	}
+}
+
+// multiState itself implements the `Recyclable` interface, but it's possible for it
+// to contain types that are not recyclable. This method checks whether or not all of
+// the aggregates contained in the multiState are recyclable.
+func (m multiState) isRecyclable() bool {
+	for _, state := range m {
+		_, ok := state.agg.(Recyclable)
+		if !ok {
+			return false
+		}
+	}
+	return true
 }
 
 func (t *simpleAggregateTransformation2) initializeState(chunk table.Chunk, current interface{}) (multiState, error) {
