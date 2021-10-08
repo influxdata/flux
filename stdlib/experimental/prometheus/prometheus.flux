@@ -60,7 +60,7 @@ builtin scrape : (url: string) => [A] where A: Record
 //     |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 1)
 // ```
 //
-histogramQuantile = (tables=<-, quantile, metricVersion=2) => {    
+histogramQuantile = (tables=<-, quantile, metricVersion=2) => {
     _version2 = () => tables
         |> group(mode: "except", columns: ["le", "_value"])
         |> map(fn: (r) => ({r with le: float(v: r.le)}))
@@ -71,7 +71,7 @@ histogramQuantile = (tables=<-, quantile, metricVersion=2) => {
 
     _version1 = () => tables
         |> filter(fn: (r) => r._field != "sum" and r._field != "count")
-        |> map(fn: (r) => ({ r with le: float(v: r._field)}))
+        |> map(fn: (r) => ({r with le: float(v: r._field)}))
         |> group(mode: "except", columns: ["_field", "le", "_value"])
         |> universe.histogramQuantile(quantile: quantile)
         |> group(mode: "except", columns: ["le", "_value", "_time"])

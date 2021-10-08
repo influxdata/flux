@@ -202,7 +202,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/oee/apq_test.flux":                                                       "b84f79dc34d491e21937ce1f46ad7985254dcb782aff7ace578b1a0a70b182e5",
 	"stdlib/experimental/oee/computeapq_test.flux":                                                "93e7be1f222d7c4ae73f79187f171fbb3f3201eb432e9e388ccbada298a82a42",
 	"stdlib/experimental/oee/oee.flux":                                                            "35e7bc400e530716f87e15f7ea2333d549c03ba01d1693518633ae574fb8e5c8",
-	"stdlib/experimental/prometheus/prometheus.flux":                                              "8e54794c5b201a5af3d2ee9eb0654bffdd40a26360f067f7ecaf9b0295dfec19",
+	"stdlib/experimental/prometheus/prometheus.flux":                                              "2585018cae47628792f5a019f4e6fcd19ebe1897464c5ed1fc5eb9ca78fefb7b",
 	"stdlib/experimental/prometheus/prometheus_histogramQuantile_test.flux":                       "3873226cf2d38821f24dca9a97be86dcba71125c30c691ba6fa068e8061f05af",
 	"stdlib/experimental/quantile_test.flux":                                                      "bd9820e444fdbf4042236dad4e8f45eeeae6170563155f3f26cd671cff161490",
 	"stdlib/experimental/query/from.flux":                                                         "5b3c21aa711551fa9ec102f0bcc3ab79efc70ee6434e4025336f991312e742cd",
