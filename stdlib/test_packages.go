@@ -20,6 +20,7 @@ import (
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
 	oee "github.com/influxdata/flux/stdlib/experimental/oee"
+	prometheus "github.com/influxdata/flux/stdlib/experimental/prometheus"
 	record "github.com/influxdata/flux/stdlib/experimental/record"
 	table "github.com/influxdata/flux/stdlib/experimental/table"
 	http "github.com/influxdata/flux/stdlib/http"
@@ -42,7 +43,7 @@ import (
 	influxql "github.com/influxdata/flux/stdlib/testing/influxql"
 	kapacitor "github.com/influxdata/flux/stdlib/testing/kapacitor"
 	pandas "github.com/influxdata/flux/stdlib/testing/pandas"
-	prometheus "github.com/influxdata/flux/stdlib/testing/prometheus"
+	prometheus1 "github.com/influxdata/flux/stdlib/testing/prometheus"
 	promql1 "github.com/influxdata/flux/stdlib/testing/promql"
 	usage "github.com/influxdata/flux/stdlib/testing/usage"
 	universe "github.com/influxdata/flux/stdlib/universe"
@@ -66,6 +67,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
 	pkgs = append(pkgs, oee.FluxTestPackages...)
+	pkgs = append(pkgs, prometheus.FluxTestPackages...)
 	pkgs = append(pkgs, record.FluxTestPackages...)
 	pkgs = append(pkgs, table.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
@@ -88,7 +90,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, influxql.FluxTestPackages...)
 	pkgs = append(pkgs, kapacitor.FluxTestPackages...)
 	pkgs = append(pkgs, pandas.FluxTestPackages...)
-	pkgs = append(pkgs, prometheus.FluxTestPackages...)
+	pkgs = append(pkgs, prometheus1.FluxTestPackages...)
 	pkgs = append(pkgs, promql1.FluxTestPackages...)
 	pkgs = append(pkgs, usage.FluxTestPackages...)
 	pkgs = append(pkgs, universe.FluxTestPackages...)
