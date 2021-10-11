@@ -5,6 +5,8 @@ extern crate serde_aux;
 
 extern crate serde_derive;
 
+use anyhow::{self, bail, Result};
+
 use fluxcore::parser::Parser;
 use fluxcore::semantic::check;
 use fluxcore::semantic::env::Environment;
@@ -24,7 +26,6 @@ use crate::semantic::doc::{nest_docs, PackageDoc};
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 use fluxcore::semantic::types::{MonoType, PolyType, TvarKinds};
 use inflate::inflate_bytes;
-use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
 
@@ -47,9 +48,12 @@ pub fn docs() -> Vec<PackageDoc> {
     serde_json::from_slice(&inflate_bytes(buf).unwrap()).unwrap()
 }
 
-pub fn docs_json() -> Result<Vec<u8>, String> {
+pub fn docs_json() -> Result<Vec<u8>> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/docs.json"));
-    inflate_bytes(buf)
+    match inflate_bytes(buf) {
+        Err(s) => bail!("{}", s),
+        Ok(bytes) => Ok(bytes),
+    }
 }
 
 /// Restructures the Vector of PackageDocs into a hierarchical format where subpackages are in the member section
@@ -71,8 +75,13 @@ pub struct ErrorHandle {
     pub err: CString,
 }
 
-impl<T: 'static + error::Error> From<T> for Box<ErrorHandle> {
-    fn from(err: T) -> Self {
+impl From<anyhow::Error> for Box<ErrorHandle> {
+    fn from(mut err: anyhow::Error) -> Self {
+        (&mut err).into()
+    }
+}
+impl From<&mut anyhow::Error> for Box<ErrorHandle> {
+    fn from(err: &mut anyhow::Error) -> Self {
         Box::new(ErrorHandle {
             err: CString::new(format!("{}", err)).unwrap(),
         })
@@ -144,7 +153,7 @@ pub extern "C" fn flux_ast_format(
     let len = out_str.len();
     let cstr = match CString::new(out_str) {
         Ok(bytes) => bytes,
-        Err(e) => return Some(e.into()),
+        Err(e) => return Some(anyhow::Error::from(e).into()),
     };
     out.data = cstr.into_raw() as *mut u8;
     out.len = len;
@@ -164,7 +173,7 @@ pub unsafe extern "C" fn flux_ast_get_error(
     let mut errs = ast::check::check(ast_pkg);
     if !errs.is_empty() {
         let err = Vec::remove(&mut errs, 0);
-        Some(err.into())
+        Some(anyhow::Error::from(err).into())
     } else {
         None
     }
@@ -195,7 +204,7 @@ pub unsafe extern "C" fn flux_parse_json(
             *out_pkg = Some(Box::new(pkg));
             None
         }
-        Err(err) => Some(err.into()),
+        Err(err) => Some(anyhow::Error::from(err).into()),
     }
 }
 
@@ -213,7 +222,7 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     let data = match serde_json::to_vec(ast_pkg) {
         Ok(v) => v,
         Err(err) => {
-            return Some(err.into());
+            return Some(anyhow::Error::from(err).into());
         }
     };
 
@@ -238,7 +247,7 @@ pub unsafe extern "C" fn flux_ast_marshal_fb(
     let (mut vec, offset) = match ast::flatbuffers::serialize(ast_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            return Some(Box::from(Error::from(err)));
+            return Some(err.into());
         }
     };
 
@@ -270,7 +279,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
     let (mut vec, offset) = match semantic::flatbuffers::serialize(sem_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            return Some(Box::from(Error::from(err)));
+            return Some(err.into());
         }
     };
 
@@ -308,43 +317,10 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
     let out_pkg = &mut *out_pkg;
     let in_pkg = &mut *in_pkg;
 
-    merge_packages(out_pkg, in_pkg).map(|err| err.into())
-}
-
-/// merge_packages takes an input package and an output package, checks that the package
-/// clauses match and merges the files from the input package into the output package. If
-/// package clauses fail validation then an option with an Error is returned.
-pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> Option<Error> {
-    let out_pkg_name = if let Some(pc) = &out_pkg.files[0].package {
-        &pc.name.name
-    } else {
-        DEFAULT_PACKAGE_NAME
-    };
-
-    // Check that all input files have a package clause that matches the output package.
-    for file in &in_pkg.files {
-        match file.package.as_ref() {
-            Some(pc) => {
-                let in_pkg_name = &pc.name.name;
-                if in_pkg_name != out_pkg_name {
-                    return Some(Error::from(format!(
-                        r#"error at {}: file is in package "{}", but other files are in package "{}""#,
-                        pc.base.location, in_pkg_name, out_pkg_name
-                    )));
-                }
-            }
-            None => {
-                if out_pkg_name != DEFAULT_PACKAGE_NAME {
-                    return Some(Error::from(format!(
-                        r#"error at {}: file is in default package "{}", but other files are in package "{}""#,
-                        file.base.location, DEFAULT_PACKAGE_NAME, out_pkg_name
-                    )));
-                }
-            }
-        };
+    match merge_packages(out_pkg, in_pkg) {
+        Ok(_) => None,
+        Err(e) => Some(e.into()),
     }
-    out_pkg.files.append(&mut in_pkg.files);
-    None
 }
 
 /// flux_analyze is a C-compatible wrapper around the analyze() function below
@@ -415,26 +391,23 @@ pub struct SemanticAnalyzer {
     imports: Environment,
 }
 
-fn new_semantic_analyzer() -> Result<SemanticAnalyzer, fluxcore::Error> {
+fn new_semantic_analyzer() -> Result<SemanticAnalyzer> {
     let env = match prelude() {
         Some(prelude) => Environment::new(prelude),
-        None => return Err(fluxcore::Error::from("missing prelude")),
+        None => bail!("missing prelude"),
     };
     let imports = match imports() {
         Some(imports) => imports,
-        None => return Err(fluxcore::Error::from("missing stdlib imports")),
+        None => bail!("missing stdlib imports"),
     };
     Ok(SemanticAnalyzer { env, imports })
 }
 
 impl SemanticAnalyzer {
-    fn analyze(
-        &mut self,
-        ast_pkg: ast::Package,
-    ) -> Result<fluxcore::semantic::nodes::Package, fluxcore::Error> {
+    fn analyze(&mut self, ast_pkg: ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
         let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
         if !errs.is_empty() {
-            return Err(fluxcore::Error::from(format!("{}", &errs[0])));
+            bail!("{}", &errs[0]);
         }
 
         let mut fresher = fresher();
@@ -472,17 +445,13 @@ impl SemanticAnalyzer {
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
-pub unsafe extern "C" fn flux_new_semantic_analyzer(
-) -> Box<Result<SemanticAnalyzer, fluxcore::Error>> {
+pub unsafe extern "C" fn flux_new_semantic_analyzer() -> Box<Result<SemanticAnalyzer>> {
     Box::new(new_semantic_analyzer())
 }
 
 /// Free a previously allocated semantic analyzer
 #[no_mangle]
-pub extern "C" fn flux_free_semantic_analyzer(
-    _: Option<Box<Result<SemanticAnalyzer, fluxcore::Error>>>,
-) {
-}
+pub extern "C" fn flux_free_semantic_analyzer(_: Option<Box<Result<SemanticAnalyzer>>>) {}
 
 /// # Safety
 ///
@@ -490,7 +459,7 @@ pub extern "C" fn flux_free_semantic_analyzer(
 #[no_mangle]
 #[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_analyze_with(
-    analyzer: *mut Result<SemanticAnalyzer, fluxcore::Error>,
+    analyzer: *mut Result<SemanticAnalyzer>,
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
@@ -498,7 +467,7 @@ pub unsafe extern "C" fn flux_analyze_with(
     let analyzer = match &mut *analyzer {
         Ok(a) => a,
         Err(err) => {
-            return Some(Box::from(err.to_owned()));
+            return Some(err.into());
         }
     };
 
@@ -516,7 +485,7 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// analyze consumes the given AST package and returns a semantic package
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
-pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
+pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
     let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
     Ok(inject_pkg_types(sem_pkg, &sub))
 }
@@ -529,11 +498,11 @@ pub fn infer_with_env(
     ast_pkg: ast::Package,
     mut f: Fresher,
     env: Option<Environment>,
-) -> Result<(Package, Environment, Substitution), Error> {
+) -> Result<(Package, Environment, Substitution)> {
     // First check to see if there are any errors in the AST.
     let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
     if !errs.is_empty() {
-        return Err(fluxcore::Error::from(format!("{}", &errs[0])));
+        bail!("{}", &errs[0]);
     }
 
     let mut sem_pkg = fluxcore::semantic::convert::convert_with(ast_pkg, &mut f)?;
@@ -542,14 +511,14 @@ pub fn infer_with_env(
 
     let mut prelude = match prelude() {
         Some(prelude) => Environment::new(prelude),
-        None => return Err(fluxcore::Error::from("missing prelude")),
+        None => bail!("missing prelude"),
     };
     if let Some(e) = env {
         prelude.copy_bindings_from(&e);
     }
     let imports = match imports() {
         Some(imports) => imports,
-        None => return Err(fluxcore::Error::from("missing stdlib imports")),
+        None => bail!("missing stdlib imports"),
     };
 
     let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports)?;
@@ -561,7 +530,7 @@ pub fn infer_with_env(
 /// will be used in semantic analysis. The Flux source code itself should not contain any definition
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
-pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType, Error> {
+pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType> {
     let mut f = fresher();
     let tvar = f.fresh();
     let mut env = Environment::empty(true);
@@ -600,7 +569,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 mod tests {
     use crate::docs;
     use crate::parser;
-    use crate::{analyze, find_var_type, flux_ast_get_error, merge_packages};
+    use crate::{analyze, find_var_type, flux_ast_get_error};
     use fluxcore::ast;
     use fluxcore::ast::get_err_type_expression;
     use fluxcore::parser::Parser;
@@ -824,156 +793,6 @@ from(bucket: v.bucket)
             format!("{}", ty),
             "{D with measurement:A, timeRangeStart:B, timeRangeStop:C, bucket:string}"
         );
-    }
-
-    #[test]
-    fn ok_merge_multi_file() {
-        let in_script = "package foo\na = 1\n";
-        let out_script = "package foo\nb = 2\n";
-
-        let in_file = crate::parser::parse_string("test", in_script);
-        let out_file = crate::parser::parse_string("test", out_script);
-        let mut in_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![in_file.clone()],
-        };
-        let mut out_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![out_file.clone()],
-        };
-        merge_packages(&mut out_pkg, &mut in_pkg);
-        let got = out_pkg.files;
-        let want = vec![out_file, in_file];
-        assert_eq!(want, got);
-    }
-
-    #[test]
-    fn ok_merge_one_default_pkg() {
-        // Make sure we can merge one file with default "main"
-        // and on explicit
-        let has_clause_script = "package main\nx = 32";
-        let no_clause_script = "y = 32";
-        let has_clause_file = crate::parser::parse_string("has_clause.flux", has_clause_script);
-        let no_clause_file = crate::parser::parse_string("no_clause.flux", no_clause_script);
-        {
-            let mut out_pkg: ast::Package = has_clause_file.clone().into();
-            let mut in_pkg: ast::Package = no_clause_file.clone().into();
-            if let Some(e) = merge_packages(&mut out_pkg, &mut in_pkg) {
-                panic!("{}", e);
-            }
-            let got = out_pkg.files;
-            let want = vec![has_clause_file.clone(), no_clause_file.clone()];
-            assert_eq!(want, got);
-        }
-        {
-            // Same as previous test, but reverse order
-            let mut out_pkg: ast::Package = no_clause_file.clone().into();
-            let mut in_pkg: ast::Package = has_clause_file.clone().into();
-            if let Some(e) = merge_packages(&mut out_pkg, &mut in_pkg) {
-                panic!("{}", e);
-            }
-            let got = out_pkg.files;
-            let want = vec![no_clause_file.clone(), has_clause_file.clone()];
-            assert_eq!(want, got);
-        }
-    }
-
-    #[test]
-    fn ok_no_in_pkg() {
-        let out_script = "package foo\nb = 2\n";
-
-        let out_file = crate::parser::parse_string("test", out_script);
-        let mut in_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![],
-        };
-        let mut out_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![out_file.clone()],
-        };
-        merge_packages(&mut out_pkg, &mut in_pkg);
-        let got = out_pkg.files;
-        let want = vec![out_file];
-        assert_eq!(want, got);
-    }
-
-    #[test]
-    fn err_no_out_pkg_clause() {
-        let in_script = "package foo\na = 1\n";
-        let out_script = "";
-
-        let in_file = crate::parser::parse_string("test_in.flux", in_script);
-        let out_file = crate::parser::parse_string("test_out.flux", out_script);
-        let mut in_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![in_file.clone()],
-        };
-        let mut out_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![out_file.clone()],
-        };
-        let got_err = merge_packages(&mut out_pkg, &mut in_pkg).unwrap().msg;
-        let want_err = r#"error at test_in.flux@1:1-1:12: file is in package "foo", but other files are in package "main""#;
-        assert_eq!(got_err.to_string(), want_err);
-    }
-
-    #[test]
-    fn err_no_in_pkg_clause() {
-        let in_script = "a = 1000\n";
-        let out_script = "package foo\nb = 100\n";
-
-        let in_file = crate::parser::parse_string("test_in.flux", in_script);
-        let out_file = crate::parser::parse_string("test_out.flux", out_script);
-        let mut in_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![in_file.clone()],
-        };
-        let mut out_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![out_file.clone()],
-        };
-        let got_err = merge_packages(&mut out_pkg, &mut in_pkg).unwrap().msg;
-        let want_err = r#"error at test_in.flux@1:1-1:9: file is in default package "main", but other files are in package "foo""#;
-        assert_eq!(got_err.to_string(), want_err);
-    }
-
-    #[test]
-    fn ok_no_pkg_clauses() {
-        let in_script = "a = 100\n";
-        let out_script = "b = a * a\n";
-        let in_file = crate::parser::parse_string("test", in_script);
-        let out_file = crate::parser::parse_string("test", out_script);
-        let mut in_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![in_file.clone()],
-        };
-        let mut out_pkg = ast::Package {
-            base: Default::default(),
-            path: "./test".to_string(),
-            package: "foo".to_string(),
-            files: vec![out_file.clone()],
-        };
-        let result = merge_packages(&mut out_pkg, &mut in_pkg);
-        assert!(result.is_none());
-        assert_eq!(2, out_pkg.files.len());
     }
 
     #[test]

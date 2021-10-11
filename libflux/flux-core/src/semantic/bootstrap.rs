@@ -6,6 +6,8 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use anyhow::{anyhow, bail, Result};
+
 use crate::ast;
 use crate::parser;
 use crate::semantic::convert::convert_file;
@@ -15,10 +17,8 @@ use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
 use crate::semantic::infer;
 use crate::semantic::infer::Constraints;
-use crate::semantic::nodes;
 use crate::semantic::nodes::infer_file;
 use crate::semantic::sub::Substitutable;
-use crate::semantic::types;
 use crate::semantic::types::{
     MonoType, PolyType, PolyTypeMap, PolyTypeMapMap, Property, Record, SemanticMap, TvarKinds,
 };
@@ -28,13 +28,6 @@ use walkdir::WalkDir;
 const PRELUDE: [&str; 3] = ["internal/boolean", "universe", "influxdata/influxdb"];
 
 type AstFileMap = SemanticMap<String, ast::File>;
-
-/// Error returned during bootstrap.
-#[derive(Debug, PartialEq)]
-pub struct Error {
-    /// Error message.
-    pub msg: String,
-}
 
 /// The return values when running infer_stdlib as a structure
 pub struct StdlibReturnValues {
@@ -53,52 +46,6 @@ pub struct StdlibReturnValues {
     pub files: AstFileMap,
 }
 
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Error {
-        Error {
-            msg: format!("{:?}", err),
-        }
-    }
-}
-
-impl From<nodes::Error> for Error {
-    fn from(err: nodes::Error) -> Error {
-        Error {
-            msg: err.to_string(),
-        }
-    }
-}
-
-impl From<types::Error> for Error {
-    fn from(err: types::Error) -> Error {
-        Error {
-            msg: err.to_string(),
-        }
-    }
-}
-
-impl From<infer::Error> for Error {
-    fn from(err: infer::Error) -> Error {
-        Error {
-            msg: err.to_string(),
-        }
-    }
-}
-
-impl From<String> for Error {
-    fn from(msg: String) -> Error {
-        Error { msg }
-    }
-}
-
-impl From<&str> for Error {
-    fn from(msg: &str) -> Error {
-        Error {
-            msg: msg.to_string(),
-        }
-    }
-}
-
 fn stdlib_relative_path() -> &'static str {
     if consts::OS == "windows" {
         "..\\..\\stdlib"
@@ -110,7 +57,7 @@ fn stdlib_relative_path() -> &'static str {
 /// Infers the types of the standard library returning two [`PolyTypeMap`]s, one for the prelude
 /// and one for the standard library, as well as a type variable [`Fresher`].
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib() -> Result<StdlibReturnValues, Error> {
+pub fn infer_stdlib() -> Result<StdlibReturnValues> {
     let mut f = Fresher::default();
 
     let path = stdlib_relative_path();
@@ -165,7 +112,7 @@ fn path_to_string(path: &Path) -> String {
 }
 
 #[allow(clippy::type_complexity)]
-fn infer_pre(f: &mut Fresher, files: &AstFileMap) -> Result<(PolyTypeMap, PolyTypeMap), Error> {
+fn infer_pre(f: &mut Fresher, files: &AstFileMap) -> Result<(PolyTypeMap, PolyTypeMap)> {
     let mut prelude = PolyTypeMap::new();
     let mut imports = PolyTypeMap::new();
     for name in &PRELUDE {
@@ -186,7 +133,7 @@ fn infer_std(
     files: &AstFileMap,
     prelude: PolyTypeMap,
     mut imports: PolyTypeMap,
-) -> Result<(PolyTypeMap, PolyTypeMapMap), Error> {
+) -> Result<(PolyTypeMap, PolyTypeMapMap)> {
     let mut importermap = PolyTypeMapMap::new();
     for (path, _) in files.iter() {
         let (types, mut importer) = infer_pkg(path, f, files, prelude.clone(), imports.clone())?;
@@ -265,17 +212,13 @@ fn dependencies<'a>(
     mut deps: Vec<&'a str>,
     mut seen: HashSet<&'a str>,
     mut done: HashSet<&'a str>,
-) -> Result<(Vec<&'a str>, HashSet<&'a str>, HashSet<&'a str>), Error> {
+) -> Result<(Vec<&'a str>, HashSet<&'a str>, HashSet<&'a str>)> {
     if seen.contains(name) && !done.contains(name) {
-        Err(Error {
-            msg: format!(r#"package "{}" depends on itself"#, name),
-        })
+        Err(anyhow!(r#"package "{}" depends on itself"#, name))
     } else {
         seen.insert(name);
         match pkgs.get(name) {
-            None => Err(Error {
-                msg: format!(r#"package "{}" not found"#, name),
-            }),
+            None => Err(anyhow!(r#"package "{}" not found"#, name)),
             Some(file) => {
                 for name in imports(file) {
                     let (x, y, z) = dependencies(name, pkgs, deps, seen, done)?;
@@ -294,7 +237,7 @@ fn dependencies<'a>(
 }
 
 /// Constructs a polytype, or more specifically a generic record type, from a hash map.
-pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Error> {
+pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType> {
     let (r, cons) = build_record(from, f);
     let mut kinds = TvarKinds::new();
     let sub = infer::solve(&cons, &mut kinds, f)?;
@@ -339,13 +282,10 @@ fn infer_pkg(
     files: &AstFileMap,   // files available for inference
     prelude: PolyTypeMap, // prelude types
     imports: PolyTypeMap, // types available for import
-) -> Result<
-    (
-        PolyTypeMap, // inferred types
-        PolyTypeMap, // types available for import (possibly updated)
-    ),
-    Error,
-> {
+) -> Result<(
+    PolyTypeMap, // inferred types
+    PolyTypeMap, // types available for import (possibly updated)
+)> {
     // Determine the order in which we must infer dependencies
     let (deps, _, _) = dependencies(name, files, Vec::new(), HashSet::new(), HashSet::new())?;
     let mut imports = imports;
@@ -355,9 +295,7 @@ fn infer_pkg(
         if imports.import(pkg).is_none() {
             let file = files.get(pkg);
             if file.is_none() {
-                return Err(Error {
-                    msg: format!(r#"package "{}" not found"#, pkg),
-                });
+                bail!(r#"package import "{}" not found"#, pkg);
             }
             let file = file.unwrap().to_owned();
 
@@ -375,9 +313,7 @@ fn infer_pkg(
 
     let file = files.get(name);
     if file.is_none() {
-        return Err(Error {
-            msg: format!("package '{}' not found", name),
-        });
+        bail!(r#"package "{}" not found"#, name);
     }
     let file = file.unwrap().to_owned();
 
@@ -401,7 +337,7 @@ mod tests {
     use crate::semantic::convert::convert_polytype;
 
     #[test]
-    fn infer_program() -> Result<(), Error> {
+    fn infer_program() -> Result<()> {
         let a = r#"
             f = (x) => x
         "#;
@@ -444,12 +380,11 @@ mod tests {
             },
         };
         if want != types {
-            return Err(Error {
-                msg: format!(
-                    "unexpected inference result:\n\nwant: {:?}\n\ngot: {:?}",
-                    want, types
-                ),
-            });
+            bail!(
+                "unexpected inference result:\n\nwant: {:?}\n\ngot: {:?}",
+                want,
+                types,
+            );
         }
 
         let want = semantic_map! {
@@ -477,12 +412,11 @@ mod tests {
             },
         };
         if want != imports {
-            return Err(Error {
-                msg: format!(
-                    "unexpected type importer:\n\nwant: {:?}\n\ngot: {:?}",
-                    want, types
-                ),
-            });
+            bail!(
+                "unexpected type importer:\n\nwant: {:?}\n\ngot: {:?}",
+                want,
+                types,
+            );
         }
 
         Ok(())
@@ -529,10 +463,8 @@ mod tests {
             .expect_err("expected cyclic dependency error");
 
         assert_eq!(
-            Error {
-                msg: r#"package "b" depends on itself"#.to_string()
-            },
-            got_err
+            r#"package "b" depends on itself"#.to_string(),
+            got_err.to_string(),
         );
     }
 }

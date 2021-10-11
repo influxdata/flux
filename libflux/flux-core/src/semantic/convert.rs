@@ -9,12 +9,8 @@ use crate::semantic::types::MonoType;
 use crate::semantic::types::MonoTypeMap;
 use crate::semantic::types::SemanticMap;
 use std::collections::BTreeMap;
-use std::result;
 
-/// Error type for semantic analysis.
-pub type SemanticError = String;
-/// Custom result type to wrap generic types and `SemanticError`s.
-pub type Result<T> = result::Result<T, SemanticError>;
+use anyhow::{anyhow, bail, Result};
 
 /// convert_with converts an [AST package] node to its semantic representation using
 /// the provided [`Fresher`].
@@ -114,7 +110,7 @@ fn convert_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
             *s, fresher,
         )?))),
         ast::Statement::TestCase(_) => {
-            Err("TestCase is not supported in semantic analysis".to_string())
+            Err(anyhow!("TestCase is not supported in semantic analysis"))
         }
         ast::Statement::Expr(s) => Ok(Statement::Expr(convert_expression_statement(*s, fresher)?)),
         ast::Statement::Return(s) => Ok(Statement::Return(convert_return_statement(*s, fresher)?)),
@@ -125,9 +121,9 @@ fn convert_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
         ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(
             convert_variable_assignment(*s, fresher)?,
         ))),
-        ast::Statement::Bad(_) => {
-            Err("BadStatement is not supported in semantic analysis".to_string())
-        }
+        ast::Statement::Bad(_) => Err(anyhow!(
+            "BadStatement is not supported in semantic analysis"
+        )),
     }
 }
 
@@ -177,7 +173,7 @@ fn convert_monotype(
             "time" => Ok(MonoType::Time),
             "regexp" => Ok(MonoType::Regexp),
             "bytes" => Ok(MonoType::Bytes),
-            _ => Err(format!("invalid named type {}", basic.name.name)),
+            _ => Err(anyhow!("invalid named type {}", basic.name.name)),
         },
         ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(convert_monotype(
             arr.element,
@@ -213,9 +209,7 @@ fn convert_monotype(
                             });
                             dirty = true;
                         } else {
-                            return Err(
-                                "function types can have at most one pipe parameter".to_string()
-                            );
+                            bail!("function types can have at most one pipe parameter");
                         }
                     }
                 }
@@ -285,7 +279,7 @@ pub fn convert_polytype(
                         "Record" => kinds.push(types::Kind::Record),
                         "Stringable" => kinds.push(types::Kind::Stringable),
                         _ => {
-                            return Err(format!("Constraint not found {} ", &k.name.as_str()));
+                            bail!("Constraint not found {} ", &k.name);
                         }
                     }
                 }
@@ -361,8 +355,8 @@ fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Ex
         ast::Expression::Regexp(lit) => Ok(Expression::Regexp(convert_regexp_literal(lit, fresher)?)),
         ast::Expression::Duration(lit) => Ok(Expression::Duration(convert_duration_literal(lit, fresher)?)),
         ast::Expression::DateTime(lit) => Ok(Expression::DateTime(convert_date_time_literal(lit, fresher)?)),
-        ast::Expression::PipeLit(_) => Err("a pipe literal may only be used as a default value for an argument in a function definition".to_string()),
-        ast::Expression::Bad(_) => Err("BadExpression is not supported in semantic analysis".to_string())
+        ast::Expression::PipeLit(_) => Err(anyhow!("a pipe literal may only be used as a default value for an argument in a function definition")),
+        ast::Expression::Bad(_) => Err(anyhow!("BadExpression is not supported in semantic analysis"))
     }
 }
 
@@ -390,7 +384,7 @@ fn convert_function_params(
     for prop in props {
         let id = match prop.key {
             ast::PropertyKey::Identifier(id) => Ok(id),
-            _ => Err("function params must be identifiers".to_string()),
+            _ => Err(anyhow!("function params must be identifiers")),
         }?;
         let key = convert_identifier(id, fresher)?;
         let mut default: Option<Expression> = None;
@@ -399,7 +393,7 @@ fn convert_function_params(
             match expr {
                 ast::Expression::PipeLit(_) => {
                     if piped {
-                        return Err("only a single argument may be piped".to_string());
+                        bail!("only a single argument may be piped");
                     } else {
                         piped = true;
                         is_pipe = true;
@@ -441,7 +435,7 @@ fn convert_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
             argument,
         })
     } else {
-        return Err("missing return statement in block".to_string());
+        bail!("missing return statement in block");
     };
 
     body.try_fold(block, |acc, s| match s {
@@ -453,7 +447,7 @@ fn convert_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
             convert_expression_statement(*stmt, fresher)?,
             Box::new(acc),
         )),
-        _ => Err(format!("invalid statement in function block {:#?}", s)),
+        _ => Err(anyhow!("invalid statement in function block {:#?}", s)),
     })
 }
 
@@ -461,20 +455,20 @@ fn convert_call_expression(expr: ast::CallExpr, fresher: &mut Fresher) -> Result
     let callee = convert_expression(expr.callee, fresher)?;
     // TODO(affo): I'd prefer these checks to be in ast.Check().
     if expr.arguments.len() > 1 {
-        return Err("arguments are more than one object expression".to_string());
+        bail!("arguments are more than one object expression");
     }
     let mut args = expr
         .arguments
         .into_iter()
         .map(|a| match a {
             ast::Expression::Object(obj) => convert_object_expression(*obj, fresher),
-            _ => Err("arguments not an object expression".to_string()),
+            _ => Err(anyhow!("arguments not an object expression")),
         })
         .collect::<Result<Vec<ObjectExpr>>>()?;
     let arguments = match args.len() {
         0 => Ok(Vec::new()),
         1 => Ok(args.pop().expect("there must be 1 element").properties),
-        _ => Err("arguments are more than one object expression".to_string()),
+        _ => Err(anyhow!("arguments are more than one object expression")),
     }?;
     Ok(CallExpr {
         loc: expr.base.location,
@@ -2895,9 +2889,8 @@ mod tests {
                 eof: vec![],
             }],
         };
-        let want: Result<Package> =
-            Err("BadStatement is not supported in semantic analysis".to_string());
-        let got = test_convert(pkg);
+        let want = "BadStatement is not supported in semantic analysis".to_string();
+        let got = test_convert(pkg).unwrap_err().to_string();
         assert_eq!(want, got);
     }
     #[test]
@@ -2924,9 +2917,8 @@ mod tests {
                 eof: vec![],
             }],
         };
-        let want: Result<Package> =
-            Err("BadExpression is not supported in semantic analysis".to_string());
-        let got = test_convert(pkg);
+        let want = "BadExpression is not supported in semantic analysis".to_string();
+        let got = test_convert(pkg).unwrap_err().to_string();
         assert_eq!(want, got);
     }
 
