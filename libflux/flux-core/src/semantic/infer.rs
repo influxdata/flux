@@ -79,8 +79,8 @@ impl From<Constraint> for Constraints {
 #[derive(Debug, Display, PartialEq)]
 #[display(fmt = "type error {}: {}", loc, err)]
 pub struct Error {
-    loc: SourceLocation,
-    err: types::Error,
+    pub loc: SourceLocation,
+    pub err: types::Error,
 }
 
 // Solve a set of type constraints

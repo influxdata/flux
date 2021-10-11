@@ -126,7 +126,7 @@ test-race: libflux-go
 
 test-bench: libflux-go
 	$(GO_TEST) -run=NONE -bench=. -benchtime=1x ./...
-	cd libflux && $(CARGO) bench
+	cd libflux && $(CARGO) test --benches
 
 vet: libflux-go
 	$(GO_VET) ./...
@@ -169,7 +169,7 @@ test-release: Dockerfile_build
 		cd src/ &&\
 	    go build -o /go/bin/pkg-config github.com/influxdata/pkg-config &&\
 		./gotool.sh github.com/goreleaser/goreleaser release --rm-dist --snapshot"
-  
+
 .PHONY: generate \
 	clean \
 	cleangenerate \

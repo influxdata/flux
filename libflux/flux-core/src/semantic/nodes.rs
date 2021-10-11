@@ -38,32 +38,59 @@ use derive_more::Display;
 /// updated type environment and a set of type constraints to be solved.
 pub type Result = std::result::Result<(Environment, Constraints), Error>;
 
+/// Error returned from the various 'infer' methods defined in this
+/// module.
+pub type Error = Located<ErrorKind>;
+
+/// An error with an attached location
+#[derive(Debug, Display, PartialEq)]
+#[display(fmt = "error {}: {}", location, error)]
+pub struct Located<E> {
+    /// The location where the error occured
+    pub location: ast::SourceLocation,
+    /// The error itself
+    pub error: E,
+}
+
+fn located<E>(location: ast::SourceLocation, error: E) -> Located<E> {
+    Located { location, error }
+}
+
 #[derive(Debug, Display, PartialEq)]
 #[allow(missing_docs)]
-pub enum Error {
+pub enum ErrorKind {
     #[display(fmt = "{}", _0)]
-    Inference(infer::Error),
-    #[display(fmt = "error {}: undefined builtin identifier {}", _1, _0)]
-    UndefinedBuiltin(String, ast::SourceLocation),
-    #[display(fmt = "error {}: undefined identifier {}", _1, _0)]
-    UndefinedIdentifier(String, ast::SourceLocation),
-    #[display(fmt = "error {}: invalid binary operator {}", _1, _0)]
-    InvalidBinOp(ast::Operator, ast::SourceLocation),
-    #[display(fmt = "error {}: invalid unary operator {}", _1, _0)]
-    InvalidUnaryOp(ast::Operator, ast::SourceLocation),
-    #[display(fmt = "error {}: invalid import path {}", _1, _0)]
-    InvalidImportPath(String, ast::SourceLocation),
-    #[display(fmt = "error {}: return not valid in file block", _0)]
-    InvalidReturn(ast::SourceLocation),
-    #[display(fmt = "error {}. This is a bug in type inference", _0)]
+    Inference(types::Error),
+    #[display(fmt = "undefined builtin identifier {}", _0)]
+    UndefinedBuiltin(String),
+    #[display(fmt = "undefined identifier {}", _0)]
+    UndefinedIdentifier(String),
+    #[display(fmt = "invalid binary operator {}", _0)]
+    InvalidBinOp(ast::Operator),
+    #[display(fmt = "invalid unary operator {}", _0)]
+    InvalidUnaryOp(ast::Operator),
+    #[display(fmt = "invalid import path {}", _0)]
+    InvalidImportPath(String),
+    #[display(fmt = "return not valid in file block")]
+    InvalidReturn,
+    #[display(fmt = "{}. This is a bug in type inference", _0)]
     Bug(String),
 }
 
 impl std::error::Error for Error {}
 
+impl From<types::Error> for ErrorKind {
+    fn from(err: types::Error) -> Self {
+        ErrorKind::Inference(err)
+    }
+}
+
 impl From<infer::Error> for Error {
-    fn from(err: infer::Error) -> Error {
-        Error::Inference(err)
+    fn from(err: infer::Error) -> Self {
+        Located {
+            location: err.loc,
+            error: ErrorKind::Inference(err.err),
+        }
     }
 }
 
@@ -320,10 +347,10 @@ impl File {
 
             imports.push(name);
 
-            match importer.import(path) {
-                Some(poly) => env.add(name.to_owned(), poly),
-                None => return Err(Error::InvalidImportPath(path.clone(), dec.loc.clone())),
-            };
+            let poly = importer.import(path).ok_or_else(|| {
+                located(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()))
+            })?;
+            env.add(name.to_owned(), poly);
         }
 
         let (mut env, constraints) =
@@ -356,7 +383,9 @@ impl File {
                             let (env, cons) = stmt.infer(env, f)?;
                             Ok((env, cons + rest))
                         }
-                        Statement::Return(stmt) => Err(Error::InvalidReturn(stmt.loc.clone())),
+                        Statement::Return(stmt) => {
+                            Err(located(stmt.loc.clone(), ErrorKind::InvalidReturn))
+                        }
                     },
                 )?;
 
@@ -878,11 +907,13 @@ impl FunctionExpr {
             .chain(opt.iter_mut())
             .chain(pipe.as_mut().map(|p| (&p.k, &mut p.v)))
         {
-            if let Some(new_t) = nenv.lookup(k) {
-                *t = new_t.expr.clone();
-            } else {
-                return Err(Error::Bug(format!("Missing function parameter `{}`", k)));
-            }
+            let new_t = nenv.lookup(k).ok_or_else(|| {
+                located(
+                    self.loc.clone(),
+                    ErrorKind::Bug(format!("Missing function parameter `{}`", k)),
+                )
+            })?;
+            *t = new_t.expr.clone();
         }
         // Now pop the nested environment, we don't need it anymore.
         let env = nenv.pop();
@@ -1314,7 +1345,12 @@ impl BinaryExpr {
                     loc: self.right.loc().clone(),
                 },
             ]),
-            _ => return Err(Error::InvalidBinOp(self.operator.clone(), self.loc.clone())),
+            _ => {
+                return Err(located(
+                    self.loc.clone(),
+                    ErrorKind::InvalidBinOp(self.operator.clone()),
+                ))
+            }
         };
 
         // Otherwise, add the constraints together and return them.
@@ -1682,9 +1718,9 @@ impl UnaryExpr {
                 ])
             }
             _ => {
-                return Err(Error::InvalidUnaryOp(
-                    self.operator.clone(),
+                return Err(located(
                     self.loc.clone(),
+                    ErrorKind::InvalidUnaryOp(self.operator.clone()),
                 ))
             }
         };
@@ -1726,23 +1762,22 @@ pub struct IdentifierExpr {
 
 impl IdentifierExpr {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        match env.lookup(&self.name) {
-            Some(poly) => {
-                let (t, cons) = infer::instantiate(poly.clone(), f, self.loc.clone());
-                Ok((
-                    env,
-                    cons + Constraints::from(vec![Constraint::Equal {
-                        act: t,
-                        exp: self.typ.clone(),
-                        loc: self.loc.clone(),
-                    }]),
-                ))
-            }
-            None => Err(Error::UndefinedIdentifier(
-                self.name.to_string(),
+        let poly = env.lookup(&self.name).ok_or_else(|| {
+            located(
                 self.loc.clone(),
-            )),
-        }
+                ErrorKind::UndefinedIdentifier(self.name.to_string()),
+            )
+        })?;
+
+        let (t, cons) = infer::instantiate(poly.clone(), f, self.loc.clone());
+        Ok((
+            env,
+            cons + Constraints::from(vec![Constraint::Equal {
+                act: t,
+                exp: self.typ.clone(),
+                loc: self.loc.clone(),
+            }]),
+        ))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);

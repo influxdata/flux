@@ -3453,21 +3453,21 @@ fn test_error_messages() {
             1 + "1"
         "#,
         // Location points to right expression expression
-        err: "type error @2:17-2:20: expected int but found string",
+        err: "error @2:17-2:20: expected int but found string",
     }
     test_error_msg! {
         src: r#"
             -"s"
         "#,
         // Location points to argument of unary expression
-        err: "type error @2:14-2:17: string is not Negatable",
+        err: "error @2:14-2:17: string is not Negatable",
     }
     test_error_msg! {
         src: r#"
             1h + 2h
         "#,
         // Location points to entire binary expression
-        err: "type error @2:13-2:20: duration is not Addable",
+        err: "error @2:13-2:20: duration is not Addable",
     }
     test_error_msg! {
         src: r#"
@@ -3476,28 +3476,28 @@ fn test_error_messages() {
             "Hey ${bob} it's me ${joe}!"
         "#,
         // Location points to second interpolated expression
-        err: "type error @4:35-4:38: {b:float, a:int} is not Stringable",
+        err: "error @4:35-4:38: {b:float, a:int} is not Stringable",
     }
     test_error_msg! {
         src: r#"
             if 0 then "a" else "b"
         "#,
         // Location points to if expression
-        err: "type error @2:16-2:17: expected bool but found int",
+        err: "error @2:16-2:17: expected bool but found int",
     }
     test_error_msg! {
         src: r#"
             if exists 0 then 0 else "b"
         "#,
         // Location points to else expression
-        err: "type error @2:37-2:40: expected int but found string",
+        err: "error @2:37-2:40: expected int but found string",
     }
     test_error_msg! {
         src: r#"
             [1, "2"]
         "#,
         // Location points to second element of array
-        err: "type error @2:17-2:20: expected int but found string",
+        err: "error @2:17-2:20: expected int but found string",
     }
     test_error_msg! {
         src: r#"
@@ -3505,7 +3505,7 @@ fn test_error_messages() {
             a[1.1]
         "#,
         // Location points to expression representing the index
-        err: "type error @3:15-3:18: expected int but found float",
+        err: "error @3:15-3:18: expected int but found float",
     }
     test_error_msg! {
         src: r#"
@@ -3513,7 +3513,7 @@ fn test_error_messages() {
             a[1] + 1.1
         "#,
         // Location points to right expression
-        err: "type error @3:20-3:23: expected int but found float",
+        err: "error @3:20-3:23: expected int but found float",
     }
     test_error_msg! {
         src: r#"
@@ -3521,7 +3521,7 @@ fn test_error_messages() {
             a[1]
         "#,
         // Location points to the identifier a
-        err: "type error @3:13-3:14: expected [A] but found int",
+        err: "error @3:13-3:14: expected [A] but found int",
     }
     test_error_msg! {
         src: r#"
@@ -3529,7 +3529,7 @@ fn test_error_messages() {
             a.x
         "#,
         // Location points to the identifier a
-        err: "type error @3:13-3:14: expected {A with x:B} but found [int]",
+        err: "error @3:13-3:14: expected {A with x:B} but found [int]",
     }
     test_error_msg! {
         src: r#"
@@ -3537,7 +3537,7 @@ fn test_error_messages() {
             f(x: "x", y: "y")
         "#,
         // Location points to entire call expression
-        err: "type error @3:13-3:30: string is not Subtractable (argument x)",
+        err: "error @3:13-3:30: string is not Subtractable (argument x)",
     }
     test_error_msg! {
         src: r#"
@@ -3545,7 +3545,7 @@ fn test_error_messages() {
             f(r: {b: 1})
         "#,
         // Location points to entire call expression
-        err: "type error @3:13-3:25: record is missing label a (argument r)",
+        err: "error @3:13-3:25: record is missing label a (argument r)",
     }
     test_error_msg! {
         src: r#"
@@ -3561,7 +3561,7 @@ fn test_error_messages() {
             fn = (r) => match(r)
         "#,
         // Location points to call expression `match(r)`
-        err: "type error @3:25-3:33: found unexpected argument r",
+        err: "error @3:25-3:33: found unexpected argument r",
     }
     test_error_msg! {
         src: r#"
@@ -3569,7 +3569,7 @@ fn test_error_messages() {
             f(a: 0, c: 1)
         "#,
         // Location points to call expression `f(a: 0, c: 1)`
-        err: "type error @3:13-3:26: found unexpected argument c",
+        err: "error @3:13-3:26: found unexpected argument c",
     }
     test_error_msg! {
         src: r#"
@@ -3577,6 +3577,6 @@ fn test_error_messages() {
             f(a: 0)
         "#,
         // Location points to call expression `f(a: 0)`
-        err: "type error @3:13-3:20: missing required argument b",
+        err: "error @3:13-3:20: missing required argument b",
     }
 }

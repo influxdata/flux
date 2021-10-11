@@ -106,7 +106,6 @@ where
         c.apply_ref(sub),
         d,
         d.apply_ref(sub),
-        |a, b, c, d| (a, b, c, d),
     )
 }
 
@@ -115,11 +114,11 @@ where
     A: Substitutable + Clone,
     B: Substitutable + Clone,
 {
-    merge(a, a.apply_ref(sub), b, b.apply_ref(sub), |a, b| (a, b))
+    merge(a, a.apply_ref(sub), b, b.apply_ref(sub))
 }
 
-#[allow(clippy::too_many_arguments)]
-fn merge4<F, A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized, R>(
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+fn merge4<A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,
@@ -128,18 +127,14 @@ fn merge4<F, A: ?Sized, B: ?Sized, C: ?Sized, D: ?Sized, R>(
     c: Option<C::Owned>,
     d_original: &D,
     d: Option<D::Owned>,
-    action: F,
-) -> Option<R>
+) -> Option<(A::Owned, B::Owned, C::Owned, D::Owned)>
 where
     A: ToOwned,
     B: ToOwned,
     C: ToOwned,
     D: ToOwned,
-    F: FnOnce(A::Owned, B::Owned, C::Owned, D::Owned) -> R,
 {
-    let a_b_c = merge3(a_original, a, b_original, b, c_original, c, |a, b, c| {
-        (a, b, c)
-    });
+    let a_b_c = merge3(a_original, a, b_original, b, c_original, c);
     merge_fn(
         &(a_original, b_original, c_original),
         |_| {
@@ -153,26 +148,24 @@ where
         d_original,
         D::to_owned,
         d,
-        |(a, b, c), d| action(a, b, c, d),
     )
+    .map(|((a, b, c), d)| (a, b, c, d))
 }
 
-fn merge3<F, A: ?Sized, B: ?Sized, C: ?Sized, R>(
+fn merge3<A: ?Sized, B: ?Sized, C: ?Sized>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,
     b: Option<B::Owned>,
     c_original: &C,
     c: Option<C::Owned>,
-    f: F,
-) -> Option<R>
+) -> Option<(A::Owned, B::Owned, C::Owned)>
 where
     A: ToOwned,
     B: ToOwned,
     C: ToOwned,
-    F: FnOnce(A::Owned, B::Owned, C::Owned) -> R,
 {
-    let a_b = merge(a_original, a, b_original, b, |a, b| (a, b));
+    let a_b = merge(a_original, a, b_original, b);
     merge_fn(
         &(a_original, b_original),
         |_| (a_original.to_owned(), b_original.to_owned()),
@@ -180,45 +173,41 @@ where
         c_original,
         C::to_owned,
         c,
-        |(a, b), c| f(a, b, c),
     )
+    .map(|((a, b), c)| (a, b, c))
 }
 
 /// Merges two values using `f` if either or both them is `Some(..)`.
 /// If both are `None`, `None` is returned.
-fn merge<F, A: ?Sized, B: ?Sized, R>(
+fn merge<A: ?Sized, B: ?Sized>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,
     b: Option<B::Owned>,
-    f: F,
-) -> Option<R>
+) -> Option<(A::Owned, B::Owned)>
 where
     A: ToOwned,
     B: ToOwned,
-    F: FnOnce(A::Owned, B::Owned) -> R,
 {
-    merge_fn(a_original, A::to_owned, a, b_original, B::to_owned, b, f)
+    merge_fn(a_original, A::to_owned, a, b_original, B::to_owned, b)
 }
 
-fn merge_fn<'a, 'b, F, G, H, A: ?Sized, B: ?Sized, A1, B1, R>(
+fn merge_fn<'a, 'b, G, H, A: ?Sized, B: ?Sized, A1, B1>(
     a_original: &'a A,
     g: G,
     a: Option<A1>,
     b_original: &'b B,
     h: H,
     b: Option<B1>,
-    merger: F,
-) -> Option<R>
+) -> Option<(A1, B1)>
 where
-    F: FnOnce(A1, B1) -> R,
     G: FnOnce(&'a A) -> A1,
     H: FnOnce(&'b B) -> B1,
 {
     match (a, b) {
-        (Some(a), Some(b)) => Some(merger(a, b)),
-        (Some(a), None) => Some(merger(a, h(b_original))),
-        (None, Some(b)) => Some(merger(g(a_original), b)),
+        (Some(a), Some(b)) => Some((a, b)),
+        (Some(a), None) => Some((a, h(b_original))),
+        (None, Some(b)) => Some((g(a_original), b)),
         (None, None) => None,
     }
 }
