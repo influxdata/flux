@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
+	"github.com/urjitbhatia/cozgo"
 )
 
 type Profiler interface {
@@ -251,13 +252,18 @@ func (o *OperatorProfiler) getTableBuilder(alloc *memory.Allocator) (*ColListTab
 	return b, nil
 }
 
+type Span struct {
+	label string
+	span opentracing.Span
+}
+
 // Create a tracing span.
 // Depending on whether the Jaeger tracing and/or the operator profiling are enabled,
 // the Span produced by this function can be very different.
 // It could be a no-op span, a Jaeger span, a no-op span wrapped by a profiling span, or
 // a Jaeger span wrapped by a profiling span.
-func StartSpanFromContext(ctx context.Context, operationName string, label string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span) {
-	var span opentracing.Span
+func StartSpanFromContext(ctx context.Context, operationName string, label string, opts ...opentracing.StartSpanOption) (context.Context, *Span) {
+	var span *Span = &Span { label: label }
 	var start time.Time
 	for _, opt := range opts {
 		if st, ok := opt.(opentracing.StartTime); ok {
@@ -270,15 +276,15 @@ func StartSpanFromContext(ctx context.Context, operationName string, label strin
 		opts = append(opts, opentracing.StartTime(start))
 	}
 	if flux.IsQueryTracingEnabled(ctx) {
-		span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opts...)
+		span.span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opts...)
 	}
 
 	if HaveExecutionDependencies(ctx) {
 		deps := GetExecutionDependencies(ctx)
 		if deps.ExecutionOptions.OperatorProfiler != nil {
 			tfp := deps.ExecutionOptions.OperatorProfiler
-			span = &OperatorProfilingSpan{
-				Span:     span,
+			span.span = &OperatorProfilingSpan{
+				Span:     span.span,
 				profiler: tfp,
 				Result: OperatorProfilingResult{
 					Type:  operationName,
@@ -288,7 +294,17 @@ func StartSpanFromContext(ctx context.Context, operationName string, label strin
 			}
 		}
 	}
+
+	cozgo.Begin(label);
+
 	return ctx, span
+}
+
+func (span *Span) Finish() {
+	cozgo.End(span.label);
+	if span.span != nil {
+		span.span.Finish();
+	}
 }
 
 type QueryProfiler struct{}

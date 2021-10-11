@@ -29,7 +29,7 @@ To build Flux, first install the GNU `pkg-config` utility on your system, then e
 ```
 # First install GNU pkg-config.
 # On Debian/Ubuntu
-$ sudo apt-get install -y clang pkg-config
+$ sudo apt-get install -y clang pkg-config coz-profiler
 # Or on Mac OS X with Homebrew
 $ brew install pkg-config
 
@@ -107,7 +107,7 @@ Here are a few examples of the language to get an idea of the syntax.
 
     // Functions are polymorphic
     add(a: 5.5, b: 2.5) // 8.0
-    
+
     // And strongly typed
     add(a: 5, b: 2.5) // type error
 
@@ -115,12 +115,12 @@ Here are a few examples of the language to get an idea of the syntax.
     // This is only possible within the influxdb repl (at the moment).
     import "influxdata/influxdb"
     data = influxdb.from(bucket:"telegraf/autogen")
-    
+
     // When running inside of influxdb, the import isn't needed.
     data = from(bucket:"telegraf/autogen")
 
     // Chain more transformation functions to further specify the desired data
-    cpu = data 
+    cpu = data
         // only get the last 5m of data
         |> range(start: -5m)
         // only get the "usage_user" data from the _measurement "cpu"
@@ -147,7 +147,7 @@ Here are a few examples of the language to get an idea of the syntax.
         |> yield()
 
     // Gather different data
-    mem = data 
+    mem = data
         // only get the last 5m of data
         |> range(start: -5m)
         // only get the "used_percent" data from the _measurement "mem"
