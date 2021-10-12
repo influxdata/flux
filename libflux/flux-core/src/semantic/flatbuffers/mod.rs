@@ -5,6 +5,8 @@ pub mod semantic_generated;
 #[allow(missing_docs)]
 pub mod types;
 
+use anyhow::{anyhow, bail, Error, Result};
+
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -21,7 +23,7 @@ use chrono::Duration as ChronoDuration;
 const UNKNOWNVARIANTNAME: &str = "UNKNOWNSEMANTIC";
 
 /// Serializes a [`semantic::nodes::Package`].
-pub fn serialize(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, usize), String> {
+pub fn serialize(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, usize)> {
     let mut v = new_serializing_visitor_with_capacity(1024);
     walk::walk(&mut v, Rc::new(walk::Node::Package(semantic_pkg)));
     v.finish()
@@ -743,7 +745,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                             Some(WIPOffset::new(union.value()))
                         }
                         _ => {
-                            v.err = Some(String::from(
+                            v.err = Some(anyhow!(
                                 "failed to pop assignment statement from stmt vector",
                             ));
                             return;
@@ -786,11 +788,11 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                                 (Some(nva), fbsemantic::Assignment::NativeVariableAssignment)
                             }
                             Some((_, ty)) => {
-                                v.err = Some(format!("found {:?} in stmt vector", ty));
+                                v.err = Some(anyhow!("found {:?} in stmt vector", ty));
                                 return;
                             }
                             None => {
-                                v.err = Some(String::from(
+                                v.err = Some(anyhow!(
                                     "Native assignment was not added to SerializingVisitor",
                                 ));
                                 return;
@@ -801,7 +803,7 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                                 (Some(member), fbsemantic::Assignment::MemberAssignment)
                             }
                             _ => {
-                                v.err = Some(String::from(
+                                v.err = Some(anyhow!(
                                     "Member assignment was not added to SerializingVisitor",
                                 ));
                                 return;
@@ -895,17 +897,17 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
 }
 
 impl<'a> SerializingVisitor<'a> {
-    fn finish(self) -> Result<(Vec<u8>, usize), String> {
+    fn finish(self) -> Result<(Vec<u8>, usize)> {
         let v = match Rc::try_unwrap(self.inner) {
             Ok(sv) => sv,
-            Err(_) => return Err(String::from("error unwrapping rc")),
+            Err(_) => bail!("error unwrapping rc"),
         };
         let mut v = v.into_inner();
         if let Some(e) = v.err {
             return Err(e);
         };
         let pkg = match v.package {
-            None => return Err(String::from("missing serialized package")),
+            None => bail!("missing serialized package"),
             Some(pkg) => pkg,
         };
         v.builder.finish(pkg, None);
@@ -917,7 +919,7 @@ impl<'a> SerializingVisitor<'a> {
 
 struct SerializingVisitorState<'a> {
     // Any error that occurred during serialization, returned by the visitor's finish method.
-    err: Option<String>,
+    err: Option<Error>,
 
     builder: flatbuffers::FlatBufferBuilder<'a>,
 
@@ -960,7 +962,7 @@ impl<'a> SerializingVisitorState<'a> {
     fn pop_expr(&mut self) -> (Option<WIPOffset<UnionWIPOffset>>, fbsemantic::Expression) {
         match self.expr_stack.pop() {
             None => {
-                self.err = Some(String::from("Tried popping empty expression stack"));
+                self.err = Some(anyhow!("Tried popping empty expression stack"));
                 (None, fbsemantic::Expression::NONE)
             }
             Some((o, e)) => (Some(o), e),
@@ -973,7 +975,7 @@ impl<'a> SerializingVisitorState<'a> {
                 if e == kind {
                     Some(WIPOffset::new(wipo.value()))
                 } else {
-                    self.err = Some(format!(
+                    self.err = Some(anyhow!(
                         "expected {} on expr stack, got {}",
                         kind.variant_name().unwrap_or(UNKNOWNVARIANTNAME),
                         e.variant_name().unwrap_or(UNKNOWNVARIANTNAME)
@@ -982,7 +984,7 @@ impl<'a> SerializingVisitorState<'a> {
                 }
             }
             None => {
-                self.err = Some("Tried popping empty expression stack".to_string());
+                self.err = Some(anyhow!("Tried popping empty expression stack"));
                 None
             }
         }
@@ -991,7 +993,7 @@ impl<'a> SerializingVisitorState<'a> {
     fn pop_ident<T>(&mut self) -> Option<WIPOffset<T>> {
         match self.identifiers.pop() {
             None => {
-                self.err = Some("Tried popping empty identifier stack".to_string());
+                self.err = Some(anyhow!("Tried popping empty identifier stack"));
                 None
             }
             Some(wip) => Some(WIPOffset::new(wip.value())),
@@ -1048,13 +1050,13 @@ impl<'a> SerializingVisitorState<'a> {
                 (Some(va), fbsemantic::Assignment::NativeVariableAssignment)
             }
             None => {
-                self.err = Some(String::from(
+                self.err = Some(anyhow!(
                     "Tried popping empty statement stack. Expected assignment on top of stack.",
                 ));
                 (None, fbsemantic::Assignment::NONE)
             }
             Some(_) => {
-                self.err = Some(String::from(
+                self.err = Some(anyhow!(
                     "Expected assignment on top of stack statement stack.",
                 ));
                 (None, fbsemantic::Assignment::NONE)

@@ -16,24 +16,8 @@ use std::rc::Rc;
 type OptionMap<'a> = HashMap<(Option<&'a str>, &'a str), &'a nodes::OptionStmt>;
 type VariableAssignMap<'a> = HashMap<&'a str, Option<&'a nodes::VariableAssgn>>;
 
-/// This function checks a semantic graph, looking for errors.
-///
-/// This pass is typically run before type inference, so type-related errors occur
-/// at a later stage.
-///
-/// These are the kind of errors that `check()` will find:
-///
-/// - Option reassignment: options may only be assigned once within a package.
-/// - Variable reassignment: variables may only be assigned once within a scope.
-///   A variable of the same name may be declared in a different scope.
-/// - Dependent options: options declared within the same package must not depend on one another.
-///
-/// If any of these errors are found, `check()` will return the first one it finds, and `Ok(())` otherwise.
-pub fn check(pkg: &nodes::Package) -> Result<(), Error> {
-    let opts = check_option_stmts(pkg)?;
-    check_vars(pkg, &opts)?;
-    check_option_dependencies(&opts)
-}
+/// Result for any potential errors with type [`Error`].
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// This is the error type for errors returned by the `check()` function.
 #[derive(Debug)]
@@ -77,11 +61,30 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
+/// This function checks a semantic graph, looking for errors.
+///
+/// This pass is typically run before type inference, so type-related errors occur
+/// at a later stage.
+///
+/// These are the kind of errors that `check()` will find:
+///
+/// - Option reassignment: options may only be assigned once within a package.
+/// - Variable reassignment: variables may only be assigned once within a scope.
+///   A variable of the same name may be declared in a different scope.
+/// - Dependent options: options declared within the same package must not depend on one another.
+///
+/// If any of these errors are found, `check()` will return the first one it finds, and `Ok(())` otherwise.
+pub fn check(pkg: &nodes::Package) -> Result<()> {
+    let opts = check_option_stmts(pkg)?;
+    check_vars(pkg, &opts)?;
+    check_option_dependencies(&opts)
+}
+
 /// `check_option_stmts` checks that options are not reassigned within a package.
 /// Note that options can only appear at file scope since the structure of the semantic
 /// graph only allows expression statements, assignments and return statements inside function bodies.
 /// As a convenience to later checks, it returns a map of all the option statements in the package.
-fn check_option_stmts(pkg: &nodes::Package) -> Result<OptionMap, Error> {
+fn check_option_stmts(pkg: &nodes::Package) -> Result<OptionMap> {
     let mut opt_stmts = vec![];
     for f in &pkg.files {
         for st in &f.body {
@@ -109,7 +112,7 @@ fn format_option(opt: (Option<&str>, &str)) -> String {
     }
 }
 
-fn get_option_name(o: &nodes::OptionStmt) -> Result<(Option<&str>, &str), Error> {
+fn get_option_name(o: &nodes::OptionStmt) -> Result<(Option<&str>, &str)> {
     match &o.assignment {
         Assignment::Variable(va) => Ok((None, va.id.name.as_str())),
         Assignment::Member(nodes::MemberAssgn {
@@ -128,7 +131,7 @@ fn get_option_name(o: &nodes::OptionStmt) -> Result<(Option<&str>, &str), Error>
 /// `check_vars()` returns an error if:
 /// - Variables are reassigned within the same block
 /// - A variable name clashes with an option name
-fn check_vars<'a>(pkg: &'a nodes::Package, opts: &'a OptionMap) -> Result<(), Error> {
+fn check_vars<'a>(pkg: &'a nodes::Package, opts: &'a OptionMap) -> Result<()> {
     let mut v = VarVisitor {
         opts,
         vars_stack: vec![VariableAssignMap::new()],
@@ -201,7 +204,7 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
 
 /// `check_option_dependencies()` checks that no options declared in a package depend on other
 /// options also declared in the same package.
-fn check_option_dependencies(opts: &OptionMap) -> Result<(), Error> {
+fn check_option_dependencies(opts: &OptionMap) -> Result<()> {
     let mut v = OptionDepVisitor {
         opts,
         vars_stack: vec![VariableAssignMap::new()],
@@ -286,6 +289,7 @@ mod tests {
     use crate::semantic::convert;
     use crate::semantic::fresh;
     use crate::semantic::nodes;
+    use anyhow::Result;
 
     fn merge_ast_files(files: Vec<ast::File>) -> ast::Package {
         let pkg = ast::Package {
@@ -302,7 +306,7 @@ mod tests {
         })
     }
 
-    fn parse_and_convert(files: Vec<&str>) -> Result<nodes::Package, String> {
+    fn parse_and_convert(files: Vec<&str>) -> Result<nodes::Package> {
         let mut ast_files = vec![];
         let mut ctr = 0;
         for f in files {
@@ -328,7 +332,7 @@ mod tests {
         let pkg = match parse_and_convert(files) {
             Ok(pkg) => pkg,
             Err(got_msg) => {
-                if !got_msg.contains(want_msg) {
+                if !got_msg.to_string().contains(want_msg) {
                     panic!(r#"expected error "{}" but got "{}""#, want_msg, got_msg);
                 } else {
                     return ();

@@ -5,6 +5,8 @@ use super::ast_generated::fbast;
 use crate::ast;
 use chrono::FixedOffset;
 
+use anyhow::{anyhow, Result};
+
 #[test]
 fn test_flatbuffers_ast() {
     use super::ast_generated::fbast::*;
@@ -123,7 +125,7 @@ fn test_serialize_all_flux_files() {
     }
 }
 
-fn serialize_and_compare(path: &str, flux_script: &str) -> Result<(), String> {
+fn serialize_and_compare(path: &str, flux_script: &str) -> Result<()> {
     use std::time::Instant;
     println!("{}", path);
     let now = Instant::now();
@@ -150,13 +152,13 @@ fn serialize_and_compare(path: &str, flux_script: &str) -> Result<(), String> {
     compare_ast_fb(&pkg, fb)
 }
 
-fn compare_ast_fb(ast_pkg: &ast::Package, fb: &[u8]) -> Result<(), String> {
+fn compare_ast_fb(ast_pkg: &ast::Package, fb: &[u8]) -> Result<()> {
     let fb_pkg = fbast::root_as_package(fb).unwrap();
     compare_pkg_fb(ast_pkg, &fb_pkg)?;
     Ok(())
 }
 
-fn compare_pkg_fb(ast_pkg: &ast::Package, fb_pkg: &fbast::Package) -> Result<(), String> {
+fn compare_pkg_fb(ast_pkg: &ast::Package, fb_pkg: &fbast::Package) -> Result<()> {
     compare_base(&ast_pkg.base, &fb_pkg.base_node())?;
     compare_strings("package path", &ast_pkg.path, &fb_pkg.path())?;
     compare_strings("package name", &ast_pkg.package, &fb_pkg.package())?;
@@ -177,7 +179,7 @@ fn compare_pkg_fb(ast_pkg: &ast::Package, fb_pkg: &fbast::Package) -> Result<(),
     }
 }
 
-fn compare_files(ast_file: &ast::File, fb_file: &fbast::File) -> Result<(), String> {
+fn compare_files(ast_file: &ast::File, fb_file: &fbast::File) -> Result<()> {
     compare_base(&ast_file.base, &fb_file.base_node())?;
     compare_strings("file name", &ast_file.name, &fb_file.name())?;
     compare_strings("metadata", &ast_file.metadata, &fb_file.metadata())?;
@@ -190,7 +192,7 @@ fn compare_files(ast_file: &ast::File, fb_file: &fbast::File) -> Result<(), Stri
 fn compare_stmt_vectors(
     ast_stmts: &Vec<ast::Statement>,
     fb_stmts: &Option<flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbast::WrappedStatement>>>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_stmts = unwrap_or_fail("statement list", fb_stmts)?;
     compare_vec_len(ast_stmts, fb_stmts)?;
     let mut i: usize = 0;
@@ -209,7 +211,7 @@ fn compare_stmts(
     ast_stmt: &ast::Statement,
     fb_stmt_ty: fbast::Statement,
     fb_stmt: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_tbl = unwrap_or_fail("statement", fb_stmt)?;
     match (ast_stmt, fb_stmt_ty) {
         (ast::Statement::Variable(ast_stmt), fbast::Statement::VariableAssignment) => {
@@ -253,7 +255,7 @@ fn compare_stmts(
             let fb_stmt = fbast::TestStatement::init_from_table(*fb_tbl);
             compare_base(&ast_stmt.base, &fb_stmt.base_node())?;
             match fb_stmt.assignment_type() == fbast::Assignment::VariableAssignment {
-                false => Err(String::from("expected var assignment in test stmt")),
+                false => Err(anyhow!("expected var assignment in test stmt")),
                 true => {
                     let fb_var_assign = &fb_stmt.assignment_as_variable_assignment();
                     compare_var_assign(&ast_stmt.assignment, fb_var_assign)
@@ -268,10 +270,11 @@ fn compare_stmts(
         (ast_stmt, fb_ty) => {
             let ast_stmt_ty = ast::walk::Node::from_stmt(ast_stmt);
             let fb_ty = fb_ty.variant_name().unwrap();
-            Err(String::from(format!(
+            Err(anyhow!(
                 "wrong statement type; ast = {}, fb = {}",
-                ast_stmt_ty, fb_ty
-            )))
+                ast_stmt_ty,
+                fb_ty
+            ))
         }
     }
 }
@@ -280,7 +283,7 @@ fn compare_assignments(
     ast_asgn: &ast::Assignment,
     fb_asgn_ty: fbast::Assignment,
     fb_asgn: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_tbl = unwrap_or_fail("assign", fb_asgn)?;
     match (ast_asgn, fb_asgn_ty) {
         (ast::Assignment::Variable(ast_va), fbast::Assignment::VariableAssignment) => {
@@ -293,14 +296,14 @@ fn compare_assignments(
             compare_member_expr(&ast_ma.member, &fb_ma.member())?;
             compare_exprs(&ast_ma.init, fb_ma.init__type(), &fb_ma.init_())
         }
-        _ => Err(String::from("assignment mismatch")),
+        _ => Err(anyhow!("assignment mismatch")),
     }
 }
 
 fn compare_var_assign(
     ast_va: &ast::VariableAssgn,
     fb_va: &Option<fbast::VariableAssignment>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_va = unwrap_or_fail("var assign", fb_va)?;
     compare_base(&ast_va.base, &fb_va.base_node())?;
     compare_ids(&ast_va.id, &fb_va.id())?;
@@ -311,7 +314,7 @@ fn compare_exprs(
     ast_expr: &ast::Expression,
     fb_expr_ty: fbast::Expression,
     fb_tbl: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_tbl = unwrap_or_fail("expr", fb_tbl)?;
     match (ast_expr, fb_expr_ty) {
         (ast::Expression::Integer(ast_int), fbast::Expression::IntegerLiteral) => {
@@ -319,11 +322,11 @@ fn compare_exprs(
             compare_base(&ast_expr.base(), &fb_int.base_node())?;
             match ast_int.value == fb_int.value() {
                 true => Ok(()),
-                false => Err(String::from(format!(
+                false => Err(anyhow!(
                     "int lit mismatch; ast = {}, fb = {}",
                     ast_int.value,
                     fb_int.value()
-                ))),
+                )),
             }
         }
         (ast::Expression::Float(ast_float), fbast::Expression::FloatLiteral) => {
@@ -331,11 +334,11 @@ fn compare_exprs(
             compare_base(&ast_float.base, &fb_float.base_node())?;
             match ast_float.value == fb_float.value() {
                 true => Ok(()),
-                false => Err(String::from(format!(
+                false => Err(anyhow!(
                     "float lit mismatch; ast = {}, fb = {}",
                     ast_float.value,
                     fb_float.value()
-                ))),
+                )),
             }
         }
         (ast::Expression::StringLit(ast_string), fbast::Expression::StringLiteral) => {
@@ -345,10 +348,11 @@ fn compare_exprs(
             let fb_value = unwrap_or_fail("string lit string", &fb_value)?;
             match &ast_string.value.as_str() == fb_value {
                 true => Ok(()),
-                false => Err(String::from(format!(
+                false => Err(anyhow!(
                     "string lit mismatch; ast = {}, fb = {}",
-                    ast_string.value, fb_value,
-                ))),
+                    ast_string.value,
+                    fb_value,
+                )),
             }
         }
         (ast::Expression::Duration(ast_dur), fbast::Expression::DurationLiteral) => {
@@ -365,10 +369,10 @@ fn compare_exprs(
                 let ast_d = &ast_dur.values[i];
                 let fb_d = fb_values.get(i);
                 if ast_d.magnitude != fb_d.magnitude() {
-                    return Err(String::from("invalid duration magnitude"));
+                    return Err(anyhow!("invalid duration magnitude"));
                 }
                 if ast_d.unit != fb_d.unit().variant_name().unwrap() {
-                    return Err(String::from("invalid duration time unit"));
+                    return Err(anyhow!("invalid duration time unit"));
                 }
                 i = i + 1;
             }
@@ -381,7 +385,7 @@ fn compare_exprs(
             );
             compare_base(&ast_dtl.base, &fb_dtl.base_node())?;
             if ast_dtl.value != dtl {
-                return Err(String::from("invalid DateTimeLiteral value"));
+                return Err(anyhow!("invalid DateTimeLiteral value"));
             }
             Ok(())
         }
@@ -438,7 +442,7 @@ fn compare_exprs(
                     compare_base(&ast_bl.base, &fb_bl.base_node())?;
                     compare_stmt_vectors(&ast_bl.body, &fb_bl.body())
                 }
-                _ => Err(String::from("function body mismatch")),
+                _ => Err(anyhow!("function body mismatch")),
             }
         }
         (ast::Expression::Logical(ast_le), fbast::Expression::LogicalExpression) => {
@@ -448,7 +452,7 @@ fn compare_exprs(
             compare_exprs(&ast_le.right, fb_le.right_type(), &fb_le.right())?;
             match ast_logical_operator(&fb_le.operator()) == ast_le.operator {
                 true => Ok(()),
-                false => Err(String::from("logical operator mismatch")),
+                false => Err(anyhow!("logical operator mismatch")),
             }
         }
         (ast::Expression::Object(ast_oe), fbast::Expression::ObjectExpression) => {
@@ -474,7 +478,7 @@ fn compare_exprs(
             compare_exprs(&ast_be.right, fb_be.right_type(), &fb_be.right())?;
             match ast_operator(fb_be.operator()) == ast_be.operator {
                 true => Ok(()),
-                false => Err(String::from("binary operator mismatch")),
+                false => Err(anyhow!("binary operator mismatch")),
             }
         }
         (ast::Expression::Unary(ast_ue), fbast::Expression::UnaryExpression) => {
@@ -483,7 +487,7 @@ fn compare_exprs(
             compare_exprs(&ast_ue.argument, fb_ue.argument_type(), &fb_ue.argument())?;
             match ast_operator(fb_ue.operator()) == ast_ue.operator {
                 true => Ok(()),
-                false => Err(String::from("unary operator mismatch")),
+                false => Err(anyhow!("unary operator mismatch")),
             }
         }
         (ast::Expression::PipeExpr(ast_pe), fbast::Expression::PipeExpression) => {
@@ -538,18 +542,16 @@ fn compare_exprs(
         (ast_expr, fb_expr_ty) => {
             let ast_expr_ty = ast::walk::Node::from_expr(ast_expr);
             let fb_ty = fb_expr_ty.variant_name().unwrap();
-            Err(String::from(format!(
+            Err(anyhow!(
                 "wrong expr type; ast = {}, fb = {}",
-                ast_expr_ty, fb_ty
-            )))
+                ast_expr_ty,
+                fb_ty
+            ))
         }
     }
 }
 
-fn compare_call_exprs(
-    ast_ce: &ast::CallExpr,
-    fb_ce: &Option<fbast::CallExpression>,
-) -> Result<(), String> {
+fn compare_call_exprs(ast_ce: &ast::CallExpr, fb_ce: &Option<fbast::CallExpression>) -> Result<()> {
     let fb_ce = unwrap_or_fail("call expr", fb_ce)?;
     compare_base(&ast_ce.base, &fb_ce.base_node())?;
     compare_exprs(&ast_ce.callee, fb_ce.callee_type(), &fb_ce.callee())?;
@@ -562,16 +564,16 @@ fn compare_call_exprs(
             fbast::Expression::ObjectExpression,
             &Some(fb_arg._tab),
         ),
-        (0, Some(_)) => Err(String::from("found call arg where not expected")),
-        (1, None) => Err(String::from("missing call arg")),
-        _ => Err(String::from("strange ast with more than one arg")),
+        (0, Some(_)) => Err(anyhow!("found call arg where not expected")),
+        (1, None) => Err(anyhow!("missing call arg")),
+        _ => Err(anyhow!("strange ast with more than one arg")),
     }
 }
 
 fn compare_member_expr(
     ast_me: &ast::MemberExpr,
     fb_me: &Option<fbast::MemberExpression>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_me = unwrap_or_fail("member expression", fb_me)?;
     compare_base(&ast_me.base, &fb_me.base_node())?;
     compare_exprs(&ast_me.object, fb_me.object_type(), &fb_me.object())?;
@@ -583,7 +585,7 @@ fn compare_string_expr_part_list(
     fb_parts: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbast::StringExpressionPart>>,
     >,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_parts = unwrap_or_fail("string expr parts", fb_parts)?;
     compare_vec_len(ast_parts, fb_parts)?;
     let mut i: usize = 0;
@@ -600,7 +602,7 @@ fn compare_string_expr_part_list(
 fn compare_string_expr_part(
     ast_part: &ast::StringExprPart,
     fb_part: &fbast::StringExpressionPart,
-) -> Result<(), String> {
+) -> Result<()> {
     match (
         ast_part,
         fb_part.text_value(),
@@ -611,25 +613,21 @@ fn compare_string_expr_part(
             compare_base(&ast_text.base, &fb_part.base_node())?;
             match ast_text.value.as_str() == fb_text {
                 true => Ok(()),
-                false => Err(String::from(
-                    "mismatch in value of text part of string expr",
-                )),
+                false => Err(anyhow!("mismatch in value of text part of string expr",)),
             }
         }
         (ast::StringExprPart::Interpolated(ast_ip), None, fb_expr_ty, fb_expr) => {
             compare_base(&ast_ip.base, &fb_part.base_node())?;
             compare_exprs(&ast_ip.expression, fb_expr_ty, &fb_expr)
         }
-        _ => Err(String::from(
-            "mismatch in string expr part text/interpolated",
-        )),
+        _ => Err(anyhow!("mismatch in string expr part text/interpolated",)),
     }
 }
 
 fn compare_property_list(
     ast_pl: &Vec<ast::Property>,
     fb_pl: &Option<flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbast::Property>>>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_pl = unwrap_or_fail("property list", fb_pl)?;
     compare_vec_len(ast_pl, fb_pl)?;
     let mut i: usize = 0;
@@ -643,7 +641,7 @@ fn compare_property_list(
     }
 }
 
-fn compare_property(ast_prop: &ast::Property, fb_prop: &fbast::Property) -> Result<(), String> {
+fn compare_property(ast_prop: &ast::Property, fb_prop: &fbast::Property) -> Result<()> {
     compare_base(&ast_prop.base, &fb_prop.base_node())?;
     // compare keys
     compare_property_key(&ast_prop.key, fb_prop.key_type(), &fb_prop.key())?;
@@ -656,7 +654,7 @@ fn compare_property(ast_prop: &ast::Property, fb_prop: &fbast::Property) -> Resu
             let fb_str = &fb_prop.key_as_string_literal();
             compare_string_lits(ast_str, fb_str)?;
         }
-        _ => return Err(String::from("property key mismatch")),
+        _ => return Err(anyhow!("property key mismatch")),
     }
     compare_opt_exprs(&ast_prop.value, fb_prop.value_type(), &fb_prop.value())
 }
@@ -665,7 +663,7 @@ fn compare_property_key(
     ast_key: &ast::PropertyKey,
     fb_key_ty: fbast::PropertyKey,
     fb_key: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_key = unwrap_or_fail("property key", &fb_key)?;
     match (&ast_key, fb_key_ty) {
         (ast::PropertyKey::Identifier(ast_id), fbast::PropertyKey::Identifier) => {
@@ -676,7 +674,7 @@ fn compare_property_key(
             let fb_str = &fbast::StringLiteral::init_from_table(*fb_key);
             compare_string_lits(ast_str, &Some(*fb_str))
         }
-        _ => Err(String::from("property key mismatch")),
+        _ => Err(anyhow!("property key mismatch")),
     }
 }
 
@@ -684,11 +682,11 @@ fn compare_opt_exprs(
     ast_expr: &Option<ast::Expression>,
     fb_expr_ty: fbast::Expression,
     fb_expr: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     match (ast_expr, fb_expr_ty) {
         (None, fbast::Expression::NONE) => Ok(()),
-        (None, _) => Err(String::from("expected no expr but got one")),
-        (Some(_), fbast::Expression::NONE) => Err(String::from("expected an expr but got none")),
+        (None, _) => Err(anyhow!("expected no expr but got one")),
+        (Some(_), fbast::Expression::NONE) => Err(anyhow!("expected an expr but got none")),
         (Some(ast_expr), _) => compare_exprs(ast_expr, fb_expr_ty, fb_expr),
     }
 }
@@ -698,7 +696,7 @@ fn compare_imports(
     fb_imports: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbast::ImportDeclaration>>,
     >,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_imports = unwrap_or_fail("imports", fb_imports)?;
     compare_vec_len(ast_imports, fb_imports)?;
     let mut i: usize = 0;
@@ -715,7 +713,7 @@ fn compare_imports(
 fn compare_import_decls(
     ast_id: &ast::ImportDeclaration,
     fb_id: &fbast::ImportDeclaration,
-) -> Result<(), String> {
+) -> Result<()> {
     compare_opt_ids(&ast_id.alias, &fb_id.as_())?;
     compare_string_lits(&ast_id.path, &fb_id.path())?;
     Ok(())
@@ -724,11 +722,11 @@ fn compare_import_decls(
 fn compare_package_clause(
     ast_pkg_clause: &Option<ast::PackageClause>,
     fb_pkg_clause: &Option<fbast::PackageClause>,
-) -> Result<(), String> {
+) -> Result<()> {
     let (ast_pkg_clause, fb_pkg_clause) = match (ast_pkg_clause, fb_pkg_clause) {
         (None, None) => return Ok(()),
-        (None, Some(_)) => return Err(String::from("found package clause where not expected")),
-        (Some(_), None) => return Err(String::from("missing package clause")),
+        (None, Some(_)) => return Err(anyhow!("found package clause where not expected")),
+        (Some(_), None) => return Err(anyhow!("missing package clause")),
         (Some(ac), Some(fc)) => (ac, fc),
     };
     compare_base(&ast_pkg_clause.base, &fb_pkg_clause.base_node())?;
@@ -736,7 +734,7 @@ fn compare_package_clause(
     Ok(())
 }
 
-fn compare_ids(ast_id: &ast::Identifier, fb_id: &Option<fbast::Identifier>) -> Result<(), String> {
+fn compare_ids(ast_id: &ast::Identifier, fb_id: &Option<fbast::Identifier>) -> Result<()> {
     let fb_id = unwrap_or_fail("id", fb_id)?;
     compare_base(&ast_id.base, &fb_id.base_node())?;
     compare_strings("id", &ast_id.name, &fb_id.name())?;
@@ -746,11 +744,11 @@ fn compare_ids(ast_id: &ast::Identifier, fb_id: &Option<fbast::Identifier>) -> R
 fn compare_with_ids(
     ast_id: &Option<ast::WithSource>,
     fb_id: &Option<fbast::Identifier>,
-) -> Result<(), String> {
+) -> Result<()> {
     match (ast_id, fb_id) {
         (None, None) => Ok(()),
-        (Some(_), None) => Err(String::from("compare opt ids, ast had one, fb did not")),
-        (None, Some(_)) => Err(String::from("compare opt ids, ast had none, fb did")),
+        (Some(_), None) => Err(anyhow!("compare opt ids, ast had one, fb did not")),
+        (None, Some(_)) => Err(anyhow!("compare opt ids, ast had none, fb did")),
         (Some(ast_id), fb_id) => compare_ids(&ast_id.source, fb_id),
     }
 }
@@ -758,59 +756,59 @@ fn compare_with_ids(
 fn compare_opt_ids(
     ast_id: &Option<ast::Identifier>,
     fb_id: &Option<fbast::Identifier>,
-) -> Result<(), String> {
+) -> Result<()> {
     match (ast_id, fb_id) {
         (None, None) => Ok(()),
-        (Some(_), None) => Err(String::from("compare opt ids, ast had one, fb did not")),
-        (None, Some(_)) => Err(String::from("compare opt ids, ast had none, fb did")),
+        (Some(_), None) => Err(anyhow!("compare opt ids, ast had one, fb did not")),
+        (None, Some(_)) => Err(anyhow!("compare opt ids, ast had none, fb did")),
         (Some(ast_id), fb_id) => compare_ids(ast_id, fb_id),
     }
 }
 
-fn compare_vec_len<T, U>(ast_vec: &Vec<T>, fb_vec: &flatbuffers::Vector<U>) -> Result<(), String> {
+fn compare_vec_len<T, U>(ast_vec: &Vec<T>, fb_vec: &flatbuffers::Vector<U>) -> Result<()> {
     match ast_vec.len() == fb_vec.len() {
         true => Ok(()),
-        false => Err(String::from(format!(
+        false => Err(anyhow!(
             "vectors have different lengths: ast = {}, fb = {}",
             ast_vec.len(),
             fb_vec.len(),
-        ))),
+        )),
     }
 }
 
-fn unwrap_or_fail<'a, T>(msg: &str, o: &'a Option<T>) -> Result<&'a T, String> {
+fn unwrap_or_fail<'a, T>(msg: &str, o: &'a Option<T>) -> Result<&'a T> {
     match o {
-        None => Err(String::from(format!("missing {}", msg))),
+        None => Err(anyhow!("missing {}", msg)),
         Some(t) => Ok(t),
     }
 }
 
-fn compare_strings(msg: &str, ast_str: &String, fb_str: &Option<&str>) -> Result<(), String> {
+fn compare_strings(msg: &str, ast_str: &String, fb_str: &Option<&str>) -> Result<()> {
     let fb_str = unwrap_or_fail("string", fb_str)?;
     if ast_str.as_str() != *fb_str {
-        return Err(format!(
+        return Err(anyhow!(
             "{} mismatch: ast: {}, fb: {}",
-            msg, ast_str, fb_str
+            msg,
+            ast_str,
+            fb_str
         ));
     };
     Ok(())
 }
 
-fn compare_opt_strings(
-    msg: &str,
-    ast_str: &Option<String>,
-    fb_str: &Option<&str>,
-) -> Result<(), String> {
+fn compare_opt_strings(msg: &str, ast_str: &Option<String>, fb_str: &Option<&str>) -> Result<()> {
     match (ast_str, fb_str) {
         (None, None) => return Ok(()),
-        (None, Some(s)) => Err(String::from(format!(
+        (None, Some(s)) => Err(anyhow!(
             "comparing opt string for {}: ast had none, fb had {}",
-            msg, s,
-        ))),
-        (Some(s), None) => Err(String::from(format!(
+            msg,
+            s,
+        )),
+        (Some(s), None) => Err(anyhow!(
             "comparing opt string for {}: ast had {}, fb had none",
-            msg, s,
-        ))),
+            msg,
+            s,
+        )),
         (Some(ast_str), fb_str) => compare_strings(msg, ast_str, fb_str),
     }
 }
@@ -818,14 +816,14 @@ fn compare_opt_strings(
 fn compare_string_lits(
     ast_lit: &ast::StringLit,
     fb_lit: &Option<fbast::StringLiteral>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_lit = unwrap_or_fail("string literal", fb_lit)?;
     compare_base(&ast_lit.base, &fb_lit.base_node())?;
     compare_strings("string literal value", &ast_lit.value, &fb_lit.value())?;
     Ok(())
 }
 
-fn compare_base(ast_base: &ast::BaseNode, fb_base: &Option<fbast::BaseNode>) -> Result<(), String> {
+fn compare_base(ast_base: &ast::BaseNode, fb_base: &Option<fbast::BaseNode>) -> Result<()> {
     let fb_base = unwrap_or_fail("base node", fb_base)?;
     compare_loc(&ast_base.location, &fb_base.loc())?;
     compare_base_errs(&ast_base.errors, &fb_base.errors())?;
@@ -836,7 +834,7 @@ fn compare_base(ast_base: &ast::BaseNode, fb_base: &Option<fbast::BaseNode>) -> 
 fn compare_loc(
     ast_loc: &ast::SourceLocation,
     fb_loc: &Option<fbast::SourceLocation>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_loc = unwrap_or_fail("source location", fb_loc)?;
     compare_opt_strings("source location file", &ast_loc.file, &fb_loc.file())?;
     compare_pos(&ast_loc.start, &fb_loc.start())?;
@@ -845,21 +843,21 @@ fn compare_loc(
     Ok(())
 }
 
-fn compare_pos(ast_pos: &ast::Position, fb_pos: &Option<&fbast::Position>) -> Result<(), String> {
+fn compare_pos(ast_pos: &ast::Position, fb_pos: &Option<&fbast::Position>) -> Result<()> {
     let fb_pos = unwrap_or_fail("position", fb_pos)?;
     if ast_pos.line != fb_pos.line() as u32 {
-        return Err(String::from(format!(
+        return Err(anyhow!(
             "ast line position is {}, fb is {}",
             ast_pos.line,
             fb_pos.line()
-        )));
+        ));
     }
     if ast_pos.column != fb_pos.column() as u32 {
-        return Err(String::from(format!(
+        return Err(anyhow!(
             "ast column position is {}, fb is {}",
             ast_pos.line,
             fb_pos.line()
-        )));
+        ));
     }
     Ok(())
 }
@@ -867,7 +865,7 @@ fn compare_pos(ast_pos: &ast::Position, fb_pos: &Option<&fbast::Position>) -> Re
 fn compare_base_errs(
     ast_errs: &Vec<String>,
     fb_errs: &Option<flatbuffers::Vector<flatbuffers::ForwardsUOffset<&str>>>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_errs = unwrap_or_fail("base errors", fb_errs)?;
     compare_vec_len(ast_errs, fb_errs)?;
     let mut i: usize = 0;
@@ -886,7 +884,7 @@ fn compare_base_errs(
 fn compare_base_cmts(
     ast_cmts: &Vec<ast::Comment>,
     fb_cmts: &Option<flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbast::Comment>>>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_cmts = unwrap_or_fail("base comments", fb_cmts)?;
     compare_vec_len(ast_cmts, fb_cmts)?;
     let mut i: usize = 0;

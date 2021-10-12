@@ -28,65 +28,19 @@ pub mod parser;
 pub mod scanner;
 pub mod semantic;
 
-use std::error;
-use std::hash::BuildHasherDefault;
+use anyhow::{bail, Result};
 
-use derive_more::Display;
 use fnv::FnvHasher;
+use std::hash::BuildHasherDefault;
 
 pub use ast::DEFAULT_PACKAGE_NAME;
 
 type DefaultHasher = BuildHasherDefault<FnvHasher>;
 
-/// An error that can occur due to problems in AST generation or semantic
-/// analysis.
-#[derive(Debug, Display, Clone)]
-#[display(fmt = "{}", msg)]
-pub struct Error {
-    /// Contents of the error message.
-    pub msg: String,
-}
-
-impl error::Error for Error {
-    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
-        None
-    }
-}
-
-impl From<String> for Error {
-    fn from(msg: String) -> Self {
-        Error { msg }
-    }
-}
-
-impl From<&str> for Error {
-    fn from(msg: &str) -> Self {
-        Error {
-            msg: String::from(msg),
-        }
-    }
-}
-
-impl From<semantic::nodes::Error> for Error {
-    fn from(sn_err: semantic::nodes::Error) -> Self {
-        Error {
-            msg: sn_err.to_string(),
-        }
-    }
-}
-
-impl From<semantic::check::Error> for Error {
-    fn from(err: semantic::check::Error) -> Self {
-        Error {
-            msg: format!("{}", err),
-        }
-    }
-}
-
 /// merge_packages takes an input package and an output package, checks that the package
 /// clauses match and merges the files from the input package into the output package. If
 /// package clauses fail validation then an option with an Error is returned.
-pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> Option<Error> {
+pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> Result<()> {
     let out_pkg_name = if let Some(pc) = &out_pkg.files[0].package {
         &pc.name.name
     } else {
@@ -99,22 +53,182 @@ pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> 
             Some(pc) => {
                 let in_pkg_name = &pc.name.name;
                 if in_pkg_name != out_pkg_name {
-                    return Some(Error::from(format!(
+                    bail!(
                         r#"error at {}: file is in package "{}", but other files are in package "{}""#,
-                        pc.base.location, in_pkg_name, out_pkg_name
-                    )));
+                        pc.base.location,
+                        in_pkg_name,
+                        out_pkg_name
+                    );
                 }
             }
             None => {
                 if out_pkg_name != DEFAULT_PACKAGE_NAME {
-                    return Some(Error::from(format!(
+                    bail!(
                         r#"error at {}: file is in default package "{}", but other files are in package "{}""#,
-                        file.base.location, DEFAULT_PACKAGE_NAME, out_pkg_name
-                    )));
+                        file.base.location,
+                        DEFAULT_PACKAGE_NAME,
+                        out_pkg_name
+                    );
                 }
             }
         };
     }
     out_pkg.files.append(&mut in_pkg.files);
-    None
+    Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::merge_packages;
+    use crate::ast;
+
+    #[test]
+    fn ok_merge_multi_file() {
+        let in_script = "package foo\na = 1\n";
+        let out_script = "package foo\nb = 2\n";
+
+        let in_file = crate::parser::parse_string("test", in_script);
+        let out_file = crate::parser::parse_string("test", out_script);
+        let mut in_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![in_file.clone()],
+        };
+        let mut out_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![out_file.clone()],
+        };
+        merge_packages(&mut out_pkg, &mut in_pkg).unwrap();
+        let got = out_pkg.files;
+        let want = vec![out_file, in_file];
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn ok_merge_one_default_pkg() {
+        // Make sure we can merge one file with default "main"
+        // and on explicit
+        let has_clause_script = "package main\nx = 32";
+        let no_clause_script = "y = 32";
+        let has_clause_file = crate::parser::parse_string("has_clause.flux", has_clause_script);
+        let no_clause_file = crate::parser::parse_string("no_clause.flux", no_clause_script);
+        {
+            let mut out_pkg: ast::Package = has_clause_file.clone().into();
+            let mut in_pkg: ast::Package = no_clause_file.clone().into();
+            merge_packages(&mut out_pkg, &mut in_pkg).unwrap();
+            let got = out_pkg.files;
+            let want = vec![has_clause_file.clone(), no_clause_file.clone()];
+            assert_eq!(want, got);
+        }
+        {
+            // Same as previous test, but reverse order
+            let mut out_pkg: ast::Package = no_clause_file.clone().into();
+            let mut in_pkg: ast::Package = has_clause_file.clone().into();
+            merge_packages(&mut out_pkg, &mut in_pkg).unwrap();
+            let got = out_pkg.files;
+            let want = vec![no_clause_file.clone(), has_clause_file.clone()];
+            assert_eq!(want, got);
+        }
+    }
+
+    #[test]
+    fn ok_no_in_pkg() {
+        let out_script = "package foo\nb = 2\n";
+
+        let out_file = crate::parser::parse_string("test", out_script);
+        let mut in_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![],
+        };
+        let mut out_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![out_file.clone()],
+        };
+        merge_packages(&mut out_pkg, &mut in_pkg).unwrap();
+        let got = out_pkg.files;
+        let want = vec![out_file];
+        assert_eq!(want, got);
+    }
+
+    #[test]
+    fn err_no_out_pkg_clause() {
+        let in_script = "package foo\na = 1\n";
+        let out_script = "";
+
+        let in_file = crate::parser::parse_string("test_in.flux", in_script);
+        let out_file = crate::parser::parse_string("test_out.flux", out_script);
+        let mut in_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![in_file.clone()],
+        };
+        let mut out_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![out_file.clone()],
+        };
+        let got_err = merge_packages(&mut out_pkg, &mut in_pkg)
+            .unwrap_err()
+            .to_string();
+        let want_err = r#"error at test_in.flux@1:1-1:12: file is in package "foo", but other files are in package "main""#;
+        assert_eq!(got_err.to_string(), want_err);
+    }
+
+    #[test]
+    fn err_no_in_pkg_clause() {
+        let in_script = "a = 1000\n";
+        let out_script = "package foo\nb = 100\n";
+
+        let in_file = crate::parser::parse_string("test_in.flux", in_script);
+        let out_file = crate::parser::parse_string("test_out.flux", out_script);
+        let mut in_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![in_file.clone()],
+        };
+        let mut out_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![out_file.clone()],
+        };
+        let got_err = merge_packages(&mut out_pkg, &mut in_pkg)
+            .unwrap_err()
+            .to_string();
+        let want_err = r#"error at test_in.flux@1:1-1:9: file is in default package "main", but other files are in package "foo""#;
+        assert_eq!(got_err.to_string(), want_err);
+    }
+
+    #[test]
+    fn ok_no_pkg_clauses() {
+        let in_script = "a = 100\n";
+        let out_script = "b = a * a\n";
+        let in_file = crate::parser::parse_string("test", in_script);
+        let out_file = crate::parser::parse_string("test", out_script);
+        let mut in_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![in_file.clone()],
+        };
+        let mut out_pkg = ast::Package {
+            base: Default::default(),
+            path: "./test".to_string(),
+            package: "foo".to_string(),
+            files: vec![out_file.clone()],
+        };
+        merge_packages(&mut out_pkg, &mut in_pkg).unwrap();
+        assert_eq!(2, out_pkg.files.len());
+    }
+}
+

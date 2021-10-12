@@ -11,6 +11,7 @@ use std::rc::Rc;
 
 use crate::ast;
 use crate::ast::walk;
+use anyhow::{anyhow, bail, Error, Result};
 use ast_generated::fbast;
 use chrono::Offset;
 use flatbuffers::{UnionWIPOffset, WIPOffset};
@@ -18,7 +19,7 @@ use flatbuffers::{UnionWIPOffset, WIPOffset};
 /// Accept the given AST package and return a FlatBuffers serialization of it as a Vec<u8>.
 /// The FlatBuffers builder starts from the end of a buffer towards the beginning, so we must
 /// also return a `usize` value which is the number of unused bytes at the start of the buffer.
-pub fn serialize(ast_pkg: &ast::Package) -> Result<(Vec<u8>, usize), String> {
+pub fn serialize(ast_pkg: &ast::Package) -> Result<(Vec<u8>, usize)> {
     // What would a good starting capacity be?
     let v = new_serializing_visitor_with_capacity(1024);
     walk::walk(&v, walk::Node::Package(ast_pkg));
@@ -46,17 +47,17 @@ struct SerializingVisitor<'a> {
 }
 
 impl<'a> SerializingVisitor<'a> {
-    fn finish(self) -> Result<(Vec<u8>, usize), String> {
+    fn finish(self) -> Result<(Vec<u8>, usize)> {
         let v = match Rc::try_unwrap(self.inner) {
             Ok(sv) => sv,
-            Err(_) => return Err(String::from("error unwrapping rc")),
+            Err(_) => bail!("error unwrapping rc"),
         };
         let mut v = v.into_inner();
         if let Some(e) = v.err {
             return Err(e);
         };
         let pkg = match v.package {
-            None => return Err(String::from("missing serialized package")),
+            None => bail!("missing serialized package"),
             Some(pkg) => pkg,
         };
         v.builder.finish(pkg, None);
@@ -321,7 +322,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     ast::FunctionBody::Block(_) => {
                         let block = match v.blocks.pop() {
                             None => {
-                                v.err = Some(String::from("pop empty block stack"));
+                                v.err = Some(anyhow!("pop empty block stack"));
                                 return;
                             }
                             Some(b) => b,
@@ -467,7 +468,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     0 => None,
                     1 => v.pop_expr_with_kind(fbast::Expression::ObjectExpression),
                     _ => {
-                        v.err = Some(String::from("found call with more than one argument"));
+                        v.err = Some(anyhow!("found call with more than one argument"));
                         return;
                     }
                 };
@@ -625,7 +626,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     ast::Assignment::Variable(_) => v.pop_assignment_stmt(),
                     ast::Assignment::Member(_) => match v.member_assign {
                         None => {
-                            v.err = Some(String::from("expected member assignment"));
+                            v.err = Some(anyhow!("expected member assignment"));
                             return;
                         }
                         ma => (ma, fbast::Assignment::MemberAssignment),
@@ -788,7 +789,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
 
 struct SerializingVisitorState<'a> {
     // Any error that occurred during serialization, returned by the visitor's finish method.
-    err: Option<String>,
+    err: Option<Error>,
 
     builder: flatbuffers::FlatBufferBuilder<'a>,
 
@@ -826,7 +827,7 @@ impl<'a> SerializingVisitorState<'a> {
     fn pop_expr(&mut self) -> (Option<WIPOffset<UnionWIPOffset>>, fbast::Expression) {
         match self.expr_stack.pop() {
             None => {
-                self.err = Some(String::from("pop empty expr stack"));
+                self.err = Some(anyhow!("pop empty expr stack"));
                 (None, fbast::Expression::NONE)
             }
             Some((o, e)) => (Some(o), e),
@@ -839,7 +840,7 @@ impl<'a> SerializingVisitorState<'a> {
                 if e == kind {
                     Some(WIPOffset::new(wipo.value()))
                 } else {
-                    self.err = Some(format!(
+                    self.err = Some(anyhow!(
                         "expected {} on expr stack, got {}",
                         kind.variant_name().unwrap_or(UNKNOWNVARIANTNAME),
                         e.variant_name().unwrap_or(UNKNOWNVARIANTNAME)
@@ -848,7 +849,7 @@ impl<'a> SerializingVisitorState<'a> {
                 }
             }
             None => {
-                self.err = Some(String::from("pop empty expr stack"));
+                self.err = Some(anyhow!("pop empty expr stack"));
                 None
             }
         }
@@ -899,9 +900,7 @@ impl<'a> SerializingVisitorState<'a> {
                 (offset, fbast::PropertyKey::StringLiteral)
             }
             _ => {
-                self.err = Some(String::from(
-                    "unexpected expression on stack for property key",
-                ));
+                self.err = Some(anyhow!("unexpected expression on stack for property key",));
                 (None, fbast::PropertyKey::NONE)
             }
         }
@@ -913,11 +912,11 @@ impl<'a> SerializingVisitorState<'a> {
                 (Some(va), fbast::Assignment::VariableAssignment)
             }
             None => {
-                self.err = Some(String::from("pop empty stmt stack; expected assignment"));
+                self.err = Some(anyhow!("pop empty stmt stack; expected assignment"));
                 (None, fbast::Assignment::NONE)
             }
             Some(_) => {
-                self.err = Some(String::from("expected assignment on top of stmt stack"));
+                self.err = Some(anyhow!("expected assignment on top of stmt stack"));
                 (None, fbast::Assignment::NONE)
             }
         }
@@ -1044,7 +1043,7 @@ fn fb_logical_operator(lo: &ast::LogicalOperator) -> fbast::LogicalOperator {
     }
 }
 
-fn fb_duration(d: &str) -> Result<fbast::TimeUnit, String> {
+fn fb_duration(d: &str) -> Result<fbast::TimeUnit> {
     match d {
         "y" => Ok(fbast::TimeUnit::y),
         "mo" => Ok(fbast::TimeUnit::mo),
@@ -1056,7 +1055,7 @@ fn fb_duration(d: &str) -> Result<fbast::TimeUnit, String> {
         "ms" => Ok(fbast::TimeUnit::ms),
         "us" => Ok(fbast::TimeUnit::us),
         "ns" => Ok(fbast::TimeUnit::ns),
-        s => Err(format!("unknown time unit {}", s)),
+        s => Err(anyhow!("unknown time unit {}", s)),
     }
 }
 

@@ -8,6 +8,8 @@ use crate::semantic::convert;
 use crate::semantic::fresh;
 use chrono::FixedOffset;
 
+use anyhow::{anyhow, Result};
+
 #[test]
 fn test_serialize() {
     let f = vec![
@@ -62,7 +64,7 @@ e = exists o.red
 tables |> f()
 fncall = id(v: 20)
 fncall2 = foo(v: 20, w: "bar")
-v = if true then 70.0 else 140.0 
+v = if true then 70.0 else 140.0
 ans = "the answer is ${v}"
 paren = (1)
 
@@ -106,7 +108,7 @@ re !~ /foo/
     }
 }
 
-fn compare_semantic_fb(semantic_pkg: &semantic::nodes::Package, fb: &[u8]) -> Result<(), String> {
+fn compare_semantic_fb(semantic_pkg: &semantic::nodes::Package, fb: &[u8]) -> Result<()> {
     let fb_pkg = fbsemantic::root_as_package(fb).unwrap();
     compare_pkg_fb(semantic_pkg, &fb_pkg)?;
     Ok(())
@@ -115,7 +117,7 @@ fn compare_semantic_fb(semantic_pkg: &semantic::nodes::Package, fb: &[u8]) -> Re
 fn compare_pkg_fb(
     semantic_pkg: &semantic::nodes::Package,
     fb_pkg: &fbsemantic::Package,
-) -> Result<(), String> {
+) -> Result<()> {
     compare_loc(&semantic_pkg.loc, &fb_pkg.loc())?;
     compare_strings("package name", &semantic_pkg.package, &fb_pkg.package())?;
 
@@ -135,10 +137,7 @@ fn compare_pkg_fb(
     }
 }
 
-fn compare_files(
-    semantic_file: &semantic::nodes::File,
-    fb_file: &fbsemantic::File,
-) -> Result<(), String> {
+fn compare_files(semantic_file: &semantic::nodes::File, fb_file: &fbsemantic::File) -> Result<()> {
     compare_loc(&semantic_file.loc, &fb_file.loc())?;
     let sem_file_ref = &semantic_file.package.as_ref();
     if let Some(package) = sem_file_ref {
@@ -157,7 +156,7 @@ fn compare_stmt_vectors(
     fb_stmts: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::WrappedStatement>>,
     >,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_stmts = unwrap_or_fail("statement list", fb_stmts)?;
     compare_vec_len(semantic_stmts, fb_stmts)?;
     let mut i: usize = 0;
@@ -176,7 +175,7 @@ fn compare_stmts(
     semantic_stmt: &semantic::nodes::Statement,
     fb_stmt_ty: fbsemantic::Statement,
     fb_stmt: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_tbl = unwrap_or_fail("statement", fb_stmt)?;
     match (semantic_stmt, fb_stmt_ty) {
         (
@@ -238,10 +237,11 @@ fn compare_stmts(
         (semantic_stmt, fb_ty) => {
             let semantic_stmt_ty = semantic::walk::Node::from_stmt(semantic_stmt);
             let fb_ty = fb_ty.variant_name().unwrap();
-            Err(String::from(format!(
+            Err(anyhow!(
                 "wrong statement type; semantic = {}, fb = {}",
-                semantic_stmt_ty, fb_ty
-            )))
+                semantic_stmt_ty,
+                fb_ty
+            ))
         }
     }
 }
@@ -257,7 +257,7 @@ fn translate_block_to_stmt(sem_block: &semantic::nodes::Block) -> semantic::node
 fn compare_ids(
     semantic_id: &semantic::nodes::Identifier,
     fb_id: &Option<fbsemantic::Identifier>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_id = unwrap_or_fail("id", fb_id)?;
     compare_loc(&semantic_id.loc, &fb_id.loc())?;
     compare_strings("id", &semantic_id.name, &fb_id.name())?;
@@ -267,7 +267,7 @@ fn compare_ids(
 fn compare_id_exprs(
     semantic_id: &semantic::nodes::IdentifierExpr,
     fb_id: &Option<fbsemantic::IdentifierExpression>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_id = unwrap_or_fail("id", fb_id)?;
     compare_loc(&semantic_id.loc, &fb_id.loc())?;
     compare_strings("id", &semantic_id.name, &fb_id.name())?;
@@ -277,13 +277,11 @@ fn compare_id_exprs(
 fn compare_opt_ids(
     semantic_id: &Option<semantic::nodes::Identifier>,
     fb_id: &Option<fbsemantic::Identifier>,
-) -> Result<(), String> {
+) -> Result<()> {
     match (semantic_id, fb_id) {
         (None, None) => Ok(()),
-        (Some(_), None) => Err(String::from(
-            "compare opt ids, semantic had one, fb did not",
-        )),
-        (None, Some(_)) => Err(String::from("compare opt ids, semantic had none, fb did")),
+        (Some(_), None) => Err(anyhow!("compare opt ids, semantic had one, fb did not",)),
+        (None, Some(_)) => Err(anyhow!("compare opt ids, semantic had none, fb did")),
         (Some(semantic_id), fb_id) => compare_ids(semantic_id, fb_id),
     }
 }
@@ -291,13 +289,11 @@ fn compare_opt_ids(
 fn compare_opt_expr_ids(
     semantic_id: &Option<semantic::nodes::IdentifierExpr>,
     fb_id: &Option<fbsemantic::IdentifierExpression>,
-) -> Result<(), String> {
+) -> Result<()> {
     match (semantic_id, fb_id) {
         (None, None) => Ok(()),
-        (Some(_), None) => Err(String::from(
-            "compare opt ids, semantic had one, fb did not",
-        )),
-        (None, Some(_)) => Err(String::from("compare opt ids, semantic had none, fb did")),
+        (Some(_), None) => Err(anyhow!("compare opt ids, semantic had one, fb did not",)),
+        (None, Some(_)) => Err(anyhow!("compare opt ids, semantic had none, fb did")),
         (Some(semantic_id), fb_id) => compare_id_exprs(semantic_id, fb_id),
     }
 }
@@ -306,7 +302,7 @@ fn compare_assignments(
     semantic_asgn: &semantic::nodes::Assignment,
     fb_asgn_ty: fbsemantic::Assignment,
     fb_asgn: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_tbl = unwrap_or_fail("assign", fb_asgn)?;
     match (semantic_asgn, fb_asgn_ty) {
         (
@@ -325,14 +321,14 @@ fn compare_assignments(
             compare_member_expr(&semantic_ma.member, &fb_ma.member())?;
             compare_exprs(&semantic_ma.init, fb_ma.init__type(), &fb_ma.init_())
         }
-        _ => Err(String::from("assignment mismatch")),
+        _ => Err(anyhow!("assignment mismatch")),
     }
 }
 
 fn compare_member_expr(
     semantic_me: &semantic::nodes::MemberExpr,
     fb_me: &Option<fbsemantic::MemberExpression>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_me = unwrap_or_fail("member expression", fb_me)?;
     compare_loc(&semantic_me.loc, &fb_me.loc())?;
     compare_exprs(&semantic_me.object, fb_me.object_type(), &fb_me.object())
@@ -341,7 +337,7 @@ fn compare_member_expr(
 fn compare_var_assign(
     semantic_va: &semantic::nodes::VariableAssgn,
     fb_va: &Option<fbsemantic::NativeVariableAssignment>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_va = unwrap_or_fail("var assign", fb_va)?;
     compare_loc(&semantic_va.loc, &fb_va.loc())?;
     compare_ids(&semantic_va.id, &fb_va.identifier())?;
@@ -352,7 +348,7 @@ fn compare_exprs(
     semantic_expr: &semantic::nodes::Expression,
     fb_expr_ty: fbsemantic::Expression,
     fb_tbl: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_tbl = unwrap_or_fail("expr", fb_tbl)?;
     match (semantic_expr, fb_expr_ty) {
         (
@@ -363,11 +359,11 @@ fn compare_exprs(
             compare_loc(&semantic_expr.loc(), &fb_int.loc())?;
             match semantic_int.value == fb_int.value() {
                 true => Ok(()),
-                false => Err(String::from(format!(
+                false => Err(anyhow!(
                     "int lit mismatch; semantic = {}, fb = {}",
                     semantic_int.value,
                     fb_int.value()
-                ))),
+                )),
             }
         }
         (
@@ -378,11 +374,11 @@ fn compare_exprs(
             compare_loc(&semantic_float.loc, &fb_float.loc())?;
             match semantic_float.value == fb_float.value() {
                 true => Ok(()),
-                false => Err(String::from(format!(
+                false => Err(anyhow!(
                     "float lit mismatch; semantic = {}, fb = {}",
                     semantic_float.value,
                     fb_float.value()
-                ))),
+                )),
             }
         }
         (
@@ -395,10 +391,11 @@ fn compare_exprs(
             let fb_value = unwrap_or_fail("string lit string", &fb_value)?;
             match &semantic_string.value.as_str() == fb_value {
                 true => Ok(()),
-                false => Err(String::from(format!(
+                false => Err(anyhow!(
                     "string lit mismatch; semantic = {}, fb = {}",
-                    semantic_string.value, fb_value,
-                ))),
+                    semantic_string.value,
+                    fb_value,
+                )),
             }
         }
         (
@@ -425,7 +422,7 @@ fn compare_exprs(
             );
             compare_loc(&semantic_dtl.loc, &fb_dtl.loc())?;
             if semantic_dtl.value != dtl {
-                return Err(String::from("invalid DateTimeLiteral value"));
+                return Err(anyhow!("invalid DateTimeLiteral value"));
             }
             Ok(())
         }
@@ -510,7 +507,7 @@ fn compare_exprs(
             compare_exprs(&semantic_le.right, fb_le.right_type(), &fb_le.right())?;
             match semantic_logical_operator(&fb_le.operator()) == semantic_le.operator {
                 true => Ok(()),
-                false => Err(String::from("logical operator mismatch")),
+                false => Err(anyhow!("logical operator mismatch")),
             }
         }
         (
@@ -548,7 +545,7 @@ fn compare_exprs(
             compare_exprs(&semantic_be.right, fb_be.right_type(), &fb_be.right())?;
             match semantic_operator(fb_be.operator()) == semantic_be.operator {
                 true => Ok(()),
-                false => Err(String::from("binary operator mismatch")),
+                false => Err(anyhow!("binary operator mismatch")),
             }
         }
         (
@@ -564,7 +561,7 @@ fn compare_exprs(
             )?;
             match semantic_operator(fb_ue.operator()) == semantic_ue.operator {
                 true => Ok(()),
-                false => Err(String::from("unary operator mismatch")),
+                false => Err(anyhow!("unary operator mismatch")),
             }
         }
         (
@@ -603,12 +600,12 @@ fn compare_exprs(
         (semantic_expr, fb_expr_ty) => {
             let semantic_expr_ty = semantic::walk::Node::from_expr(semantic_expr);
             let fb_ty = fb_expr_ty.variant_name().unwrap();
-            Err(String::from(format!(
+            Err(anyhow!(
                 "wrong expr type; semantic = {} {}, fb = {}",
                 semantic_expr_ty,
                 semantic_expr_ty.loc(),
                 fb_ty,
-            )))
+            ))
         }
     }
 }
@@ -616,29 +613,29 @@ fn compare_exprs(
 fn compare_duration(
     semantic_dur: &semantic::nodes::Duration,
     fb_dur: &fbsemantic::Duration,
-) -> Result<(), String> {
+) -> Result<()> {
     if semantic_dur.months != fb_dur.months() {
-        return Err(String::from(format!(
+        return Err(anyhow!(
             "duration months do not match; semantic = {}, fb = {}",
             semantic_dur.months,
-            fb_dur.months()
-        )));
+            fb_dur.months(),
+        ));
     }
 
     if semantic_dur.nanoseconds != fb_dur.nanoseconds() {
-        return Err(String::from(format!(
+        return Err(anyhow!(
             "duration nanoseconds do not match; semantic = {}, fb = {}",
             semantic_dur.nanoseconds,
             fb_dur.nanoseconds()
-        )));
+        ));
     }
 
     if semantic_dur.negative != fb_dur.negative() {
-        return Err(String::from(format!(
+        return Err(anyhow!(
             "durations are not the same sign; semantic is negative = {}, fb is negative = {}",
             semantic_dur.negative,
             fb_dur.negative()
-        )));
+        ));
     }
     Ok(())
 }
@@ -646,7 +643,7 @@ fn compare_duration(
 fn compare_property_list(
     semantic_pl: &Vec<semantic::nodes::Property>,
     fb_pl: &Option<flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::Property>>>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_pl = unwrap_or_fail("property list", fb_pl)?;
     compare_vec_len(semantic_pl, fb_pl)?;
     let mut i: usize = 0;
@@ -665,7 +662,7 @@ fn compare_params(
     fb_params: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::FunctionParameter>>,
     >,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_params = unwrap_or_fail("params", fb_params)?;
     compare_vec_len(semantic_params, fb_params)?;
     let mut i: usize = 0;
@@ -682,10 +679,10 @@ fn compare_params(
 fn compare_param(
     semantic_param: &semantic::nodes::FunctionParameter,
     fb_param: &fbsemantic::FunctionParameter,
-) -> Result<(), String> {
+) -> Result<()> {
     compare_loc(&semantic_param.loc, &fb_param.loc())?;
     if semantic_param.is_pipe != fb_param.is_pipe() {
-        return Err(format!(
+        return Err(anyhow!(
             "mismatch: semantic: {}, fb: {}",
             semantic_param.is_pipe,
             fb_param.is_pipe()
@@ -701,7 +698,7 @@ fn compare_param(
 fn compare_property(
     semantic_prop: &semantic::nodes::Property,
     fb_prop: &fbsemantic::Property,
-) -> Result<(), String> {
+) -> Result<()> {
     compare_loc(&semantic_prop.loc, &fb_prop.loc())?;
     compare_ids(&semantic_prop.key, &fb_prop.key());
     let expr_prop = &semantic_prop.value;
@@ -711,11 +708,11 @@ fn compare_property(
 fn compare_package_clause(
     semantic_pkg_clause: &Option<semantic::nodes::PackageClause>,
     fb_pkg_clause: &Option<fbsemantic::PackageClause>,
-) -> Result<(), String> {
+) -> Result<()> {
     let (semantic_pkg_clause, fb_pkg_clause) = match (semantic_pkg_clause, fb_pkg_clause) {
         (None, None) => return Ok(()),
-        (None, Some(_)) => return Err(String::from("found package clause where not expected")),
-        (Some(_), None) => return Err(String::from("missing package clause")),
+        (None, Some(_)) => return Err(anyhow!("found package clause where not expected")),
+        (Some(_), None) => return Err(anyhow!("missing package clause")),
         (Some(ac), Some(fc)) => (ac, fc),
     };
     compare_loc(&semantic_pkg_clause.loc, &fb_pkg_clause.loc())?;
@@ -728,7 +725,7 @@ fn compare_imports(
     fb_imports: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::ImportDeclaration>>,
     >,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_imports = unwrap_or_fail("imports", fb_imports)?;
     compare_vec_len(semantic_imports, fb_imports)?;
     let mut i: usize = 0;
@@ -745,7 +742,7 @@ fn compare_imports(
 fn compare_import_decls(
     semantic_id: &semantic::nodes::ImportDeclaration,
     fb_id: &fbsemantic::ImportDeclaration,
-) -> Result<(), String> {
+) -> Result<()> {
     compare_opt_ids(&semantic_id.alias, &fb_id.alias())?;
     compare_string_lits(&semantic_id.path, &fb_id.path())?;
     Ok(())
@@ -754,7 +751,7 @@ fn compare_import_decls(
 fn compare_loc(
     semantic_loc: &ast::SourceLocation,
     fb_loc: &Option<fbsemantic::SourceLocation>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_loc = unwrap_or_fail("source location", fb_loc)?;
     compare_opt_strings("source location file", &semantic_loc.file, &fb_loc.file())?;
     compare_pos(&semantic_loc.start, &fb_loc.start())?;
@@ -767,33 +764,32 @@ fn compare_loc(
     Ok(())
 }
 
-fn compare_vec_len<T, U>(
-    semantic_vec: &Vec<T>,
-    fb_vec: &flatbuffers::Vector<U>,
-) -> Result<(), String> {
+fn compare_vec_len<T, U>(semantic_vec: &Vec<T>, fb_vec: &flatbuffers::Vector<U>) -> Result<()> {
     match semantic_vec.len() == fb_vec.len() {
         true => Ok(()),
-        false => Err(String::from(format!(
+        false => Err(anyhow!(
             "vectors have different lengths: semantic = {}, fb = {}",
             semantic_vec.len(),
             fb_vec.len(),
-        ))),
+        )),
     }
 }
 
-fn unwrap_or_fail<'a, T>(msg: &str, o: &'a Option<T>) -> Result<&'a T, String> {
+fn unwrap_or_fail<'a, T>(msg: &str, o: &'a Option<T>) -> Result<&'a T> {
     match o {
-        None => Err(String::from(format!("missing {}", msg))),
+        None => Err(anyhow!("missing {}", msg)),
         Some(t) => Ok(t),
     }
 }
 
-fn compare_strings(msg: &str, semantic_str: &String, fb_str: &Option<&str>) -> Result<(), String> {
+fn compare_strings(msg: &str, semantic_str: &String, fb_str: &Option<&str>) -> Result<()> {
     let fb_str = unwrap_or_fail("string", fb_str)?;
     if semantic_str.as_str() != *fb_str {
-        return Err(format!(
+        return Err(anyhow!(
             "{} mismatch: semantic: {}, fb: {}",
-            msg, semantic_str, fb_str
+            msg,
+            semantic_str,
+            fb_str
         ));
     };
     Ok(())
@@ -803,39 +799,38 @@ fn compare_opt_strings(
     msg: &str,
     semantic_str: &Option<String>,
     fb_str: &Option<&str>,
-) -> Result<(), String> {
+) -> Result<()> {
     match (semantic_str, fb_str) {
         (None, None) => return Ok(()),
-        (None, Some(s)) => Err(String::from(format!(
+        (None, Some(s)) => Err(anyhow!(
             "comparing opt string for {}: semantic had none, fb had {}",
-            msg, s,
-        ))),
-        (Some(s), None) => Err(String::from(format!(
+            msg,
+            s,
+        )),
+        (Some(s), None) => Err(anyhow!(
             "comparing opt string for {}: semantic had {}, fb had none",
-            msg, s,
-        ))),
+            msg,
+            s,
+        )),
         (Some(semantic_str), fb_str) => compare_strings(msg, semantic_str, fb_str),
     }
 }
 
-fn compare_pos(
-    semantic_pos: &ast::Position,
-    fb_pos: &Option<&fbsemantic::Position>,
-) -> Result<(), String> {
+fn compare_pos(semantic_pos: &ast::Position, fb_pos: &Option<&fbsemantic::Position>) -> Result<()> {
     let fb_pos = unwrap_or_fail("position", fb_pos)?;
     if semantic_pos.line != fb_pos.line() as u32 {
-        return Err(String::from(format!(
+        return Err(anyhow!(
             "semantic line position is {}, fb is {}",
             semantic_pos.line,
             fb_pos.line()
-        )));
+        ));
     }
     if semantic_pos.column != fb_pos.column() as u32 {
-        return Err(String::from(format!(
+        return Err(anyhow!(
             "semantic column position is {}, fb is {}",
             semantic_pos.column,
             fb_pos.column()
-        )));
+        ));
     }
     Ok(())
 }
@@ -843,7 +838,7 @@ fn compare_pos(
 fn compare_string_lits(
     semantic_lit: &semantic::nodes::StringLit,
     fb_lit: &Option<fbsemantic::StringLiteral>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_lit = unwrap_or_fail("string literal", fb_lit)?;
     compare_loc(&semantic_lit.loc, &fb_lit.loc())?;
     compare_strings("string literal value", &semantic_lit.value, &fb_lit.value())?;
@@ -854,13 +849,11 @@ fn compare_opt_exprs(
     semantic_expr: &Option<semantic::nodes::Expression>,
     fb_expr_ty: fbsemantic::Expression,
     fb_expr: &Option<flatbuffers::Table>,
-) -> Result<(), String> {
+) -> Result<()> {
     match (semantic_expr, fb_expr_ty) {
         (None, fbsemantic::Expression::NONE) => Ok(()),
-        (None, _) => Err(String::from("expected no expr but got one")),
-        (Some(_), fbsemantic::Expression::NONE) => {
-            Err(String::from("expected an expr but got none"))
-        }
+        (None, _) => Err(anyhow!("expected no expr but got one")),
+        (Some(_), fbsemantic::Expression::NONE) => Err(anyhow!("expected an expr but got none")),
         (Some(semantic_expr), _) => compare_exprs(semantic_expr, fb_expr_ty, fb_expr),
     }
 }
@@ -868,7 +861,7 @@ fn compare_opt_exprs(
 fn compare_call_exprs(
     semantic_ce: &semantic::nodes::CallExpr,
     fb_ce: &Option<fbsemantic::CallExpression>,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_ce = unwrap_or_fail("call expr", fb_ce)?;
     compare_loc(&semantic_ce.loc, &fb_ce.loc())?;
     compare_exprs(&semantic_ce.callee, fb_ce.callee_type(), &fb_ce.callee())?;
@@ -889,7 +882,7 @@ fn compare_string_expr_part_list(
     fb_parts: &Option<
         flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbsemantic::StringExpressionPart>>,
     >,
-) -> Result<(), String> {
+) -> Result<()> {
     let fb_parts = unwrap_or_fail("string expr parts", fb_parts)?;
     compare_vec_len(semantic_parts, fb_parts)?;
     let mut i: usize = 0;
@@ -906,7 +899,7 @@ fn compare_string_expr_part_list(
 fn compare_string_expr_part(
     semantic_part: &semantic::nodes::StringExprPart,
     fb_part: &fbsemantic::StringExpressionPart,
-) -> Result<(), String> {
+) -> Result<()> {
     match (
         semantic_part,
         fb_part.text_value(),
@@ -922,18 +915,14 @@ fn compare_string_expr_part(
             compare_loc(&semantic_text.loc, &fb_part.loc())?;
             match semantic_text.value.as_str() == fb_text {
                 true => Ok(()),
-                false => Err(String::from(
-                    "mismatch in value of text part of string expr",
-                )),
+                false => Err(anyhow!("mismatch in value of text part of string expr",)),
             }
         }
         (semantic::nodes::StringExprPart::Interpolated(semantic_ip), None, fb_expr_ty, fb_expr) => {
             compare_loc(&semantic_ip.loc, &fb_part.loc())?;
             compare_exprs(&semantic_ip.expression, fb_expr_ty, &fb_expr)
         }
-        _ => Err(String::from(
-            "mismatch in string expr part text/interpolated",
-        )),
+        _ => Err(anyhow!("mismatch in string expr part text/interpolated",)),
     }
 }
 

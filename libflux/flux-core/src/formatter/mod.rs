@@ -2,15 +2,13 @@
 
 use crate::ast::{self, walk::Node, File, Statement};
 use crate::parser::parse_string;
-use crate::Error;
 
-use std::io;
-use std::string::FromUtf8Error;
+use anyhow::{anyhow, Error, Result};
 
 use chrono::SecondsFormat;
 
 /// Format a [`File`].
-pub fn convert_to_string(file: &File) -> Result<String, Error> {
+pub fn convert_to_string(file: &File) -> Result<String> {
     let mut formatter = Formatter::default();
     formatter.format_file(file, true);
     formatter.output()
@@ -26,7 +24,7 @@ pub fn convert_to_string(file: &File) -> Result<String, Error> {
 /// let formatted = format(source).unwrap();
 /// assert_eq!(formatted, "(r) => r.user == \"user1\"");
 /// ```
-pub fn format(contents: &str) -> Result<String, Error> {
+pub fn format(contents: &str) -> Result<String> {
     let file = parse_string("", contents);
     convert_to_string(&file)
 }
@@ -70,28 +68,9 @@ impl Default for Formatter {
     }
 }
 
-//
-// Implement specific error From conversions based on the kinds of errors we can encounter
-//
-
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Self {
-        Error {
-            msg: format!("{}", err),
-        }
-    }
-}
-impl From<FromUtf8Error> for Error {
-    fn from(err: FromUtf8Error) -> Self {
-        Error {
-            msg: format!("{}", err),
-        }
-    }
-}
-
 impl Formatter {
     /// Returns the final formatted string and error message.
-    pub fn output(self) -> Result<String, Error> {
+    pub fn output(self) -> Result<String> {
         if let Some(err) = self.err {
             return Err(err);
         }
@@ -244,8 +223,8 @@ impl Formatter {
                 self.format_record_expression_braces(m, true, self.temp_singleline)
             }
             Node::Package(m) => self.format_package(m),
-            Node::BadStmt(_) => self.err = Some(Error::from("bad statement")),
-            Node::BadExpr(_) => self.err = Some(Error::from("bad expression")),
+            Node::BadStmt(_) => self.err = Some(anyhow!("bad statement")),
+            Node::BadExpr(_) => self.err = Some(anyhow!("bad expression")),
             Node::BuiltinStmt(m) => self.format_builtin(m),
         }
         self.set_indent(curr_ind)

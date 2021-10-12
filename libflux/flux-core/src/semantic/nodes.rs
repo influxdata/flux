@@ -25,6 +25,7 @@ use crate::semantic::{
     },
 };
 
+use anyhow::{anyhow, bail, Result as AnyhowResult};
 use chrono::prelude::DateTime;
 use chrono::FixedOffset;
 use derivative::Derivative;
@@ -1963,18 +1964,16 @@ const YEARS: i64 = MONTHS * 12;
 /// Convert an [`ast::Duration`] node to its semantic counterpart [`Duration`].
 ///
 /// Returns a `Result` type with a possible error message.
-pub fn convert_duration(ast_dur: &[ast::Duration]) -> std::result::Result<Duration, String> {
+pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
     if ast_dur.is_empty() {
-        return Err(String::from(
-            "AST duration vector must contain at least one duration value",
-        ));
+        bail!("AST duration vector must contain at least one duration value");
     };
 
     let negative = ast_dur[0].magnitude.is_negative();
 
     let (nanoseconds, months) = ast_dur.iter().try_fold((0i64, 0i64), |acc, d| {
         if (d.magnitude.is_negative() && !negative) || (!d.magnitude.is_negative() && negative) {
-            return Err("all values in AST duration vector must have the same sign");
+            bail!("all values in AST duration vector must have the same sign");
         }
 
         match d.unit.as_str() {
@@ -1988,7 +1987,7 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> std::result::Result<Durati
             "ms" => Ok((acc.0 + d.magnitude * MILLIS, acc.1)),
             "us" | "µs" => Ok((acc.0 + d.magnitude * MICROS, acc.1)),
             "ns" => Ok((acc.0 + d.magnitude * NANOS, acc.1)),
-            _ => Err("unrecognized magnitude for duration"),
+            _ => Err(anyhow!("unrecognized magnitude for duration")),
         }
     })?;
 

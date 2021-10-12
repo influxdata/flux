@@ -83,6 +83,8 @@ pub struct Error {
     pub err: types::Error,
 }
 
+impl std::error::Error for Error {}
+
 // Solve a set of type constraints
 pub fn solve(
     cons: &Constraints,

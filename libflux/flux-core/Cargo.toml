@@ -14,6 +14,7 @@ strict = []
 lsp = ["lsp-types"]
 
 [dependencies]
+anyhow = "1"
 comrak = "0.10.1"
 fnv = "1.0.7"
 derive_more = { version = "0.99.11", default-features = false, features = [
