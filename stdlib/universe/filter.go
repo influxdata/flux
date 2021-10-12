@@ -373,6 +373,7 @@ func (t *filterTransformation) Finish(id execute.DatasetID, err error) {
 
 type filterTransformationAdapter struct {
 	*filterTransformation
+	execute.StatelessTransformation
 }
 
 func (t *filterTransformationAdapter) Process(chunk table.Chunk, d *execute.TransportDataset, mem arrowmem.Allocator) error {

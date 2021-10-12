@@ -148,6 +148,7 @@ func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMo
 
 type groupTransformationAdapter struct {
 	t *groupTransformation
+	execute.StatelessTransformation
 }
 
 func (a *groupTransformationAdapter) Process(chunk table.Chunk, d *execute.TransportDataset, mem arrowmem.Allocator) error {
