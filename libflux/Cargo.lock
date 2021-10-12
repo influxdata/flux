@@ -398,7 +398,6 @@ name = "flux"
 version = "0.5.1"
 dependencies = [
  "anyhow",
- "comrak",
  "criterion",
  "deflate",
  "flatbuffers",
