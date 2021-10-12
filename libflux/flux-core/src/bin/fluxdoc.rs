@@ -27,6 +27,9 @@ enum FluxDoc {
         /// Whether to omit full descriptions and keep only the short form docs.
         #[structopt(long)]
         short: bool,
+        /// Honor the exception list.
+        #[structopt(long)]
+        allow_exceptions: bool,
     },
     /// Check Flux source code for documentation linting errors
     Lint {
@@ -39,6 +42,9 @@ enum FluxDoc {
         /// Limit the number of diagnostics to report. Default 10.
         #[structopt(short, long)]
         limit: Option<i32>,
+        /// Honor the exception list.
+        #[structopt(long)]
+        allow_exceptions: bool,
     },
 }
 
@@ -51,18 +57,21 @@ fn main() -> Result<()> {
             output,
             nested,
             short,
+            allow_exceptions,
         } => dump(
             stdlib_dir.as_deref(),
             &dir,
             output.as_deref(),
             nested,
             short,
+            allow_exceptions,
         )?,
         FluxDoc::Lint {
             stdlib_dir,
             dir,
             limit,
-        } => lint(stdlib_dir.as_deref(), &dir, limit)?,
+            allow_exceptions,
+        } => lint(stdlib_dir.as_deref(), &dir, limit, allow_exceptions)?,
     };
     Ok(())
 }
@@ -75,6 +84,7 @@ fn dump(
     output: Option<&Path>,
     nested: bool,
     short: bool,
+    allow_exceptions: bool,
 ) -> Result<()> {
     let stdlib_dir = match stdlib_dir {
         Some(stdlib_dir) => stdlib_dir,
@@ -86,8 +96,13 @@ fn dump(
         None => Box::new(io::stdout()),
     };
 
+    let exceptions = if allow_exceptions {
+        &EXCEPTIONS[..]
+    } else {
+        &[]
+    };
     let (mut docs, diagnostics) =
-        parse_docs(stdlib_dir, dir, &EXCEPTIONS[..]).context("parsing source code")?;
+        parse_docs(stdlib_dir, dir, exceptions).context("parsing source code")?;
     if !diagnostics.is_empty() {
         bail!(
             "found {} diagnostics when building documentation: {}",
@@ -114,7 +129,12 @@ fn dump(
     Ok(())
 }
 
-fn lint(stdlib_dir: Option<&Path>, dir: &Path, limit: Option<i32>) -> Result<()> {
+fn lint(
+    stdlib_dir: Option<&Path>,
+    dir: &Path,
+    limit: Option<i32>,
+    allow_exceptions: bool,
+) -> Result<()> {
     let stdlib_dir = match stdlib_dir {
         Some(stdlib_dir) => stdlib_dir,
         None => Path::new(DEFAULT_STDLIB_PATH),
@@ -123,7 +143,12 @@ fn lint(stdlib_dir: Option<&Path>, dir: &Path, limit: Option<i32>) -> Result<()>
         Some(limit) => limit as usize,
         None => 10,
     };
-    let (_, mut diagnostics) = parse_docs(stdlib_dir, dir, &[])?;
+    let exceptions = if allow_exceptions {
+        &EXCEPTIONS[..]
+    } else {
+        &[]
+    };
+    let (_, mut diagnostics) = parse_docs(stdlib_dir, dir, exceptions)?;
     if !diagnostics.is_empty() {
         let rest = diagnostics.len() as i64 - limit as i64;
         println!("Found {} diagnostics", diagnostics.len());
@@ -134,6 +159,7 @@ fn lint(stdlib_dir: Option<&Path>, dir: &Path, limit: Option<i32>) -> Result<()>
         if rest > 0 {
             println!("Hiding the remaining {} diagnostics", rest);
         }
+        bail!("docs do not pass lint");
     }
     Ok(())
 }
