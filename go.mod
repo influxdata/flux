@@ -13,7 +13,7 @@ require (
 	github.com/SAP/go-hdb v0.14.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20210722123801-4591d76fce28
-	github.com/benbjohnson/immutable v0.2.1
+	github.com/benbjohnson/immutable v0.3.0
 	github.com/bonitoo-io/go-sql-bigquery v0.3.4-1.4.0
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash/v2 v2.1.1

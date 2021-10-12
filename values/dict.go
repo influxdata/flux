@@ -335,11 +335,7 @@ type DictionaryBuilder struct {
 // NewDictBuilder will create a new DictionaryBuilder for the given
 // key type.
 func NewDictBuilder(dictType semantic.MonoType) DictionaryBuilder {
-	builder := immutable.NewSortedMapBuilder(
-		immutable.NewSortedMap(
-			dictComparer(dictType),
-		),
-	)
+	builder := immutable.NewSortedMapBuilder(dictComparer(dictType))
 	return DictionaryBuilder{t: dictType, b: builder}
 }
 
