@@ -12,7 +12,7 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "baef097fe5f59a0d59506d19c7d97971388348ad5ad0263574aae754dd6c83b9",
+	"libflux/Cargo.lock":                                                                          "419b4531523031a1af36016fd4b00dd5de258a4947141e9159c5506772eeafee",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
 	"libflux/flux-core/Cargo.toml":                                                                "e7b01830c22f393e0a9865a149161d3e846ca2da68b19ae73819e7b60d37c312",
 	"libflux/flux-core/benches/scanner.rs":                                                        "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
@@ -61,7 +61,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/walk/test_utils.rs":                                           "ffec273fc2e54c640ba5f2ce5c1faa1516a3d98b1365d6f4cab762f582102650",
 	"libflux/flux-core/src/semantic/walk/walk_mut.rs":                                             "845e0b706c90fd84b1f7ef08ab85d86a5af24392d7973415ed6d1c778a67e012",
 	"libflux/flux-core/tests/analyze_test.rs":                                                     "537fcf7722f940794646d5916e3484262769fd90a7fa5e74e8095fb732136be6",
-	"libflux/flux/Cargo.toml":                                                                     "fcb225317b195a369b3af8da7f162015b776ab2997ee0a5aecbb09599f564f79",
+	"libflux/flux/Cargo.toml":                                                                     "8fd026b75662a3dd1e7aefc872cd7d1033ab7eb2d9f4d85b19933a3b29d946bc",
 	"libflux/flux/FLUXDOC.md":                                                                     "92e6dd8043bd87b4924e09aa28fb5346630aee1214de28ea2c8fc0687cad0785",
 	"libflux/flux/benches/basic.rs":                                                               "bb1e655d303f2e6e75e930dd98417e46946e72e1456d8cea8ecb215a62b6d107",
 	"libflux/flux/benches/builtins.rs":                                                            "625b3de708d49a3cb758f331a01f41805ac59d22bbadfee417922504f2d5797e",

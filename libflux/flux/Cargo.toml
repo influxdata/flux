@@ -19,7 +19,6 @@ strict = []
 
 [dependencies]
 anyhow ="1"
-comrak = "0.10.1"
 flux-core = { path = "../flux-core" }
 flatbuffers = "2.0.0"
 lazy_static = "1.4.0"
