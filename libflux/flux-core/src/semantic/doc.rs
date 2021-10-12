@@ -79,7 +79,7 @@ pub struct FunctionDoc {
     /// the headline of the function
     pub headline: String,
     /// the description of the function
-    pub description: String,
+    pub description: Option<String>,
     /// the parameters of the function
     pub parameters: Vec<ParameterDoc>,
     /// the type of the function
@@ -342,16 +342,18 @@ fn parse_function_doc(
             }
             if !parameter_range.is_empty() {
                 // Return the description with the parameter list removed
-                description
-                    .chars()
-                    .take(parameter_range.start)
-                    .chain(description.chars().skip(parameter_range.end))
-                    .collect()
+                Some(
+                    description
+                        .chars()
+                        .take(parameter_range.start)
+                        .chain(description.chars().skip(parameter_range.end))
+                        .collect(),
+                )
             } else {
                 // Its possible the parameter list was not found or was invalid.
                 // In such cases a diagnostic would have been reported, so just return the
                 // description unmodified.
-                description
+                Some(description)
             }
         }
         None => {
@@ -362,7 +364,7 @@ fn parse_function_doc(
                 ),
                 loc: loc.clone(),
             });
-            "".to_string()
+            None
         }
     };
     Ok((
@@ -559,6 +561,39 @@ fn comments_to_string(comments: &[ast::Comment]) -> String {
     s
 }
 
+/// Shorten removes all long form descriptions from the docs structures leaving only the headlines
+/// and other metadata.
+pub fn shorten(doc: &mut PackageDoc) {
+    doc.description = None;
+    for (_, m) in doc.members.iter_mut() {
+        remove_desc(m);
+    }
+}
+
+/// Removes the description from a Doc.
+///
+/// This function is recursive via the [`shorten`] function.
+/// This design allows the implementation for the Doc::Package variant to share code with
+/// [`shorten`] and keep the original data types as &mut instead of moving the data into these
+/// functions.
+fn remove_desc(doc: &mut Doc) {
+    match doc {
+        Doc::Package(p) => shorten(p),
+        Doc::Value(v) => {
+            v.description = None;
+        }
+        Doc::Opt(o) => {
+            o.description = None;
+        }
+        Doc::Function(f) => {
+            f.description = None;
+            for p in f.parameters.iter_mut() {
+                p.description = None
+            }
+        }
+    }
+}
+
 /// Restructures the Vector of PackageDocs into a hierarchical format where subpackages are in the member section
 /// of their parent packages. Ex: monitor.flux docs are in the members section of influxdb docs which are in the members of InfluxData docs.
 pub fn nest_docs(original_docs: Vec<PackageDoc>) -> PackageDoc {
@@ -613,7 +648,7 @@ fn find_parent(path: String, nested_docs: &mut PackageDoc) -> &mut PackageDoc {
 #[cfg(test)]
 mod test {
     use super::{
-        parse_package_doc_comments, Diagnostic, Diagnostics, Doc, FunctionDoc, PackageDoc,
+        parse_package_doc_comments, shorten, Diagnostic, Diagnostics, Doc, FunctionDoc, PackageDoc,
         ParameterDoc, ValueDoc,
     };
 
@@ -644,17 +679,26 @@ mod test {
             files: vec![file],
         }
     }
-    fn assert_docs(src: &str, pkg: PackageDoc, diags: Diagnostics) {
+    fn assert_docs_full(src: &str, pkg: PackageDoc, diags: Diagnostics) {
+        assert_docs(src, pkg, diags, false)
+    }
+    fn assert_docs_short(src: &str, pkg: PackageDoc, diags: Diagnostics) {
+        assert_docs(src, pkg, diags, true)
+    }
+    fn assert_docs(src: &str, pkg: PackageDoc, diags: Diagnostics, short: bool) {
         let mut analyzer = Analyzer::new(Environment::empty(true), PolyTypeMap::new());
         let ast_pkg = parse_program(src);
         let (types, _) = match analyzer.analyze_ast(ast_pkg.clone()) {
             Ok(t) => t,
             Err(e) => panic!("error inferring types {}", e),
         };
-        let (got_pkg, got_diags) = match parse_package_doc_comments(&ast_pkg, "path", &types) {
+        let (mut got_pkg, got_diags) = match parse_package_doc_comments(&ast_pkg, "path", &types) {
             Ok((p, d)) => (p, d),
             Err(e) => panic!("error parsing doc comments {}", e),
         };
+        if short {
+            shorten(&mut got_pkg);
+        }
         // assert the diagnostics first as they may contain clues as to why the rest of the docs do
         // not match.
         assert_eq!(
@@ -667,15 +711,15 @@ mod test {
     #[test]
     fn test_package_doc() {
         let src = "
-        // Package foo does a thing
+        // Package foo does a thing.
         package foo
         ";
-        assert_docs(
+        assert_docs_full(
             src,
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing\n".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: BTreeMap::default(),
             },
@@ -685,23 +729,23 @@ mod test {
     #[test]
     fn test_value_doc_no_desc() {
         let src = "
-        // Package foo does a thing
+        // Package foo does a thing.
         package foo
 
-        // A is a constant
+        // A is a constant.
         a = 1
         ";
-        assert_docs(
+        assert_docs_full(
             src,
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing\n".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: map![
                     "a" => Doc::Value(Box::new(ValueDoc{
                         name: "a".to_string(),
-                        headline: "A is a constant\n".to_string(),
+                        headline: "A is a constant.\n".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
                     })),
@@ -713,7 +757,7 @@ mod test {
     #[test]
     fn test_value_doc_full() {
         let src = "
-        // Package foo does a thing
+        // Package foo does a thing.
         package foo
 
         // A is a constant.
@@ -724,12 +768,12 @@ mod test {
         // The description contains any remaining markdown content.
         a = 1
         ";
-        assert_docs(
+        assert_docs_full(
             src,
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing\n".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: map![
                     "a" => Doc::Value(Box::new(ValueDoc{
@@ -744,9 +788,77 @@ mod test {
         );
     }
     #[test]
+    fn test_shorten() {
+        let src = "
+        // Package foo does a thing.
+        //
+        // This is a description.
+        package foo
+
+        // A is a constant.
+        //
+        // This is a description.
+        //
+        a = 1
+
+        // F is a function.
+        //
+        // This is a description.
+        //
+        // ## Parameters
+        //
+        // - `x` is a parameter.
+        //
+        //     This is a description of x.
+        //
+        f = (x) => 1
+
+        // O is an option.
+        //
+        // This is a description.
+        option o = 1
+        ";
+        assert_docs_short(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
+                description: None,
+                members: map![
+                    "a" => Doc::Value(Box::new(ValueDoc{
+                        name: "a".to_string(),
+                        headline: "A is a constant.\n".to_string(),
+                        description: None,
+                        flux_type: "int".to_string(),
+                    })),
+                    "f" => Doc::Function(Box::new(FunctionDoc{
+                        name: "f".to_string(),
+                        headline: "F is a function.\n".to_string(),
+                        description: None,
+                        parameters: vec![ParameterDoc{
+                            name: "x".to_string(),
+                            headline: "`x` is a parameter.".to_string(),
+                            description: None,
+                            required: true,
+                        } ],
+                        flux_type: "(x:A) => int".to_string(),
+                    })),
+                    "o" => Doc::Value(Box::new(ValueDoc{
+                        name: "o".to_string(),
+                        headline: "O is an option.\n".to_string(),
+                        description: None,
+                        flux_type: "int".to_string(),
+                    })),
+                ],
+            },
+            vec![],
+        );
+    }
+    #[test]
     fn test_function_doc() {
         let src = "
-        // Package foo does a thing
+        // Package foo does a thing.
         package foo
 
         // F is a function.
@@ -755,26 +867,26 @@ mod test {
         // parameter.
         //
         // ## Parameters
-        // - `x` is any value
+        // - `x` is any value.
         //
         // More description after the parameter list.
         f = (x) => x
         ";
-        assert_docs(
+        assert_docs_full(
             src,
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing\n".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: map![
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
                         headline: "F is a function.\n".to_string(),
-                        description: "\nF is specifically the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.\n".to_string(),
+                        description: Some("\nF is specifically the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.\n".to_string()),
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
-                            headline: "`x` is any value".to_string(),
+                            headline: "`x` is any value.".to_string(),
                             description: None,
                             required: true,
                         }],
@@ -788,7 +900,7 @@ mod test {
     #[test]
     fn test_function_doc_parameter_desc() {
         let src = "
-        // Package foo does a thing
+        // Package foo does a thing.
         package foo
 
         // F is a function.
@@ -808,18 +920,18 @@ mod test {
         // More description after the parameter list.
         f = (x,y) => x + y
         ";
-        assert_docs(
+        assert_docs_full(
             src,
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing\n".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: map![
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
                         headline: "F is a function.\n".to_string(),
-                        description: "\nF is specifically the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.\n".to_string(),
+                        description: Some("\nF is specifically the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.\n".to_string()),
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
                             headline: "`x` is any value.".to_string(),
@@ -842,25 +954,25 @@ mod test {
     #[test]
     fn test_function_doc_missing_description() {
         let src = "
-        // Package foo does a thing
+        // Package foo does a thing.
         package foo
 
         // F is a function.
         f = (x) => x
         ";
         let loc = Locator::new(&src[..]);
-        assert_docs(
+        assert_docs_full(
             src,
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing\n".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: map![
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
                         headline: "F is a function.\n".to_string(),
-                        description: "".to_string(),
+                        description: None,
                         parameters: vec![],
                         flux_type: "(x:A) => A".to_string(),
                     })),
@@ -876,7 +988,7 @@ mod test {
     #[test]
     fn test_function_doc_missing_parameter() {
         let src = "
-        // Package foo does a thing
+        // Package foo does a thing.
         package foo
 
         // Add is a function.
@@ -886,18 +998,18 @@ mod test {
         add = (x,y) => x + y
         ";
         let loc = Locator::new(&src[..]);
-        assert_docs(
+        assert_docs_full(
             src,
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing\n".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: map![
                     "add" => Doc::Function(Box::new(FunctionDoc{
                         name: "add".to_string(),
                         headline: "Add is a function.\n".to_string(),
-                        description: "\n".to_string(),
+                        description: Some("\n".to_string()),
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
                             headline: "`x` is any value".to_string(),
@@ -917,7 +1029,7 @@ mod test {
     #[test]
     fn test_function_doc_missing_optional_parameter() {
         let src = "
-        // Package foo does a thing
+        // Package foo does a thing.
         package foo
 
         // Add is a function.
@@ -927,18 +1039,18 @@ mod test {
         add = (x,y=1) => x + y
         ";
         let loc = Locator::new(&src[..]);
-        assert_docs(
+        assert_docs_full(
             src,
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing\n".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: map![
                     "add" => Doc::Function(Box::new(FunctionDoc{
                         name: "add".to_string(),
                         headline: "Add is a function.\n".to_string(),
-                        description: "\n".to_string(),
+                        description: Some("\n".to_string()),
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
                             headline: "`x` is any value".to_string(),

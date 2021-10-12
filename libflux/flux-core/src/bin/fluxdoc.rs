@@ -24,6 +24,9 @@ enum FluxDoc {
         /// Whether to structure the documentation as nested pacakges.
         #[structopt(short, long)]
         nested: bool,
+        /// Whether to omit full descriptions and keep only the short form docs.
+        #[structopt(long)]
+        short: bool,
     },
     /// Check Flux source code for documentation linting errors
     Lint {
@@ -47,7 +50,14 @@ fn main() -> Result<()> {
             dir,
             output,
             nested,
-        } => dump(stdlib_dir.as_deref(), &dir, output.as_deref(), nested)?,
+            short,
+        } => dump(
+            stdlib_dir.as_deref(),
+            &dir,
+            output.as_deref(),
+            nested,
+            short,
+        )?,
         FluxDoc::Lint {
             stdlib_dir,
             dir,
@@ -59,7 +69,13 @@ fn main() -> Result<()> {
 
 const DEFAULT_STDLIB_PATH: &str = "./stdlib-compiled";
 
-fn dump(stdlib_dir: Option<&Path>, dir: &Path, output: Option<&Path>, nested: bool) -> Result<()> {
+fn dump(
+    stdlib_dir: Option<&Path>,
+    dir: &Path,
+    output: Option<&Path>,
+    nested: bool,
+    short: bool,
+) -> Result<()> {
     let stdlib_dir = match stdlib_dir {
         Some(stdlib_dir) => stdlib_dir,
         None => Path::new(DEFAULT_STDLIB_PATH),
@@ -70,7 +86,7 @@ fn dump(stdlib_dir: Option<&Path>, dir: &Path, output: Option<&Path>, nested: bo
         None => Box::new(io::stdout()),
     };
 
-    let (docs, diagnostics) =
+    let (mut docs, diagnostics) =
         parse_docs(stdlib_dir, dir, &EXCEPTIONS[..]).context("parsing source code")?;
     if !diagnostics.is_empty() {
         bail!(
@@ -82,6 +98,11 @@ fn dump(stdlib_dir: Option<&Path>, dir: &Path, output: Option<&Path>, nested: bo
                 .collect::<Vec<String>>()
                 .join("\n"),
         );
+    }
+    if short {
+        for d in docs.iter_mut() {
+            doc::shorten(d);
+        }
     }
     if nested {
         let nested_docs = doc::nest_docs(docs);
