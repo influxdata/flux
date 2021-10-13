@@ -1,160 +1,95 @@
-//! Flux start-up.
+//! Bootstrap provides an API for compiling the Flux standard library.
+//!
+//! This package does not assume a location of the source code but does assume which packages are
+//! part of the prelude.
 
-use std::collections::HashSet;
-use std::env::consts;
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
+use std::{collections::HashSet, env::consts, fs, io, io::Write, path::Path};
 
 use anyhow::{anyhow, bail, Result};
 
+use libflate::gzip::Encoder;
+
 use crate::ast;
 use crate::parser;
-use crate::semantic::convert::convert_file;
-use crate::semantic::doc::{generate_docs, PackageDoc};
-use crate::semantic::env::Environment;
-use crate::semantic::fresh::Fresher;
-use crate::semantic::import::Importer;
-use crate::semantic::infer;
-use crate::semantic::infer::Constraints;
-use crate::semantic::nodes::infer_file;
-use crate::semantic::sub::Substitutable;
-use crate::semantic::types::{
-    MonoType, PolyType, PolyTypeMap, PolyTypeMapMap, Property, Record, SemanticMap, TvarKinds,
+use crate::semantic::{
+    convert::convert_package,
+    env::Environment,
+    flatbuffers::types::{build_module, finish_serialize},
+    fresh::Fresher,
+    fs::{FileSystemImporter, StdFS},
+    import::Importer,
+    infer,
+    infer::Constraints,
+    nodes,
+    nodes::{infer_package, inject_pkg_types, Package},
+    sub::Substitutable,
+    types::{MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds},
 };
 
 use walkdir::WalkDir;
 
+// List of packages to include into the Flux prelude
 const PRELUDE: [&str; 3] = ["internal/boolean", "universe", "influxdata/influxdb"];
 
-type AstFileMap = SemanticMap<String, ast::File>;
+/// A mapping of package import paths to the corresponding AST package.
+pub type ASTPackageMap = SemanticMap<String, ast::Package>;
+/// A mapping of package import paths to the corresponding semantic graph package.
+pub type SemanticPackageMap = SemanticMap<String, Package>;
 
-/// The return values when running infer_stdlib as a structure
-pub struct StdlibReturnValues {
-    /// The prelude for the Stdlib.
-    pub prelude: PolyTypeMap,
-    /// The importer is how the Stdlib is serialized and exposed for type inference. We are keeping it around for now as it
-    /// has the advantage that you could parameterize an entire package (like a functor from SML) which we will revisit later.
-    pub importer: PolyTypeMap,
-    /// The map of PolytypeMap: one PolyTypeMap per package acts as a simpler way to represent types within the package.
-    pub importermap: PolyTypeMapMap,
-    /// The Stdlib struct used for incrementing type variable identifiers.
-    pub f: Fresher,
-    /// A vector indicating whether to rerun each package if it is changed.
-    pub rerun_if_changed: Vec<String>,
-    /// The AST map of files for the entire Stdlib.
-    pub files: AstFileMap,
-}
-
-fn stdlib_relative_path() -> &'static str {
-    if consts::OS == "windows" {
-        "..\\..\\stdlib"
-    } else {
-        "../../stdlib"
-    }
-}
-
-/// Infers the types of the standard library returning two [`PolyTypeMap`]s, one for the prelude
-/// and one for the standard library, as well as a type variable [`Fresher`].
+/// Infers the Flux standard library given the path to the source code.
+/// The prelude and the imports are returned.
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib() -> Result<StdlibReturnValues> {
+pub fn infer_stdlib_dir(path: &Path) -> Result<(PolyTypeMap, PolyTypeMap, SemanticPackageMap)> {
     let mut f = Fresher::default();
 
-    let path = stdlib_relative_path();
-    let files = file_map(parse_flux_files(path)?);
-    let rerun_if_changed = compute_file_dependencies(path);
+    let ast_packages = parse_dir(path)?;
 
-    let (prelude, importer) = infer_pre(&mut f, &files)?;
-    let (importer, importermap) = infer_std(&mut f, &files, prelude.clone(), importer)?;
+    let (prelude, importer) = infer_pre(&mut f, &ast_packages)?;
+    let (imports, sem_pkg_map) = infer_std(&mut f, &ast_packages, prelude.clone(), importer)?;
 
-    Ok(StdlibReturnValues {
-        prelude,
-        importer,
-        importermap,
-        f,
-        rerun_if_changed,
-        files,
-    })
+    Ok((prelude, imports, sem_pkg_map))
 }
 
-/// new stdlib docs function
-pub fn stdlib_docs(
-    lib: &PolyTypeMapMap,
-    files: &AstFileMap,
-) -> Result<Vec<PackageDoc>, Box<dyn std::error::Error>> {
-    let mut docs = Vec::with_capacity(files.len());
-    for (pkgpath, file) in files.iter() {
-        let pkg = generate_docs(lib, file, pkgpath)?;
-        docs.push(pkg);
-    }
-    Ok(docs)
-}
-
-fn compute_file_dependencies(root: &str) -> Vec<String> {
-    // Iterate through each ast file and canonicalize the
-    // file path to an absolute path.
-    // Canonicalize the root path to the absolute directory.
-    let rootpath = std::env::current_dir()
-        .unwrap()
-        .join(root)
-        .canonicalize()
-        .unwrap();
-    WalkDir::new(rootpath)
-        .into_iter()
-        .filter_map(|r| r.ok())
-        .filter(|r| r.path().is_dir() || (r.path().is_file() && r.path().ends_with(".flux")))
-        .map(|r| path_to_string(r.path()))
-        .collect()
-}
-
-fn path_to_string(path: &Path) -> String {
-    path.to_str().expect("valid path").to_string()
-}
-
-#[allow(clippy::type_complexity)]
-fn infer_pre(f: &mut Fresher, files: &AstFileMap) -> Result<(PolyTypeMap, PolyTypeMap)> {
-    let mut prelude = PolyTypeMap::new();
+fn infer_pre(f: &mut Fresher, ast_packages: &ASTPackageMap) -> Result<(PolyTypeMap, PolyTypeMap)> {
+    let mut prelude_map = PolyTypeMap::new();
     let mut imports = PolyTypeMap::new();
-    for name in &PRELUDE {
+    for name in PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
         // packages within the prelude list.
-        let (types, importer) = infer_pkg(name, f, files, prelude.clone(), imports)?;
+        let (types, importer, _sem_pkg) =
+            infer_pkg(name, f, ast_packages, prelude_map.clone(), imports)?;
         for (k, v) in types {
-            prelude.insert(k, v);
+            prelude_map.insert(k, v);
         }
         imports = importer;
     }
-    Ok((prelude, imports))
+    Ok((prelude_map, imports))
 }
 
 #[allow(clippy::type_complexity)]
 fn infer_std(
     f: &mut Fresher,
-    files: &AstFileMap,
+    ast_packages: &ASTPackageMap,
     prelude: PolyTypeMap,
     mut imports: PolyTypeMap,
-) -> Result<(PolyTypeMap, PolyTypeMapMap)> {
-    let mut importermap = PolyTypeMapMap::new();
-    for (path, _) in files.iter() {
-        let (types, mut importer) = infer_pkg(path, f, files, prelude.clone(), imports.clone())?;
-        if importermap.contains_key(path) {
-            continue;
+) -> Result<(PolyTypeMap, SemanticPackageMap)> {
+    let mut sem_pkg_map = SemanticPackageMap::new();
+    for (path, _) in ast_packages.iter() {
+        let (types, mut importer, sem_pkg) =
+            infer_pkg(path, f, ast_packages, prelude.clone(), imports.clone())?;
+        sem_pkg_map.insert(path.to_string(), sem_pkg);
+        if !imports.contains_key(path) {
+            importer.insert(path.to_string(), build_polytype(types, f)?);
+            imports = importer;
         }
-        importermap.insert(path.to_string(), types.clone());
-
-        if imports.contains_key(path) {
-            continue;
-        }
-        importer.insert(path.to_string(), build_polytype(types, f)?);
-        imports = importer;
     }
-    Ok((imports, importermap))
+    Ok((imports, sem_pkg_map))
 }
 
-// Recursively parse all flux files within a directory.
-fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
+/// Recursively parse all flux files within a directory.
+pub fn parse_dir(dir: &Path) -> io::Result<ASTPackageMap> {
     let mut files = Vec::new();
-    let entries = WalkDir::new(PathBuf::from(path))
+    let entries = WalkDir::new(dir)
         .into_iter()
         .filter_map(|r| r.ok())
         .filter(|r| r.path().is_file());
@@ -176,28 +111,43 @@ fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
                 files.push(parser::parse_string(
                     normalized_path
                         .rsplitn(2, "/stdlib/")
-                        .collect::<Vec<&str>>()[0],
+                        .collect::<Vec<&str>>()[0]
+                        .to_owned(),
                     &fs::read_to_string(entry.path())?,
                 ));
             }
         }
     }
-    Ok(files)
+    Ok(ast_map(files))
 }
 
 // Associates an import path with each file
-fn file_map(files: Vec<ast::File>) -> AstFileMap {
-    files.into_iter().fold(AstFileMap::new(), |mut acc, file| {
-        let name = file.name.rsplitn(2, '/').collect::<Vec<&str>>()[1].to_string();
-        acc.insert(name, file);
-        acc
-    })
+fn ast_map(files: Vec<ast::File>) -> ASTPackageMap {
+    files
+        .into_iter()
+        .fold(ASTPackageMap::new(), |mut acc, file| {
+            let path = file.name.rsplitn(2, '/').collect::<Vec<&str>>()[1].to_string();
+            acc.insert(
+                path.clone(),
+                ast::Package {
+                    base: ast::BaseNode {
+                        ..ast::BaseNode::default()
+                    },
+                    path,
+                    package: String::from(file.get_package()),
+                    files: vec![file],
+                },
+            );
+            acc
+        })
 }
 
-fn imports(file: &ast::File) -> Vec<&str> {
+fn imports(pkg: &ast::Package) -> Vec<&str> {
     let mut dependencies = Vec::new();
-    for import in &file.imports {
-        dependencies.push(&import.path.value[..]);
+    for file in &pkg.files {
+        for import in &file.imports {
+            dependencies.push(&import.path.value[..]);
+        }
     }
     dependencies
 }
@@ -208,7 +158,7 @@ fn imports(file: &ast::File) -> Vec<&str> {
 #[allow(clippy::type_complexity)]
 fn dependencies<'a>(
     name: &'a str,
-    pkgs: &'a AstFileMap,
+    pkgs: &'a ASTPackageMap,
     mut deps: Vec<&'a str>,
     mut seen: HashSet<&'a str>,
     mut done: HashSet<&'a str>,
@@ -219,8 +169,8 @@ fn dependencies<'a>(
         seen.insert(name);
         match pkgs.get(name) {
             None => Err(anyhow!(r#"package "{}" not found"#, name)),
-            Some(file) => {
-                for name in imports(file) {
+            Some(pkg) => {
+                for name in imports(pkg) {
                     let (x, y, z) = dependencies(name, pkgs, deps, seen, done)?;
                     deps = x;
                     seen = y;
@@ -277,55 +227,174 @@ fn build_record(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
 //
 #[allow(clippy::type_complexity)]
 fn infer_pkg(
-    name: &str,           // name of package to infer
-    f: &mut Fresher,      // type variable fresher
-    files: &AstFileMap,   // files available for inference
-    prelude: PolyTypeMap, // prelude types
-    imports: PolyTypeMap, // types available for import
+    name: &str,                   // name of package to infer
+    f: &mut Fresher,              // type variable fresher
+    ast_packages: &ASTPackageMap, // ast_packages available for inference
+    prelude: PolyTypeMap,         // prelude types
+    imports: PolyTypeMap,         // types available for import
 ) -> Result<(
     PolyTypeMap, // inferred types
     PolyTypeMap, // types available for import (possibly updated)
+    Package,     // semantic graph
 )> {
     // Determine the order in which we must infer dependencies
-    let (deps, _, _) = dependencies(name, files, Vec::new(), HashSet::new(), HashSet::new())?;
+    let (deps, _, _) = dependencies(
+        name,
+        ast_packages,
+        Vec::new(),
+        HashSet::new(),
+        HashSet::new(),
+    )?;
     let mut imports = imports;
 
     // Infer all dependencies
     for pkg in deps {
         if imports.import(pkg).is_none() {
-            let file = files.get(pkg);
+            let file = ast_packages.get(pkg);
             if file.is_none() {
                 bail!(r#"package import "{}" not found"#, pkg);
             }
             let file = file.unwrap().to_owned();
 
-            let env = infer_file(
-                &mut convert_file(file, f)?,
+            let (env, _) = infer_package(
+                &mut convert_package(file, f)?,
                 Environment::new(prelude.clone().into()),
                 f,
-                &imports,
-            )?
-            .0;
+                &mut imports,
+            )?;
 
             imports.insert(pkg.to_string(), build_polytype(env.values, f)?);
         }
     }
 
-    let file = files.get(name);
+    let file = ast_packages.get(name);
     if file.is_none() {
         bail!(r#"package "{}" not found"#, name);
     }
     let file = file.unwrap().to_owned();
 
-    let env = infer_file(
-        &mut convert_file(file, f)?,
+    let mut sem_pkg = convert_package(file, f)?;
+    let (env, sub) = infer_package(
+        &mut sem_pkg,
         Environment::new(prelude.into()),
         f,
-        &imports,
-    )?
-    .0;
+        &mut imports,
+    )?;
+    sem_pkg = inject_pkg_types(sem_pkg, &sub);
 
-    Ok((env.values, imports))
+    Ok((env.values, imports, sem_pkg))
+}
+
+fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
+    let fs = StdFS::new(path);
+    FileSystemImporter::new(fs)
+}
+
+fn prelude_from_importer<I>(importer: &mut I) -> Result<Environment>
+where
+    I: Importer,
+{
+    let mut env = PolyTypeMap::new();
+    for pkg in PRELUDE {
+        if let Some(pkg_type) = importer.import(pkg) {
+            if let MonoType::Record(typ) = pkg_type.expr {
+                add_record_to_map(&mut env, typ.as_ref(), &pkg_type.vars, &pkg_type.cons)?;
+            } else {
+                bail!("package type is not a record");
+            }
+        } else {
+            bail!("prelude package {} not found", pkg);
+        }
+    }
+    Ok(env.into())
+}
+
+fn add_record_to_map(
+    env: &mut PolyTypeMap,
+    r: &Record,
+    free_vars: &[Tvar],
+    cons: &TvarKinds,
+) -> Result<()> {
+    match r {
+        Record::Empty => Ok(()),
+        Record::Extension { head, tail } => {
+            let new_vars = head.v.free_vars();
+            let mut new_cons = TvarKinds::new();
+            for var in &new_vars {
+                if !free_vars.iter().any(|v| v == var) {
+                    bail!("monotype contains free var not in poly type free vars");
+                }
+                if let Some(con) = cons.get(var) {
+                    new_cons.insert(*var, con.clone());
+                }
+            }
+            env.insert(
+                head.k.clone(),
+                PolyType {
+                    vars: new_vars,
+                    cons: new_cons,
+                    expr: head.v.clone(),
+                },
+            );
+            match tail {
+                MonoType::Record(r) => add_record_to_map(env, r, free_vars, cons),
+                _ => Ok(()),
+            }
+        }
+    }
+}
+
+/// Stdlib returns the prelude and importer for the Flux standard library given a path to a
+/// compiled directory structure.
+pub fn stdlib(dir: &Path) -> Result<(Environment, FileSystemImporter<StdFS>)> {
+    let mut stdlib_importer = stdlib_importer(dir);
+    let prelude = prelude_from_importer(&mut stdlib_importer)?;
+    Ok((prelude, stdlib_importer))
+}
+
+/// Compiles the stdlib found at the srcdir into the outdir.
+pub fn compile_stdlib(srcdir: &Path, outdir: &Path) -> Result<()> {
+    let (_, imports, mut sem_pkgs) = infer_stdlib_dir(srcdir)?;
+    // Write each file as compiled module
+    for (path, pt) in &imports {
+        if let Some(code) = sem_pkgs.remove(path) {
+            let module = Module {
+                polytype: Some(pt.clone()),
+                code: Some(code),
+            };
+            let mut builder = flatbuffers::FlatBufferBuilder::new();
+            let offset = build_module(&mut builder, module);
+            let buf = finish_serialize(&mut builder, offset);
+
+            // Write module contents to file
+            let mut fpath = outdir.join(path);
+            fpath.set_extension("fc");
+            fs::create_dir_all(fpath.parent().unwrap())?;
+            let file = fs::File::create(&fpath)?;
+            let mut encoder = Encoder::new(file)?;
+            encoder.write_all(buf)?;
+            encoder.finish().into_result()?;
+        } else {
+            bail!("package {} missing code", &path);
+        }
+    }
+    Ok(())
+}
+
+/// Module represenets the result of compiling Flux source code.
+///
+/// The polytype represents the type of the entire package as a record type.
+/// The record properties represent the exported values from the package.
+///
+/// The package is the actual code of the package that can be used to execute the package.
+///
+/// This struct is experimental we anticipate it will change as we build more systems around
+/// the concepts of modules.
+pub struct Module {
+    /// The polytype
+    pub polytype: Option<PolyType>,
+    /// The code
+    pub code: Option<nodes::Package>,
 }
 
 #[cfg(test)]
@@ -353,15 +422,15 @@ mod tests {
 
             z = b.y
         "#;
-        let files = semantic_map! {
-            String::from("a") => parse_string("a.flux", a),
-            String::from("b") => parse_string("b.flux", b),
-            String::from("c") => parse_string("c.flux", c),
+        let ast_packages: ASTPackageMap = semantic_map! {
+            String::from("a") => parse_string("a.flux".to_string(), a).into(),
+            String::from("b") => parse_string("b.flux".to_string(), b).into(),
+            String::from("c") => parse_string("c.flux".to_string(), c).into(),
         };
-        let (types, imports) = infer_pkg(
+        let (types, imports, _) = infer_pkg(
             "c",
             &mut Fresher::from(1),
-            &files,
+            &ast_packages,
             PolyTypeMap::new(),
             PolyTypeMap::new(),
         )?;
@@ -423,31 +492,6 @@ mod tests {
     }
 
     #[test]
-    fn prelude_dependencies() {
-        let files = file_map(parse_flux_files(stdlib_relative_path()).unwrap());
-
-        let r = PRELUDE.iter().try_fold(
-            (Vec::new(), HashSet::new(), HashSet::new()),
-            |(deps, seen, done), name| dependencies(name, &files, deps, seen, done),
-        );
-
-        let names = r.unwrap().0;
-
-        assert_eq!(
-            vec![
-                "system",
-                "date",
-                "math",
-                "strings",
-                "regexp",
-                "experimental/table",
-                "timezone",
-            ],
-            names,
-        );
-    }
-
-    #[test]
     fn cyclic_dependency() {
         let a = r#"
             import "b"
@@ -455,12 +499,18 @@ mod tests {
         let b = r#"
             import "a"
         "#;
-        let files = semantic_map! {
-            String::from("a") => parse_string("a.flux", a),
-            String::from("b") => parse_string("b.flux", b),
+        let ast_packages: ASTPackageMap = semantic_map! {
+            String::from("a") => parse_string("a.flux".to_string(), a).into(),
+            String::from("b") => parse_string("b.flux".to_string(), b).into(),
         };
-        let got_err = dependencies("b", &files, Vec::new(), HashSet::new(), HashSet::new())
-            .expect_err("expected cyclic dependency error");
+        let got_err = dependencies(
+            "b",
+            &ast_packages,
+            Vec::new(),
+            HashSet::new(),
+            HashSet::new(),
+        )
+        .expect_err("expected cyclic dependency error");
 
         assert_eq!(
             r#"package "b" depends on itself"#.to_string(),

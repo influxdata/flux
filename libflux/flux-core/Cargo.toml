@@ -8,6 +8,16 @@ edition = "2018"
 name = "fluxcore"
 crate-type = ["rlib"]
 
+[[bin]]
+name = "fluxdoc"
+test = false
+bench = false
+
+[[bin]]
+name = "fluxc"
+test = false
+bench = false
+
 [features]
 default = ["strict"]
 strict = []
@@ -15,6 +25,7 @@ lsp = ["lsp-types"]
 
 [dependencies]
 anyhow = "1"
+thiserror = "1"
 comrak = "0.10.1"
 fnv = "1.0.7"
 derive_more = { version = "0.99.11", default-features = false, features = [
@@ -33,6 +44,8 @@ derivative = "2.1.1"
 walkdir = "2.2.9"
 lsp-types = { version = "0.89.2", optional = true }
 pulldown-cmark = { version = "0.8", default-features = false }
+structopt = "0.3"
+libflate = "1"
 
 [dev-dependencies]
 colored = "1.8"

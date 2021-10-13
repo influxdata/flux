@@ -1477,6 +1477,7 @@ pub trait MaxTvar {
     /// Return the maximum type variable of a type.
     fn max_tvar(&self) -> Option<Tvar>;
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

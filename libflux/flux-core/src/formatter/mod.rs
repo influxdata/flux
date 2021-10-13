@@ -25,7 +25,7 @@ pub fn convert_to_string(file: &File) -> Result<String> {
 /// assert_eq!(formatted, "(r) => r.user == \"user1\"");
 /// ```
 pub fn format(contents: &str) -> Result<String> {
-    let file = parse_string("", contents);
+    let file = parse_string("".to_string(), contents);
     convert_to_string(&file)
 }
 

@@ -20,7 +20,7 @@ type VariableAssignMap<'a> = HashMap<&'a str, Option<&'a nodes::VariableAssgn>>;
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// This is the error type for errors returned by the `check()` function.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Error {
     /// An assignment after the `option` keyword is not correctly formed.
     InvalidOption(ast::SourceLocation),
@@ -310,12 +310,13 @@ mod tests {
         let mut ast_files = vec![];
         let mut ctr = 0;
         for f in files {
-            let file = parser::parse_string(format!("file_{}.flux", ctr).as_str(), f);
+            let file = parser::parse_string(format!("file_{}.flux", ctr), f);
             ast_files.push(file);
             ctr = ctr + 1;
         }
         let ast_pkg = merge_ast_files(ast_files);
-        convert::convert_with(ast_pkg, &mut fresh::Fresher::default())
+        let sem_pkg = convert::convert_package(ast_pkg, &mut fresh::Fresher::default())?;
+        Ok(sem_pkg)
     }
 
     fn check_success(files: Vec<&str>) {
@@ -375,7 +376,7 @@ mod tests {
                 }
             "#,
             ],
-            "invalid statement in function block",
+            "invalid option statement in function block",
         );
         // nested function block
         check_fail(
@@ -391,7 +392,7 @@ mod tests {
                 }
             "#,
             ],
-            "invalid statement in function block",
+            "invalid option statement in function block",
         );
         // qualified option
         check_fail(
@@ -405,7 +406,7 @@ mod tests {
                 }
             "#,
             ],
-            "invalid statement in function block",
+            "invalid option statement in function block",
         );
         // multiple files
         check_fail(
@@ -441,7 +442,7 @@ mod tests {
                 }
             "#,
             ],
-            "invalid statement in function block",
+            "invalid option statement in function block",
         )
     }
 

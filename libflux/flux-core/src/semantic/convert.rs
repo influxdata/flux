@@ -10,9 +10,44 @@ use crate::semantic::types::MonoTypeMap;
 use crate::semantic::types::SemanticMap;
 use std::collections::BTreeMap;
 
-use anyhow::{anyhow, bail, Result};
+use thiserror::Error;
 
-/// convert_with converts an [AST package] node to its semantic representation using
+/// Error that categorizes errors when converting from AST to semantic graph.
+#[derive(Error, Debug, PartialEq)]
+#[allow(missing_docs)]
+pub enum Error {
+    #[error("TestCase is not supported in semantic analysis")]
+    TestCase,
+    #[error("BadStatement is not supported in semantic analysis")]
+    BadStatement,
+    #[error("BadExpression is not supported in semantic analysis")]
+    BadExpression,
+    #[error("invalid named type {0}")]
+    InvalidNamedType(String),
+    #[error("function types can have at most one pipe parameter")]
+    AtMostOnePipe,
+    #[error("invalid constraint {0}")]
+    InvalidConstraint(String),
+    #[error("a pipe literal may only be used as a default value for an argument in a function definition")]
+    InvalidPipeLit,
+    #[error("function parameters must be identifiers")]
+    FunctionParameterIdents,
+    #[error("missing return statement in block")]
+    MissingReturn,
+    #[error("invalid {0} statement in function block")]
+    InvalidFunctionStatement(&'static str),
+    #[error("function parameters is not a record expression")]
+    ParametersNotRecord,
+    #[error("function parameters are more than one record expression")]
+    ExtraParameterRecord,
+    #[error("invalid duration, {0}")]
+    InvalidDuration(String),
+}
+
+/// Result encapsulates any error during the conversion process.
+pub type Result<T> = std::result::Result<T, Error>;
+
+/// convert_package converts an [AST package] node to its semantic representation using
 /// the provided [`Fresher`].
 ///
 /// Note: most external callers of this function will want to use the analyze()
@@ -25,12 +60,7 @@ use anyhow::{anyhow, bail, Result};
 /// overhead involved.
 ///
 /// [AST package]: ast::Package
-pub fn convert_with(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
-    convert_package(pkg, fresher)
-    // TODO(affo): run checks on the semantic graph.
-}
-
-fn convert_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
+pub fn convert_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
     let files = pkg
         .files
         .into_iter()
@@ -43,11 +73,7 @@ fn convert_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> 
     })
 }
 
-/// Converts an [AST file] node to its semantic representation using
-/// the provided fresher.
-///
-/// [AST file]: ast::File
-pub fn convert_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
+fn convert_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
     let package = convert_package_clause(file.package, fresher)?;
     let imports = file
         .imports
@@ -109,9 +135,7 @@ fn convert_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
         ast::Statement::Test(s) => Ok(Statement::Test(Box::new(convert_test_statement(
             *s, fresher,
         )?))),
-        ast::Statement::TestCase(_) => {
-            Err(anyhow!("TestCase is not supported in semantic analysis"))
-        }
+        ast::Statement::TestCase(_) => Err(Error::TestCase),
         ast::Statement::Expr(s) => Ok(Statement::Expr(convert_expression_statement(*s, fresher)?)),
         ast::Statement::Return(s) => Ok(Statement::Return(convert_return_statement(*s, fresher)?)),
         // TODO(affo): we should fix this to include MemberAssignement.
@@ -121,9 +145,7 @@ fn convert_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
         ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(
             convert_variable_assignment(*s, fresher)?,
         ))),
-        ast::Statement::Bad(_) => Err(anyhow!(
-            "BadStatement is not supported in semantic analysis"
-        )),
+        ast::Statement::Bad(_) => Err(Error::BadStatement),
     }
 }
 
@@ -173,7 +195,7 @@ fn convert_monotype(
             "time" => Ok(MonoType::Time),
             "regexp" => Ok(MonoType::Regexp),
             "bytes" => Ok(MonoType::Bytes),
-            _ => Err(anyhow!("invalid named type {}", basic.name.name)),
+            _ => Err(Error::InvalidNamedType(basic.name.name.to_string())),
         },
         ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(convert_monotype(
             arr.element,
@@ -209,7 +231,7 @@ fn convert_monotype(
                             });
                             dirty = true;
                         } else {
-                            bail!("function types can have at most one pipe parameter");
+                            return Err(Error::AtMostOnePipe);
                         }
                     }
                 }
@@ -279,7 +301,7 @@ pub fn convert_polytype(
                         "Record" => kinds.push(types::Kind::Record),
                         "Stringable" => kinds.push(types::Kind::Stringable),
                         _ => {
-                            bail!("Constraint not found {} ", &k.name);
+                            return Err(Error::InvalidConstraint(k.name.clone()));
                         }
                     }
                 }
@@ -332,31 +354,73 @@ fn convert_member_assignment(stmt: ast::MemberAssgn, fresher: &mut Fresher) -> R
 
 fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Expression> {
     match expr {
-        ast::Expression::Function(expr) => Ok(Expression::Function(Box::new(convert_function_expression(*expr, fresher)?))),
-        ast::Expression::Call(expr) => Ok(Expression::Call(Box::new(convert_call_expression(*expr, fresher)?))),
-        ast::Expression::Member(expr) => Ok(Expression::Member(Box::new(convert_member_expression(*expr, fresher)?))),
-        ast::Expression::Index(expr) => Ok(Expression::Index(Box::new(convert_index_expression(*expr, fresher)?))),
-        ast::Expression::PipeExpr(expr) => Ok(Expression::Call(Box::new(convert_pipe_expression(*expr, fresher)?))),
-        ast::Expression::Binary(expr) => Ok(Expression::Binary(Box::new(convert_binary_expression(*expr, fresher)?))),
-        ast::Expression::Unary(expr) => Ok(Expression::Unary(Box::new(convert_unary_expression(*expr, fresher)?))),
-        ast::Expression::Logical(expr) => Ok(Expression::Logical(Box::new(convert_logical_expression(*expr, fresher)?))),
-        ast::Expression::Conditional(expr) => Ok(Expression::Conditional(Box::new(convert_conditional_expression(*expr, fresher)?))),
-        ast::Expression::Object(expr) => Ok(Expression::Object(Box::new(convert_object_expression(*expr, fresher)?))),
-        ast::Expression::Array(expr) => Ok(Expression::Array(Box::new(convert_array_expression(*expr, fresher)?))),
-        ast::Expression::Dict(expr) => Ok(Expression::Dict(Box::new(convert_dict_expression(*expr, fresher)?))),
-        ast::Expression::Identifier(expr) => Ok(Expression::Identifier(convert_identifier_expression(expr, fresher)?)),
-        ast::Expression::StringExpr(expr) => Ok(Expression::StringExpr(Box::new(convert_string_expression(*expr, fresher)?))),
+        ast::Expression::Function(expr) => Ok(Expression::Function(Box::new(
+            convert_function_expression(*expr, fresher)?,
+        ))),
+        ast::Expression::Call(expr) => Ok(Expression::Call(Box::new(convert_call_expression(
+            *expr, fresher,
+        )?))),
+        ast::Expression::Member(expr) => Ok(Expression::Member(Box::new(
+            convert_member_expression(*expr, fresher)?,
+        ))),
+        ast::Expression::Index(expr) => Ok(Expression::Index(Box::new(convert_index_expression(
+            *expr, fresher,
+        )?))),
+        ast::Expression::PipeExpr(expr) => Ok(Expression::Call(Box::new(convert_pipe_expression(
+            *expr, fresher,
+        )?))),
+        ast::Expression::Binary(expr) => Ok(Expression::Binary(Box::new(
+            convert_binary_expression(*expr, fresher)?,
+        ))),
+        ast::Expression::Unary(expr) => Ok(Expression::Unary(Box::new(convert_unary_expression(
+            *expr, fresher,
+        )?))),
+        ast::Expression::Logical(expr) => Ok(Expression::Logical(Box::new(
+            convert_logical_expression(*expr, fresher)?,
+        ))),
+        ast::Expression::Conditional(expr) => Ok(Expression::Conditional(Box::new(
+            convert_conditional_expression(*expr, fresher)?,
+        ))),
+        ast::Expression::Object(expr) => Ok(Expression::Object(Box::new(
+            convert_object_expression(*expr, fresher)?,
+        ))),
+        ast::Expression::Array(expr) => Ok(Expression::Array(Box::new(convert_array_expression(
+            *expr, fresher,
+        )?))),
+        ast::Expression::Dict(expr) => Ok(Expression::Dict(Box::new(convert_dict_expression(
+            *expr, fresher,
+        )?))),
+        ast::Expression::Identifier(expr) => Ok(Expression::Identifier(
+            convert_identifier_expression(expr, fresher)?,
+        )),
+        ast::Expression::StringExpr(expr) => Ok(Expression::StringExpr(Box::new(
+            convert_string_expression(*expr, fresher)?,
+        ))),
         ast::Expression::Paren(expr) => convert_expression(expr.expression, fresher),
-        ast::Expression::StringLit(lit) => Ok(Expression::StringLit(convert_string_literal(lit, fresher)?)),
-        ast::Expression::Boolean(lit) => Ok(Expression::Boolean(convert_boolean_literal(lit, fresher)?)),
+        ast::Expression::StringLit(lit) => {
+            Ok(Expression::StringLit(convert_string_literal(lit, fresher)?))
+        }
+        ast::Expression::Boolean(lit) => {
+            Ok(Expression::Boolean(convert_boolean_literal(lit, fresher)?))
+        }
         ast::Expression::Float(lit) => Ok(Expression::Float(convert_float_literal(lit, fresher)?)),
-        ast::Expression::Integer(lit) => Ok(Expression::Integer(convert_integer_literal(lit, fresher)?)),
-        ast::Expression::Uint(lit) => Ok(Expression::Uint(convert_unsigned_integer_literal(lit, fresher)?)),
-        ast::Expression::Regexp(lit) => Ok(Expression::Regexp(convert_regexp_literal(lit, fresher)?)),
-        ast::Expression::Duration(lit) => Ok(Expression::Duration(convert_duration_literal(lit, fresher)?)),
-        ast::Expression::DateTime(lit) => Ok(Expression::DateTime(convert_date_time_literal(lit, fresher)?)),
-        ast::Expression::PipeLit(_) => Err(anyhow!("a pipe literal may only be used as a default value for an argument in a function definition")),
-        ast::Expression::Bad(_) => Err(anyhow!("BadExpression is not supported in semantic analysis"))
+        ast::Expression::Integer(lit) => {
+            Ok(Expression::Integer(convert_integer_literal(lit, fresher)?))
+        }
+        ast::Expression::Uint(lit) => Ok(Expression::Uint(convert_unsigned_integer_literal(
+            lit, fresher,
+        )?)),
+        ast::Expression::Regexp(lit) => {
+            Ok(Expression::Regexp(convert_regexp_literal(lit, fresher)?))
+        }
+        ast::Expression::Duration(lit) => Ok(Expression::Duration(convert_duration_literal(
+            lit, fresher,
+        )?)),
+        ast::Expression::DateTime(lit) => Ok(Expression::DateTime(convert_date_time_literal(
+            lit, fresher,
+        )?)),
+        ast::Expression::PipeLit(_) => Err(Error::InvalidPipeLit),
+        ast::Expression::Bad(_) => Err(Error::BadExpression),
     }
 }
 
@@ -384,7 +448,7 @@ fn convert_function_params(
     for prop in props {
         let id = match prop.key {
             ast::PropertyKey::Identifier(id) => Ok(id),
-            _ => Err(anyhow!("function params must be identifiers")),
+            _ => Err(Error::FunctionParameterIdents),
         }?;
         let key = convert_identifier(id, fresher)?;
         let mut default: Option<Expression> = None;
@@ -393,7 +457,7 @@ fn convert_function_params(
             match expr {
                 ast::Expression::PipeLit(_) => {
                     if piped {
-                        bail!("only a single argument may be piped");
+                        return Err(Error::AtMostOnePipe);
                     } else {
                         piped = true;
                         is_pipe = true;
@@ -435,7 +499,7 @@ fn convert_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
             argument,
         })
     } else {
-        bail!("missing return statement in block");
+        return Err(Error::MissingReturn);
     };
 
     body.try_fold(block, |acc, s| match s {
@@ -447,7 +511,7 @@ fn convert_block(block: ast::Block, fresher: &mut Fresher) -> Result<Block> {
             convert_expression_statement(*stmt, fresher)?,
             Box::new(acc),
         )),
-        _ => Err(anyhow!("invalid statement in function block {:#?}", s)),
+        _ => Err(Error::InvalidFunctionStatement(s.type_name())),
     })
 }
 
@@ -455,20 +519,20 @@ fn convert_call_expression(expr: ast::CallExpr, fresher: &mut Fresher) -> Result
     let callee = convert_expression(expr.callee, fresher)?;
     // TODO(affo): I'd prefer these checks to be in ast.Check().
     if expr.arguments.len() > 1 {
-        bail!("arguments are more than one object expression");
+        return Err(Error::ExtraParameterRecord);
     }
     let mut args = expr
         .arguments
         .into_iter()
         .map(|a| match a {
             ast::Expression::Object(obj) => convert_object_expression(*obj, fresher),
-            _ => Err(anyhow!("arguments not an object expression")),
+            _ => Err(Error::ParametersNotRecord),
         })
         .collect::<Result<Vec<ObjectExpr>>>()?;
     let arguments = match args.len() {
         0 => Ok(Vec::new()),
         1 => Ok(args.pop().expect("there must be 1 element").properties),
-        _ => Err(anyhow!("arguments are more than one object expression")),
+        _ => Err(Error::ExtraParameterRecord),
     }?;
     Ok(CallExpr {
         loc: expr.base.location,
@@ -724,7 +788,7 @@ fn convert_regexp_literal(lit: ast::RegexpLit, _: &mut Fresher) -> Result<Regexp
 fn convert_duration_literal(lit: ast::DurationLit, _: &mut Fresher) -> Result<DurationLit> {
     Ok(DurationLit {
         loc: lit.base.location,
-        value: convert_duration(&lit.values)?,
+        value: convert_duration(&lit.values).map_err(|e| Error::InvalidDuration(e.to_string()))?,
     })
 }
 
@@ -752,7 +816,7 @@ mod tests {
     }
 
     fn test_convert(pkg: ast::Package) -> Result<Package> {
-        convert_with(pkg, &mut fresh::Fresher::default())
+        convert_package(pkg, &mut fresh::Fresher::default())
     }
 
     #[test]
@@ -2092,7 +2156,10 @@ mod tests {
             }],
         };
         let got = test_convert(pkg).err().unwrap().to_string();
-        assert_eq!("only a single argument may be piped".to_string(), got);
+        assert_eq!(
+            "function types can have at most one pipe parameter".to_string(),
+            got
+        );
     }
 
     #[test]
@@ -2165,7 +2232,7 @@ mod tests {
         };
         let got = test_convert(pkg).err().unwrap().to_string();
         assert_eq!(
-            "arguments are more than one object expression".to_string(),
+            "function parameters are more than one record expression".to_string(),
             got
         );
     }

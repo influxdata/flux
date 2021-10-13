@@ -16,9 +16,9 @@ mod strconv;
 ///
 /// Returns a [`File`] with the value of the `name` parameter
 /// as the file name.
-pub fn parse_string(name: &str, s: &str) -> File {
+pub fn parse_string(name: String, s: &str) -> File {
     let mut p = Parser::new(s);
-    p.parse_file(String::from(name))
+    p.parse_file(name)
 }
 
 struct TokenError {

@@ -1,19 +1,25 @@
-use crate::semantic::types::{PolyType, PolyTypeMap};
+//! Module import defines the abstractions for importing Flux package types from various sources.
 
+use crate::semantic::{
+    env::Environment,
+    types::{PolyType, PolyTypeMap},
+};
+
+/// Importer defines an API for resolving Flux import paths to their corresponding types.
 pub trait Importer {
-    fn import(&self, _name: &str) -> Option<PolyType> {
+    /// Import resolves an absolute import path and returns the type for the corresponding Flux
+    /// package or None if no such package exists.
+    fn import(&mut self, _path: &str) -> Option<PolyType> {
         None
     }
 }
-
-impl Importer for PolyTypeMap {
-    fn import(&self, name: &str) -> Option<PolyType> {
-        self.get(name).cloned()
+impl Importer for Environment {
+    fn import(&mut self, path: &str) -> Option<PolyType> {
+        self.lookup(path).cloned()
     }
 }
-
-impl Importer for Box<dyn Importer> {
-    fn import(&self, name: &str) -> Option<PolyType> {
-        self.as_ref().import(name)
+impl Importer for PolyTypeMap {
+    fn import(&mut self, name: &str) -> Option<PolyType> {
+        self.get(name).cloned()
     }
 }

@@ -446,4 +446,9 @@ table UnsignedIntegerLiteral {
   value:uint64;
 }
 
+table Module {
+    polytype:PolyType;
+    code:Package;
+}
+
 root_type Package;

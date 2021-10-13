@@ -1,6 +1,5 @@
 //! Type environments.
 
-use crate::semantic::import::Importer;
 use crate::semantic::sub::{apply2, Substitutable, Substitution};
 use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
 
@@ -52,12 +51,6 @@ impl Substitutable for Environment {
     }
 }
 
-impl Importer for Environment {
-    fn import(&self, name: &str) -> Option<PolyType> {
-        self.lookup(name).cloned()
-    }
-}
-
 // Derive a type environment from a hash map
 impl From<PolyTypeMap> for Environment {
     fn from(bindings: PolyTypeMap) -> Environment {
@@ -66,6 +59,12 @@ impl From<PolyTypeMap> for Environment {
             values: bindings,
             readwrite: false,
         }
+    }
+}
+
+impl Default for Environment {
+    fn default() -> Self {
+        Environment::empty(false)
     }
 }
 

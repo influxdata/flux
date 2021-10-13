@@ -8,7 +8,7 @@ use chrono::TimeZone;
 pub fn ast_with_every_kind_of_node() -> Package {
     let f = vec![
         crate::parser::parse_string(
-            "test1",
+            "test1".to_string(),
             r#"
 package mypkg
 import "my_other_pkg"
@@ -30,7 +30,7 @@ test aggregate_window_empty = () => ({
 "#,
         ),
         crate::parser::parse_string(
-            "test2",
+            "test2".to_string(),
             r#"
 a
 
@@ -2130,4 +2130,49 @@ fn test_ast_json_roundtrip() {
         Err(e) => panic!("error deserializing JSON: {}", e),
     };
     assert_eq!(ast, roundtrip_ast);
+}
+
+/// Locator makes constructing an SourceLocation from a string simple.
+pub struct Locator<'a> {
+    source: &'a str,
+    lines: Vec<u32>,
+}
+
+impl<'a> Locator<'a> {
+    /// Create a new Locator for the given source code
+    pub fn new(source: &'a str) -> Self {
+        let mut lines = Vec::new();
+        lines.push(0);
+        let ci = source.char_indices();
+        for (i, c) in ci {
+            match c {
+                '\n' => lines.push((i + 1) as u32),
+                _ => (),
+            }
+        }
+        Self { source, lines }
+    }
+
+    /// Get the SourceLocation for the given start line, start column, end line and end
+    /// column.
+    pub fn get(&self, sl: u32, sc: u32, el: u32, ec: u32) -> SourceLocation {
+        SourceLocation {
+            file: Some("".to_string()),
+            source: Some(self.get_src(sl, sc, el, ec).to_string()),
+            start: Position {
+                line: sl,
+                column: sc,
+            },
+            end: Position {
+                line: el,
+                column: ec,
+            },
+        }
+    }
+
+    fn get_src(&self, sl: u32, sc: u32, el: u32, ec: u32) -> &str {
+        let start_offset = self.lines.get(sl as usize - 1).expect("line not found") + sc - 1;
+        let end_offset = self.lines.get(el as usize - 1).expect("line not found") + ec - 1;
+        return &self.source[start_offset as usize..end_offset as usize];
+    }
 }

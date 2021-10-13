@@ -271,6 +271,19 @@ impl Statement {
             Statement::Builtin(_) => 6,
         }
     }
+    /// Returns the name of the type of statement.
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            Statement::Expr(_) => "expression",
+            Statement::Variable(_) => "variable",
+            Statement::Option(_) => "option",
+            Statement::Return(_) => "return",
+            Statement::Bad(_) => "bad",
+            Statement::Test(_) => "test",
+            Statement::TestCase(_) => "testcase",
+            Statement::Builtin(_) => "builtin",
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -441,7 +454,8 @@ pub struct File {
 }
 
 impl File {
-    fn get_package(self: &File) -> &str {
+    /// Reports the package name defined in the file or the default package name if not defined
+    pub fn get_package(self: &File) -> &str {
         match &self.package {
             Some(pkg_clause) => pkg_clause.name.name.as_str(),
             None => DEFAULT_PACKAGE_NAME,
@@ -1695,5 +1709,7 @@ pub struct DateTimeLit {
     pub value: chrono::DateTime<FixedOffset>,
 }
 
+// The tests code exports a few helpers for writing AST related tests.
+// We make it public so other tests can consume those helpers.
 #[cfg(test)]
-mod tests;
+pub mod tests;

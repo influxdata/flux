@@ -87,8 +87,8 @@ mod tests {
         let in_script = "package foo\na = 1\n";
         let out_script = "package foo\nb = 2\n";
 
-        let in_file = crate::parser::parse_string("test", in_script);
-        let out_file = crate::parser::parse_string("test", out_script);
+        let in_file = crate::parser::parse_string("test".to_string(), in_script);
+        let out_file = crate::parser::parse_string("test".to_string(), out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -113,8 +113,10 @@ mod tests {
         // and on explicit
         let has_clause_script = "package main\nx = 32";
         let no_clause_script = "y = 32";
-        let has_clause_file = crate::parser::parse_string("has_clause.flux", has_clause_script);
-        let no_clause_file = crate::parser::parse_string("no_clause.flux", no_clause_script);
+        let has_clause_file =
+            crate::parser::parse_string("has_clause.flux".to_string(), has_clause_script);
+        let no_clause_file =
+            crate::parser::parse_string("no_clause.flux".to_string(), no_clause_script);
         {
             let mut out_pkg: ast::Package = has_clause_file.clone().into();
             let mut in_pkg: ast::Package = no_clause_file.clone().into();
@@ -138,7 +140,7 @@ mod tests {
     fn ok_no_in_pkg() {
         let out_script = "package foo\nb = 2\n";
 
-        let out_file = crate::parser::parse_string("test", out_script);
+        let out_file = crate::parser::parse_string("test".to_string(), out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -162,8 +164,8 @@ mod tests {
         let in_script = "package foo\na = 1\n";
         let out_script = "";
 
-        let in_file = crate::parser::parse_string("test_in.flux", in_script);
-        let out_file = crate::parser::parse_string("test_out.flux", out_script);
+        let in_file = crate::parser::parse_string("test_in.flux".to_string(), in_script);
+        let out_file = crate::parser::parse_string("test_out.flux".to_string(), out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -188,8 +190,8 @@ mod tests {
         let in_script = "a = 1000\n";
         let out_script = "package foo\nb = 100\n";
 
-        let in_file = crate::parser::parse_string("test_in.flux", in_script);
-        let out_file = crate::parser::parse_string("test_out.flux", out_script);
+        let in_file = crate::parser::parse_string("test_in.flux".to_string(), in_script);
+        let out_file = crate::parser::parse_string("test_out.flux".to_string(), out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -213,8 +215,8 @@ mod tests {
     fn ok_no_pkg_clauses() {
         let in_script = "a = 100\n";
         let out_script = "b = a * a\n";
-        let in_file = crate::parser::parse_string("test", in_script);
-        let out_file = crate::parser::parse_string("test", out_script);
+        let in_file = crate::parser::parse_string("test".to_string(), in_script);
+        let out_file = crate::parser::parse_string("test".to_string(), out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -231,4 +233,3 @@ mod tests {
         assert_eq!(2, out_pkg.files.len());
     }
 }
-

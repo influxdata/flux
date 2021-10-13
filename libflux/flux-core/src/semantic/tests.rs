@@ -23,13 +23,15 @@
 //!
 use std::collections::HashMap;
 
-use crate::semantic::bootstrap::build_polytype;
-use crate::semantic::convert::convert_with;
-use crate::semantic::env::Environment;
-use crate::semantic::fresh::Fresher;
-use crate::semantic::import::Importer;
-use crate::semantic::nodes;
-use crate::semantic::types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds};
+use crate::semantic::{
+    self,
+    bootstrap::build_polytype,
+    env::Environment,
+    fresh::Fresher,
+    import::Importer,
+    types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
+    Analyzer,
+};
 
 use crate::ast;
 use crate::ast::get_err_type_expression;
@@ -41,7 +43,7 @@ use colored::*;
 use derive_more::Display;
 
 fn parse_program(src: &str) -> ast::Package {
-    let file = parse_string("", src);
+    let file = parse_string("".to_string(), src);
 
     ast::Package {
         base: file.base.clone(),
@@ -71,7 +73,7 @@ fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap {
 }
 
 impl Importer for HashMap<&str, PolyType> {
-    fn import(&self, name: &str) -> Option<PolyType> {
+    fn import(&mut self, name: &str) -> Option<PolyType> {
         match self.get(name) {
             Some(pty) => Some(pty.clone()),
             None => None,
@@ -81,17 +83,10 @@ impl Importer for HashMap<&str, PolyType> {
 
 #[derive(Debug, Display, PartialEq)]
 enum Error {
-    #[display(
-        fmt = "{}",
-        r#"_0
-            .iter()
-            .map(|err| err.to_string())
-            .collect::<Vec<_>>()
-            .join("\n")"#
-    )]
-    Parse(Vec<ast::check::Error>),
     #[display(fmt = "{}", _0)]
-    Infer(nodes::Error),
+    Parse(ast::check::Errors),
+    #[display(fmt = "{}", _0)]
+    Analysis(semantic::Error),
     #[display(
         fmt = "\n\n{}\n\n{}\n{}\n{}\n{}\n",
         r#""unexpected types:".red().bold()"#,
@@ -136,21 +131,12 @@ fn infer_types(
 
     let env: Environment = env.into();
 
-    let mut f = Fresher::default();
-
     let pkg = parse_program(src);
-    let errors = ast::check::check(ast::walk::Node::Package(&pkg));
-    if !errors.is_empty() {
-        return Err(Error::Parse(errors));
-    }
-
-    let (env, _) = nodes::infer_pkg_types(
-        &mut convert_with(pkg, &mut f).expect("analysis failed"),
-        Environment::new(env),
-        &mut f,
-        &importer,
-    )
-    .map_err(Error::Infer)?;
+    let mut analyzer = Analyzer::new(Environment::new(env), importer);
+    let (env, _) = analyzer.analyze_ast(pkg).map_err(|e| match e {
+        semantic::Error::InvalidAST(e) => Error::Parse(e),
+        _ => Error::Analysis(e),
+    })?;
     let got = env.values;
 
     // Parse polytype expressions in expected environment.
@@ -277,7 +263,7 @@ macro_rules! test_infer_err {
             | Err(err @ Error::TypeMismatch {.. }) => {
                 panic!("{}", err)
             }
-            Err(Error::Infer(_)) => {
+            Err(Error::Analysis(_)) => {
 
             }
         }

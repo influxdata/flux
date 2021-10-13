@@ -6,13 +6,13 @@
 
 void test_ast();
 void test_semantic();
-void test_semantic_analyzer();
+void test_stateful_analyzer();
 void test_env_stdlib();
 
 int main(int argc, char* argv[]) {
   test_ast();
   test_semantic();
-  test_semantic_analyzer();
+  test_stateful_analyzer();
   test_env_stdlib();
   return 0;
 }
@@ -142,10 +142,10 @@ void test_semantic() {
   printf("\n");
 }
 
-void test_semantic_analyzer() {
+void test_stateful_analyzer() {
   printf("Testing semantic analyzer...\n");
 
-  struct flux_semantic_analyzer_t *analyzer = flux_new_semantic_analyzer();
+  struct flux_stateful_analyzer_t *analyzer = flux_new_stateful_analyzer();
 
   struct flux_ast_pkg_t *ast_pkg = NULL;
   struct flux_semantic_pkg_t *sem_pkg = NULL;
@@ -179,7 +179,7 @@ void test_semantic_analyzer() {
   printf("  error: %s\n", err_str);
   flux_free_error(err);
 
-  flux_free_semantic_analyzer(analyzer);
+  flux_free_stateful_analyzer(analyzer);
   printf("\n");
 }
 

@@ -271,11 +271,11 @@ impl Expression {
 
 /// Infer the types of a Flux package.
 #[allow(missing_docs)]
-pub fn infer_pkg_types<T>(
+pub fn infer_package<T>(
     pkg: &mut Package,
     env: Environment,
     f: &mut Fresher,
-    importer: &T,
+    importer: &mut T,
 ) -> std::result::Result<(Environment, Substitution), Error>
 where
     T: Importer,
@@ -284,15 +284,7 @@ where
     Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
 }
 
-/// Infer the types of a Flux source code file.
-#[allow(missing_docs)]
-pub fn infer_file<T>(file: &mut File, env: Environment, f: &mut Fresher, importer: &T) -> Result
-where
-    T: Importer,
-{
-    file.infer(env, f, importer)
-}
-
+/// Applies the substitution to the entire package.
 #[allow(missing_docs)]
 pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
     pkg.apply(sub)
@@ -308,7 +300,7 @@ pub struct Package {
 }
 
 impl Package {
-    fn infer<T>(&mut self, env: Environment, f: &mut Fresher, importer: &T) -> Result
+    fn infer<T>(&mut self, env: Environment, f: &mut Fresher, importer: &mut T) -> Result
     where
         T: Importer,
     {
@@ -336,7 +328,7 @@ pub struct File {
 }
 
 impl File {
-    fn infer<T>(&mut self, mut env: Environment, f: &mut Fresher, importer: &T) -> Result
+    fn infer<T>(&mut self, mut env: Environment, f: &mut Fresher, importer: &mut T) -> Result
     where
         T: Importer,
     {

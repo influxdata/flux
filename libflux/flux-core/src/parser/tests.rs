@@ -1,60 +1,19 @@
 use super::*;
 use crate::ast;
 
+use crate::ast::tests::Locator;
 use crate::ast::Expression::{Array, Member};
 use crate::ast::Statement::Variable;
 use crate::ast::StringExprPart::{Interpolated, Text};
 use chrono;
 use pretty_assertions::assert_eq;
 
-struct Locator<'a> {
-    source: &'a str,
-    lines: Vec<u32>,
-}
-
-impl<'a> Locator<'a> {
-    fn new(source: &'a str) -> Self {
-        let mut lines = Vec::new();
-        lines.push(0);
-        let ci = source.char_indices();
-        for (i, c) in ci {
-            match c {
-                '\n' => lines.push((i + 1) as u32),
-                _ => (),
-            }
-        }
-        Self { source, lines }
-    }
-
-    fn get(&self, sl: u32, sc: u32, el: u32, ec: u32) -> SourceLocation {
-        SourceLocation {
-            file: Some("".to_string()),
-            source: Some(self.get_src(sl, sc, el, ec).to_string()),
-            start: ast::Position {
-                line: sl,
-                column: sc,
-            },
-            end: ast::Position {
-                line: el,
-                column: ec,
-            },
-        }
-    }
-
-    fn get_src(&self, sl: u32, sc: u32, el: u32, ec: u32) -> &str {
-        let start_offset = self.lines.get(sl as usize - 1).expect("line not found") + sc - 1;
-        let end_offset = self.lines.get(el as usize - 1).expect("line not found") + ec - 1;
-        return &self.source[start_offset as usize..end_offset as usize];
-    }
-}
-
 #[test]
 fn parse_array_expr_no_rbrack() {
     let mut p = Parser::new(r#"group(columns: ["_time", "_field]", mode: "by")"#);
     let parsed = p.parse_file("".to_string());
     let node = ast::walk::Node::File(&parsed);
-    let errs = ast::check::check(node);
-    assert!(!errs.is_empty())
+    ast::check::check(node).unwrap_err();
 }
 
 #[test]
@@ -66,8 +25,7 @@ strings.joinStr(arr: [r.unit, ": time", string(v: now()), "InfluxDB Task", $task
     );
     let parsed = p.parse_file("".to_string());
     let node = ast::walk::Node::File(&parsed);
-    let errs = ast::check::check(node);
-    assert!(!errs.is_empty())
+    ast::check::check(node).unwrap_err();
 }
 
 #[test]
@@ -79,8 +37,7 @@ sort(columns: ["_time"], desc: true)|> limit(n: [object Object])
     );
     let parsed = p.parse_file("".to_string());
     let node = ast::walk::Node::File(&parsed);
-    let errs = ast::check::check(node);
-    assert!(!errs.is_empty())
+    ast::check::check(node).unwrap_err();
 }
 
 #[test]
