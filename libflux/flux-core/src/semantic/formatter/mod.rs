@@ -5,7 +5,7 @@ use crate::ast;
 use crate::semantic;
 use crate::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
 use crate::semantic::walk;
-use crate::Error;
+use anyhow::{anyhow, Error, Result};
 use chrono::SecondsFormat;
 
 #[cfg(test)]
@@ -150,7 +150,7 @@ impl Formatter {
             walk::Node::ObjectExpr(m) => self.format_record_expression_braces(m, true),
             walk::Node::Package(m) => self.format_package(m),
             walk::Node::BuiltinStmt(m) => self.format_builtin(m),
-            _ => self.err = Some(Error::from(format!("bad expression: {:?}", n))),
+            _ => self.err = Some(anyhow!(format!("bad expression: {:?}", n))),
         }
         self.set_indent(curr_ind)
     }
@@ -181,7 +181,7 @@ impl Formatter {
             MonoType::Record(rec) => self.format_record_type(rec),
             MonoType::Fun(fun) => self.format_function_type(fun),
             //MonoType::Vector(vec) => self.format_vector_type(vec),
-            _ => self.err = Some(Error::from("bad expression")),
+            _ => self.err = Some(anyhow!("bad expression")),
         }
     }
 
@@ -296,18 +296,55 @@ impl Formatter {
     }
 
     fn format_array_expression(&mut self, n: &semantic::nodes::ArrayExpr) {
+        let multiline = n.elements.len() > 4 || n.loc.is_multiline();
         self.write_rune('[');
-
-        for (_i, item) in (&n.elements).iter().enumerate() {
+        if multiline {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        }
+        let sep = match multiline {
+            true => ",\n",
+            false => ", ",
+        };
+        for (i, item) in (&n.elements).iter().enumerate() {
+            if i != 0 {
+                self.write_string(sep);
+                if multiline {
+                    self.write_indent()
+                }
+            }
             self.format_node(&walk::Node::from_expr(item));
         }
-        self.write_rune(']')
+        if multiline {
+            self.write_string(sep);
+            self.unindent();
+            self.write_indent();
+        }
+        self.write_rune(']');
+        self.write_string(&format!(":{}", &n.typ));
     }
 
     fn format_dict_expression(&mut self, n: &semantic::nodes::DictExpr) {
+        let multiline = n.elements.len() > 4 || n.loc.is_multiline();
         self.write_rune('[');
+        if multiline {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        }
+        let sep = match multiline {
+            true => ",\n",
+            false => ", ",
+        };
         if !n.elements.is_empty() {
-            for (_i, item) in (&n.elements).iter().enumerate() {
+            for (i, item) in (&n.elements).iter().enumerate() {
+                if i != 0 {
+                    self.write_string(sep);
+                    if multiline {
+                        self.write_indent()
+                    }
+                }
                 self.format_node(&walk::Node::from_expr(&item.0));
                 self.write_rune(':');
                 self.write_rune(' ');
@@ -315,6 +352,11 @@ impl Formatter {
             }
         } else {
             self.write_rune(':');
+        }
+        if multiline {
+            self.write_string(sep);
+            self.unindent();
+            self.write_indent();
         }
         self.write_rune(']')
     }
@@ -718,7 +760,7 @@ impl Formatter {
             f = v.to_rfc3339_opts(SecondsFormat::Secs, true)
         }
         self.write_string(&f);
-        self.write_string(":datetime");
+        self.write_string(":time");
     }
 
     fn format_duration_literal(&mut self, n: &semantic::nodes::DurationLit) {
