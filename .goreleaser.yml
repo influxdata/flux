@@ -27,4 +27,6 @@ archive:
 release:
   prerelease: auto
   name_template: "v{{.Version}}"
+  extra_files:
+    - glob: ./generated_docs/*.json
 

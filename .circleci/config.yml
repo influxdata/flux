@@ -28,6 +28,7 @@ jobs:
       - run: make checkgenerate
       - run: make checkfmt
       - run: make checktidy
+      - run: make checkdocs
       - run: make vet
       - run: GOGC=50 make staticcheck
       - run: make libflux-wasm
@@ -158,6 +159,8 @@ jobs:
       - run:
           name: Install pkg-config
           command: go build -o /go/bin/pkg-config github.com/influxdata/pkg-config
+      # Make the flux documentation JSON archives to add to the release
+      - run: make fluxdocs
       - run:
           # Parallelism for goreleaser must be set to 1 so it doesn't
           # attempt to invoke pkg-config, which invokes cargo,

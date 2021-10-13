@@ -170,30 +170,45 @@ test-release: Dockerfile_build
 	    go build -o /go/bin/pkg-config github.com/influxdata/pkg-config &&\
 		./gotool.sh github.com/goreleaser/goreleaser release --rm-dist --snapshot"
 
-.PHONY: generate \
-	clean \
-	cleangenerate \
+
+libflux/target/release/fluxc: libflux
+	cd libflux && $(CARGO) build $(CARGO_ARGS) --release --bin fluxc
+
+libflux/target/release/fluxdoc: libflux
+	cd libflux && $(CARGO) build $(CARGO_ARGS) --release --bin fluxdoc
+
+fluxdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc
+	FLUXC=./libflux/target/release/fluxc FLUXDOC=./libflux/target/release/fluxdoc ./etc/gen_docs.sh
+
+checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc
+	FLUXC=./libflux/target/release/fluxc FLUXDOC=./libflux/target/release/fluxdoc ./etc/checkdocs.sh
+
+# This list is sorted for easy inspection
+.PHONY: bench \
 	build \
+	build-wasm \
+	checkdocs \
+	checkfmt \
+	checkgenerate \
+	checktidy \
+	clean \
+	clean-wasm \
+	cleangenerate \
 	default \
+	fluxdocs \
+	fmt \
+	generate \
 	libflux \
 	libflux-go \
 	libflux-wasm \
-	clean-wasm \
-	build-wasm \
 	publish-wasm \
-	fmt \
-	checkfmt \
-	tidy \
-	checktidy \
-	checkgenerate \
+	release \
 	staticcheck \
 	test \
-	test-go \
-	test-rust \
-	test-race \
 	test-bench \
+	test-go \
+	test-race \
+	test-rust \
 	test-valgrind \
-	vet \
-	bench \
-	checkfmt \
-	release
+	tidy \
+	vet
