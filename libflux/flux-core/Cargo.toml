@@ -46,6 +46,7 @@ lsp-types = { version = "0.89.2", optional = true }
 pulldown-cmark = { version = "0.8", default-features = false }
 structopt = "0.3"
 libflate = "1"
+lazy_static = "1"
 
 [dev-dependencies]
 colored = "1.8"

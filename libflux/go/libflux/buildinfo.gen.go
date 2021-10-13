@@ -12,9 +12,9 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "83c0ffc2198c02d49b9fd33356d4e2cf343ece9e2dc8f9b4f1be2d8384037c81",
+	"libflux/Cargo.lock":                                                                          "12dbbc939fdbf0218090dc2b88ee60e8c83af386c2b0c047a8e19c6768631996",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                                "ef5e9189ca6f7f05c1fc8e89181dc409ee29250316c4382f0e293765ac754f1c",
+	"libflux/flux-core/Cargo.toml":                                                                "605fc52e755f7b11e09f86aeac863650e1f1c0cdf9c37657797e7c3f14c25524",
 	"libflux/flux-core/benches/scanner.rs":                                                        "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "ea93aaf47bded6f1fa46f6167308750837fac20a7e5ddeaecc86a3bc855143a4",
 	"libflux/flux-core/src/ast/check/tests.rs":                                                    "d1bc09d1f2573d4addd546a6fbf2ca7c9a65d0dd773b687196a5a3df4f2fd299",
@@ -30,7 +30,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "588aaded25739dfa5ecdedf7b4e94cd46d58efba18888fc5ea7e322d6e4b2933",
 	"libflux/flux-core/src/formatter/mod.rs":                                                      "ce8396fb867a5bc361fec99c36d36d70d2e1f3a6ec12de714f7257e4d4eef57f",
 	"libflux/flux-core/src/formatter/tests.rs":                                                    "b0a10998a65fc4b54a8f68b3a0ed186d8548ba3d7638f911eb188d2ce485206f",
-	"libflux/flux-core/src/lib.rs":                                                                "8bea09103be65b527a0e86b5861d598e9bd971e2225e2fbc7946e1cfcc7d8624",
+	"libflux/flux-core/src/lib.rs":                                                                "b15c8350169ed94973b173eb80f49e6d737e081501a28f66b979b60ec377028e",
 	"libflux/flux-core/src/parser/mod.rs":                                                         "1d5862788873ddf06599e592b68445c9d398b46cdbfb2c2d3590c6a338d78cde",
 	"libflux/flux-core/src/parser/strconv.rs":                                                     "748c82f6efc2eafaafb872db5b4185ce29aafa8f03ba02c4b84f4a9614e832d2",
 	"libflux/flux-core/src/parser/tests.rs":                                                       "1277c672801f50eefd36ddfae4ce8456c5ddcfbe63f4b1923f1aecbb2d9794c3",
@@ -44,7 +44,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/bootstrap.rs":                                                 "42205d54bd0b9a1144f5ff5a1cfeb641664a8856301460b8b0ab869e6964d19d",
 	"libflux/flux-core/src/semantic/check.rs":                                                     "b922f182bf42b2761cc3c0240cd87ed61e29f36bdb17315f69a28a7bc8252cd5",
 	"libflux/flux-core/src/semantic/convert.rs":                                                   "ba2588fb2b4d40cffea54ccc8d2c7c7326802f7127a7ace0127310220d8c0c34",
-	"libflux/flux-core/src/semantic/doc.rs":                                                       "e77dd6d5ed2e54ee678048b64e7ea4b214c7af5c4c58e32a44fb2c818229b5ac",
+	"libflux/flux-core/src/semantic/doc.rs":                                                       "8b99e9cffdf365caa18cd54ee27faf042a2126e975d175e6c796bc9996406891",
 	"libflux/flux-core/src/semantic/env.rs":                                                       "b6592e90052ddc9126e3c618b0530130318279490a8f9bddfc9782968ab70519",
 	"libflux/flux-core/src/semantic/flatbuffers/mod.rs":                                           "436fb3a0f087a9762d9d4d83e4fbf14023a92e2a392d424b74a0e63b3462333b",
 	"libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs":                            "3669a15eec7ed9219ac6b71e2b2e91d46fe72f67447268f1b15e2389872689f0",

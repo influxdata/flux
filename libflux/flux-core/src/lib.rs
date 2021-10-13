@@ -20,6 +20,7 @@ extern crate derive_more;
 extern crate fnv;
 #[macro_use]
 extern crate serde_derive;
+extern crate lazy_static;
 extern crate serde_aux;
 
 pub mod ast;
