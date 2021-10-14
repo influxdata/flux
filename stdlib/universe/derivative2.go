@@ -17,7 +17,6 @@ import (
 //go:generate tmpl -data=@../../internal/types.tmpldata -o derivative2.gen.go derivative2.gen.go.tmpl
 
 type derivativeTransformation2 struct {
-	execute.StatelessTransformation
 	unit        float64
 	nonNegative bool
 	columns     []string

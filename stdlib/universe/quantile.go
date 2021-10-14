@@ -1,7 +1,6 @@
 package universe
 
 import (
-	"context"
 	"math"
 	"sort"
 
@@ -200,16 +199,17 @@ func newQuantileProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Pr
 type QuantileAgg struct {
 	Quantile,
 	Compression float64
-
-	digest *tdigest.TDigest
-	ok     bool
+	freeDigests []*tdigest.TDigest
+	mem         *memory.Allocator
 }
 
-func NewQuantileAgg(q, comp float64) *QuantileAgg {
+func NewQuantileAgg(q, comp float64, mem *memory.Allocator, size int) *QuantileAgg {
+	digests := make([]*tdigest.TDigest, 0, size)
 	return &QuantileAgg{
 		Quantile:    q,
 		Compression: comp,
-		digest:      tdigest.NewWithCompression(comp),
+		freeDigests: digests,
+		mem:         mem,
 	}
 }
 
@@ -218,31 +218,31 @@ func createQuantileTransformation(id execute.DatasetID, mode execute.Accumulatio
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
-	agg := NewQuantileAgg(ps.Quantile, ps.Compression)
-	err := a.Allocator().Account(tdigest.ByteSizeForCompression(agg.Compression))
-	if err != nil {
-		return nil, nil, errors.Newf(codes.Internal, "could not allocate memory for tdigest: %s", err)
-	}
-	// TODO(sean): The quantile transformation is not compatible with the new aggregate transport.
-	// For now, we are passing it an empty context so that the new transport can't be enabled via feature flag.
-	// Once we've done some work to refactor quantile, we can try enabling the new transport again to see if the problem
-	// has been fixed.
-	//
-	// The reason quantile breaks when using the new aggregate state transport is that it reuses
-	// a buffer and overwrites memory necessary to get the correct result (see the Recycle method).
-	// However, recycling that memory is necessary in certain cases to avoid exorbitant memory use.
-	// We will want to modify quantile's behavior so that it only reuses memory when there isn't important
-	// state information to keep track of.
-	//
-	// See https://github.com/influxdata/flux/issues/4042 for more details.
-	return execute.NewSimpleAggregateTransformation(context.Background(), id, agg, ps.SimpleAggregateConfig, a.Allocator())
+	size := len(ps.SimpleAggregateConfig.Columns)
+	agg := NewQuantileAgg(ps.Quantile, ps.Compression, a.Allocator(), size)
+	return execute.NewSimpleAggregateTransformation(a.Context(), id, agg, ps.SimpleAggregateConfig, a.Allocator())
 }
 
-func (a *QuantileAgg) Recycle() *QuantileAgg {
-	na := new(QuantileAgg)
-	*na = *a
-	na.digest.Reset()
-	return na
+func (a *QuantileAgg) popFreeDigest() *tdigest.TDigest {
+	if len(a.freeDigests) < 1 {
+		return nil
+	}
+
+	i := len(a.freeDigests) - 1
+	d := a.freeDigests[i]
+	a.freeDigests = a.freeDigests[:i]
+	return d
+}
+
+func (a *QuantileAgg) pushFreeDigest(d *tdigest.TDigest) {
+	if d != nil {
+		if len(a.freeDigests) < cap(a.freeDigests) {
+			d.Reset()
+			a.freeDigests = append(a.freeDigests, d)
+		} else {
+			a.mem.Account(tdigest.ByteSizeForCompression(a.Compression) * -1)
+		}
+	}
 }
 
 func (a *QuantileAgg) NewBoolAgg() execute.DoBoolAgg {
@@ -258,32 +258,59 @@ func (a *QuantileAgg) NewUIntAgg() execute.DoUIntAgg {
 }
 
 func (a *QuantileAgg) NewFloatAgg() execute.DoFloatAgg {
-	return a.Recycle()
+	q := &QuantileAggState{
+		parent: a,
+	}
+	if len(a.freeDigests) > 0 {
+		q.digest = a.popFreeDigest()
+	} else {
+		a.mem.Account(tdigest.ByteSizeForCompression(a.Compression))
+		q.digest = tdigest.NewWithCompression(a.Compression)
+	}
+	return q
 }
 
 func (a *QuantileAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *QuantileAgg) DoFloat(vs *array.Float) {
+func (a *QuantileAgg) Dispose() {
+	for i := 0; i < len(a.freeDigests); i++ {
+		a.mem.Account(tdigest.ByteSizeForCompression(a.Compression) * -1)
+	}
+	a.freeDigests = nil
+}
+
+type QuantileAggState struct {
+	digest *tdigest.TDigest
+	parent *QuantileAgg
+	ok     bool
+}
+
+func (s *QuantileAggState) DoFloat(vs *array.Float) {
 	for i := 0; i < vs.Len(); i++ {
 		if vs.IsValid(i) {
-			a.digest.Add(vs.Value(i), 1)
-			a.ok = true
+			s.digest.Add(vs.Value(i), 1)
+			s.ok = true
 		}
 	}
 }
 
-func (a *QuantileAgg) Type() flux.ColType {
+func (s *QuantileAggState) Type() flux.ColType {
 	return flux.TFloat
 }
 
-func (a *QuantileAgg) ValueFloat() float64 {
-	return a.digest.Quantile(a.Quantile)
+func (s *QuantileAggState) ValueFloat() float64 {
+	return s.digest.Quantile(s.parent.Quantile)
 }
 
-func (a *QuantileAgg) IsNull() bool {
-	return !a.ok
+func (s *QuantileAggState) IsNull() bool {
+	return !s.ok
+}
+
+func (s *QuantileAggState) Dispose() {
+	s.parent.pushFreeDigest(s.digest)
+	s.digest = nil
 }
 
 type ExactQuantileAgg struct {
