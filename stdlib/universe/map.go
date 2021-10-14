@@ -185,7 +185,8 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 					}
 				}
 				if !v.IsNull() && c.Type.String() != v.Type().Nature().String() {
-					return errors.Newf(codes.Internal, "column %s:%s is not of type %v",
+					return errors.Newf(codes.Invalid, "map regroups data such that column %q would include values" +
+						" of two different data types: %v, %v",
 						c.Label, c.Type, v.Type(),
 					)
 				}
