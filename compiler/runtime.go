@@ -87,7 +87,6 @@ func eval(ctx context.Context, e Evaluator, scope Scope) (values.Value, error) {
 type blockEvaluator struct {
 	t     semantic.MonoType
 	body  []Evaluator
-	value values.Value
 }
 
 func (e *blockEvaluator) Type() semantic.MonoType {
@@ -96,13 +95,14 @@ func (e *blockEvaluator) Type() semantic.MonoType {
 
 func (e *blockEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
 	var err error
+	var value values.Value
 	for _, b := range e.body {
-		e.value, err = eval(ctx, b, scope)
+		value, err = eval(ctx, b, scope)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return e.value, nil
+	return value, nil
 }
 
 type returnEvaluator struct {
