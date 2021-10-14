@@ -320,6 +320,9 @@ func (t *simpleAggregateTransformation) Process(id DatasetID, tbl flux.Table) er
 			if err := builder.AppendNil(bj); err != nil {
 				return err
 			}
+			if vf, ok := vf.(Disposable); ok {
+				vf.Dispose()
+			}
 			continue
 		}
 
@@ -350,6 +353,9 @@ func (t *simpleAggregateTransformation) Process(id DatasetID, tbl flux.Table) er
 			if err := builder.AppendString(bj, v); err != nil {
 				return err
 			}
+		}
+		if vf, ok := vf.(Disposable); ok {
+			vf.Dispose()
 		}
 	}
 
