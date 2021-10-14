@@ -11,6 +11,8 @@ import (
 type NarrowStateTransformation interface {
 	// Process will process the TableView.
 	Process(chunk table.Chunk, state interface{}, d *TransportDataset, mem memory.Allocator) (interface{}, bool, error)
+
+	Disposable
 }
 
 var _ Transport = (*narrowStateTransformation)(nil)
@@ -52,7 +54,11 @@ func (n *narrowStateTransformation) ProcessMessage(m Message) error {
 		if err := n.d.FlushKey(m.Key()); err != nil {
 			return err
 		}
-		n.d.Delete(m.Key())
+		if v, ok := n.d.Delete(m.Key()); ok {
+			if v, ok := v.(Disposable); ok {
+				v.Dispose()
+			}
+		}
 		return nil
 	case ProcessMsg:
 		return n.Process(m.SrcDatasetID(), m.Table())
@@ -84,7 +90,14 @@ func (n *narrowStateTransformation) Process(id DatasetID, tbl flux.Table) error 
 
 // Finish is implemented to remain compatible with legacy upstreams.
 func (n *narrowStateTransformation) Finish(id DatasetID, err error) {
+	_ = n.d.Range(func(key flux.GroupKey, value interface{}) error {
+		if v, ok := value.(Disposable); ok {
+			v.Dispose()
+		}
+		return nil
+	})
 	n.d.Finish(err)
+	n.t.Dispose()
 }
 
 func (n *narrowStateTransformation) OperationType() string {

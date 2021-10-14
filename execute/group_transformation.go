@@ -14,6 +14,8 @@ import (
 // and GroupTransformation will swallow this Message.
 type GroupTransformation interface {
 	Process(chunk table.Chunk, d *TransportDataset, mem memory.Allocator) error
+
+	Disposable
 }
 
 var _ Transport = (*groupTransformation)(nil)
@@ -77,6 +79,7 @@ func (g *groupTransformation) Process(id DatasetID, tbl flux.Table) error {
 
 func (g *groupTransformation) Finish(id DatasetID, err error) {
 	g.d.Finish(err)
+	g.t.Dispose()
 }
 
 func (g *groupTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {

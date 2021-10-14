@@ -405,6 +405,8 @@ func (t *filterTransformationAdapter) Process(chunk table.Chunk, d *execute.Tran
 	return d.Process(out)
 }
 
+func (t *filterTransformationAdapter) Dispose() {}
+
 // RemoveTrivialFilterRule removes Filter nodes whose predicate always evaluates to true.
 type RemoveTrivialFilterRule struct{}
 

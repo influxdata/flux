@@ -107,6 +107,7 @@ func TestNarrowStateTransformation_FlushKey(t *testing.T) {
 		static.Floats("_value", 1, 2, 3),
 	}
 
+	var disposeCount int
 	tr, d, err := execute.NewNarrowStateTransformation(
 		executetest.RandomDatasetID(),
 		&mock.NarrowStateTransformation{
@@ -118,7 +119,9 @@ func TestNarrowStateTransformation_FlushKey(t *testing.T) {
 				if err := d.Process(chunk); err != nil {
 					return nil, false, err
 				}
-				return int64(4), true, nil
+				return &mockState{
+					disposeCount: &disposeCount,
+				}, true, nil
 			},
 		},
 		mem,
@@ -167,6 +170,11 @@ func TestNarrowStateTransformation_FlushKey(t *testing.T) {
 	}
 	if !isFlushed {
 		t.Error("flush key message was never processed")
+	}
+
+	// The state should have been disposed of twice.
+	if want, got := 2, disposeCount; want != got {
+		t.Errorf("unexpected dispose count -want/+got:\n\t- %d\n\t+ %d", want, got)
 	}
 }
 
@@ -242,13 +250,30 @@ func TestNarrowStateTransformation_Process(t *testing.T) {
 }
 
 func TestNarrowStateTransformation_Finish(t *testing.T) {
+	// Ensure we allocate and free all memory correctly.
+	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
+	defer mem.AssertSize(t, 0)
+
 	isFinished := []bool{false, false}
 
 	want := errors.New(codes.Internal, "expected")
 
+	var (
+		disposeCount int
+		isDisposed   bool
+	)
 	tr, d, err := execute.NewNarrowStateTransformation(
 		executetest.RandomDatasetID(),
-		&mock.NarrowStateTransformation{},
+		&mock.NarrowStateTransformation{
+			ProcessFn: func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+				return &mockState{
+					disposeCount: &disposeCount,
+				}, true, nil
+			},
+			DisposeFn: func() {
+				isDisposed = true
+			},
+		},
 		memory.DefaultAllocator,
 	)
 	if err != nil {
@@ -281,22 +306,47 @@ func TestNarrowStateTransformation_Finish(t *testing.T) {
 		},
 	)
 
-	// We want to check that finish is forwarded correctly.
-	// We construct the finish message and then send it directly
-	// to the process message method.
-	if err := tr.(execute.Transport).ProcessMessage(
-		execute.NewFinishMsg(want),
-	); err != nil {
+	// We can use a TransportDataset as a mock source
+	// to send messages to the transformation we are testing.
+	source := execute.NewTransportDataset(executetest.RandomDatasetID(), mem)
+	source.AddTransformation(tr)
+
+	// Generate one table chunk using static.Table.
+	// This will only produce one column reader, so we are
+	// extracting that value from the nested iterators.
+	gen := static.Table{
+		static.Times("_time", 0, 10, 20),
+		static.Floats("_value", 1, 2, 3),
+	}
+
+	// Process the table but do not flush the key.
+	tbl := gen.Table(mem)
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		chunk := table.ChunkFromReader(cr)
+		chunk.Retain()
+		return source.Process(chunk)
+	}); err != nil {
 		t.Fatal(err)
 	}
 
-	d.Finish(want)
+	// We want to check that finish is forwarded correctly.
+	source.Finish(want)
 
 	if !isFinished[0] {
 		t.Error("transport did not receive finish message")
 	}
 	if !isFinished[1] {
 		t.Error("transformation did not receive finish message")
+	}
+
+	// The state should have been disposed.
+	if want, got := 1, disposeCount; want != got {
+		t.Errorf("unexpected dispose count -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+
+	// So should the transformation.
+	if !isDisposed {
+		t.Error("transformation was not disposed")
 	}
 }
 

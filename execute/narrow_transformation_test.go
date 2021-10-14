@@ -215,9 +215,14 @@ func TestNarrowTransformation_Finish(t *testing.T) {
 
 	want := errors.New(codes.Internal, "expected")
 
+	isDisposed := false
 	tr, d, err := execute.NewNarrowTransformation(
 		executetest.RandomDatasetID(),
-		&mock.NarrowTransformation{},
+		&mock.NarrowTransformation{
+			DisposeFn: func() {
+				isDisposed = true
+			},
+		},
 		memory.DefaultAllocator,
 	)
 	if err != nil {
@@ -261,11 +266,14 @@ func TestNarrowTransformation_Finish(t *testing.T) {
 
 	d.Finish(want)
 
+	if !isDisposed {
+		t.Error("transformation was not disposed")
+	}
 	if !isFinished[0] {
-		t.Error("transport did not receive finish message")
+		t.Error("downstream transport did not receive finish message")
 	}
 	if !isFinished[1] {
-		t.Error("transformation did not receive finish message")
+		t.Error("downstream transformation did not receive finish message")
 	}
 }
 
