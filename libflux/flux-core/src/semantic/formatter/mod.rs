@@ -113,7 +113,7 @@ impl Formatter {
         let curr_ind = self.indentation;
         match n {
             walk::Node::File(m) => self.format_file(m, true),
-            //walk::Node::Block(m) => self.format_block(m),
+            walk::Node::Block(m) => self.format_block(m),
             walk::Node::ExprStmt(m) => self.format_expression_statement(m),
             walk::Node::PackageClause(m) => self.format_package_clause(m),
             walk::Node::ImportDeclaration(m) => self.format_import_declaration(m),
@@ -532,7 +532,7 @@ impl Formatter {
         self.write_string(") ");
         self.write_string("=>");
 
-        //self.format_block(&n.body);
+        self.format_block(&n.body);
     }
 
     fn format_function_argument(&mut self, n: &semantic::nodes::FunctionParameter) {
@@ -545,21 +545,34 @@ impl Formatter {
         }
     }
 
-    // fn format_block(&mut self, n: &semantic::nodes::Block) {
-    //     self.write_rune('{');
-    //     let sep = '\n';
+    fn format_block(&mut self, n: &semantic::nodes::Block) {
+        self.write_rune('{');
+        let sep = '\n';
+        self.indent();
+        self.write_rune(sep);
+        let mut current = n;
 
-    //     self.write_rune(sep);
-    //     // format the block statements
-    //     self.format_statement_list(&n.);
-
-    //     if !n.body.is_empty() {
-    //         self.write_rune(sep);
-    //         self.unindent();
-    //         self.write_indent()
-    //     }
-    //     self.write_rune('}')
-    // }
+        loop {
+            match current {
+                semantic::nodes::Block::Variable(assign, next) => {
+                    self.format_variable_assignment(assign.as_ref());
+                    current = next.as_ref();
+                }
+                semantic::nodes::Block::Expr(expr_stmt, next) => {
+                    self.format_expression_statement(expr_stmt);
+                    current = next.as_ref();
+                }
+                semantic::nodes::Block::Return(ret) => {
+                    self.format_return_statement(ret);
+                    break;
+                }
+            }
+        }
+        self.write_rune(sep);
+        self.unindent();
+        self.write_indent();
+        self.write_rune('}');
+    }
 
     fn format_identifier(&mut self, n: &semantic::nodes::Identifier) {
         self.write_string(&n.name);
@@ -764,9 +777,70 @@ impl Formatter {
     }
 
     fn format_duration_literal(&mut self, n: &semantic::nodes::DurationLit) {
-        self.write_string(&format!("{}", &n.value.months));
-        self.write_string(&format!("{}", &n.value.nanoseconds));
-        self.write_string(&format!("{}:duration", &n.value.negative));
+        // format negative sign
+        if n.value.negative {
+            self.write_string("-");
+        }
+
+        // format months
+        let mut inp_months = n.value.months;
+        if inp_months > 0 {
+            let years = inp_months / 12;
+            if years > 0 {
+                self.write_string(&format!("{}y", years));
+            }
+            let months = inp_months % 12;
+            if months > 0 {
+                self.write_string(&format!("{}mo", months));
+            }
+        }
+
+        // format nanoseconds
+        let mut inp_nsecs = n.value.nanoseconds;
+        if inp_nsecs > 0 {
+            let nsecs = inp_nsecs % 1000;
+            inp_nsecs /= 1000;
+            let usecs = inp_nsecs % 1000;
+            inp_nsecs /= 1000;
+            let msecs = inp_nsecs % 1000;
+            inp_nsecs /= 1000;
+            let secs = inp_nsecs % 60;
+            inp_nsecs /= 60;
+            let mins = inp_nsecs % 60;
+            inp_nsecs /= 60;
+            let hours = inp_nsecs % 24;
+            inp_nsecs /= 24;
+            let days = inp_nsecs % 7;
+            inp_nsecs /= 7;
+            let weeks = inp_nsecs;
+
+            if weeks > 0 {
+                self.write_string(&format!("{}w", weeks));
+            }
+            if days > 0 {
+                self.write_string(&format!("{}d", days));
+            }
+            if hours > 0 {
+                self.write_string(&format!("{}h", hours));
+            }
+            if mins > 0 {
+                self.write_string(&format!("{}m", mins));
+            }
+            if secs > 0 {
+                self.write_string(&format!("{}s", secs));
+            }
+            if msecs > 0 {
+                self.write_string(&format!("{}ms", msecs));
+            }
+            if usecs > 0 {
+                self.write_string(&format!("{}us", usecs));
+            }
+            if nsecs > 0 {
+                self.write_string(&format!("{}ns", nsecs));
+            }
+        }
+
+        self.write_string(":duration");
     }
 
     fn format_float_literal(&mut self, n: &semantic::nodes::FloatLit) {
