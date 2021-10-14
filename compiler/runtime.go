@@ -26,7 +26,7 @@ type Evaluator interface {
 }
 
 type compiledFn struct {
-	root       Evaluator
+	root        Evaluator
 	parentScope Scope
 }
 
@@ -85,8 +85,8 @@ func eval(ctx context.Context, e Evaluator, scope Scope) (values.Value, error) {
 }
 
 type blockEvaluator struct {
-	t     semantic.MonoType
-	body  []Evaluator
+	t    semantic.MonoType
+	body []Evaluator
 }
 
 func (e *blockEvaluator) Type() semantic.MonoType {

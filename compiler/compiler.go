@@ -63,7 +63,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 		return nil, errors.Wrapf(err, codes.Inherit, "cannot compile @ %v", f.Location())
 	}
 	return compiledFn{
-		root:       root,
+		root:        root,
 		parentScope: scope,
 	}, nil
 }

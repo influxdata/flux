@@ -23,9 +23,9 @@ type dynamicFn struct {
 
 type compiledFn struct {
 	fn         compiler.Func
-	inType semantic.MonoType
+	inType     semantic.MonoType
 	recordType semantic.MonoType
-	cols []flux.ColMeta
+	cols       []flux.ColMeta
 	extraTypes map[string]semantic.MonoType
 }
 
@@ -78,13 +78,13 @@ func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.
 		if err != nil {
 			return preparedFn{}, err
 		}
-		f.compiledFn = &compiledFn {
-			fn: fn,
-			inType: inType,
+		f.compiledFn = &compiledFn{
+			fn:         fn,
+			inType:     inType,
 			recordType: recordType,
-			cols: cols,
+			cols:       cols,
 			extraTypes: extraTypes,
-		};
+		}
 	}
 
 	// Construct the arguments that will be used when evaluating the function.
