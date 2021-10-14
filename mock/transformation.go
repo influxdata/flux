@@ -34,31 +34,53 @@ func (t *Transformation) Finish(id execute.DatasetID, err error) {
 
 type GroupTransformation struct {
 	ProcessFn func(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error
+	DisposeFn func()
 }
 
 func (n *GroupTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
 	return n.ProcessFn(chunk, d, mem)
 }
 
+func (a *GroupTransformation) Dispose() {
+	if a.DisposeFn != nil {
+		a.DisposeFn()
+	}
+}
+
 type NarrowTransformation struct {
 	ProcessFn func(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error
+	DisposeFn func()
 }
 
 func (n *NarrowTransformation) Process(chunk table.Chunk, d *execute.TransportDataset, mem memory.Allocator) error {
 	return n.ProcessFn(chunk, d, mem)
 }
 
+func (a *NarrowTransformation) Dispose() {
+	if a.DisposeFn != nil {
+		a.DisposeFn()
+	}
+}
+
 type NarrowStateTransformation struct {
 	ProcessFn func(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error)
+	DisposeFn func()
 }
 
 func (n *NarrowStateTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
 	return n.ProcessFn(chunk, state, d, mem)
 }
 
+func (a *NarrowStateTransformation) Dispose() {
+	if a.DisposeFn != nil {
+		a.DisposeFn()
+	}
+}
+
 type AggregateTransformation struct {
 	AggregateFn func(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error)
 	ComputeFn   func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error
+	DisposeFn   func()
 }
 
 func (a *AggregateTransformation) Aggregate(chunk table.Chunk, state interface{}, mem memory.Allocator) (interface{}, bool, error) {
@@ -67,4 +89,10 @@ func (a *AggregateTransformation) Aggregate(chunk table.Chunk, state interface{}
 
 func (a *AggregateTransformation) Compute(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
 	return a.ComputeFn(key, state, d, mem)
+}
+
+func (a *AggregateTransformation) Dispose() {
+	if a.DisposeFn != nil {
+		a.DisposeFn()
+	}
 }

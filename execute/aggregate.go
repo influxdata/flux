@@ -42,6 +42,8 @@ type AggregateTransformation interface {
 	// If the Aggregate function never returned state, this function
 	// will never be called.
 	Compute(key flux.GroupKey, state interface{}, d *TransportDataset, mem memory.Allocator) error
+
+	Disposable
 }
 
 type aggregateTransformation struct {
@@ -112,14 +114,24 @@ func (t *aggregateTransformation) processChunk(chunk table.Chunk) error {
 	return nil
 }
 
+func (t *aggregateTransformation) computeFor(key flux.GroupKey, state interface{}) error {
+	if err := t.t.Compute(key, state, t.d, t.d.mem); err != nil {
+		return err
+	}
+
+	// If this state is disposable, we are done with it so invoke
+	// the Dispose method.
+	if v, ok := state.(Disposable); ok {
+		v.Dispose()
+	}
+	return t.d.FlushKey(key)
+}
+
 func (t *aggregateTransformation) flushKey(key flux.GroupKey) error {
 	// Remove the state for this key from the dataset.
 	// If we find state associated with the key, compute the table.
 	if state, ok := t.d.Delete(key); ok {
-		if err := t.t.Compute(key, state, t.d, t.d.mem); err != nil {
-			return err
-		}
-		return t.d.FlushKey(key)
+		return t.computeFor(key, state)
 	}
 	return nil
 }
@@ -128,13 +140,11 @@ func (t *aggregateTransformation) flushKey(key flux.GroupKey) error {
 func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 	if err == nil {
 		err = t.d.Range(func(key flux.GroupKey, value interface{}) error {
-			if err := t.t.Compute(key, value, t.d, t.d.mem); err != nil {
-				return err
-			}
-			return t.d.FlushKey(key)
+			return t.computeFor(key, value)
 		})
 	}
 	t.d.Finish(err)
+	t.t.Dispose()
 }
 
 func (t *aggregateTransformation) OperationType() string {
@@ -369,12 +379,26 @@ type aggregateState struct {
 	agg ValueFunc
 }
 
-func (t *simpleAggregateTransformation2) initializeState(chunk table.Chunk, current interface{}) ([]aggregateState, error) {
+func (s *aggregateState) Dispose() {
+	if v, ok := s.agg.(Disposable); ok {
+		v.Dispose()
+	}
+}
+
+type aggregateStateList []aggregateState
+
+func (a aggregateStateList) Dispose() {
+	for i := range a {
+		a[i].Dispose()
+	}
+}
+
+func (t *simpleAggregateTransformation2) initializeState(chunk table.Chunk, current interface{}) (aggregateStateList, error) {
 	if current != nil {
-		return current.([]aggregateState), nil
+		return current.(aggregateStateList), nil
 	}
 
-	state := make([]aggregateState, len(t.config.Columns))
+	state := make(aggregateStateList, len(t.config.Columns))
 	for i, label := range t.config.Columns {
 		j := chunk.Index(label)
 		if j < 0 {
@@ -443,7 +467,7 @@ func (t *simpleAggregateTransformation2) Aggregate(chunk table.Chunk, state inte
 }
 
 func (t *simpleAggregateTransformation2) Compute(key flux.GroupKey, state interface{}, d *TransportDataset, mem memory.Allocator) error {
-	aggregates := state.([]aggregateState)
+	aggregates := state.(aggregateStateList)
 	buffer := arrow.TableBuffer{
 		GroupKey: key,
 		Columns:  make([]flux.ColMeta, 0, len(key.Cols())+len(aggregates)),
@@ -490,6 +514,12 @@ func (t *simpleAggregateTransformation2) Compute(key flux.GroupKey, state interf
 
 	out := table.ChunkFromBuffer(buffer)
 	return d.Process(out)
+}
+
+func (t *simpleAggregateTransformation2) Dispose() {
+	if disposable, ok := t.agg.(Disposable); ok {
+		disposable.Dispose()
+	}
 }
 
 type SimpleAggregate interface {

@@ -107,17 +107,21 @@ func TestAggregateTransformation_FlushKey(t *testing.T) {
 	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
 
+	var disposeCount int
 	isComputed := false
 	tr, _, err := execute.NewAggregateTransformation(
 		executetest.RandomDatasetID(),
 		&mock.AggregateTransformation{
 			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
-				return "mystate", true, nil
+				return &mockState{
+					value:        "mystate",
+					disposeCount: &disposeCount,
+				}, true, nil
 			},
 			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
 				if state == nil {
 					t.Error("invoked compute without state")
-				} else if want, got := "mystate", state.(string); want != got {
+				} else if want, got := "mystate", state.(*mockState).value; want != got {
 					t.Errorf("unexpected state -want/+got:\n\t- %s\n\t+ %s", want, got)
 				}
 				isComputed = true
@@ -164,6 +168,11 @@ func TestAggregateTransformation_FlushKey(t *testing.T) {
 		t.Fatal(err)
 	} else if !isComputed {
 		t.Fatal("expected compute to be called")
+	}
+
+	// The state should have been disposed.
+	if want, got := 1, disposeCount; want != got {
+		t.Errorf("unexpected dispose count -want/+got:\n\t- %d\n\t+ %d", want, got)
 	}
 }
 
@@ -283,22 +292,32 @@ func TestAggregateTransformation_Finish(t *testing.T) {
 	mem := memory.NewCheckedAllocator(memory.DefaultAllocator)
 	defer mem.AssertSize(t, 0)
 
+	var (
+		disposeCount int
+		isDisposed   bool
+	)
 	isAggregated, isComputed := false, false
 	tr, _, err := execute.NewAggregateTransformation(
 		executetest.RandomDatasetID(),
 		&mock.AggregateTransformation{
 			AggregateFn: func(chunk table.Chunk, state interface{}, _ memory.Allocator) (interface{}, bool, error) {
 				isAggregated = true
-				return "mystate", true, nil
+				return &mockState{
+					value:        "mystate",
+					disposeCount: &disposeCount,
+				}, true, nil
 			},
 			ComputeFn: func(key flux.GroupKey, state interface{}, d *execute.TransportDataset, mem memory.Allocator) error {
 				if state == nil {
 					t.Error("invoked compute without state")
-				} else if want, got := "mystate", state.(string); want != got {
+				} else if want, got := "mystate", state.(*mockState).value; want != got {
 					t.Errorf("unexpected state -want/+got:\n\t- %s\n\t+ %s", want, got)
 				}
 				isComputed = true
 				return nil
+			},
+			DisposeFn: func() {
+				isDisposed = true
 			},
 		},
 		mem,
@@ -339,6 +358,16 @@ func TestAggregateTransformation_Finish(t *testing.T) {
 	source.Finish(nil)
 	if !isComputed {
 		t.Fatal("expected compute function to be called")
+	}
+
+	// The state should have been disposed.
+	if want, got := 1, disposeCount; want != got {
+		t.Errorf("unexpected dispose count -want/+got:\n\t- %d\n\t+ %d", want, got)
+	}
+
+	// So should the transformation.
+	if !isDisposed {
+		t.Error("transformation was not disposed")
 	}
 }
 
@@ -913,5 +942,16 @@ func TestSimpleAggregate_Process(t *testing.T) {
 				t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(tc.want, got))
 			}
 		})
+	}
+}
+
+type mockState struct {
+	value        string
+	disposeCount *int
+}
+
+func (s *mockState) Dispose() {
+	if s.disposeCount != nil {
+		*s.disposeCount++
 	}
 }

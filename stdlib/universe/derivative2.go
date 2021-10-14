@@ -291,6 +291,8 @@ func (t *derivativeTransformation2) derivativeStateFor(col flux.ColMeta, state *
 	}, nil
 }
 
+func (t *derivativeTransformation2) Dispose() {}
+
 type derivativeState struct {
 	cols        []flux.ColMeta
 	data        []*derivativeColumn
