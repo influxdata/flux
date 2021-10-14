@@ -27,14 +27,7 @@ type Evaluator interface {
 
 type compiledFn struct {
 	root       Evaluator
-	inputScope Scope
-}
-
-func (c compiledFn) buildScope(input values.Object) error {
-	input.Range(func(k string, v values.Value) {
-		c.inputScope.Set(k, v)
-	})
-	return nil
+	parentScope Scope
 }
 
 // Type returns the return type of the compiled function.
@@ -43,11 +36,12 @@ func (c compiledFn) Type() semantic.MonoType {
 }
 
 func (c compiledFn) Eval(ctx context.Context, input values.Object) (values.Value, error) {
-	if err := c.buildScope(input); err != nil {
-		return nil, err
-	}
+	inputScope := nestScope(c.parentScope)
+	input.Range(func(k string, v values.Value) {
+		inputScope.Set(k, v)
+	})
 
-	return eval(ctx, c.root, c.inputScope)
+	return eval(ctx, c.root, inputScope)
 }
 
 type Scope interface {

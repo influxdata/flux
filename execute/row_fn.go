@@ -2,6 +2,7 @@ package execute
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -17,6 +18,15 @@ type dynamicFn struct {
 	scope      compiler.Scope
 	fn         *semantic.FunctionExpression
 	recordName string
+	compiledFn *compiledFn
+}
+
+type compiledFn struct {
+	fn         compiler.Func
+	inType semantic.MonoType
+	recordType semantic.MonoType
+	cols []flux.ColMeta
+	extraTypes map[string]semantic.MonoType
 }
 
 func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamicFn {
@@ -44,35 +54,45 @@ func (f *dynamicFn) typeof(cols []flux.ColMeta) (semantic.MonoType, error) {
 }
 
 func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) (preparedFn, error) {
-	// Prepare the type of the record column.
-	recordType, err := f.typeof(cols)
-	if err != nil {
-		return preparedFn{}, err
-	}
+	// If the types have not changed we do not need to recompile, just use the cached version
+	if f.compiledFn == nil || !reflect.DeepEqual(f.compiledFn.cols, cols) || !reflect.DeepEqual(f.compiledFn.extraTypes, extraTypes) {
+		// Prepare the type of the record column.
+		recordType, err := f.typeof(cols)
+		if err != nil {
+			return preparedFn{}, err
+		}
 
-	// Prepare the arguments type.
-	properties := []semantic.PropertyType{
-		{Key: []byte(f.recordName), Value: recordType},
-	}
-	for name, typ := range extraTypes {
-		properties = append(properties, semantic.PropertyType{
-			Key:   []byte(name),
-			Value: typ,
-		})
-	}
+		// Prepare the arguments type.
+		properties := []semantic.PropertyType{
+			{Key: []byte(f.recordName), Value: recordType},
+		}
+		for name, typ := range extraTypes {
+			properties = append(properties, semantic.PropertyType{
+				Key:   []byte(name),
+				Value: typ,
+			})
+		}
 
-	inType := semantic.NewObjectType(properties)
-	fn, err := compiler.Compile(f.scope, f.fn, inType)
-	if err != nil {
-		return preparedFn{}, err
+		inType := semantic.NewObjectType(properties)
+		fn, err := compiler.Compile(f.scope, f.fn, inType)
+		if err != nil {
+			return preparedFn{}, err
+		}
+		f.compiledFn = &compiledFn {
+			fn: fn,
+			inType: inType,
+			recordType: recordType,
+			cols: cols,
+			extraTypes: extraTypes,
+		};
 	}
 
 	// Construct the arguments that will be used when evaluating the function.
-	arg0 := values.NewObject(recordType)
-	args := values.NewObject(inType)
+	arg0 := values.NewObject(f.compiledFn.recordType)
+	args := values.NewObject(f.compiledFn.inType)
 	args.Set(f.recordName, arg0)
 	return preparedFn{
-		fn:         fn,
+		fn:         f.compiledFn.fn,
 		recordName: f.recordName,
 		arg0:       arg0,
 		args:       args,
