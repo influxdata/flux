@@ -1,5 +1,5 @@
 //! Substitutions during type inference.
-use std::iter::FusedIterator;
+use std::{cell::RefCell, iter::FusedIterator};
 
 use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 
@@ -10,35 +10,33 @@ use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 /// Substitutions are idempotent. Given a substitution *s* and an input
 /// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
 #[derive(Clone, Debug)]
-pub struct Substitution(SubstitutionMap);
+pub struct Substitution(RefCell<UnificationTable>);
+
+type UnificationTable = ena::unify::InPlaceUnificationTable<Tvar>;
 
 impl From<SubstitutionMap> for Substitution {
     /// Derive a substitution from a hash map.
     fn from(values: SubstitutionMap) -> Substitution {
-        Substitution(values)
-    }
-}
-
-// The `allow` attribute below is a side effect of the orphan impl rule as
-// well as the implicit_hasher lint. For more info, see
-// https://github.com/rust-lang/rfcs/issues/1856
-#[allow(clippy::implicit_hasher)]
-impl From<Substitution> for SubstitutionMap {
-    /// Derive a hash map from a substitution.
-    fn from(sub: Substitution) -> SubstitutionMap {
-        sub.0
+        let mut map = UnificationTable::new();
+        for (var, typ) in values {
+            match typ {
+                MonoType::Var(var2) => map.union(var, var2),
+                _ => map.union_value(var, Some(typ)),
+            }
+        }
+        Substitution(RefCell::new(map))
     }
 }
 
 impl Substitution {
     /// Return a new empty substitution.
     pub fn empty() -> Substitution {
-        Substitution(SubstitutionMap::new())
+        Substitution(RefCell::new(UnificationTable::new()))
     }
 
     /// Returns `true` if the `Substitution` is empty
     pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+        self.0.borrow().len() == 0 // TODO This is not the same with ena
     }
 
     /// Apply a substitution to a type variable.
@@ -49,13 +47,14 @@ impl Substitution {
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
     /// variable.
     pub fn try_apply(&self, tv: Tvar) -> Option<MonoType> {
-        self.0.get(&tv).cloned()
+        self.0.borrow_mut().probe_value(tv)
     }
 
     /// Merge two substitutions.
-    pub fn merge(self, with: Substitution) -> Substitution {
-        let applied: SubstitutionMap = self.0.apply(&with);
-        Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
+    pub fn merge(self, _with: Substitution) -> Substitution {
+        todo!("remove")
+        // let applied: SubstitutionMap = self.0.apply(&with);
+        // Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
     }
 }
 

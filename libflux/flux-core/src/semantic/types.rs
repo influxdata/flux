@@ -594,7 +594,26 @@ impl MonoType {
 /// `Tvar` stands for *type variable*.
 /// A type variable holds an unknown type, before type inference.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
-pub struct Tvar(pub u64);
+pub struct Tvar(pub u64); // TODO u32 to match ena?
+
+impl ena::unify::UnifyKey for Tvar {
+    type Value = Option<MonoType>;
+    fn index(&self) -> u32 {
+        self.0 as u32
+    }
+    fn from_index(u: u32) -> Self {
+        Self(From::from(u))
+    }
+    fn tag() -> &'static str {
+        "Tvar"
+    }
+}
+impl ena::unify::UnifyValue for MonoType {
+    type Error = ena::unify::NoError;
+    fn unify_values(_value1: &Self, _value2: &Self) -> Result<Self, Self::Error> {
+        unreachable!()
+    }
+}
 
 /// A map from type variables to their constraining kinds.
 pub type TvarKinds = SemanticMap<Tvar, Vec<Kind>>;
