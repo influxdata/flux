@@ -9,7 +9,7 @@ use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 ///
 /// Substitutions are idempotent. Given a substitution *s* and an input
 /// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Substitution(SubstitutionMap);
 
 impl From<SubstitutionMap> for Substitution {
@@ -34,6 +34,11 @@ impl Substitution {
     /// Return a new empty substitution.
     pub fn empty() -> Substitution {
         Substitution(SubstitutionMap::new())
+    }
+
+    /// Returns `true` if the `Substitution` is empty
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
 
     /// Apply a substitution to a type variable.

@@ -2085,7 +2085,7 @@ mod tests {
                 &mut Fresher::default(),
             )
             .unwrap();
-        assert_eq!(sub, Substitution::empty());
+        assert!(sub.is_empty());
     }
     #[test]
     fn constrain_ints() {
@@ -2100,11 +2100,13 @@ mod tests {
             Kind::Stringable,
         ];
         for c in allowable_cons {
-            let sub = MonoType::Int.constrain(c, &mut TvarKinds::new());
-            assert_eq!(Ok(Substitution::empty()), sub);
+            let sub = MonoType::Int.constrain(c, &mut TvarKinds::new()).unwrap();
+            assert!(sub.is_empty());
         }
 
-        let sub = MonoType::Int.constrain(Kind::Record, &mut TvarKinds::new());
+        let sub = MonoType::Int
+            .constrain(Kind::Record, &mut TvarKinds::new())
+            .map(|_| ());
         assert_eq!(
             Err(Error::CannotConstrain {
                 act: MonoType::Int,
@@ -2115,8 +2117,10 @@ mod tests {
     }
     #[test]
     fn constrain_rows() {
-        let sub = Record::Empty.constrain(Kind::Record, &mut TvarKinds::new());
-        assert_eq!(Ok(Substitution::empty()), sub);
+        let sub = Record::Empty
+            .constrain(Kind::Record, &mut TvarKinds::new())
+            .unwrap();
+        assert!(sub.is_empty());
 
         let unallowable_cons = vec![
             Kind::Addable,
@@ -2127,7 +2131,9 @@ mod tests {
             Kind::Nullable,
         ];
         for c in unallowable_cons {
-            let sub = Record::Empty.constrain(c, &mut TvarKinds::new());
+            let sub = Record::Empty
+                .constrain(c, &mut TvarKinds::new())
+                .map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
                     act: MonoType::from(Record::Empty),
@@ -2153,15 +2159,17 @@ mod tests {
 
         for c in allowable_cons_int {
             let vector_int = MonoType::Vector(Box::new(Vector(MonoType::Int)));
-            let sub = vector_int.constrain(c, &mut TvarKinds::new());
-            assert_eq!(Ok(Substitution::empty()), sub);
+            let sub = vector_int.constrain(c, &mut TvarKinds::new()).unwrap();
+            assert!(sub.is_empty());
         }
 
         // kind constraints not allowed for Vector(MonoType::String)
         let unallowable_cons_string = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_string {
             let vector_string = MonoType::Vector(Box::new(Vector(MonoType::String)));
-            let sub = vector_string.constrain(c, &mut TvarKinds::new());
+            let sub = vector_string
+                .constrain(c, &mut TvarKinds::new())
+                .map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
                     act: MonoType::String,
@@ -2175,7 +2183,7 @@ mod tests {
         let unallowable_cons_time = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_time {
             let vector_time = MonoType::Vector(Box::new(Vector(MonoType::Time)));
-            let sub = vector_time.constrain(c, &mut TvarKinds::new());
+            let sub = vector_time.constrain(c, &mut TvarKinds::new()).map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
                     act: MonoType::Time,
@@ -2196,8 +2204,8 @@ mod tests {
 
         for c in allowable_cons_time {
             let vector_time = MonoType::Vector(Box::new(Vector(MonoType::Time)));
-            let sub = vector_time.constrain(c, &mut TvarKinds::new());
-            assert_eq!(Ok(Substitution::empty()), sub);
+            let sub = vector_time.constrain(c, &mut TvarKinds::new()).unwrap();
+            assert!(sub.is_empty());
         }
     }
     #[test]
@@ -2223,10 +2231,7 @@ mod tests {
                 &mut Fresher::default(),
             )
             .unwrap();
-        assert_eq!(
-            sub,
-            Substitution::from(semantic_map! {Tvar(0) => MonoType::Var(Tvar(1))}),
-        );
+        assert_eq!(sub.apply(Tvar(0)), MonoType::Var(Tvar(1)));
     }
     #[test]
     fn unify_constrained_tvars() {
@@ -2234,10 +2239,7 @@ mod tests {
         let sub = MonoType::Var(Tvar(0))
             .unify(MonoType::Var(Tvar(1)), &mut cons, &mut Fresher::default())
             .unwrap();
-        assert_eq!(
-            sub,
-            Substitution::from(semantic_map! {Tvar(0) => MonoType::Var(Tvar(1))})
-        );
+        assert_eq!(sub.apply(Tvar(0)), MonoType::Var(Tvar(1)));
         assert_eq!(
             cons,
             semantic_map! {Tvar(1) => vec![Kind::Addable, Kind::Divisible]},
@@ -2326,10 +2328,7 @@ mod tests {
             let sub = f
                 .unify(call_type, &mut cons, &mut Fresher::default())
                 .unwrap();
-            assert_eq!(
-                sub,
-                Substitution::from(semantic_map! {Tvar(0) => MonoType::Int})
-            );
+            assert_eq!(sub.apply(Tvar(0)), MonoType::Int);
             // the constraint on A gets removed.
             assert_eq!(cons, semantic_map! {Tvar(1) => vec![Kind::Divisible]});
         } else {
@@ -2358,13 +2357,8 @@ mod tests {
             // this extends the first map with the second by generating a new one.
             let mut cons = f_cons.into_iter().chain(g_cons).collect();
             let sub = f.unify(*g, &mut cons, &mut Fresher::default()).unwrap();
-            assert_eq!(
-                sub,
-                Substitution::from(semantic_map! {
-                    Tvar(0) => MonoType::Int,
-                    Tvar(1) => MonoType::Float,
-                })
-            );
+            assert_eq!(sub.apply(Tvar(0)), MonoType::Int);
+            assert_eq!(sub.apply(Tvar(1)), MonoType::Float);
             // we know everything about tvars, there is no constraint.
             assert_eq!(cons, semantic_map! {});
         } else {
