@@ -1,7 +1,9 @@
 //! Semantic representations of types.
 
 use crate::semantic::fresh::{Fresh, Fresher};
-use crate::semantic::sub::{apply2, apply4, merge_collect, Substitutable, Substitution};
+use crate::semantic::sub::{
+    apply2, apply4, merge_collect, Substitutable, Substituter, Substitution,
+};
 use derive_more::Display;
 use std::fmt::Write;
 
@@ -82,15 +84,22 @@ impl PartialEq for PolyType {
 }
 
 impl Substitutable for PolyType {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
-        let sub = sub.without(&self.vars);
-        self.expr.apply_ref(&sub).map(|expr| PolyType {
-            vars: self.vars.clone(),
-            cons: self.cons.clone(),
-            expr,
-        })
+        self.expr
+            .apply_ref(&|var| {
+                if self.vars.contains(&var) {
+                    None
+                } else {
+                    sub.try_apply(var)
+                }
+            })
+            .map(|expr| PolyType {
+                vars: self.vars.clone(),
+                cons: self.cons.clone(),
+                expr,
+            })
     }
     fn free_vars(&self) -> Vec<Tvar> {
         minus(&self.vars, self.expr.free_vars())
@@ -306,7 +315,7 @@ pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
 type RefMonoTypeVecMap<'a> = HashMap<&'a String, Vec<&'a MonoType>>;
 
 impl Substitutable for MonoType {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             MonoType::Bool
             | MonoType::Int
@@ -697,7 +706,7 @@ impl Tvar {
 pub struct Array(pub MonoType);
 
 impl Substitutable for Array {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.0.apply_ref(sub).map(Array)
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -743,7 +752,7 @@ impl Array {
 pub struct Vector(pub MonoType);
 
 impl Substitutable for Vector {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.0.apply_ref(sub).map(Vector)
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -788,7 +797,7 @@ pub struct Dictionary {
 }
 
 impl Substitutable for Dictionary {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -911,7 +920,7 @@ impl cmp::PartialEq for Record {
 }
 
 impl Substitutable for Record {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             Record::Empty => None,
             Record::Extension { head, tail } => {
@@ -1153,7 +1162,7 @@ pub struct Property {
 }
 
 impl Substitutable for Property {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.v.apply_ref(sub).map(|v| Property {
             k: self.k.clone(),
             v,
@@ -1242,7 +1251,7 @@ impl fmt::Display for Function {
 
 #[allow(clippy::implicit_hasher)]
 impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(
             &mut (),
             self,
@@ -1257,7 +1266,7 @@ impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, 
 }
 
 impl<T: Substitutable> Substitutable for Option<T> {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             None => None,
             Some(t) => t.apply_ref(sub).map(Some),
@@ -1272,7 +1281,7 @@ impl<T: Substitutable> Substitutable for Option<T> {
 }
 
 impl Substitutable for Function {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         let Function {
             req,
             opt,

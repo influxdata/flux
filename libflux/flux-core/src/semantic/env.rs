@@ -1,7 +1,7 @@
 //! Type environments.
 use std::mem;
 
-use crate::semantic::sub::{apply2, Substitutable, Substitution};
+use crate::semantic::sub::{apply2, Substitutable, Substituter};
 use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
 
 /// A type environment maps program identifiers to their polymorphic types.
@@ -20,7 +20,7 @@ pub struct Environment {
 }
 
 impl Substitutable for Environment {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match (self.readwrite, &self.parent) {
             // This is a performance optimization where false implies
             // this is the top-level of the type environment and apply
