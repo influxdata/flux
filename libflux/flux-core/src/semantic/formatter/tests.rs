@@ -29,12 +29,12 @@ fn literals() {
         script,
         expect![[r#"
             package main
-            a = "Hello, World!":string
+            a = "Hello, World!"
             b = 12:int
             c = 18.5:float
             d = -1y2mo3w4d5h6m7s8ms9us10ns:duration
             e = 2019-10-31T00:00:00Z:time
-            f = /server[01]/:regex"#]],
+            f = /server[01]/:regexp"#]],
     )
 }
 
@@ -56,10 +56,10 @@ fn array_lit() {
             package main
             a = [1:int, 2:int, 3:int]:[int]
             b = [1.1:float, 2.2:float, 3.3:float]:[float]
-            c = ["1":string, "2":string, "3":string]:[string]
+            c = ["1", "2", "3"]:[string]
             d = [1s:duration, 2m:duration, 3h:duration]:[duration]
             e = [2019-10-31T00:00:00Z:time]:[time]
-            f = [/a/:regex, /b/:regex, /c/:regex]:[regexp]
+            f = [/a/:regexp, /b/:regexp, /c/:regexp]:[regexp]
             g = [{a: 0:int, b: 0.0:float}, {a: 1:int, b: 1.1:float}]:[{a:int, b:float}]"#]],
     )
 }
@@ -75,8 +75,8 @@ fn dictionary_literals() {
         script,
         expect![[r#"
             package main
-            a = ["a":string: 0:int, "b":string: 1:int, "c":string: 2:int]
-            b = [1970-01-01T00:00:00Z:time: 0:int, 1970-01-01T01:00:00Z:time: 1:int]"#]],
+            a = ["a": 0:int, "b": 1:int, "c": 2:int]:[string:int]
+            b = [1970-01-01T00:00:00Z:time: 0:int, 1970-01-01T01:00:00Z:time: 1:int]:[time:int]"#]],
     )
 }
 
