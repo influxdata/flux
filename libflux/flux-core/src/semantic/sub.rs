@@ -80,6 +80,16 @@ pub trait Substitutable {
     {
         self.apply_ref(sub).unwrap_or(self)
     }
+
+    /// Apply a substitution to a type variable.
+    fn apply_mut(&mut self, sub: &Substitution)
+    where
+        Self: Sized,
+    {
+        if let Some(new) = self.apply_ref(sub) {
+            *self = new;
+        }
+    }
     /// Apply a substitution to a type variable. Should return `None` if there was nothing to apply
     /// which allows for optimizations.
     fn apply_ref(&self, sub: &Substitution) -> Option<Self>

@@ -1,4 +1,5 @@
 //! Type environments.
+use std::mem;
 
 use crate::semantic::sub::{apply2, Substitutable, Substitution};
 use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
@@ -92,6 +93,12 @@ impl Environment {
         }
     }
 
+    /// Return a new environment from the current one.
+    pub fn enter_scope(&mut self) {
+        let parent = mem::replace(self, Environment::empty(true));
+        self.parent = Some(Box::new(parent));
+    }
+
     /// Check whether a `PolyType` `t` given by a
     /// string identifier is in the environment. Also checks parent environments.
     /// If the type is present, returns a pointer to `t`; otherwise, returns `None`.
@@ -130,9 +137,14 @@ impl Environment {
     ///
     /// It is invalid to call `pop` on a type environment with only one stack
     /// frame. This will result in a panic.
-    pub fn pop(self) -> Environment {
-        match self.parent {
-            Some(env) => *env,
+    pub fn pop(mut self) -> Environment {
+        self.exit_scope();
+        self
+    }
+
+    pub(crate) fn exit_scope(&mut self) {
+        match self.parent.take() {
+            Some(env) => *self = *env,
             None => panic!("cannot pop final stack frame from type environment"),
         }
     }
