@@ -962,7 +962,7 @@ f
 					},
 				},
 			},
-			wantErr: errors.New(`column _value:int is not of type float`),
+			wantErr: errors.New(`map regroups data such that column "_value" would include values of two different data types: int, float`),
 		},
 		{
 			name: `mismatched types with zero value`,
@@ -994,7 +994,7 @@ f
 					},
 				},
 			},
-			wantErr: errors.New(`column _value:string is not of type float`),
+			wantErr: errors.New(`map regroups data such that column "_value" would include values of two different data types: string, float`),
 		},
 	}
 	for _, tc := range testCases {
