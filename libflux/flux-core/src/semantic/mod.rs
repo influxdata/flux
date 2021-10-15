@@ -2,6 +2,7 @@
 
 pub mod convert;
 
+mod errors;
 mod fs;
 mod infer;
 
@@ -48,7 +49,7 @@ pub enum Error {
     InvalidSemantic(#[from] check::Error),
     /// Errors that occur because of incompatible/incomplete types
     #[error("{0}")]
-    Inference(#[from] nodes::Error),
+    Inference(#[from] errors::Errors<nodes::Error>),
 }
 
 /// Analyzer provides an API for analyzing Flux code.
