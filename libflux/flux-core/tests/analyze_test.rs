@@ -9,7 +9,7 @@ use pretty_assertions::assert_eq;
 
 #[test]
 fn analyze_end_to_end() {
-    let mut analyzer = Analyzer::new(Environment::default(), PolyTypeMap::new());
+    let mut analyzer = Analyzer::new_with_defaults(Environment::default(), PolyTypeMap::new());
     let (_, mut got) = analyzer
         .analyze_source(
             "main".to_string(),

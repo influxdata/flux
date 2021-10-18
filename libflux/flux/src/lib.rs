@@ -16,7 +16,7 @@ use fluxcore::{
         fresh::Fresher,
         nodes::Package,
         types::{MonoType, PolyType, TvarKinds},
-        Analyzer,
+        Analyzer, AnalyzerConfig,
     },
 };
 
@@ -50,7 +50,7 @@ pub fn imports() -> Option<Environment> {
 /// Creates a new analyzer that can semantically analyze Flux source code.
 ///
 /// The analyzer is aware of the stdlib and prelude.
-pub fn new_semantic_analyzer() -> Result<Analyzer<Environment>> {
+pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<Environment>> {
     let env = match prelude() {
         Some(prelude) => Environment::new(prelude),
         None => bail!("missing prelude"),
@@ -59,7 +59,7 @@ pub fn new_semantic_analyzer() -> Result<Analyzer<Environment>> {
         Some(imports) => imports,
         None => bail!("missing stdlib imports"),
     };
-    Ok(Analyzer::new(env, importer))
+    Ok(Analyzer::new(env, importer, config))
 }
 
 /// An error handle designed to allow passing `Error` instances to library
@@ -403,7 +403,8 @@ pub struct StatefulAnalyzer {
 
 impl StatefulAnalyzer {
     fn analyze(&mut self, ast_pkg: ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
-        let mut analyzer = Analyzer::new(mem::take(&mut self.env), mem::take(&mut self.imports));
+        let mut analyzer =
+            Analyzer::new_with_defaults(mem::take(&mut self.env), mem::take(&mut self.imports));
         let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
             Ok(r) => r,
             Err(e) => {
@@ -488,7 +489,7 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// that has been type-inferred.  This function is aware of the standard library
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
-    let mut analyzer = new_semantic_analyzer()?;
+    let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default())?;
     let (_, sem_pkg) = analyzer.analyze_ast(ast_pkg)?;
     Ok(sem_pkg)
 }
@@ -513,7 +514,7 @@ pub fn infer_with_env(
         Some(imports) => imports,
         None => bail!("missing stdlib imports"),
     };
-    let mut analyzer = Analyzer::new(prelude, importer);
+    let mut analyzer = Analyzer::new_with_defaults(prelude, importer);
     analyzer
         .analyze_ast_with_fresher(ast_pkg, &mut f)
         .map_err(anyhow::Error::from)
@@ -561,7 +562,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
-    use super::new_semantic_analyzer;
+    use super::{new_semantic_analyzer, AnalyzerConfig};
     use crate::parser;
     use crate::{analyze, find_var_type, flux_ast_get_error};
     use fluxcore::ast;
@@ -799,7 +800,7 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
 
     #[test]
     fn deserialize_and_infer() {
-        let mut analyzer = new_semantic_analyzer().unwrap();
+        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default()).unwrap();
 
         let src = r#"
             x = from(bucket: "b")
@@ -836,7 +837,7 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
 
     #[test]
     fn infer_union() {
-        let mut analyzer = new_semantic_analyzer().unwrap();
+        let mut analyzer = new_semantic_analyzer(AnalyzerConfig::default()).unwrap();
 
         let src = r#"
             a = from(bucket: "b")

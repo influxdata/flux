@@ -30,7 +30,7 @@ use crate::semantic::{
     fresh::Fresher,
     import::Importer,
     types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
-    Analyzer,
+    Analyzer, AnalyzerConfig,
 };
 
 use crate::ast;
@@ -108,6 +108,7 @@ fn infer_types(
     env: HashMap<&str, &str>,
     imp: HashMap<&str, HashMap<&str, &str>>,
     want: Option<HashMap<&str, &str>>,
+    config: AnalyzerConfig,
 ) -> Result<Environment, Error> {
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp
@@ -132,7 +133,7 @@ fn infer_types(
     let env: Environment = env.into();
 
     let pkg = parse_program(src);
-    let mut analyzer = Analyzer::new(Environment::new(env), importer);
+    let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
     let (env, _) = analyzer.analyze_ast(pkg).map_err(|e| match e {
         semantic::Error::InvalidAST(e) => Error::Parse(e),
         _ => Error::Analysis(e),
@@ -198,7 +199,7 @@ fn infer_types(
 /// ```
 ///
 macro_rules! test_infer {
-    ($(env: $env:expr,)? $(imp: $imp:expr,)? src: $src:expr, exp: $exp:expr $(,)? ) => {{
+    ($(config: $config:expr,)? $(env: $env:expr,)? $(imp: $imp:expr,)? src: $src:expr, exp: $exp:expr $(,)? ) => {{
         #[allow(unused_mut, unused_assignments)]
         let mut env = HashMap::default();
         $(
@@ -209,10 +210,15 @@ macro_rules! test_infer {
         $(
             imp = $imp;
         )?
-        if let Err(e) = infer_types($src, env, imp, Some($exp)) {
+        #[allow(unused_mut, unused_assignments)]
+        let mut config = AnalyzerConfig::default();
+        $(
+            config = $config;
+        )?
+        if let Err(e) = infer_types($src, env, imp, Some($exp), config) {
             panic!("{}", e);
         }
-    }};
+    }}
 }
 
 /// The test_infer_err! macro generates test cases that don't type check.
@@ -246,7 +252,7 @@ macro_rules! test_infer_err {
         $(
             env = $env;
         )?
-        match infer_types($src, env, imp, None) {
+        match infer_types($src, env, imp, None, AnalyzerConfig::default()) {
             Ok(env) => {
                 panic!(
                     "\n\n{}\n\n{}\n",
@@ -287,7 +293,13 @@ macro_rules! test_infer_err {
 ///
 macro_rules! test_error_msg {
     ( src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
-        match infer_types($src, HashMap::default(), HashMap::default(), None) {
+        match infer_types(
+            $src,
+            HashMap::default(),
+            HashMap::default(),
+            None,
+            AnalyzerConfig::default(),
+        ) {
             Err(e) => {
                 if e.to_string() != $err {
                     panic!("\n\nexpected error:\n\t{}\n\ngot error:\n\t{}\n\n", $err, e)
@@ -3564,5 +3576,25 @@ fn test_error_messages() {
         "#,
         // Location points to call expression `f(a: 0)`
         err: "error @3:13-3:20: missing required argument b",
+    }
+}
+
+#[test]
+fn test_analyzer_skip_checks() {
+    // Test that if we skips checks we do not get an error and that we can analyze
+    // the partial source code.
+    test_infer! {
+        config: AnalyzerConfig{
+            skip_checks: true,
+            ..AnalyzerConfig::default()
+        },
+        src: r#"
+            x = () => 1
+            y = x(
+        "#,
+        exp: map![
+            "x" => "() => int",
+            "y" => "int",
+        ],
     }
 }
