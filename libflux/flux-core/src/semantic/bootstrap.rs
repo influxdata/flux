@@ -15,14 +15,13 @@ use crate::semantic::{
     convert::convert_package,
     env::Environment,
     flatbuffers::types::{build_module, finish_serialize},
-    fresh::Fresher,
     fs::{FileSystemImporter, StdFS},
     import::Importer,
     infer,
     infer::Constraints,
     nodes,
     nodes::{infer_package, inject_pkg_types, Package},
-    sub::Substitutable,
+    sub::{Substitutable, Substitution},
     types::{MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds},
 };
 
@@ -40,24 +39,27 @@ pub type SemanticPackageMap = SemanticMap<String, Package>;
 /// The prelude and the imports are returned.
 #[allow(clippy::type_complexity)]
 pub fn infer_stdlib_dir(path: &Path) -> Result<(PolyTypeMap, PolyTypeMap, SemanticPackageMap)> {
-    let mut f = Fresher::default();
+    let mut sub = Substitution::default();
 
     let ast_packages = parse_dir(path)?;
 
-    let (prelude, importer) = infer_pre(&mut f, &ast_packages)?;
-    let (imports, sem_pkg_map) = infer_std(&mut f, &ast_packages, prelude.clone(), importer)?;
+    let (prelude, importer) = infer_pre(&mut sub, &ast_packages)?;
+    let (imports, sem_pkg_map) = infer_std(&mut sub, &ast_packages, prelude.clone(), importer)?;
 
     Ok((prelude, imports, sem_pkg_map))
 }
 
-fn infer_pre(f: &mut Fresher, ast_packages: &ASTPackageMap) -> Result<(PolyTypeMap, PolyTypeMap)> {
+fn infer_pre(
+    sub: &mut Substitution,
+    ast_packages: &ASTPackageMap,
+) -> Result<(PolyTypeMap, PolyTypeMap)> {
     let mut prelude_map = PolyTypeMap::new();
     let mut imports = PolyTypeMap::new();
     for name in PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
         // packages within the prelude list.
         let (types, importer, _sem_pkg) =
-            infer_pkg(name, f, ast_packages, prelude_map.clone(), imports)?;
+            infer_pkg(name, sub, ast_packages, prelude_map.clone(), imports)?;
         for (k, v) in types {
             prelude_map.insert(k, v);
         }
@@ -68,7 +70,7 @@ fn infer_pre(f: &mut Fresher, ast_packages: &ASTPackageMap) -> Result<(PolyTypeM
 
 #[allow(clippy::type_complexity)]
 fn infer_std(
-    f: &mut Fresher,
+    sub: &mut Substitution,
     ast_packages: &ASTPackageMap,
     prelude: PolyTypeMap,
     mut imports: PolyTypeMap,
@@ -76,10 +78,10 @@ fn infer_std(
     let mut sem_pkg_map = SemanticPackageMap::new();
     for (path, _) in ast_packages.iter() {
         let (types, mut importer, sem_pkg) =
-            infer_pkg(path, f, ast_packages, prelude.clone(), imports.clone())?;
+            infer_pkg(path, sub, ast_packages, prelude.clone(), imports.clone())?;
         sem_pkg_map.insert(path.to_string(), sem_pkg);
         if !imports.contains_key(path) {
-            importer.insert(path.to_string(), build_polytype(types, f)?);
+            importer.insert(path.to_string(), build_polytype(types, sub)?);
             imports = importer;
         }
     }
@@ -187,25 +189,25 @@ fn dependencies<'a>(
 }
 
 /// Constructs a polytype, or more specifically a generic record type, from a hash map.
-pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType> {
-    let (r, cons) = build_record(from, f);
+pub fn build_polytype(from: PolyTypeMap, sub: &mut Substitution) -> Result<PolyType> {
+    let (r, cons) = build_record(from, sub);
     let mut kinds = TvarKinds::new();
-    let sub = infer::solve(&cons, &mut kinds, f)?;
+    infer::solve(&cons, &mut kinds, sub)?;
     Ok(infer::generalize(
         &Environment::empty(false),
         &kinds,
-        MonoType::record(r).apply(&sub),
+        MonoType::record(r).apply(sub),
     ))
 }
 
-fn build_record(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
+fn build_record(from: PolyTypeMap, sub: &mut Substitution) -> (Record, Constraints) {
     let mut r = Record::Empty;
     let mut cons = Constraints::empty();
 
     for (name, poly) in from {
         let (ty, constraints) = infer::instantiate(
             poly.clone(),
-            f,
+            sub,
             ast::SourceLocation {
                 file: None,
                 start: ast::Position::default(),
@@ -228,7 +230,7 @@ fn build_record(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
 #[allow(clippy::type_complexity)]
 fn infer_pkg(
     name: &str,                   // name of package to infer
-    f: &mut Fresher,              // type variable fresher
+    sub: &mut Substitution,       // type variable substitution
     ast_packages: &ASTPackageMap, // ast_packages available for inference
     prelude: PolyTypeMap,         // prelude types
     imports: PolyTypeMap,         // types available for import
@@ -256,14 +258,14 @@ fn infer_pkg(
             }
             let file = file.unwrap().to_owned();
 
-            let (env, _) = infer_package(
-                &mut convert_package(file, f)?,
+            let env = infer_package(
+                &mut convert_package(file, sub)?,
                 Environment::new(prelude.clone().into()),
-                f,
+                sub,
                 &mut imports,
             )?;
 
-            imports.insert(pkg.to_string(), build_polytype(env.values, f)?);
+            imports.insert(pkg.to_string(), build_polytype(env.values, sub)?);
         }
     }
 
@@ -273,11 +275,11 @@ fn infer_pkg(
     }
     let file = file.unwrap().to_owned();
 
-    let mut sem_pkg = convert_package(file, f)?;
-    let (env, sub) = infer_package(
+    let mut sem_pkg = convert_package(file, sub)?;
+    let env = infer_package(
         &mut sem_pkg,
         Environment::new(prelude.into()),
-        f,
+        sub,
         &mut imports,
     )?;
     sem_pkg = inject_pkg_types(sem_pkg, &sub);
@@ -429,7 +431,7 @@ mod tests {
         };
         let (types, imports, _) = infer_pkg(
             "c",
-            &mut Fresher::from(1),
+            &mut Substitution::default(),
             &ast_packages,
             PolyTypeMap::new(),
             PolyTypeMap::new(),
@@ -445,7 +447,7 @@ mod tests {
                             "TypeExpression parsing failed for int. {:?}", err
                         );
                     }
-                    convert_polytype(typ_expr, &mut Fresher::default())?
+                    convert_polytype(typ_expr, &mut Substitution::default())?
             },
         };
         if want != types {
@@ -466,7 +468,7 @@ mod tests {
                             "TypeExpression parsing failed for int. {:?}", err
                         );
                     }
-                    convert_polytype(typ_expr, &mut Fresher::default())?
+                    convert_polytype(typ_expr, &mut Substitution::default())?
             },
             String::from("b") => {
             let mut p = parser::Parser::new("{x: int , y: int}");
@@ -477,7 +479,7 @@ mod tests {
                             "TypeExpression parsing failed for int. {:?}", err
                         );
                     }
-                    convert_polytype(typ_expr, &mut Fresher::default())?
+                    convert_polytype(typ_expr, &mut Substitution::default())?
             },
         };
         if want != imports {

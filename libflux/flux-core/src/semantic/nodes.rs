@@ -15,7 +15,6 @@ use crate::semantic::infer;
 use crate::semantic::types;
 use crate::semantic::{
     env::Environment,
-    fresh::Fresher,
     import::Importer,
     infer::{Constraint, Constraints},
     sub::{Substitutable, Substitution},
@@ -96,7 +95,7 @@ impl From<infer::Error> for Error {
 }
 
 struct InferState<'a> {
-    f: &'a mut Fresher,
+    sub: &'a mut Substitution,
     env: Environment,
 }
 
@@ -279,18 +278,17 @@ impl Expression {
 pub fn infer_package<T>(
     pkg: &mut Package,
     env: Environment,
-    f: &mut Fresher,
+    sub: &mut Substitution,
     importer: &mut T,
-) -> std::result::Result<(Environment, Substitution), Error>
+) -> std::result::Result<Environment, Error>
 where
     T: Importer,
 {
-    let mut infer = InferState { f, env };
+    let mut infer = InferState { sub, env };
     let cons = pkg.infer(&mut infer, importer)?;
-    Ok((
-        infer.env,
-        infer::solve(&cons, &mut TvarKinds::new(), infer.f)?,
-    ))
+
+    infer::solve(&cons, &mut TvarKinds::new(), infer.sub)?;
+    Ok(infer.env)
 }
 
 /// Applies the substitution to the entire package.
@@ -523,8 +521,8 @@ pub struct ExprStmt {
 impl ExprStmt {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let cons = self.expression.infer(infer)?;
-        let sub = infer::solve(&cons, &mut TvarKinds::new(), infer.f)?;
-        infer.env.apply_mut(&sub);
+        infer::solve(&cons, &mut TvarKinds::new(), infer.sub)?;
+        infer.env.apply_mut(infer.sub);
         Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -600,12 +598,12 @@ impl VariableAssgn {
         let constraints = self.init.infer(infer)?;
 
         let mut kinds = TvarKinds::new();
-        let sub = infer::solve(&constraints, &mut kinds, infer.f)?;
+        infer::solve(&constraints, &mut kinds, infer.sub)?;
 
         // Apply substitution to the type environment
-        infer.env.apply_mut(&sub);
+        infer.env.apply_mut(infer.sub);
 
-        let t = self.init.type_of().apply(&sub);
+        let t = self.init.type_of().apply(infer.sub);
         let p = infer::generalize(&infer.env, &kinds, t);
 
         // Update variable assignment nodes with the free vars
@@ -726,7 +724,7 @@ pub struct ArrayExpr {
 impl ArrayExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let mut cons = Vec::new();
-        let elt = MonoType::Var(infer.f.fresh());
+        let elt = MonoType::Var(infer.sub.fresh());
         for el in &mut self.elements {
             let c = el.infer(infer)?;
             cons.append(&mut c.into());
@@ -769,8 +767,8 @@ impl DictExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let mut cons = Constraints::empty();
 
-        let key = MonoType::Var(infer.f.fresh());
-        let val = MonoType::Var(infer.f.fresh());
+        let key = MonoType::Var(infer.sub.fresh());
+        let val = MonoType::Var(infer.sub.fresh());
 
         for (k, v) in &mut self.elements {
             let c0 = k.infer(infer)?;
@@ -864,7 +862,7 @@ impl FunctionExpr {
                     // We are here: `infer = (a) => {...}`.
                     // So, we do not know the type of "a". Let's use a fresh TVar.
                     let id = param.key.name.clone();
-                    let ftvar = infer.f.fresh();
+                    let ftvar = infer.sub.fresh();
                     let typ = PolyType {
                         vars: Vec::new(),
                         cons: TvarKinds::new(),
@@ -1536,7 +1534,7 @@ impl MemberExpr {
             k: self.property.to_owned(),
             v: self.typ.to_owned(),
         };
-        let tail = MonoType::Var(infer.f.fresh());
+        let tail = MonoType::Var(infer.sub.fresh());
 
         let r = MonoType::from(types::Record::Extension { head, tail });
         let t = self.object.type_of();
@@ -1752,7 +1750,7 @@ impl IdentifierExpr {
             )
         })?;
 
-        let (t, cons) = infer::instantiate(poly.clone(), infer.f, self.loc.clone());
+        let (t, cons) = infer::instantiate(poly.clone(), infer.sub, self.loc.clone());
         Ok(cons
             + Constraints::from(vec![Constraint::Equal {
                 act: t,

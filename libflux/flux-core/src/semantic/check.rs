@@ -287,8 +287,8 @@ mod tests {
     use crate::parser;
     use crate::semantic::check;
     use crate::semantic::convert;
-    use crate::semantic::fresh;
     use crate::semantic::nodes;
+    use crate::semantic::sub;
     use anyhow::Result;
 
     fn merge_ast_files(files: Vec<ast::File>) -> ast::Package {
@@ -315,7 +315,7 @@ mod tests {
             ctr = ctr + 1;
         }
         let ast_pkg = merge_ast_files(ast_files);
-        let sem_pkg = convert::convert_package(ast_pkg, &mut fresh::Fresher::default())?;
+        let sem_pkg = convert::convert_package(ast_pkg, &mut sub::Substitution::default())?;
         Ok(sem_pkg)
     }
 

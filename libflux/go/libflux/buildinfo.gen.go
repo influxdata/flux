@@ -35,6 +35,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/lib.rs":                                                                "6c8aae532cca06672aefec70b5a06ce5a780de29f3f89937b368dd1c427dafe2",
 	"libflux/flux-core/src/parser/mod.rs":                                                         "1d5862788873ddf06599e592b68445c9d398b46cdbfb2c2d3590c6a338d78cde",
 	"libflux/flux-core/src/parser/strconv.rs":                                                     "748c82f6efc2eafaafb872db5b4185ce29aafa8f03ba02c4b84f4a9614e832d2",
+<<<<<<< HEAD
 	"libflux/flux-core/src/parser/tests.rs":                                                       "c3ed9e7883c35dbf0d873adff27a2834f719e4252e779189c18aac2b19e15244",
 	"libflux/flux-core/src/parser/tests/arrow_function.rs":                                        "3fe572be31598e8395fa36a902908a96339cf2a1a9cd5c282dc4efb2d0cad28d",
 	"libflux/flux-core/src/parser/tests/from.rs":                                                  "1dbc2d1a952694a624b308eeffc7abf508f521a95df9b30561eda93964e1f99d",
@@ -639,3 +640,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/window_test.flux":                                                            "3a7267214389c94a90defa625a896527a3c1f79cf1e26bb82f549f92aacb3fe0",
 	"stdlib/universe/yield_test.flux":                                                             "0484f5afea429ca8ca55ec9498cdb1692f5425f41355be8992bc5024a9254d00",
 }
+=======
+	"libflux/flux-core/src/parser/tests.rs":                                                       "1277c672801f50eefd36ddfae4ce8456c5ddcfbe63f4b1923f1aecbb2d9794c3",
+	"libflux/flux-core/src/scanner/mod.rs":
+>>>>>>> 47b5e4e4 (refactor: Pass a persistent Substitution throughout inference)

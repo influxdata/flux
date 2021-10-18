@@ -17,14 +17,21 @@ type UnificationTable = ena::unify::InPlaceUnificationTable<Tvar>;
 impl From<SubstitutionMap> for Substitution {
     /// Derive a substitution from a hash map.
     fn from(values: SubstitutionMap) -> Substitution {
-        let mut map = UnificationTable::new();
+        let sub = Substitution(RefCell::new(UnificationTable::new()));
         for (var, typ) in values {
-            match typ {
-                MonoType::Var(var2) => map.union(var, var2),
-                _ => map.union_value(var, Some(typ)),
+            // Create any variables referenced in the input map
+            while var.0 >= sub.0.borrow().len() as u64 {
+                sub.fresh();
             }
+            sub.union_type(var, typ);
         }
-        Substitution(RefCell::new(map))
+        sub
+    }
+}
+
+impl Default for Substitution {
+    fn default() -> Self {
+        Self::empty()
     }
 }
 
@@ -32,6 +39,20 @@ impl Substitution {
     /// Return a new empty substitution.
     pub fn empty() -> Substitution {
         Substitution(RefCell::new(UnificationTable::new()))
+    }
+
+    /// Takes a `Substitution` and returns an incremented [`Tvar`].
+    pub fn fresh(&self) -> Tvar {
+        self.0.borrow_mut().new_key(None)
+    }
+
+    /// Prepares `count` type variables for testing
+    #[cfg(test)]
+    pub(crate) fn mk_fresh(&self, count: usize) {
+        let mut sub = self.0.borrow_mut();
+        for _ in 0..count {
+            sub.new_key(None);
+        }
     }
 
     /// Returns `true` if the `Substitution` is empty
@@ -47,7 +68,38 @@ impl Substitution {
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
     /// variable.
     pub fn try_apply(&self, tv: Tvar) -> Option<MonoType> {
-        self.0.borrow_mut().probe_value(tv)
+        let mut sub = self.0.borrow_mut();
+        match sub.probe_value(tv) {
+            Some(typ) => Some(typ),
+            None => {
+                let root = sub.find(tv);
+                if root == tv {
+                    None
+                } else {
+                    Some(MonoType::Var(root))
+                }
+            }
+        }
+    }
+
+    /// Returns the "root variable" which is the variable that uniquely identifies a group of
+    /// variables that were unified
+    pub fn root(&self, tv: Tvar) -> Tvar {
+        self.0.borrow_mut().find(tv)
+    }
+
+    /// Unifies as a `Tvar` and a `MonoType`, recording the result in the substitution for later
+    /// lookup
+    pub fn union_type(&self, l: Tvar, r: MonoType) {
+        match r {
+            MonoType::Var(r) => self.union(l, r),
+            _ => self.0.borrow_mut().union_value(l, Some(r)),
+        }
+    }
+
+    /// Unifies two `Tvar`s, recording the result in the substitution for later.
+    pub fn union(&self, l: Tvar, r: Tvar) {
+        self.0.borrow_mut().union(l, r);
     }
 
     /// Merge two substitutions.
@@ -61,7 +113,7 @@ impl Substitution {
 /// A type is `Substitutable` if a substitution can be applied to it.
 pub trait Substitutable {
     /// Apply a substitution to a type variable.
-    fn apply(self, sub: &Substitution) -> Self
+    fn apply(self, sub: &dyn Substituter) -> Self
     where
         Self: Sized,
     {
@@ -69,7 +121,7 @@ pub trait Substitutable {
     }
 
     /// Apply a substitution to a type variable.
-    fn apply_mut(&mut self, sub: &Substitution)
+    fn apply_mut(&mut self, sub: &dyn Substituter)
     where
         Self: Sized,
     {
@@ -99,6 +151,12 @@ where
 {
     fn try_apply(&self, var: Tvar) -> Option<MonoType> {
         self(var)
+    }
+}
+
+impl Substituter for SubstitutionMap {
+    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        self.get(&var).cloned()
     }
 }
 

@@ -29,6 +29,7 @@ use crate::semantic::{
     env::Environment,
     fresh::Fresher,
     import::Importer,
+    sub::Substitution,
     types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
     Analyzer, AnalyzerConfig,
 };
@@ -64,7 +65,7 @@ fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap {
             if err != "" {
                 panic!("TypeExpression parsing failed for {}. {:?}", name, err);
             }
-            let poly = convert_polytype(typ_expr, &mut Fresher::default());
+            let poly = convert_polytype(typ_expr, &mut Substitution::default());
 
             // let poly = parse(expr).expect(format!("failed to parse {}", name).as_str());
             return (name.to_string(), poly.unwrap());
@@ -122,7 +123,7 @@ fn infer_types(
         .map(|(path, types)| {
             (
                 path,
-                build_polytype(types, &mut Fresher::default()).unwrap(),
+                build_polytype(types, &mut Substitution::default()).unwrap(),
             )
         })
         .collect();
