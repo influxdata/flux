@@ -110,7 +110,7 @@ const (
 	receiveTimeout = 15 * time.Second
 )
 
-var runScript = func(script string) error {
+func runScript(script string) error {
 	ctx := flux.NewDefaultDependencies().Inject(context.Background())
 	if _, _, err := runtime.Eval(ctx, script); err != nil {
 		return err
@@ -118,7 +118,7 @@ var runScript = func(script string) error {
 	return nil
 }
 
-var runScriptWithPipeline = func(script string) error {
+func runScriptWithPipeline(script string) error {
 	prog, err := lang.Compile(script, runtime.Default, time.Now())
 	if err != nil {
 		return err
@@ -167,294 +167,6 @@ var receive = func(c chan MQTT.Message) (MQTT.Message, error) {
 type wanted struct {
 	Table  []*executetest.Table
 	Result []byte
-}
-
-var testCases = []struct {
-	name string
-	spec *mqtt.ToMQTTProcedureSpec
-	data []flux.Table
-	want wanted
-}{
-	{
-		name: "coltable with name in _measurement",
-		spec: &mqtt.ToMQTTProcedureSpec{
-			Spec: &mqtt.ToMQTTOpSpec{
-				CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
-					Broker:  broker,
-					Timeout: 50 * time.Second,
-				},
-				Topic:        topic,
-				TimeColumn:   execute.DefaultTimeColLabel,
-				ValueColumns: []string{"_value"},
-				NameColumn:   "_measurement",
-			},
-		},
-		data: []flux.Table{executetest.MustCopyTable(&executetest.Table{
-			ColMeta: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_measurement", Type: flux.TString},
-				{Label: "_value", Type: flux.TFloat},
-				{Label: "fred", Type: flux.TString},
-			},
-			Data: [][]interface{}{
-				{execute.Time(11), "a", 2.0, "one"},
-				{execute.Time(21), "a", 2.0, "one"},
-				{execute.Time(21), "b", 1.0, "seven"},
-				{execute.Time(31), "a", 3.0, "nine"},
-				{execute.Time(41), "c", 4.0, "elevendyone"},
-			},
-		})},
-		want: wanted{
-			Table: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "a", 2.0, "one"},
-					{execute.Time(21), "a", 2.0, "one"},
-					{execute.Time(21), "b", 1.0, "seven"},
-					{execute.Time(31), "a", 3.0, "nine"},
-					{execute.Time(41), "c", 4.0, "elevendyone"},
-				},
-			}},
-			Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
-	},
-	{
-		name: "one table with measurement name in _measurement",
-		spec: &mqtt.ToMQTTProcedureSpec{
-			Spec: &mqtt.ToMQTTOpSpec{
-				CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
-					Broker:  broker,
-					Timeout: 50 * time.Second,
-				},
-				Topic:        topic,
-				TimeColumn:   execute.DefaultTimeColLabel,
-				NameColumn:   "_measurement",
-				ValueColumns: []string{"_value"},
-			},
-		},
-		data: []flux.Table{&executetest.Table{
-			ColMeta: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_measurement", Type: flux.TString},
-				{Label: "_value", Type: flux.TFloat},
-				{Label: "fred", Type: flux.TString},
-			},
-			Data: [][]interface{}{
-				{execute.Time(11), "a", 2.0, "one"},
-				{execute.Time(21), "a", 2.0, "one"},
-				{execute.Time(21), "b", 1.0, "seven"},
-				{execute.Time(31), "a", 3.0, "nine"},
-				{execute.Time(41), "c", 4.0, "elevendyone"},
-			},
-		}},
-		want: wanted{
-			Table: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "a", 2.0, "one"},
-					{execute.Time(21), "a", 2.0, "one"},
-					{execute.Time(21), "b", 1.0, "seven"},
-					{execute.Time(31), "a", 3.0, "nine"},
-					{execute.Time(41), "c", 4.0, "elevendyone"},
-				},
-			}},
-			Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
-	},
-	{
-		name: "one table with measurement name in _measurement and tag",
-		spec: &mqtt.ToMQTTProcedureSpec{
-			Spec: &mqtt.ToMQTTOpSpec{
-				CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
-					Broker:  broker,
-					Timeout: 50 * time.Second,
-				},
-				Topic:        topic,
-				TimeColumn:   execute.DefaultTimeColLabel,
-				ValueColumns: []string{"_value"},
-				TagColumns:   []string{"fred"},
-				NameColumn:   "_measurement",
-			},
-		},
-		data: []flux.Table{&executetest.Table{
-			ColMeta: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_measurement", Type: flux.TString},
-				{Label: "_value", Type: flux.TFloat},
-				{Label: "fred", Type: flux.TString},
-			},
-			Data: [][]interface{}{
-				{execute.Time(11), "a", 2.0, "one"},
-				{execute.Time(21), "a", 2.0, "one"},
-				{execute.Time(21), "b", 1.0, "seven"},
-				{execute.Time(31), "a", 3.0, "nine"},
-				{execute.Time(41), "c", 4.0, "elevendyone"},
-			},
-		}},
-		want: wanted{
-			Table: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "a", 2.0, "one"},
-					{execute.Time(21), "a", 2.0, "one"},
-					{execute.Time(21), "b", 1.0, "seven"},
-					{execute.Time(31), "a", 3.0, "nine"},
-					{execute.Time(41), "c", 4.0, "elevendyone"},
-				},
-			}},
-			Result: []byte("a,fred=one _value=2 11\na,fred=one _value=2 21\nb,fred=seven _value=1 21\na,fred=nine _value=3 31\nc,fred=elevendyone _value=4 41\n")},
-	},
-	{
-		name: "one table",
-		spec: &mqtt.ToMQTTProcedureSpec{
-			Spec: &mqtt.ToMQTTOpSpec{
-				CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
-					Broker:  broker,
-					Timeout: 50 * time.Second,
-				},
-				Topic:        topic,
-				TimeColumn:   execute.DefaultTimeColLabel,
-				ValueColumns: []string{"_value"},
-				NameColumn:   "_measurement",
-			},
-		},
-		data: []flux.Table{&executetest.Table{
-			ColMeta: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_measurement", Type: flux.TString},
-				{Label: "_value", Type: flux.TFloat},
-			},
-			Data: [][]interface{}{
-				{execute.Time(11), "one_table", 2.0},
-				{execute.Time(21), "one_table", 1.0},
-				{execute.Time(31), "one_table", 3.0},
-				{execute.Time(41), "one_table", 4.0},
-			},
-		}},
-		want: wanted{
-			Table: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "one_table", 2.0},
-					{execute.Time(21), "one_table", 1.0},
-					{execute.Time(31), "one_table", 3.0},
-					{execute.Time(41), "one_table", 4.0},
-				},
-			}},
-			Result: []byte("one_table _value=2 11\none_table _value=1 21\none_table _value=3 31\none_table _value=4 41\n"),
-		},
-	},
-	{
-		name: "one table with unused tag",
-		spec: &mqtt.ToMQTTProcedureSpec{
-			Spec: &mqtt.ToMQTTOpSpec{
-				CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
-					Broker:  broker,
-					Timeout: 50 * time.Second,
-				},
-				Topic:        topic,
-				TimeColumn:   execute.DefaultTimeColLabel,
-				ValueColumns: []string{"_value"},
-				NameColumn:   "_measurement",
-			},
-		},
-		data: []flux.Table{&executetest.Table{
-			ColMeta: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_measurement", Type: flux.TString},
-				{Label: "_value", Type: flux.TFloat},
-				{Label: "fred", Type: flux.TString},
-			},
-			Data: [][]interface{}{
-				{execute.Time(11), "one_table_w_unused_tag", 2.0, "one"},
-				{execute.Time(21), "one_table_w_unused_tag", 1.0, "seven"},
-				{execute.Time(31), "one_table_w_unused_tag", 3.0, "nine"},
-				{execute.Time(41), "one_table_w_unused_tag", 4.0, "elevendyone"},
-			},
-		}},
-		want: wanted{
-			Table: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "one_table_w_unused_tag", 2.0, "one"},
-					{execute.Time(21), "one_table_w_unused_tag", 1.0, "seven"},
-					{execute.Time(31), "one_table_w_unused_tag", 3.0, "nine"},
-					{execute.Time(41), "one_table_w_unused_tag", 4.0, "elevendyone"},
-				},
-			}},
-			Result: []byte("one_table_w_unused_tag _value=2 11\none_table_w_unused_tag _value=1 21\none_table_w_unused_tag _value=3 31\none_table_w_unused_tag _value=4 41\n"),
-		},
-	},
-	{
-		name: "one table with tag",
-		spec: &mqtt.ToMQTTProcedureSpec{
-			Spec: &mqtt.ToMQTTOpSpec{
-				CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
-					Broker:  broker,
-					Timeout: 50 * time.Second,
-				},
-				Topic:        topic,
-				TimeColumn:   execute.DefaultTimeColLabel,
-				ValueColumns: []string{"_value"},
-				TagColumns:   []string{"fred"},
-				NameColumn:   "_measurement",
-			},
-		},
-		data: []flux.Table{&executetest.Table{
-			ColMeta: []flux.ColMeta{
-				{Label: "_time", Type: flux.TTime},
-				{Label: "_measurement", Type: flux.TString},
-				{Label: "_value", Type: flux.TFloat},
-				{Label: "fred", Type: flux.TString},
-			},
-			Data: [][]interface{}{
-				{execute.Time(11), "foo", 2.0, "one"},
-				{execute.Time(21), "foo", 1.0, "seven"},
-				{execute.Time(31), "foo", 3.0, "nine"},
-				{execute.Time(41), "foo", 4.0, "elevendyone"},
-			},
-		}},
-		want: wanted{
-			Table: []*executetest.Table{{
-				ColMeta: []flux.ColMeta{
-					{Label: "_time", Type: flux.TTime},
-					{Label: "_measurement", Type: flux.TString},
-					{Label: "_value", Type: flux.TFloat},
-					{Label: "fred", Type: flux.TString},
-					//
-				},
-				Data: [][]interface{}{
-					{execute.Time(11), "foo", 2.0, "one"},
-					{execute.Time(21), "foo", 1.0, "seven"},
-					{execute.Time(31), "foo", 3.0, "nine"},
-					{execute.Time(41), "foo", 4.0, "elevendyone"},
-				},
-			}},
-			Result: []byte("foo,fred=one _value=2 11\nfoo,fred=seven _value=1 21\nfoo,fred=nine _value=3 31\nfoo,fred=elevendyone _value=4 41\n"),
-		},
-	},
 }
 
 func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
@@ -525,6 +237,293 @@ func TestToMQTTOpSpec_UnmarshalJSON(t *testing.T) {
 
 func TestToMQTT_Process(t *testing.T) {
 	t.Skip("test does not work inside of CI environment.")
+	testCases := []struct {
+		name string
+		spec *mqtt.ToMQTTProcedureSpec
+		data []flux.Table
+		want wanted
+	}{
+		{
+			name: "coltable with name in _measurement",
+			spec: &mqtt.ToMQTTProcedureSpec{
+				Spec: &mqtt.ToMQTTOpSpec{
+					CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
+						Broker:  broker,
+						Timeout: 50 * time.Second,
+					},
+					Topic:        topic,
+					TimeColumn:   execute.DefaultTimeColLabel,
+					ValueColumns: []string{"_value"},
+					NameColumn:   "_measurement",
+				},
+			},
+			data: []flux.Table{executetest.MustCopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "a", 2.0, "one"},
+					{execute.Time(21), "a", 2.0, "one"},
+					{execute.Time(21), "b", 1.0, "seven"},
+					{execute.Time(31), "a", 3.0, "nine"},
+					{execute.Time(41), "c", 4.0, "elevendyone"},
+				},
+			})},
+			want: wanted{
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "a", 2.0, "one"},
+						{execute.Time(21), "a", 2.0, "one"},
+						{execute.Time(21), "b", 1.0, "seven"},
+						{execute.Time(31), "a", 3.0, "nine"},
+						{execute.Time(41), "c", 4.0, "elevendyone"},
+					},
+				}},
+				Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
+		},
+		{
+			name: "one table with measurement name in _measurement",
+			spec: &mqtt.ToMQTTProcedureSpec{
+				Spec: &mqtt.ToMQTTOpSpec{
+					CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
+						Broker:  broker,
+						Timeout: 50 * time.Second,
+					},
+					Topic:        topic,
+					TimeColumn:   execute.DefaultTimeColLabel,
+					NameColumn:   "_measurement",
+					ValueColumns: []string{"_value"},
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "a", 2.0, "one"},
+					{execute.Time(21), "a", 2.0, "one"},
+					{execute.Time(21), "b", 1.0, "seven"},
+					{execute.Time(31), "a", 3.0, "nine"},
+					{execute.Time(41), "c", 4.0, "elevendyone"},
+				},
+			}},
+			want: wanted{
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "a", 2.0, "one"},
+						{execute.Time(21), "a", 2.0, "one"},
+						{execute.Time(21), "b", 1.0, "seven"},
+						{execute.Time(31), "a", 3.0, "nine"},
+						{execute.Time(41), "c", 4.0, "elevendyone"},
+					},
+				}},
+				Result: []byte("a _value=2 11\na _value=2 21\nb _value=1 21\na _value=3 31\nc _value=4 41\n")},
+		},
+		{
+			name: "one table with measurement name in _measurement and tag",
+			spec: &mqtt.ToMQTTProcedureSpec{
+				Spec: &mqtt.ToMQTTOpSpec{
+					CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
+						Broker:  broker,
+						Timeout: 50 * time.Second,
+					},
+					Topic:        topic,
+					TimeColumn:   execute.DefaultTimeColLabel,
+					ValueColumns: []string{"_value"},
+					TagColumns:   []string{"fred"},
+					NameColumn:   "_measurement",
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "a", 2.0, "one"},
+					{execute.Time(21), "a", 2.0, "one"},
+					{execute.Time(21), "b", 1.0, "seven"},
+					{execute.Time(31), "a", 3.0, "nine"},
+					{execute.Time(41), "c", 4.0, "elevendyone"},
+				},
+			}},
+			want: wanted{
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "a", 2.0, "one"},
+						{execute.Time(21), "a", 2.0, "one"},
+						{execute.Time(21), "b", 1.0, "seven"},
+						{execute.Time(31), "a", 3.0, "nine"},
+						{execute.Time(41), "c", 4.0, "elevendyone"},
+					},
+				}},
+				Result: []byte("a,fred=one _value=2 11\na,fred=one _value=2 21\nb,fred=seven _value=1 21\na,fred=nine _value=3 31\nc,fred=elevendyone _value=4 41\n")},
+		},
+		{
+			name: "one table",
+			spec: &mqtt.ToMQTTProcedureSpec{
+				Spec: &mqtt.ToMQTTOpSpec{
+					CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
+						Broker:  broker,
+						Timeout: 50 * time.Second,
+					},
+					Topic:        topic,
+					TimeColumn:   execute.DefaultTimeColLabel,
+					ValueColumns: []string{"_value"},
+					NameColumn:   "_measurement",
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "one_table", 2.0},
+					{execute.Time(21), "one_table", 1.0},
+					{execute.Time(31), "one_table", 3.0},
+					{execute.Time(41), "one_table", 4.0},
+				},
+			}},
+			want: wanted{
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "one_table", 2.0},
+						{execute.Time(21), "one_table", 1.0},
+						{execute.Time(31), "one_table", 3.0},
+						{execute.Time(41), "one_table", 4.0},
+					},
+				}},
+				Result: []byte("one_table _value=2 11\none_table _value=1 21\none_table _value=3 31\none_table _value=4 41\n"),
+			},
+		},
+		{
+			name: "one table with unused tag",
+			spec: &mqtt.ToMQTTProcedureSpec{
+				Spec: &mqtt.ToMQTTOpSpec{
+					CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
+						Broker:  broker,
+						Timeout: 50 * time.Second,
+					},
+					Topic:        topic,
+					TimeColumn:   execute.DefaultTimeColLabel,
+					ValueColumns: []string{"_value"},
+					NameColumn:   "_measurement",
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "one_table_w_unused_tag", 2.0, "one"},
+					{execute.Time(21), "one_table_w_unused_tag", 1.0, "seven"},
+					{execute.Time(31), "one_table_w_unused_tag", 3.0, "nine"},
+					{execute.Time(41), "one_table_w_unused_tag", 4.0, "elevendyone"},
+				},
+			}},
+			want: wanted{
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "one_table_w_unused_tag", 2.0, "one"},
+						{execute.Time(21), "one_table_w_unused_tag", 1.0, "seven"},
+						{execute.Time(31), "one_table_w_unused_tag", 3.0, "nine"},
+						{execute.Time(41), "one_table_w_unused_tag", 4.0, "elevendyone"},
+					},
+				}},
+				Result: []byte("one_table_w_unused_tag _value=2 11\none_table_w_unused_tag _value=1 21\none_table_w_unused_tag _value=3 31\none_table_w_unused_tag _value=4 41\n"),
+			},
+		},
+		{
+			name: "one table with tag",
+			spec: &mqtt.ToMQTTProcedureSpec{
+				Spec: &mqtt.ToMQTTOpSpec{
+					CommonMQTTOpSpec: mqtt.CommonMQTTOpSpec{
+						Broker:  broker,
+						Timeout: 50 * time.Second,
+					},
+					Topic:        topic,
+					TimeColumn:   execute.DefaultTimeColLabel,
+					ValueColumns: []string{"_value"},
+					TagColumns:   []string{"fred"},
+					NameColumn:   "_measurement",
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "fred", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(11), "foo", 2.0, "one"},
+					{execute.Time(21), "foo", 1.0, "seven"},
+					{execute.Time(31), "foo", 3.0, "nine"},
+					{execute.Time(41), "foo", 4.0, "elevendyone"},
+				},
+			}},
+			want: wanted{
+				Table: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+						{Label: "fred", Type: flux.TString},
+						//
+					},
+					Data: [][]interface{}{
+						{execute.Time(11), "foo", 2.0, "one"},
+						{execute.Time(21), "foo", 1.0, "seven"},
+						{execute.Time(31), "foo", 3.0, "nine"},
+						{execute.Time(41), "foo", 4.0, "elevendyone"},
+					},
+				}},
+				Result: []byte("foo,fred=one _value=2 11\nfoo,fred=seven _value=1 21\nfoo,fred=nine _value=3 31\nfoo,fred=elevendyone _value=4 41\n"),
+			},
+		},
+	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
@@ -579,7 +578,10 @@ array.from(rows: [
   |> mqtt.to(broker: "` + broker + `", topic: "` + topic + `", retain: true)
 `
 	want := "foo _value=4 1577836841000000000\n" // last row as line protocol without tag(s)
-	runScriptWithPipeline(script)
+	err := runScriptWithPipeline(script)
+	if err != nil {
+		t.Fatal(err)
+	}
 	/*
 	 Now subscribe and get the retained message.
 	*/
