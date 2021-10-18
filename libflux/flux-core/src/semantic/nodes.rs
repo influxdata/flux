@@ -37,7 +37,7 @@ use derive_more::Display;
 /// Result returned from the various 'infer' methods defined in this
 /// module. The result of inferring an expression or statment is an
 /// updated type environment and a set of type constraints to be solved.
-pub type Result = std::result::Result<(Environment, Constraints), Error>;
+pub type Result = std::result::Result<Constraints, Error>;
 
 /// Error returned from the various 'infer' methods defined in this
 /// module.
@@ -93,6 +93,11 @@ impl From<infer::Error> for Error {
             error: ErrorKind::Inference(err.err),
         }
     }
+}
+
+struct InferState<'a> {
+    f: &'a mut Fresher,
+    env: Environment,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -217,29 +222,29 @@ impl Expression {
             Expression::Regexp(lit) => &lit.loc,
         }
     }
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         match self {
-            Expression::Identifier(e) => e.infer(env, f),
-            Expression::Array(e) => e.infer(env, f),
-            Expression::Dict(e) => e.infer(env, f),
-            Expression::Function(e) => e.infer(env, f),
-            Expression::Logical(e) => e.infer(env, f),
-            Expression::Object(e) => e.infer(env, f),
-            Expression::Member(e) => e.infer(env, f),
-            Expression::Index(e) => e.infer(env, f),
-            Expression::Binary(e) => e.infer(env, f),
-            Expression::Unary(e) => e.infer(env, f),
-            Expression::Call(e) => e.infer(env, f),
-            Expression::Conditional(e) => e.infer(env, f),
-            Expression::StringExpr(e) => e.infer(env, f),
-            Expression::Integer(lit) => lit.infer(env),
-            Expression::Float(lit) => lit.infer(env),
-            Expression::StringLit(lit) => lit.infer(env),
-            Expression::Duration(lit) => lit.infer(env),
-            Expression::Uint(lit) => lit.infer(env),
-            Expression::Boolean(lit) => lit.infer(env),
-            Expression::DateTime(lit) => lit.infer(env),
-            Expression::Regexp(lit) => lit.infer(env),
+            Expression::Identifier(e) => e.infer(infer),
+            Expression::Array(e) => e.infer(infer),
+            Expression::Dict(e) => e.infer(infer),
+            Expression::Function(e) => e.infer(infer),
+            Expression::Logical(e) => e.infer(infer),
+            Expression::Object(e) => e.infer(infer),
+            Expression::Member(e) => e.infer(infer),
+            Expression::Index(e) => e.infer(infer),
+            Expression::Binary(e) => e.infer(infer),
+            Expression::Unary(e) => e.infer(infer),
+            Expression::Call(e) => e.infer(infer),
+            Expression::Conditional(e) => e.infer(infer),
+            Expression::StringExpr(e) => e.infer(infer),
+            Expression::Integer(lit) => lit.infer(),
+            Expression::Float(lit) => lit.infer(),
+            Expression::StringLit(lit) => lit.infer(),
+            Expression::Duration(lit) => lit.infer(),
+            Expression::Uint(lit) => lit.infer(),
+            Expression::Boolean(lit) => lit.infer(),
+            Expression::DateTime(lit) => lit.infer(),
+            Expression::Regexp(lit) => lit.infer(),
         }
     }
     fn apply(self, sub: &Substitution) -> Self {
@@ -280,8 +285,12 @@ pub fn infer_package<T>(
 where
     T: Importer,
 {
-    let (env, cons) = pkg.infer(env, f, importer)?;
-    Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
+    let mut infer = InferState { f, env };
+    let cons = pkg.infer(&mut infer, importer)?;
+    Ok((
+        infer.env,
+        infer::solve(&cons, &mut TvarKinds::new(), infer.f)?,
+    ))
 }
 
 /// Applies the substitution to the entire package.
@@ -300,15 +309,15 @@ pub struct Package {
 }
 
 impl Package {
-    fn infer<T>(&mut self, env: Environment, f: &mut Fresher, importer: &mut T) -> Result
+    fn infer<T>(&mut self, infer: &mut InferState, importer: &mut T) -> Result
     where
         T: Importer,
     {
         self.files
             .iter_mut()
-            .try_fold((env, Constraints::empty()), |(env, rest), file| {
-                let (env, cons) = file.infer(env, f, importer)?;
-                Ok((env, cons + rest))
+            .try_fold(Constraints::empty(), |rest, file| {
+                let cons = file.infer(infer, importer)?;
+                Ok(cons + rest)
             })
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -328,7 +337,7 @@ pub struct File {
 }
 
 impl File {
-    fn infer<T>(&mut self, mut env: Environment, f: &mut Fresher, importer: &mut T) -> Result
+    fn infer<T>(&mut self, infer: &mut InferState, importer: &mut T) -> Result
     where
         T: Importer,
     {
@@ -343,49 +352,44 @@ impl File {
             let poly = importer.import(path).ok_or_else(|| {
                 located(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()))
             })?;
-            env.add(name.to_owned(), poly);
+            infer.env.add(name.to_owned(), poly);
         }
 
-        let (mut env, constraints) =
-            self.body
-                .iter_mut()
-                .try_fold(
-                    (env, Constraints::empty()),
-                    |(env, rest), node| match node {
-                        Statement::Builtin(stmt) => {
-                            let env = stmt.infer(env)?;
-                            Ok((env, rest))
-                        }
-                        Statement::Variable(stmt) => {
-                            let (env, cons) = stmt.infer(env, f)?;
-                            Ok((env, cons + rest))
-                        }
-                        Statement::Option(stmt) => {
-                            let (env, cons) = stmt.infer(env, f)?;
-                            Ok((env, cons + rest))
-                        }
-                        Statement::Expr(stmt) => {
-                            let (env, cons) = stmt.infer(env, f)?;
-                            Ok((env, cons + rest))
-                        }
-                        Statement::Test(stmt) => {
-                            let (env, cons) = stmt.infer(env, f)?;
-                            Ok((env, cons + rest))
-                        }
-                        Statement::TestCase(stmt) => {
-                            let (env, cons) = stmt.infer(env, f)?;
-                            Ok((env, cons + rest))
-                        }
-                        Statement::Return(stmt) => {
-                            Err(located(stmt.loc.clone(), ErrorKind::InvalidReturn))
-                        }
-                    },
-                )?;
+        let constraints = self
+            .body
+            .iter_mut()
+            .try_fold(Constraints::empty(), |rest, node| match node {
+                Statement::Builtin(stmt) => {
+                    stmt.infer(&mut infer.env)?;
+                    Ok(rest)
+                }
+                Statement::Variable(stmt) => {
+                    let cons = stmt.infer(infer)?;
+                    Ok(cons + rest)
+                }
+                Statement::Option(stmt) => {
+                    let cons = stmt.infer(infer)?;
+                    Ok(cons + rest)
+                }
+                Statement::Expr(stmt) => {
+                    let cons = stmt.infer(infer)?;
+                    Ok(cons + rest)
+                }
+                Statement::Test(stmt) => {
+                    let cons = stmt.infer(infer)?;
+                    Ok(cons + rest)
+                }
+                Statement::TestCase(stmt) => {
+                    let cons = stmt.infer(infer)?;
+                    Ok(cons + rest)
+                }
+                Statement::Return(stmt) => Err(located(stmt.loc.clone(), ErrorKind::InvalidReturn)),
+            })?;
 
         for name in imports {
-            env.remove(name);
+            infer.env.remove(name);
         }
-        Ok((env, constraints))
+        Ok(constraints)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.body = self.body.into_iter().map(|stmt| stmt.apply(sub)).collect();
@@ -430,24 +434,22 @@ pub struct OptionStmt {
 }
 
 impl OptionStmt {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         match &mut self.assignment {
             Assignment::Member(stmt) => {
-                let (env, cons) = stmt.init.infer(env, f)?;
-                let (env, rest) = stmt.member.infer(env, f)?;
+                let cons = stmt.init.infer(infer)?;
+                let rest = stmt.member.infer(infer)?;
 
-                Ok((
-                    env,
-                    cons + rest
-                        + vec![Constraint::Equal {
-                            exp: stmt.member.typ.clone(),
-                            act: stmt.init.type_of(),
-                            loc: stmt.init.loc().clone(),
-                        }]
-                        .into(),
-                ))
+                Ok(cons
+                    + rest
+                    + vec![Constraint::Equal {
+                        exp: stmt.member.typ.clone(),
+                        act: stmt.init.type_of(),
+                        loc: stmt.init.loc().clone(),
+                    }]
+                    .into())
             }
-            Assignment::Variable(stmt) => stmt.infer(env, f),
+            Assignment::Variable(stmt) => stmt.infer(infer),
         }
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -465,9 +467,9 @@ pub struct BuiltinStmt {
 }
 
 impl BuiltinStmt {
-    fn infer(&self, mut env: Environment) -> std::result::Result<Environment, Error> {
+    fn infer(&self, env: &mut Environment) -> std::result::Result<(), Error> {
         env.add(self.id.name.clone(), self.typ_expr.clone());
-        Ok(env)
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -483,8 +485,8 @@ pub struct TestStmt {
 }
 
 impl TestStmt {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        self.assignment.infer(env, f)
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        self.assignment.infer(infer)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.assignment = self.assignment.apply(sub);
@@ -501,8 +503,8 @@ pub struct TestCaseStmt {
 }
 
 impl TestCaseStmt {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        self.block.infer(env, f)
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        self.block.infer(infer)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.block = self.block.apply(sub);
@@ -519,10 +521,11 @@ pub struct ExprStmt {
 }
 
 impl ExprStmt {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        let (env, cons) = self.expression.infer(env, f)?;
-        let sub = infer::solve(&cons, &mut TvarKinds::new(), f)?;
-        Ok((env.apply(&sub), cons))
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        let cons = self.expression.infer(infer)?;
+        let sub = infer::solve(&cons, &mut TvarKinds::new(), infer.f)?;
+        infer.env.apply_mut(&sub);
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.expression = self.expression.apply(sub);
@@ -540,8 +543,8 @@ pub struct ReturnStmt {
 
 impl ReturnStmt {
     #[allow(dead_code)]
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        self.argument.infer(env, f)
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        self.argument.infer(infer)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.argument = self.argument.apply(sub);
@@ -593,17 +596,17 @@ impl VariableAssgn {
     // the variable to its newly generalized type in the type environment
     // before inferring the rest of the program.
     //
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        let (env, constraints) = self.init.infer(env, f)?;
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        let constraints = self.init.infer(infer)?;
 
         let mut kinds = TvarKinds::new();
-        let sub = infer::solve(&constraints, &mut kinds, f)?;
+        let sub = infer::solve(&constraints, &mut kinds, infer.f)?;
 
         // Apply substitution to the type environment
-        let mut env = env.apply(&sub);
+        infer.env.apply_mut(&sub);
 
         let t = self.init.type_of().apply(&sub);
-        let p = infer::generalize(&env, &kinds, t);
+        let p = infer::generalize(&infer.env, &kinds, t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
@@ -614,8 +617,8 @@ impl VariableAssgn {
         self.cons = p.cons.clone();
 
         // Update the type environment
-        env.add(String::from(&self.id.name), p);
-        Ok((env, constraints))
+        infer.env.add(String::from(&self.id.name), p);
+        Ok(constraints)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.init = self.init.apply(sub);
@@ -649,22 +652,20 @@ pub struct StringExpr {
 }
 
 impl StringExpr {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        let mut env = env;
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let mut constraints = Vec::new();
         for p in &mut self.parts {
             if let StringExprPart::Interpolated(ref mut ip) = p {
-                let (e, cons) = ip.expression.infer(env, f)?;
+                let cons = ip.expression.infer(infer)?;
                 constraints.append(&mut Vec::from(cons));
                 constraints.push(Constraint::Kind {
                     exp: Kind::Stringable,
                     act: ip.expression.type_of(),
                     loc: ip.expression.loc().clone(),
                 });
-                env = e
             }
         }
-        Ok((env, Constraints::from(constraints)))
+        Ok(Constraints::from(constraints))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.parts = self.parts.into_iter().map(|part| part.apply(sub)).collect();
@@ -723,18 +724,17 @@ pub struct ArrayExpr {
 }
 
 impl ArrayExpr {
-    fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let mut cons = Vec::new();
-        let elt = MonoType::Var(f.fresh());
+        let elt = MonoType::Var(infer.f.fresh());
         for el in &mut self.elements {
-            let (e, c) = el.infer(env, f)?;
+            let c = el.infer(infer)?;
             cons.append(&mut c.into());
             cons.push(Constraint::Equal {
                 exp: elt.clone(),
                 act: el.type_of(),
                 loc: el.loc().clone(),
             });
-            env = e;
         }
         let at = MonoType::from(Array(elt));
         cons.push(Constraint::Equal {
@@ -742,7 +742,7 @@ impl ArrayExpr {
             act: self.typ.clone(),
             loc: self.loc.clone(),
         });
-        Ok((env, cons.into()))
+        Ok(cons.into())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -766,15 +766,15 @@ pub struct DictExpr {
 }
 
 impl DictExpr {
-    fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let mut cons = Constraints::empty();
 
-        let key = MonoType::Var(f.fresh());
-        let val = MonoType::Var(f.fresh());
+        let key = MonoType::Var(infer.f.fresh());
+        let val = MonoType::Var(infer.f.fresh());
 
         for (k, v) in &mut self.elements {
-            let (e, c0) = k.infer(env, f)?;
-            let (e, c1) = v.infer(e, f)?;
+            let c0 = k.infer(infer)?;
+            let c1 = v.infer(infer)?;
 
             let kt = k.type_of();
             let vt = v.type_of();
@@ -791,7 +791,6 @@ impl DictExpr {
             };
 
             cons = cons + c0 + c1 + vec![kc, vc].into();
-            env = e;
         }
 
         let ty = MonoType::from(Dictionary {
@@ -810,7 +809,7 @@ impl DictExpr {
             loc: self.loc.clone(),
         };
 
-        Ok((env, cons + vec![eq, tc].into()))
+        Ok(cons + vec![eq, tc].into())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -837,7 +836,7 @@ pub struct FunctionExpr {
 }
 
 impl FunctionExpr {
-    fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let mut cons = Constraints::empty();
         let mut pipe = None;
         let mut req = MonoTypeMap::new();
@@ -847,10 +846,10 @@ impl FunctionExpr {
         for param in &mut self.params {
             match param.default {
                 Some(ref mut e) => {
-                    let (nenv, ncons) = e.infer(env, f)?;
+                    let ncons = e.infer(infer)?;
                     cons = cons + ncons;
                     let id = param.key.name.clone();
-                    // We are here: `f = (a=1) => {...}`.
+                    // We are here: `infer = (a=1) => {...}`.
                     // So, this PolyType is actually a MonoType, whose type
                     // is the one of the default value ("1" in "a=1").
                     let typ = PolyType {
@@ -860,13 +859,12 @@ impl FunctionExpr {
                     };
                     params.insert(id.clone(), typ);
                     opt.insert(id, e.type_of());
-                    env = nenv;
                 }
                 None => {
-                    // We are here: `f = (a) => {...}`.
+                    // We are here: `infer = (a) => {...}`.
                     // So, we do not know the type of "a". Let's use a fresh TVar.
                     let id = param.key.name.clone();
-                    let ftvar = f.fresh();
+                    let ftvar = infer.f.fresh();
                     let typ = PolyType {
                         vars: Vec::new(),
                         cons: TvarKinds::new(),
@@ -887,12 +885,12 @@ impl FunctionExpr {
             };
         }
         // Add the parameters to some nested environment.
-        let mut nenv = Environment::new(env);
+        infer.env.enter_scope();
         for (id, param) in params.into_iter() {
-            nenv.add(id, param);
+            infer.env.add(id, param);
         }
         // And use it to infer the body.
-        let (nenv, bcons) = self.body.infer(nenv, f)?;
+        let bcons = self.body.infer(infer)?;
         // HACK Remove once substitutions are persisted correctly
         // Update the argument variable with the types inferred from the body
         for (k, t) in req
@@ -900,7 +898,7 @@ impl FunctionExpr {
             .chain(opt.iter_mut())
             .chain(pipe.as_mut().map(|p| (&p.k, &mut p.v)))
         {
-            let new_t = nenv.lookup(k).ok_or_else(|| {
+            let new_t = infer.env.lookup(k).ok_or_else(|| {
                 located(
                     self.loc.clone(),
                     ErrorKind::Bug(format!("Missing function parameter `{}`", k)),
@@ -909,7 +907,7 @@ impl FunctionExpr {
             *t = new_t.expr.clone();
         }
         // Now pop the nested environment, we don't need it anymore.
-        let env = nenv.pop();
+        infer.env.exit_scope();
         let retn = self.body.type_of();
         let func = MonoType::from(Function {
             req,
@@ -923,7 +921,7 @@ impl FunctionExpr {
             act: func,
             loc: self.loc.clone(),
         });
-        Ok((env, cons))
+        Ok(cons)
     }
     #[allow(missing_docs)]
     pub fn pipe(&self) -> Option<&FunctionParameter> {
@@ -975,21 +973,21 @@ pub enum Block {
 }
 
 impl Block {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         match self {
             Block::Variable(stmt, block) => {
-                let (env, cons) = stmt.infer(env, f)?;
-                let (env, rest) = block.infer(env, f)?;
+                let cons = stmt.infer(infer)?;
+                let rest = block.infer(infer)?;
 
-                Ok((env, cons + rest))
+                Ok(cons + rest)
             }
             Block::Expr(stmt, block) => {
-                let (env, cons) = stmt.infer(env, f)?;
-                let (env, rest) = block.infer(env, f)?;
+                let cons = stmt.infer(infer)?;
+                let rest = block.infer(infer)?;
 
-                Ok((env, cons + rest))
+                Ok(cons + rest)
             }
-            Block::Return(e) => e.infer(env, f),
+            Block::Return(e) => e.infer(infer),
         }
     }
     #[allow(missing_docs)]
@@ -1059,11 +1057,11 @@ pub struct BinaryExpr {
 }
 
 impl BinaryExpr {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         // Compute the left and right constraints.
         // Do this first so that we can return an error if one occurs.
-        let (env, lcons) = self.left.infer(env, f)?;
-        let (env, rcons) = self.right.infer(env, f)?;
+        let lcons = self.left.infer(infer)?;
+        let rcons = self.right.infer(infer)?;
 
         let cons = match self.operator {
             // The following operators require both sides to be equal.
@@ -1347,7 +1345,7 @@ impl BinaryExpr {
         };
 
         // Otherwise, add the constraints together and return them.
-        Ok((env, lcons + rcons + cons))
+        Ok(lcons + rcons + cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1371,11 +1369,11 @@ pub struct CallExpr {
 }
 
 impl CallExpr {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         // First, recursively infer every type of the children of this call expression,
         // update the environment and the constraints, and use the inferred types to
         // build the fields of the type for this call expression.
-        let (mut env, mut cons) = self.callee.infer(env, f)?;
+        let mut cons = self.callee.infer(infer)?;
         let mut req = MonoTypeMap::new();
         let mut pipe = None;
         for Property {
@@ -1384,16 +1382,14 @@ impl CallExpr {
             ..
         } in &mut self.arguments
         {
-            let (nenv, ncons) = expr.infer(env, f)?;
+            let ncons = expr.infer(infer)?;
             cons = cons + ncons;
-            env = nenv;
             // Every argument is required in a function call.
             req.insert(id.name.clone(), expr.type_of());
         }
         if let Some(ref mut p) = &mut self.pipe {
-            let (nenv, ncons) = p.infer(env, f)?;
+            let ncons = p.infer(infer)?;
             cons = cons + ncons;
-            env = nenv;
             pipe = Some(types::Property {
                 k: "<-".to_string(),
                 v: p.type_of(),
@@ -1419,7 +1415,7 @@ impl CallExpr {
             }),
             loc: self.loc.clone(),
         });
-        Ok((env, cons))
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1450,10 +1446,10 @@ pub struct ConditionalExpr {
 }
 
 impl ConditionalExpr {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        let (env, tcons) = self.test.infer(env, f)?;
-        let (env, ccons) = self.consequent.infer(env, f)?;
-        let (env, acons) = self.alternate.infer(env, f)?;
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        let tcons = self.test.infer(infer)?;
+        let ccons = self.consequent.infer(infer)?;
+        let acons = self.alternate.infer(infer)?;
         let cons = tcons
             + ccons
             + acons
@@ -1469,7 +1465,7 @@ impl ConditionalExpr {
                     loc: self.alternate.loc().clone(),
                 },
             ]);
-        Ok((env, cons))
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.test = self.test.apply(sub);
@@ -1490,9 +1486,9 @@ pub struct LogicalExpr {
 }
 
 impl LogicalExpr {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        let (env, lcons) = self.left.infer(env, f)?;
-        let (env, rcons) = self.right.infer(env, f)?;
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        let lcons = self.left.infer(infer)?;
+        let rcons = self.right.infer(infer)?;
         let cons = lcons
             + rcons
             + Constraints::from(vec![
@@ -1507,7 +1503,7 @@ impl LogicalExpr {
                     loc: self.right.loc().clone(),
                 },
             ]);
-        Ok((env, cons))
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.left = self.left.apply(sub);
@@ -1535,26 +1531,24 @@ impl MemberExpr {
     //
     // where 'r is a fresh type variable.
     //
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let head = types::Property {
             k: self.property.to_owned(),
             v: self.typ.to_owned(),
         };
-        let tail = MonoType::Var(f.fresh());
+        let tail = MonoType::Var(infer.f.fresh());
 
         let r = MonoType::from(types::Record::Extension { head, tail });
         let t = self.object.type_of();
 
-        let (env, cons) = self.object.infer(env, f)?;
-        Ok((
-            env,
-            cons + vec![Constraint::Equal {
+        let cons = self.object.infer(infer)?;
+        Ok(cons
+            + vec![Constraint::Equal {
                 exp: r,
                 act: t,
                 loc: self.object.loc().clone(),
             }]
-            .into(),
-        ))
+            .into())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1576,9 +1570,9 @@ pub struct IndexExpr {
 }
 
 impl IndexExpr {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        let (env, acons) = self.array.infer(env, f)?;
-        let (env, icons) = self.index.infer(env, f)?;
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        let acons = self.array.infer(infer)?;
+        let icons = self.index.infer(infer)?;
         let cons = acons
             + icons
             + Constraints::from(vec![
@@ -1593,7 +1587,7 @@ impl IndexExpr {
                     loc: self.array.loc().clone(),
                 },
             ]);
-        Ok((env, cons))
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1616,20 +1610,18 @@ pub struct ObjectExpr {
 }
 
 impl ObjectExpr {
-    fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         // If record extension, infer constraints for base
         let (mut r, mut cons) = match &mut self.with {
             Some(expr) => {
-                let (e, cons) = expr.infer(env, f)?;
-                env = e;
+                let cons = expr.infer(infer)?;
                 (expr.typ.to_owned(), cons)
             }
             None => (MonoType::from(types::Record::Empty), Constraints::empty()),
         };
         // Infer constraints for properties
         for prop in self.properties.iter_mut().rev() {
-            let (e, rest) = prop.value.infer(env, f)?;
-            env = e;
+            let rest = prop.value.infer(infer)?;
             cons = cons + rest;
             r = MonoType::from(types::Record::Extension {
                 head: types::Property {
@@ -1639,15 +1631,13 @@ impl ObjectExpr {
                 tail: r,
             });
         }
-        Ok((
-            env,
-            cons + vec![Constraint::Equal {
+        Ok(cons
+            + vec![Constraint::Equal {
                 exp: self.typ.to_owned(),
                 act: r,
                 loc: self.loc.clone(),
             }]
-            .into(),
-        ))
+            .into())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1676,8 +1666,8 @@ pub struct UnaryExpr {
 }
 
 impl UnaryExpr {
-    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
-        let (env, acons) = self.argument.infer(env, f)?;
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+        let acons = self.argument.infer(infer)?;
         let cons = match self.operator {
             ast::Operator::NotOperator => Constraints::from(vec![
                 Constraint::Equal {
@@ -1717,7 +1707,7 @@ impl UnaryExpr {
                 ))
             }
         };
-        Ok((env, acons + cons))
+        Ok(acons + cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1754,23 +1744,21 @@ pub struct IdentifierExpr {
 }
 
 impl IdentifierExpr {
-    fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
-        let poly = env.lookup(&self.name).ok_or_else(|| {
+    fn infer(&self, infer: &mut InferState<'_>) -> Result {
+        let poly = infer.env.lookup(&self.name).ok_or_else(|| {
             located(
                 self.loc.clone(),
                 ErrorKind::UndefinedIdentifier(self.name.to_string()),
             )
         })?;
 
-        let (t, cons) = infer::instantiate(poly.clone(), f, self.loc.clone());
-        Ok((
-            env,
-            cons + Constraints::from(vec![Constraint::Equal {
+        let (t, cons) = infer::instantiate(poly.clone(), infer.f, self.loc.clone());
+        Ok(cons
+            + Constraints::from(vec![Constraint::Equal {
                 act: t,
                 exp: self.typ.clone(),
                 loc: self.loc.clone(),
-            }]),
-        ))
+            }]))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1795,8 +1783,8 @@ pub struct BooleanLit {
 }
 
 impl BooleanLit {
-    fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+    fn infer(&self) -> Result {
+        Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1812,8 +1800,8 @@ pub struct IntegerLit {
 }
 
 impl IntegerLit {
-    fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+    fn infer(&self) -> Result {
+        Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1829,8 +1817,8 @@ pub struct FloatLit {
 }
 
 impl FloatLit {
-    fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+    fn infer(&self) -> Result {
+        Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1846,8 +1834,8 @@ pub struct RegexpLit {
 }
 
 impl RegexpLit {
-    fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+    fn infer(&self) -> Result {
+        Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1863,8 +1851,8 @@ pub struct StringLit {
 }
 
 impl StringLit {
-    fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+    fn infer(&self) -> Result {
+        Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1880,8 +1868,8 @@ pub struct UintLit {
 }
 
 impl UintLit {
-    fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+    fn infer(&self) -> Result {
+        Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1897,8 +1885,8 @@ pub struct DateTimeLit {
 }
 
 impl DateTimeLit {
-    fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+    fn infer(&self) -> Result {
+        Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1931,8 +1919,8 @@ pub struct DurationLit {
 }
 
 impl DurationLit {
-    fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+    fn infer(&self) -> Result {
+        Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
         self

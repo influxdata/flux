@@ -1,7 +1,9 @@
 //! Semantic representations of types.
 
 use crate::semantic::fresh::{Fresh, Fresher};
-use crate::semantic::sub::{apply2, apply4, merge_collect, Substitutable, Substitution};
+use crate::semantic::sub::{
+    apply2, apply4, merge_collect, Substitutable, Substituter, Substitution,
+};
 use derive_more::Display;
 use std::fmt::Write;
 
@@ -82,15 +84,22 @@ impl PartialEq for PolyType {
 }
 
 impl Substitutable for PolyType {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         // `vars` defines new distinct variables for `expr` so any substitutions applied on a
         // variable named the same must not be applied in `expr`
-        let sub = sub.without(&self.vars);
-        self.expr.apply_ref(&sub).map(|expr| PolyType {
-            vars: self.vars.clone(),
-            cons: self.cons.clone(),
-            expr,
-        })
+        self.expr
+            .apply_ref(&|var| {
+                if self.vars.contains(&var) {
+                    None
+                } else {
+                    sub.try_apply(var)
+                }
+            })
+            .map(|expr| PolyType {
+                vars: self.vars.clone(),
+                cons: self.cons.clone(),
+                expr,
+            })
     }
     fn free_vars(&self) -> Vec<Tvar> {
         minus(&self.vars, self.expr.free_vars())
@@ -306,7 +315,7 @@ pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
 type RefMonoTypeVecMap<'a> = HashMap<&'a String, Vec<&'a MonoType>>;
 
 impl Substitutable for MonoType {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             MonoType::Bool
             | MonoType::Int
@@ -697,7 +706,7 @@ impl Tvar {
 pub struct Array(pub MonoType);
 
 impl Substitutable for Array {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.0.apply_ref(sub).map(Array)
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -743,7 +752,7 @@ impl Array {
 pub struct Vector(pub MonoType);
 
 impl Substitutable for Vector {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.0.apply_ref(sub).map(Vector)
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -788,7 +797,7 @@ pub struct Dictionary {
 }
 
 impl Substitutable for Dictionary {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
     }
     fn free_vars(&self) -> Vec<Tvar> {
@@ -911,7 +920,7 @@ impl cmp::PartialEq for Record {
 }
 
 impl Substitutable for Record {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             Record::Empty => None,
             Record::Extension { head, tail } => {
@@ -1153,7 +1162,7 @@ pub struct Property {
 }
 
 impl Substitutable for Property {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.v.apply_ref(sub).map(|v| Property {
             k: self.k.clone(),
             v,
@@ -1242,7 +1251,7 @@ impl fmt::Display for Function {
 
 #[allow(clippy::implicit_hasher)]
 impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(
             &mut (),
             self,
@@ -1257,7 +1266,7 @@ impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, 
 }
 
 impl<T: Substitutable> Substitutable for Option<T> {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
             None => None,
             Some(t) => t.apply_ref(sub).map(Some),
@@ -1272,7 +1281,7 @@ impl<T: Substitutable> Substitutable for Option<T> {
 }
 
 impl Substitutable for Function {
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         let Function {
             req,
             opt,
@@ -2085,7 +2094,7 @@ mod tests {
                 &mut Fresher::default(),
             )
             .unwrap();
-        assert_eq!(sub, Substitution::empty());
+        assert!(sub.is_empty());
     }
     #[test]
     fn constrain_ints() {
@@ -2100,11 +2109,13 @@ mod tests {
             Kind::Stringable,
         ];
         for c in allowable_cons {
-            let sub = MonoType::Int.constrain(c, &mut TvarKinds::new());
-            assert_eq!(Ok(Substitution::empty()), sub);
+            let sub = MonoType::Int.constrain(c, &mut TvarKinds::new()).unwrap();
+            assert!(sub.is_empty());
         }
 
-        let sub = MonoType::Int.constrain(Kind::Record, &mut TvarKinds::new());
+        let sub = MonoType::Int
+            .constrain(Kind::Record, &mut TvarKinds::new())
+            .map(|_| ());
         assert_eq!(
             Err(Error::CannotConstrain {
                 act: MonoType::Int,
@@ -2115,8 +2126,10 @@ mod tests {
     }
     #[test]
     fn constrain_rows() {
-        let sub = Record::Empty.constrain(Kind::Record, &mut TvarKinds::new());
-        assert_eq!(Ok(Substitution::empty()), sub);
+        let sub = Record::Empty
+            .constrain(Kind::Record, &mut TvarKinds::new())
+            .unwrap();
+        assert!(sub.is_empty());
 
         let unallowable_cons = vec![
             Kind::Addable,
@@ -2127,7 +2140,9 @@ mod tests {
             Kind::Nullable,
         ];
         for c in unallowable_cons {
-            let sub = Record::Empty.constrain(c, &mut TvarKinds::new());
+            let sub = Record::Empty
+                .constrain(c, &mut TvarKinds::new())
+                .map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
                     act: MonoType::from(Record::Empty),
@@ -2153,15 +2168,17 @@ mod tests {
 
         for c in allowable_cons_int {
             let vector_int = MonoType::Vector(Box::new(Vector(MonoType::Int)));
-            let sub = vector_int.constrain(c, &mut TvarKinds::new());
-            assert_eq!(Ok(Substitution::empty()), sub);
+            let sub = vector_int.constrain(c, &mut TvarKinds::new()).unwrap();
+            assert!(sub.is_empty());
         }
 
         // kind constraints not allowed for Vector(MonoType::String)
         let unallowable_cons_string = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_string {
             let vector_string = MonoType::Vector(Box::new(Vector(MonoType::String)));
-            let sub = vector_string.constrain(c, &mut TvarKinds::new());
+            let sub = vector_string
+                .constrain(c, &mut TvarKinds::new())
+                .map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
                     act: MonoType::String,
@@ -2175,7 +2192,7 @@ mod tests {
         let unallowable_cons_time = vec![Kind::Subtractable, Kind::Divisible, Kind::Numeric];
         for c in unallowable_cons_time {
             let vector_time = MonoType::Vector(Box::new(Vector(MonoType::Time)));
-            let sub = vector_time.constrain(c, &mut TvarKinds::new());
+            let sub = vector_time.constrain(c, &mut TvarKinds::new()).map(|_| ());
             assert_eq!(
                 Err(Error::CannotConstrain {
                     act: MonoType::Time,
@@ -2196,8 +2213,8 @@ mod tests {
 
         for c in allowable_cons_time {
             let vector_time = MonoType::Vector(Box::new(Vector(MonoType::Time)));
-            let sub = vector_time.constrain(c, &mut TvarKinds::new());
-            assert_eq!(Ok(Substitution::empty()), sub);
+            let sub = vector_time.constrain(c, &mut TvarKinds::new()).unwrap();
+            assert!(sub.is_empty());
         }
     }
     #[test]
@@ -2223,10 +2240,7 @@ mod tests {
                 &mut Fresher::default(),
             )
             .unwrap();
-        assert_eq!(
-            sub,
-            Substitution::from(semantic_map! {Tvar(0) => MonoType::Var(Tvar(1))}),
-        );
+        assert_eq!(sub.apply(Tvar(0)), MonoType::Var(Tvar(1)));
     }
     #[test]
     fn unify_constrained_tvars() {
@@ -2234,10 +2248,7 @@ mod tests {
         let sub = MonoType::Var(Tvar(0))
             .unify(MonoType::Var(Tvar(1)), &mut cons, &mut Fresher::default())
             .unwrap();
-        assert_eq!(
-            sub,
-            Substitution::from(semantic_map! {Tvar(0) => MonoType::Var(Tvar(1))})
-        );
+        assert_eq!(sub.apply(Tvar(0)), MonoType::Var(Tvar(1)));
         assert_eq!(
             cons,
             semantic_map! {Tvar(1) => vec![Kind::Addable, Kind::Divisible]},
@@ -2326,10 +2337,7 @@ mod tests {
             let sub = f
                 .unify(call_type, &mut cons, &mut Fresher::default())
                 .unwrap();
-            assert_eq!(
-                sub,
-                Substitution::from(semantic_map! {Tvar(0) => MonoType::Int})
-            );
+            assert_eq!(sub.apply(Tvar(0)), MonoType::Int);
             // the constraint on A gets removed.
             assert_eq!(cons, semantic_map! {Tvar(1) => vec![Kind::Divisible]});
         } else {
@@ -2358,13 +2366,8 @@ mod tests {
             // this extends the first map with the second by generating a new one.
             let mut cons = f_cons.into_iter().chain(g_cons).collect();
             let sub = f.unify(*g, &mut cons, &mut Fresher::default()).unwrap();
-            assert_eq!(
-                sub,
-                Substitution::from(semantic_map! {
-                    Tvar(0) => MonoType::Int,
-                    Tvar(1) => MonoType::Float,
-                })
-            );
+            assert_eq!(sub.apply(Tvar(0)), MonoType::Int);
+            assert_eq!(sub.apply(Tvar(1)), MonoType::Float);
             // we know everything about tvars, there is no constraint.
             assert_eq!(cons, semantic_map! {});
         } else {

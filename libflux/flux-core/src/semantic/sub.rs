@@ -1,5 +1,5 @@
 //! Substitutions during type inference.
-use std::{borrow::Cow, iter::FusedIterator};
+use std::iter::FusedIterator;
 
 use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 
@@ -9,7 +9,7 @@ use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 ///
 /// Substitutions are idempotent. Given a substitution *s* and an input
 /// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Substitution(SubstitutionMap);
 
 impl From<SubstitutionMap> for Substitution {
@@ -36,6 +36,11 @@ impl Substitution {
         Substitution(SubstitutionMap::new())
     }
 
+    /// Returns `true` if the `Substitution` is empty
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     /// Apply a substitution to a type variable.
     pub fn apply(&self, tv: Tvar) -> MonoType {
         self.try_apply(tv).unwrap_or(MonoType::Var(tv))
@@ -52,18 +57,6 @@ impl Substitution {
         let applied: SubstitutionMap = self.0.apply(&with);
         Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
     }
-
-    pub(crate) fn without(&self, vars: &[Tvar]) -> Cow<'_, Substitution> {
-        if vars.iter().any(|var| self.0.contains_key(var)) {
-            let mut sub = self.clone();
-            for var in vars {
-                sub.0.remove(var);
-            }
-            Cow::Owned(sub)
-        } else {
-            Cow::Borrowed(self)
-        }
-    }
 }
 
 /// A type is `Substitutable` if a substitution can be applied to it.
@@ -75,13 +68,45 @@ pub trait Substitutable {
     {
         self.apply_ref(sub).unwrap_or(self)
     }
+
+    /// Apply a substitution to a type variable.
+    fn apply_mut(&mut self, sub: &Substitution)
+    where
+        Self: Sized,
+    {
+        if let Some(new) = self.apply_ref(sub) {
+            *self = new;
+        }
+    }
     /// Apply a substitution to a type variable. Should return `None` if there was nothing to apply
     /// which allows for optimizations.
-    fn apply_ref(&self, sub: &Substitution) -> Option<Self>
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self>
     where
         Self: Sized;
     /// Get all free type variables in a type.
     fn free_vars(&self) -> Vec<Tvar>;
+}
+
+/// Objects from which variable substitutions can be looked up.
+pub trait Substituter {
+    /// Apply a substitution to a type variable, returning None if there is no substitution for the
+    /// variable.
+    fn try_apply(&self, var: Tvar) -> Option<MonoType>;
+}
+
+impl<F> Substituter for F
+where
+    F: ?Sized + Fn(Tvar) -> Option<MonoType>,
+{
+    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        self(var)
+    }
+}
+
+impl Substituter for Substitution {
+    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        Substitution::try_apply(self, var)
+    }
 }
 
 pub(crate) fn apply4<A, B, C, D>(
@@ -89,7 +114,7 @@ pub(crate) fn apply4<A, B, C, D>(
     b: &B,
     c: &C,
     d: &D,
-    sub: &Substitution,
+    sub: &dyn Substituter,
 ) -> Option<(A, B, C, D)>
 where
     A: Substitutable + Clone,
@@ -109,7 +134,7 @@ where
     )
 }
 
-pub(crate) fn apply2<A, B>(a: &A, b: &B, sub: &Substitution) -> Option<(A, B)>
+pub(crate) fn apply2<A, B>(a: &A, b: &B, sub: &dyn Substituter) -> Option<(A, B)>
 where
     A: Substitutable + Clone,
     B: Substitutable + Clone,
