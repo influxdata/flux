@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/SAP/go-hdb/driver"
 	hdb "github.com/SAP/go-hdb/driver"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"

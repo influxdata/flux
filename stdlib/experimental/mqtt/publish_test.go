@@ -1,6 +1,7 @@
 package mqtt_test
 
 import (
+	"fmt"
 	"testing"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -148,4 +149,11 @@ mqtt.publish(broker: "` + broker + `", topic: "` + topic + `", message: "hello r
 	if !retained {
 		t.Fatal("unexpected retained false")
 	}
+}
+
+func TestMakeStaticcheckHappy(t *testing.T) {
+	// This test case does nothing other than use the runScript* functions to make staticcheck happy.
+	// These scripts are only used in skipped tests and staticcheck marks them as unused.
+	// However if you remove them then the code no longer compiles.
+	fmt.Printf("%p %p", runScript, runScriptWithPipeline)
 }

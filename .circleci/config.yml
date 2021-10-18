@@ -29,6 +29,7 @@ jobs:
       - run: make checkfmt
       - run: make checktidy
       - run: make checkdocs
+      - run: make checkrelease
       - run: make vet
       - run: GOGC=50 make staticcheck
       - run: make libflux-wasm

@@ -99,6 +99,9 @@ checktidy:
 checkgenerate:
 	./etc/checkgenerate.sh
 
+checkrelease:
+	./gotool.sh github.com/goreleaser/goreleaser check
+
 # Run this in two passes to to keep memory usage down. As of this commit,
 # running on everything (./...) uses just over 4G of memory. Breaking stdlib
 # out keeps memory under 3G.
@@ -190,6 +193,7 @@ checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release
 	checkdocs \
 	checkfmt \
 	checkgenerate \
+	checkrelease \
 	checktidy \
 	clean \
 	clean-wasm \
