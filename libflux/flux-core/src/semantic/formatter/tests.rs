@@ -30,11 +30,11 @@ fn literals() {
         expect![[r#"
             package main
             a = "Hello, World!"
-            b = 12:int
-            c = 18.5:float
+            b = 12
+            c = 18.5
             d = -1y2mo3w4d5h6m7s8ms9us10ns:duration
-            e = 2019-10-31T00:00:00Z:time
-            f = /server[01]/:regexp"#]],
+            e = 2019-10-31T00:00:00Z
+            f = /server[01]/"#]],
     )
 }
 
@@ -54,13 +54,13 @@ fn array_lit() {
         script,
         expect![[r#"
             package main
-            a = [1:int, 2:int, 3:int]:[int]
-            b = [1.1:float, 2.2:float, 3.3:float]:[float]
+            a = [1, 2, 3]:[int]
+            b = [1.1, 2.2, 3.3]:[float]
             c = ["1", "2", "3"]:[string]
-            d = [1s:duration, 2m:duration, 3h:duration]:[duration]
-            e = [2019-10-31T00:00:00Z:time]:[time]
-            f = [/a/:regexp, /b/:regexp, /c/:regexp]:[regexp]
-            g = [{a: 0:int, b: 0.0:float}, {a: 1:int, b: 1.1:float}]:[{a:int, b:float}]"#]],
+            d = [1s, 2m, 3h]:[duration]
+            e = [2019-10-31T00:00:00Z]:[time]
+            f = [/a/, /b/, /c/]:[regexp]
+            g = [{a: 0, b: 0.0}:{a:int, b:float}, {a: 1, b: 1.1}:{a:int, b:float}]:[{a:int, b:float}]"#]],
     )
 }
 
@@ -75,8 +75,8 @@ fn dictionary_literals() {
         script,
         expect![[r#"
             package main
-            a = ["a": 0:int, "b": 1:int, "c": 2:int]:[string:int]
-            b = [1970-01-01T00:00:00Z:time: 0:int, 1970-01-01T01:00:00Z:time: 1:int]:[time:int]"#]],
+            a = ["a": 0, "b": 1, "c": 2]:[string:int]
+            b = [1970-01-01T00:00:00Z: 0, 1970-01-01T01:00:00Z: 1]:[time:int]"#]],
     )
 }
 
@@ -91,14 +91,15 @@ fn identifier_expressions() {
         script,
         expect![[r#"
             package main
-            n = 1.0:float
-            f = n:float +:float 3.0:float"#]],
+            n = 1.0
+            f = n:float +:float 3.0"#]],
     )
 }
 
 #[test]
-fn function_default_arguments() {
+fn format_function_expression() {
     let script = r#"
+            (a) => a
             f = (a, b=1) => a + b
             x = f(a:2)
             y = f(a: x, b: f(a:x))
@@ -108,10 +109,156 @@ fn function_default_arguments() {
         script,
         expect![[r#"
             package main
-            f = (a, b=1:int) =>{
+            (a) =>{
+            return a:t17
+            }:(a:t17) => t17
+            f = (a, b=1) =>{
             return a:int +:int b:int
+            }:(a:int, ?b:int) => int
+            x = f:(a:int, ?b:int) => int(a: 2):int
+            y = f:(a:int, ?b:int) => int(a: x:int, b: f:(a:int, ?b:int) => int(a: x:int):int):int"#]],
+    )
+}
+
+#[test]
+fn format_conditional_expression() {
+    let script = r#"
+            if 1 == 2 then 5 else 3
+            ans = if 100 > 0 then "yes" else "no"
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            if 1 ==:bool 2 then 5 else 3
+            ans = if 100 >:bool 0 then "yes" else "no""#]],
+    )
+}
+
+#[test]
+fn format_index_expression() {
+    let script = r#"
+            [1, 2, 3][1]
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            [1, 2, 3]:[int][1]:int"#]],
+    )
+}
+
+#[test]
+fn format_unary_expression() {
+    let script = r#"
+            -1d
+            x = -1
+            y = +1
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            -1d:duration
+            x = -1:int
+            y = +1:int"#]],
+    )
+}
+
+#[test]
+fn format_object_expression() {
+    let script = r#"
+            {a: 1, b: "2"}
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            {a: 1, b: "2"}:{a:int, b:string}"#]],
+    )
+}
+
+#[test]
+fn format_member_expression() {
+    let script = r#"
+            o = {temp: 30.0, loc: "FL"}
+            t = o.temp
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            o = {temp: 30.0, loc: "FL"}:{temp:float, loc:string}
+            t = o:{temp:float, loc:string}temp:float"#]],
+    )
+}
+
+#[test]
+fn format_call_expression() {
+    let script = r#"
+            (() => 2)()
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            (() =>{
+            return 2
+            }:() => int)():int"#]],
+    )
+}
+
+#[test]
+fn format_option_statement() {
+    let script = r#"
+            option now = () => 2019-05-22T00:00:00Z
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            option now = () =>{
+            return 2019-05-22T00:00:00Z
+            }:() => time"#]],
+    )
+}
+
+#[test]
+fn format_test_statement() {
+    let script = r#"
+            test foo = {}
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            test foo = {}:{}"#]],
+    )
+}
+
+#[test]
+fn format_block_statement() {
+    let script = r#"
+            (r) => {
+                v = if r < 0 then -r else r
+                return v * v
             }
-            x = f:(a:int, ?b:int) => int(a: 2:int)
-            y = f:(a:int, ?b:int) => int(a: x:int, b: f:(a:int, ?b:int) => int(a: x:int))"#]],
+            "#;
+
+    check(
+        script,
+        expect![[r#"
+            package main
+            (r) =>{
+            v = if r:C <:bool 0 then -r:C:C else r:Creturn v:C *:C v:C
+            }:(r:C) => C"#]],
     )
 }
