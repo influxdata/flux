@@ -55,13 +55,31 @@ pub enum Error {
 pub struct Analyzer<I: import::Importer> {
     env: env::Environment,
     importer: I,
+    config: AnalyzerConfig,
+}
+
+/// A set of configuration options for the behavior of an Analyzer.
+#[derive(Default)]
+pub struct AnalyzerConfig {
+    /// If true no AST or Semantic checks are performed.
+    /// Default is false.
+    pub skip_checks: bool,
 }
 
 impl<I: import::Importer> Analyzer<I> {
     /// Create an analyzer with the given environment and importer.
     /// The environment represents any values in scope.
-    pub fn new(env: env::Environment, importer: I) -> Self {
-        Analyzer { env, importer }
+    pub fn new(env: env::Environment, importer: I, config: AnalyzerConfig) -> Self {
+        Analyzer {
+            env,
+            importer,
+            config,
+        }
+    }
+    /// Create an analyzer with the given environment and importer using default configuration.
+    /// The environment represents any values in scope.
+    pub fn new_with_defaults(env: env::Environment, importer: I) -> Self {
+        Analyzer::new(env, importer, AnalyzerConfig::default())
     }
     /// Analyze Flux source code returning the semantic package and the package environment.
     pub fn analyze_source(
@@ -95,10 +113,14 @@ impl<I: import::Importer> Analyzer<I> {
         ast_pkg: ast::Package,
         fresher: &mut fresh::Fresher,
     ) -> Result<(env::Environment, nodes::Package), Error> {
-        ast::check::check(ast::walk::Node::Package(&ast_pkg))?;
+        if !self.config.skip_checks {
+            ast::check::check(ast::walk::Node::Package(&ast_pkg))?;
+        }
 
         let mut sem_pkg = convert::convert_package(ast_pkg, fresher)?;
-        check::check(&sem_pkg)?;
+        if !self.config.skip_checks {
+            check::check(&sem_pkg)?;
+        }
 
         // Clone the environment as the inferred package may mutate it.
         let env = self.env.clone();
