@@ -1170,7 +1170,7 @@ impl Record {
     fn contains(&self, tv: Tvar) -> bool {
         match self {
             Record::Empty => false,
-            Record::Extension { head, tail } => head.v.contains(tv) && tail.contains(tv),
+            Record::Extension { head, tail } => head.v.contains(tv) || tail.contains(tv),
         }
     }
 
@@ -2446,6 +2446,7 @@ mod tests {
         }
     }
 
+    #[allow(unused)]
     macro_rules! assert_unify {
         ($expected: expr, $actual: expr $(,)?) => {{
             let mut sub = Substitution::default();
@@ -2456,13 +2457,34 @@ mod tests {
                     &mut Default::default(),
                     &mut sub,
                 )
-                .unwrap();
+                .unwrap_or_else(|err| panic!("{}", err));
+        }};
+    }
+
+    macro_rules! assert_unify_err {
+        ($expected: expr, $actual: expr $(, $pat: pat)? $(,)?) => {{
+            let mut sub = Substitution::default();
+            let mut tvars = BTreeMap::new();
+            let result = parse_type($expected, &mut tvars, &mut sub).unify(
+                parse_type($actual, &mut tvars, &mut sub),
+                &mut Default::default(),
+                &mut sub,
+            );
+            match result {
+                $(
+                    Err($pat) => (),
+                    Err(err) => panic!("Unexpected error: {}", err),
+                )?
+                #[allow(unreachable_patterns)]
+                Err(_) => (),
+                Ok(_) => panic!("Unexpected "),
+            }
         }};
     }
 
     #[test]
     fn unify_records() {
-        assert_unify!(
+        assert_unify_err!(
             "(fn:(r:A) => A) => [A]",
             "(fn:(r:{C with _value_data:float}) => {C with _value:float, _value_data:float}) => D",
         );
