@@ -5,7 +5,7 @@ use crate::semantic::Analyzer;
 use expect_test::{expect, Expect};
 
 fn check(actual: &str, expect: Expect) {
-    let mut analyzer = Analyzer::new(Environment::default(), PolyTypeMap::new());
+    let mut analyzer = Analyzer::new_with_defaults(Environment::default(), PolyTypeMap::new());
     let (_, mut sem_pkg) = analyzer
         .analyze_source("main".to_string(), "main.flux".to_string(), actual)
         .unwrap();
@@ -103,20 +103,24 @@ fn format_function_expression() {
             f = (a, b=1) => a + b
             x = f(a:2)
             y = f(a: x, b: f(a:x))
+            g = (t=<-) => t
             "#;
 
     check(
         script,
         expect![[r#"
             package main
-            (a) =>{
-            return a:t17
-            }:(a:t17) => t17
-            f = (a, b=1) =>{
-            return a:int +:int b:int
+            (a) => {
+                return a:t19
+            }:(a:t19) => t19
+            f = (a, b=1) => {
+                return a:int +:int b:int
             }:(a:int, ?b:int) => int
             x = f:(a:int, ?b:int) => int(a: 2):int
-            y = f:(a:int, ?b:int) => int(a: x:int, b: f:(a:int, ?b:int) => int(a: x:int):int):int"#]],
+            y = f:(a:int, ?b:int) => int(a: x:int, b: f:(a:int, ?b:int) => int(a: x:int):int):int
+            g = (t) => {
+                return t:t21
+            }:(<-t:t21) => t21"#]],
     )
 }
 
@@ -131,8 +135,8 @@ fn format_conditional_expression() {
         script,
         expect![[r#"
             package main
-            if 1 ==:bool 2 then 5 else 3
-            ans = if 100 >:bool 0 then "yes" else "no""#]],
+            (if 1 ==:bool 2 then 5 else 3):int
+            ans = (if 100 >:bool 0 then "yes" else "no"):string"#]],
     )
 }
 
@@ -194,7 +198,7 @@ fn format_member_expression() {
         expect![[r#"
             package main
             o = {temp: 30.0, loc: "FL"}:{temp:float, loc:string}
-            t = o:{temp:float, loc:string}temp:float"#]],
+            t = o:{temp:float, loc:string}.temp:float"#]],
     )
 }
 
@@ -208,8 +212,8 @@ fn format_call_expression() {
         script,
         expect![[r#"
             package main
-            (() =>{
-            return 2
+            (() => {
+                return 2
             }:() => int)():int"#]],
     )
 }
@@ -224,8 +228,8 @@ fn format_option_statement() {
         script,
         expect![[r#"
             package main
-            option now = () =>{
-            return 2019-05-22T00:00:00Z
+            option now = () => {
+                return 2019-05-22T00:00:00Z
             }:() => time"#]],
     )
 }
@@ -257,8 +261,9 @@ fn format_block_statement() {
         script,
         expect![[r#"
             package main
-            (r) =>{
-            v = if r:C <:bool 0 then -r:C:C else r:Creturn v:C *:C v:C
+            (r) => {
+                v = (if r:C <:bool 0 then -r:C:C else r:C):C
+                return v:C *:C v:C
             }:(r:C) => C"#]],
     )
 }

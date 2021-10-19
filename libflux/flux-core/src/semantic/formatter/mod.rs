@@ -453,6 +453,7 @@ impl Formatter {
 
     fn format_member_expression(&mut self, n: &semantic::nodes::MemberExpr) {
         self.format_child_with_parens(walk::Node::MemberExpr(n), walk::Node::from_expr(&n.object));
+        self.write_rune('.');
         self.write_string(&n.property);
         self.write_string(&format!(":{}", &n.typ));
     }
@@ -534,7 +535,7 @@ impl Formatter {
         }
         self.write_string(") ");
         self.write_string("=>");
-
+        self.write_rune(' ');
         self.format_block(&n.body);
         self.write_string(&format!(":{}", &n.typ));
     }
@@ -555,18 +556,27 @@ impl Formatter {
         self.indent();
         self.write_rune(sep);
         let mut current = n;
+        let mut multiline = false;
 
         loop {
             match current {
                 semantic::nodes::Block::Variable(assign, next) => {
+                    self.write_indent();
                     self.format_variable_assignment(assign.as_ref());
+                    multiline = true;
                     current = next.as_ref();
                 }
                 semantic::nodes::Block::Expr(expr_stmt, next) => {
+                    self.write_indent();
                     self.format_expression_statement(expr_stmt);
+                    multiline = true;
                     current = next.as_ref();
                 }
                 semantic::nodes::Block::Return(ret) => {
+                    if multiline {
+                        self.write_rune(sep);
+                    }
+                    self.write_indent();
                     self.format_return_statement(ret);
                     break;
                 }
@@ -605,6 +615,7 @@ impl Formatter {
     fn format_conditional_expression(&mut self, n: &semantic::nodes::ConditionalExpr) {
         let multiline = n.loc.is_multiline();
         let nested = matches!(&n.alternate, semantic::nodes::Expression::Conditional(_));
+        self.write_rune('(');
         self.write_string("if ");
         self.format_node(&walk::Node::from_expr(&n.test));
         self.write_string(" then");
@@ -635,6 +646,8 @@ impl Formatter {
         if multiline && !nested {
             self.unindent();
         }
+        self.write_rune(')');
+        self.write_string(&format!(":{}", &n.consequent.type_of()));
     }
 
     fn format_member_assignment(&mut self, n: &semantic::nodes::MemberAssgn) {
@@ -717,7 +730,6 @@ impl Formatter {
             if !src.is_empty() {
                 // Preserve the exact literal if we have it
                 self.write_string(src);
-                // ommitting printing type for string literals as its obvious
                 // self.write_string(&format!(":{}", MonoType::String.to_string()));
                 return;
             }
@@ -753,7 +765,6 @@ impl Formatter {
             s = "false"
         }
         self.write_string(s);
-        // ommitting printing type for boolean literals as its obvious
         // self.write_string(&format!(":{}", MonoType::Bool.to_string()));
     }
 
@@ -781,7 +792,6 @@ impl Formatter {
             f = v.to_rfc3339_opts(SecondsFormat::Secs, true)
         }
         self.write_string(&f);
-        // ommitting printing type for time literals as its obvious
         // self.write_string(&format!(":{}", MonoType::Time.to_string()));
     }
 
@@ -848,7 +858,6 @@ impl Formatter {
                 self.write_string(&format!("{}ns", nsecs));
             }
         }
-        // ommitting printing type for duration literals as its obvious
         // self.write_string(&format!(":{}", MonoType::Duration.to_string()));
     }
 
@@ -857,20 +866,17 @@ impl Formatter {
         if !s.contains('.') {
             s.push_str(".0");
         }
-        // ommitting printing type for float literals as its obvious
         // s.push_str(&format!(":{}", MonoType::Float.to_string()));
         self.write_string(&s)
     }
 
     fn format_integer_literal(&mut self, n: &semantic::nodes::IntegerLit) {
         self.write_string(&format!("{}", n.value));
-        // ommitting printing type for int literals as its obvious
         // self.write_string(&format!(":{}", MonoType::Int.to_string()));
     }
 
     fn format_unsigned_integer_literal(&mut self, n: &semantic::nodes::UintLit) {
         self.write_string(&format!("{0:10}", n.value));
-        // ommitting printing type for unit literals as its obvious
         // self.write_string(&format!(":{}", MonoType::Uint.to_string()));
     }
 
@@ -878,7 +884,6 @@ impl Formatter {
         self.write_rune('/');
         self.write_string(&n.value.replace("/", "\\/"));
         self.write_rune('/');
-        // ommitting printing type for regexp literals as its obvious
         // self.write_string(&format!(":{}", MonoType::Regexp.to_string()));
     }
 }
