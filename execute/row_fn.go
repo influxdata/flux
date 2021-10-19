@@ -53,13 +53,14 @@ func (f *dynamicFn) typeof(cols []flux.ColMeta) (semantic.MonoType, error) {
 	return semantic.NewObjectType(properties), nil
 }
 
-func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) (preparedFn, error) {
+func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) error {
+
 	// If the types have not changed we do not need to recompile, just use the cached version
 	if f.compiledFn == nil || !reflect.DeepEqual(f.compiledFn.cols, cols) || !reflect.DeepEqual(f.compiledFn.extraTypes, extraTypes) {
 		// Prepare the type of the record column.
 		recordType, err := f.typeof(cols)
 		if err != nil {
-			return preparedFn{}, err
+			return err
 		}
 
 		// Prepare the arguments type.
@@ -76,7 +77,7 @@ func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.
 		inType := semantic.NewObjectType(properties)
 		fn, err := compiler.Compile(f.scope, f.fn, inType)
 		if err != nil {
-			return preparedFn{}, err
+			return err
 		}
 		f.compiledFn = &compiledFn{
 			fn:         fn,
@@ -85,6 +86,14 @@ func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.
 			cols:       cols,
 			extraTypes: extraTypes,
 		}
+	}
+	return nil
+}
+
+func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) (preparedFn, error) {
+	err := f.compileFunction(cols, extraTypes)
+	if err != nil {
+		return preparedFn{}, err
 	}
 
 	// Construct the arguments that will be used when evaluating the function.
