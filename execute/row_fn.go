@@ -2,7 +2,6 @@ package execute
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -27,6 +26,26 @@ type compiledFn struct {
 	recordType semantic.MonoType
 	cols       []flux.ColMeta
 	extraTypes map[string]semantic.MonoType
+}
+
+func (f *compiledFn) isCacheHit(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) bool {
+	if len(f.cols) != len(cols) {
+		return false
+	}
+	for i := range f.cols {
+		if f.cols[i] != cols[i] {
+			return false
+		}
+	}
+	if len(f.extraTypes) != len(extraTypes) {
+		return false
+	}
+	for k, v := range f.extraTypes {
+		if w, ok := extraTypes[k]; !ok || v != w {
+			return false
+		}
+	}
+	return true
 }
 
 func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamicFn {
@@ -56,7 +75,7 @@ func (f *dynamicFn) typeof(cols []flux.ColMeta) (semantic.MonoType, error) {
 func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) error {
 
 	// If the types have not changed we do not need to recompile, just use the cached version
-	if f.compiledFn == nil || !reflect.DeepEqual(f.compiledFn.cols, cols) || !reflect.DeepEqual(f.compiledFn.extraTypes, extraTypes) {
+	if f.compiledFn == nil || !f.compiledFn.isCacheHit(cols, extraTypes) {
 		// Prepare the type of the record column.
 		recordType, err := f.typeof(cols)
 		if err != nil {
