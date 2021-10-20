@@ -8,6 +8,7 @@ package csv
 // Each record in the table represents a single point in the series.
 //
 // ## Parameters
+//
 // - csv: is CSV data.
 //
 //   Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.

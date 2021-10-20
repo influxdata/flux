@@ -4,6 +4,8 @@ use lazy_static::lazy_static;
 use pulldown_cmark::{Event, OffsetIter, Parser as MarkdownParser, Tag};
 use regex::Regex;
 use std::collections::BTreeMap;
+use std::iter::{Iterator, Peekable};
+use std::mem;
 use std::ops::Range;
 
 use crate::{
@@ -57,6 +59,8 @@ pub struct PackageDoc {
     pub description: Option<String>,
     /// the members are the values and functions of a package
     pub members: BTreeMap<String, Doc>,
+    /// list of any examples of the value
+    pub examples: Vec<Example>,
     /// any Metadata associated with the package
     pub metadata: Option<Metadata>,
 }
@@ -78,6 +82,8 @@ pub struct ValueDoc {
     pub is_option: bool,
     /// the location in the source code of the value
     pub source_location: ast::SourceLocation,
+    /// list of any examples of the value
+    pub examples: Vec<Example>,
     /// any Metadata associated with the value
     pub metadata: Option<Metadata>,
 }
@@ -91,6 +97,8 @@ pub struct FunctionDoc {
     pub headline: String,
     /// the description of the function
     pub description: Option<String>,
+    ///// list of any examples of the function
+    //pub examples: Vec<Example>,
     /// the parameters of the function
     pub parameters: Vec<ParameterDoc>,
     /// the type of the function
@@ -116,6 +124,22 @@ pub struct ParameterDoc {
     pub required: bool,
 }
 
+/// Example represents an extracted example with optional input and outputs.
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
+pub struct Example {
+    /// Title is the heading given to the example.
+    pub title: String,
+    /// Content is the source code and other markdown content of the example.
+    pub content: String,
+    /// If something represents the input to the example.
+    pub input: Option<Vec<Table>>,
+    /// If something represents the output to the example.
+    pub output: Option<Vec<Table>>,
+}
+
+/// Rendered markdown of table data.
+pub type Table = String;
+
 /// Parse the package documentation for all values within the package.
 /// The list of diagnostics reports problems found with formatting or otherwise of the comments.
 /// An empty list of diagnostics implies that doc comments are all property formatted.
@@ -128,19 +152,22 @@ pub fn parse_package_doc_comments(
     parse_file_doc_comments(&pkg.files[0], pkgpath, types)
 }
 
-const PACKAGE_LIT: &str = "Package";
-
 fn parse_file_doc_comments(
     file: &ast::File,
     pkgpath: &str,
     types: &Environment,
 ) -> Result<(PackageDoc, Diagnostics)> {
     let mut diagnostics: Diagnostics = Vec::new();
-    let (name, headline, description) = match &file.package {
+    let mut pkg = match &file.package {
         Some(pkg_clause) => {
             let comment = comments_to_string(&pkg_clause.base.comments);
-            let hd = parse_headline_desc(&comment)?;
-            if hd.headline.is_empty() {
+            let pr = parse_comment(
+                comment.as_str(),
+                false,
+                &pkg_clause.base.location,
+                &mut diagnostics,
+            )?;
+            if pr.headline.is_empty() {
                 diagnostics.push(Diagnostic {
                     msg: format!(
                         "package {} must contain a non empty package comment",
@@ -150,8 +177,8 @@ fn parse_file_doc_comments(
                 });
             }
             let name = pkg_clause.name.name.clone();
-            let words = two_words(hd.headline.as_str());
-            let start = format!("{} {}", PACKAGE_LIT, name);
+            let words = two_words(pr.headline.as_str());
+            let start = format!("Package {}", name);
             if start != words {
                 diagnostics.push(Diagnostic {
                     msg: format!(
@@ -161,41 +188,247 @@ fn parse_file_doc_comments(
                     loc: pkg_clause.base.location.clone(),
                 })
             }
-            (name, hd.headline, hd.description)
+            PackageDoc {
+                path: pkgpath.to_string(),
+                name,
+                headline: pr.headline,
+                description: pr.description,
+                members: BTreeMap::new(),
+                examples: pr.examples,
+                metadata: pr.metadata,
+            }
         }
         None => {
             diagnostics.push(Diagnostic {
                 msg: format!("package {} must contain a package clause", pkgpath),
                 loc: file.base.location.clone(),
             });
-            ("".to_string(), "".to_string(), None)
+            // Create a skeleton package doc since we know basically nothing
+            PackageDoc {
+                path: pkgpath.to_string(),
+                name: "".to_string(),
+                headline: "".to_string(),
+                description: None,
+                members: BTreeMap::new(),
+                examples: vec![],
+                metadata: None,
+            }
         }
     };
 
-    let (members, mut diags) = parse_package_values(file, types)?;
-    diagnostics.append(&mut diags);
-    let (description, metadata, mut diags) = parse_metadata(description, &file.base.location);
-    diagnostics.append(&mut diags);
-    Ok((
-        PackageDoc {
-            path: pkgpath.to_string(),
-            name,
-            headline,
-            description,
-            members,
-            metadata,
-        },
-        diagnostics,
-    ))
+    let members = parse_package_values(file, types, &mut diagnostics)?;
+    pkg.members = members;
+    Ok((pkg, diagnostics))
+}
+
+// Union of values that can be parsed from a comment
+struct ParseResult {
+    headline: String,
+    description: Option<String>,
+    parameters: Vec<HeadlineDescription>,
+    examples: Vec<Example>,
+    metadata: Option<Metadata>,
+}
+
+struct HeadlineDescription {
+    headline: String,
+    description: Option<String>,
+}
+fn parse_comment(
+    comment: &str,
+    expect_parameters: bool,
+    loc: &ast::SourceLocation,
+    diagnostics: &mut Diagnostics,
+) -> Result<ParseResult> {
+    let mut parser = Parser::new(comment);
+    let tokens_vec = parser.parse()?;
+    let mut tokens = tokens_vec.iter().peekable();
+    let headline = headline_from_tokens(&mut tokens);
+    let description = description_from_tokens(&mut tokens);
+    let parameters = if expect_parameters {
+        parameters_from_tokens(&mut tokens)
+    } else {
+        if let Some(Token::Parameters) = tokens.peek() {
+            diagnostics.push(Diagnostic {
+                msg: "extra Parameters heading".to_string(),
+                loc: loc.clone(),
+            });
+        }
+        Vec::new()
+    };
+    let more_description = description_from_tokens(&mut tokens);
+    let description = match (description, more_description) {
+        (Some(d), Some(m)) => Some(format!("{}\n\n{}", d, m)),
+        (d, None) => d,
+        (None, d) => d,
+    };
+    let description = if let Some(d) = description {
+        if d.is_empty() {
+            None
+        } else {
+            Some(d)
+        }
+    } else {
+        description
+    };
+    let examples = examples_from_tokens(&mut tokens);
+    let metadata = metadata_from_tokens(&mut tokens, loc, diagnostics);
+    Ok(ParseResult {
+        headline,
+        description,
+        parameters,
+        examples,
+        metadata,
+    })
+}
+
+fn headline_from_tokens<'a: 'b, 'b, I>(tokens: &mut Peekable<I>) -> String
+where
+    I: Iterator<Item = &'b Token<'a>>,
+{
+    if let Some(Token::Headline(h)) = tokens.peek() {
+        tokens.next();
+        h.to_string()
+    } else {
+        String::new()
+    }
+}
+fn description_from_tokens<'a: 'b, 'b, I>(tokens: &mut Peekable<I>) -> Option<String>
+where
+    I: Iterator<Item = &'b Token<'a>>,
+{
+    let tokens = tokens.into_iter();
+    if let Some(Token::Description(h)) = tokens.peek() {
+        tokens.next();
+        Some(h.to_string())
+    } else {
+        None
+    }
+}
+fn parameters_from_tokens<'a: 'b, 'b, I>(tokens: &mut Peekable<I>) -> Vec<HeadlineDescription>
+where
+    I: Iterator<Item = &'b Token<'a>>,
+{
+    let mut parameters = Vec::with_capacity(tokens.size_hint().0);
+    if let Some(Token::Parameters) = tokens.peek() {
+        tokens.next();
+        loop {
+            if let Some(Token::Parameter) = tokens.peek() {
+                tokens.next();
+                let headline = param_headline_from_tokens(tokens);
+                let description = param_description_from_tokens(tokens);
+                parameters.push(HeadlineDescription {
+                    headline: headline.to_string(),
+                    description: description.to_owned(),
+                });
+            } else {
+                return parameters;
+            }
+        }
+    };
+    parameters
+}
+fn param_headline_from_tokens<'a: 'b, 'b, I>(tokens: &mut Peekable<I>) -> String
+where
+    I: Iterator<Item = &'b Token<'a>>,
+{
+    if let Some(Token::ParamHeadline(h)) = tokens.peek() {
+        tokens.next();
+        h.to_string()
+    } else {
+        String::new()
+    }
+}
+fn param_description_from_tokens<'a: 'b, 'b, I>(tokens: &mut Peekable<I>) -> Option<String>
+where
+    I: Iterator<Item = &'b Token<'a>>,
+{
+    let tokens = tokens.into_iter();
+    if let Some(Token::ParamDescription(h)) = tokens.peek() {
+        tokens.next();
+        Some(h.to_string())
+    } else {
+        None
+    }
+}
+fn examples_from_tokens<'a: 'b, 'b, I>(tokens: &mut Peekable<I>) -> Vec<Example>
+where
+    I: Iterator<Item = &'b Token<'a>>,
+{
+    let mut examples = Vec::with_capacity(tokens.size_hint().0);
+    if let Some(Token::Examples) = tokens.peek() {
+        tokens.next();
+        loop {
+            if let Some(Token::ExampleTitle(title)) = tokens.peek() {
+                tokens.next();
+                if let Some(Token::ExampleContent(content)) = tokens.peek() {
+                    tokens.next();
+                    examples.push(Example {
+                        title: title.to_string(),
+                        content: content.to_string(),
+                        input: None,
+                        output: None,
+                    });
+                } else {
+                    return examples;
+                }
+            } else {
+                return examples;
+            }
+        }
+    };
+    examples
+}
+
+fn metadata_from_tokens<'a: 'b, 'b, I>(
+    tokens: &mut Peekable<I>,
+    loc: &ast::SourceLocation,
+    diagnostics: &mut Diagnostics,
+) -> Option<Metadata>
+where
+    I: Iterator<Item = &'b Token<'a>>,
+{
+    lazy_static! {
+        static ref KEY_VALUE_PATTERN: Regex = Regex::new("^(\\w[\\w_]+): (.+)$").unwrap();
+    }
+    if let Some(Token::Metadata) = tokens.peek() {
+        tokens.next();
+        let mut metadata = Metadata::new();
+        loop {
+            if let Some(Token::MetadataLine(line)) = tokens.peek() {
+                tokens.next();
+                for cap in KEY_VALUE_PATTERN.captures_iter(line) {
+                    let key = &cap[1];
+                    let value = &cap[2];
+                    if metadata.contains_key(key) {
+                        diagnostics.push(Diagnostic {
+                            msg: format!("found duplicate metadata key \"{}\"", key),
+                            loc: loc.clone(),
+                        });
+                    };
+                    metadata.insert(key.to_string(), value.to_string());
+                }
+            } else {
+                break;
+            }
+        }
+        if !metadata.is_empty() {
+            Some(metadata)
+        } else {
+            None
+        }
+    } else {
+        None
+    }
 }
 
 // Generates docs for the values in a given source file.
 fn parse_package_values(
     f: &ast::File,
     pkgtypes: &Environment,
-) -> Result<(BTreeMap<String, Doc>, Diagnostics)> {
+    diagnostics: &mut Diagnostics,
+) -> Result<BTreeMap<String, Doc>> {
     let mut members: BTreeMap<String, Doc> = BTreeMap::new();
-    let mut diagnostics: Diagnostics = Vec::new();
     for stmt in &f.body {
         if let Some((name, comment, loc, is_option)) = match stmt {
             ast::Statement::Variable(s) => {
@@ -225,76 +458,16 @@ fn parse_package_values(
             _ => None,
         } {
             if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
-                let (doc, mut diags) = parse_value(&name, &comment, typ, loc, is_option)?;
-                diagnostics.append(&mut diags);
+                let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
                 members.insert(name.clone(), doc);
             } else {
                 bail!("type of value {} not found in environment", &name);
             }
         }
     }
-    Ok((members, diagnostics))
+    Ok(members)
 }
 
-struct HeadlineDesc {
-    headline: String,
-    description: Option<String>,
-}
-
-// parses a headline and description from a comment.
-// The headline is defined as the first paragraph in the comment.
-fn parse_headline_desc(comment: &str) -> Result<HeadlineDesc> {
-    if comment.is_empty() {
-        return Ok(HeadlineDesc {
-            headline: "".to_string(),
-            description: None,
-        });
-    }
-    let mut parser = MarkdownParser::new(comment).into_offset_iter();
-    let range = headline_range(&mut parser)?;
-    let headline = &comment[range.clone()];
-    // the rest of the comment is the description
-    let description = &comment[range.end..comment.len()];
-    Ok(HeadlineDesc {
-        headline: headline.to_string(),
-        description: match description.len() {
-            0 => None,
-            _ => Some(description.to_string()),
-        },
-    })
-}
-
-// find the range for the headline which is defined as the first paragraph.
-fn headline_range(parser: &mut OffsetIter) -> Result<Range<usize>> {
-    let mut range = Range::<usize> { start: 0, end: 0 };
-    // We will either have a paragraph or a single text node
-    match parser.next() {
-        Some((Event::Start(Tag::Paragraph), r)) => {
-            range.start = r.start;
-        }
-        Some((Event::Text(_), r)) => return Ok(r),
-        Some((Event::Code(_), r)) => return Ok(r),
-        Some(e) => bail!(
-            "headline does not start with paragraph or text found {:?}",
-            e
-        ),
-        None => bail!("headline does not start with paragraph or text found EOF"),
-    };
-    // We have a paragraph so gather all events until the end of the paragraph.
-    loop {
-        match parser.next() {
-            Some((Event::End(Tag::Paragraph), r)) => {
-                range.end = r.end;
-                return Ok(range);
-            }
-            //do nothing but catch the event
-            Some(_) => {}
-            None => {
-                bail!("reached end of markdown without reaching end of paragraph")
-            }
-        }
-    }
-}
 // Returns the first word in the string where words are considered to be delimited by spaces.
 fn first_word(s: &str) -> &str {
     n_words(1, s)
@@ -333,43 +506,25 @@ fn check_headline(name: &str, headline: &str, loc: &ast::SourceLocation) -> Opti
     }
 }
 
-// finds a the next heading 2 within the markdown that has the provided name.
-fn find_heading_range(parser: &mut OffsetIter, heading: &str) -> Option<Range<usize>> {
-    loop {
-        match parser.next() {
-            Some((Event::Start(Tag::Heading(2)), range)) => {
-                if let Some((Event::Text(t), _)) = parser.next() {
-                    if heading == &*t {
-                        return Some(range);
-                    }
-                }
-            }
-            Some(_) => {}
-            None => return None,
-        }
-    }
-}
-
-fn parse_value(
+fn parse_any_value(
     name: &str,
     comment: &str,
     typ: &PolyType,
     loc: &ast::SourceLocation,
+    diagnostics: &mut Diagnostics,
     is_option: bool,
-) -> Result<(Doc, Diagnostics)> {
+) -> Result<Doc> {
     match &typ.expr {
         MonoType::Fun(f) => {
-            let (doc, diags) = parse_function_doc(name, comment, typ, f, loc, is_option)?;
-            Ok((Doc::Function(Box::new(doc)), diags))
+            let doc = parse_function_doc(name, comment, typ, f, loc, diagnostics, is_option)?;
+            Ok(Doc::Function(Box::new(doc)))
         }
         _ => {
-            let (doc, diags) = parse_value_doc(name, comment, typ, loc, is_option)?;
-            Ok((Doc::Value(Box::new(doc)), diags))
+            let doc = parse_value_doc(name, comment, typ, loc, diagnostics, is_option)?;
+            Ok(Doc::Value(Box::new(doc)))
         }
     }
 }
-
-const PARAMETER_HEADING: &str = "Parameters";
 
 fn parse_function_doc(
     name: &str,
@@ -377,199 +532,73 @@ fn parse_function_doc(
     typ: &PolyType,
     fun_typ: &Function,
     loc: &ast::SourceLocation,
+    diagnostics: &mut Diagnostics,
     is_option: bool,
-) -> Result<(FunctionDoc, Diagnostics)> {
-    let mut diagnostics: Diagnostics = Vec::new();
-    let hd = parse_headline_desc(comment)?;
-    if hd.headline.is_empty() {
+) -> Result<FunctionDoc> {
+    let pr = parse_comment(comment, true, loc, diagnostics)?;
+    if pr.headline.is_empty() {
         diagnostics.push(Diagnostic {
             msg: format!("function \"{}\" must contain a non empty comment", name),
             loc: loc.clone(),
         });
     }
-    if let Some(diagnostic) = check_headline(name, &hd.headline, loc) {
+    if let Some(diagnostic) = check_headline(name, &pr.headline, loc) {
         diagnostics.push(diagnostic)
     }
+    let mut parameters: Vec<ParameterDoc> = Vec::with_capacity(pr.parameters.len());
+    for parameter in pr.parameters {
+        let mut name = String::new();
+        if let Some(n) = first_word(&parameter.headline).strip_suffix(':') {
+            name = n.to_string();
+        }
+        if name.is_empty() {
+            diagnostics.push(Diagnostic {
+                msg: "parameter headline must start with \"{parameter_name}:\"".to_string(),
+                loc: loc.clone(),
+            });
+        }
+        let required = fun_typ.req.contains_key(&name);
+        parameters.push(ParameterDoc {
+            name,
+            headline: parameter.headline,
+            description: parameter.description,
+            required,
+        })
+    }
+    // Validate all parameters were documented
+    let params_on_type: Vec<&String> = fun_typ.req.keys().chain(fun_typ.opt.keys()).collect();
+    for name in &params_on_type {
+        if !contains_parameter(&parameters, name.as_str()) {
+            diagnostics.push(Diagnostic {
+                msg: format!("missing documentation for parameter \"{}\"", name),
+                loc: loc.clone(),
+            });
+        }
+    }
+    // Validate extra parameters are not documented
+    for param in &parameters {
+        if !param.name.is_empty() && !params_on_type.iter().any(|&name| name == &param.name) {
+            diagnostics.push(Diagnostic {
+                msg: format!("extra documentation for parameter \"{}\"", param.name,),
+                loc: loc.clone(),
+            });
+        }
+    }
 
-    let mut parameters: Vec<ParameterDoc> = Vec::new();
-    let description = match hd.description {
-        Some(description) => {
-            let mut parser = MarkdownParser::new(&description).into_offset_iter();
-            if let Some(heading_range) = find_heading_range(&mut parser, PARAMETER_HEADING) {
-                let (params, range, mut diags) =
-                    parse_function_parameter_list(&mut parser, fun_typ, &description, loc)?;
-                let parameter_range = Range {
-                    start: heading_range.start,
-                    end: range.end,
-                };
-                diagnostics.append(&mut diags);
-                parameters = params;
-                diagnostics.append(&mut diags);
-                // Validate all parameters were documented
-                let params_on_type: Vec<&String> =
-                    fun_typ.req.keys().chain(fun_typ.opt.keys()).collect();
-                for name in &params_on_type {
-                    if !contains_parameter(&parameters, name.as_str()) {
-                        diagnostics.push(Diagnostic {
-                            msg: format!("missing documentation for parameter \"{}\"", name),
-                            loc: loc.clone(),
-                        });
-                    }
-                }
-                // Validate extra parameters are not documented
-                for param in &parameters {
-                    if !param.name.is_empty()
-                        && !params_on_type.iter().any(|&name| name == &param.name)
-                    {
-                        diagnostics.push(Diagnostic {
-                            msg: format!("extra documentation for parameter \"{}\"", param.name,),
-                            loc: loc.clone(),
-                        });
-                    }
-                }
-                // Return the description with the parameter list removed
-                Some(
-                    description
-                        .chars()
-                        .take(parameter_range.start)
-                        .chain(description.chars().skip(parameter_range.end))
-                        .collect(),
-                )
-            } else {
-                // Its possible the parameter list was not found or was invalid.
-                // In such cases a diagnostic would have been reported, so just return the
-                // description unmodified.
-                Some(description)
-            }
-        }
-        None => {
-            // A description is not necessary if there are no parameters.
-            if !fun_typ.req.is_empty() || !fun_typ.opt.is_empty() || fun_typ.pipe.is_some() {
-                diagnostics.push(Diagnostic {
-                    msg: format!("function \"{}\" comment must contain a description", name),
-                    loc: loc.clone(),
-                });
-            }
-            None
-        }
-    };
-    let (description, metadata, mut diags) = parse_metadata(description, loc);
-    diagnostics.append(&mut diags);
-    Ok((
-        FunctionDoc {
-            name: name.to_string(),
-            headline: hd.headline,
-            description,
-            parameters,
-            flux_type: format!("{}", &typ.normal()),
-            is_option,
-            source_location: loc.clone(),
-            metadata,
-        },
-        diagnostics,
-    ))
+    Ok(FunctionDoc {
+        name: name.to_string(),
+        headline: pr.headline,
+        description: pr.description,
+        parameters,
+        flux_type: format!("{}", &typ.normal()),
+        is_option,
+        source_location: loc.clone(),
+        metadata: pr.metadata,
+    })
 }
 
 fn contains_parameter(params: &[ParameterDoc], name: &str) -> bool {
     params.iter().any(|pd| pd.name == name)
-}
-
-fn parse_function_parameter_list(
-    parser: &mut OffsetIter,
-    typ: &Function,
-    content: &str,
-    loc: &ast::SourceLocation,
-) -> Result<(Vec<ParameterDoc>, Range<usize>, Diagnostics)> {
-    let mut parameters: Vec<ParameterDoc> = Vec::new();
-    let mut diagnostics: Diagnostics = Vec::new();
-    loop {
-        match parser.next() {
-            Some((Event::Start(Tag::Item), _)) => {
-                let (doc, mut diags) = parse_function_parameter(parser, typ, content, loc)?;
-                diagnostics.append(&mut diags);
-                parameters.push(doc);
-            }
-            Some((Event::End(Tag::List(_)), range)) => return Ok((parameters, range, diagnostics)),
-            None => return Ok((parameters, Range::default(), diagnostics)),
-            _ => {}
-        }
-    }
-}
-
-fn parse_function_parameter(
-    parser: &mut OffsetIter,
-    typ: &Function,
-    content: &str,
-    loc: &ast::SourceLocation,
-) -> Result<(ParameterDoc, Diagnostics)> {
-    let mut diagnostics: Diagnostics = Vec::new();
-    // Parse headline
-    let headline_range = headline_range(parser)?;
-    let headline = content[headline_range.clone()].to_string();
-    let mut name = String::new();
-    let word = first_word(headline.as_str());
-    if let Some(n) = word.strip_suffix(':') {
-        name = n.to_string();
-    } else {
-        diagnostics.push(Diagnostic {
-            msg: "parameter headline must start with \"<parameter name>:\"".to_string(),
-            loc: loc.clone(),
-        });
-    }
-    if headline.is_empty() {
-        diagnostics.push(Diagnostic {
-            msg: "parameter list entry does not contain a headline".to_string(),
-            loc: loc.clone(),
-        });
-    }
-    // The rest of the list item is the description.
-    let desc_range = find_item_end(parser, headline_range.end)?;
-    let description = if desc_range.is_empty() {
-        None
-    } else {
-        let d = content[desc_range].to_string();
-        if d.trim().is_empty() {
-            None
-        } else {
-            Some(d)
-        }
-    };
-    let required = typ.req.contains_key(&name);
-    Ok((
-        ParameterDoc {
-            name,
-            headline,
-            description,
-            required,
-        },
-        diagnostics,
-    ))
-}
-
-fn find_item_end(parser: &mut OffsetIter, start: usize) -> Result<Range<usize>> {
-    let mut desc_range = Range::<usize> { start, end: 0 };
-    let mut depth = 0;
-    loop {
-        match parser.next() {
-            Some((Event::Start(Tag::List(_)), _)) => {
-                depth += 1;
-            }
-            Some((Event::End(Tag::List(_)), _)) => {
-                depth -= 1;
-            }
-            Some((Event::End(Tag::Item), range)) => {
-                if depth == 0 {
-                    desc_range.end = range.end;
-                    return Ok(desc_range);
-                }
-            }
-            // Consume all other events.
-            Some(_) => {}
-            None => {
-                bail!("reached end of markdown without reaching end of item")
-            }
-        }
-    }
 }
 
 fn parse_value_doc(
@@ -577,87 +606,29 @@ fn parse_value_doc(
     comment: &str,
     typ: &PolyType,
     loc: &ast::SourceLocation,
+    diagnostics: &mut Diagnostics,
     is_option: bool,
-) -> Result<(ValueDoc, Diagnostics)> {
-    let mut diagnostics: Diagnostics = Vec::new();
-    let hd = parse_headline_desc(comment)?;
-    if hd.headline.is_empty() {
+) -> Result<ValueDoc> {
+    let pr = parse_comment(comment, false, loc, diagnostics)?;
+    if pr.headline.is_empty() {
         diagnostics.push(Diagnostic {
             msg: format!("value {} must contain a non empty comment", name),
             loc: loc.clone(),
         });
     }
-    if let Some(diagnostic) = check_headline(name, &hd.headline, loc) {
+    if let Some(diagnostic) = check_headline(name, &pr.headline, loc) {
         diagnostics.push(diagnostic)
     }
-    let (description, metadata, mut diags) = parse_metadata(hd.description, loc);
-    diagnostics.append(&mut diags);
-    Ok((
-        ValueDoc {
-            name: name.to_string(),
-            headline: hd.headline,
-            description,
-            flux_type: format!("{}", &typ.normal()),
-            is_option,
-            source_location: loc.clone(),
-            metadata,
-        },
-        diagnostics,
-    ))
-}
-
-const METADATA_HEADING: &str = "Metadata";
-
-// parses 'key: value' data from the end of a string returning the
-// unused beginning of the string, the metadata and any diagnostics.
-// Metadata begins after a ## Metadata heading is found.
-fn parse_metadata(
-    content: Option<String>,
-    loc: &ast::SourceLocation,
-) -> (Option<String>, Option<Metadata>, Diagnostics) {
-    lazy_static! {
-        static ref KEY_VALUE_PATTERN: Regex = Regex::new("^(\\w[\\w_]+): (.+)$").unwrap();
-    }
-    let mut diagnostics: Diagnostics = Vec::new();
-    if let Some(content) = content {
-        let mut parser = MarkdownParser::new(&content).into_offset_iter();
-        let mut description_range: Range<usize> = Range {
-            start: 0,
-            end: content.len(),
-        };
-        // Find beginning of metadata
-        if let Some(heading_range) = find_heading_range(&mut parser, METADATA_HEADING) {
-            description_range.end = heading_range.start;
-            let mut meta = Metadata::new();
-            for line in content[heading_range.end..]
-                .lines()
-                .take_while(|l| l.is_empty() || KEY_VALUE_PATTERN.is_match(l))
-            {
-                for cap in KEY_VALUE_PATTERN.captures_iter(line) {
-                    if meta.contains_key(&cap[1]) {
-                        diagnostics.push(Diagnostic {
-                            msg: format!("found duplicate metadata key \"{}\"", &cap[1]),
-                            loc: loc.clone(),
-                        });
-                    };
-                    meta.insert(cap[1].to_string(), cap[2].to_string());
-                }
-            }
-            if !meta.is_empty() {
-                (
-                    Some(content[description_range].to_string()),
-                    Some(meta),
-                    diagnostics,
-                )
-            } else {
-                (Some(content), None, diagnostics)
-            }
-        } else {
-            (Some(content), None, diagnostics)
-        }
-    } else {
-        (None, None, diagnostics)
-    }
+    Ok(ValueDoc {
+        name: name.to_string(),
+        headline: pr.headline,
+        description: pr.description,
+        flux_type: format!("{}", &typ.normal()),
+        is_option,
+        source_location: loc.clone(),
+        examples: pr.examples,
+        metadata: pr.metadata,
+    })
 }
 
 fn comments_to_string(comments: &[ast::Comment]) -> String {
@@ -718,6 +689,7 @@ pub fn nest_docs(original_docs: Vec<PackageDoc>) -> PackageDoc {
         headline: String::new(),
         description: None,
         members: std::collections::BTreeMap::new(),
+        examples: Vec::new(),
         metadata: None,
     };
     for current_pkg in original_docs {
@@ -748,6 +720,7 @@ fn find_parent(path: String, nested_docs: &mut PackageDoc) -> &mut PackageDoc {
                 headline: String::new(),
                 description: None,
                 members: std::collections::BTreeMap::new(),
+                examples: Vec::new(),
                 metadata: None,
             }))
         });
@@ -762,11 +735,346 @@ fn find_parent(path: String, nested_docs: &mut PackageDoc) -> &mut PackageDoc {
     parent
 }
 
+const PARAMETER_HEADING: &str = "Parameters";
+const EXAMPLES_HEADING: &str = "Examples";
+const METADATA_HEADING: &str = "Metadata";
+
+// Parser produces a series of tokens from documentation comments.
+struct Parser<'a> {
+    content: &'a str,
+    iter: Peekable<OffsetIter<'a>>,
+    tokens: Vec<Token<'a>>,
+}
+
+impl<'a> Parser<'a> {
+    fn slice(&self, r: Range<usize>) -> &'a str {
+        &self.content[r].trim()
+    }
+}
+
+#[derive(PartialEq, Debug)]
+enum Token<'a> {
+    Headline(&'a str),
+    Description(&'a str),
+    Parameters,
+    Parameter,
+    ParamHeadline(&'a str),
+    ParamDescription(&'a str),
+    Examples,
+    ExampleTitle(&'a str),
+    ExampleContent(&'a str),
+    Metadata,
+    MetadataLine(&'a str),
+}
+
+impl<'a> Parser<'a> {
+    fn new(content: &'a str) -> Parser<'a> {
+        Parser {
+            content,
+            iter: MarkdownParser::new(content).into_offset_iter().peekable(),
+            // Most comments will have less than 100 tokens and 100 is a small enough value that
+            // pre-allocating will not be a big concern.
+            tokens: Vec::with_capacity(100),
+        }
+    }
+    // In a single pass parse the content into its tokens
+    fn parse(&mut self) -> Result<Vec<Token<'a>>> {
+        self.parse_headline()?;
+        Ok(mem::take(&mut self.tokens))
+    }
+    fn parse_headline(&mut self) -> Result<()> {
+        let mut range = Range::<usize> { start: 0, end: 0 };
+        // We will either have a paragraph or a single text node
+        match self.iter.next() {
+            Some((Event::Start(Tag::Paragraph), r)) => {
+                range.start = r.start;
+            }
+            Some((Event::Text(_), r)) => {
+                self.tokens.push(Token::Headline(self.slice(r)));
+                return self.parse_description();
+            }
+            _ => bail!("headline does not start with paragraph or text"),
+        };
+        // We have a paragraph so gather all events until the end of the paragraph.
+        loop {
+            match self.iter.next() {
+                Some((Event::End(Tag::Paragraph), r)) => {
+                    range.end = r.end;
+                    self.tokens.push(Token::Headline(self.slice(range)));
+                    return self.parse_description();
+                }
+                //do nothing but catch the event
+                Some(_) => {}
+                None => {
+                    bail!("reached end of markdown without reaching end of paragraph")
+                }
+            }
+        }
+    }
+
+    fn parse_description(&mut self) -> Result<()> {
+        let mut range: Range<usize> = Range::default();
+        if let Some((_, r)) = self.iter.peek() {
+            range.start = r.start;
+        } else {
+            // We reached the end of the markdown content, stop lexing
+            return Ok(());
+        }
+        // Peek and consume items until we see a delimiter heading
+        loop {
+            match self.iter.next() {
+                Some((Event::Start(Tag::Heading(2)), r)) => {
+                    if let Some((Event::Text(t), _)) = self.iter.peek() {
+                        // The description ends at the start of this heading
+                        range.end = r.start;
+                        match t.as_ref() {
+                            PARAMETER_HEADING => {
+                                self.tokens.push(Token::Description(self.slice(range)));
+                                return self.parse_parameters();
+                            }
+                            EXAMPLES_HEADING => {
+                                self.tokens.push(Token::Description(self.slice(range)));
+                                return self.parse_examples();
+                            }
+                            METADATA_HEADING => {
+                                self.tokens.push(Token::Description(self.slice(range)));
+                                return self.parse_metadata();
+                            }
+                            // If we didn't find a delimiter heading then keep consuming items.
+                            _ => {}
+                        };
+                    }
+                }
+                Some(_) => {}
+                // We reached the end of the markdown content, stop lexing and return token
+                None => {
+                    range.end = self.content.len();
+                    self.tokens.push(Token::Description(self.slice(range)));
+                    return Ok(());
+                }
+            }
+        }
+    }
+
+    fn parse_any_heading_or_description(&mut self) -> Result<()> {
+        match self.iter.peek() {
+            Some((Event::Start(Tag::Heading(2)), _)) => {
+                self.iter.next();
+                return self.parse_any_heading_text();
+            }
+            Some(_) => return self.parse_description(),
+            // We reached the end of the markdown content, stop lexing
+            None => return Ok(()),
+        }
+    }
+
+    // lex any delimiting heading. If it does not exist an error is returned.
+    fn parse_any_heading_text(&mut self) -> Result<()> {
+        if let Some((Event::Text(t), _)) = self.iter.peek() {
+            match t.as_ref() {
+                PARAMETER_HEADING => return self.parse_parameters(),
+                EXAMPLES_HEADING => return self.parse_examples(),
+                METADATA_HEADING => return self.parse_metadata(),
+                _ => bail!("expected delimiter heading text"),
+            }
+        } else {
+            bail!("expected heading text")
+        }
+    }
+
+    fn parse_parameters(&mut self) -> Result<()> {
+        // Discard the "Parameters" text item and heading end
+        if let None = self.iter.next_if(|e| matches!(e, (Event::Text(_), _))) {
+            bail!("missing parameters text")
+        }
+        if let None = self
+            .iter
+            .next_if(|e| matches!(e, (Event::End(Tag::Heading(2)), _)))
+        {
+            bail!("missing end of heading")
+        }
+        loop {
+            match self.iter.next() {
+                Some((Event::Start(Tag::List(_)), _)) => {
+                    self.tokens.push(Token::Parameters);
+                    // Note: parse_parameter is recursive calling itself until the end of the
+                    // parameter list is found.
+                    return self.parse_parameter();
+                }
+                Some(e) => bail!(
+                    "parameters heading must be followed by a list found {:?}",
+                    e
+                ),
+                None => bail!("parameters heading must be followed by a list found EOF"),
+            }
+        }
+    }
+
+    fn parse_parameter(&mut self) -> Result<()> {
+        match self.iter.next() {
+            Some((Event::Start(Tag::Item), _)) => {
+                self.tokens.push(Token::Parameter);
+                return self.parse_parameter_headline();
+            }
+            Some((Event::End(Tag::List(_)), _)) => {
+                // We reached the end of the parameters list
+                // Start lexing the next section.
+                return self.parse_any_heading_or_description();
+            }
+            Some(_) => bail!("parameters list must contain only items"),
+            None => bail!("parameters heading must be followed by a list"),
+        }
+    }
+    fn parse_parameter_headline(&mut self) -> Result<()> {
+        let mut range = Range::<usize> { start: 0, end: 0 };
+        // We will either have a paragraph or a single text node
+        match self.iter.next() {
+            Some((Event::Start(Tag::Paragraph), r)) => {
+                range.start = r.start;
+            }
+            Some((Event::Text(_), r)) => {
+                self.tokens.push(Token::ParamHeadline(self.slice(r)));
+                return self.parse_parameter_description();
+            }
+            _ => bail!("parameter headline does not start with paragraph or text"),
+        };
+        // We have a paragraph so gather all events until the end of the paragraph.
+        loop {
+            match self.iter.next() {
+                Some((Event::End(Tag::Paragraph), r)) => {
+                    range.end = r.end;
+                    self.tokens.push(Token::ParamHeadline(self.slice(range)));
+                    return self.parse_parameter_description();
+                }
+                //do nothing but catch the event
+                Some(_) => {}
+                None => {
+                    bail!("reached end of markdown without reaching end of paragraph")
+                }
+            }
+        }
+    }
+
+    fn parse_parameter_description(&mut self) -> Result<()> {
+        let mut range: Range<usize> = Range::default();
+        if let Some((_, r)) = self.iter.peek() {
+            range.start = r.start;
+        } else {
+            bail!("reached the end of markdown without reaching end of item")
+        }
+        let mut depth = 0;
+        // Peek and consume events until we see an end item
+        loop {
+            match self.iter.next() {
+                Some((Event::Start(Tag::List(_)), _)) => {
+                    depth += 1;
+                }
+                Some((Event::End(Tag::List(_)), _)) => {
+                    depth -= 1;
+                }
+                Some((Event::End(Tag::Item), r)) => {
+                    if depth == 0 {
+                        range.end = r.end;
+                        if range != r {
+                            // If the outer range is the same as the Tag::Item range then we didn't
+                            // find any new events, meaning we do not have a description.
+                            self.tokens.push(Token::ParamDescription(self.slice(range)));
+                        }
+                        // Recurse back to parse_parameter to look for more parameters.
+                        return self.parse_parameter();
+                    }
+                }
+                Some(_) => {}
+                None => bail!("reached the end of markdown without reaching end of item"),
+            }
+        }
+    }
+
+    fn parse_examples(&mut self) -> Result<()> {
+        // Discard the "Examples" text item and heading end
+        if let None = self.iter.next_if(|e| matches!(e, (Event::Text(_), _))) {
+            bail!("missing parameters text")
+        }
+        if let None = self
+            .iter
+            .next_if(|e| matches!(e, (Event::End(Tag::Heading(2)), _)))
+        {
+            bail!("missing end of heading")
+        }
+        self.tokens.push(Token::Examples);
+        let mut range: Range<usize> = Range::default();
+        let mut count = 0;
+        loop {
+            match self.iter.next() {
+                Some((Event::Start(Tag::Heading(2)), r)) => {
+                    // Heading 2 means we are done with examples
+                    // We found the begining of a new section, emit the content token.
+                    range.end = r.start;
+                    self.tokens
+                        .push(Token::ExampleContent(self.slice(range.clone())));
+                    return self.parse_any_heading_text();
+                }
+                Some((Event::End(Tag::Heading(3)), r)) => {
+                    range.end = r.start;
+                    if count > 0 {
+                        // We found another example emit the content token
+                        self.tokens
+                            .push(Token::ExampleContent(self.slice(range.clone())));
+                    }
+                    count += 1;
+                    // The example content starts where the heading ends
+                    range.start = r.end;
+                    self.tokens.push(Token::ExampleTitle(self.slice(r)));
+                }
+                Some(_) => {}
+                None => {
+                    // We found the end of the markdown emit the final content token
+                    range.end = self.content.len();
+                    self.tokens.push(Token::ExampleContent(self.slice(range)));
+                    return Ok(());
+                }
+            }
+        }
+    }
+    fn parse_metadata(&mut self) -> Result<()> {
+        // Discard the "Metadata" text item and heading end
+        if let None = self.iter.next_if(|e| matches!(e, (Event::Text(_), _))) {
+            bail!("missing parameters text")
+        }
+        if let None = self
+            .iter
+            .next_if(|e| matches!(e, (Event::End(Tag::Heading(2)), _)))
+        {
+            bail!("missing end of heading")
+        }
+        self.tokens.push(Token::Metadata);
+        let mut range: Range<usize> = Range::default();
+        loop {
+            match self.iter.next() {
+                Some((Event::Start(Tag::Heading(2)), r)) => {
+                    // Heading 2 means we are done with metadata
+                    // We found the begining of a new section, emit the line token.
+                    range.end = r.start;
+                    self.tokens.push(Token::MetadataLine(self.slice(r)));
+                    return self.parse_any_heading_text();
+                }
+                Some((Event::Text(_), r)) => {
+                    self.tokens.push(Token::MetadataLine(self.slice(r)));
+                }
+                Some(_) => {}
+                None => {
+                    return Ok(());
+                }
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{
         parse_package_doc_comments, shorten, Diagnostic, Diagnostics, Doc, FunctionDoc, PackageDoc,
-        ParameterDoc, ValueDoc,
+        ParameterDoc, Parser, Token, ValueDoc,
     };
 
     use crate::{
@@ -796,6 +1104,11 @@ mod test {
             files: vec![file],
         }
     }
+    fn assert_parser(src: &str, want: Vec<Token>) {
+        let mut parser = Parser::new(src);
+        let got = parser.parse().unwrap();
+        assert_eq!(want, got, "\nwant:\n{:#?}\ngot:\n{:#?}\n", want, got);
+    }
     fn assert_docs_full(src: &str, pkg: PackageDoc, diags: Diagnostics) {
         assert_docs(src, pkg, diags, false)
     }
@@ -812,7 +1125,7 @@ mod test {
         };
         let (mut got_pkg, got_diags) = match parse_package_doc_comments(&ast_pkg, "path", &types) {
             Ok((p, d)) => (p, d),
-            Err(e) => panic!("error parsing doc comments {}", e),
+            Err(e) => panic!("error parsing doc comments: {}", e),
         };
         if short {
             shorten(&mut got_pkg);
@@ -837,9 +1150,10 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: BTreeMap::default(),
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
@@ -857,9 +1171,10 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "foo does a thing.\n".to_string(),
+                headline: "foo does a thing.".to_string(),
                 description: None,
                 members: BTreeMap::default(),
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![Diagnostic {
@@ -884,19 +1199,21 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "a" => Doc::Value(Box::new(ValueDoc{
                         name: "a".to_string(),
-                        headline: "a is a constant.\n".to_string(),
+                        headline: "a is a constant.".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
                         is_option: false,
                         source_location: loc.get(6,9,6,14),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
@@ -917,19 +1234,21 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "a" => Doc::Value(Box::new(ValueDoc{
                         name: "a".to_string(),
-                        headline: "A is a constant.\n".to_string(),
+                        headline: "A is a constant.".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
                         is_option: false,
                         source_location: loc.get(6,9,6,14),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![Diagnostic {
@@ -958,19 +1277,21 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "a" => Doc::Value(Box::new(ValueDoc{
                         name: "a".to_string(),
-                        headline: "a is a constant.\nThe value is one.\n".to_string(),
-                        description: Some("\nThis is the start of the description.\n\nThe description contains any remaining markdown content.\n".to_string()),
+                        headline: "a is a constant.\nThe value is one.".to_string(),
+                        description: Some("This is the start of the description.\n\nThe description contains any remaining markdown content.".to_string()),
                         flux_type: "int".to_string(),
                         is_option: false,
                         source_location: loc.get(11,9,11,14),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
@@ -1013,25 +1334,26 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "a" => Doc::Value(Box::new(ValueDoc{
                         name: "a".to_string(),
-                        headline: "a is a constant.\n".to_string(),
+                        headline: "a is a constant.".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
                         is_option: false,
                         source_location: loc.get(11,9,11,14),
+                        examples: vec![],
                         metadata: None,
                     })),
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
-                        headline: "f is a function.\n".to_string(),
+                        headline: "f is a function.".to_string(),
                         description: None,
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
-                            headline: "x: is a parameter.\n".to_string(),
+                            headline: "x: is a parameter.".to_string(),
                             description: None,
                             required: true,
                         } ],
@@ -1042,14 +1364,16 @@ mod test {
                     })),
                     "o" => Doc::Value(Box::new(ValueDoc{
                         name: "o".to_string(),
-                        headline: "o is an option.\n".to_string(),
+                        headline: "o is an option.".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
                         is_option: true,
                         source_location: loc.get(28,9,28,21),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
@@ -1109,16 +1433,17 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
-                description: Some("\nThis is a description.\n\n".to_string()),
+                headline: "Package foo does a thing.".to_string(),
+                description: Some("This is a description.".to_string()),
                 members: map![
                     "a" => Doc::Value(Box::new(ValueDoc{
                         name: "a".to_string(),
-                        headline: "a is a constant.\n".to_string(),
-                        description: Some("\nThis is a description.\n\n".to_string()),
+                        headline: "a is a constant.".to_string(),
+                        description: Some("This is a description.".to_string()),
                         flux_type: "int".to_string(),
                         is_option: false,
                         source_location: loc.get(20,9,20,14),
+                        examples: vec![],
                         metadata: Some(map![
                             "k3" => "v3".to_string(),
                             "k4" => "v4".to_string(),
@@ -1127,12 +1452,12 @@ mod test {
                     })),
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
-                        headline: "f is a function.\n".to_string(),
-                        description: Some("\nThis is a description.\n\n".to_string()),
+                        headline: "f is a function.".to_string(),
+                        description: Some("This is a description.".to_string()),
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
-                            headline: "x: is a parameter.\n".to_string(),
-                            description: Some("\n    This is a description of x.\n\n".to_string()),
+                            headline: "x: is a parameter.".to_string(),
+                            description: Some("This is a description of x.".to_string()),
                             required: true,
                         } ],
                         flux_type: "(x:A) => int".to_string(),
@@ -1146,17 +1471,19 @@ mod test {
                     })),
                     "o" => Doc::Value(Box::new(ValueDoc{
                         name: "o".to_string(),
-                        headline: "o is an option.\n".to_string(),
-                        description: Some("\nThis is a description.\n\n".to_string()),
+                        headline: "o is an option.".to_string(),
+                        description: Some("This is a description.".to_string()),
                         flux_type: "int".to_string(),
                         is_option: true,
                         source_location: loc.get(45,9,45,21),
+                        examples: vec![],
                         metadata: Some(map![
                             "k9" => "v9".to_string(),
                             "k0" => "v0".to_string(),
                         ]),
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: Some(map![
                     "k0" => "v0".to_string(),
                     "k1" => "v1".to_string(),
@@ -1186,9 +1513,10 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
-                description: Some("\nThis is a description.\n\n".to_string()),
+                headline: "Package foo does a thing.".to_string(),
+                description: Some("This is a description.".to_string()),
                 members: BTreeMap::default(),
+                examples: Vec::new(),
                 metadata: Some(map![
                     "key" => "valueB".to_string(),
                     "key1" => "value with spaces".to_string(),
@@ -1224,13 +1552,13 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
-                        headline: "f is a function.\n".to_string(),
-                        description: Some("\nMore specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.\n".to_string()),
+                        headline: "f is a function.".to_string(),
+                        description: Some("More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.".to_string()),
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
                             headline: "x: is any value.".to_string(),
@@ -1243,6 +1571,7 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
@@ -1263,12 +1592,12 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
-                        headline: "F is a function.\n".to_string(),
+                        headline: "F is a function.".to_string(),
                         description: None,
                         parameters: vec![],
                         flux_type: "() => int".to_string(),
@@ -1277,6 +1606,7 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![Diagnostic {
@@ -1314,23 +1644,23 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
-                        headline: "f is a function.\n".to_string(),
-                        description: Some("\nMore specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.\n".to_string()),
+                        headline: "f is a function.".to_string(),
+                        description: Some("More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.".to_string()),
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
-                            headline: "x: is any value.\n".to_string(),
-                            description: Some("\n   Long description of x.\n\n".to_string()),
+                            headline: "x: is any value.".to_string(),
+                            description: Some("Long description of x.".to_string()),
                             required: true,
                         },
                         ParameterDoc{
                             name: "y".to_string(),
-                            headline: "y: is any value.\n".to_string(),
-                            description: Some("\n   Y has a long description too.\n\n".to_string()),
+                            headline: "y: is any value.".to_string(),
+                            description: Some("Y has a long description too.".to_string()),
                             required: true,
                         }],
                         flux_type: "(x:A, y:A) => A where A: Addable".to_string(),
@@ -1339,6 +1669,7 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
@@ -1373,23 +1704,23 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
-                        headline: "f is a function.\n".to_string(),
-                        description: Some("\nMore specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.\n".to_string()),
+                        headline: "f is a function.".to_string(),
+                        description: Some("More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.".to_string()),
                         parameters: vec![ParameterDoc{
                             name: "".to_string(),
-                            headline: "x is any value.\n".to_string(),
-                            description: Some("\n   Long description of x.\n\n".to_string()),
+                            headline: "x is any value.".to_string(),
+                            description: Some("Long description of x.".to_string()),
                             required: false,
                         },
                         ParameterDoc{
                             name: "".to_string(),
-                            headline: "`y` is any value.\n".to_string(),
-                            description: Some("\n   Y has a long description too.\n\n".to_string()),
+                            headline: "`y` is any value.".to_string(),
+                            description: Some("Y has a long description too.".to_string()),
                             required: false,
                         }],
                         flux_type: "(x:A, y:A) => A where A: Addable".to_string(),
@@ -1398,15 +1729,16 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![
                 Diagnostic {
-                    msg: "parameter headline must start with \"<parameter name>:\"".to_string(),
+                    msg: "parameter headline must start with \"{parameter_name}:\"".to_string(),
                     loc: loc.get(20, 9, 20, 27),
                 },
                 Diagnostic {
-                    msg: "parameter headline must start with \"<parameter name>:\"".to_string(),
+                    msg: "parameter headline must start with \"{parameter_name}:\"".to_string(),
                     loc: loc.get(20, 9, 20, 27),
                 },
                 Diagnostic {
@@ -1435,12 +1767,12 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
-                        headline: "f is a function.\n".to_string(),
+                        headline: "f is a function.".to_string(),
                         description: None,
                         parameters: vec![],
                         flux_type: "(x:A) => A".to_string(),
@@ -1449,10 +1781,11 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![Diagnostic {
-                msg: "function \"f\" comment must contain a description".to_string(),
+                msg: "missing documentation for parameter \"x\"".to_string(),
                 loc: loc.get(6, 9, 6, 21),
             }],
         );
@@ -1475,13 +1808,13 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "add" => Doc::Function(Box::new(FunctionDoc{
                         name: "add".to_string(),
-                        headline: "add is a function.\n".to_string(),
-                        description: Some("\n".to_string()),
+                        headline: "add is a function.".to_string(),
+                        description: None,
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
                             headline: "x: is any value.".to_string(),
@@ -1494,6 +1827,7 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![Diagnostic {
@@ -1520,13 +1854,13 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "add" => Doc::Function(Box::new(FunctionDoc{
                         name: "add".to_string(),
-                        headline: "add is a function.\n".to_string(),
-                        description: Some("\n".to_string()),
+                        headline: "add is a function.".to_string(),
+                        description: None,
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
                             headline: "x: is any value.".to_string(),
@@ -1539,6 +1873,7 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![Diagnostic {
@@ -1565,13 +1900,13 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "one" => Doc::Function(Box::new(FunctionDoc{
                         name: "one".to_string(),
-                        headline: "one is a function.\n".to_string(),
-                        description: Some("\n".to_string()),
+                        headline: "one is a function.".to_string(),
+                        description: None,
                         parameters: vec![ParameterDoc{
                             name: "x".to_string(),
                             headline: "x: is any value.".to_string(),
@@ -1584,6 +1919,7 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![Diagnostic {
@@ -1607,12 +1943,12 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "one" => Doc::Function(Box::new(FunctionDoc{
                         name: "one".to_string(),
-                        headline: "one returns the number one.\n".to_string(),
+                        headline: "one returns the number one.".to_string(),
                         description: None,
                         parameters: vec![],
                         flux_type: "() => int".to_string(),
@@ -1621,6 +1957,7 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
@@ -1641,19 +1978,21 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "one" => Doc::Value(Box::new(ValueDoc{
                         name: "one".to_string(),
-                        headline: "one is the number one.\n".to_string(),
+                        headline: "one is the number one.".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
                         is_option: true,
                         source_location: loc.get(6, 9, 6, 23),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
@@ -1674,12 +2013,12 @@ mod test {
             PackageDoc {
                 path: "path".to_string(),
                 name: "foo".to_string(),
-                headline: "Package foo does a thing.\n".to_string(),
+                headline: "Package foo does a thing.".to_string(),
                 description: None,
                 members: map![
                     "one" => Doc::Function(Box::new(FunctionDoc{
                         name: "one".to_string(),
-                        headline: "one returns the number one.\n".to_string(),
+                        headline: "one returns the number one.".to_string(),
                         description: None,
                         parameters: vec![],
                         flux_type: "() => int".to_string(),
@@ -1688,9 +2027,226 @@ mod test {
                         metadata: None,
                     })),
                 ],
+                examples: Vec::new(),
                 metadata: None,
             },
             vec![],
+        );
+    }
+    #[test]
+    fn test_parser_headline() {
+        let src = r#"
+
+This is the first paragraph.
+It has multiple sentences.
+Each on their own line.
+But it is still a single paragraph.
+
+
+"#;
+        assert_parser(src, vec![Token::Headline(src.trim())]);
+    }
+    #[test]
+    fn test_parser_headline_and_description() {
+        let src = r#"This is the headline.
+
+This is the description.
+"#;
+        assert_parser(
+            &src,
+            vec![
+                Token::Headline("This is the headline."),
+                Token::Description("This is the description."),
+            ],
+        );
+    }
+    #[test]
+    fn test_parser_parameters() {
+        let src = r#"
+This is the headline.
+
+This is the description.
+
+## Parameters
+
+- this is _parameter_ 1.
+
+    Description of one.
+
+- this is parameter 2.
+
+More description of function.
+
+"#;
+        assert_parser(
+            &src,
+            vec![
+                Token::Headline("This is the headline."),
+                Token::Description("This is the description."),
+                Token::Parameters,
+                Token::Parameter,
+                Token::ParamHeadline("this is _parameter_ 1."),
+                Token::ParamDescription("Description of one."),
+                Token::Parameter,
+                Token::ParamHeadline("this is parameter 2."),
+                Token::Description("More description of function."),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_parser_examples() {
+        let src = r#"
+This is the headline.
+
+This is the description.
+
+## Examples
+
+### Example 1
+
+Subtraction:
+
+```
+3 - 2
+```
+
+### Example 2
+
+Addition:
+
+```
+1 + 1
+```
+
+
+"#;
+        assert_parser(
+            &src,
+            vec![
+                Token::Headline("This is the headline."),
+                Token::Description("This is the description."),
+                Token::Examples,
+                Token::ExampleTitle("### Example 1"),
+                Token::ExampleContent(
+                    r#"Subtraction:
+
+```
+3 - 2
+```"#,
+                ),
+                Token::ExampleTitle("### Example 2"),
+                Token::ExampleContent(
+                    r#"Addition:
+
+```
+1 + 1
+```"#,
+                ),
+            ],
+        );
+    }
+    #[test]
+    fn test_parser_metadata() {
+        let src = r#"
+This is the headline.
+
+This is the description.
+
+## Metadata
+
+k1: v1
+k2: v2
+k3: v3
+"#;
+        assert_parser(
+            &src,
+            vec![
+                Token::Headline("This is the headline."),
+                Token::Description("This is the description."),
+                Token::Metadata,
+                Token::MetadataLine("k1: v1"),
+                Token::MetadataLine("k2: v2"),
+                Token::MetadataLine("k3: v3"),
+            ],
+        );
+    }
+    #[test]
+    fn test_parser_all() {
+        let src = r#"
+This is the headline.
+
+This is the description.
+
+## Parameters
+
+- this is _parameter_ 1.
+
+    Description of one.
+
+- this is parameter 2.
+
+    Description of two.
+
+
+## Examples
+
+### Example 1
+
+Subtraction:
+
+```
+3 - 2
+```
+
+### Example 2
+
+Addition:
+
+```
+1 + 1
+```
+
+## Metadata
+
+k1: v1
+k2: v2
+k3: v3
+"#;
+        assert_parser(
+            &src,
+            vec![
+                Token::Headline("This is the headline."),
+                Token::Description("This is the description."),
+                Token::Parameters,
+                Token::Parameter,
+                Token::ParamHeadline("this is _parameter_ 1."),
+                Token::ParamDescription("Description of one."),
+                Token::Parameter,
+                Token::ParamHeadline("this is parameter 2."),
+                Token::ParamDescription("Description of two."),
+                Token::Examples,
+                Token::ExampleTitle("### Example 1"),
+                Token::ExampleContent(
+                    r#"Subtraction:
+
+```
+3 - 2
+```"#,
+                ),
+                Token::ExampleTitle("### Example 2"),
+                Token::ExampleContent(
+                    r#"Addition:
+
+```
+1 + 1
+```"#,
+                ),
+                Token::Metadata,
+                Token::MetadataLine("k1: v1"),
+                Token::MetadataLine("k2: v2"),
+                Token::MetadataLine("k3: v3"),
+            ],
         );
     }
 }
