@@ -102,36 +102,32 @@ pub fn solve(
     with: &mut TvarKinds,
     sub: &mut Substitution,
 ) -> Result<(), Error> {
-    cons.0
-        .iter()
-        .try_fold((), |(), constraint| match constraint {
+    for constraint in &cons.0 {
+        match constraint {
             Constraint::Kind { exp, act, loc } => {
                 // Apply the current substitution to the type, then constrain
                 log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
-                match act.clone().apply(sub).constrain(*exp, with) {
-                    Err(e) => Err(Error {
+                act.clone()
+                    .apply(sub)
+                    .constrain(*exp, with)
+                    .map_err(|err| Error {
                         loc: loc.clone(),
-                        err: e,
-                    }),
-                    Ok(s) => Ok(s),
-                }?;
-                Ok(())
+                        err,
+                    })?;
             }
             Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                let exp = exp.clone().apply(sub);
-                let act = act.clone().apply(sub);
+                let exp = exp.clone();
+                let act = act.clone();
                 log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
-                match exp.unify(act, with, sub) {
-                    Err(e) => Err(Error {
-                        loc: loc.clone(),
-                        err: e,
-                    }),
-                    Ok(s) => Ok(s),
-                }?;
-                Ok(())
+                exp.unify(act, with, sub).map_err(|err| Error {
+                    loc: loc.clone(),
+                    err,
+                })?;
             }
-        })
+        }
+    }
+    Ok(())
 }
 
 // Create a parametric type from a monotype by universally quantifying
