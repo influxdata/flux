@@ -262,8 +262,8 @@ fn format_block_statement() {
         expect![[r#"
             package main
             (r) => {
-                v = (if r:C <:bool 0 then -r:C:C else r:C):C
-                return v:C *:C v:C
-            }:(r:C) => C"#]],
+                v = (if r:J <:bool 0 then -r:J:J else r:J):J
+                return v:J *:J v:J
+            }:(r:J) => J"#]],
     )
 }
