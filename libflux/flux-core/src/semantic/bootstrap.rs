@@ -282,7 +282,7 @@ fn infer_pkg(
         sub,
         &mut imports,
     )?;
-    sem_pkg = inject_pkg_types(sem_pkg, &sub);
+    sem_pkg = inject_pkg_types(sem_pkg, sub);
 
     Ok((env.values, imports, sem_pkg))
 }

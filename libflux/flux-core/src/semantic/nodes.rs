@@ -17,7 +17,7 @@ use crate::semantic::{
     env::Environment,
     import::Importer,
     infer::{Constraint, Constraints},
-    sub::{Substitutable, Substitution},
+    sub::{Substitutable, Substituter, Substitution},
     types::{
         Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
         TvarKinds,
@@ -56,6 +56,21 @@ fn located<E>(location: ast::SourceLocation, error: E) -> Located<E> {
     Located { location, error }
 }
 
+impl<E> Substitutable for Located<E>
+where
+    E: Substitutable,
+{
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.error.apply_ref(sub).map(|error| Located {
+            location: self.location.clone(),
+            error,
+        })
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.error.free_vars()
+    }
+}
+
 #[derive(Debug, Display, PartialEq)]
 #[allow(missing_docs)]
 pub enum ErrorKind {
@@ -78,6 +93,33 @@ pub enum ErrorKind {
 }
 
 impl std::error::Error for Error {}
+
+impl Substitutable for ErrorKind {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        match self {
+            Self::Inference(err) => err.apply_ref(sub).map(Self::Inference),
+            Self::UndefinedBuiltin(_)
+            | Self::UndefinedIdentifier(_)
+            | Self::InvalidBinOp(_)
+            | Self::InvalidUnaryOp(_)
+            | Self::InvalidImportPath(_)
+            | Self::InvalidReturn
+            | Self::Bug(_) => None,
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        match self {
+            Self::Inference(err) => err.free_vars(),
+            Self::UndefinedBuiltin(_)
+            | Self::UndefinedIdentifier(_)
+            | Self::InvalidBinOp(_)
+            | Self::InvalidUnaryOp(_)
+            | Self::InvalidImportPath(_)
+            | Self::InvalidReturn
+            | Self::Bug(_) => Vec::new(),
+        }
+    }
+}
 
 impl From<types::Error> for ErrorKind {
     fn from(err: types::Error) -> Self {
@@ -285,9 +327,11 @@ where
     T: Importer,
 {
     let mut infer = InferState { sub, env };
-    let cons = pkg.infer(&mut infer, importer)?;
+    let cons = pkg
+        .infer(&mut infer, importer)
+        .map_err(|err| err.apply(infer.sub))?;
 
-    infer::solve(&cons, &mut TvarKinds::new(), infer.sub)?;
+    infer::solve(&cons, &mut TvarKinds::new(), infer.sub).map_err(|err| err.apply(infer.sub))?;
     Ok(infer.env)
 }
 

@@ -4,9 +4,9 @@ use derive_more::Display;
 
 use crate::ast::SourceLocation;
 use crate::semantic::env::Environment;
-use crate::semantic::sub::{Substitutable, Substitution};
+use crate::semantic::sub::{Substitutable, Substituter, Substitution};
 use crate::semantic::types;
-use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, TvarKinds};
+use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds};
 
 // Type constraints are produced during type inference and come
 // in two flavors.
@@ -84,6 +84,18 @@ pub struct Error {
 
 impl std::error::Error for Error {}
 
+impl Substitutable for Error {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.err.apply_ref(sub).map(|err| Error {
+            loc: self.loc.clone(),
+            err,
+        })
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.err.free_vars()
+    }
+}
+
 // Solve a set of type constraints
 pub fn solve(
     cons: &Constraints,
@@ -95,6 +107,7 @@ pub fn solve(
         .try_fold((), |(), constraint| match constraint {
             Constraint::Kind { exp, act, loc } => {
                 // Apply the current substitution to the type, then constrain
+                log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
                 match act.clone().apply(sub).constrain(*exp, with) {
                     Err(e) => Err(Error {
                         loc: loc.clone(),
@@ -108,7 +121,7 @@ pub fn solve(
                 // Apply the current substitution to the constraint, then unify
                 let exp = exp.clone().apply(sub);
                 let act = act.clone().apply(sub);
-                eprintln!("{} <===> {}", exp, act);
+                log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
                 match exp.unify(act, with, sub) {
                     Err(e) => Err(Error {
                         loc: loc.clone(),

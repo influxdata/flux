@@ -125,7 +125,7 @@ impl<I: import::Importer> Analyzer<I> {
         // Clone the environment as the inferred package may mutate it.
         let env = self.env.clone();
         let env = nodes::infer_package(&mut sem_pkg, env, sub, &mut self.importer)?;
-        Ok((env, nodes::inject_pkg_types(sem_pkg, &sub)))
+        Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
     }
 
     /// Drop returns ownership of the environment and importer.

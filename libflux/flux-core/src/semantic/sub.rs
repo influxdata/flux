@@ -138,6 +138,18 @@ pub trait Substitutable {
     fn free_vars(&self) -> Vec<Tvar>;
 }
 
+impl<T> Substitutable for Box<T>
+where
+    T: Substitutable,
+{
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        T::apply_ref(self, sub).map(Box::new)
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        T::free_vars(self)
+    }
+}
+
 /// Objects from which variable substitutions can be looked up.
 pub trait Substituter {
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
@@ -188,6 +200,22 @@ where
         c.apply_ref(sub),
         d,
         d.apply_ref(sub),
+    )
+}
+
+pub(crate) fn apply3<A, B, C>(a: &A, b: &B, c: &C, sub: &dyn Substituter) -> Option<(A, B, C)>
+where
+    A: Substitutable + Clone,
+    B: Substitutable + Clone,
+    C: Substitutable + Clone,
+{
+    merge3(
+        a,
+        a.apply_ref(sub),
+        b,
+        b.apply_ref(sub),
+        c,
+        c.apply_ref(sub),
     )
 }
 

@@ -456,6 +456,7 @@ dependencies = [
  "fnv",
  "lazy_static",
  "libflate",
+ "log",
  "lsp-types",
  "maplit",
  "pad",

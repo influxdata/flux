@@ -2,7 +2,7 @@
 
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{
-    apply2, apply4, merge_collect, Substitutable, Substituter, Substitution,
+    apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution,
 };
 use derive_more::Display;
 use std::fmt::Write;
@@ -42,16 +42,11 @@ macro_rules! semantic_map {
 
 impl fmt::Display for PolyType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.cons.is_empty() {
-            self.expr.fmt(f)
-        } else {
-            write!(
-                f,
-                "{} where {}",
-                self.expr,
-                PolyType::display_constraints(&self.cons),
-            )
+        write!(f, "{}", self.expr)?;
+        if !self.cons.is_empty() {
+            write!(f, " where {}", PolyType::display_constraints(&self.cons),)?;
         }
+        Ok(())
     }
 }
 
@@ -171,7 +166,7 @@ pub(crate) fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
 /// Errors that can be returned during type inference.
 /// (Note that these error messages are read by end users.
 /// This should be kept in mind when returning one of these errors.)
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 #[allow(missing_docs)]
 pub enum Error {
     CannotUnify {
@@ -196,6 +191,7 @@ pub enum Error {
     CannotUnifyReturn {
         exp: MonoType,
         act: MonoType,
+        cause: Box<Error>,
     },
     MissingPipeArgument,
     MultiplePipeArguments {
@@ -235,16 +231,67 @@ impl fmt::Display for Error {
             Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
             Error::ExtraArgument(x) => write!(f, "found unexpected argument {}", x),
             Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
-            Error::CannotUnifyReturn { exp, act } => write!(
+            Error::CannotUnifyReturn { exp, act, cause } => write!(
                 f,
-                "expected {} but found {} for return type",
+                "expected {} but found {} for return type caused by {}",
                 exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                act.clone().fresh(&mut fresh, &mut TvarMap::new())
+                act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                cause
             ),
             Error::MissingPipeArgument => write!(f, "missing pipe argument"),
             Error::MultiplePipeArguments { exp, act } => {
                 write!(f, "expected pipe argument {} but found {}", exp, act)
             }
+        }
+    }
+}
+
+impl Substitutable for Error {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        match self {
+            Error::CannotUnify { exp, act } => {
+                apply2(exp, act, sub).map(|(exp, act)| Error::CannotUnify { exp, act })
+            }
+            Error::CannotConstrain { exp, act } => act
+                .apply_ref(sub)
+                .map(|act| Error::CannotConstrain { exp: *exp, act }),
+            Error::OccursCheck(tv, ty) => ty.apply_ref(sub).map(|ty| Error::OccursCheck(*tv, ty)),
+            Error::CannotUnifyLabel { lab, exp, act } => {
+                apply2(exp, act, sub).map(|(exp, act)| Error::CannotUnifyLabel {
+                    lab: lab.clone(),
+                    exp,
+                    act,
+                })
+            }
+            Error::CannotUnifyArgument(x, e) => e
+                .apply_ref(sub)
+                .map(|e| Error::CannotUnifyArgument(x.clone(), e)),
+            Error::CannotUnifyReturn { exp, act, cause } => apply3(exp, act, cause, sub)
+                .map(|(exp, act, cause)| Error::CannotUnifyReturn { exp, act, cause }),
+            Error::MissingLabel(_)
+            | Error::ExtraLabel(_)
+            | Error::MissingArgument(_)
+            | Error::ExtraArgument(_)
+            | Error::MissingPipeArgument
+            | Error::MultiplePipeArguments { .. } => None,
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        match self {
+            Error::CannotUnify { exp, act } => union(exp.free_vars(), act.free_vars()),
+            Error::CannotConstrain { exp: _, act } => act.free_vars(),
+            Error::OccursCheck(tv, ty) => union(vec![*tv], ty.free_vars()),
+            Error::CannotUnifyLabel { exp, act, .. } => union(exp.free_vars(), act.free_vars()),
+            Error::CannotUnifyArgument(_, e) => e.free_vars(),
+            Error::CannotUnifyReturn { exp, act, cause } => {
+                union(union(exp.free_vars(), act.free_vars()), cause.free_vars())
+            }
+            Error::MissingLabel(_)
+            | Error::ExtraLabel(_)
+            | Error::MissingArgument(_)
+            | Error::ExtraArgument(_)
+            | Error::MissingPipeArgument
+            | Error::MultiplePipeArguments { .. } => Vec::new(),
         }
     }
 }
@@ -327,7 +374,15 @@ impl Substitutable for MonoType {
             | MonoType::Regexp
             | MonoType::Bytes => None,
             MonoType::Var(tvr) => sub.try_apply(*tvr).map(|new| {
-                if MonoType::Var(*tvr) == new {
+                // If a variable is the replacement we do not recurse further
+                // as `instantiate` breaks in cases where it generates a substitution map
+                // like `{ A => B, B => C }` which would replace `A` with the (fresh) variable `B`
+                // which would then be replaced again due to `B => C` which is very wrong (`B` != `fresh B`).
+                // Bit of a hack, but it works.
+                //
+                // For other replacements we need to recurse into them as well so that we may fully
+                // replace any variables that occur in that as well.
+                if let MonoType::Var(_) = new {
                     new
                 } else {
                     new.apply(sub)
@@ -449,7 +504,7 @@ impl MonoType {
         cons: &mut TvarKinds,
         sub: &mut Substitution,
     ) -> Result<(), Error> {
-        eprintln!("Unify {} <=> {}", self, actual);
+        log::debug!("Unify {} <=> {}", self, actual);
         match (self, actual) {
             (MonoType::Bool, MonoType::Bool)
             | (MonoType::Int, MonoType::Int)
@@ -695,9 +750,7 @@ impl Tvar {
             }
             _ => {
                 let with = with.apply(sub);
-                eprintln!("Contains {} .. {}", self, with);
                 if with.contains(self) {
-                    eprintln!("Invalid");
                     // Invalid recursive type
                     Err(Error::OccursCheck(self, with))
                 } else {
@@ -1111,8 +1164,6 @@ impl Record {
                 },
             ) if a != b => {
                 let var = sub.fresh();
-                eprintln!("{} <=> {}", self, actual);
-                eprintln!("{}", var);
                 let exp = MonoType::from(Record::Extension {
                     head: Property { k: a, v: t },
                     tail: MonoType::Var(var),
@@ -1121,10 +1172,7 @@ impl Record {
                     head: Property { k: b, v: u },
                     tail: MonoType::Var(var),
                 });
-                eprintln!("{}: {}", Tvar(0), sub.apply(Tvar(0)));
-                eprintln!("1 {} <=> {}", l, act);
                 l.unify(act, cons, sub)?;
-                eprintln!("2 {} <=> {}", exp, r);
                 apply_then_unify(exp, r, cons, sub)
             }
             // If we are expecting {a: u | r} but find {}, label `a` is missing.
@@ -1510,9 +1558,10 @@ impl Function {
         }
         // Unify return types.
         match apply_then_unify(f.retn.clone(), g.retn.clone(), cons, sub) {
-            Err(_) => Err(Error::CannotUnifyReturn {
-                exp: f.retn,
-                act: g.retn,
+            Err(cause) => Err(Error::CannotUnifyReturn {
+                exp: f.retn.apply(sub),
+                act: g.retn.apply(sub),
+                cause: Box::new(cause),
             }),
             Ok(sub) => Ok(sub),
         }
