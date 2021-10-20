@@ -72,6 +72,12 @@ impl Substitution {
         match sub.probe_value(tv) {
             Some(typ) => Some(typ),
             None => {
+                // If `tv` hasn't been unified with a type we still want to see if it has been
+                // unified with any other variables. If it has and it isn't the root we replace
+                // `tv` with its root so that `exp.apply(sub).to_string() == actual.apply(sub)`
+                // may be equal if they to contain different type variables that has been unified
+                // with each other (simplifies debugging even if it isn't strictly necessary for
+                // inference itself)
                 let root = sub.find(tv);
                 if root == tv {
                     None
