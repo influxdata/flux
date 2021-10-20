@@ -1,6 +1,8 @@
 //! Generate documentation from source code comments.
 
+use lazy_static::lazy_static;
 use pulldown_cmark::{Event, OffsetIter, Parser as MarkdownParser, Tag};
+use regex::Regex;
 use std::collections::BTreeMap;
 use std::ops::Range;
 
@@ -27,6 +29,9 @@ pub struct Diagnostic {
 /// Diagnostics is a set of diagnostics
 pub type Diagnostics = Vec<Diagnostic>;
 
+/// Metadata is arbitrary key value data associated with documentation.
+pub type Metadata = BTreeMap<String, String>;
+
 /// Doc is an enum that can take the form of the various types of flux documentation structures through polymorphism.
 #[derive(PartialEq, Debug, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -35,8 +40,6 @@ pub enum Doc {
     Package(Box<PackageDoc>),
     /// Value represents documentation for a value exposed from a package.
     Value(Box<ValueDoc>),
-    /// Option represents documentation for a option value exposed from a package.
-    Opt(Box<ValueDoc>),
     /// Function represents documentation for a function value exposed from a package.
     Function(Box<FunctionDoc>),
 }
@@ -54,6 +57,8 @@ pub struct PackageDoc {
     pub description: Option<String>,
     /// the members are the values and functions of a package
     pub members: BTreeMap<String, Doc>,
+    /// any Metadata associated with the package
+    pub metadata: Option<Metadata>,
 }
 
 /// ValueDoc represents the documentation for a single value within a package.
@@ -69,6 +74,12 @@ pub struct ValueDoc {
     pub description: Option<String>,
     /// the type of the value
     pub flux_type: String,
+    /// indicates if this value is a Flux option
+    pub is_option: bool,
+    /// the location in the source code of the value
+    pub source_location: ast::SourceLocation,
+    /// any Metadata associated with the value
+    pub metadata: Option<Metadata>,
 }
 
 /// FunctionDoc represents the documentation for a single Function within a package.
@@ -84,6 +95,12 @@ pub struct FunctionDoc {
     pub parameters: Vec<ParameterDoc>,
     /// the type of the function
     pub flux_type: String,
+    /// indicates if this function is a Flux option
+    pub is_option: bool,
+    /// the location in the source code of the function
+    pub source_location: ast::SourceLocation,
+    /// any Metadata associated with the function
+    pub metadata: Option<Metadata>,
 }
 
 /// ParameterDoc represents the documentation for a single parameter within a function.
@@ -150,6 +167,8 @@ fn parse_file_doc_comments(
     };
     let (members, mut diags) = parse_package_values(file, types)?;
     diagnostics.append(&mut diags);
+    let (description, metadata, mut diags) = parse_metadata(description, &file.base.location);
+    diagnostics.append(&mut diags);
     Ok((
         PackageDoc {
             path: pkgpath.to_string(),
@@ -157,6 +176,7 @@ fn parse_file_doc_comments(
             headline,
             description,
             members,
+            metadata,
         },
         diagnostics,
     ))
@@ -170,23 +190,23 @@ fn parse_package_values(
     let mut members: BTreeMap<String, Doc> = BTreeMap::new();
     let mut diagnostics: Diagnostics = Vec::new();
     for stmt in &f.body {
-        if let Some((name, comment, loc)) = match stmt {
+        if let Some((name, comment, loc, is_option)) = match stmt {
             ast::Statement::Variable(s) => {
                 let comment = comments_to_string(&s.id.base.comments);
                 let name = s.id.name.clone();
-                Some((name, comment, &s.base.location))
+                Some((name, comment, &s.base.location, false))
             }
             ast::Statement::Builtin(s) => {
                 let comment = comments_to_string(&s.base.comments);
                 let name = s.id.name.clone();
-                Some((name, comment, &s.base.location))
+                Some((name, comment, &s.base.location, false))
             }
             ast::Statement::Option(s) => {
                 match &s.assignment {
                     ast::Assignment::Variable(v) => {
                         let comment = comments_to_string(&s.base.comments);
                         let name = v.id.name.clone();
-                        Some((name, comment, &s.base.location))
+                        Some((name, comment, &s.base.location, true))
                     }
                     // Member assignments are not exported values from a package
                     // and do not need documentation.
@@ -198,7 +218,7 @@ fn parse_package_values(
             _ => None,
         } {
             if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
-                let (doc, mut diags) = parse_value(&name, &comment, typ, loc)?;
+                let (doc, mut diags) = parse_value(&name, &comment, typ, loc, is_option)?;
                 diagnostics.append(&mut diags);
                 members.insert(name.clone(), doc);
             } else {
@@ -254,23 +274,43 @@ fn headline_range(parser: &mut OffsetIter) -> Result<Range<usize>, ParseError> {
     }
 }
 
+// finds a the next heading 2 within the markdown that has the provided name.
+fn find_heading_range(parser: &mut OffsetIter, heading: &str) -> Option<Range<usize>> {
+    loop {
+        match parser.next() {
+            Some((Event::Start(Tag::Heading(2)), range)) => {
+                if let Some((Event::Text(t), _)) = parser.next() {
+                    if heading == &*t {
+                        return Some(range);
+                    }
+                }
+            }
+            Some(_) => {}
+            None => return None,
+        }
+    }
+}
+
 fn parse_value(
     name: &str,
     comment: &str,
     typ: &PolyType,
     loc: &ast::SourceLocation,
+    is_option: bool,
 ) -> Result<(Doc, Diagnostics)> {
     match &typ.expr {
         MonoType::Fun(f) => {
-            let (doc, diags) = parse_function_doc(name, comment, typ, f, loc)?;
+            let (doc, diags) = parse_function_doc(name, comment, typ, f, loc, is_option)?;
             Ok((Doc::Function(Box::new(doc)), diags))
         }
         _ => {
-            let (doc, diags) = parse_value_doc(name, comment, typ, loc)?;
+            let (doc, diags) = parse_value_doc(name, comment, typ, loc, is_option)?;
             Ok((Doc::Value(Box::new(doc)), diags))
         }
     }
 }
+
+const PARAMETER_HEADING: &str = "Parameters";
 
 fn parse_function_doc(
     name: &str,
@@ -278,6 +318,7 @@ fn parse_function_doc(
     typ: &PolyType,
     fun_typ: &Function,
     loc: &ast::SourceLocation,
+    is_option: bool,
 ) -> Result<(FunctionDoc, Diagnostics)> {
     let mut diagnostics: Diagnostics = Vec::new();
     let (headline, description) = match parse_headline_desc(comment) {
@@ -294,53 +335,35 @@ fn parse_function_doc(
     let description = match description {
         Some(description) => {
             let mut parser = MarkdownParser::new(&description).into_offset_iter();
-            let mut parameter_range: Range<usize> = Range::default();
-            loop {
-                match parser.next() {
-                    Some((Event::Start(Tag::Heading(2)), range)) => {
-                        if let Some((Event::Text(_), _)) = parser.next() {
-                            parameter_range.start = range.start;
-                            let (params, range, mut diags) = parse_function_parameter_list(
-                                &mut parser,
-                                fun_typ,
-                                &description,
-                                loc,
-                            )?;
-                            parameter_range.end = range.end;
-                            parameters = params;
-                            diagnostics.append(&mut diags);
-                            // Validate all parameters were documented
-                            let params_on_type: Vec<&String> =
-                                fun_typ.req.keys().chain(fun_typ.opt.keys()).collect();
-                            for name in &params_on_type {
-                                if !contains_parameter(&parameters, name.as_str()) {
-                                    diagnostics.push(Diagnostic {
-                                        msg: format!(
-                                            "missing documentation for parameter \"{}\"",
-                                            name
-                                        ),
-                                        loc: loc.clone(),
-                                    });
-                                }
-                            }
-                            // Validate extra parameters are not documented
-                            for param in &parameters {
-                                if !params_on_type.iter().any(|&name| name == &param.name) {
-                                    diagnostics.push(Diagnostic {
-                                        msg: format!("found extra parameter \"{}\"", name),
-                                        loc: loc.clone(),
-                                    });
-                                }
-                            }
-                            break;
-                        }
+            if let Some(heading_range) = find_heading_range(&mut parser, PARAMETER_HEADING) {
+                let (params, range, mut diags) =
+                    parse_function_parameter_list(&mut parser, fun_typ, &description, loc)?;
+                let parameter_range = Range {
+                    start: heading_range.start,
+                    end: range.end,
+                };
+                parameters = params;
+                diagnostics.append(&mut diags);
+                // Validate all parameters were documented
+                let params_on_type: Vec<&String> =
+                    fun_typ.req.keys().chain(fun_typ.opt.keys()).collect();
+                for name in &params_on_type {
+                    if !contains_parameter(&parameters, name.as_str()) {
+                        diagnostics.push(Diagnostic {
+                            msg: format!("missing documentation for parameter \"{}\"", name),
+                            loc: loc.clone(),
+                        });
                     }
-                    // else do nothing
-                    None => break,
-                    _ => {}
                 }
-            }
-            if !parameter_range.is_empty() {
+                // Validate extra parameters are not documented
+                for param in &parameters {
+                    if !params_on_type.iter().any(|&name| name == &param.name) {
+                        diagnostics.push(Diagnostic {
+                            msg: format!("extra documentation for parameter \"{}\"", param.name,),
+                            loc: loc.clone(),
+                        });
+                    }
+                }
                 // Return the description with the parameter list removed
                 Some(
                     description
@@ -357,16 +380,18 @@ fn parse_function_doc(
             }
         }
         None => {
-            diagnostics.push(Diagnostic {
-                msg: format!(
-                    "function \"{}\" comment must contain both a headline and a description",
-                    name
-                ),
-                loc: loc.clone(),
-            });
+            // A description is not necessary if there are no parameters.
+            if !fun_typ.req.is_empty() || !fun_typ.opt.is_empty() || fun_typ.pipe.is_some() {
+                diagnostics.push(Diagnostic {
+                    msg: format!("function \"{}\" comment must contain a description", name),
+                    loc: loc.clone(),
+                });
+            }
             None
         }
     };
+    let (description, metadata, mut diags) = parse_metadata(description, loc);
+    diagnostics.append(&mut diags);
     Ok((
         FunctionDoc {
             name: name.to_string(),
@@ -374,6 +399,9 @@ fn parse_function_doc(
             description,
             parameters,
             flux_type: format!("{}", &typ.normal()),
+            is_option,
+            source_location: loc.clone(),
+            metadata,
         },
         diagnostics,
     ))
@@ -519,6 +547,7 @@ fn parse_value_doc(
     comment: &str,
     typ: &PolyType,
     loc: &ast::SourceLocation,
+    is_option: bool,
 ) -> Result<(ValueDoc, Diagnostics)> {
     let mut diagnostics: Diagnostics = Vec::new();
     let (headline, description) = match parse_headline_desc(comment) {
@@ -531,15 +560,73 @@ fn parse_value_doc(
             ("".to_string(), None)
         }
     };
+    let (description, metadata, mut diags) = parse_metadata(description, loc);
+    diagnostics.append(&mut diags);
     Ok((
         ValueDoc {
             name: name.to_string(),
             headline,
             description,
             flux_type: format!("{}", &typ.normal()),
+            is_option,
+            source_location: loc.clone(),
+            metadata,
         },
         diagnostics,
     ))
+}
+
+const METADATA_HEADING: &str = "Metadata";
+
+// parses 'key: value' data from the end of a string returning the
+// unused beginning of the string, the metadata and any diagnostics.
+fn parse_metadata(
+    content: Option<String>,
+    loc: &ast::SourceLocation,
+) -> (Option<String>, Option<Metadata>, Diagnostics) {
+    lazy_static! {
+        static ref KEY_VALUE_PATTERN: Regex = Regex::new("^(\\w[\\w_]+): (.+)$").unwrap();
+    }
+    let mut diagnostics: Diagnostics = Vec::new();
+    if let Some(content) = content {
+        let mut parser = MarkdownParser::new(&content).into_offset_iter();
+        let mut description_range: Range<usize> = Range {
+            start: 0,
+            end: content.len(),
+        };
+        // Find beginning of metadata
+        if let Some(heading_range) = find_heading_range(&mut parser, METADATA_HEADING) {
+            description_range.end = heading_range.start;
+            let mut meta = Metadata::new();
+            for line in content[heading_range.end..]
+                .lines()
+                .take_while(|l| l.is_empty() || KEY_VALUE_PATTERN.is_match(l))
+            {
+                for cap in KEY_VALUE_PATTERN.captures_iter(line) {
+                    if meta.contains_key(&cap[1]) {
+                        diagnostics.push(Diagnostic {
+                            msg: format!("found duplicate metadata key \"{}\"", &cap[1]),
+                            loc: loc.clone(),
+                        });
+                    };
+                    meta.insert(cap[1].to_string(), cap[2].to_string());
+                }
+            }
+            if !meta.is_empty() {
+                (
+                    Some(content[description_range].to_string()),
+                    Some(meta),
+                    diagnostics,
+                )
+            } else {
+                (Some(content), None, diagnostics)
+            }
+        } else {
+            (Some(content), None, diagnostics)
+        }
+    } else {
+        (None, None, diagnostics)
+    }
 }
 
 fn comments_to_string(comments: &[ast::Comment]) -> String {
@@ -582,9 +669,6 @@ fn remove_desc(doc: &mut Doc) {
         Doc::Value(v) => {
             v.description = None;
         }
-        Doc::Opt(o) => {
-            o.description = None;
-        }
         Doc::Function(f) => {
             f.description = None;
             for p in f.parameters.iter_mut() {
@@ -603,6 +687,7 @@ pub fn nest_docs(original_docs: Vec<PackageDoc>) -> PackageDoc {
         headline: String::new(),
         description: None,
         members: std::collections::BTreeMap::new(),
+        metadata: None,
     };
     for current_pkg in original_docs {
         let parent = find_parent(current_pkg.path.clone(), &mut nested_docs);
@@ -632,6 +717,7 @@ fn find_parent(path: String, nested_docs: &mut PackageDoc) -> &mut PackageDoc {
                 headline: String::new(),
                 description: None,
                 members: std::collections::BTreeMap::new(),
+                metadata: None,
             }))
         });
         match current {
@@ -723,6 +809,7 @@ mod test {
                 headline: "Package foo does a thing.\n".to_string(),
                 description: None,
                 members: BTreeMap::default(),
+                metadata: None,
             },
             vec![],
         );
@@ -736,6 +823,7 @@ mod test {
         // A is a constant.
         a = 1
         ";
+        let loc = Locator::new(&src[..]);
         assert_docs_full(
             src,
             PackageDoc {
@@ -749,8 +837,12 @@ mod test {
                         headline: "A is a constant.\n".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(6,9,6,14),
+                        metadata: None,
                     })),
                 ],
+                metadata: None,
             },
             vec![],
         );
@@ -769,6 +861,7 @@ mod test {
         // The description contains any remaining markdown content.
         a = 1
         ";
+        let loc = Locator::new(&src[..]);
         assert_docs_full(
             src,
             PackageDoc {
@@ -782,8 +875,12 @@ mod test {
                         headline: "A is a constant.\nThe value is one.\n".to_string(),
                         description: Some("\nThis is the start of the description.\n\nThe description contains any remaining markdown content.\n".to_string()),
                         flux_type: "int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(11,9,11,14),
+                        metadata: None,
                     })),
                 ],
+                metadata: None,
             },
             vec![],
         );
@@ -819,6 +916,7 @@ mod test {
         // This is a description.
         option o = 1
         ";
+        let loc = Locator::new(&src[..]);
         assert_docs_short(
             src,
             PackageDoc {
@@ -832,6 +930,9 @@ mod test {
                         headline: "A is a constant.\n".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(11,9,11,14),
+                        metadata: None,
                     })),
                     "f" => Doc::Function(Box::new(FunctionDoc{
                         name: "f".to_string(),
@@ -844,16 +945,169 @@ mod test {
                             required: true,
                         } ],
                         flux_type: "(x:A) => int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(23,9,23,21),
+                        metadata: None,
                     })),
                     "o" => Doc::Value(Box::new(ValueDoc{
                         name: "o".to_string(),
                         headline: "O is an option.\n".to_string(),
                         description: None,
                         flux_type: "int".to_string(),
+                        is_option: true,
+                        source_location: loc.get(28,9,28,21),
+                        metadata: None,
                     })),
                 ],
+                metadata: None,
             },
             vec![],
+        );
+    }
+    #[test]
+    fn test_metadata_all_docs() {
+        let src = "
+        // Package foo does a thing.
+        //
+        // This is a description.
+        //
+        // ## Metadata
+        // k0: v0
+        // k1: v1
+        // k2: v2
+        package foo
+
+        // A is a constant.
+        //
+        // This is a description.
+        //
+        // ## Metadata
+        // k3: v3
+        // k4: v4
+        // k5: v5
+        a = 1
+
+        // F is a function.
+        //
+        // This is a description.
+        //
+        // ## Parameters
+        //
+        // - `x` is a parameter.
+        //
+        //     This is a description of x.
+        //
+        // ## Metadata
+        // k6: v6
+        // k7: v7
+        // k8: v8
+        f = (x) => 1
+
+        // O is an option.
+        //
+        // This is a description.
+        //
+        // ## Metadata
+        // k9: v9
+        // k0: v0
+        option o = 1
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
+                description: Some("\nThis is a description.\n\n".to_string()),
+                members: map![
+                    "a" => Doc::Value(Box::new(ValueDoc{
+                        name: "a".to_string(),
+                        headline: "A is a constant.\n".to_string(),
+                        description: Some("\nThis is a description.\n\n".to_string()),
+                        flux_type: "int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(20,9,20,14),
+                        metadata: Some(map![
+                            "k3" => "v3".to_string(),
+                            "k4" => "v4".to_string(),
+                            "k5" => "v5".to_string(),
+                        ]),
+                    })),
+                    "f" => Doc::Function(Box::new(FunctionDoc{
+                        name: "f".to_string(),
+                        headline: "F is a function.\n".to_string(),
+                        description: Some("\nThis is a description.\n\n".to_string()),
+                        parameters: vec![ParameterDoc{
+                            name: "x".to_string(),
+                            headline: "`x` is a parameter.".to_string(),
+                            description: Some("\n\n    This is a description of x.\n\n".to_string()),
+                            required: true,
+                        } ],
+                        flux_type: "(x:A) => int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(36,9,36,21),
+                        metadata: Some(map![
+                            "k6" => "v6".to_string(),
+                            "k7" => "v7".to_string(),
+                            "k8" => "v8".to_string(),
+                        ]),
+                    })),
+                    "o" => Doc::Value(Box::new(ValueDoc{
+                        name: "o".to_string(),
+                        headline: "O is an option.\n".to_string(),
+                        description: Some("\nThis is a description.\n\n".to_string()),
+                        flux_type: "int".to_string(),
+                        is_option: true,
+                        source_location: loc.get(45,9,45,21),
+                        metadata: Some(map![
+                            "k9" => "v9".to_string(),
+                            "k0" => "v0".to_string(),
+                        ]),
+                    })),
+                ],
+                metadata: Some(map![
+                    "k0" => "v0".to_string(),
+                    "k1" => "v1".to_string(),
+                    "k2" => "v2".to_string(),
+                ]),
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_metadata_pkg() {
+        let src = "
+        // Package foo does a thing.
+        //
+        // This is a description.
+        //
+        // ## Metadata
+        // key: valueA
+        // key: valueB
+        // key1: value with spaces
+        // key_with_underscores: value
+        package foo
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
+                description: Some("\nThis is a description.\n\n".to_string()),
+                members: BTreeMap::default(),
+                metadata: Some(map![
+                    "key" => "valueB".to_string(),
+                    "key1" => "value with spaces".to_string(),
+                    "key_with_underscores" => "value".to_string(),
+                ]),
+            },
+            vec![Diagnostic {
+                msg: "found duplicate metadata key \"key\"".to_string(),
+                loc: loc.get(11, 9, 11, 20),
+            }],
         );
     }
     #[test]
@@ -873,6 +1127,7 @@ mod test {
         // More description after the parameter list.
         f = (x) => x
         ";
+        let loc = Locator::new(&src[..]);
         assert_docs_full(
             src,
             PackageDoc {
@@ -892,8 +1147,12 @@ mod test {
                             required: true,
                         }],
                         flux_type: "(x:A) => A".to_string(),
+                        is_option: false,
+                        source_location: loc.get(14,9,14,21),
+                        metadata: None,
                     })),
                 ],
+                metadata: None,
             },
             vec![],
         );
@@ -921,6 +1180,7 @@ mod test {
         // More description after the parameter list.
         f = (x,y) => x + y
         ";
+        let loc = Locator::new(&src[..]);
         assert_docs_full(
             src,
             PackageDoc {
@@ -946,8 +1206,12 @@ mod test {
                             required: true,
                         }],
                         flux_type: "(x:A, y:A) => A where A: Addable".to_string(),
+                        is_option: false,
+                        source_location: loc.get(20,9,20,27),
+                        metadata: None,
                     })),
                 ],
+                metadata: None,
             },
             vec![],
         );
@@ -976,12 +1240,15 @@ mod test {
                         description: None,
                         parameters: vec![],
                         flux_type: "(x:A) => A".to_string(),
+                        is_option: false,
+                        source_location: loc.get(6, 9, 6, 21),
+                        metadata: None,
                     })),
                 ],
+                metadata: None,
             },
             vec![Diagnostic {
-                msg: "function \"f\" comment must contain both a headline and a description"
-                    .to_string(),
+                msg: "function \"f\" comment must contain a description".to_string(),
                 loc: loc.get(6, 9, 6, 21),
             }],
         );
@@ -1018,8 +1285,12 @@ mod test {
                             required: true,
                         }],
                         flux_type: "(x:A, y:A) => A where A: Addable".to_string(),
+                        is_option: false,
+                        source_location: loc.get(9, 9, 9, 29),
+                        metadata: None,
                     })),
                 ],
+                metadata: None,
             },
             vec![Diagnostic {
                 msg: "missing documentation for parameter \"y\"".to_string(),
@@ -1059,13 +1330,163 @@ mod test {
                             required: true,
                         }],
                         flux_type: "(x:int, ?y:int) => int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(9, 9, 9, 31),
+                        metadata: None,
                     })),
                 ],
+                metadata: None,
             },
             vec![Diagnostic {
                 msg: "missing documentation for parameter \"y\"".to_string(),
                 loc: loc.get(9, 9, 9, 31),
             }],
+        );
+    }
+    #[test]
+    fn test_function_doc_extra_parameter() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // One is a function.
+        //
+        // ## Parameters
+        // - `x` is any value
+        one = () => 1
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
+                description: None,
+                members: map![
+                    "one" => Doc::Function(Box::new(FunctionDoc{
+                        name: "one".to_string(),
+                        headline: "One is a function.\n".to_string(),
+                        description: Some("\n".to_string()),
+                        parameters: vec![ParameterDoc{
+                            name: "x".to_string(),
+                            headline: "`x` is any value".to_string(),
+                            description: None,
+                            required: false,
+                        }],
+                        flux_type: "() => int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(9, 9, 9, 22),
+                        metadata: None,
+                    })),
+                ],
+                metadata: None,
+            },
+            vec![Diagnostic {
+                msg: "extra documentation for parameter \"x\"".to_string(),
+                loc: loc.get(9, 9, 9, 22),
+            }],
+        );
+    }
+    #[test]
+    fn test_function_no_parameters() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // One returns the number one.
+        one = () => 1
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
+                description: None,
+                members: map![
+                    "one" => Doc::Function(Box::new(FunctionDoc{
+                        name: "one".to_string(),
+                        headline: "One returns the number one.\n".to_string(),
+                        description: None,
+                        parameters: vec![],
+                        flux_type: "() => int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(6, 9, 6, 22),
+                        metadata: None,
+                    })),
+                ],
+                metadata: None,
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_value_option() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // One is the number one.
+        option one = 1
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
+                description: None,
+                members: map![
+                    "one" => Doc::Value(Box::new(ValueDoc{
+                        name: "one".to_string(),
+                        headline: "One is the number one.\n".to_string(),
+                        description: None,
+                        flux_type: "int".to_string(),
+                        is_option: true,
+                        source_location: loc.get(6, 9, 6, 23),
+                        metadata: None,
+                    })),
+                ],
+                metadata: None,
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_function_option() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // One returns the number one.
+        option one = () => 1
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.\n".to_string(),
+                description: None,
+                members: map![
+                    "one" => Doc::Function(Box::new(FunctionDoc{
+                        name: "one".to_string(),
+                        headline: "One returns the number one.\n".to_string(),
+                        description: None,
+                        parameters: vec![],
+                        flux_type: "() => int".to_string(),
+                        is_option: true,
+                        source_location: loc.get(6, 9, 6, 29),
+                        metadata: None,
+                    })),
+                ],
+                metadata: None,
+            },
+            vec![],
         );
     }
 }

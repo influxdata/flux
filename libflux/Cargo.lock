@@ -442,6 +442,7 @@ dependencies = [
  "expect-test",
  "flatbuffers",
  "fnv",
+ "lazy_static",
  "libflate",
  "lsp-types",
  "maplit",
