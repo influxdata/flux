@@ -34,9 +34,9 @@ use std::vec::Vec;
 use derive_more::Display;
 
 /// Result returned from the various 'infer' methods defined in this
-/// module. The result of inferring an expression or statment is an
-/// updated type environment and a set of type constraints to be solved.
-pub type Result = std::result::Result<Constraints, Error>;
+/// module. The result of inferring an expression or statement is a
+/// set of type constraints to be solved.
+pub type Result<T = Constraints> = std::result::Result<T, Error>;
 
 /// Error returned from the various 'infer' methods defined in this
 /// module.
@@ -406,20 +406,20 @@ impl File {
                     Ok(rest)
                 }
                 Statement::Variable(stmt) => {
-                    let cons = stmt.infer(infer)?;
-                    Ok(cons + rest)
+                    stmt.infer(infer)?;
+                    Ok(rest)
                 }
                 Statement::Option(stmt) => {
                     let cons = stmt.infer(infer)?;
                     Ok(cons + rest)
                 }
                 Statement::Expr(stmt) => {
-                    let cons = stmt.infer(infer)?;
-                    Ok(cons + rest)
+                    stmt.infer(infer)?;
+                    Ok(rest)
                 }
                 Statement::Test(stmt) => {
-                    let cons = stmt.infer(infer)?;
-                    Ok(cons + rest)
+                    stmt.infer(infer)?;
+                    Ok(rest)
                 }
                 Statement::TestCase(stmt) => {
                     let cons = stmt.infer(infer)?;
@@ -491,7 +491,10 @@ impl OptionStmt {
                     }]
                     .into())
             }
-            Assignment::Variable(stmt) => stmt.infer(infer),
+            Assignment::Variable(stmt) => {
+                stmt.infer(infer)?;
+                Ok(Constraints::empty())
+            }
         }
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -527,7 +530,7 @@ pub struct TestStmt {
 }
 
 impl TestStmt {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         self.assignment.infer(infer)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -563,11 +566,11 @@ pub struct ExprStmt {
 }
 
 impl ExprStmt {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         let cons = self.expression.infer(infer)?;
         infer::solve(&cons, &mut TvarKinds::new(), infer.sub)?;
         infer.env.apply_mut(infer.sub);
-        Ok(cons)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.expression = self.expression.apply(sub);
@@ -638,7 +641,7 @@ impl VariableAssgn {
     // the variable to its newly generalized type in the type environment
     // before inferring the rest of the program.
     //
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         let constraints = self.init.infer(infer)?;
 
         let mut kinds = TvarKinds::new();
@@ -660,7 +663,7 @@ impl VariableAssgn {
 
         // Update the type environment
         infer.env.add(String::from(&self.id.name), p);
-        Ok(constraints)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.init = self.init.apply(sub);
@@ -1018,16 +1021,16 @@ impl Block {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         match self {
             Block::Variable(stmt, block) => {
-                let cons = stmt.infer(infer)?;
-                let rest = block.infer(infer)?;
+                stmt.infer(infer)?;
+                let cons = block.infer(infer)?;
 
-                Ok(cons + rest)
+                Ok(cons)
             }
             Block::Expr(stmt, block) => {
-                let cons = stmt.infer(infer)?;
-                let rest = block.infer(infer)?;
+                stmt.infer(infer)?;
+                let cons = block.infer(infer)?;
 
-                Ok(cons + rest)
+                Ok(cons)
             }
             Block::Return(e) => e.infer(infer),
         }
