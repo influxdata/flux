@@ -1,7 +1,7 @@
 //! Substitutions during type inference.
 use std::{cell::RefCell, iter::FusedIterator};
 
-use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
+use crate::semantic::types::{union, Error, MonoType, SubstitutionMap, Tvar, TvarKinds};
 
 /// A substitution defines a function that takes a monotype as input
 /// and returns a monotype as output. The output type is interpreted
@@ -9,8 +9,11 @@ use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 ///
 /// Substitutions are idempotent. Given a substitution *s* and an input
 /// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
-#[derive(Clone, Debug)]
-pub struct Substitution(RefCell<UnificationTable>);
+#[derive(Clone, Debug, Default)]
+pub struct Substitution {
+    table: RefCell<UnificationTable>,
+    cons: RefCell<TvarKinds>,
+}
 
 /// An implementation of a
 /// (Disjoint-set](https://en.wikipedia.org/wiki/Disjoint-set_data_structure) which is used to
@@ -20,42 +23,40 @@ type UnificationTable = ena::unify::InPlaceUnificationTable<Tvar>;
 impl From<SubstitutionMap> for Substitution {
     /// Derive a substitution from a hash map.
     fn from(values: SubstitutionMap) -> Substitution {
-        let sub = Substitution(RefCell::new(UnificationTable::new()));
+        let sub = Substitution::default();
         for (var, typ) in values {
             // Create any variables referenced in the input map
-            while var.0 >= sub.0.borrow().len() as u64 {
+            while var.0 >= sub.table.borrow().len() as u64 {
                 sub.fresh();
             }
-            sub.union_type(var, typ);
+            sub.union_type(var, typ).unwrap();
         }
         sub
-    }
-}
-
-impl Default for Substitution {
-    fn default() -> Self {
-        Self::empty()
     }
 }
 
 impl Substitution {
     /// Return a new empty substitution.
     pub fn empty() -> Substitution {
-        Substitution(RefCell::new(UnificationTable::new()))
+        Substitution::default()
     }
 
     /// Takes a `Substitution` and returns an incremented [`Tvar`].
     pub fn fresh(&self) -> Tvar {
-        self.0.borrow_mut().new_key(None)
+        self.table.borrow_mut().new_key(None)
     }
 
     /// Prepares `count` type variables for testing
     #[cfg(test)]
     pub(crate) fn mk_fresh(&self, count: usize) {
-        let mut sub = self.0.borrow_mut();
+        let mut sub = self.table.borrow_mut();
         for _ in 0..count {
             sub.new_key(None);
         }
+    }
+
+    pub(crate) fn cons(&mut self) -> &mut TvarKinds {
+        self.cons.get_mut()
     }
 
     /// Apply a substitution to a type variable.
@@ -66,7 +67,7 @@ impl Substitution {
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
     /// variable.
     pub fn try_apply(&self, tv: Tvar) -> Option<MonoType> {
-        let mut sub = self.0.borrow_mut();
+        let mut sub = self.table.borrow_mut();
         match sub.probe_value(tv) {
             Some(typ) => Some(typ),
             None => {
@@ -89,21 +90,45 @@ impl Substitution {
     /// Returns the "root variable" which is the variable that uniquely identifies a group of
     /// variables that were unified
     pub fn root(&self, tv: Tvar) -> Tvar {
-        self.0.borrow_mut().find(tv)
+        self.table.borrow_mut().find(tv)
     }
 
     /// Unifies as a `Tvar` and a `MonoType`, recording the result in the substitution for later
     /// lookup
-    pub fn union_type(&self, l: Tvar, r: MonoType) {
-        match r {
-            MonoType::Var(r) => self.union(l, r),
-            _ => self.0.borrow_mut().union_value(l, Some(r)),
+    pub fn union_type(&self, var: Tvar, typ: MonoType) -> Result<(), Error> {
+        match typ {
+            MonoType::Var(r) => self.union(var, r),
+            _ => {
+                self.table.borrow_mut().union_value(var, Some(typ.clone()));
+
+                let mut cons = self.cons.borrow_mut();
+                if let Some(kinds) = cons.remove(&var) {
+                    for kind in kinds {
+                        // The monotype that is being unified with the
+                        // tvar must be constrained with the same kinds
+                        // as that of the tvar.
+                        typ.clone().constrain(kind, &mut cons)?;
+                    }
+                }
+            }
         }
+        Ok(())
     }
 
     /// Unifies two `Tvar`s, recording the result in the substitution for later.
     pub fn union(&self, l: Tvar, r: Tvar) {
-        self.0.borrow_mut().union(l, r);
+        self.table.borrow_mut().union(l, r);
+
+        let mut cons = self.cons.borrow_mut();
+        // Kind constraints for both type variables
+        let kinds = union(
+            cons.remove(&l).unwrap_or_default(),
+            cons.remove(&r).unwrap_or_default(),
+        );
+        if !kinds.is_empty() {
+            let root = self.root(l);
+            cons.insert(root, kinds);
+        }
     }
 }
 

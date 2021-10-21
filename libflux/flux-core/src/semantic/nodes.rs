@@ -331,7 +331,7 @@ where
         .infer(&mut infer, importer)
         .map_err(|err| err.apply(infer.sub))?;
 
-    infer::solve(&cons, &mut TvarKinds::new(), infer.sub).map_err(|err| err.apply(infer.sub))?;
+    infer::solve(&cons, infer.sub).map_err(|err| err.apply(infer.sub))?;
     Ok(infer.env)
 }
 
@@ -568,7 +568,7 @@ pub struct ExprStmt {
 impl ExprStmt {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         let cons = self.expression.infer(infer)?;
-        infer::solve(&cons, &mut TvarKinds::new(), infer.sub)?;
+        infer::solve(&cons, infer.sub)?;
         infer.env.apply_mut(infer.sub);
         Ok(())
     }
@@ -644,14 +644,13 @@ impl VariableAssgn {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         let constraints = self.init.infer(infer)?;
 
-        let mut kinds = TvarKinds::new();
-        infer::solve(&constraints, &mut kinds, infer.sub)?;
+        infer::solve(&constraints, infer.sub)?;
 
         // Apply substitution to the type environment
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        let p = infer::generalize(&infer.env, &kinds, t);
+        let p = infer::generalize(&infer.env, infer.sub.cons(), t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.

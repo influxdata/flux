@@ -191,12 +191,12 @@ fn dependencies<'a>(
 /// Constructs a polytype, or more specifically a generic record type, from a hash map.
 pub fn build_polytype(from: PolyTypeMap, sub: &mut Substitution) -> Result<PolyType> {
     let (r, cons) = build_record(from, sub);
-    let mut kinds = TvarKinds::new();
-    infer::solve(&cons, &mut kinds, sub)?;
+    infer::solve(&cons, sub)?;
+    let typ = MonoType::record(r).apply(sub);
     Ok(infer::generalize(
         &Environment::empty(false),
-        &kinds,
-        MonoType::record(r).apply(sub),
+        sub.cons(),
+        typ,
     ))
 }
 
