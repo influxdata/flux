@@ -78,7 +78,10 @@ func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (Writer, error
 	}
 
 	service := apihttp.NewService(httpClient.Config.Host, "Token "+httpClient.Config.Token, apihttp.DefaultOptions().SetHTTPDoer(httpClient.Client))
-	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrName(), httpClient.Config.Bucket.IdOrName(), service, write.DefaultOptions())
+
+	writeOptions := write.DefaultOptions()
+	writeOptions.SetMaxRetries(0)
+	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrName(), httpClient.Config.Bucket.IdOrName(), service, writeOptions)
 
 	return newHttpWriter(writer)
 }
