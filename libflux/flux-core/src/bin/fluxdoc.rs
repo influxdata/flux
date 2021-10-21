@@ -178,7 +178,8 @@ fn parse_docs(
     let mut diagnostics = Vec::new();
     for (pkgpath, ast_pkg) in ast_packages {
         let (pkgtypes, _) = analyzer.analyze_ast(ast_pkg.clone())?;
-        let (doc, mut diags) = doc::parse_package_doc_comments(&ast_pkg, &pkgpath, &pkgtypes)?;
+        let (doc, mut diags) = doc::parse_package_doc_comments(&ast_pkg, &pkgpath, &pkgtypes)
+            .context(format!("generating docs for \"{}\"", &pkgpath))?;
         if !exceptions.contains(&pkgpath.as_str()) {
             diagnostics.append(&mut diags);
         }
@@ -194,7 +195,7 @@ fn parse_docs(
 // high standard going forward.
 //
 // See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
-const EXCEPTIONS: [&str; 96] = [
+const EXCEPTIONS: [&str; 97] = [
     "array",
     "contrib",
     "contrib/RohanSreerama5",
@@ -289,6 +290,7 @@ const EXCEPTIONS: [&str; 96] = [
     "testing/prometheus",
     "testing/promql",
     "testing/usage",
+    "timezone",
     "universe",
     "universe/holt_winters",
 ];
