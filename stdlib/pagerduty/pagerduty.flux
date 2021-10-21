@@ -2,6 +2,7 @@
 package pagerduty
 
 
+import "experimental/record"
 import "http"
 import "json"
 import "strings"
@@ -106,8 +107,10 @@ actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve"
 //        acknowledge
 //
 // - `source` is the unique location of the affected system. For example, the hostname or fully qualified domain name (FQDN).
+// - `component` is the component responsible for the event.
 // - `summary` is a brief text summary of the event used as the summaries or titles of associated alerts. The maximum permitted length is 1024 characters.
 // - `timestamp` is the time the detected event occurred in RFC3339nano format.
+// - `customDetails` is the record with additional details about the event.
 //
 sendEvent = (
         pagerdutyURL=defaultURL,
@@ -120,13 +123,16 @@ sendEvent = (
         severity,
         eventAction,
         source,
+        component="",
         summary,
         timestamp,
+        customDetails=record.any,
 ) => {
     payload = {
         summary: summary,
         timestamp: timestamp,
         source: source,
+        component: component,
         severity: severity,
         group: group,
         class: class,
@@ -143,7 +149,16 @@ sendEvent = (
         "Accept": "application/vnd.pagerduty+json;version=2",
         "Content-Type": "application/json",
     }
-    enc = json.encode(v: data)
+    enc = if customDetails == record.any then
+        json.encode(v: data)
+    else
+        json.encode(
+            v: {data with
+                payload: {payload with
+                    custom_details: customDetails,
+                },
+            },
+        )
 
     return http.post(headers: headers, url: pagerdutyURL, data: enc)
 }
@@ -170,10 +185,11 @@ sendEvent = (
 //         eventAction
 //         group
 //         severity
-//         component
 //         source
+//         component
 //         summary
 //         timestamp
+//         customDetails
 //
 // ## Send critical statuses to a PagerDuty endpoint
 // ```
@@ -196,10 +212,11 @@ sendEvent = (
 //       eventAction: r.eventAction,
 //       group: r.group,
 //       severity: r.severity,
-//       component: r.component,
 //       source: r.source,
+//       component: r.component,
 //       summary: r.summary,
 //       timestamp: r._time,
+//       customDetails: { "ping time": r.ping, load: r.load },
 //     })
 //   )()
 // ```
@@ -223,8 +240,10 @@ endpoint = (url=defaultURL) => (mapFn) => (tables=<-) => tables
                         severity: obj.severity,
                         eventAction: obj.eventAction,
                         source: obj.source,
+                        component: record.get(r: obj, key: "component", default: ""),
                         summary: obj.summary,
                         timestamp: obj.timestamp,
+                        customDetails: record.get(r: obj, key: "customDetails", default: record.any),
                     ) / 100,
                 ),
             }
