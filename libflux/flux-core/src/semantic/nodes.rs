@@ -1107,279 +1107,111 @@ impl BinaryExpr {
         let lcons = self.left.infer(infer)?;
         let rcons = self.right.infer(infer)?;
 
+        let binop_arithmetic_constraints = |kind| {
+            Constraints::from(vec![
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.right.type_of(),
+                    loc: self.right.loc().clone(),
+                },
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.typ.clone(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Kind {
+                    act: self.typ.clone(),
+                    exp: kind,
+                    loc: self.loc.clone(),
+                },
+            ])
+        };
+        let binop_compare_constraints = |kind| {
+            Constraints::from(vec![
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
+                Constraint::Equal {
+                    act: self.typ.clone(),
+                    exp: MonoType::Bool,
+                    loc: self.loc.clone(),
+                },
+                Constraint::Kind {
+                    act: self.left.type_of(),
+                    exp: kind,
+                    loc: self.left.loc().clone(),
+                },
+                Constraint::Kind {
+                    act: self.right.type_of(),
+                    exp: kind,
+                    loc: self.right.loc().clone(),
+                },
+            ])
+        };
         let cons = match self.operator {
             // The following operators require both sides to be equal.
-            ast::Operator::AdditionOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Addable,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::SubtractionOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Subtractable,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::MultiplicationOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Divisible,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::DivisionOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Divisible,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::PowerOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Divisible,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::ModuloOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Divisible,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::GreaterThanOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::LessThanOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::EqualOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::NotEqualOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::GreaterThanEqualOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::LessThanEqualOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
+            ast::Operator::AdditionOperator => binop_arithmetic_constraints(Kind::Addable),
+            ast::Operator::SubtractionOperator => binop_arithmetic_constraints(Kind::Subtractable),
+            ast::Operator::MultiplicationOperator
+            | ast::Operator::DivisionOperator
+            | ast::Operator::PowerOperator
+            | ast::Operator::ModuloOperator => binop_arithmetic_constraints(Kind::Divisible),
+            ast::Operator::GreaterThanOperator | ast::Operator::LessThanOperator => {
+                binop_compare_constraints(Kind::Comparable)
+            }
+            ast::Operator::EqualOperator | ast::Operator::NotEqualOperator => {
+                binop_compare_constraints(Kind::Equatable)
+            }
+            ast::Operator::GreaterThanEqualOperator | ast::Operator::LessThanEqualOperator => {
+                Constraints::from(vec![
+                    // https://github.com/influxdata/flux/issues/2393
+                    // Constraint::Equal{self.left.type_of(), self.right.type_of()),
+                    Constraint::Equal {
+                        act: self.typ.clone(),
+                        exp: MonoType::Bool,
+                        loc: self.loc.clone(),
+                    },
+                    Constraint::Kind {
+                        act: self.left.type_of(),
+                        exp: Kind::Equatable,
+                        loc: self.left.loc().clone(),
+                    },
+                    Constraint::Kind {
+                        act: self.left.type_of(),
+                        exp: Kind::Comparable,
+                        loc: self.left.loc().clone(),
+                    },
+                    Constraint::Kind {
+                        act: self.right.type_of(),
+                        exp: Kind::Equatable,
+                        loc: self.right.loc().clone(),
+                    },
+                    Constraint::Kind {
+                        act: self.right.type_of(),
+                        exp: Kind::Comparable,
+                        loc: self.right.loc().clone(),
+                    },
+                ])
+            }
             // Regular expression operators.
-            ast::Operator::RegexpMatchOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Equal {
-                    act: self.left.type_of(),
-                    exp: MonoType::String,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Equal {
-                    act: self.right.type_of(),
-                    exp: MonoType::Regexp,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::NotRegexpMatchOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Equal {
-                    act: self.left.type_of(),
-                    exp: MonoType::String,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Equal {
-                    act: self.right.type_of(),
-                    exp: MonoType::Regexp,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
+            ast::Operator::RegexpMatchOperator | ast::Operator::NotRegexpMatchOperator => {
+                Constraints::from(vec![
+                    Constraint::Equal {
+                        act: self.typ.clone(),
+                        exp: MonoType::Bool,
+                        loc: self.loc.clone(),
+                    },
+                    Constraint::Equal {
+                        act: self.left.type_of(),
+                        exp: MonoType::String,
+                        loc: self.left.loc().clone(),
+                    },
+                    Constraint::Equal {
+                        act: self.right.type_of(),
+                        exp: MonoType::Regexp,
+                        loc: self.right.loc().clone(),
+                    },
+                ])
+            }
             _ => {
                 return Err(located(
                     self.loc.clone(),
