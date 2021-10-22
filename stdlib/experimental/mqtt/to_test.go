@@ -542,7 +542,7 @@ func TestToMQTT_Process(t *testing.T) {
 				tc.want.Table,
 				nil,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return mqtt.NewToMQTTTransformation(d, c, tc.spec)
+					return mqtt.NewToMQTTTransformation(context.Background(), d, c, tc.spec)
 				},
 			)
 			msg, err := receive(received)

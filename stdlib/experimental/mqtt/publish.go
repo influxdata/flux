@@ -38,7 +38,7 @@ func init() {
 					return nil, errors.New(codes.Invalid, "empty message")
 				}
 
-				published, err := publish(topic, message, spec)
+				published, err := publish(ctx, topic, message, spec)
 				if err != nil {
 					return nil, err
 				}

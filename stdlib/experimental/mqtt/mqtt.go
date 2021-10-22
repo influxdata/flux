@@ -1,11 +1,12 @@
 package mqtt
 
 import (
+	"context"
 	"time"
 
-	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/mqtt"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
 )
@@ -88,32 +89,22 @@ func (o *CommonMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	return nil
 }
 
-func publish(topic, message string, spec *CommonMQTTOpSpec) (bool, error) {
-	opts := MQTT.NewClientOptions().AddBroker(spec.Broker)
-	if spec.ClientID != "" {
-		opts.SetClientID(spec.ClientID)
-	} else {
-		opts.SetClientID(DefaultClientID)
+func publish(ctx context.Context, topic, message string, spec *CommonMQTTOpSpec) (bool, error) {
+	options := mqtt.Options{
+		ClientID: spec.ClientID,
+		Username: spec.Username,
+		Password: spec.Password,
+		Timeout:  spec.Timeout,
 	}
-	if spec.Timeout > 0 {
-		opts.SetConnectTimeout(spec.Timeout)
+	provider := mqtt.GetDialer(ctx)
+	client, err := provider.Dial(ctx, []string{spec.Broker}, options)
+	if err != nil {
+		return false, err
 	}
-	if spec.Username != "" {
-		opts.SetUsername(spec.Username)
-		if spec.Password != "" {
-			opts.SetPassword(spec.Password)
-		}
-	}
+	defer func() { _ = client.Close() }()
 
-	client := MQTT.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		return false, token.Error()
+	if err := client.Publish(ctx, topic, byte(spec.QoS), spec.Retain, message); err != nil {
+		return false, err
 	}
-	defer client.Disconnect(250)
-
-	if token := client.Publish(topic, byte(spec.QoS), spec.Retain, message); token.Wait() && token.Error() != nil {
-		return false, token.Error()
-	}
-
 	return true, nil
 }
