@@ -1,5 +1,7 @@
 //! Generate documentation from source code comments.
 
+pub mod example;
+
 use lazy_static::lazy_static;
 use pulldown_cmark::{Event, OffsetIter, Parser as MarkdownParser, Tag};
 use regex::Regex;
@@ -97,8 +99,6 @@ pub struct FunctionDoc {
     pub headline: String,
     /// the description of the function
     pub description: Option<String>,
-    ///// list of any examples of the function
-    //pub examples: Vec<Example>,
     /// the parameters of the function
     pub parameters: Vec<ParameterDoc>,
     /// the type of the function
@@ -107,6 +107,8 @@ pub struct FunctionDoc {
     pub is_option: bool,
     /// the location in the source code of the function
     pub source_location: ast::SourceLocation,
+    /// list of any examples of the function
+    pub examples: Vec<Example>,
     /// any Metadata associated with the function
     pub metadata: Option<Metadata>,
 }
@@ -241,7 +243,25 @@ fn parse_comment(
     diagnostics: &mut Diagnostics,
 ) -> Result<ParseResult> {
     let mut parser = Parser::new(comment);
-    let tokens_vec = parser.parse()?;
+    let tokens_vec = match parser.parse() {
+        Ok(t) => t,
+        Err(e) => {
+            diagnostics.push(Diagnostic {
+                msg: format!("parse error {}", e),
+                loc: loc.clone(),
+            });
+            // We didn't get any tokens so return a completely empty parse result.
+            // This should only happen if the parser failed to understand the markdown.
+            return Ok(ParseResult {
+                headline: "".to_string(),
+                description: None,
+                parameters: Vec::new(),
+                examples: Vec::new(),
+                metadata: None,
+            });
+        }
+    };
+
     let mut tokens = tokens_vec.iter().peekable();
     let headline = headline_from_tokens(&mut tokens);
     let description = description_from_tokens(&mut tokens);
@@ -541,8 +561,7 @@ fn parse_function_doc(
             msg: format!("function \"{}\" must contain a non empty comment", name),
             loc: loc.clone(),
         });
-    }
-    if let Some(diagnostic) = check_headline(name, &pr.headline, loc) {
+    } else if let Some(diagnostic) = check_headline(name, &pr.headline, loc) {
         diagnostics.push(diagnostic)
     }
     let mut parameters: Vec<ParameterDoc> = Vec::with_capacity(pr.parameters.len());
@@ -593,6 +612,7 @@ fn parse_function_doc(
         flux_type: format!("{}", &typ.normal()),
         is_option,
         source_location: loc.clone(),
+        examples: pr.examples,
         metadata: pr.metadata,
     })
 }
@@ -615,8 +635,7 @@ fn parse_value_doc(
             msg: format!("value {} must contain a non empty comment", name),
             loc: loc.clone(),
         });
-    }
-    if let Some(diagnostic) = check_headline(name, &pr.headline, loc) {
+    } else if let Some(diagnostic) = check_headline(name, &pr.headline, loc) {
         diagnostics.push(diagnostic)
     }
     Ok(ValueDoc {
@@ -654,8 +673,9 @@ fn comments_to_string(comments: &[ast::Comment]) -> String {
 /// and other metadata.
 pub fn shorten(doc: &mut PackageDoc) {
     doc.description = None;
+    doc.examples = Vec::new();
     for (_, m) in doc.members.iter_mut() {
-        remove_desc(m);
+        shorten_doc(m);
     }
 }
 
@@ -665,14 +685,16 @@ pub fn shorten(doc: &mut PackageDoc) {
 /// This design allows the implementation for the Doc::Package variant to share code with
 /// [`shorten`] and keep the original data types as &mut instead of moving the data into these
 /// functions.
-fn remove_desc(doc: &mut Doc) {
+fn shorten_doc(doc: &mut Doc) {
     match doc {
         Doc::Package(p) => shorten(p),
         Doc::Value(v) => {
             v.description = None;
+            v.examples = Vec::new();
         }
         Doc::Function(f) => {
             f.description = None;
+            f.examples = Vec::new();
             for p in f.parameters.iter_mut() {
                 p.description = None
             }
@@ -777,7 +799,12 @@ impl<'a> Parser<'a> {
             tokens: Vec::with_capacity(100),
         }
     }
-    // In a single pass parse the content into its tokens
+    // In a single pass parse the content into its tokens.
+    //
+    // An error is returned only when an assumption about parsing markdown is violated (i.e. no
+    // end event after a start event).
+    //
+    // Otherwise Tokens are produced with a best effort.
     fn parse(&mut self) -> Result<Vec<Token<'a>>> {
         self.parse_headline()?;
         Ok(mem::take(&mut self.tokens))
@@ -793,7 +820,10 @@ impl<'a> Parser<'a> {
                 self.tokens.push(Token::Headline(self.slice(r)));
                 return self.parse_description();
             }
-            _ => bail!("headline does not start with paragraph or text"),
+            _ => {
+                // We failed to parse a headline, move on to next possible tokens.
+                return self.parse_description();
+            }
         };
         // We have a paragraph so gather all events until the end of the paragraph.
         loop {
@@ -868,14 +898,17 @@ impl<'a> Parser<'a> {
         }
     }
 
-    // lex any delimiting heading. If it does not exist an error is returned.
     fn parse_any_heading_text(&mut self) -> Result<()> {
         if let Some((Event::Text(t), _)) = self.iter.peek() {
             match t.as_ref() {
                 PARAMETER_HEADING => return self.parse_parameters(),
                 EXAMPLES_HEADING => return self.parse_examples(),
                 METADATA_HEADING => return self.parse_metadata(),
-                _ => bail!("expected delimiter heading text"),
+                _ => {
+                    // We didn't find any delimiting heading
+                    // There is no where to go from here so simply end parsing.
+                    Ok(())
+                }
             }
         } else {
             bail!("expected heading text")
@@ -901,11 +934,10 @@ impl<'a> Parser<'a> {
                     // parameter list is found.
                     return self.parse_parameter();
                 }
-                Some(e) => bail!(
-                    "parameters heading must be followed by a list found {:?}",
-                    e
-                ),
-                None => bail!("parameters heading must be followed by a list found EOF"),
+                _ => {
+                    // We didn't find a list so we start over looking for the next heading.
+                    return self.parse_any_heading_or_description();
+                }
             }
         }
     }
@@ -921,8 +953,10 @@ impl<'a> Parser<'a> {
                 // Start lexing the next section.
                 return self.parse_any_heading_or_description();
             }
-            Some(_) => bail!("parameters list must contain only items"),
-            None => bail!("parameters heading must be followed by a list"),
+            _ => {
+                // We didn't find another item, start over looking for the next heading.
+                return self.parse_any_heading_or_description();
+            }
         }
     }
     fn parse_parameter_headline(&mut self) -> Result<()> {
@@ -936,7 +970,19 @@ impl<'a> Parser<'a> {
                 self.tokens.push(Token::ParamHeadline(self.slice(r)));
                 return self.parse_parameter_description();
             }
-            _ => bail!("parameter headline does not start with paragraph or text"),
+            _ => {
+                // We didn't find a good headline
+                // Find the end of the item and start over
+                loop {
+                    match self.iter.next() {
+                        Some((Event::End(Tag::Item), _)) => {
+                            return self.parse_any_heading_or_description()
+                        }
+                        Some(_) => {}
+                        None => bail!("reached end of markdown without reaching end of item"),
+                    };
+                }
+            }
         };
         // We have a paragraph so gather all events until the end of the paragraph.
         loop {
@@ -1073,8 +1119,8 @@ impl<'a> Parser<'a> {
 #[cfg(test)]
 mod test {
     use super::{
-        parse_package_doc_comments, shorten, Diagnostic, Diagnostics, Doc, FunctionDoc, PackageDoc,
-        ParameterDoc, Parser, Token, ValueDoc,
+        parse_package_doc_comments, shorten, Diagnostic, Diagnostics, Doc, Example, FunctionDoc,
+        PackageDoc, ParameterDoc, Parser, Token, ValueDoc,
     };
 
     use crate::{
@@ -1299,16 +1345,34 @@ mod test {
     }
     #[test]
     fn test_shorten() {
-        let src = "
+        let src = r#"
         // Package foo does a thing.
         //
         // This is a description.
+        //
+        // ## Examples
+        //
+        // ### Using foo
+        //
+        // ```
+        // import "foo"
+        //
+        // foo.a
+        // ```
         package foo
 
         // a is a constant.
         //
         // This is a description.
         //
+        // ## Examples
+        //
+        // ### Using a
+        //
+        // ```
+        // # import "foo"
+        // foo.a
+        // ```
         a = 1
 
         // f is a function.
@@ -1321,13 +1385,30 @@ mod test {
         //
         //     This is a description of x.
         //
+        // ## Examples
+        //
+        // ### Using f
+        //
+        // ```
+        // # import "foo"
+        // foo.f(x:1)
+        // ```
         f = (x) => 1
 
         // o is an option.
         //
         // This is a description.
+        //
+        // ## Examples
+        //
+        // ### Using o
+        //
+        // ```
+        // # import "foo"
+        // option foo.o = 2
+        // ```
         option o = 1
-        ";
+        "#;
         let loc = Locator::new(&src[..]);
         assert_docs_short(
             src,
@@ -1343,7 +1424,7 @@ mod test {
                         description: None,
                         flux_type: "int".to_string(),
                         is_option: false,
-                        source_location: loc.get(11,9,11,14),
+                        source_location: loc.get(29,9,29,14),
                         examples: vec![],
                         metadata: None,
                     })),
@@ -1359,7 +1440,8 @@ mod test {
                         } ],
                         flux_type: "(x:A) => int".to_string(),
                         is_option: false,
-                        source_location: loc.get(23,9,23,21),
+                        source_location: loc.get(49,9,49,21),
+                        examples: vec![],
                         metadata: None,
                     })),
                     "o" => Doc::Value(Box::new(ValueDoc{
@@ -1368,12 +1450,166 @@ mod test {
                         description: None,
                         flux_type: "int".to_string(),
                         is_option: true,
-                        source_location: loc.get(28,9,28,21),
+                        source_location: loc.get(63,9,63,21),
                         examples: vec![],
                         metadata: None,
                     })),
                 ],
                 examples: Vec::new(),
+                metadata: None,
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_examples() {
+        let src = r#"
+        // Package foo does a thing.
+        //
+        // This is a description.
+        //
+        // ## Examples
+        //
+        // ### Using foo
+        //
+        // ```
+        // import "foo"
+        //
+        // foo.a
+        // ```
+        package foo
+
+        // a is a constant.
+        //
+        // This is a description.
+        //
+        // ## Examples
+        //
+        // ### Using a
+        //
+        // ```
+        // # import "foo"
+        // foo.a
+        // ```
+        a = 1
+
+        // f is a function.
+        //
+        // This is a description.
+        //
+        // ## Parameters
+        //
+        // - x: is a parameter.
+        //
+        //     This is a description of x.
+        //
+        // ## Examples
+        //
+        // ### Using f
+        //
+        // ```
+        // # import "foo"
+        // foo.f(x:1)
+        // ```
+        f = (x) => 1
+
+        // o is an option.
+        //
+        // This is a description.
+        //
+        // ## Examples
+        //
+        // ### Using o
+        //
+        // ```
+        // # import "foo"
+        // option foo.o = 2
+        // ```
+        option o = 1
+        "#;
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: Some("This is a description.".to_string()),
+                members: map![
+                    "a" => Doc::Value(Box::new(ValueDoc{
+                        name: "a".to_string(),
+                        headline: "a is a constant.".to_string(),
+                        description: Some("This is a description.".to_string()),
+                        flux_type: "int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(29,9,29,14),
+                        examples: vec![Example {
+                            title: "### Using a".to_string(),
+                            content: r#"```
+# import "foo"
+foo.a
+```"# .to_string(),
+                            input: None,
+                            output: None,
+                        }],
+                        metadata: None,
+                    })),
+                    "f" => Doc::Function(Box::new(FunctionDoc{
+                        name: "f".to_string(),
+                        headline: "f is a function.".to_string(),
+                        description: Some("This is a description.".to_string()),
+                        parameters: vec![ParameterDoc{
+                            name: "x".to_string(),
+                            headline: "x: is a parameter.".to_string(),
+                            description: Some("This is a description of x.".to_string()),
+                            required: true,
+                        } ],
+                        flux_type: "(x:A) => int".to_string(),
+                        is_option: false,
+                        source_location: loc.get(49,9,49,21),
+                        examples: vec![Example {
+                            title: "### Using f".to_string(),
+                            content: r#"```
+# import "foo"
+foo.f(x:1)
+```"#
+                            .to_string(),
+                            input: None,
+                            output: None,
+                        }],
+                        metadata: None,
+                    })),
+                    "o" => Doc::Value(Box::new(ValueDoc{
+                        name: "o".to_string(),
+                        headline: "o is an option.".to_string(),
+                        description: Some("This is a description.".to_string()),
+                        flux_type: "int".to_string(),
+                        is_option: true,
+                        source_location: loc.get(63,9,63,21),
+                        examples: vec![Example {
+                            title: "### Using o".to_string(),
+                            content: r#"```
+# import "foo"
+option foo.o = 2
+```"#
+                            .to_string(),
+                            input: None,
+                            output: None,
+                        }],
+                        metadata: None,
+                    })),
+                ],
+                examples: vec![Example {
+                    title: "### Using foo".to_string(),
+                    content: r#"```
+import "foo"
+
+foo.a
+```"#
+                        .to_string(),
+                    input: None,
+                    output: None,
+                }],
                 metadata: None,
             },
             vec![],
@@ -1463,6 +1699,7 @@ mod test {
                         flux_type: "(x:A) => int".to_string(),
                         is_option: false,
                         source_location: loc.get(36,9,36,21),
+                        examples: vec![],
                         metadata: Some(map![
                             "k6" => "v6".to_string(),
                             "k7" => "v7".to_string(),
@@ -1568,6 +1805,7 @@ mod test {
                         flux_type: "(x:A) => A".to_string(),
                         is_option: false,
                         source_location: loc.get(14,9,14,21),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -1603,6 +1841,7 @@ mod test {
                         flux_type: "() => int".to_string(),
                         is_option: false,
                         source_location: loc.get(6,9,6,20),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -1666,6 +1905,7 @@ mod test {
                         flux_type: "(x:A, y:A) => A where A: Addable".to_string(),
                         is_option: false,
                         source_location: loc.get(20,9,20,27),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -1726,6 +1966,7 @@ mod test {
                         flux_type: "(x:A, y:A) => A where A: Addable".to_string(),
                         is_option: false,
                         source_location: loc.get(20,9,20,27),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -1778,6 +2019,7 @@ mod test {
                         flux_type: "(x:A) => A".to_string(),
                         is_option: false,
                         source_location: loc.get(6, 9, 6, 21),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -1824,6 +2066,7 @@ mod test {
                         flux_type: "(x:A, y:A) => A where A: Addable".to_string(),
                         is_option: false,
                         source_location: loc.get(9, 9, 9, 29),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -1870,6 +2113,7 @@ mod test {
                         flux_type: "(x:int, ?y:int) => int".to_string(),
                         is_option: false,
                         source_location: loc.get(9, 9, 9, 31),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -1916,6 +2160,7 @@ mod test {
                         flux_type: "() => int".to_string(),
                         is_option: false,
                         source_location: loc.get(9, 9, 9, 22),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -1954,6 +2199,7 @@ mod test {
                         flux_type: "() => int".to_string(),
                         is_option: false,
                         source_location: loc.get(6, 9, 6, 22),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],
@@ -2024,6 +2270,7 @@ mod test {
                         flux_type: "() => int".to_string(),
                         is_option: true,
                         source_location: loc.get(6, 9, 6, 29),
+                        examples: vec![],
                         metadata: None,
                     })),
                 ],

@@ -2,7 +2,6 @@
 package math
 
 
-// on floating point numbers.
 builtin pi : float
 builtin e : float
 builtin phi : float
@@ -23,17 +22,9 @@ builtin maxuint : uint
 // abs is a function that returns the absolute value of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
-// ## Example
-//
-// ```
-// import "math"
-//
-// math.abs(x: -1.22)
-// ```
-//
-// ## Special Cases
+// Special Cases
 //
 // ```
 // import "math"
@@ -41,12 +32,31 @@ builtin maxuint : uint
 // math.abs(x: ±Inf) // returns +Inf
 // math.abs(x: NaN) // returns NaN
 // ```
+//
+// ## Examples
+//
+// ### Absolute Value
+// ```
+// # import "math"
+//
+// math.abs(x: -1.22) // 1.22
+// ```
+//
+// ### Using math.abs inside map
+// ```
+// # import "math"
+// # import "sampledata"
+//
+// < sampledata.float()
+// >     |> map(fn: (r) => ({r with _value: math.abs(x: r._value)}))
+// ```
+//
 builtin abs : (x: float) => float
 
 // acos is a funciton that returns the acosine of x in radians.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 //   x should be greater than -1 and less than 1. Otherwise, the operation
 //   will return NaN.
@@ -72,7 +82,7 @@ builtin acos : (x: float) => float
 // acosh is a function that returns the inverse hyperbolic cosine of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 //   x should be greater than 1. If less than 1 the operation will return NaN.
 //
@@ -98,7 +108,7 @@ builtin acosh : (x: float) => float
 // asin is a function that returns the arcsine of x in radians.
 //
 // ## Parameters
-// - `x` is is value used in the operation.
+// - x: is is value used in the operation.
 //
 //   x should be greater than -1 and less than 1. Otherwise the function will
 //   return NaN.
@@ -125,7 +135,7 @@ builtin asin : (x: float) => float
 // asinh is a function that returns the inverse hyperbolic sine of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -149,7 +159,7 @@ builtin asinh : (x: float) => float
 // atan is a function that returns the arctangent of x in radians.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -173,8 +183,8 @@ builtin atan : (x: float) => float
 //  of the two to determine the quadrant of the return value.
 //
 // ## Parameters
-// - `y` is the y-coordinate used in the operation.
-// - `x` is the x-corrdinate used in the operation.
+// - y: is the y-coordinate used in the operation.
+// - x: is the x-corrdinate used in the operation.
 //
 // ## Example
 //
@@ -212,7 +222,7 @@ builtin atan2 : (y: float, x: float) => float
 // atanh is a function that returns the inverse hyperbolic tangent of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 //   x should be greater than -1 and less than 1, otherwise the operation
 //   will return NaN.
@@ -242,7 +252,7 @@ builtin atanh : (x: float) => float
 // cbrt is a function that returns the cube root of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -267,7 +277,7 @@ builtin cbrt : (x: float) => float
 //  or equal to x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -292,8 +302,8 @@ builtin ceil : (x: float) => float
 //  the sign of y.
 //
 // ## Parameters
-// - `x` is the magnitude used in the operation.
-// - `y` is the sign used in the operation.
+// - x: is the magnitude used in the operation.
+// - y: is the sign used in the operation.
 //
 // ## Example
 //
@@ -307,7 +317,7 @@ builtin copysign : (x: float, y: float) => float
 // cos is a function that returns the cosine of the radian argument x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -330,7 +340,7 @@ builtin cos : (x: float) => float
 // cosh is a function that returns the hyperbolic cosine of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -354,8 +364,8 @@ builtin cosh : (x: float) => float
 // dim is a function that returns the maximum of x - y or 0.
 //
 // ## Parameters
-// - `x` is the X-value used in the operation .
-// - 'y' is the Y-value used in the operation.
+// - x: is the X-value used in the operation .
+// - y: is the Y-value used in the operation.
 //
 // ## Example
 //
@@ -380,7 +390,7 @@ builtin dim : (x: float, y: float) => float
 // erf is a function that returns the error function of x
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -404,7 +414,7 @@ builtin erf : (x: float) => float
 // erfc is a function that returns the complementary error function of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -428,7 +438,7 @@ builtin erfc : (x: float) => float
 // erfcinv is a function that returns the inverse of math.erfc().
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 //   x should be greater than 0 and less than 2. Otherwise the operation
 //   will return NaN.
@@ -457,7 +467,7 @@ builtin erfcinv : (x: float) => float
 // erfinv is a function that returns the inverse error function of x.
 //
 // ## Parameter
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 //   x should be greater than -1 and less than 1. Otherwise, the operation will
 //   return NaN.
@@ -486,7 +496,7 @@ builtin erfinv : (x: float) => float
 // exp is a function that returns `e**x`, the base-e exponential of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -509,7 +519,7 @@ builtin exp : (x: float) => float
 // exp2 is a function that returns `2**x`, the base-2 exponential of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -535,7 +545,7 @@ builtin exp2 : (x: float) => float
 //  1. It is more accurate than `math.exp(x:x) - 1` when x is near zero.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -562,7 +572,7 @@ builtin expm1 : (x: float) => float
 //  with the sign bit of f and the result in the same bit position.
 //
 // ## Parameters
-// - `f` is the value used in the operation.
+// - f: is the value used in the operation.
 //
 // ## Example
 //
@@ -578,7 +588,7 @@ builtin float64bits : (f: float) => uint
 //  same bit position.
 //
 // ## Parameters
-// - `b` is the value used in the operation.
+// - b: is the value used in the operation.
 //
 // ## Example
 //
@@ -593,7 +603,7 @@ builtin float64frombits : (b: uint) => float
 //  equal to x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -621,7 +631,7 @@ builtin floor : (x: float) => float
 //  with the absolute value of frac in the interval [1/2, 1).
 //
 // ## Parameters
-// - `f` the value used in the operation.
+// - f: the value used in the operation.
 //
 // ## Example
 //
@@ -645,7 +655,7 @@ builtin frexp : (f: float) => {frac: float, exp: int}
 // gamma is a function that returns the gamma function of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -673,8 +683,8 @@ builtin gamma : (x: float) => float
 //  care to avoid overflow and underflow.
 //
 // ## Params
-// - `p` is the p-value used in the operation.
-// - `q` is the q-value used in the operation.
+// - p: is the p-value used in the operation.
+// - q: is the q-value used in the operation.
 //
 // ## Example
 //
@@ -699,7 +709,7 @@ builtin hypot : (x: float) => float
 // ilogb is a function that returns the binary exponent of x as an integer.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -724,7 +734,7 @@ builtin ilogb : (x: float) => float
 // if `sign < 0`
 //
 // ## Parameters
-// - `sign` is the sign value used in the operation.
+// - sign: is the sign value used in the operation.
 //
 // ## Example
 //
@@ -742,8 +752,8 @@ builtin mInf : (sign: int) => float
 // If `sign  == 0`, math.isInf reports whether f is either infinity.
 //
 // ## Parameters
-// - `f` is the value used in the evaluation.
-// - `sign` is the sign used in the eveluation.
+// - f: is the value used in the evaluation.
+// - sign: is the sign used in the eveluation.
 //
 // ## Example
 //
@@ -757,7 +767,7 @@ builtin isInf : (f: float, sign: int) => bool
 // isNaN is a function that reports whether f is an IEEE 754 "not-a-number" value.
 //
 // ## Parameters
-// - `f` is the value used in the evaluation.
+// - f: is the value used in the evaluation.
 //
 // ## Example
 //
@@ -771,7 +781,7 @@ builtin isNaN : (f: float) => bool
 // j0 is a function that returns the order-zero Bessel function of the first kind.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -795,7 +805,7 @@ builtin j0 : (x: float) => float
 // j1 is a funciton that returns the order-one Bessel function for the first kind.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -818,8 +828,8 @@ builtin j1 : (x: float) => float
 // jn is a function that returns the order-n Bessel funciton of the first kind.
 //
 // ## Parameters
-// - `n` is the order number.
-// - `x` is the value used in the operation.
+// - n: is the order number.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -843,8 +853,8 @@ builtin jn : (n: int, x: float) => float
 //  `frac x 2**exp`. 
 //
 // ## Parameters
-// - `frac` is the fraction used in the operation.
-// - `exp` is the exponent used in the operation.
+// - frac: is the fraction used in the operation.
+// - exp: is the exponent used in the operation.
 //
 // ## Example
 //
@@ -869,7 +879,7 @@ builtin ldexp : (frac: float, exp: int) => float
 //  (-1 or +1) of math.gamma(x:x).
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -895,7 +905,7 @@ builtin lgamma : (x: float) => {lgamma: float, sign: int}
 // log is a function that returns the natural logarithm of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -920,7 +930,7 @@ builtin log : (x: float) => float
 // log10 is a function that returns the decimal logarithm of x.
 //
 // ## Params
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -947,7 +957,7 @@ builtin log10 : (x: float) => float
 //  near zero.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -973,7 +983,7 @@ builtin log1p : (x: float) => float
 // log2 is a function returns the binary logarithm of x.
 //
 // ## Parameters
-// - `x` the value used in the operation.
+// - x: the value used in the operation.
 //
 // ## Example
 //
@@ -998,7 +1008,7 @@ builtin log2 : (x: float) => float
 // logb is a function that returns the binary exponent of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1022,8 +1032,8 @@ builtin logb : (x: float) => float
 // mMax is a function that returns the larger of x or y.
 //
 // ## Parameters
-// - `x` is the x-value used in the operation.
-// - `y` is the y-value used in the operation.
+// - x: is the x-value used in the operation.
+// - y: is the y-value used in the operation.
 //
 // ## Example
 //
@@ -1051,8 +1061,8 @@ builtin mMax : (x: float, y: float) => float
 // mMin is a function taht returns the lessser of x or y.
 //
 // ## Parameters
-// - `x` is the x-value used in the operation.
-// - `y` is the y-value used in the operation.
+// - x: is the x-value used in the operation.
+// - y: is the y-value used in the operation.
 //
 // ## Example
 // ```
@@ -1080,8 +1090,8 @@ builtin mMin : (x: float, y: float) => float
 //  with that of x.
 //
 // ## Parameters
-// - `x` is the x-value used in the operation.
-// - `y` is the y-value used in the operation.
+// - x: is the x-value used in the operation.
+// - y: is the y-value used in the operation.
 //
 // ## Example
 //
@@ -1108,7 +1118,7 @@ builtin mod : (x: float, y: float) => float
 //  Both values have the same sign as f.
 //
 // ## Parameters
-// - `f` is the value used in the operation
+// - f: is the value used in the operation
 //
 // ## Example
 //
@@ -1143,8 +1153,8 @@ builtin NaN : () => float
 //  x towards y.
 //
 // ## Parameters
-// - `x` is the x-vaue used in the operation.
-// - `y` is the y-value used in the operation.
+// - x: is the x-vaue used in the operation.
+// - y: is the y-value used in the operation.
 //
 // ## Example
 //
@@ -1207,7 +1217,7 @@ builtin pow : (x: float, y: float) => float
 // pow10 is a function that returns 10**n, the base-10 exponential of n.
 //
 // ## Parameters
-// - `n` is the value used in the operation.
+// - n: is the value used in the operation.
 //
 // ## Example
 //
@@ -1231,8 +1241,8 @@ builtin pow10 : (n: int) => float
 //  of x / y.
 //
 // ## Parameters
-// - `x` is the numerator used in the operation.
-// - `y` is the denominator used in the operation.
+// - x: is the numerator used in the operation.
+// - y: is the denominator used in the operation.
 //
 // ## Example
 //
@@ -1259,7 +1269,7 @@ builtin remainder : (x: float, y: float) => float
 //  from zero.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1284,7 +1294,7 @@ builtin round : (x: float) => float
 //  ties to even.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1307,7 +1317,7 @@ builtin roundtoeven : (x: float) => float
 // signbit is a function that reports whether x is negative of negative zero.
 //
 // ## Parameters
-// - `x` is the value used in the evaluation.
+// - x: is the value used in the evaluation.
 //
 // ## Example
 //
@@ -1321,7 +1331,7 @@ builtin signbit : (x: float) => bool
 // sin is a function that returns the sine of the radian argument x.
 //
 // ## Parameters
-// - `x` is the radian value used in the operation.
+// - x: is the radian value used in the operation.
 //
 // ## Example
 //
@@ -1346,7 +1356,7 @@ builtin sin : (x: float) => float
 //  math.cos(x:x).
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1370,7 +1380,7 @@ builtin sincos : (x: float) => {sin: float, cos: float}
 // sinh is a function that returns the hyperbolic sine of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1394,7 +1404,7 @@ builtin sinh : (x: float) => float
 // sqrt is a function that returns the square root of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1419,7 +1429,7 @@ builtin sqrt : (x: float) => float
 // tan is a function that returns the tangent of the radian argument.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1443,7 +1453,7 @@ builtin tan : (x: float) => float
 // tanh is a function that returns the hyperbolic tangent of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1467,7 +1477,7 @@ builtin tanh : (x: float) => float
 // trunc is a function that returns the integer value of x.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1492,7 +1502,7 @@ builtin trunc : (x: float) => float
 //  second kind.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1518,7 +1528,7 @@ builtin y0 : (x: float) => float
 //  the second kind.
 //
 // ## Parameters
-// - `x` is the value used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
@@ -1544,8 +1554,8 @@ builtin y1 : (x: float) => float
 //  the second kind.
 //
 // ## Parameters
-// - `n` is the order number used in the operation.
-// - `x` is the value used in the operation.
+// - n: is the order number used in the operation.
+// - x: is the value used in the operation.
 //
 // ## Example
 //
