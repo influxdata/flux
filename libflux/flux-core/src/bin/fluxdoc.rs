@@ -195,7 +195,7 @@ fn parse_docs(
 // high standard going forward.
 //
 // See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
-const EXCEPTIONS: [&str; 97] = [
+const EXCEPTIONS: [&str; 98] = [
     "array",
     "contrib",
     "contrib/RohanSreerama5",
@@ -207,6 +207,7 @@ const EXCEPTIONS: [&str; 97] = [
     "contrib/bonitoo-io",
     "contrib/bonitoo-io/alerta",
     "contrib/bonitoo-io/hex",
+    "contrib/bonitoo-io/servicenow",
     "contrib/bonitoo-io/tickscript",
     "contrib/bonitoo-io/victorops",
     "contrib/bonitoo-io/zenoss",
