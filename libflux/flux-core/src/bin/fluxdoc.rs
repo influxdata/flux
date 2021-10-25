@@ -1,11 +1,16 @@
 use std::fs::File;
-use std::io;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use anyhow::{bail, Context, Result};
 use structopt::StructOpt;
 
-use fluxcore::semantic::{bootstrap, doc, Analyzer};
+use fluxcore::{
+    doc,
+    doc::example,
+    semantic::{bootstrap, Analyzer},
+};
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "generate and validate Flux source code documentation")]
@@ -15,6 +20,9 @@ enum FluxDoc {
         /// Directory containing Flux source code.
         #[structopt(short, long, parse(from_os_str))]
         stdlib_dir: Option<PathBuf>,
+        /// Path to flux command, must be the cmd from internal/cmd/flux
+        #[structopt(long, parse(from_os_str))]
+        flux_cmd_path: Option<PathBuf>,
         /// Directory containing Flux source code.
         #[structopt(short, long, parse(from_os_str))]
         dir: PathBuf,
@@ -58,8 +66,10 @@ fn main() -> Result<()> {
             nested,
             short,
             allow_exceptions,
+            flux_cmd_path,
         } => dump(
             stdlib_dir.as_deref(),
+            flux_cmd_path.as_deref(),
             &dir,
             output.as_deref(),
             nested,
@@ -77,9 +87,11 @@ fn main() -> Result<()> {
 }
 
 const DEFAULT_STDLIB_PATH: &str = "./stdlib-compiled";
+const DEFAULT_FLUX_CMD_PATH: &str = "flux";
 
 fn dump(
     stdlib_dir: Option<&Path>,
+    flux_cmd_path: Option<&Path>,
     dir: &Path,
     output: Option<&Path>,
     nested: bool,
@@ -89,6 +101,10 @@ fn dump(
     let stdlib_dir = match stdlib_dir {
         Some(stdlib_dir) => stdlib_dir,
         None => Path::new(DEFAULT_STDLIB_PATH),
+    };
+    let flux_cmd_path = match flux_cmd_path {
+        Some(flux_cmd_path) => flux_cmd_path,
+        None => Path::new(DEFAULT_FLUX_CMD_PATH),
     };
     let f = match output {
         Some(p) => Box::new(File::create(p).context(format!("creating output file {:?}", p))?)
@@ -105,7 +121,7 @@ fn dump(
         parse_docs(stdlib_dir, dir, exceptions).context("parsing source code")?;
     if !diagnostics.is_empty() {
         bail!(
-            "found {} diagnostics when building documentation: {}",
+            "found {} diagnostics when building documentation:\n{}",
             diagnostics.len(),
             diagnostics
                 .iter()
@@ -117,6 +133,14 @@ fn dump(
     if short {
         for d in docs.iter_mut() {
             doc::shorten(d);
+        }
+    } else {
+        // Evaluate examples only if not in short mode as shorten removes them.
+        let mut executor = CLIExecutor {
+            path: flux_cmd_path,
+        };
+        for d in docs.iter_mut() {
+            example::evaluate_package_examples(d, &mut executor)?;
         }
     }
     if nested {
@@ -186,6 +210,24 @@ fn parse_docs(
         docs.push(doc);
     }
     Ok((docs, diagnostics))
+}
+
+struct CLIExecutor<'a> {
+    path: &'a Path,
+}
+
+impl<'a> example::Executor for CLIExecutor<'a> {
+    fn execute(&mut self, code: &str) -> Result<String> {
+        let tmpfile = tempfile::NamedTempFile::new()?;
+        write!(tmpfile.reopen()?, "{}", code)?;
+        let output = Command::new(self.path)
+            .arg("--format")
+            .arg("csv")
+            .arg(tmpfile.path())
+            .output()?;
+
+        Ok(String::from_utf8(output.stdout)?)
+    }
 }
 
 // HACK: Any package in this list will not report any errors from documentation diagnostics

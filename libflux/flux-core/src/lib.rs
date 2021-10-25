@@ -23,6 +23,11 @@ extern crate serde_derive;
 extern crate lazy_static;
 extern crate serde_aux;
 
+// Only include the doc module if the feature is enabled.
+// The code has lots of dependencies we do not want as part of the crate by default.
+#[cfg(feature = "doc")]
+pub mod doc;
+
 pub mod ast;
 pub mod formatter;
 pub mod parser;

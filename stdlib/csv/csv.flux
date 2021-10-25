@@ -8,6 +8,7 @@ package csv
 // Each record in the table represents a single point in the series.
 //
 // ## Parameters
+//
 // - csv: is CSV data.
 //
 //   Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.
@@ -25,17 +26,19 @@ package csv
 //    - raw: Parse all columns as strings and use the first row as the header row
 //    - and all subsequent rows as data.
 //
-// ## Query anotated CSV data from file
+// ## Examples
 //
-// ```
+// ### Query anotated CSV data from file
+//
+// ```no_run
 // import "csv"
 //
 // csv.from(file: "path/to/data-file.csv")
 // ```
 //
-// ## Query raw data from CSV file
+// ### Query raw data from CSV file
 //
-// ```
+// ```no_run
 // import "csv"
 //
 // csv.from(
@@ -44,26 +47,29 @@ package csv
 // )
 // ```
 //
-// ## Query an annotated CSV string
+// ### Query an annotated CSV string
 //
 // ```
 // import "csv"
 //
 // csvData = "
 // #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
-// #group,false,false,false,false,false,false,false,false
+// #group,false,false,false,false,false,true,true,false
 // #default,,,,,,,,
 // ,result,table,_start,_stop,_time,region,host,_value
 // ,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43
-// ,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
-// ,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
+// ,mean,0,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:51:00Z,east,A,65.15
+// ,mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
+// ,mean,1,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:51:20Z,east,B,18.67
+// ,mean,2,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
+// ,mean,2,2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:51:40Z,east,C,82.16
 // "
 //
-// csv.from(csv: csvData)
+// > csv.from(csv: csvData)
 //
 // ```
 //
-// ## Query a raw CSV string
+// ### Query a raw CSV string
 //
 // ```
 // import "csv"
@@ -76,8 +82,8 @@ package csv
 // "
 //
 // csv.from(
-//   csv: csvData,
-//   mode: "raw"
-// )
+//  csv: csvData,
+//  mode: "raw"
+// > )
 // ```
 builtin from : (?csv: string, ?file: string, ?mode: string) => [A] where A: Record

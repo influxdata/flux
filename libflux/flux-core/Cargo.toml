@@ -12,6 +12,7 @@ crate-type = ["rlib"]
 name = "fluxdoc"
 test = false
 bench = false
+required-features = ["doc"]
 
 [[bin]]
 name = "fluxc"
@@ -22,6 +23,7 @@ bench = false
 default = ["strict"]
 strict = []
 lsp = ["lsp-types"]
+doc = []
 
 [dependencies]
 anyhow = "1"
@@ -47,6 +49,9 @@ pulldown-cmark = { version = "0.8", default-features = false }
 structopt = "0.3"
 libflate = "1"
 lazy_static = "1"
+csv = "1.1"
+pad = "0.1.6"
+tempfile = "3"
 
 [dev-dependencies]
 colored = "1.8"

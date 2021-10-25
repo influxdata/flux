@@ -20,6 +20,7 @@ import (
 var flags struct {
 	ExecScript bool
 	Trace      string
+	Format     string
 }
 
 func runE(cmd *cobra.Command, args []string) error {
@@ -50,7 +51,7 @@ func runE(cmd *cobra.Command, args []string) error {
 	if len(args) == 0 {
 		return replE(ctx, deps)
 	}
-	return executeE(ctx, script)
+	return executeE(ctx, script, flags.Format)
 }
 
 func configureTracing(ctx context.Context) (context.Context, func(), error) {
@@ -115,6 +116,7 @@ func main() {
 	}
 	cmd.Flags().BoolVarP(&flags.ExecScript, "exec", "e", false, "Interpret file argument as a raw flux script")
 	cmd.Flags().StringVar(&flags.Trace, "trace", "", "Trace query execution")
+	cmd.Flags().StringVarP(&flags.Format, "format", "", "cli", "Output format one of: cli,csv. Defaults to cli")
 	cmd.Flag("trace").NoOptDefVal = "jaeger"
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)

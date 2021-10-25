@@ -20,6 +20,7 @@ export GO_GENERATE=go generate $(GO_ARGS)
 export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
 export CARGO_ARGS=
+export PATH := $(shell pwd)/bin:$(PATH)
 
 define go_deps
 	$(shell env GO111MODULE=on go list -f "{{range .GoFiles}} {{$$.Dir}}/{{.}}{{end}}" $(1))
@@ -174,13 +175,17 @@ test-release: Dockerfile_build
 		./gotool.sh github.com/goreleaser/goreleaser release --rm-dist --snapshot"
 
 
+bin/flux:
+	$(GO_BUILD) -o ./bin/flux ./internal/cmd/flux
+
+	
 libflux/target/release/fluxc: libflux
 	cd libflux && $(CARGO) build $(CARGO_ARGS) --release --bin fluxc
 
 libflux/target/release/fluxdoc: libflux
-	cd libflux && $(CARGO) build $(CARGO_ARGS) --release --bin fluxdoc
+	cd libflux && $(CARGO) build $(CARGO_ARGS) --features=doc --release --bin fluxdoc
 
-fluxdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc
+fluxdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc bin/flux
 	FLUXC=./libflux/target/release/fluxc FLUXDOC=./libflux/target/release/fluxdoc ./etc/gen_docs.sh
 
 checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc
