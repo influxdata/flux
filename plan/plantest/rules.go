@@ -222,7 +222,9 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase, options ...cmp.Optio
 		return nil
 	})
 
-	tempOptions := append(CmpOptions, options...)
+	tempOptions := make([]cmp.Option, 0, len(CmpOptions)+len(options))
+	tempOptions = append(tempOptions, CmpOptions...)
+	tempOptions = append(tempOptions, options...)
 	if !cmp.Equal(want, got, tempOptions...) {
 		t.Errorf("transformed plan not as expected, -want/+got:\n%v",
 			cmp.Diff(want, got, tempOptions...))
@@ -277,7 +279,9 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase, options ...cmp.Option
 		return nil
 	})
 
-	tempOptions := append(CmpOptions, options...)
+	tempOptions := make([]cmp.Option, 0, len(CmpOptions)+len(options))
+	tempOptions = append(tempOptions, CmpOptions...)
+	tempOptions = append(tempOptions, options...)
 	if !cmp.Equal(want, got, tempOptions...) {
 		t.Errorf("transformed plan not as expected, -want/+got:\n%v",
 			cmp.Diff(want, got, tempOptions...))
