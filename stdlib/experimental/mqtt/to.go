@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"context"
 	"encoding/json"
 	"net/url"
 	"sort"
@@ -193,12 +194,13 @@ func createToMQTTTransformation(id execute.DatasetID, mode execute.AccumulationM
 	}
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
-	t := NewToMQTTTransformation(d, cache, s)
+	t := NewToMQTTTransformation(a.Context(), d, cache, s)
 	return t, d, nil
 }
 
 type ToMQTTTransformation struct {
 	execute.ExecutionNode
+	ctx   context.Context
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  *ToMQTTProcedureSpec
@@ -208,8 +210,9 @@ func (t *ToMQTTTransformation) RetractTable(id execute.DatasetID, key flux.Group
 	return t.d.RetractTable(key)
 }
 
-func NewToMQTTTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *ToMQTTProcedureSpec) *ToMQTTTransformation {
+func NewToMQTTTransformation(ctx context.Context, d execute.Dataset, cache execute.TableBuilderCache, spec *ToMQTTProcedureSpec) *ToMQTTTransformation {
 	return &ToMQTTTransformation{
+		ctx:   ctx,
 		d:     d,
 		cache: cache,
 		spec:  spec,
@@ -366,7 +369,7 @@ func (t *ToMQTTTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 			topic = m.createTopic(message)
 		}
 		spec := &t.spec.Spec.CommonMQTTOpSpec
-		publish(topic, message, spec)
+		publish(t.ctx, topic, message, spec)
 	}
 
 	return nil
