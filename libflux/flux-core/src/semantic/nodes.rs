@@ -512,7 +512,7 @@ pub struct BuiltinStmt {
 }
 
 impl BuiltinStmt {
-    fn infer(&self, env: &mut Environment) -> std::result::Result<(), Error> {
+    fn infer(&mut self, env: &mut Environment) -> std::result::Result<(), Error> {
         env.add(self.id.name.clone(), self.typ_expr.clone());
         Ok(())
     }
@@ -1415,9 +1415,10 @@ impl MemberExpr {
         let tail = MonoType::Var(infer.sub.fresh());
 
         let r = MonoType::from(types::Record::Extension { head, tail });
-        let t = self.object.type_of();
 
         let cons = self.object.infer(infer)?;
+        let t = self.object.type_of();
+
         Ok(cons
             + vec![Constraint::Equal {
                 exp: r,
@@ -1620,7 +1621,7 @@ pub struct IdentifierExpr {
 }
 
 impl IdentifierExpr {
-    fn infer(&self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let poly = infer.env.lookup(&self.name).ok_or_else(|| {
             located(
                 self.loc.clone(),
@@ -1629,12 +1630,8 @@ impl IdentifierExpr {
         })?;
 
         let (t, cons) = infer::instantiate(poly.clone(), infer.sub, self.loc.clone());
-        Ok(cons
-            + Constraints::from(vec![Constraint::Equal {
-                act: t,
-                exp: self.typ.clone(),
-                loc: self.loc.clone(),
-            }]))
+        self.typ = t;
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1659,7 +1656,7 @@ pub struct BooleanLit {
 }
 
 impl BooleanLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1676,7 +1673,7 @@ pub struct IntegerLit {
 }
 
 impl IntegerLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1693,7 +1690,7 @@ pub struct FloatLit {
 }
 
 impl FloatLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1710,7 +1707,7 @@ pub struct RegexpLit {
 }
 
 impl RegexpLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1727,7 +1724,7 @@ pub struct StringLit {
 }
 
 impl StringLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1744,7 +1741,7 @@ pub struct UintLit {
 }
 
 impl UintLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1761,7 +1758,7 @@ pub struct DateTimeLit {
 }
 
 impl DateTimeLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1795,7 +1792,7 @@ pub struct DurationLit {
 }
 
 impl DurationLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
