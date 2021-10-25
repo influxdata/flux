@@ -1,16 +1,17 @@
 //! Semantic representations of types.
 
-use crate::semantic::fresh::{Fresh, Fresher};
-use crate::semantic::sub::{
-    apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution,
+use crate::semantic::{
+    fresh::{Fresh, Fresher},
+    sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
 };
+
 use derive_more::Display;
-use std::fmt::Write;
 
 use std::{
     cmp,
     collections::{BTreeMap, BTreeSet, HashMap},
     fmt,
+    fmt::Write,
 };
 
 /// For use in generics where the specific type of map is not mentioned.

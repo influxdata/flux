@@ -10,27 +10,27 @@
 extern crate chrono;
 extern crate derivative;
 
-use crate::ast;
-use crate::semantic::infer;
-use crate::semantic::types;
-use crate::semantic::{
-    env::Environment,
-    import::Importer,
-    infer::{Constraint, Constraints},
-    sub::{Substitutable, Substituter, Substitution},
-    types::{
-        Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
-        TvarKinds,
+use crate::{
+    ast,
+    semantic::{
+        env::Environment,
+        import::Importer,
+        infer,
+        infer::{Constraint, Constraints},
+        sub::{Substitutable, Substituter, Substitution},
+        types,
+        types::{
+            Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
+            TvarKinds,
+        },
     },
 };
 
-use anyhow::{anyhow, bail, Result as AnyhowResult};
-use chrono::prelude::DateTime;
-use chrono::FixedOffset;
-use derivative::Derivative;
-use std::fmt::Debug;
-use std::vec::Vec;
+use std::{fmt::Debug, vec::Vec};
 
+use anyhow::{anyhow, bail, Result as AnyhowResult};
+use chrono::{prelude::DateTime, FixedOffset};
+use derivative::Derivative;
 use derive_more::Display;
 
 /// Result returned from the various 'infer' methods defined in this

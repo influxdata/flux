@@ -2,11 +2,14 @@ use std::ops;
 
 use derive_more::Display;
 
-use crate::ast::SourceLocation;
-use crate::semantic::env::Environment;
-use crate::semantic::sub::{Substitutable, Substituter, Substitution};
-use crate::semantic::types;
-use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds};
+use crate::{
+    ast::SourceLocation,
+    semantic::{
+        env::Environment,
+        sub::{Substitutable, Substituter, Substitution},
+        types::{self, minus, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+    },
+};
 
 // Type constraints are produced during type inference and come
 // in two flavors.
