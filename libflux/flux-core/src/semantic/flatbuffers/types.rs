@@ -365,7 +365,7 @@ pub fn build_polytype<'a>(
     let cons = build_vec(cons, builder, build_constraint);
     let cons = builder.create_vector(cons.as_slice());
 
-    let (buf_offset, expr) = build_type(builder, t.expr);
+    let (buf_offset, expr) = build_type(builder, &t.expr);
     fb::PolyType::create(
         builder,
         &fb::PolyTypeArgs {
@@ -393,7 +393,7 @@ fn build_constraint<'a>(
 
 pub fn build_type(
     builder: &mut flatbuffers::FlatBufferBuilder,
-    t: MonoType,
+    t: &MonoType,
 ) -> (
     flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
     fb::MonoType,
@@ -452,27 +452,27 @@ pub fn build_type(
             (v.as_union_value(), fb::MonoType::Basic)
         }
         MonoType::Var(tvr) => {
-            let offset = build_var(builder, tvr);
+            let offset = build_var(builder, *tvr);
             (offset.as_union_value(), fb::MonoType::Var)
         }
         MonoType::Arr(arr) => {
-            let offset = build_arr(builder, (*arr).clone());
+            let offset = build_arr(builder, arr);
             (offset.as_union_value(), fb::MonoType::Arr)
         }
         MonoType::Vector(vector) => {
-            let offset = build_vect(builder, (*vector).clone());
+            let offset = build_vect(builder, vector);
             (offset.as_union_value(), fb::MonoType::Vector)
         }
         MonoType::Dict(dict) => {
-            let offset = build_dict(builder, (*dict).clone());
+            let offset = build_dict(builder, dict);
             (offset.as_union_value(), fb::MonoType::Dict)
         }
         MonoType::Record(record) => {
-            let offset = build_record(builder, (*record).clone());
+            let offset = build_record(builder, record);
             (offset.as_union_value(), fb::MonoType::Record)
         }
         MonoType::Fun(fun) => {
-            let offset = build_fun(builder, (*fun).clone());
+            let offset = build_fun(builder, fun);
             (offset.as_union_value(), fb::MonoType::Fun)
         }
     }
@@ -487,9 +487,9 @@ fn build_var<'a>(
 
 fn build_arr<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut arr: Array,
+    mut arr: &Array,
 ) -> flatbuffers::WIPOffset<fb::Arr<'a>> {
-    let (off, typ) = build_type(builder, arr.0);
+    let (off, typ) = build_type(builder, &arr.0);
     fb::Arr::create(
         builder,
         &fb::ArrArgs {
@@ -501,9 +501,9 @@ fn build_arr<'a>(
 
 fn build_vect<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut vector: Vector,
+    mut vector: &Vector,
 ) -> flatbuffers::WIPOffset<fb::Vector<'a>> {
-    let (off, typ) = build_type(builder, vector.0);
+    let (off, typ) = build_type(builder, &vector.0);
     fb::Vector::create(
         builder,
         &fb::VectorArgs {
@@ -515,10 +515,10 @@ fn build_vect<'a>(
 
 fn build_dict<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut dict: Dictionary,
+    mut dict: &Dictionary,
 ) -> flatbuffers::WIPOffset<fb::Dict<'a>> {
-    let (k_offset, k_type) = build_type(builder, dict.key);
-    let (v_offset, v_type) = build_type(builder, dict.val);
+    let (k_offset, k_type) = build_type(builder, &dict.key);
+    let (v_offset, v_type) = build_type(builder, &dict.val);
     let (k, v) = (Some(k_offset), Some(v_offset));
     fb::Dict::create(
         builder,
@@ -533,7 +533,7 @@ fn build_dict<'a>(
 
 fn build_record<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut record: Record,
+    mut record: &Record,
 ) -> flatbuffers::WIPOffset<fb::Record<'a>> {
     let mut props = Vec::new();
     let extends = loop {
@@ -546,7 +546,7 @@ fn build_record<'a>(
                 tail: MonoType::Record(o),
             } => {
                 props.push(head);
-                record = (*o).clone();
+                record = o;
             }
             Record::Extension {
                 head,
@@ -562,7 +562,7 @@ fn build_record<'a>(
     };
     let props = build_vec(props, builder, build_prop);
     let props = builder.create_vector(props.as_slice());
-    let extends = extends.map(|typevar| build_var(builder, typevar));
+    let extends = extends.map(|typevar| build_var(builder, *typevar));
     fb::Record::create(
         builder,
         &fb::RecordArgs {
@@ -574,9 +574,9 @@ fn build_record<'a>(
 
 fn build_prop<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    prop: Property,
+    prop: &Property,
 ) -> flatbuffers::WIPOffset<fb::Prop<'a>> {
-    let (off, typ) = build_type(builder, prop.v);
+    let (off, typ) = build_type(builder, &prop.v);
     let k = builder.create_string(&prop.k);
     fb::Prop::create(
         builder,
@@ -590,22 +590,22 @@ fn build_prop<'a>(
 
 fn build_fun<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    mut fun: Function,
+    mut fun: &Function,
 ) -> flatbuffers::WIPOffset<fb::Fun<'a>> {
     let mut args = Vec::new();
-    if let Some(pipe) = fun.pipe {
-        args.push((pipe.k, pipe.v, true, false))
+    if let Some(pipe) = &fun.pipe {
+        args.push((&pipe.k, &pipe.v, true, false))
     };
-    for (k, v) in fun.req {
+    for (k, v) in &fun.req {
         args.push((k, v, false, false));
     }
-    for (k, v) in fun.opt {
+    for (k, v) in &fun.opt {
         args.push((k, v, false, true));
     }
     let args = build_vec(args, builder, build_arg);
     let args = builder.create_vector(args.as_slice());
 
-    let (ret, typ) = build_type(builder, fun.retn);
+    let (ret, typ) = build_type(builder, &fun.retn);
     fb::Fun::create(
         builder,
         &fb::FunArgs {
@@ -618,10 +618,10 @@ fn build_fun<'a>(
 
 fn build_arg<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    arg: (String, MonoType, bool, bool),
+    arg: (&String, &MonoType, bool, bool),
 ) -> flatbuffers::WIPOffset<fb::Argument<'a>> {
     let name = builder.create_string(&arg.0);
-    let (buf_offset, typ) = build_type(builder, arg.1);
+    let (buf_offset, typ) = build_type(builder, &arg.1);
     fb::Argument::create(
         builder,
         &fb::ArgumentArgs {

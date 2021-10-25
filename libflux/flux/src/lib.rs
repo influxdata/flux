@@ -366,7 +366,7 @@ pub unsafe extern "C" fn flux_find_var_type(
         |e| Some(Box::from(e)),
         |t| {
             let mut builder = flatbuffers::FlatBufferBuilder::new();
-            let (fb_mono_type, typ_type) = build_type(&mut builder, t);
+            let (fb_mono_type, typ_type) = build_type(&mut builder, &t);
             let fb_mono_type_holder = fb::MonoTypeHolder::create(
                 &mut builder,
                 &MonoTypeHolderArgs {
