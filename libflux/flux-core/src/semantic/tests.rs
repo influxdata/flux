@@ -4116,3 +4116,34 @@ fn multiple_errors_in_function_call() {
         "#]]
     }
 }
+
+#[test]
+fn exists_operator() {
+    // Usage of `r.a` inside the exists operator or the true branch should not bleed into the
+    // surrounding code
+    test_infer! {
+        src: r#"
+            f = (r) => if exists r.a then r.a else r.b + 0
+        "#,
+        exp: map![
+            "f" => "(r: { A with b: int }) => int",
+        ],
+    }
+    // r.b is a required field so that should be reflected in the type signature
+    test_infer! {
+        src: r#"
+            f = (r) => if exists r.a then r.a + r.b + 0 else 0
+        "#,
+        exp: map![
+            "f" => "(r: { A with b: int }) => int",
+        ],
+    }
+    // `r.a` should only exist in the first branch
+    test_error_msg! {
+        src: r#"
+            r = {}
+            x = if exists r.a then r.a else r.a
+        "#,
+        err: "error @3:45-3:46: record is missing label a",
+    }
+}

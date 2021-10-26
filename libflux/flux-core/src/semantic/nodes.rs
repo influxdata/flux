@@ -1376,6 +1376,52 @@ pub struct ConditionalExpr {
 
 impl ConditionalExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
+        // Detect `if exists r.a ...`
+        if let Expression::Unary(unary) = &mut self.test {
+            if let (ast::Operator::ExistsOperator, Expression::Member(member)) =
+                (&unary.operator, &mut unary.argument)
+            {
+                if let Expression::Identifier(record_ident) = &mut member.object {
+                    let tcons = record_ident.infer(infer)?;
+
+                    infer.env.enter_scope();
+
+                    // In `consequent` we know that the field must exist so we shadow the record
+                    // variable with something that has that field
+
+                    let record_rest = MonoType::Var(infer.sub.fresh());
+                    infer.env.add(
+                        record_ident.name.clone(),
+                        MonoType::from(types::Record::new(
+                            [types::Property {
+                                k: member.property.clone(),
+                                v: MonoType::Var(infer.sub.fresh()),
+                            }],
+                            Some(record_rest.clone()),
+                        ))
+                        .into(),
+                    );
+
+                    let ccons = self.consequent.infer(infer)?;
+
+                    infer.env.exit_scope();
+
+                    let acons = self.alternate.infer(infer)?;
+
+                    return Ok(tcons
+                        + ccons
+                        + acons
+                        // Any additional fields inferred in `consequent` also needs to exist in
+                        // the full record
+                        + Constraints::from(vec![Constraint::Equal {
+                            exp: record_rest,
+                            act: record_ident.typ.clone(),
+                            loc: record_ident.loc.clone(),
+                        }]));
+                }
+            }
+        }
+
         self.test.infer(infer)?;
         infer.equal(&MonoType::BOOL, &self.test.type_of(), self.test.loc());
 
