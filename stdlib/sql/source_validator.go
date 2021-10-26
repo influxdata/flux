@@ -45,6 +45,12 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		// an example for postgres data source is: postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full
 		// this follows the URI semantics
 		u, err = neturl.Parse(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
 	case "vertica", "vertigo":
 		// an example for vertica data source is: vertica://dbadmin:password@localhost:5433/VMart
 		// this follows the URI semantics
