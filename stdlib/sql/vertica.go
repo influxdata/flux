@@ -3,7 +3,6 @@ package sql
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -13,20 +12,14 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-type MySQLRowReader struct {
+type VerticaRowReader struct {
 	Cursor      *sql.Rows
 	columns     []interface{}
 	columnTypes []flux.ColType
 	columnNames []string
-	NextFunc    func() bool
-	CloseFunc   func() error
 }
 
-// Next prepares MySQLRowReader to return rows
-func (m *MySQLRowReader) Next() bool {
-	if m.NextFunc != nil {
-		return m.NextFunc()
-	}
+func (m *VerticaRowReader) Next() bool {
 	next := m.Cursor.Next()
 	if next {
 		columnNames, err := m.Cursor.Columns()
@@ -45,16 +38,15 @@ func (m *MySQLRowReader) Next() bool {
 	return next
 }
 
-func (m *MySQLRowReader) GetNextRow() ([]values.Value, error) {
+func (m *VerticaRowReader) GetNextRow() ([]values.Value, error) {
 	row := make([]values.Value, len(m.columns))
 	for i, col := range m.columns {
 		switch col := col.(type) {
-		case bool, int64, uint64, float64, string:
+		case bool, int, uint, int64, uint64, float64, string:
 			row[i] = values.New(col)
+		case time.Time:
+			row[i] = values.NewTime(values.ConvertTime(col))
 		case []uint8:
-			// Hack for MySQL, might need to work with charset?
-			// Can't do boolean with MySQL - stores BOOLEANs as TINYINTs (0 or 1)
-			// No way to distinguish if intended int or bool
 			switch m.columnTypes[i] {
 			case flux.TInt:
 				newInt, err := UInt8ToInt64(col)
@@ -77,8 +69,6 @@ func (m *MySQLRowReader) GetNextRow() ([]values.Value, error) {
 			default:
 				row[i] = values.NewString(string(col))
 			}
-		case time.Time:
-			row[i] = values.NewTime(values.ConvertTime(col))
 		case nil:
 			row[i] = values.NewNull(flux.SemanticType(m.columnTypes[i]))
 		default:
@@ -88,20 +78,24 @@ func (m *MySQLRowReader) GetNextRow() ([]values.Value, error) {
 	return row, nil
 }
 
-func (m *MySQLRowReader) InitColumnNames(names []string) {
-	m.columnNames = names
+func (m *VerticaRowReader) InitColumnNames(n []string) {
+	m.columnNames = n
 }
 
-func (m *MySQLRowReader) InitColumnTypes(types []*sql.ColumnType) {
+func (m *VerticaRowReader) InitColumnTypes(types []*sql.ColumnType) {
 	stringTypes := make([]flux.ColType, len(types))
 	for i := 0; i < len(types); i++ {
 		switch types[i].DatabaseTypeName() {
-		case "INT", "BIGINT", "SMALLINT", "TINYINT":
+		case "INT", "INTEGER", "BIGINT", "SMALLINT", "TINYINT", "INT2", "INT4", "INT8", "SERIAL2", "SERIAL4", "SERIAL8":
 			stringTypes[i] = flux.TInt
-		case "FLOAT", "DOUBLE":
+		case "FLOAT", "FLOAT4", "FLOAT8":
 			stringTypes[i] = flux.TFloat
-		case "DATETIME":
+		case "DATE", "TIME", "TIMESTAMP":
 			stringTypes[i] = flux.TTime
+		case "BOOL":
+			stringTypes[i] = flux.TBool
+		case "TEXT", "VARCHAR", "VARBINARY":
+			stringTypes[i] = flux.TString
 		default:
 			stringTypes[i] = flux.TString
 		}
@@ -109,52 +103,27 @@ func (m *MySQLRowReader) InitColumnTypes(types []*sql.ColumnType) {
 	m.columnTypes = stringTypes
 }
 
-func (m *MySQLRowReader) ColumnNames() []string {
+func (m *VerticaRowReader) ColumnNames() []string {
 	return m.columnNames
 }
 
-func (m *MySQLRowReader) ColumnTypes() []flux.ColType {
+func (m *VerticaRowReader) ColumnTypes() []flux.ColType {
 	return m.columnTypes
 }
 
-func (m *MySQLRowReader) SetColumnTypes(types []flux.ColType) {
-	m.columnTypes = types
-}
-
-func (m *MySQLRowReader) SetColumns(i []interface{}) {
+func (m *VerticaRowReader) SetColumns(i []interface{}) {
 	m.columns = i
 }
 
-func (m *MySQLRowReader) Close() error {
-	if m.CloseFunc != nil {
-		return m.CloseFunc()
-	}
+func (m *VerticaRowReader) Close() error {
 	if err := m.Cursor.Err(); err != nil {
 		return err
 	}
 	return m.Cursor.Close()
 }
 
-func UInt8ToFloat(a []uint8) (float64, error) {
-	str := string(a)
-	s, err := strconv.ParseFloat(str, 64)
-	if err != nil {
-		return s, err
-	}
-	return s, nil
-}
-
-func UInt8ToInt64(a []uint8) (int64, error) {
-	str := string(a)
-	s, err := strconv.ParseInt(str, 0, 64)
-	if err != nil {
-		return s, err
-	}
-	return s, nil
-}
-
-func NewMySQLRowReader(r *sql.Rows) (execute.RowReader, error) {
-	reader := &MySQLRowReader{
+func NewVerticaRowReader(r *sql.Rows) (execute.RowReader, error) {
+	reader := &VerticaRowReader{
 		Cursor: r,
 	}
 	cols, err := r.Columns()
@@ -168,27 +137,25 @@ func NewMySQLRowReader(r *sql.Rows) (execute.RowReader, error) {
 		return nil, err
 	}
 	reader.InitColumnTypes(types)
-
 	return reader, nil
 }
 
-// MysqlTranslateColumn translates flux colTypes into their corresponding MySQL column type
-func MysqlColumnTranslateFunc() translationFunc {
+// VerticaTranslateColumn translates flux colTypes into their corresponding Vertica column type
+func VerticaColumnTranslateFunc() translationFunc {
 	c := map[string]string{
 		flux.TFloat.String():  "FLOAT",
-		flux.TInt.String():    "BIGINT",
-		flux.TUInt.String():   "BIGINT",
-		flux.TString.String(): "TEXT(16383)",
-		flux.TTime.String():   "DATETIME",
+		flux.TInt.String():    "INTEGER",
+		flux.TUInt.String():   "INTEGER",
+		flux.TString.String(): "VARCHAR",
+		flux.TTime.String():   "TIMESTAMP",
 		flux.TBool.String():   "BOOL",
-		// BOOL is a synonym supplied by MySQL for "convenience", and MYSQL turns this into a TINYINT type under the hood
-		// which means that looking at the schema afterwards shows the columntype as TINYINT, and not bool!
 	}
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := c[f.String()]
 		if !found {
-			return "", errors.Newf(codes.Internal, "MySQL does not support column type %s", f.String())
+			return "", errors.Newf(codes.Internal, "Vertica does not support column type %s", f.String())
 		}
 		return colName + " " + s, nil
 	}
+
 }

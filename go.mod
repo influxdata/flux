@@ -51,6 +51,7 @@ require (
 	github.com/uber/athenadriver v1.1.4
 	github.com/uber/jaeger-client-go v2.28.0+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
+	github.com/vertica/vertica-sql-go v1.1.1
 	go.uber.org/zap v1.14.0
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
