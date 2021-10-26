@@ -211,8 +211,8 @@ where
             error,
         })
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.error.free_vars()
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.error.free_vars(vars)
     }
 }
 

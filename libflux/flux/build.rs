@@ -61,13 +61,13 @@ fn main() -> Result<()> {
 
     // Validate there aren't any free type variables in the environment
     for (name, ty) in prelude.iter() {
-        if !ty.free_vars().is_empty() {
+        if !ty.mk_free_vars().is_empty() {
             bail!("found free variables in type of {}: {}", name, ty);
         }
     }
     for (name, package) in &imports {
         let ty = package.typ();
-        if !ty.free_vars().is_empty() {
+        if !ty.mk_free_vars().is_empty() {
             bail!("found free variables in type of package {}: {}", name, ty);
         }
     }

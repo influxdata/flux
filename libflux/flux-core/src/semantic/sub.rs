@@ -168,8 +168,16 @@ pub trait Substitutable {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self>
     where
         Self: Sized;
+
     /// Get all free type variables in a type.
-    fn free_vars(&self) -> Vec<Tvar>;
+    fn mk_free_vars(&self) -> Vec<Tvar> {
+        let mut vars = Vec::new();
+        self.free_vars(&mut vars);
+        vars
+    }
+
+    /// Get all free type variables in a type.
+    fn free_vars(&self, vars: &mut Vec<Tvar>);
 }
 
 impl<T> Substitutable for Box<T>
@@ -179,8 +187,8 @@ where
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         T::apply_ref(self, sub).map(Box::new)
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        T::free_vars(self)
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        T::free_vars(self, vars)
     }
 }
 

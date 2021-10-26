@@ -107,8 +107,9 @@ impl Substitutable for PolyType {
                 expr,
             })
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        minus(&self.vars, self.expr.free_vars())
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.expr.free_vars(vars);
+        vars.retain(|v| !self.vars.contains(v));
     }
 }
 
@@ -306,22 +307,35 @@ impl Substitutable for Error {
             | Error::MultiplePipeArguments { .. } => None,
         }
     }
-    fn free_vars(&self) -> Vec<Tvar> {
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
         match self {
-            Error::CannotUnify { exp, act } => union(exp.free_vars(), act.free_vars()),
-            Error::CannotConstrain { exp: _, act } => act.free_vars(),
-            Error::OccursCheck(tv, ty) => union(vec![*tv], ty.free_vars()),
-            Error::CannotUnifyLabel { exp, act, .. } => union(exp.free_vars(), act.free_vars()),
-            Error::CannotUnifyArgument(_, e) => e.free_vars(),
+            Error::CannotUnify { exp, act } => {
+                exp.free_vars(vars);
+                act.free_vars(vars);
+            }
+            Error::CannotConstrain { exp: _, act } => act.free_vars(vars),
+            Error::OccursCheck(tv, ty) => {
+                ty.free_vars(vars);
+                if let Err(i) = vars.binary_search(tv) {
+                    vars.insert(i, *tv);
+                }
+            }
+            Error::CannotUnifyLabel { exp, act, .. } => {
+                exp.free_vars(vars);
+                act.free_vars(vars);
+            }
+            Error::CannotUnifyArgument(_, e) => e.free_vars(vars),
             Error::CannotUnifyReturn { exp, act, cause } => {
-                union(union(exp.free_vars(), act.free_vars()), cause.free_vars())
+                exp.free_vars(vars);
+                act.free_vars(vars);
+                cause.free_vars(vars);
             }
             Error::MissingLabel(_)
             | Error::ExtraLabel(_)
             | Error::MissingArgument(_)
             | Error::ExtraArgument(_)
             | Error::MissingPipeArgument
-            | Error::MultiplePipeArguments { .. } => Vec::new(),
+            | Error::MultiplePipeArguments { .. } => (),
         }
     }
 }
@@ -358,8 +372,8 @@ impl<T: Substitutable> Substitutable for Ptr<T> {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         T::apply_ref(self, sub).map(Ptr::new)
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        T::free_vars(self)
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        T::free_vars(self, vars)
     }
 }
 
@@ -617,15 +631,19 @@ impl Substitutable for MonoType {
             MonoType::Fun(fun) => fun.apply_ref(sub).map(MonoType::fun),
         }
     }
-    fn free_vars(&self) -> Vec<Tvar> {
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
         match self {
-            MonoType::Error | MonoType::Builtin(_) => Vec::new(),
-            MonoType::Var(tvr) => vec![*tvr],
-            MonoType::Arr(arr) => arr.free_vars(),
-            MonoType::Vector(vector) => vector.free_vars(),
-            MonoType::Dict(dict) => dict.free_vars(),
-            MonoType::Record(obj) => obj.free_vars(),
-            MonoType::Fun(fun) => fun.free_vars(),
+            MonoType::Error | MonoType::Builtin(_) => (),
+            MonoType::Var(tvr) => {
+                if let Err(i) = vars.binary_search(tvr) {
+                    vars.insert(i, *tvr);
+                }
+            }
+            MonoType::Arr(arr) => arr.free_vars(vars),
+            MonoType::Vector(vector) => vector.free_vars(vars),
+            MonoType::Dict(dict) => dict.free_vars(vars),
+            MonoType::Record(obj) => obj.free_vars(vars),
+            MonoType::Fun(fun) => fun.free_vars(vars),
         }
     }
 }
@@ -954,8 +972,8 @@ impl Substitutable for Array {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.0.apply_ref(sub).map(Array)
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.0.free_vars()
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.0.free_vars(vars)
     }
 }
 
@@ -995,8 +1013,8 @@ impl Substitutable for Vector {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.0.apply_ref(sub).map(Vector)
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.0.free_vars()
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.0.free_vars(vars)
     }
 }
 
@@ -1035,8 +1053,9 @@ impl Substitutable for Dictionary {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         apply2(&self.key, &self.val, sub).map(|(key, val)| Dictionary { key, val })
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        union(self.key.free_vars(), self.val.free_vars())
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.key.free_vars(vars);
+        self.val.free_vars(vars);
     }
 }
 
@@ -1159,10 +1178,13 @@ impl Substitutable for Record {
             }
         }
     }
-    fn free_vars(&self) -> Vec<Tvar> {
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
         match self {
-            Record::Empty => Vec::new(),
-            Record::Extension { head, tail } => union(tail.free_vars(), head.v.free_vars()),
+            Record::Empty => (),
+            Record::Extension { head, tail } => {
+                tail.free_vars(vars);
+                head.v.free_vars(vars);
+            }
         }
     }
 }
@@ -1523,8 +1545,8 @@ where
             v,
         })
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.v.free_vars()
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.v.free_vars(vars)
     }
 }
 
@@ -1614,9 +1636,10 @@ impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, 
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.values()
-            .fold(Vec::new(), |vars, t| union(vars, t.free_vars()))
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        for t in self.values() {
+            t.free_vars(vars);
+        }
     }
 }
 
@@ -1627,10 +1650,10 @@ impl<T: Substitutable> Substitutable for Option<T> {
             Some(t) => t.apply_ref(sub).map(Some),
         }
     }
-    fn free_vars(&self) -> Vec<Tvar> {
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
         match self {
-            Some(t) => t.free_vars(),
-            None => Vec::new(),
+            Some(t) => t.free_vars(vars),
+            None => (),
         }
     }
 }
@@ -1650,14 +1673,11 @@ impl Substitutable for Function {
             retn,
         })
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        union(
-            self.req.free_vars(),
-            union(
-                self.opt.free_vars(),
-                union(self.pipe.free_vars(), self.retn.free_vars()),
-            ),
-        )
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.req.free_vars(vars);
+        self.opt.free_vars(vars);
+        self.pipe.free_vars(vars);
+        self.retn.free_vars(vars);
     }
 }
 
