@@ -39,11 +39,11 @@ func (d Dependency) Inject(ctx context.Context) context.Context {
 // If no Dialer has been injected into the dependencies,
 // this will return a default provider.
 func GetDialer(ctx context.Context) Dialer {
-	p := ctx.Value(clientKey)
-	if p == nil {
-		return DefaultProvider{}
+	d := ctx.Value(clientKey)
+	if d == nil {
+		return DefaultDialer{}
 	}
-	return p.(Dialer)
+	return d.(Dialer)
 }
 
 // Options contains additional options for configuring the mqtt client.
@@ -68,10 +68,10 @@ type Client interface {
 	io.Closer
 }
 
-// DefaultProvider is the default provider that uses the default mqtt client.
-type DefaultProvider struct{}
+// DefaultDialer is the default dialer that uses the default mqtt client.
+type DefaultDialer struct{}
 
-func (p DefaultProvider) Dial(ctx context.Context, brokers []string, options Options) (Client, error) {
+func (d DefaultDialer) Dial(ctx context.Context, brokers []string, options Options) (Client, error) {
 	if len(brokers) == 0 {
 		return nil, errors.New(codes.Invalid, "at least one broker is required for mqtt")
 	}
