@@ -1,11 +1,11 @@
-package edit_test
+package editlite_test
 
 import (
 	"testing"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/astutil"
-	"github.com/influxdata/flux/ast/edit"
+	"github.com/influxdata/flux/ast/editlite"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/values"
 )
@@ -25,7 +25,7 @@ func TestEditor(t *testing.T) {
     |> range(start: 2018-05-23T13:09:22.885021542Z)`,
 			unchanged: true,
 			edit: func(node ast.Node) (bool, error) {
-				return edit.Option(node, "from", nil)
+				return editlite.Option(node, "from", nil)
 			},
 		},
 		{
@@ -33,7 +33,7 @@ func TestEditor(t *testing.T) {
 			in:        `option foo = 1`,
 			unchanged: true,
 			edit: func(node ast.Node) (bool, error) {
-				return edit.Option(node, "bar", nil)
+				return editlite.Option(node, "bar", nil)
 			},
 		},
 		{
@@ -42,7 +42,7 @@ func TestEditor(t *testing.T) {
 			edited: `option alert.state = 1`,
 			edit: func(node ast.Node) (bool, error) {
 				literal := &ast.IntegerLiteral{Value: int64(1)}
-				return edit.Option(node, "alert.state", edit.OptionValueFn(literal))
+				return editlite.Option(node, "alert.state", editlite.OptionValueFn(literal))
 			},
 		},
 		{
@@ -53,7 +53,7 @@ option bar = 1`,
 option bar = 42`,
 			edit: func(node ast.Node) (bool, error) {
 				literal := &ast.IntegerLiteral{Value: int64(42)}
-				return edit.Option(node, "bar", edit.OptionValueFn(literal))
+				return editlite.Option(node, "bar", editlite.OptionValueFn(literal))
 			},
 		},
 		{
@@ -83,7 +83,7 @@ option task = {
 				if err != nil {
 					t.Fatal(err)
 				}
-				return edit.Option(node, "task", edit.OptionObjectFn(map[string]ast.Expression{
+				return editlite.Option(node, "task", editlite.OptionObjectFn(map[string]ast.Expression{
 					"every": every,
 					"delay": delay,
 					"cron":  &ast.StringLiteral{Value: "buz"},
@@ -115,7 +115,7 @@ option task = {
 				if err != nil {
 					t.Fatal(err)
 				}
-				return edit.Option(node, "task", edit.OptionObjectFn(map[string]ast.Expression{
+				return editlite.Option(node, "task", editlite.OptionObjectFn(map[string]ast.Expression{
 					"foo":   &ast.StringLiteral{Value: "foo"}, // should add a foo string
 					"every": every,
 				}))
@@ -132,7 +132,7 @@ option task = {
 					&ast.IntegerLiteral{Value: 3},
 					&ast.IntegerLiteral{Value: 4},
 				}}
-				return edit.Option(node, "foo", edit.OptionValueFn(literal))
+				return editlite.Option(node, "foo", editlite.OptionValueFn(literal))
 			},
 		},
 		{
@@ -149,7 +149,7 @@ option task = {
 						Value: &ast.StringLiteral{Value: "y"},
 					},
 					}}
-				return edit.Option(node, "foo", edit.OptionValueFn(literal))
+				return editlite.Option(node, "foo", editlite.OptionValueFn(literal))
 			},
 		},
 		{
@@ -191,7 +191,7 @@ option task = {
 						Value: z,
 					},
 					}}
-				return edit.Option(node, "foo", edit.OptionValueFn(literal))
+				return editlite.Option(node, "foo", editlite.OptionValueFn(literal))
 			},
 		},
 		{
@@ -208,7 +208,7 @@ option task = {
 						},
 					}}},
 				}
-				return edit.Option(node, "location", edit.OptionValueFn(literal))
+				return editlite.Option(node, "location", editlite.OptionValueFn(literal))
 			},
 		},
 		{
@@ -225,7 +225,7 @@ option task = {
 					Params: []*ast.Property{},
 					Body:   &ast.DateTimeLiteral{Value: t.Time()},
 				}
-				return edit.Option(node, "now", edit.OptionValueFn(literal))
+				return editlite.Option(node, "now", editlite.OptionValueFn(literal))
 			},
 		},
 	}

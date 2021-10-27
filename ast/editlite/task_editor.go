@@ -1,4 +1,4 @@
-package edit
+package editlite
 
 import (
 	"github.com/influxdata/flux"

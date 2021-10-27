@@ -1,4 +1,4 @@
-package edit
+package testcase
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/influxdata/flux/parser"
 )
 
-// TestcaseTransform will transform an *ast.Package into a set of *ast.Package values
+// Transform will transform an *ast.Package into a set of *ast.Package values
 // that represent each testcase defined within the original package.
 //
 // A testcase is defined with the testcase statement such as below.
@@ -66,7 +66,7 @@ import (
 // It is allowed for an imported testcase to have an option, but no attempt is made
 // to remove duplicate options. If there is a duplicate option, this will likely
 // cause an error when the test is actually run.
-func TestcaseTransform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]string, []*ast.Package, error) {
+func Transform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]string, []*ast.Package, error) {
 	if len(pkg.Files) != 1 {
 		return nil, nil, errors.Newf(codes.FailedPrecondition, "unsupported number of files in test case package, got %d", len(pkg.Files))
 	}

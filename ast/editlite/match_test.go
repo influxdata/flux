@@ -1,4 +1,4 @@
-package edit_test
+package editlite_test
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
-	"github.com/influxdata/flux/ast/edit"
+	"github.com/influxdata/flux/ast/editlite"
 )
 
 func TestMatch(t *testing.T) {
@@ -912,7 +912,7 @@ func TestMatch(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ms := edit.Match(tc.in, tc.match, tc.fuzzy)
+			ms := editlite.Match(tc.in, tc.match, tc.fuzzy)
 			if !cmp.Equal(tc.result, ms, asttest.IgnoreBaseNodeOptions...) {
 				t.Errorf("unexpected match result: -want/+got:\n%s", cmp.Diff(tc.result, ms, asttest.IgnoreBaseNodeOptions...))
 			}

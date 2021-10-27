@@ -1,4 +1,4 @@
-package edit_test
+package editlite_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
-	"github.com/influxdata/flux/ast/edit"
+	"github.com/influxdata/flux/ast/editlite"
 	"github.com/influxdata/flux/parser"
 )
 
@@ -18,9 +18,9 @@ func TestGetOptionBlockMissing(t *testing.T) {
 	f := parser.ParseSource(src).Files[0]
 
 	// here GetOption will return nil, OptionNotFoundError
-	_, err := edit.GetOption(f, "task")
-	if err != edit.OptionNotFoundError {
-		t.Errorf("expected err == edit.OptionNotFoundError but found err == : %v", err)
+	_, err := editlite.GetOption(f, "task")
+	if err != editlite.OptionNotFoundError {
+		t.Errorf("expected err == editlite.OptionNotFoundError but found err == : %v", err)
 	}
 }
 
@@ -29,12 +29,12 @@ func TestGetOptionProperty(t *testing.T) {
 
 	f := parser.ParseSource(src).Files[0]
 
-	obj, err := edit.GetOption(f, "task")
+	obj, err := editlite.GetOption(f, "task")
 	if err != nil {
 		t.Fatalf("unexpected error retrieving option: %v", err)
 	}
 
-	expr, err := edit.GetProperty(obj.(*ast.ObjectExpression), "b")
+	expr, err := editlite.GetProperty(obj.(*ast.ObjectExpression), "b")
 	if err != nil {
 		t.Fatalf("unexpected error retrieving property: %v", err)
 	}
@@ -103,7 +103,7 @@ func TestGetOption(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			got, err := edit.GetOption(tc.file, tc.optionID)
+			got, err := editlite.GetOption(tc.file, tc.optionID)
 			if err != nil {
 				t.Errorf("unexpected error %s", err)
 			}
@@ -261,9 +261,9 @@ func TestSetDeleteOption(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			switch tc.testType {
 			case "setOption":
-				edit.SetOption(tc.got, tc.optionID, tc.opt)
+				editlite.SetOption(tc.got, tc.optionID, tc.opt)
 			case "deleteOption":
-				edit.DeleteOption(tc.got, tc.optionID)
+				editlite.DeleteOption(tc.got, tc.optionID)
 			default:
 				t.Fatal("Test type must be set to 'setOption' or 'deleteOption'.")
 			}
@@ -321,7 +321,7 @@ func TestGetProperty(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			got, err := edit.GetProperty(tc.obj, tc.key)
+			got, err := editlite.GetProperty(tc.obj, tc.key)
 			if err != nil {
 				t.Errorf("unexpected error %s", err)
 			}
@@ -524,9 +524,9 @@ func TestSetDeleteProperty(t *testing.T) {
 		t.Run(tc.testName, func(t *testing.T) {
 			switch tc.testType {
 			case "setProperty":
-				edit.SetProperty(tc.obj, tc.key, tc.value)
+				editlite.SetProperty(tc.obj, tc.key, tc.value)
 			case "deleteProperty":
-				edit.DeleteProperty(tc.obj, tc.key)
+				editlite.DeleteProperty(tc.obj, tc.key)
 			default:
 				t.Fatal("Test type must be set to 'setProperty' or 'deleteProperty'.")
 			}
@@ -608,7 +608,7 @@ func TestHasDuplicateOptions(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.testName, func(t *testing.T) {
-			hasDuplicates := edit.HasDuplicateOptions(tc.file, tc.optionID)
+			hasDuplicates := editlite.HasDuplicateOptions(tc.file, tc.optionID)
 
 			if tc.wantDuplicates != hasDuplicates {
 				t.Errorf("Mismatch in duplicate expectation want=%t got=%t", tc.wantDuplicates, hasDuplicates)
