@@ -1,4 +1,4 @@
-package edit_test
+package testcase_test
 
 import (
 	"context"
@@ -12,12 +12,12 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
 	"github.com/influxdata/flux/ast/astutil"
-	"github.com/influxdata/flux/ast/edit"
+	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/parser"
 )
 
-func TestTestcaseTransform(t *testing.T) {
+func TestTransform(t *testing.T) {
 	expected := []*ast.Package{
 		parser.ParseSource(`package main
 
@@ -27,7 +27,7 @@ myVar = 4
 
 testing.assertEqual(got: 2 + 2, want: 4)`),
 		parser.ParseSource(`package main
-		
+
 import "testing"
 
 myVar = 4
@@ -51,7 +51,7 @@ testcase test_subtraction {
 
 	d := parser.ParseSource(testFile)
 
-	names, transformed, err := edit.TestcaseTransform(context.Background(), d, nil)
+	names, transformed, err := testcase.Transform(context.Background(), d, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +64,7 @@ testcase test_subtraction {
 	}
 }
 
-func TestTestcaseTransformNoTestcase(t *testing.T) {
+func TestTransformNoTestcase(t *testing.T) {
 	testFile := `package an_test
 
 import "testing"
@@ -73,7 +73,7 @@ myVar = 4`
 
 	d := parser.ParseSource(testFile)
 
-	_, transformed, err := edit.TestcaseTransform(context.Background(), d, nil)
+	_, transformed, err := testcase.Transform(context.Background(), d, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ myVar = 4`
 	}
 }
 
-func TestTestcaseTransformImport(t *testing.T) {
+func TestTransformImport(t *testing.T) {
 	fs := &memoryFilesystem{
 		files: map[string]string{
 			"a/a_test.flux": `package a_test
@@ -114,7 +114,7 @@ testcase b extends "flux/a/a_test" {
 	}
 	pkg.Files[0].Name = "b/b_test.flux"
 
-	names, pkgs, err := edit.TestcaseTransform(ctx, pkg, edit.TestModules{
+	names, pkgs, err := testcase.Transform(ctx, pkg, testcase.TestModules{
 		"flux": fs,
 	})
 	if err != nil {
