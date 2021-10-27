@@ -16,7 +16,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/ast/edit"
+	"github.com/influxdata/flux/ast/testcase"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/testing"
@@ -140,12 +140,12 @@ func NewTestRunner(reporter TestReporter) TestRunner {
 	}
 }
 
-type gatherFunc func(filename string) ([]string, fs, edit.TestModules, error)
+type gatherFunc func(filename string) ([]string, fs, testcase.TestModules, error)
 
 // Gather gathers all tests from the filesystem and creates Test instances
 // from that info.
 func (t *TestRunner) Gather(roots []string, names []string) error {
-	var modules edit.TestModules
+	var modules testcase.TestModules
 	for _, root := range roots {
 		var gatherFrom gatherFunc
 		if strings.HasSuffix(root, ".tar.gz") || strings.HasSuffix(root, ".tar") {
@@ -181,7 +181,7 @@ func (t *TestRunner) Gather(roots []string, names []string) error {
 			if len(baseAST.Files) > 0 {
 				baseAST.Files[0].Name = file
 			}
-			tcnames, asts, err := edit.TestcaseTransform(ctx, baseAST, modules)
+			tcnames, asts, err := testcase.Transform(ctx, baseAST, modules)
 			if err != nil {
 				return err
 			}
@@ -196,7 +196,7 @@ func (t *TestRunner) Gather(roots []string, names []string) error {
 	return nil
 }
 
-func gatherFromTarArchive(filename string) ([]string, fs, edit.TestModules, error) {
+func gatherFromTarArchive(filename string) ([]string, fs, testcase.TestModules, error) {
 	var f io.ReadCloser
 	f, err := os.Open(filename)
 	if err != nil {
@@ -218,7 +218,7 @@ func gatherFromTarArchive(filename string) ([]string, fs, edit.TestModules, erro
 		tfs   = &tarfs{
 			files: make(map[string]*tarfile),
 		}
-		modules edit.TestModules
+		modules testcase.TestModules
 	)
 	archive := tar.NewReader(f)
 	for {
@@ -297,8 +297,8 @@ func (t *tarfile) Stat() (os.FileInfo, error) {
 	return t.info, nil
 }
 
-func gatherFromZipArchive(filename string) ([]string, fs, edit.TestModules, error) {
-	var modules edit.TestModules
+func gatherFromZipArchive(filename string) ([]string, fs, testcase.TestModules, error) {
+	var modules testcase.TestModules
 
 	f, err := os.Open(filename)
 	if err != nil {
@@ -413,10 +413,10 @@ func (s prefixfs) Open(fpath string) (filesystem.File, error) {
 	return s.fs.Open(fpath)
 }
 
-func gatherFromDir(filename string) ([]string, fs, edit.TestModules, error) {
+func gatherFromDir(filename string) ([]string, fs, testcase.TestModules, error) {
 	var (
 		files   []string
-		modules edit.TestModules
+		modules testcase.TestModules
 	)
 
 	// Find a test root above the root if it exists.
@@ -453,8 +453,8 @@ func gatherFromDir(filename string) ([]string, fs, edit.TestModules, error) {
 	return files, systemfs{}, modules, nil
 }
 
-func gatherFromFile(filename string) ([]string, fs, edit.TestModules, error) {
-	var modules edit.TestModules
+func gatherFromFile(filename string) ([]string, fs, testcase.TestModules, error) {
+	var modules testcase.TestModules
 
 	// Find a test root above the root if it exists.
 	if name, fs, ok, err := findParentTestRoot(filename); err != nil {
