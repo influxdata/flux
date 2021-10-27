@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -1712,6 +1713,17 @@ func (l *DurationLiteral) Copy() Node {
 		copy(nl.Values, l.Values)
 	}
 	return nl
+}
+
+// String implements fmt.Stringer by returning
+// the duration formatted as its Flux representation.
+func (n *DurationLiteral) String() string {
+	builder := strings.Builder{}
+	for _, d := range n.Values {
+		builder.WriteString(strconv.FormatInt(d.Magnitude, 10))
+		builder.WriteString(d.Unit)
+	}
+	return builder.String()
 }
 
 // Duration gives you a DurationLiteral from a time.Duration.
