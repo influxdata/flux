@@ -12,6 +12,9 @@ use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 #[derive(Clone, Debug)]
 pub struct Substitution(RefCell<UnificationTable>);
 
+/// An implementation of a
+/// (Disjoint-set](https://en.wikipedia.org/wiki/Disjoint-set_data_structure) which is used to
+/// track which type variables are them same (unified) and which type they have unified to (if any)
 type UnificationTable = ena::unify::InPlaceUnificationTable<Tvar>;
 
 impl From<SubstitutionMap> for Substitution {
@@ -53,11 +56,6 @@ impl Substitution {
         for _ in 0..count {
             sub.new_key(None);
         }
-    }
-
-    /// Returns `true` if the `Substitution` is empty
-    pub fn is_empty(&self) -> bool {
-        self.0.borrow().len() == 0 // TODO This is not the same with ena
     }
 
     /// Apply a substitution to a type variable.
@@ -106,13 +104,6 @@ impl Substitution {
     /// Unifies two `Tvar`s, recording the result in the substitution for later.
     pub fn union(&self, l: Tvar, r: Tvar) {
         self.0.borrow_mut().union(l, r);
-    }
-
-    /// Merge two substitutions.
-    pub fn merge(self, _with: Substitution) -> Substitution {
-        todo!("remove")
-        // let applied: SubstitutionMap = self.0.apply(&with);
-        // Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
     }
 }
 

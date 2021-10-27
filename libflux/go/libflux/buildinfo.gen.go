@@ -12,9 +12,9 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "ff4840e9ea9a8eca03fcdbd240a3aa348ea1ee4b5cec95a63593e207f15fb2af",
+	"libflux/Cargo.lock":                                                                          "dfc821e79cb46092c63aab8b624d08c397a7b7fa63f53ef77bc176e9a180a2c4",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                                "7c889b435fba6ebbf7fb08bbbb4ca68486494807ce9ee71e7fab4df4b75b2fdd",
+	"libflux/flux-core/Cargo.toml":                                                                "c1f28cbb567ee33c1f9b88fed9480d864b7028dcc6f826563f7c6ff9dbf36aab",
 	"libflux/flux-core/benches/scanner.rs":                                                        "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "ea93aaf47bded6f1fa46f6167308750837fac20a7e5ddeaecc86a3bc855143a4",
 	"libflux/flux-core/src/ast/check/tests.rs":                                                    "d1bc09d1f2573d4addd546a6fbf2ca7c9a65d0dd773b687196a5a3df4f2fd299",
@@ -63,9 +63,9 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/fs.rs":                                                        "afe9d0092fa8c41eb1e78ff83dfe302ce85a2dca3664c3d0b787f3e735341f3e",
 	"libflux/flux-core/src/semantic/import.rs":                                                    "5f68cb773a83e9aeed8bdc4f480d1ae1bf590f6afb464c80a0299029bbe1d597",
 	"libflux/flux-core/src/semantic/infer.rs":                                                     "62464e47e67eb974d4f04609f8eaa3dfe44d8791d7d57f5b6bff63bf1cd5bb08",
-	"libflux/flux-core/src/semantic/mod.rs":                                                       "49b77ea6e4b7af956105caef244a3af2683d79e9b70408a477856a1ac49ff9b6",
+	"libflux/flux-core/src/semantic/mod.rs":                                                       "ab680e459c2d0949a357a730c7e06ab80fcf14b737c873be3ce07eea73bfb785",
 	"libflux/flux-core/src/semantic/nodes.rs":                                                     "33552f0cb61b27dff1fc847d1da3be969d3d558f98f023f0c013cd0e95dc748a",
-	"libflux/flux-core/src/semantic/sub.rs":                                                       "fc150a29b5c5c8764df4a5e2f3eab146797c43621589f344527e7e9aa942250a",
+	"libflux/flux-core/src/semantic/sub.rs":                                                       "77d493147def48033b694cee92b8005ebcb9d3a471408f0346355b7de888335d",
 	"libflux/flux-core/src/semantic/tests.rs":                                                     "a1cde99be268fb305b37b37291ba7699ecdd80f5f737760afb3168863b07bad0",
 	"libflux/flux-core/src/semantic/types.rs":                                                     "9b1fa310b5b777ec4601e67082004e5f414dc23b2b108eff2764474b22f2eced",
 	"libflux/flux-core/src/semantic/walk/_walk.rs":                                                "0e8739d439fc26112c654a3c90264d14cdb4f21faf69c5bd3845e70a4c925c5f",
