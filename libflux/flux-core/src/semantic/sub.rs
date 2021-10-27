@@ -1,5 +1,5 @@
 //! Substitutions during type inference.
-use std::iter::FusedIterator;
+use std::{cell::RefCell, iter::FusedIterator};
 
 use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 
@@ -10,35 +10,52 @@ use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 /// Substitutions are idempotent. Given a substitution *s* and an input
 /// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
 #[derive(Clone, Debug)]
-pub struct Substitution(SubstitutionMap);
+pub struct Substitution(RefCell<UnificationTable>);
+
+/// An implementation of a
+/// (Disjoint-set](https://en.wikipedia.org/wiki/Disjoint-set_data_structure) which is used to
+/// track which type variables are them same (unified) and which type they have unified to (if any)
+type UnificationTable = ena::unify::InPlaceUnificationTable<Tvar>;
 
 impl From<SubstitutionMap> for Substitution {
     /// Derive a substitution from a hash map.
     fn from(values: SubstitutionMap) -> Substitution {
-        Substitution(values)
+        let sub = Substitution(RefCell::new(UnificationTable::new()));
+        for (var, typ) in values {
+            // Create any variables referenced in the input map
+            while var.0 >= sub.0.borrow().len() as u64 {
+                sub.fresh();
+            }
+            sub.union_type(var, typ);
+        }
+        sub
     }
 }
 
-// The `allow` attribute below is a side effect of the orphan impl rule as
-// well as the implicit_hasher lint. For more info, see
-// https://github.com/rust-lang/rfcs/issues/1856
-#[allow(clippy::implicit_hasher)]
-impl From<Substitution> for SubstitutionMap {
-    /// Derive a hash map from a substitution.
-    fn from(sub: Substitution) -> SubstitutionMap {
-        sub.0
+impl Default for Substitution {
+    fn default() -> Self {
+        Self::empty()
     }
 }
 
 impl Substitution {
     /// Return a new empty substitution.
     pub fn empty() -> Substitution {
-        Substitution(SubstitutionMap::new())
+        Substitution(RefCell::new(UnificationTable::new()))
     }
 
-    /// Returns `true` if the `Substitution` is empty
-    pub fn is_empty(&self) -> bool {
-        self.0.is_empty()
+    /// Takes a `Substitution` and returns an incremented [`Tvar`].
+    pub fn fresh(&self) -> Tvar {
+        self.0.borrow_mut().new_key(None)
+    }
+
+    /// Prepares `count` type variables for testing
+    #[cfg(test)]
+    pub(crate) fn mk_fresh(&self, count: usize) {
+        let mut sub = self.0.borrow_mut();
+        for _ in 0..count {
+            sub.new_key(None);
+        }
     }
 
     /// Apply a substitution to a type variable.
@@ -49,20 +66,51 @@ impl Substitution {
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
     /// variable.
     pub fn try_apply(&self, tv: Tvar) -> Option<MonoType> {
-        self.0.get(&tv).cloned()
+        let mut sub = self.0.borrow_mut();
+        match sub.probe_value(tv) {
+            Some(typ) => Some(typ),
+            None => {
+                // If `tv` hasn't been unified with a type we still want to see if it has been
+                // unified with any other variables. If it has and it isn't the root we replace
+                // `tv` with its root so that `exp.apply(sub).to_string() == actual.apply(sub)`
+                // may be equal if they to contain different type variables that has been unified
+                // with each other (simplifies debugging even if it isn't strictly necessary for
+                // inference itself)
+                let root = sub.find(tv);
+                if root == tv {
+                    None
+                } else {
+                    Some(MonoType::Var(root))
+                }
+            }
+        }
     }
 
-    /// Merge two substitutions.
-    pub fn merge(self, with: Substitution) -> Substitution {
-        let applied: SubstitutionMap = self.0.apply(&with);
-        Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
+    /// Returns the "root variable" which is the variable that uniquely identifies a group of
+    /// variables that were unified
+    pub fn root(&self, tv: Tvar) -> Tvar {
+        self.0.borrow_mut().find(tv)
+    }
+
+    /// Unifies as a `Tvar` and a `MonoType`, recording the result in the substitution for later
+    /// lookup
+    pub fn union_type(&self, l: Tvar, r: MonoType) {
+        match r {
+            MonoType::Var(r) => self.union(l, r),
+            _ => self.0.borrow_mut().union_value(l, Some(r)),
+        }
+    }
+
+    /// Unifies two `Tvar`s, recording the result in the substitution for later.
+    pub fn union(&self, l: Tvar, r: Tvar) {
+        self.0.borrow_mut().union(l, r);
     }
 }
 
 /// A type is `Substitutable` if a substitution can be applied to it.
 pub trait Substitutable {
     /// Apply a substitution to a type variable.
-    fn apply(self, sub: &Substitution) -> Self
+    fn apply(self, sub: &dyn Substituter) -> Self
     where
         Self: Sized,
     {
@@ -70,7 +118,7 @@ pub trait Substitutable {
     }
 
     /// Apply a substitution to a type variable.
-    fn apply_mut(&mut self, sub: &Substitution)
+    fn apply_mut(&mut self, sub: &dyn Substituter)
     where
         Self: Sized,
     {
@@ -87,6 +135,18 @@ pub trait Substitutable {
     fn free_vars(&self) -> Vec<Tvar>;
 }
 
+impl<T> Substitutable for Box<T>
+where
+    T: Substitutable,
+{
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        T::apply_ref(self, sub).map(Box::new)
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        T::free_vars(self)
+    }
+}
+
 /// Objects from which variable substitutions can be looked up.
 pub trait Substituter {
     /// Apply a substitution to a type variable, returning None if there is no substitution for the
@@ -100,6 +160,12 @@ where
 {
     fn try_apply(&self, var: Tvar) -> Option<MonoType> {
         self(var)
+    }
+}
+
+impl Substituter for SubstitutionMap {
+    fn try_apply(&self, var: Tvar) -> Option<MonoType> {
+        self.get(&var).cloned()
     }
 }
 
@@ -131,6 +197,22 @@ where
         c.apply_ref(sub),
         d,
         d.apply_ref(sub),
+    )
+}
+
+pub(crate) fn apply3<A, B, C>(a: &A, b: &B, c: &C, sub: &dyn Substituter) -> Option<(A, B, C)>
+where
+    A: Substitutable + Clone,
+    B: Substitutable + Clone,
+    C: Substitutable + Clone,
+{
+    merge3(
+        a,
+        a.apply_ref(sub),
+        b,
+        b.apply_ref(sub),
+        c,
+        c.apply_ref(sub),
     )
 }
 

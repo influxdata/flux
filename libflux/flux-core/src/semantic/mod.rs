@@ -102,30 +102,30 @@ impl<I: import::Importer> Analyzer<I> {
         &mut self,
         ast_pkg: ast::Package,
     ) -> Result<(env::Environment, nodes::Package), Error> {
-        self.analyze_ast_with_fresher(ast_pkg, &mut fresh::Fresher::default())
+        self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
     /// Analyze Flux AST returning the semantic package and the package environment.
     /// A custom fresher may be provided.
-    pub fn analyze_ast_with_fresher(
+    pub fn analyze_ast_with_substitution(
         &mut self,
         // TODO(nathanielc): Change analyze steps to not move the ast::Package as it is a readonly
         // operation.
         ast_pkg: ast::Package,
-        fresher: &mut fresh::Fresher,
+        sub: &mut sub::Substitution,
     ) -> Result<(env::Environment, nodes::Package), Error> {
         if !self.config.skip_checks {
             ast::check::check(ast::walk::Node::Package(&ast_pkg))?;
         }
 
-        let mut sem_pkg = convert::convert_package(ast_pkg, fresher)?;
+        let mut sem_pkg = convert::convert_package(ast_pkg, sub)?;
         if !self.config.skip_checks {
             check::check(&sem_pkg)?;
         }
 
         // Clone the environment as the inferred package may mutate it.
         let env = self.env.clone();
-        let (env, sub) = nodes::infer_package(&mut sem_pkg, env, fresher, &mut self.importer)?;
-        Ok((env, nodes::inject_pkg_types(sem_pkg, &sub)))
+        let env = nodes::infer_package(&mut sem_pkg, env, sub, &mut self.importer)?;
+        Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
     }
 
     /// Drop returns ownership of the environment and importer.

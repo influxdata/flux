@@ -34,6 +34,7 @@ features = ["js"]
 [dev-dependencies]
 maplit = "1.0.2"
 criterion = "0.3.3"
+pretty_assertions = "1"
 
 [build-dependencies]
 flux-core = { path = "../flux-core" }

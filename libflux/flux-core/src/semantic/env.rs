@@ -1,5 +1,5 @@
 //! Type environments.
-use std::mem;
+use std::{fmt, mem};
 
 use crate::semantic::sub::{apply2, Substitutable, Substituter};
 use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
@@ -17,6 +17,14 @@ pub struct Environment {
     pub values: PolyTypeMap,
     /// Read/write permissions flag.
     pub readwrite: bool,
+}
+
+impl fmt::Display for Environment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut debug_map = f.debug_map();
+        self.fmt_display(&mut debug_map);
+        debug_map.finish()
+    }
 }
 
 impl Substitutable for Environment {
@@ -154,6 +162,13 @@ impl Environment {
     pub fn copy_bindings_from(&mut self, other: &Environment) {
         for (name, t) in other.values.iter() {
             self.add(name.clone(), t.clone());
+        }
+    }
+
+    fn fmt_display(&self, f: &mut fmt::DebugMap<'_, '_>) {
+        f.entries(self.values.iter().map(|(k, v)| (k, v.to_string())));
+        if let Some(parent) = &self.parent {
+            parent.fmt_display(f);
         }
     }
 }

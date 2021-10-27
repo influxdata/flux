@@ -5,7 +5,7 @@ use super::semantic_generated::fbsemantic;
 use crate::ast;
 use crate::semantic;
 use crate::semantic::convert;
-use crate::semantic::fresh;
+use crate::semantic::sub;
 use chrono::FixedOffset;
 
 use anyhow::{anyhow, Result};
@@ -87,7 +87,7 @@ re !~ /foo/
         package: String::from("test"),
         files: f,
     };
-    let mut pkg = match convert::convert_package(pkg, &mut fresh::Fresher::default()) {
+    let mut pkg = match convert::convert_package(pkg, &mut sub::Substitution::default()) {
         Ok(pkg) => pkg,
         Err(e) => {
             assert!(false, "{}", e);

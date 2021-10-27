@@ -4,10 +4,9 @@ use derive_more::Display;
 
 use crate::ast::SourceLocation;
 use crate::semantic::env::Environment;
-use crate::semantic::fresh::Fresher;
-use crate::semantic::sub::{Substitutable, Substitution};
+use crate::semantic::sub::{Substitutable, Substituter, Substitution};
 use crate::semantic::types;
-use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, TvarKinds};
+use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds};
 
 // Type constraints are produced during type inference and come
 // in two flavors.
@@ -85,40 +84,50 @@ pub struct Error {
 
 impl std::error::Error for Error {}
 
+impl Substitutable for Error {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.err.apply_ref(sub).map(|err| Error {
+            loc: self.loc.clone(),
+            err,
+        })
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.err.free_vars()
+    }
+}
+
 // Solve a set of type constraints
 pub fn solve(
     cons: &Constraints,
     with: &mut TvarKinds,
-    fresher: &mut Fresher,
-) -> Result<Substitution, Error> {
-    cons.0
-        .iter()
-        .try_fold(Substitution::empty(), |sub, constraint| match constraint {
+    sub: &mut Substitution,
+) -> Result<(), Error> {
+    for constraint in &cons.0 {
+        match constraint {
             Constraint::Kind { exp, act, loc } => {
                 // Apply the current substitution to the type, then constrain
-                let s = match act.clone().apply(&sub).constrain(*exp, with) {
-                    Err(e) => Err(Error {
+                log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
+                act.clone()
+                    .apply(sub)
+                    .constrain(*exp, with)
+                    .map_err(|err| Error {
                         loc: loc.clone(),
-                        err: e,
-                    }),
-                    Ok(s) => Ok(s),
-                }?;
-                Ok(sub.merge(s))
+                        err,
+                    })?;
             }
             Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                let exp = exp.clone().apply(&sub);
-                let act = act.clone().apply(&sub);
-                let s = match exp.unify(act, with, fresher) {
-                    Err(e) => Err(Error {
-                        loc: loc.clone(),
-                        err: e,
-                    }),
-                    Ok(s) => Ok(s),
-                }?;
-                Ok(sub.merge(s))
+                let exp = exp.clone();
+                let act = act.clone();
+                log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
+                exp.unify(act, with, sub).map_err(|err| Error {
+                    loc: loc.clone(),
+                    err,
+                })?;
             }
-        })
+        }
+    }
+    Ok(())
 }
 
 // Create a parametric type from a monotype by universally quantifying
@@ -152,16 +161,15 @@ pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType 
 // based on the context in which a function is called.
 pub fn instantiate(
     poly: PolyType,
-    f: &mut Fresher,
+    sub: &mut Substitution,
     loc: SourceLocation,
 ) -> (MonoType, Constraints) {
     // Substitute fresh type variables for all quantified variables
-    let sub: Substitution = poly
+    let sub: SubstitutionMap = poly
         .vars
         .into_iter()
-        .map(|tv| (tv, MonoType::Var(f.fresh())))
-        .collect::<SubstitutionMap>()
-        .into();
+        .map(|tv| (tv, MonoType::Var(sub.fresh())))
+        .collect();
     // Generate constraints for the new fresh type variables
     let constraints = poly
         .cons
@@ -171,7 +179,7 @@ pub fn instantiate(
                 .into_iter()
                 .map(|kind| Constraint::Kind {
                     exp: kind,
-                    act: sub.apply(tv),
+                    act: sub.get(&tv).unwrap().clone(),
                     loc: loc.clone(),
                 })
                 .collect::<Vec<Constraint>>()

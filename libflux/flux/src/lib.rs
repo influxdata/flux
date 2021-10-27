@@ -5,6 +5,10 @@ extern crate serde_aux;
 
 extern crate serde_derive;
 
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
+
 use anyhow::{self, bail, Result};
 
 use fluxcore::{
@@ -13,8 +17,8 @@ use fluxcore::{
         env::Environment,
         flatbuffers::semantic_generated::fbsemantic as fb,
         flatbuffers::types::{build_env, build_type},
-        fresh::Fresher,
         nodes::Package,
+        sub::Substitution,
         types::{MonoType, PolyType, TvarKinds},
         Analyzer, AnalyzerConfig,
     },
@@ -500,7 +504,7 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
 /// This function is aware of the standard library and prelude.
 pub fn infer_with_env(
     ast_pkg: ast::Package,
-    mut f: Fresher,
+    mut sub: Substitution,
     env: Option<Environment>,
 ) -> Result<(Environment, Package)> {
     let mut prelude = match prelude() {
@@ -516,7 +520,7 @@ pub fn infer_with_env(
     };
     let mut analyzer = Analyzer::new_with_defaults(prelude, importer);
     analyzer
-        .analyze_ast_with_fresher(ast_pkg, &mut f)
+        .analyze_ast_with_substitution(ast_pkg, &mut sub)
         .map_err(anyhow::Error::from)
 }
 
@@ -526,8 +530,8 @@ pub fn infer_with_env(
 /// for that variable.
 /// This version of find_var_type is aware of the prelude and builtins.
 pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType> {
-    let mut f = Fresher::default();
-    let tvar = f.fresh();
+    let sub = Substitution::default();
+    let tvar = sub.fresh();
     let mut env = Environment::empty(true);
     env.add(
         var_name.clone(),
@@ -537,7 +541,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
             expr: MonoType::Var(tvar),
         },
     );
-    infer_with_env(ast_pkg, f, Some(env))
+    infer_with_env(ast_pkg, sub, Some(env))
         .map(|(env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
 }
 
@@ -570,6 +574,7 @@ mod tests {
     use fluxcore::parser::Parser;
     use fluxcore::semantic::convert::convert_polytype;
     use fluxcore::semantic::fresh::Fresher;
+    use fluxcore::semantic::sub::Substitution;
     use fluxcore::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
 
     pub struct MonoTypeNormalizer {
@@ -830,7 +835,7 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         if err != "" {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
-        let want = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+        let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
     }
@@ -868,7 +873,7 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         if err != "" {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_a = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+        let want_a = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let code = " [{ D with
                 _value: A
@@ -886,7 +891,7 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         if err != "" {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_b = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+        let want_b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let code = "[{ D with
                 _value: A
@@ -904,7 +909,7 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         if err != "" {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
-        let want_c = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+        let want_c = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
         assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());

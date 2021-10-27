@@ -639,6 +639,7 @@ mod tests {
     use crate::ast::get_err_type_expression;
     use crate::parser;
     use crate::semantic::convert::convert_polytype;
+    use crate::semantic::sub::Substitution;
     use crate::semantic::types::SemanticMap;
 
     #[rustfmt::skip]
@@ -670,7 +671,7 @@ mod tests {
         if err != "" {
             panic!("TypeExpression parsing failed for {}. {:?}", expr, err);
         }
-        let want = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+        let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
         let buf = serialize(&mut builder, want.clone(), build_polytype);
@@ -686,7 +687,7 @@ mod tests {
         if err != "" {
             panic!("TypeExpression parsing failed for bool. {:?}", err);
         }
-        let a = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+        let a = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let mut p = parser::Parser::new("time");
         let typ_expr = p.parse_type_expression();
@@ -694,7 +695,7 @@ mod tests {
         if err != "" {
             panic!("TypeExpression parsing failed for time. {:?}", err);
         }
-        let b = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
+        let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let want: Environment = semantic_map! {
             String::from("a") => a,
