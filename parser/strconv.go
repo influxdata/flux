@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"strconv"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/influxdata/flux/ast"
@@ -52,12 +50,7 @@ func ParseDuration(lit string) (*ast.DurationLiteral, error) {
 
 // FormatDuration will convert DurationLiteral into formatted string representation
 func FormatDuration(n *ast.DurationLiteral) string {
-	builder := strings.Builder{}
-	for _, d := range n.Values {
-		builder.WriteString(strconv.FormatInt(d.Magnitude, 10))
-		builder.WriteString(d.Unit)
-	}
-	return builder.String()
+	return n.String()
 }
 
 // ParseString removes quotes and unescapes the string literal.
