@@ -4146,4 +4146,14 @@ fn exists_operator() {
         "#,
         err: "error @3:45-3:46: record is missing label a",
     }
+
+    // Should be an error as `a` exists, but has the wrong type (or it should fail the exists check
+    // at runtime at least)
+    test_error_msg! {
+        src: r#"
+            f = (r) => if exists r.a then r.a else 0
+            x = f(r: { a: "" })
+        "#,
+        err: "error @3:45-3:46: TODO",
+    }
 }
