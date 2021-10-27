@@ -6,7 +6,7 @@ use criterion::{black_box, Criterion};
 
 use fluxcore::scanner;
 
-const FLUX: &'static str = r#"from(bucket: "benchtest")
+const FLUX: &str = r#"from(bucket: "benchtest")
     # Here's a random comment
     |> range(start: -10m)
     |> map(fn: (r) => ({r with square: r._value * r._value}))"#;

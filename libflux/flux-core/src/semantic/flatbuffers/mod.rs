@@ -47,7 +47,7 @@ fn serialize<'a, 'b>(
     let mut v = SerializingVisitor {
         inner: Rc::new(RefCell::new(SerializingVisitorState::with_builder(builder))),
     };
-    walk::walk(&mut v, Rc::new(walk::Node::Package(semantic_pkg)));
+    walk::walk(&mut v, walk::Node::Package(semantic_pkg));
     v.offset()
 }
 
@@ -56,7 +56,7 @@ struct SerializingVisitor<'a, 'b> {
 }
 
 impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
-    fn visit(&mut self, _node: Rc<walk::Node<'_>>) -> bool {
+    fn visit(&mut self, _node: walk::Node<'_>) -> bool {
         let v = self.inner.borrow();
         if v.err.is_some() {
             return false;
@@ -64,17 +64,16 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
         true
     }
 
-    fn done(&mut self, node: Rc<walk::Node<'_>>) {
+    fn done(&mut self, node: walk::Node<'_>) {
         let mut v = &mut *self.inner.borrow_mut();
         if v.err.is_some() {
             return;
         }
-        let node = &*node;
         let loc = v.create_loc(node.loc());
-        match node {
+        match &node {
             walk::Node::IntegerLit(int) => {
                 let int = fbsemantic::IntegerLiteral::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::IntegerLiteralArgs {
                         loc,
                         value: int.value,
@@ -85,7 +84,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             }
             walk::Node::UintLit(uint) => {
                 let uint = fbsemantic::UnsignedIntegerLiteral::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::UnsignedIntegerLiteralArgs {
                         loc,
                         value: uint.value,
@@ -98,7 +97,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             }
             walk::Node::FloatLit(float) => {
                 let float = fbsemantic::FloatLiteral::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::FloatLiteralArgs {
                         loc,
                         value: float.value,
@@ -110,7 +109,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::RegexpLit(regex) => {
                 let regex_val = v.create_string(&regex.value);
                 let regex = fbsemantic::RegexpLiteral::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::RegexpLiteralArgs {
                         loc,
                         value: regex_val,
@@ -124,7 +123,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::StringLit(string) => {
                 let string_val = v.create_string(&string.value);
                 let string = fbsemantic::StringLiteral::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::StringLiteralArgs {
                         loc,
                         value: string_val,
@@ -142,7 +141,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let negative = dur_lit.value.negative;
 
                 let dur = fbsemantic::Duration::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::DurationArgs {
                         months,
                         nanoseconds,
@@ -153,7 +152,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 dur_vec.push(dur);
                 let value = Some(v.builder.create_vector(dur_vec.as_slice()));
                 let dur_lit = fbsemantic::DurationLiteral::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::DurationLiteralArgs { loc, value },
                 );
                 v.expr_stack.push((
@@ -171,7 +170,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let offset = datetime.value.offset().local_minus_utc();
 
                 let time = fbsemantic::Time::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::TimeArgs {
                         secs,
                         nsecs: nano_secs,
@@ -180,7 +179,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 );
 
                 let datetime = fbsemantic::DateTimeLiteral::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::DateTimeLiteralArgs {
                         loc,
                         value: Some(time),
@@ -194,7 +193,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
 
             walk::Node::BooleanLit(boolean) => {
                 let boolean = fbsemantic::BooleanLiteral::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::BooleanLiteralArgs {
                         loc,
                         value: boolean.value,
@@ -209,10 +208,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::IdentifierExpr(id) => {
                 let name = v.create_string(&id.name);
                 let id_typ = id.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, id_typ);
+                let (typ, typ_type) = types::build_type(v.builder, id_typ);
 
                 let ident = fbsemantic::IdentifierExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::IdentifierExpressionArgs {
                         loc,
                         name,
@@ -229,7 +228,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::Identifier(id) => {
                 let name = v.create_string(&id.name);
                 let identifier = fbsemantic::Identifier::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::IdentifierArgs { loc, name },
                 );
                 v.identifiers.push(identifier)
@@ -241,7 +240,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (value, value_type) = v.pop_expr();
 
                 let prop = fbsemantic::Property::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::PropertyArgs {
                         loc,
                         key,
@@ -257,9 +256,9 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (argument, argument_type) = v.pop_expr();
 
                 let unary_typ = unary.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, unary_typ);
+                let (typ, typ_type) = types::build_type(v.builder, unary_typ);
                 let unary = fbsemantic::UnaryExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::UnaryExpressionArgs {
                         loc,
                         operator,
@@ -288,10 +287,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 };
 
                 let obj_type = obj.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, obj_type);
+                let (typ, typ_type) = types::build_type(v.builder, obj_type);
 
                 let obj = fbsemantic::ObjectExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::ObjectExpressionArgs {
                         loc,
                         with,
@@ -310,10 +309,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (index, index_type) = v.pop_expr();
                 let (array, array_type) = v.pop_expr();
                 let ind_type = ind.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, ind_type);
+                let (typ, typ_type) = types::build_type(v.builder, ind_type);
 
                 let index = fbsemantic::IndexExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::IndexExpressionArgs {
                         loc,
                         array,
@@ -335,10 +334,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (object, object_type) = v.pop_expr();
 
                 let member_typ = member.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, member_typ);
+                let (typ, typ_type) = types::build_type(v.builder, member_typ);
 
                 let mem = fbsemantic::MemberExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::MemberExpressionArgs {
                         loc,
                         object,
@@ -360,7 +359,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (left, left_type) = v.pop_expr();
 
                 let logical = fbsemantic::LogicalExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::LogicalExpressionArgs {
                         loc,
                         operator,
@@ -382,7 +381,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (test, test_type) = v.pop_expr();
 
                 let cond = fbsemantic::ConditionalExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::ConditionalExpressionArgs {
                         loc,
                         test_type,
@@ -419,10 +418,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 };
 
                 let call_typ = call.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, call_typ);
+                let (typ, typ_type) = types::build_type(v.builder, call_typ);
 
                 let call = fbsemantic::CallExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::CallExpressionArgs {
                         loc,
                         callee,
@@ -446,10 +445,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (left, left_type) = v.pop_expr();
 
                 let bin_typ = bin.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, bin_typ);
+                let (typ, typ_type) = types::build_type(v.builder, bin_typ);
 
                 let bin = fbsemantic::BinaryExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::BinaryExpressionArgs {
                         loc,
                         operator,
@@ -508,7 +507,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     Some(v.builder.create_vector(stmt_vec.as_slice()))
                 };
                 let body = Some(fbsemantic::Block::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::BlockArgs {
                         loc: body_loc,
                         body: body_vec,
@@ -516,10 +515,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 ));
 
                 let func_typ = func.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, func_typ);
+                let (typ, typ_type) = types::build_type(v.builder, func_typ);
 
                 let func = fbsemantic::FunctionExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::FunctionExpressionArgs {
                         loc,
                         params,
@@ -545,7 +544,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 };
 
                 let func_param = fbsemantic::FunctionParameter::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::FunctionParameterArgs {
                         loc,
                         key,
@@ -565,7 +564,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     let mut wrapped_elems = Vec::with_capacity(num_elems);
                     for (e, et) in elems {
                         wrapped_elems.push(fbsemantic::WrappedExpression::create(
-                            &mut v.builder,
+                            v.builder,
                             &fbsemantic::WrappedExpressionArgs {
                                 expression_type: *et,
                                 expression: Some(*e),
@@ -576,10 +575,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 };
                 v.expr_stack.truncate(start);
                 let arr_typ = array.typ.clone();
-                let (typ, typ_type) = types::build_type(&mut v.builder, arr_typ);
+                let (typ, typ_type) = types::build_type(v.builder, arr_typ);
 
                 let array = fbsemantic::ArrayExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::ArrayExpressionArgs {
                         loc,
                         elements,
@@ -604,7 +603,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                         let (key, key_type) = elems[i];
                         let (val, val_type) = elems[i + 1];
                         items.push(fbsemantic::DictItem::create(
-                            &mut v.builder,
+                            v.builder,
                             &fbsemantic::DictItemArgs {
                                 key_type,
                                 val_type,
@@ -616,10 +615,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     Some(v.builder.create_vector(items.as_slice()))
                 };
                 v.expr_stack.truncate(start);
-                let (typ, typ_type) = types::build_type(&mut v.builder, dict.typ.clone());
+                let (typ, typ_type) = types::build_type(v.builder, dict.typ.clone());
 
                 let dict = fbsemantic::DictExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::DictExpressionArgs {
                         loc,
                         elements,
@@ -636,7 +635,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::TextPart(tp) => {
                 let text_value = Some(v.builder.create_string(tp.value.as_str()));
                 let text = fbsemantic::StringExpressionPart::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::StringExpressionPartArgs {
                         loc,
                         text_value,
@@ -649,7 +648,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::InterpolatedPart(_) => {
                 let (interpolated_expression, interpolated_expression_type) = v.pop_expr();
                 let inter = fbsemantic::StringExpressionPart::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::StringExpressionPartArgs {
                         loc,
                         interpolated_expression_type,
@@ -670,7 +669,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     Some(vec)
                 };
                 let string = fbsemantic::StringExpression::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::StringExpressionArgs { loc, parts },
                 );
                 v.expr_stack.push((
@@ -683,7 +682,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (init_, init__type) = v.pop_expr();
                 let member = v.pop_expr_with_kind(fbsemantic::Expression::MemberExpression);
                 let mem = fbsemantic::MemberAssignment::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::MemberAssignmentArgs {
                         loc,
                         member,
@@ -702,10 +701,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let identifier = v.pop_ident();
 
                 let poly = native.poly_type_of();
-                let typ = Some(types::build_polytype(&mut v.builder, poly));
+                let typ = Some(types::build_polytype(v.builder, poly));
 
                 let native = fbsemantic::NativeVariableAssignment::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::NativeVariableAssignmentArgs {
                         loc,
                         identifier,
@@ -723,7 +722,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::ReturnStmt(_) => {
                 let (argument, argument_type) = v.pop_expr();
                 let return_st = fbsemantic::ReturnStatement::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::ReturnStatementArgs {
                         loc,
                         argument_type,
@@ -739,7 +738,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::ExprStmt(_) => {
                 let (expression, expression_type) = v.pop_expr();
                 let expr = fbsemantic::ExpressionStatement::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::ExpressionStatementArgs {
                         loc,
                         expression_type,
@@ -768,7 +767,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 };
 
                 let test = fbsemantic::TestStatement::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::TestStatementArgs { loc, assignment },
                 );
                 v.stmts
@@ -785,7 +784,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::BuiltinStmt(builtin) => {
                 let id = v.pop_ident();
                 let builtin = fbsemantic::BuiltinStatement::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::BuiltinStatementArgs { loc, id },
                 );
                 v.stmts.push((
@@ -826,7 +825,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     }
                 };
                 let opt = fbsemantic::OptionStatement::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::OptionStatementArgs {
                         loc,
                         assignment_type,
@@ -853,7 +852,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
 
                 let path = v.pop_expr_with_kind(fbsemantic::Expression::StringLiteral);
                 let import = fbsemantic::ImportDeclaration::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::ImportDeclarationArgs { loc, alias, path },
                 );
                 v.import_decls.push(import);
@@ -862,7 +861,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::PackageClause(_) => {
                 let name = v.pop_ident();
                 let pc = fbsemantic::PackageClause::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::PackageClauseArgs { loc, name },
                 );
                 v.package_clause = Some(pc);
@@ -879,7 +878,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let body = Some(v.builder.create_vector(stmt_vec.as_slice()));
 
                 let file = fbsemantic::File::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::FileArgs {
                         loc,
                         package,
@@ -898,7 +897,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     Some(v.builder.create_vector(fs.as_slice()))
                 };
                 v.package = Some(fbsemantic::Package::create(
-                    &mut v.builder,
+                    v.builder,
                     &fbsemantic::PackageArgs {
                         loc,
                         package,
@@ -1036,7 +1035,7 @@ impl<'a, 'b> SerializingVisitorState<'a, 'b> {
 
         for (stmt, stmt_type) in union_stmts {
             let wrapped_st = fbsemantic::WrappedStatement::create(
-                &mut self.builder,
+                self.builder,
                 &fbsemantic::WrappedStatementArgs {
                     statement_type: *stmt_type,
                     statement: Some(*stmt),
@@ -1086,7 +1085,7 @@ impl<'a, 'b> SerializingVisitorState<'a, 'b> {
         let source = self.create_opt_string(&loc.source);
 
         Some(fbsemantic::SourceLocation::create(
-            &mut self.builder,
+            self.builder,
             &fbsemantic::SourceLocationArgs {
                 file,
                 start: Some(&fbsemantic::Position::new(
