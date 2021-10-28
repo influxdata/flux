@@ -225,7 +225,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/spread_test.flux":                                                        "ba59e6f87f4a97e9de2c9716bc41eb4b653181327cb1f3e387a58381acb98611",
 	"stdlib/experimental/stddev_test.flux":                                                        "8d1ac201a4e1e3bcd65d2e97a2746a8aceab8d8c877742048dd4254d1b70e9d9",
 	"stdlib/experimental/sum_test.flux":                                                           "4dee647bd3ca6f33514e18b8f1aff3c470608e6ac29fdc89a590559de118eba3",
-	"stdlib/experimental/table/fill_test.flux":                                                    "84fef4b34f9101736ffed1316afae7fbbe1829dd5873f212052a7a1da23af15f",
+	"stdlib/experimental/table/fill_test.flux":                                                    "e418323af6f9603c3a7bc86caaf71d67b7442586bab190312bfa9fddc2a5997f",
 	"stdlib/experimental/table/table.flux":                                                        "5d0c9282d1fec1e6b6596550069f510e155ad3a02fa1cb4611217a893accfb37",
 	"stdlib/experimental/unique_test.flux":                                                        "52ad71f18bf7fe517cf0024f31947155186fb73a4d3c9aca88a6a4e9a5b9095d",
 	"stdlib/experimental/usage/usage.flux":                                                        "a2d409ef565fafe98e5a514eb9a963b82a0d98d74e1b5162b0b144c990fd25c7",
