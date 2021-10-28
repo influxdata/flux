@@ -23,10 +23,22 @@ import (
 	"go.uber.org/zap"
 )
 
+type key int
+
 const (
-	FluxCompilerType = "flux"
-	ASTCompilerType  = "ast"
+	FluxCompilerType     = "flux"
+	ASTCompilerType      = "ast"
+	runtimeNow       key = iota
 )
+
+// GetRuntimeNow will return the runtime start time for the current context.
+func GetRuntimeNow(ctx context.Context) time.Time {
+	p := ctx.Value(runtimeNow)
+	if p == nil {
+		return time.Time{}
+	}
+	return p.(time.Time)
+}
 
 // AddCompilerMappings adds the Flux specific compiler mappings.
 func AddCompilerMappings(mappings flux.CompilerMappings) error {
@@ -274,6 +286,7 @@ func (p *Program) SetLogger(logger *zap.Logger) {
 
 func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	ctx, cancel := context.WithCancel(ctx)
+	ctx = context.WithValue(ctx, runtimeNow, time.Now())
 
 	// This span gets closed by the query when it is done.
 	s, cctx := opentracing.StartSpanFromContext(ctx, "execute")
