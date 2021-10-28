@@ -10,33 +10,33 @@
 extern crate chrono;
 extern crate derivative;
 
-use crate::ast;
-use crate::semantic::infer;
-use crate::semantic::types;
-use crate::semantic::{
-    env::Environment,
-    import::Importer,
-    infer::{Constraint, Constraints},
-    sub::{Substitutable, Substituter, Substitution},
-    types::{
-        Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
-        TvarKinds,
+use crate::{
+    ast,
+    semantic::{
+        env::Environment,
+        import::Importer,
+        infer,
+        infer::{Constraint, Constraints},
+        sub::{Substitutable, Substituter, Substitution},
+        types,
+        types::{
+            Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
+            TvarKinds,
+        },
     },
 };
 
-use anyhow::{anyhow, bail, Result as AnyhowResult};
-use chrono::prelude::DateTime;
-use chrono::FixedOffset;
-use derivative::Derivative;
-use std::fmt::Debug;
-use std::vec::Vec;
+use std::{fmt::Debug, vec::Vec};
 
+use anyhow::{anyhow, bail, Result as AnyhowResult};
+use chrono::{prelude::DateTime, FixedOffset};
+use derivative::Derivative;
 use derive_more::Display;
 
 /// Result returned from the various 'infer' methods defined in this
-/// module. The result of inferring an expression or statment is an
-/// updated type environment and a set of type constraints to be solved.
-pub type Result = std::result::Result<Constraints, Error>;
+/// module. The result of inferring an expression or statement is a
+/// set of type constraints to be solved.
+pub type Result<T = Constraints> = std::result::Result<T, Error>;
 
 /// Error returned from the various 'infer' methods defined in this
 /// module.
@@ -331,7 +331,7 @@ where
         .infer(&mut infer, importer)
         .map_err(|err| err.apply(infer.sub))?;
 
-    infer::solve(&cons, &mut TvarKinds::new(), infer.sub).map_err(|err| err.apply(infer.sub))?;
+    infer::solve(&cons, infer.sub).map_err(|err| err.apply(infer.sub))?;
     Ok(infer.env)
 }
 
@@ -406,20 +406,20 @@ impl File {
                     Ok(rest)
                 }
                 Statement::Variable(stmt) => {
-                    let cons = stmt.infer(infer)?;
-                    Ok(cons + rest)
+                    stmt.infer(infer)?;
+                    Ok(rest)
                 }
                 Statement::Option(stmt) => {
                     let cons = stmt.infer(infer)?;
                     Ok(cons + rest)
                 }
                 Statement::Expr(stmt) => {
-                    let cons = stmt.infer(infer)?;
-                    Ok(cons + rest)
+                    stmt.infer(infer)?;
+                    Ok(rest)
                 }
                 Statement::Test(stmt) => {
-                    let cons = stmt.infer(infer)?;
-                    Ok(cons + rest)
+                    stmt.infer(infer)?;
+                    Ok(rest)
                 }
                 Statement::TestCase(stmt) => {
                     let cons = stmt.infer(infer)?;
@@ -491,7 +491,10 @@ impl OptionStmt {
                     }]
                     .into())
             }
-            Assignment::Variable(stmt) => stmt.infer(infer),
+            Assignment::Variable(stmt) => {
+                stmt.infer(infer)?;
+                Ok(Constraints::empty())
+            }
         }
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -509,7 +512,7 @@ pub struct BuiltinStmt {
 }
 
 impl BuiltinStmt {
-    fn infer(&self, env: &mut Environment) -> std::result::Result<(), Error> {
+    fn infer(&mut self, env: &mut Environment) -> std::result::Result<(), Error> {
         env.add(self.id.name.clone(), self.typ_expr.clone());
         Ok(())
     }
@@ -527,7 +530,7 @@ pub struct TestStmt {
 }
 
 impl TestStmt {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         self.assignment.infer(infer)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -563,11 +566,11 @@ pub struct ExprStmt {
 }
 
 impl ExprStmt {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         let cons = self.expression.infer(infer)?;
-        infer::solve(&cons, &mut TvarKinds::new(), infer.sub)?;
+        infer::solve(&cons, infer.sub)?;
         infer.env.apply_mut(infer.sub);
-        Ok(cons)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.expression = self.expression.apply(sub);
@@ -638,17 +641,16 @@ impl VariableAssgn {
     // the variable to its newly generalized type in the type environment
     // before inferring the rest of the program.
     //
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         let constraints = self.init.infer(infer)?;
 
-        let mut kinds = TvarKinds::new();
-        infer::solve(&constraints, &mut kinds, infer.sub)?;
+        infer::solve(&constraints, infer.sub)?;
 
         // Apply substitution to the type environment
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        let p = infer::generalize(&infer.env, &kinds, t);
+        let p = infer::generalize(&infer.env, infer.sub.cons(), t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
@@ -660,7 +662,7 @@ impl VariableAssgn {
 
         // Update the type environment
         infer.env.add(String::from(&self.id.name), p);
-        Ok(constraints)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.init = self.init.apply(sub);
@@ -1018,16 +1020,16 @@ impl Block {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         match self {
             Block::Variable(stmt, block) => {
-                let cons = stmt.infer(infer)?;
-                let rest = block.infer(infer)?;
+                stmt.infer(infer)?;
+                let cons = block.infer(infer)?;
 
-                Ok(cons + rest)
+                Ok(cons)
             }
             Block::Expr(stmt, block) => {
-                let cons = stmt.infer(infer)?;
-                let rest = block.infer(infer)?;
+                stmt.infer(infer)?;
+                let cons = block.infer(infer)?;
 
-                Ok(cons + rest)
+                Ok(cons)
             }
             Block::Return(e) => e.infer(infer),
         }
@@ -1105,279 +1107,111 @@ impl BinaryExpr {
         let lcons = self.left.infer(infer)?;
         let rcons = self.right.infer(infer)?;
 
+        let binop_arithmetic_constraints = |kind| {
+            Constraints::from(vec![
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.right.type_of(),
+                    loc: self.right.loc().clone(),
+                },
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.typ.clone(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Kind {
+                    act: self.typ.clone(),
+                    exp: kind,
+                    loc: self.loc.clone(),
+                },
+            ])
+        };
+        let binop_compare_constraints = |kind| {
+            Constraints::from(vec![
+                // https://github.com/influxdata/flux/issues/2393
+                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
+                Constraint::Equal {
+                    act: self.typ.clone(),
+                    exp: MonoType::Bool,
+                    loc: self.loc.clone(),
+                },
+                Constraint::Kind {
+                    act: self.left.type_of(),
+                    exp: kind,
+                    loc: self.left.loc().clone(),
+                },
+                Constraint::Kind {
+                    act: self.right.type_of(),
+                    exp: kind,
+                    loc: self.right.loc().clone(),
+                },
+            ])
+        };
         let cons = match self.operator {
             // The following operators require both sides to be equal.
-            ast::Operator::AdditionOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Addable,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::SubtractionOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Subtractable,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::MultiplicationOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Divisible,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::DivisionOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Divisible,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::PowerOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Divisible,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::ModuloOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.typ.clone(),
-                    exp: Kind::Divisible,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::GreaterThanOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::LessThanOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::EqualOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::NotEqualOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::GreaterThanEqualOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::LessThanEqualOperator => Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.left.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Equatable,
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: Kind::Comparable,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
+            ast::Operator::AdditionOperator => binop_arithmetic_constraints(Kind::Addable),
+            ast::Operator::SubtractionOperator => binop_arithmetic_constraints(Kind::Subtractable),
+            ast::Operator::MultiplicationOperator
+            | ast::Operator::DivisionOperator
+            | ast::Operator::PowerOperator
+            | ast::Operator::ModuloOperator => binop_arithmetic_constraints(Kind::Divisible),
+            ast::Operator::GreaterThanOperator | ast::Operator::LessThanOperator => {
+                binop_compare_constraints(Kind::Comparable)
+            }
+            ast::Operator::EqualOperator | ast::Operator::NotEqualOperator => {
+                binop_compare_constraints(Kind::Equatable)
+            }
+            ast::Operator::GreaterThanEqualOperator | ast::Operator::LessThanEqualOperator => {
+                Constraints::from(vec![
+                    // https://github.com/influxdata/flux/issues/2393
+                    // Constraint::Equal{self.left.type_of(), self.right.type_of()),
+                    Constraint::Equal {
+                        act: self.typ.clone(),
+                        exp: MonoType::Bool,
+                        loc: self.loc.clone(),
+                    },
+                    Constraint::Kind {
+                        act: self.left.type_of(),
+                        exp: Kind::Equatable,
+                        loc: self.left.loc().clone(),
+                    },
+                    Constraint::Kind {
+                        act: self.left.type_of(),
+                        exp: Kind::Comparable,
+                        loc: self.left.loc().clone(),
+                    },
+                    Constraint::Kind {
+                        act: self.right.type_of(),
+                        exp: Kind::Equatable,
+                        loc: self.right.loc().clone(),
+                    },
+                    Constraint::Kind {
+                        act: self.right.type_of(),
+                        exp: Kind::Comparable,
+                        loc: self.right.loc().clone(),
+                    },
+                ])
+            }
             // Regular expression operators.
-            ast::Operator::RegexpMatchOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Equal {
-                    act: self.left.type_of(),
-                    exp: MonoType::String,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Equal {
-                    act: self.right.type_of(),
-                    exp: MonoType::Regexp,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
-            ast::Operator::NotRegexpMatchOperator => Constraints::from(vec![
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-                Constraint::Equal {
-                    act: self.left.type_of(),
-                    exp: MonoType::String,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Equal {
-                    act: self.right.type_of(),
-                    exp: MonoType::Regexp,
-                    loc: self.right.loc().clone(),
-                },
-            ]),
+            ast::Operator::RegexpMatchOperator | ast::Operator::NotRegexpMatchOperator => {
+                Constraints::from(vec![
+                    Constraint::Equal {
+                        act: self.typ.clone(),
+                        exp: MonoType::Bool,
+                        loc: self.loc.clone(),
+                    },
+                    Constraint::Equal {
+                        act: self.left.type_of(),
+                        exp: MonoType::String,
+                        loc: self.left.loc().clone(),
+                    },
+                    Constraint::Equal {
+                        act: self.right.type_of(),
+                        exp: MonoType::Regexp,
+                        loc: self.right.loc().clone(),
+                    },
+                ])
+            }
             _ => {
                 return Err(located(
                     self.loc.clone(),
@@ -1581,9 +1415,10 @@ impl MemberExpr {
         let tail = MonoType::Var(infer.sub.fresh());
 
         let r = MonoType::from(types::Record::Extension { head, tail });
-        let t = self.object.type_of();
 
         let cons = self.object.infer(infer)?;
+        let t = self.object.type_of();
+
         Ok(cons
             + vec![Constraint::Equal {
                 exp: r,
@@ -1786,7 +1621,7 @@ pub struct IdentifierExpr {
 }
 
 impl IdentifierExpr {
-    fn infer(&self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let poly = infer.env.lookup(&self.name).ok_or_else(|| {
             located(
                 self.loc.clone(),
@@ -1795,12 +1630,8 @@ impl IdentifierExpr {
         })?;
 
         let (t, cons) = infer::instantiate(poly.clone(), infer.sub, self.loc.clone());
-        Ok(cons
-            + Constraints::from(vec![Constraint::Equal {
-                act: t,
-                exp: self.typ.clone(),
-                loc: self.loc.clone(),
-            }]))
+        self.typ = t;
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1825,7 +1656,7 @@ pub struct BooleanLit {
 }
 
 impl BooleanLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1842,7 +1673,7 @@ pub struct IntegerLit {
 }
 
 impl IntegerLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1859,7 +1690,7 @@ pub struct FloatLit {
 }
 
 impl FloatLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1876,7 +1707,7 @@ pub struct RegexpLit {
 }
 
 impl RegexpLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1893,7 +1724,7 @@ pub struct StringLit {
 }
 
 impl StringLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1910,7 +1741,7 @@ pub struct UintLit {
 }
 
 impl UintLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1927,7 +1758,7 @@ pub struct DateTimeLit {
 }
 
 impl DateTimeLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -1961,7 +1792,7 @@ pub struct DurationLit {
 }
 
 impl DurationLit {
-    fn infer(&self) -> Result {
+    fn infer(&mut self) -> Result {
         Ok(Constraints::empty())
     }
     fn apply(self, _: &Substitution) -> Self {

@@ -2,11 +2,14 @@ use std::ops;
 
 use derive_more::Display;
 
-use crate::ast::SourceLocation;
-use crate::semantic::env::Environment;
-use crate::semantic::sub::{Substitutable, Substituter, Substitution};
-use crate::semantic::types;
-use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds};
+use crate::{
+    ast::SourceLocation,
+    semantic::{
+        env::Environment,
+        sub::{Substitutable, Substituter, Substitution},
+        types::{self, minus, Kind, MonoType, PolyType, SubstitutionMap, Tvar, TvarKinds},
+    },
+};
 
 // Type constraints are produced during type inference and come
 // in two flavors.
@@ -97,11 +100,7 @@ impl Substitutable for Error {
 }
 
 // Solve a set of type constraints
-pub fn solve(
-    cons: &Constraints,
-    with: &mut TvarKinds,
-    sub: &mut Substitution,
-) -> Result<(), Error> {
+pub fn solve(cons: &Constraints, sub: &mut Substitution) -> Result<(), Error> {
     for constraint in &cons.0 {
         match constraint {
             Constraint::Kind { exp, act, loc } => {
@@ -109,7 +108,7 @@ pub fn solve(
                 log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
                 act.clone()
                     .apply(sub)
-                    .constrain(*exp, with)
+                    .constrain(*exp, sub.cons())
                     .map_err(|err| Error {
                         loc: loc.clone(),
                         err,
@@ -120,7 +119,7 @@ pub fn solve(
                 let exp = exp.clone();
                 let act = act.clone();
                 log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
-                exp.unify(act, with, sub).map_err(|err| Error {
+                exp.unify(act, sub).map_err(|err| Error {
                     loc: loc.clone(),
                     err,
                 })?;
@@ -141,8 +140,8 @@ pub fn solve(
 pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType {
     let vars = minus(&env.free_vars(), t.free_vars());
     let mut cons = TvarKinds::new();
-    for (tv, kinds) in with {
-        if vars.contains(tv) {
+    for tv in &vars {
+        if let Some(kinds) = with.get(tv) {
             cons.insert(*tv, kinds.to_owned());
         }
     }
