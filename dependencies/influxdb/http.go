@@ -483,7 +483,7 @@ func newHttpWriter(writer *api.WriteAPIImpl) (*httpWriter, error) {
 		for err := range w.errChan {
 			if err != nil {
 				select {
-				case w.latestError <- err:
+				case w.latestError <- handleError(err):
 				default:
 				}
 			}

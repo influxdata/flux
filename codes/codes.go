@@ -77,7 +77,7 @@ const (
 	PermissionDenied Code = 7
 
 	// ResourceExhausted indicates some resource has been exhausted, perhaps
-	// a per-user quota, or perhaps the the memory allocation limit has been
+	// a per-user quota, or perhaps the memory allocation limit has been
 	// reached.
 	ResourceExhausted Code = 8
 
