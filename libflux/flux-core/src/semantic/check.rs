@@ -9,7 +9,7 @@ use crate::semantic::walk;
 use crate::semantic::walk::Node;
 
 use std::collections::HashMap;
-use std::rc::Rc;
+
 
 // OptionMap maps the name of a Flux option (including an optional package qualifier)
 // to its corresponding option statement.
@@ -138,7 +138,7 @@ fn check_vars<'a>(pkg: &'a nodes::Package, opts: &'a OptionMap) -> Result<()> {
         in_option: false,
         err: None,
     };
-    walk::walk(&mut v, Rc::new(walk::Node::Package(pkg)));
+    walk::walk(&mut v, walk::Node::Package(pkg));
     match v.err {
         Some(e) => Err(e),
         None => Ok(()),
@@ -156,11 +156,11 @@ struct VarVisitor<'a> {
 }
 
 impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
-    fn visit(&mut self, node: Rc<Node<'a>>) -> bool {
+    fn visit(&mut self, node: Node<'a>) -> bool {
         if self.err.is_some() {
             return false;
         }
-        match *node {
+        match node {
             walk::Node::OptionStmt(_) => {
                 self.in_option = true;
             }
@@ -195,8 +195,8 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
         true
     }
 
-    fn done(&mut self, node: Rc<Node<'a>>) {
-        if let walk::Node::FunctionExpr(_) = *node {
+    fn done(&mut self, node: Node<'a>) {
+        if let walk::Node::FunctionExpr(_) = node {
             self.vars_stack.pop();
         }
     }
@@ -219,7 +219,7 @@ fn check_option_dependencies(opts: &OptionMap) -> Result<()> {
             Assignment::Variable(_) => (),
         }
         v.vars_stack[0].clear();
-        walk::walk(&mut v, Rc::new(walk::Node::OptionStmt(o)));
+        walk::walk(&mut v, walk::Node::OptionStmt(o));
         if let Some(id) = v.bad_id {
             let opt_name = get_option_name(o)?;
             return Err(Error::DependentOptions(
@@ -239,12 +239,12 @@ struct OptionDepVisitor<'a> {
 }
 
 impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
-    fn visit(&mut self, node: Rc<Node<'a>>) -> bool {
+    fn visit(&mut self, node: Node<'a>) -> bool {
         if self.bad_id.is_some() {
             return false;
         }
 
-        match *node {
+        match node {
             Node::FunctionExpr(_) => self.vars_stack.push(VariableAssignMap::new()),
             Node::FunctionParameter(fp) => {
                 let name = fp.key.name.as_str();
@@ -274,8 +274,8 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
         true
     }
 
-    fn done(&mut self, node: Rc<Node<'a>>) {
-        if let Node::FunctionExpr(_) = *node {
+    fn done(&mut self, node: Node<'a>) {
+        if let Node::FunctionExpr(_) = node {
             self.vars_stack.pop();
         }
     }

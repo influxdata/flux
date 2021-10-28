@@ -1860,7 +1860,6 @@ mod tests {
     use crate::ast;
     use crate::semantic::types::{MonoType, Tvar};
     use crate::semantic::walk::{walk, Node};
-    use std::rc::Rc;
 
     #[test]
     fn duration_conversion_ok() {
@@ -2099,14 +2098,14 @@ mod tests {
         let pkg = inject_pkg_types(pkg, &sub);
         let mut no_types_checked = 0;
         walk(
-            &mut |node: Rc<Node>| {
+            &mut |node: Node| {
                 let typ = node.type_of();
                 if let Some(typ) = typ {
                     assert_eq!(typ, MonoType::Int);
                     no_types_checked += 1;
                 }
             },
-            Rc::new(Node::Package(&pkg)),
+            Node::Package(&pkg),
         );
         assert_eq!(no_types_checked, 8);
     }

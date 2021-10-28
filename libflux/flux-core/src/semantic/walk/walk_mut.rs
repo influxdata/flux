@@ -3,189 +3,15 @@ use crate::semantic::nodes::*;
 use crate::semantic::types::MonoType;
 use std::fmt;
 
-/// Represents any structure that can appear in the semantic graph.
-/// It also enables mutability of the wrapped semantic node.
-#[derive(Debug)]
-#[allow(missing_docs)]
-pub enum NodeMut<'a> {
-    Package(&'a mut Package),
-    File(&'a mut File),
-    PackageClause(&'a mut PackageClause),
-    ImportDeclaration(&'a mut ImportDeclaration),
-    Identifier(&'a mut Identifier),
-    FunctionParameter(&'a mut FunctionParameter),
-    Block(&'a mut Block),
-    Property(&'a mut Property),
+mk_node!(
+    /// Represents any structure that can appear in the semantic graph.
+    /// It also enables mutability of the wrapped semantic node.
+    #[derive(Debug)]
+    #[allow(missing_docs)]
+    NodeMut mut
+);
 
-    // Expressions.
-    IdentifierExpr(&'a mut IdentifierExpr),
-    ArrayExpr(&'a mut ArrayExpr),
-    DictExpr(&'a mut DictExpr),
-    FunctionExpr(&'a mut FunctionExpr),
-    LogicalExpr(&'a mut LogicalExpr),
-    ObjectExpr(&'a mut ObjectExpr),
-    MemberExpr(&'a mut MemberExpr),
-    IndexExpr(&'a mut IndexExpr),
-    BinaryExpr(&'a mut BinaryExpr),
-    UnaryExpr(&'a mut UnaryExpr),
-    CallExpr(&'a mut CallExpr),
-    ConditionalExpr(&'a mut ConditionalExpr),
-    StringExpr(&'a mut StringExpr),
-    IntegerLit(&'a mut IntegerLit),
-    FloatLit(&'a mut FloatLit),
-    StringLit(&'a mut StringLit),
-    DurationLit(&'a mut DurationLit),
-    UintLit(&'a mut UintLit),
-    BooleanLit(&'a mut BooleanLit),
-    DateTimeLit(&'a mut DateTimeLit),
-    RegexpLit(&'a mut RegexpLit),
-
-    // Statements.
-    ExprStmt(&'a mut ExprStmt),
-    OptionStmt(&'a mut OptionStmt),
-    ReturnStmt(&'a mut ReturnStmt),
-    TestStmt(&'a mut TestStmt),
-    TestCaseStmt(&'a mut TestCaseStmt),
-    BuiltinStmt(&'a mut BuiltinStmt),
-
-    // StringExprPart.
-    TextPart(&'a mut TextPart),
-    InterpolatedPart(&'a mut InterpolatedPart),
-
-    // Assignment.
-    VariableAssgn(&'a mut VariableAssgn), // Native variable assignment
-    MemberAssgn(&'a mut MemberAssgn),
-}
-
-impl<'a> fmt::Display for NodeMut<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            NodeMut::Package(_) => write!(f, "Package"),
-            NodeMut::File(_) => write!(f, "File"),
-            NodeMut::PackageClause(_) => write!(f, "PackageClause"),
-            NodeMut::ImportDeclaration(_) => write!(f, "ImportDeclaration"),
-            NodeMut::Identifier(_) => write!(f, "Identifier"),
-            NodeMut::IdentifierExpr(_) => write!(f, "IdentifierExpr"),
-            NodeMut::ArrayExpr(_) => write!(f, "ArrayExpr"),
-            NodeMut::DictExpr(_) => write!(f, "DictExpr"),
-            NodeMut::FunctionExpr(_) => write!(f, "FunctionExpr"),
-            NodeMut::FunctionParameter(_) => write!(f, "FunctionParameter"),
-            NodeMut::LogicalExpr(_) => write!(f, "LogicalExpr"),
-            NodeMut::ObjectExpr(_) => write!(f, "ObjectExpr"),
-            NodeMut::MemberExpr(_) => write!(f, "MemberExpr"),
-            NodeMut::IndexExpr(_) => write!(f, "IndexExpr"),
-            NodeMut::BinaryExpr(_) => write!(f, "BinaryExpr"),
-            NodeMut::UnaryExpr(_) => write!(f, "UnaryExpr"),
-            NodeMut::CallExpr(_) => write!(f, "CallExpr"),
-            NodeMut::ConditionalExpr(_) => write!(f, "ConditionalExpr"),
-            NodeMut::StringExpr(_) => write!(f, "StringExpr"),
-            NodeMut::IntegerLit(_) => write!(f, "IntegerLit"),
-            NodeMut::FloatLit(_) => write!(f, "FloatLit"),
-            NodeMut::StringLit(_) => write!(f, "StringLit"),
-            NodeMut::DurationLit(_) => write!(f, "DurationLit"),
-            NodeMut::UintLit(_) => write!(f, "UintLit"),
-            NodeMut::BooleanLit(_) => write!(f, "BooleanLit"),
-            NodeMut::DateTimeLit(_) => write!(f, "DateTimeLit"),
-            NodeMut::RegexpLit(_) => write!(f, "RegexpLit"),
-            NodeMut::ExprStmt(_) => write!(f, "ExprStmt"),
-            NodeMut::OptionStmt(_) => write!(f, "OptionStmt"),
-            NodeMut::ReturnStmt(_) => write!(f, "ReturnStmt"),
-            NodeMut::TestStmt(_) => write!(f, "TestStmt"),
-            NodeMut::TestCaseStmt(_) => write!(f, "TestCaseStmt"),
-            NodeMut::BuiltinStmt(_) => write!(f, "BuiltinStmt"),
-            NodeMut::Block(n) => match n {
-                Block::Variable(_, _) => write!(f, "Block::Variable"),
-                Block::Expr(_, _) => write!(f, "Block::Expr"),
-                Block::Return(_) => write!(f, "Block::Return"),
-            },
-            NodeMut::Property(_) => write!(f, "Property"),
-            NodeMut::TextPart(_) => write!(f, "TextPart"),
-            NodeMut::InterpolatedPart(_) => write!(f, "InterpolatedPart"),
-            NodeMut::VariableAssgn(_) => write!(f, "VariableAssgn"),
-            NodeMut::MemberAssgn(_) => write!(f, "MemberAssgn"),
-        }
-    }
-}
-impl<'a> NodeMut<'a> {
-    /// Returns the source location of a semantic graph node.
-    pub fn loc(&self) -> &SourceLocation {
-        match self {
-            NodeMut::Package(n) => &n.loc,
-            NodeMut::File(n) => &n.loc,
-            NodeMut::PackageClause(n) => &n.loc,
-            NodeMut::ImportDeclaration(n) => &n.loc,
-            NodeMut::Identifier(n) => &n.loc,
-            NodeMut::IdentifierExpr(n) => &n.loc,
-            NodeMut::ArrayExpr(n) => &n.loc,
-            NodeMut::DictExpr(n) => &n.loc,
-            NodeMut::FunctionExpr(n) => &n.loc,
-            NodeMut::FunctionParameter(n) => &n.loc,
-            NodeMut::LogicalExpr(n) => &n.loc,
-            NodeMut::ObjectExpr(n) => &n.loc,
-            NodeMut::MemberExpr(n) => &n.loc,
-            NodeMut::IndexExpr(n) => &n.loc,
-            NodeMut::BinaryExpr(n) => &n.loc,
-            NodeMut::UnaryExpr(n) => &n.loc,
-            NodeMut::CallExpr(n) => &n.loc,
-            NodeMut::ConditionalExpr(n) => &n.loc,
-            NodeMut::StringExpr(n) => &n.loc,
-            NodeMut::IntegerLit(n) => &n.loc,
-            NodeMut::FloatLit(n) => &n.loc,
-            NodeMut::StringLit(n) => &n.loc,
-            NodeMut::DurationLit(n) => &n.loc,
-            NodeMut::UintLit(n) => &n.loc,
-            NodeMut::BooleanLit(n) => &n.loc,
-            NodeMut::DateTimeLit(n) => &n.loc,
-            NodeMut::RegexpLit(n) => &n.loc,
-            NodeMut::ExprStmt(n) => &n.loc,
-            NodeMut::OptionStmt(n) => &n.loc,
-            NodeMut::ReturnStmt(n) => &n.loc,
-            NodeMut::TestStmt(n) => &n.loc,
-            NodeMut::TestCaseStmt(n) => &n.loc,
-            NodeMut::BuiltinStmt(n) => &n.loc,
-            NodeMut::Block(n) => n.loc(),
-            NodeMut::Property(n) => &n.loc,
-            NodeMut::TextPart(n) => &n.loc,
-            NodeMut::InterpolatedPart(n) => &n.loc,
-            NodeMut::VariableAssgn(n) => &n.loc,
-            NodeMut::MemberAssgn(n) => &n.loc,
-        }
-    }
-
-    /// Returns the type of a semantic graph node.
-    pub fn type_of(&self) -> Option<MonoType> {
-        match self {
-            NodeMut::IdentifierExpr(n) => Some(Expression::Identifier((*n).clone()).type_of()),
-            NodeMut::ArrayExpr(n) => Some(Expression::Array(Box::new((*n).clone())).type_of()),
-            NodeMut::DictExpr(n) => Some(Expression::Dict(Box::new((*n).clone())).type_of()),
-            NodeMut::FunctionExpr(n) => {
-                Some(Expression::Function(Box::new((*n).clone())).type_of())
-            }
-            NodeMut::LogicalExpr(n) => Some(Expression::Logical(Box::new((*n).clone())).type_of()),
-            NodeMut::ObjectExpr(n) => Some(Expression::Object(Box::new((*n).clone())).type_of()),
-            NodeMut::MemberExpr(n) => Some(Expression::Member(Box::new((*n).clone())).type_of()),
-            NodeMut::IndexExpr(n) => Some(Expression::Index(Box::new((*n).clone())).type_of()),
-            NodeMut::BinaryExpr(n) => Some(Expression::Binary(Box::new((*n).clone())).type_of()),
-            NodeMut::UnaryExpr(n) => Some(Expression::Unary(Box::new((*n).clone())).type_of()),
-            NodeMut::CallExpr(n) => Some(Expression::Call(Box::new((*n).clone())).type_of()),
-            NodeMut::ConditionalExpr(n) => {
-                Some(Expression::Conditional(Box::new((*n).clone())).type_of())
-            }
-            NodeMut::StringExpr(n) => {
-                Some(Expression::StringExpr(Box::new((*n).clone())).type_of())
-            }
-            NodeMut::IntegerLit(n) => Some(Expression::Integer((*n).clone()).type_of()),
-            NodeMut::FloatLit(n) => Some(Expression::Float((*n).clone()).type_of()),
-            NodeMut::StringLit(n) => Some(Expression::StringLit((*n).clone()).type_of()),
-            NodeMut::DurationLit(n) => Some(Expression::Duration((*n).clone()).type_of()),
-            NodeMut::UintLit(n) => Some(Expression::Uint((*n).clone()).type_of()),
-            NodeMut::BooleanLit(n) => Some(Expression::Boolean((*n).clone()).type_of()),
-            NodeMut::DateTimeLit(n) => Some(Expression::DateTime((*n).clone()).type_of()),
-            NodeMut::RegexpLit(n) => Some(Expression::Regexp((*n).clone()).type_of()),
-            _ => None,
-        }
-    }
-
+impl NodeMut<'_> {
     #[allow(missing_docs)]
     pub fn set_loc(&mut self, loc: SourceLocation) {
         match self {
@@ -229,58 +55,6 @@ impl<'a> NodeMut<'a> {
             NodeMut::VariableAssgn(ref mut n) => n.loc = loc,
             NodeMut::MemberAssgn(ref mut n) => n.loc = loc,
         };
-    }
-}
-
-// Private utility functions.
-impl<'a> NodeMut<'a> {
-    fn from_expr(expr: &'a mut Expression) -> NodeMut {
-        match *expr {
-            Expression::Identifier(ref mut e) => NodeMut::IdentifierExpr(e),
-            Expression::Array(ref mut e) => NodeMut::ArrayExpr(e),
-            Expression::Dict(ref mut e) => NodeMut::DictExpr(e),
-            Expression::Function(ref mut e) => NodeMut::FunctionExpr(e),
-            Expression::Logical(ref mut e) => NodeMut::LogicalExpr(e),
-            Expression::Object(ref mut e) => NodeMut::ObjectExpr(e),
-            Expression::Member(ref mut e) => NodeMut::MemberExpr(e),
-            Expression::Index(ref mut e) => NodeMut::IndexExpr(e),
-            Expression::Binary(ref mut e) => NodeMut::BinaryExpr(e),
-            Expression::Unary(ref mut e) => NodeMut::UnaryExpr(e),
-            Expression::Call(ref mut e) => NodeMut::CallExpr(e),
-            Expression::Conditional(ref mut e) => NodeMut::ConditionalExpr(e),
-            Expression::StringExpr(ref mut e) => NodeMut::StringExpr(e),
-            Expression::Integer(ref mut e) => NodeMut::IntegerLit(e),
-            Expression::Float(ref mut e) => NodeMut::FloatLit(e),
-            Expression::StringLit(ref mut e) => NodeMut::StringLit(e),
-            Expression::Duration(ref mut e) => NodeMut::DurationLit(e),
-            Expression::Uint(ref mut e) => NodeMut::UintLit(e),
-            Expression::Boolean(ref mut e) => NodeMut::BooleanLit(e),
-            Expression::DateTime(ref mut e) => NodeMut::DateTimeLit(e),
-            Expression::Regexp(ref mut e) => NodeMut::RegexpLit(e),
-        }
-    }
-    fn from_stmt(stmt: &'a mut Statement) -> NodeMut {
-        match *stmt {
-            Statement::Expr(ref mut s) => NodeMut::ExprStmt(s),
-            Statement::Variable(ref mut s) => NodeMut::VariableAssgn(s),
-            Statement::Option(ref mut s) => NodeMut::OptionStmt(s),
-            Statement::Return(ref mut s) => NodeMut::ReturnStmt(s),
-            Statement::Test(ref mut s) => NodeMut::TestStmt(s),
-            Statement::TestCase(ref mut s) => NodeMut::TestCaseStmt(s),
-            Statement::Builtin(ref mut s) => NodeMut::BuiltinStmt(s),
-        }
-    }
-    fn from_string_expr_part(sp: &'a mut StringExprPart) -> NodeMut {
-        match *sp {
-            StringExprPart::Text(ref mut t) => NodeMut::TextPart(t),
-            StringExprPart::Interpolated(ref mut e) => NodeMut::InterpolatedPart(e),
-        }
-    }
-    fn from_assignment(a: &'a mut Assignment) -> NodeMut {
-        match *a {
-            Assignment::Variable(ref mut v) => NodeMut::VariableAssgn(v),
-            Assignment::Member(ref mut m) => NodeMut::MemberAssgn(m),
-        }
     }
 }
 
@@ -334,42 +108,42 @@ pub trait VisitorMut: Sized {
 
 /// Recursively visits children of a node given a [`VisitorMut`].
 /// Nodes are visited in depth-first order.
-pub fn walk_mut<T>(v: &mut T, mut node: &mut NodeMut)
+pub fn walk_mut<T>(v: &mut T, node: &mut NodeMut)
 where
     T: VisitorMut,
 {
-    if v.visit(&mut node) {
+    if v.visit(node) {
         match node {
             NodeMut::Package(ref mut n) => {
-                for mut file in n.files.iter_mut() {
-                    walk_mut(v, &mut NodeMut::File(&mut file));
+                for file in n.files.iter_mut() {
+                    walk_mut(v, &mut NodeMut::File(file));
                 }
             }
             NodeMut::File(ref mut n) => {
-                if let Some(mut pkg) = n.package.as_mut() {
-                    walk_mut(v, &mut NodeMut::PackageClause(&mut pkg));
+                if let Some(pkg) = n.package.as_mut() {
+                    walk_mut(v, &mut NodeMut::PackageClause(pkg));
                 }
-                for mut imp in n.imports.iter_mut() {
-                    walk_mut(v, &mut NodeMut::ImportDeclaration(&mut imp));
+                for imp in n.imports.iter_mut() {
+                    walk_mut(v, &mut NodeMut::ImportDeclaration(imp));
                 }
-                for mut stmt in n.body.iter_mut() {
-                    walk_mut(v, &mut NodeMut::from_stmt(&mut stmt));
+                for stmt in n.body.iter_mut() {
+                    walk_mut(v, &mut NodeMut::from_stmt(stmt));
                 }
             }
             NodeMut::PackageClause(ref mut n) => {
                 walk_mut(v, &mut NodeMut::Identifier(&mut n.name));
             }
             NodeMut::ImportDeclaration(ref mut n) => {
-                if let Some(mut alias) = n.alias.as_mut() {
-                    walk_mut(v, &mut NodeMut::Identifier(&mut alias));
+                if let Some(alias) = n.alias.as_mut() {
+                    walk_mut(v, &mut NodeMut::Identifier(alias));
                 }
                 walk_mut(v, &mut NodeMut::StringLit(&mut n.path));
             }
             NodeMut::Identifier(_) => {}
             NodeMut::IdentifierExpr(_) => {}
             NodeMut::ArrayExpr(ref mut n) => {
-                for mut element in n.elements.iter_mut() {
-                    walk_mut(v, &mut NodeMut::from_expr(&mut element));
+                for element in n.elements.iter_mut() {
+                    walk_mut(v, &mut NodeMut::from_expr(element));
                 }
             }
             NodeMut::DictExpr(ref mut n) => {
@@ -379,15 +153,15 @@ where
                 }
             }
             NodeMut::FunctionExpr(ref mut n) => {
-                for mut param in n.params.iter_mut() {
-                    walk_mut(v, &mut NodeMut::FunctionParameter(&mut param));
+                for param in n.params.iter_mut() {
+                    walk_mut(v, &mut NodeMut::FunctionParameter(param));
                 }
                 walk_mut(v, &mut NodeMut::Block(&mut n.body));
             }
             NodeMut::FunctionParameter(ref mut n) => {
                 walk_mut(v, &mut NodeMut::Identifier(&mut n.key));
-                if let Some(mut def) = n.default.as_mut() {
-                    walk_mut(v, &mut NodeMut::from_expr(&mut def));
+                if let Some(def) = n.default.as_mut() {
+                    walk_mut(v, &mut NodeMut::from_expr(def));
                 }
             }
             NodeMut::LogicalExpr(ref mut n) => {
@@ -395,11 +169,11 @@ where
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.right));
             }
             NodeMut::ObjectExpr(ref mut n) => {
-                if let Some(mut i) = n.with.as_mut() {
-                    walk_mut(v, &mut NodeMut::IdentifierExpr(&mut i));
+                if let Some(i) = n.with.as_mut() {
+                    walk_mut(v, &mut NodeMut::IdentifierExpr(i));
                 }
-                for mut prop in n.properties.iter_mut() {
-                    walk_mut(v, &mut NodeMut::Property(&mut prop));
+                for prop in n.properties.iter_mut() {
+                    walk_mut(v, &mut NodeMut::Property(prop));
                 }
             }
             NodeMut::MemberExpr(ref mut n) => {
@@ -418,11 +192,11 @@ where
             }
             NodeMut::CallExpr(ref mut n) => {
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.callee));
-                if let Some(mut p) = n.pipe.as_mut() {
-                    walk_mut(v, &mut NodeMut::from_expr(&mut p));
+                if let Some(p) = n.pipe.as_mut() {
+                    walk_mut(v, &mut NodeMut::from_expr(p));
                 }
-                for mut arg in n.arguments.iter_mut() {
-                    walk_mut(v, &mut NodeMut::Property(&mut arg));
+                for arg in n.arguments.iter_mut() {
+                    walk_mut(v, &mut NodeMut::Property(arg));
                 }
             }
             NodeMut::ConditionalExpr(ref mut n) => {
@@ -431,8 +205,8 @@ where
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.alternate));
             }
             NodeMut::StringExpr(ref mut n) => {
-                for mut part in n.parts.iter_mut() {
-                    walk_mut(v, &mut NodeMut::from_string_expr_part(&mut part));
+                for part in n.parts.iter_mut() {
+                    walk_mut(v, &mut NodeMut::from_string_expr_part(part));
                 }
             }
             NodeMut::IntegerLit(_) => {}
@@ -491,7 +265,7 @@ where
             }
         };
     }
-    v.done(&mut node);
+    v.done(node);
 }
 
 /// Implementation of VisitorMut for a mutable closure.
