@@ -47,9 +47,6 @@ func (m *PostgresRowReader) GetNextRow() ([]values.Value, error) {
 		case time.Time:
 			row[i] = values.NewTime(values.ConvertTime(col))
 		case []uint8:
-			// Hack for MySQL, might need to work with charset?
-			// Can't do boolean with MySQL - stores BOOLEANs as TINYINTs (0 or 1)
-			// No way to distinguish if intended int or bool
 			switch m.columnTypes[i] {
 			case flux.TInt:
 				newInt, err := UInt8ToInt64(col)
@@ -63,7 +60,6 @@ func (m *PostgresRowReader) GetNextRow() ([]values.Value, error) {
 					return nil, err
 				}
 				row[i] = values.NewFloat(newFloat)
-			// This works, but you can also just just add the DSN parameter parseTime=true (see line 136)
 			case flux.TTime:
 				t, err := time.Parse(layout, string(col))
 				if err != nil {
