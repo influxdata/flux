@@ -7,10 +7,13 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/dependencies/influxdb"
 	protocol "github.com/influxdata/line-protocol"
@@ -19,6 +22,7 @@ import (
 type RoundTrip struct {
 	RequestValidator      func(_ *http.Request) error
 	RequestValidatorError error
+	HandlerFn             func(req *http.Request) (*http.Response, error)
 
 	Bodies bytes.Buffer
 }
@@ -30,6 +34,10 @@ func (f *RoundTrip) RoundTrip(req *http.Request) (*http.Response, error) {
 	_, err := io.Copy(&f.Bodies, req.Body)
 	if err != nil {
 		panic(fmt.Sprintf("Error while copying request body: %s", err))
+	}
+
+	if f.HandlerFn != nil {
+		return f.HandlerFn(req)
 	}
 
 	return &http.Response{
@@ -68,7 +76,7 @@ func diskMetric(usage float64, ns int) protocol.Metric {
 	return met
 }
 
-func Test_httpWriter_Write(t *testing.T) {
+func TestHttpWriter_Write(t *testing.T) {
 	tests := []struct {
 		name     string
 		metric   [][]protocol.Metric
@@ -156,5 +164,70 @@ disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000004
 				t.Errorf(cmp.Diff(roundTripper.Bodies.String(), tt.wantBody))
 			}
 		})
+	}
+}
+
+func TestHttpWriter_Write_Error(t *testing.T) {
+	h := influxdb.HttpProvider{
+		DefaultConfig: influxdb.Config{
+			Host:  "http://myhost.com:8085",
+			Token: "mytoken",
+		},
+	}
+	deps := dependenciestest.Default()
+	roundTripper := &RoundTrip{
+		RequestValidator: func(req *http.Request) error {
+			return nil
+		},
+		HandlerFn: func(req *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: http.StatusTooManyRequests,
+				Status:     http.StatusText(http.StatusTooManyRequests),
+
+				// Send response to be tested
+				Body: ioutil.NopCloser(strings.NewReader(`{"code":"too many requests","message":"write limit reached"}`)),
+
+				Header: http.Header{
+					"Content-Type": []string{"application/json"},
+				},
+			}, nil
+		},
+	}
+	deps.Deps.HTTPClient = &http.Client{
+		Transport: roundTripper,
+	}
+	ctx := deps.Inject(context.Background())
+	writer, err := h.WriterFor(ctx, influxdb.Config{
+		Org:    influxdb.NameOrID{Name: "myorg"},
+		Bucket: influxdb.NameOrID{Name: "mybucket"},
+	})
+	if err != nil {
+		t.Errorf("WriterFor() error = %v", err)
+	}
+
+	// We're going to write a metric. It's not really guaranteed
+	// when we will receive the error and we probably won't receive
+	// an error when only writing one metric, but we'll check anyway.
+	//
+	// An error on Write or Close is what we are looking for.
+	metrics := []protocol.Metric{
+		cpuMetric(95, 1),
+	}
+	err = writer.Write(metrics...)
+	if closeErr := writer.Close(); err == nil {
+		err = closeErr
+	}
+
+	if err == nil {
+		t.Error("expected error, got nil")
+	} else if ferr, ok := err.(*flux.Error); !ok {
+		t.Errorf("expected flux error, but got a non-flux error: %v", err)
+	} else {
+		if want, got := codes.ResourceExhausted, ferr.Code; want != got {
+			t.Errorf("unexpected code -want/+got:\n\t- %s\n\t+ %s", want, got)
+		}
+		if want, got := "write limit reached", ferr.Msg; want != got {
+			t.Errorf("unexpected message -want/+got:\n\t- %s\n\t+ %s", want, got)
+		}
 	}
 }

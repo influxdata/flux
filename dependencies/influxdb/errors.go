@@ -4,6 +4,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/influxdb-client-go/v2/api/http"
 )
 
 func handleError(target interface{}) error {
@@ -23,6 +24,21 @@ func handleError(target interface{}) error {
 		}
 		return internalErr
 	}
+
+	if err, ok := target.(error); ok {
+		var httpErr *http.Error
+		if errors.As(err, &httpErr) {
+			internalErr := &flux.Error{
+				Code: handleErrorCode(httpErr.Code),
+				Msg:  httpErr.Message,
+			}
+			if httpErr.Err != nil {
+				internalErr.Err = handleError(httpErr.Err)
+			}
+			return internalErr
+		}
+		return err
+	}
 	return nil
 }
 
@@ -40,6 +56,8 @@ func handleErrorCode(code string) codes.Code {
 		return codes.PermissionDenied
 	case "unauthorized":
 		return codes.Unauthenticated
+	case "too many requests":
+		return codes.ResourceExhausted
 	default:
 		return codes.Unknown
 	}
