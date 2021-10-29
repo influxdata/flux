@@ -203,6 +203,12 @@ func (t *fillTransformation) RetractTable(id execute.DatasetID, key flux.GroupKe
 
 func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	colIdx := execute.ColIdx(t.spec.Column, tbl.Cols())
+	if colIdx < 0 && t.spec.UsePrevious {
+		// usePrevious was used on a column that doesn't exist. In this case, just
+		// act as a passthrough. This functionality says "I was provided a non-existent
+		// value, so the new value also doesn't exist.
+		return t.d.Process(tbl)
+	}
 	key := tbl.Key()
 	if idx := execute.ColIdx(t.spec.Column, key.Cols()); idx >= 0 {
 		if key.IsNull(idx) {

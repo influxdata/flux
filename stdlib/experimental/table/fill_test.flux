@@ -131,3 +131,31 @@ testcase idempotent_planner_rule {
     expect.planner(rules: ["experimental/table.IdempotentTableFill": 1])
     test_idempotent()
 }
+
+testcase fill_unknown_column {
+    want = testing.loadMem(
+        csv: "
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,string
+#group,false,false,true,true,false,true,true,false,true
+#default,_result,,,,,,,,
+,result,table,_start,_stop,_time,_measurement,_field,_value,t0
+,,0,2021-04-13T09:00:00Z,2021-04-13T09:15:00Z,2021-04-13T09:00:00Z,m0,f0,2.0,a
+,,0,2021-04-13T09:00:00Z,2021-04-13T09:15:00Z,2021-04-13T09:05:00Z,m0,f0,9.0,a
+,,1,2021-04-13T09:15:00Z,2021-04-13T09:30:00Z,2021-04-13T09:15:00Z,m0,f0,7.0,a
+,,1,2021-04-13T09:15:00Z,2021-04-13T09:30:00Z,2021-04-13T09:25:00Z,m0,f0,3.0,a
+,,2,2021-04-13T09:45:00Z,2021-04-13T10:00:00Z,2021-04-13T09:45:00Z,m0,f0,5.0,a
+,,2,2021-04-13T09:45:00Z,2021-04-13T10:00:00Z,2021-04-13T09:55:00Z,m0,f0,1.0,a
+,,3,2021-04-13T09:00:00Z,2021-04-13T09:15:00Z,2021-04-13T09:05:00Z,m0,f0,4.0,b
+,,3,2021-04-13T09:00:00Z,2021-04-13T09:15:00Z,2021-04-13T09:10:00Z,m0,f0,1.0,b
+,,4,2021-04-13T09:15:00Z,2021-04-13T09:30:00Z,2021-04-13T09:15:00Z,m0,f0,2.0,b
+,,5,2021-04-13T09:30:00Z,2021-04-13T09:45:00Z,2021-04-13T09:30:00Z,m0,f0,5.0,b
+,,5,2021-04-13T09:30:00Z,2021-04-13T09:45:00Z,2021-04-13T09:35:00Z,m0,f0,6.0,b
+,,5,2021-04-13T09:30:00Z,2021-04-13T09:45:00Z,2021-04-13T09:40:00Z,m0,f0,8.0,b
+",
+    )
+    got = loadData()
+        |> window(every: 15m)
+        |> fill(column: "nonexistent", usePrevious: true)
+
+    testing.diff(got, want) |> yield()
+}
