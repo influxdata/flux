@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"cloud.google.com/go/bigtable"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/bigtable"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -148,7 +148,8 @@ func NewBigtableDecoder(reader *execute.RowReader, administration execute.Admini
 var _ execute.SourceDecoder = (*BigtableDecoder)(nil)
 
 func (c *BigtableDecoder) Connect(ctx context.Context) error {
-	client, err := bigtable.NewClient(ctx, c.spec.Project, c.spec.Instance, option.WithCredentialsJSON([]byte(c.spec.Token)))
+	provider := bigtable.GetProvider(ctx)
+	client, err := provider.NewClient(ctx, c.spec.Project, c.spec.Instance, option.WithCredentialsJSON([]byte(c.spec.Token)))
 	if err != nil {
 		return err
 	}

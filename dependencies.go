@@ -2,6 +2,9 @@ package flux
 
 import (
 	"context"
+	"net"
+	"syscall"
+	"time"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
@@ -108,4 +111,32 @@ func NewDefaultDependencies() Deps {
 // Accessing any dependency will result in an error.
 func NewEmptyDependencies() Dependencies {
 	return Deps{}
+}
+
+// GetDialer will return a net.Dialer using the injected dependencies
+// within the context.Context.
+func GetDialer(ctx context.Context) (*net.Dialer, error) {
+	deps := GetDependencies(ctx)
+	url, err := deps.URLValidator()
+	if err != nil {
+		return nil, err
+	}
+
+	// Control is called after DNS lookup, but before the
+	// network connection is initiated.
+	control := func(network, address string, c syscall.RawConn) error {
+		host, _, err := net.SplitHostPort(address)
+		if err != nil {
+			return err
+		}
+
+		ip := net.ParseIP(host)
+		return url.ValidateIP(ip)
+	}
+
+	return &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+		Control:   control,
+	}, nil
 }
