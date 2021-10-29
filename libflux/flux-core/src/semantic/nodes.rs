@@ -14,14 +14,13 @@ use crate::{
     ast,
     semantic::{
         env::Environment,
+        errors::Errors,
         import::Importer,
-        infer,
-        infer::{Constraint, Constraints},
+        infer::{self, Constraint, Constraints},
         sub::{Substitutable, Substituter, Substitution},
-        types,
         types::{
-            Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
-            TvarKinds,
+            self, Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap,
+            Tvar, TvarKinds,
         },
     },
 };
@@ -139,6 +138,15 @@ impl From<infer::Error> for Error {
 struct InferState<'a> {
     sub: &'a mut Substitution,
     env: Environment,
+    errors: Errors<Error>,
+}
+
+impl InferState<'_> {
+    fn solve(&mut self, cons: &Constraints) {
+        if let Err(err) = infer::solve(cons, self.sub) {
+            self.errors.push(err.into());
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -322,17 +330,28 @@ pub fn infer_package<T>(
     env: Environment,
     sub: &mut Substitution,
     importer: &mut T,
-) -> std::result::Result<Environment, Error>
+) -> std::result::Result<Environment, Errors<Error>>
 where
     T: Importer,
 {
-    let mut infer = InferState { sub, env };
+    let mut infer = InferState {
+        sub,
+        env,
+        errors: Errors::new(),
+    };
     let cons = pkg
         .infer(&mut infer, importer)
         .map_err(|err| err.apply(infer.sub))?;
 
-    infer::solve(&cons, infer.sub).map_err(|err| err.apply(infer.sub))?;
-    Ok(infer.env)
+    infer.solve(&cons);
+    if infer.errors.has_errors() {
+        for err in &mut infer.errors {
+            err.apply_mut(infer.sub);
+        }
+        Err(infer.errors)
+    } else {
+        Ok(infer.env)
+    }
 }
 
 /// Applies the substitution to the entire package.
@@ -568,7 +587,7 @@ pub struct ExprStmt {
 impl ExprStmt {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         let cons = self.expression.infer(infer)?;
-        infer::solve(&cons, infer.sub)?;
+        infer.solve(&cons);
         infer.env.apply_mut(infer.sub);
         Ok(())
     }
@@ -644,7 +663,7 @@ impl VariableAssgn {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
         let constraints = self.init.infer(infer)?;
 
-        infer::solve(&constraints, infer.sub)?;
+        infer.solve(&constraints);
 
         // Apply substitution to the type environment
         infer.env.apply_mut(infer.sub);
