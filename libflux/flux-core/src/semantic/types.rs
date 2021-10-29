@@ -690,6 +690,23 @@ impl MonoType {
             MonoType::Fun(fun) => fun.contains(tv),
         }
     }
+
+    pub(crate) fn parameter(&self, field: &str) -> Option<&MonoType> {
+        match self {
+            MonoType::Fun(f) => f.req.get(field).or_else(|| f.opt.get(field)).or_else(|| {
+                f.pipe
+                    .as_ref()
+                    .and_then(|pipe| if pipe.k == field { Some(&pipe.v) } else { None })
+            }),
+            _ => None,
+        }
+    }
+    pub(crate) fn field(&self, field: &str) -> Option<&MonoType> {
+        match self {
+            MonoType::Record(r) => r.fields().find(|p| p.k == field).map(|p| &p.v),
+            _ => None,
+        }
+    }
 }
 
 /// `Tvar` stands for *type variable*.
@@ -1210,6 +1227,20 @@ impl Record {
                 _ => Err(fmt::Error),
             },
         }
+    }
+
+    fn fields(&self) -> impl Iterator<Item = &Property> {
+        let mut record = Some(self);
+        std::iter::from_fn(move || match record {
+            Some(Record::Extension { head, tail }) => {
+                match tail {
+                    MonoType::Record(tail) => record = Some(tail),
+                    _ => record = None,
+                }
+                Some(head)
+            }
+            _ => None,
+        })
     }
 }
 

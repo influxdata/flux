@@ -23,6 +23,13 @@ pub fn format(pkg: &semantic::nodes::Package) -> Result<String, Error> {
     convert_to_string(pkg)
 }
 
+/// Format a `Node`
+pub fn format_node(node: walk::Node) -> Result<String, Error> {
+    let mut formatter = Formatter::default();
+    formatter.format_node(&node);
+    formatter.output()
+}
+
 /// Struct to hold data related to formatting such as formatted code,
 /// options, and errors.
 /// Provides methods for formatting files and strings of source code.
@@ -470,7 +477,7 @@ impl Formatter {
             self.write_rune('{');
         }
         if let Some(with) = &n.with {
-            self.write_string(&with.name);
+            self.format_identifier_expression(with);
             self.write_string(" with");
             if !multiline {
                 self.write_rune(' ');
