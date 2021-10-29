@@ -1354,6 +1354,7 @@ type Arguments interface {
 	GetRequired(name string) (values.Value, error)
 
 	GetString(name string) (string, bool, error)
+	GetUInt(name string) (uint64, bool, error)
 	GetInt(name string) (int64, bool, error)
 	GetFloat(name string) (float64, bool, error)
 	GetBool(name string) (bool, bool, error)
@@ -1364,6 +1365,7 @@ type Arguments interface {
 	GetDictionary(name string) (values.Dictionary, bool, error)
 
 	GetRequiredString(name string) (string, error)
+	GetRequiredUInt(name string) (uint64, error)
 	GetRequiredInt(name string) (int64, error)
 	GetRequiredFloat(name string) (float64, error)
 	GetRequiredBool(name string) (bool, error)
@@ -1445,6 +1447,20 @@ func (a *arguments) GetRequiredInt(name string) (int64, error) {
 		return 0, err
 	}
 	return v.Int(), nil
+}
+func (a *arguments) GetUInt(name string) (uint64, bool, error) {
+	v, ok, err := a.get(name, semantic.UInt, false)
+	if err != nil || !ok {
+		return 0, ok, err
+	}
+	return v.UInt(), ok, nil
+}
+func (a *arguments) GetRequiredUInt(name string) (uint64, error) {
+	v, _, err := a.get(name, semantic.UInt, true)
+	if err != nil {
+		return 0, err
+	}
+	return v.UInt(), nil
 }
 func (a *arguments) GetFloat(name string) (float64, bool, error) {
 	v, ok, err := a.get(name, semantic.Float, false)

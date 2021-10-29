@@ -17,6 +17,7 @@ import (
 	dict "github.com/influxdata/flux/stdlib/dict"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
 	aggregate1 "github.com/influxdata/flux/stdlib/experimental/aggregate"
+	bitwise "github.com/influxdata/flux/stdlib/experimental/bitwise"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
 	oee "github.com/influxdata/flux/stdlib/experimental/oee"
@@ -64,6 +65,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, dict.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate1.FluxTestPackages...)
+	pkgs = append(pkgs, bitwise.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
 	pkgs = append(pkgs, oee.FluxTestPackages...)
