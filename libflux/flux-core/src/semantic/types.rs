@@ -121,6 +121,14 @@ impl MaxTvar for PolyType {
 }
 
 impl PolyType {
+    pub(crate) fn error() -> Self {
+        PolyType {
+            vars: Vec::new(),
+            cons: BTreeMap::new(),
+            expr: MonoType::Error,
+        }
+    }
+
     fn display_constraints(cons: &TvarKinds) -> String {
         cons.iter()
             // A BTree produces a sorted iterator for
@@ -323,6 +331,8 @@ pub type Ptr<T> = Box<T>;
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[allow(missing_docs)]
 pub enum MonoType {
+    #[display(fmt = "<error>")]
+    Error,
     #[display(fmt = "bool")]
     Bool,
     #[display(fmt = "int")]
@@ -365,7 +375,8 @@ type RefMonoTypeVecMap<'a> = HashMap<&'a String, Vec<&'a MonoType>>;
 impl Substitutable for MonoType {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
-            MonoType::Bool
+            MonoType::Error
+            | MonoType::Bool
             | MonoType::Int
             | MonoType::Uint
             | MonoType::Float
@@ -398,7 +409,8 @@ impl Substitutable for MonoType {
     }
     fn free_vars(&self) -> Vec<Tvar> {
         match self {
-            MonoType::Bool
+            MonoType::Error
+            | MonoType::Bool
             | MonoType::Int
             | MonoType::Uint
             | MonoType::Float
@@ -420,7 +432,8 @@ impl Substitutable for MonoType {
 impl MaxTvar for MonoType {
     fn max_tvar(&self) -> Option<Tvar> {
         match self {
-            MonoType::Bool
+            MonoType::Error
+            | MonoType::Bool
             | MonoType::Int
             | MonoType::Uint
             | MonoType::Float
@@ -514,7 +527,11 @@ impl MonoType {
             | (MonoType::Duration, MonoType::Duration)
             | (MonoType::Time, MonoType::Time)
             | (MonoType::Regexp, MonoType::Regexp)
-            | (MonoType::Bytes, MonoType::Bytes) => Ok(()),
+            | (MonoType::Bytes, MonoType::Bytes)
+            // An error has already occurred so assume everything is ok here so that we do not
+            // create additional, spurious errors
+            | (MonoType::Error, _)
+            | (_, MonoType::Error) => Ok(()),
             (MonoType::Var(tv), MonoType::Var(tv2)) => {
                 match (sub.try_apply(tv), sub.try_apply(tv2)) {
                     (Some(self_), Some(actual)) => self_.unify(actual, sub),
@@ -543,6 +560,7 @@ impl MonoType {
     /// Validates that the current type meets the constraints of the specified kind.
     pub fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
         match self {
+            MonoType::Error => Ok(()),
             MonoType::Bool => match with {
                 Kind::Equatable | Kind::Nullable | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -654,7 +672,8 @@ impl MonoType {
 
     fn contains(&self, tv: Tvar) -> bool {
         match self {
-            MonoType::Bool
+            MonoType::Error
+            | MonoType::Bool
             | MonoType::Int
             | MonoType::Uint
             | MonoType::Float
@@ -692,7 +711,7 @@ impl ena::unify::UnifyKey for Tvar {
 }
 impl ena::unify::UnifyValue for MonoType {
     type Error = ena::unify::NoError;
-    fn unify_values(_value1: &Self, _value2: &Self) -> Result<Self, Self::Error> {
+    fn unify_values(_value1: &Self, _value2: &Self) -> Result<Self, ena::unify::NoError> {
         unreachable!("We should never unify two values with each other within the substitution. If we reach this we did not resolve the variable before unifying")
     }
 }

@@ -399,6 +399,7 @@ pub fn build_type(
     fb::MonoType,
 ) {
     match t {
+        MonoType::Error => unreachable!(),
         MonoType::Bool => {
             let a = fb::BasicArgs { t: fb::Type::Bool };
             let v = fb::Basic::create(builder, &a);

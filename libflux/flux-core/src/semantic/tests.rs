@@ -3599,3 +3599,32 @@ fn test_analyzer_skip_checks() {
         ],
     }
 }
+
+#[test]
+fn errors_do_not_cause_additional_errors() {
+    test_error_msg! {
+        src: r#"
+            x = y
+            z = x + 1
+            z2 = x + "a"
+        "#,
+        err: "error @2:17-2:18: undefined identifier y",
+    }
+}
+
+#[test]
+#[ignore]
+fn error_types_do_not_suppress_additional_actual_errors() {
+    test_error_msg! {
+        src: r#"
+            x = y - 1
+            z = x + ""
+        "#,
+        // Should get an int != string error here, but binary expressions are inferred as
+        // `left <> right` and `left <> result` instead of being unified with a function type
+        // `(left, right) => return <> (A, A) => A` (where `A` is a type variable)
+        err: r#"error @2:17-2:18: undefined identifier y
+
+              error @3:17-2:18: expected int but found string"#,
+    }
+}

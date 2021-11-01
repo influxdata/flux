@@ -147,6 +147,10 @@ impl InferState<'_> {
             self.errors.push(err.into());
         }
     }
+
+    fn error(&mut self, loc: ast::SourceLocation, error: ErrorKind) {
+        self.errors.push(located(loc, error));
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -410,9 +414,10 @@ impl File {
 
             imports.push(name);
 
-            let poly = importer.import(path).ok_or_else(|| {
-                located(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()))
-            })?;
+            let poly = importer.import(path).unwrap_or_else(|| {
+                infer.error(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()));
+                PolyType::error()
+            });
             infer.env.add(name.to_owned(), poly);
         }
 
@@ -444,7 +449,10 @@ impl File {
                     let cons = stmt.infer(infer)?;
                     Ok(cons + rest)
                 }
-                Statement::Return(stmt) => Err(located(stmt.loc.clone(), ErrorKind::InvalidReturn)),
+                Statement::Return(stmt) => {
+                    infer.error(stmt.loc.clone(), ErrorKind::InvalidReturn);
+                    Ok::<_, Error>(rest)
+                }
             })?;
 
         for name in imports {
@@ -954,21 +962,6 @@ impl FunctionExpr {
         }
         // And use it to infer the body.
         let bcons = self.body.infer(infer)?;
-        // HACK Remove once substitutions are persisted correctly
-        // Update the argument variable with the types inferred from the body
-        for (k, t) in req
-            .iter_mut()
-            .chain(opt.iter_mut())
-            .chain(pipe.as_mut().map(|p| (&p.k, &mut p.v)))
-        {
-            let new_t = infer.env.lookup(k).ok_or_else(|| {
-                located(
-                    self.loc.clone(),
-                    ErrorKind::Bug(format!("Missing function parameter `{}`", k)),
-                )
-            })?;
-            *t = new_t.expr.clone();
-        }
         // Now pop the nested environment, we don't need it anymore.
         infer.env.exit_scope();
         let retn = self.body.type_of();
@@ -1232,10 +1225,11 @@ impl BinaryExpr {
                 ])
             }
             _ => {
-                return Err(located(
+                infer.error(
                     self.loc.clone(),
                     ErrorKind::InvalidBinOp(self.operator.clone()),
-                ))
+                );
+                Constraints::empty()
             }
         };
 
@@ -1597,10 +1591,11 @@ impl UnaryExpr {
                 ])
             }
             _ => {
-                return Err(located(
+                infer.error(
                     self.loc.clone(),
                     ErrorKind::InvalidUnaryOp(self.operator.clone()),
-                ))
+                );
+                Constraints::empty()
             }
         };
         Ok(acons + cons)
@@ -1641,14 +1636,15 @@ pub struct IdentifierExpr {
 
 impl IdentifierExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let poly = infer.env.lookup(&self.name).ok_or_else(|| {
-            located(
+        let poly = infer.env.lookup(&self.name).cloned().unwrap_or_else(|| {
+            infer.error(
                 self.loc.clone(),
                 ErrorKind::UndefinedIdentifier(self.name.to_string()),
-            )
-        })?;
+            );
+            PolyType::error()
+        });
 
-        let (t, cons) = infer::instantiate(poly.clone(), infer.sub, self.loc.clone());
+        let (t, cons) = infer::instantiate(poly, infer.sub, self.loc.clone());
         self.typ = t;
         Ok(cons)
     }
