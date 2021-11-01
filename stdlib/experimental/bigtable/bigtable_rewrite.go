@@ -3,8 +3,8 @@ package bigtable
 import (
 	"time"
 
-	"cloud.google.com/go/bigtable"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/dependencies/bigtable"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"

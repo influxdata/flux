@@ -59,5 +59,6 @@ require (
 	golang.org/x/tools v0.1.4
 	gonum.org/v1/gonum v0.8.2
 	google.golang.org/api v0.47.0
+	google.golang.org/grpc v1.39.0
 	gopkg.in/yaml.v2 v2.3.0
 )
