@@ -414,9 +414,10 @@ impl File {
 
             imports.push(name);
 
-            let poly = importer.import(path).ok_or_else(|| {
-                located(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()))
-            })?;
+            let poly = importer.import(path).unwrap_or_else(|| {
+                infer.error(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()));
+                PolyType::error()
+            });
             infer.env.add(name.to_owned(), poly);
         }
 
@@ -1635,14 +1636,15 @@ pub struct IdentifierExpr {
 
 impl IdentifierExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let poly = infer.env.lookup(&self.name).ok_or_else(|| {
-            located(
+        let poly = infer.env.lookup(&self.name).cloned().unwrap_or_else(|| {
+            infer.error(
                 self.loc.clone(),
                 ErrorKind::UndefinedIdentifier(self.name.to_string()),
-            )
-        })?;
+            );
+            PolyType::error()
+        });
 
-        let (t, cons) = infer::instantiate(poly.clone(), infer.sub, self.loc.clone());
+        let (t, cons) = infer::instantiate(poly, infer.sub, self.loc.clone());
         self.typ = t;
         Ok(cons)
     }
