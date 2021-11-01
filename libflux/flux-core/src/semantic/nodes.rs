@@ -954,21 +954,6 @@ impl FunctionExpr {
         }
         // And use it to infer the body.
         let bcons = self.body.infer(infer)?;
-        // HACK Remove once substitutions are persisted correctly
-        // Update the argument variable with the types inferred from the body
-        for (k, t) in req
-            .iter_mut()
-            .chain(opt.iter_mut())
-            .chain(pipe.as_mut().map(|p| (&p.k, &mut p.v)))
-        {
-            let new_t = infer.env.lookup(k).ok_or_else(|| {
-                located(
-                    self.loc.clone(),
-                    ErrorKind::Bug(format!("Missing function parameter `{}`", k)),
-                )
-            })?;
-            *t = new_t.expr.clone();
-        }
         // Now pop the nested environment, we don't need it anymore.
         infer.env.exit_scope();
         let retn = self.body.type_of();
