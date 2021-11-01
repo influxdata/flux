@@ -147,6 +147,10 @@ impl InferState<'_> {
             self.errors.push(err.into());
         }
     }
+
+    fn error(&mut self, loc: ast::SourceLocation, error: ErrorKind) {
+        self.errors.push(located(loc, error));
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -444,7 +448,10 @@ impl File {
                     let cons = stmt.infer(infer)?;
                     Ok(cons + rest)
                 }
-                Statement::Return(stmt) => Err(located(stmt.loc.clone(), ErrorKind::InvalidReturn)),
+                Statement::Return(stmt) => {
+                    infer.error(stmt.loc.clone(), ErrorKind::InvalidReturn);
+                    Ok::<_, Error>(rest)
+                }
             })?;
 
         for name in imports {
@@ -1217,10 +1224,11 @@ impl BinaryExpr {
                 ])
             }
             _ => {
-                return Err(located(
+                infer.error(
                     self.loc.clone(),
                     ErrorKind::InvalidBinOp(self.operator.clone()),
-                ))
+                );
+                Constraints::empty()
             }
         };
 
@@ -1582,10 +1590,11 @@ impl UnaryExpr {
                 ])
             }
             _ => {
-                return Err(located(
+                infer.error(
                     self.loc.clone(),
                     ErrorKind::InvalidUnaryOp(self.operator.clone()),
-                ))
+                );
+                Constraints::empty()
             }
         };
         Ok(acons + cons)
