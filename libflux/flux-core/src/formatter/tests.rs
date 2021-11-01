@@ -1231,7 +1231,7 @@ fn preserve_multiline_test() {
     return tables
         |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
         |> fill(column: _column, value: defaultValue)
-        |> rename(fn: (column) => if column == _column then _as else column)"#,
+        |> rename(fn: (column) => if column == _column then _as else column)}"#,
         r#"selectWindow = (
         column="_value",
         fn,
@@ -1267,4 +1267,18 @@ fn tab_literals() {
 a",
     );
     assert_unchanged(r#"a = "a string literal with a tabstop '	'""#);
+}
+
+#[test]
+fn invalid_syntax() {
+    assert_unchanged(
+        r#"builtin diff : (
+    <-got: [A],
+    want: [A],
+    ?verbose: bool,
+    ?epsilon: float,
+    ?nansEqual: bool,
+    aoeustahoesih
+) => [{A with _diff: string}:]"#,
+    );
 }
