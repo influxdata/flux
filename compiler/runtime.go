@@ -205,6 +205,12 @@ func (e *objEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, err
 			if err != nil {
 				return err
 			}
+			if with.IsNull() {
+				return errors.New(codes.Invalid, `null value on left hand side of "with" in record literal`)
+			}
+			if typ := with.Type().Nature(); typ != semantic.Object {
+				return errors.Newf(codes.Invalid, `value on left hand side of "with" in record literal has type %s; expected record`, typ)
+			}
 			with.Object().Range(func(name string, v values.Value) {
 				set(name, v)
 			})
@@ -289,6 +295,9 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 	if err != nil {
 		return nil, err
 	}
+	if typ := l.Type().Nature(); !l.IsNull() && typ != semantic.Bool {
+		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; exected boolean", typ, e.operator)
+	}
 
 	switch e.operator {
 	case ast.AndOperator:
@@ -307,6 +316,10 @@ func (e *logicalEvaluator) Eval(ctx context.Context, scope Scope) (values.Value,
 	if err != nil {
 		return nil, err
 	}
+	if typ := r.Type().Nature(); !r.IsNull() && typ != semantic.Bool {
+		return nil, errors.Newf(codes.Invalid, "cannot use operand of type %s with logical %s; expected boolean", typ, e.operator)
+	}
+
 	return r, nil
 }
 
@@ -324,6 +337,9 @@ func (e *conditionalEvaluator) Eval(ctx context.Context, scope Scope) (values.Va
 	t, err := eval(ctx, e.test, scope)
 	if err != nil {
 		return nil, err
+	}
+	if typ := t.Type().Nature(); !t.IsNull() && typ != semantic.Bool {
+		return nil, errors.Newf(codes.Invalid, "cannot use test of type %s in conditional expression; expected boolean", typ)
 	}
 
 	if t.IsNull() || !t.Bool() {
@@ -537,6 +553,13 @@ func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 	if err != nil {
 		return nil, err
 	}
+	if o.IsNull() {
+		return nil, errors.Newf(codes.Invalid, "cannot access property of a null value; expected record")
+	}
+	if typ := o.Type().Nature(); typ != semantic.Object {
+		return nil, errors.Newf(codes.Invalid, "cannot access property of a value with type %s; expected record", typ)
+	}
+
 	v, ok := o.Object().Get(e.property)
 	if !ok && !e.nullable {
 		return nil, errors.Newf(codes.Invalid, "member %q with type %s is not in the record", e.property, e.t.Nature())
@@ -559,9 +582,21 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	if err != nil {
 		return nil, err
 	}
+	if a.IsNull() {
+		return nil, errors.New(codes.Invalid, "cannot index into a null value; expected an array")
+	}
+	if typ := a.Type().Nature(); typ != semantic.Array {
+		return nil, errors.Newf(codes.Invalid, "cannot index into a value of type %s; expected an array", typ)
+	}
 	i, err := e.index.Eval(ctx, scope)
 	if err != nil {
 		return nil, err
+	}
+	if i.IsNull() {
+		return nil, errors.New(codes.Invalid, "cannot index into an array with null value; expected an int")
+	}
+	if typ := i.Type().Nature(); typ != semantic.Int {
+		return nil, errors.Newf(codes.Invalid, "cannot index into an array with value of type %s; expected an int", typ)
 	}
 	ix := int(i.Int())
 	l := a.Array().Len()
@@ -590,6 +625,13 @@ func (e *callEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, er
 	if err != nil {
 		return nil, err
 	}
+	if f.IsNull() {
+		return nil, errors.Newf(codes.Invalid, "attempt to call a null value; expected function")
+	}
+	if typ := f.Type().Nature(); typ != semantic.Function {
+		return nil, errors.Newf(codes.Invalid, "attempt to call a value of type %s; expected function", typ)
+	}
+
 	return f.Function().Call(ctx, args.Object())
 }
 
