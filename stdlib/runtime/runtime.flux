@@ -4,6 +4,3 @@ package runtime
 
 // version returns the current Flux version.
 builtin version : () => string
-
-// now returns the runtime start time
-builtin now : () => time

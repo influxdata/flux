@@ -8,10 +8,9 @@ import "strings"
 import "regexp"
 import "experimental/table"
 import "timezone"
-import "runtime"
 
-// now is a function option whose default behaviour is to return the current runtime.now
-option now = runtime.now
+// now is a function option whose default behaviour is to return the current system time
+option now = system.time
 
 // Transformation functions
 builtin chandeMomentumOscillator : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
