@@ -23,25 +23,24 @@
 //!
 use std::collections::HashMap;
 
-use crate::semantic::{
-    self,
-    bootstrap::build_polytype,
-    env::Environment,
-    fresh::Fresher,
-    import::Importer,
-    sub::Substitution,
-    types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
-    Analyzer, AnalyzerConfig,
+use crate::{
+    ast::{self, get_err_type_expression},
+    errors::Errors,
+    parser::{self, parse_string},
+    semantic::{
+        self,
+        bootstrap::build_polytype,
+        convert::convert_polytype,
+        env::Environment,
+        fresh::Fresher,
+        import::Importer,
+        sub::Substitution,
+        types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
+        Analyzer, AnalyzerConfig,
+    },
 };
 
-use crate::ast;
-use crate::ast::get_err_type_expression;
-use crate::parser;
-use crate::parser::parse_string;
-use crate::semantic::convert::convert_polytype;
-
-use colored::*;
-use derive_more::Display;
+use {colored::*, derive_more::Display};
 
 mod vectorize;
 
@@ -87,7 +86,7 @@ impl Importer for HashMap<&str, PolyType> {
 #[derive(Debug, Display, PartialEq)]
 enum Error {
     #[display(fmt = "{}", _0)]
-    Parse(ast::check::Errors),
+    Parse(Errors<ast::check::Error>),
     #[display(fmt = "{}", _0)]
     Analysis(semantic::Error),
     #[display(

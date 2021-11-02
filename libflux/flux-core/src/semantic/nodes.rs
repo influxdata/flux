@@ -12,9 +12,9 @@ extern crate derivative;
 
 use crate::{
     ast,
+    errors::Errors,
     semantic::{
         env::Environment,
-        errors::Errors,
         import::Importer,
         infer::{self, Constraint, Constraints},
         sub::{Substitutable, Substituter, Substitution},

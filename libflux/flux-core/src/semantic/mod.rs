@@ -2,7 +2,6 @@
 
 pub mod convert;
 
-mod errors;
 mod fs;
 mod infer;
 
@@ -25,7 +24,7 @@ mod tests;
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
 
-use crate::{ast, parser};
+use crate::{ast, errors::Errors, parser};
 
 use thiserror::Error;
 
@@ -40,7 +39,7 @@ use thiserror::Error;
 pub enum Error {
     /// Errors that occur because of bad syntax or in valid AST
     #[error("{0}")]
-    InvalidAST(#[from] ast::check::Errors),
+    InvalidAST(#[from] Errors<ast::check::Error>),
     /// Errors that occur converting AST to semantic graph
     #[error("{0}")]
     Convert(#[from] convert::Error),
@@ -49,7 +48,7 @@ pub enum Error {
     InvalidSemantic(#[from] check::Error),
     /// Errors that occur because of incompatible/incomplete types
     #[error("{0}")]
-    Inference(#[from] errors::Errors<nodes::Error>),
+    Inference(#[from] Errors<nodes::Error>),
 }
 
 /// Analyzer provides an API for analyzing Flux code.

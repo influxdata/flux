@@ -1,4 +1,7 @@
 use super::*;
+
+use std::iter::FromIterator;
+
 use crate::ast::Expression::Integer;
 use crate::ast::Statement::Variable;
 use crate::ast::{BaseNode, File, Identifier, IntegerLit, Position, VariableAssgn};
@@ -8,7 +11,7 @@ use crate::parser::parse_string;
 fn test_object_check() {
     let file = parse_string("object_test".to_string(), "a = 1\nb = {c: 2, a}");
     let got = check(walk::Node::File(&file));
-    let want = Err(Errors(vec![Error {
+    let want = Err(Errors::from_iter(vec![Error {
         location: SourceLocation {
             file: Some(String::from("object_test")),
             start: Position { line: 2, column: 5 },
@@ -27,7 +30,7 @@ fn test_object_check() {
 fn test_bad_stmt() {
     let file = parse_string("bad_stmt_test".to_string(), "a = 1\nb = \nc=2");
     let got = check(walk::Node::File(&file));
-    let want = Err(Errors(vec![Error {
+    let want = Err(Errors::from_iter(vec![Error {
         location: SourceLocation {
             file: Some(String::from("bad_stmt_test")),
             start: Position { line: 3, column: 2 },
@@ -43,7 +46,7 @@ fn test_bad_stmt() {
 fn test_bad_expr() {
     let file = parse_string("bad_expr_test".to_string(), "a = 3 + / 10");
     let got = check(walk::Node::File(&file));
-    let want = Err(Errors(vec![Error {
+    let want = Err(Errors::from_iter(vec![Error {
         location: SourceLocation {
             file: Some(String::from("bad_expr_test")),
             start: Position { line: 1, column: 9 },
@@ -120,8 +123,8 @@ fn test_check_collect_existing_error() {
         eof: vec![],
     };
     let got = check(walk::Node::File(&file)).unwrap_err();
-    assert_eq!(3, got.0.len());
-    for (i, err) in got.0.iter().enumerate() {
+    assert_eq!(3, got.len());
+    for (i, err) in got.iter().enumerate() {
         assert_eq!(err.message, format!("error {}", i + 1));
     }
 }
