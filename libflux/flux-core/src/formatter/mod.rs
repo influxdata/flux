@@ -230,6 +230,11 @@ impl Formatter {
             Node::BadStmt(_) => self.err = Some(anyhow!("bad statement")),
             Node::BadExpr(_) => self.err = Some(anyhow!("bad expression")),
             Node::BuiltinStmt(m) => self.format_builtin(m),
+            Node::TypeExpression(n) => self.format_type_expression(n),
+            Node::MonoType(n) => self.format_monotype(n),
+            Node::ParameterType(n) => self.format_parameter_type(n),
+            Node::PropertyType(n) => self.format_property_type(n),
+            Node::TypeConstraint(n) => self.format_constraint(n),
         }
         self.set_indent(curr_ind)
     }
@@ -1343,6 +1348,11 @@ fn starts_with_comment(n: Node) -> bool {
         Node::InterpolatedPart(_) => false,
         Node::VariableAssgn(n) => starts_with_comment(Node::Identifier(&n.id)),
         Node::MemberAssgn(n) => starts_with_comment(Node::MemberExpr(&n.member)),
+        Node::TypeExpression(n) => !n.base.comments.is_empty(),
+        Node::MonoType(n) => !n.base().comments.is_empty(),
+        Node::ParameterType(n) => !n.base().comments.is_empty(),
+        Node::PropertyType(n) => !n.base.comments.is_empty(),
+        Node::TypeConstraint(n) => !n.base.comments.is_empty(),
     }
 }
 
