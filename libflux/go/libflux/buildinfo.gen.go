@@ -499,6 +499,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/integral_columns_test.flux":                                                  "f9922394511d31323a05ade5082e41926f6f0e3781705ba6166764664c6a8396",
 	"stdlib/universe/integral_interpolate_test.flux":                                              "dddda2dad8c07891025868b8a0c08fa6aab56e9fa9f83a27c7cf18fc983b8638",
 	"stdlib/universe/integral_test.flux":                                                          "439ce6fb39d8e214445fc0e87963846af91efe0ca67300cd924a896423f6b96b",
+	"stdlib/universe/is_type_test.flux":                                                           "1ff537abfbb2b5cfc839a273f88e8ae8ddc6e350860b54b5a2326c7c21ac5eb3",
 	"stdlib/universe/join_across_measurements_test.flux":                                          "f56e51db608f1b04f01215279d21affd83b5802068794cfd3730272306e5b5d6",
 	"stdlib/universe/join_agg_test.flux":                                                          "bf89dbe3c400418488af058e8e5a56c7171678ee2028607a6310ddb7f0a76625",
 	"stdlib/universe/join_mismatched_schema_test.flux":                                            "78c5c1b3da6fa074122641b38166cfa6f06d8f3005fd2c28a4749c7721c6957c",
