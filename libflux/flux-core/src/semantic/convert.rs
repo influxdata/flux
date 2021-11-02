@@ -433,6 +433,7 @@ fn convert_function_expression(
         typ: MonoType::Var(sub.fresh()),
         params,
         body,
+        vectorized: None,
     })
 }
 
@@ -1800,6 +1801,7 @@ mod tests {
                                     }),
                                 })),
                             }),
+                            vectorized: None,
                         })),
                         b.location.clone(),
                     ))),
@@ -2048,6 +2050,7 @@ mod tests {
                                     }),
                                 })),
                             }),
+                            vectorized: None,
                         })),
                         b.location.clone(),
                     ))),
@@ -2400,6 +2403,7 @@ mod tests {
                                     }),
                                 })),
                             }),
+                            vectorized: None,
                         })),
                         b.location.clone(),
                     ))),
@@ -2481,6 +2485,7 @@ mod tests {
                     }),
                 })),
             }),
+            vectorized: None,
         };
         assert_eq!(Vec::<&FunctionParameter>::new(), f.defaults());
         assert_eq!(None, f.pipe());
@@ -2562,6 +2567,7 @@ mod tests {
                     }),
                 })),
             }),
+            vectorized: None,
         };
         assert_eq!(defaults, f.defaults());
         assert_eq!(Some(&piped), f.pipe());

@@ -43,6 +43,8 @@ use crate::semantic::convert::convert_polytype;
 use colored::*;
 use derive_more::Display;
 
+mod vectorize;
+
 fn parse_program(src: &str) -> ast::Package {
     let file = parse_string("".to_string(), src);
 
@@ -103,6 +105,8 @@ enum Error {
         got: SemanticMap<String, PolyType>,
     },
 }
+
+impl std::error::Error for Error {}
 
 fn infer_types(
     src: &str,

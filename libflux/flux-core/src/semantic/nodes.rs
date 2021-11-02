@@ -25,7 +25,7 @@ use crate::{
     },
 };
 
-use std::{fmt::Debug, vec::Vec};
+use std::{collections::HashMap, fmt::Debug, vec::Vec};
 
 use anyhow::{anyhow, bail, Result as AnyhowResult};
 use chrono::{prelude::DateTime, FixedOffset};
@@ -87,6 +87,8 @@ pub enum ErrorKind {
     InvalidImportPath(String),
     #[display(fmt = "return not valid in file block")]
     InvalidReturn,
+    #[display(fmt = "can't vectorize function: {}", _0)]
+    UnableToVectorize(String),
     #[display(fmt = "{}. This is a bug in type inference", _0)]
     Bug(String),
 }
@@ -102,6 +104,7 @@ impl Substitutable for ErrorKind {
             | Self::InvalidBinOp(_)
             | Self::InvalidUnaryOp(_)
             | Self::InvalidImportPath(_)
+            | Self::UnableToVectorize(_)
             | Self::InvalidReturn
             | Self::Bug(_) => None,
         }
@@ -114,6 +117,7 @@ impl Substitutable for ErrorKind {
             | Self::InvalidBinOp(_)
             | Self::InvalidUnaryOp(_)
             | Self::InvalidImportPath(_)
+            | Self::UnableToVectorize(_)
             | Self::InvalidReturn
             | Self::Bug(_) => Vec::new(),
         }
@@ -134,6 +138,8 @@ impl From<infer::Error> for Error {
         }
     }
 }
+
+type VectorizeEnv = HashMap<String, MonoType>;
 
 struct InferState<'a> {
     sub: &'a mut Substitution,
@@ -325,6 +331,41 @@ impl Expression {
             Expression::Regexp(lit) => Expression::Regexp(lit.apply(sub)),
         }
     }
+
+    fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
+        Ok(match self {
+            Expression::Identifier(identifier) => {
+                Expression::Identifier(identifier.vectorize(env)?)
+            }
+            Expression::Member(member) => {
+                let object = member.object.vectorize(env)?;
+                let typ = object.type_of();
+                Expression::Member(Box::new(MemberExpr {
+                    loc: member.loc.clone(),
+                    typ: typ
+                        .field(&member.property)
+                        .ok_or_else(|| {
+                            located(
+                                member.object.loc().clone(),
+                                ErrorKind::UnableToVectorize(format!(
+                                    "Expected record type, got `{}`",
+                                    typ
+                                )),
+                            )
+                        })?
+                        .clone(),
+                    object,
+                    property: member.property.clone(),
+                }))
+            }
+            _ => {
+                return Err(located(
+                    self.loc().clone(),
+                    ErrorKind::UnableToVectorize("Unable to vectorize expression".into()),
+                ))
+            }
+        })
+    }
 }
 
 /// Infer the types of a Flux package.
@@ -362,6 +403,32 @@ where
 #[allow(missing_docs)]
 pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
     pkg.apply(sub)
+}
+
+/// Vectorizes a pkg
+pub fn vectorize(pkg: &mut Package) -> Result<()> {
+    use crate::semantic::walk::{walk_mut, NodeMut, VisitorMut};
+    struct Vectorizer {
+        result: Result<()>,
+    }
+    impl VisitorMut for Vectorizer {
+        fn visit(&mut self, node: &mut NodeMut) -> bool {
+            if self.result.is_err() {
+                return false;
+            }
+            if let NodeMut::FunctionExpr(function) = node {
+                match function.vectorize() {
+                    Ok(vectorized) => function.vectorized = Some(Box::new(vectorized)),
+                    Err(err) => self.result = Err(err),
+                }
+            }
+            true
+        }
+    }
+
+    let mut visitor = Vectorizer { result: Ok(()) };
+    walk_mut(&mut visitor, &mut NodeMut::Package(pkg));
+    visitor.result
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -904,6 +971,8 @@ pub struct FunctionExpr {
 
     pub params: Vec<FunctionParameter>,
     pub body: Block,
+
+    pub vectorized: Option<Box<FunctionExpr>>,
 }
 
 impl FunctionExpr {
@@ -1008,6 +1077,105 @@ impl FunctionExpr {
             .collect();
         self.body = self.body.apply(sub);
         self
+    }
+
+    fn vectorize(&self) -> Result<Self> {
+        if self.params.len() == 1 && self.params[0].key.name == "r" {
+            fn vectorize_fields(record: &MonoType) -> MonoType {
+                use crate::semantic::types::Record;
+                match record {
+                    MonoType::Record(record) => MonoType::from(match &**record {
+                        Record::Empty => Record::Empty,
+                        Record::Extension { head, tail } => Record::Extension {
+                            head: types::Property {
+                                k: head.k.clone(),
+                                v: MonoType::vector(types::Vector(head.v.clone())),
+                            },
+                            tail: vectorize_fields(tail),
+                        },
+                    }),
+                    _ => record.clone(),
+                }
+            }
+            let env: VectorizeEnv = self
+                .params
+                .iter()
+                .map(|param| {
+                    let parameter_type =
+                        vectorize_fields(self.typ.parameter(&param.key.name).unwrap());
+                    (param.key.name.clone(), parameter_type)
+                })
+                .collect();
+            let body = match &self.body {
+                Block::Variable(..) | Block::Expr(..) => {
+                    return Err(located(
+                        self.body.loc().clone(),
+                        ErrorKind::UnableToVectorize("Unable to vectorize statements".into()),
+                    ))
+                }
+                Block::Return(e) => {
+                    let argument = match &e.argument {
+                        Expression::Object(e) => {
+                            let properties = e
+                                .properties
+                                .iter()
+                                .map(|p| {
+                                    Ok(Property {
+                                        loc: p.loc.clone(),
+                                        key: p.key.clone(),
+                                        value: p.value.vectorize(&env)?,
+                                    })
+                                })
+                                .collect::<Result<Vec<_>>>()?;
+
+                            let with = e
+                                .with
+                                .as_ref()
+                                .map(|with| with.vectorize(&env))
+                                .transpose()?;
+
+                            Expression::Object(Box::new(ObjectExpr {
+                                loc: e.loc.clone(),
+                                typ: MonoType::from(types::Record::new(
+                                    properties.iter().map(|p| types::Property {
+                                        k: p.key.name.clone(),
+                                        v: p.value.type_of(),
+                                    }),
+                                    with.as_ref().map(|with| with.typ.clone()),
+                                )),
+                                with,
+                                properties,
+                            }))
+                        }
+                        _ => {
+                            return Err(located(
+                                e.argument.loc().clone(),
+                                ErrorKind::UnableToVectorize(
+                                    "Vectorization only supports returning a record".into(),
+                                ),
+                            ))
+                        }
+                    };
+                    Block::Return(ReturnStmt {
+                        loc: e.loc.clone(),
+                        argument,
+                    })
+                }
+            };
+            Ok(FunctionExpr {
+                loc: self.loc.clone(),
+                typ: self.typ.clone(), // TODO Correct the type
+                params: self.params.clone(),
+                body,
+                vectorized: None,
+            })
+        } else {
+            // Only `map` will get vectorized to start with, so only try to vectorize such functions
+            Err(located(
+                self.loc.clone(),
+                ErrorKind::UnableToVectorize("Does not match the `map` signature".into()),
+            ))
+        }
     }
 }
 
@@ -1652,6 +1820,16 @@ impl IdentifierExpr {
         self.typ = self.typ.apply(sub);
         self
     }
+
+    fn vectorize(&self, env: &VectorizeEnv) -> Result<Self> {
+        let typ = env.get(&self.name).unwrap_or(&self.typ).clone();
+
+        Ok(IdentifierExpr {
+            loc: self.loc.clone(),
+            typ,
+            name: self.name.clone(),
+        })
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -2066,6 +2244,7 @@ mod tests {
                                     }),
                                 })),
                             }),
+                            vectorized: None,
                         })),
                         b.location.clone(),
                     ))),
