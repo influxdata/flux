@@ -272,13 +272,13 @@ pub mod fbsemantic {
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
-    pub const ENUM_MAX_KIND: u8 = 10;
+    pub const ENUM_MAX_KIND: u8 = 11;
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
     #[allow(non_camel_case_types)]
-    pub const ENUM_VALUES_KIND: [Kind; 11] = [
+    pub const ENUM_VALUES_KIND: [Kind; 12] = [
         Kind::Addable,
         Kind::Subtractable,
         Kind::Divisible,
@@ -289,6 +289,7 @@ pub mod fbsemantic {
         Kind::Record,
         Kind::Negatable,
         Kind::Timeable,
+        Kind::Primitive,
         Kind::Stringable,
     ];
 
@@ -307,10 +308,11 @@ pub mod fbsemantic {
         pub const Record: Self = Self(7);
         pub const Negatable: Self = Self(8);
         pub const Timeable: Self = Self(9);
-        pub const Stringable: Self = Self(10);
+        pub const Primitive: Self = Self(10);
+        pub const Stringable: Self = Self(11);
 
         pub const ENUM_MIN: u8 = 0;
-        pub const ENUM_MAX: u8 = 10;
+        pub const ENUM_MAX: u8 = 11;
         pub const ENUM_VALUES: &'static [Self] = &[
             Self::Addable,
             Self::Subtractable,
@@ -322,6 +324,7 @@ pub mod fbsemantic {
             Self::Record,
             Self::Negatable,
             Self::Timeable,
+            Self::Primitive,
             Self::Stringable,
         ];
         /// Returns the variant's name or "" if unknown.
@@ -337,6 +340,7 @@ pub mod fbsemantic {
                 Self::Record => Some("Record"),
                 Self::Negatable => Some("Negatable"),
                 Self::Timeable => Some("Timeable"),
+                Self::Primitive => Some("Primitive"),
                 Self::Stringable => Some("Stringable"),
                 _ => None,
             }

@@ -193,7 +193,7 @@ builtin die : (msg: string) => A
 // Returns true if `v` is an object matching `type`.
 // This function can only check against the primitive types:
 // `string`, `bytes`, `int`, `uint`, `float`, `bool`, `time`, `duration`, `regexp`.
-builtin isType : (v: A, type: string) => bool
+builtin isType : (v: A, type: string) => bool where A: Primitive
 
 // Time weighted average where values at the beginning and end of the range are linearly interpolated.
 timeWeightedAvg = (tables=<-, unit) => tables

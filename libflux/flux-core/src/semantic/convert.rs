@@ -291,6 +291,7 @@ pub fn convert_polytype(
                         "Negatable" => kinds.push(types::Kind::Negatable),
                         "Timeable" => kinds.push(types::Kind::Timeable),
                         "Record" => kinds.push(types::Kind::Record),
+                        "Primitive" => kinds.push(types::Kind::Primitive),
                         "Stringable" => kinds.push(types::Kind::Stringable),
                         _ => {
                             return Err(Error::InvalidConstraint(k.name.clone()));

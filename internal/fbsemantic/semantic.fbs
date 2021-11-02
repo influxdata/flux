@@ -105,6 +105,7 @@ enum Kind : ubyte {
   Record,
   Negatable,
   Timeable,
+  Primitive,
   Stringable,
 }
 
@@ -367,7 +368,7 @@ table ObjectExpression {
   loc:SourceLocation;
   with:IdentifierExpression;
   properties:[Property];
-  typ: MonoType; 
+  typ: MonoType;
 }
 
 table UnaryExpression {
