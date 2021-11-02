@@ -687,6 +687,17 @@ pub enum ParameterType {
     },
 }
 
+impl ParameterType {
+    /// Returns the [`BaseNode`] for an [`ParameterType`].
+    pub fn base(&self) -> &BaseNode {
+        match self {
+            Self::Required { base, .. } | Self::Optional { base, .. } | Self::Pipe { base, .. } => {
+                base
+            }
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]

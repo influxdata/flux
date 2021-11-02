@@ -783,6 +783,13 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     },
                 ));
             }
+            // These are used inside builtin statements but as of their addition, the builtin
+            // statement just ignore that data so we ignore them here as well
+            walk::Node::TypeExpression(_)
+            | walk::Node::MonoType(_)
+            | walk::Node::PropertyType(_)
+            | walk::Node::ParameterType(_)
+            | walk::Node::TypeConstraint(_) => (),
         };
     }
 }

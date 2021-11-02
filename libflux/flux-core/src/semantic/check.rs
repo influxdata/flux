@@ -10,7 +10,6 @@ use crate::semantic::walk::Node;
 
 use std::collections::HashMap;
 
-
 // OptionMap maps the name of a Flux option (including an optional package qualifier)
 // to its corresponding option statement.
 type OptionMap<'a> = HashMap<(Option<&'a str>, &'a str), &'a nodes::OptionStmt>;

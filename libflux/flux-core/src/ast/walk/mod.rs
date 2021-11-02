@@ -113,6 +113,17 @@ pub enum Node<'a> {
     VariableAssgn(&'a VariableAssgn),
     #[display(fmt = "MemberAssgn")]
     MemberAssgn(&'a MemberAssgn),
+
+    #[display(fmt = "TypeExpression")]
+    TypeExpression(&'a TypeExpression),
+    #[display(fmt = "MonoType")]
+    MonoType(&'a MonoType),
+    #[display(fmt = "PropertyType")]
+    PropertyType(&'a PropertyType),
+    #[display(fmt = "ParameterType")]
+    ParameterType(&'a ParameterType),
+    #[display(fmt = "TypeConstraint")]
+    TypeConstraint(&'a TypeConstraint),
 }
 
 impl<'a> Node<'a> {
@@ -161,6 +172,11 @@ impl<'a> Node<'a> {
             Node::InterpolatedPart(n) => &n.base,
             Node::VariableAssgn(n) => &n.base,
             Node::MemberAssgn(n) => &n.base,
+            Node::TypeExpression(n) => &n.base,
+            Node::MonoType(n) => n.base(),
+            Node::PropertyType(n) => &n.base,
+            Node::ParameterType(n) => n.base(),
+            Node::TypeConstraint(n) => &n.base,
         }
     }
 }
@@ -405,6 +421,7 @@ where
             }
             Node::BuiltinStmt(n) => {
                 walk(&w, Node::Identifier(&n.id));
+                walk(&w, Node::TypeExpression(&n.ty));
             }
             Node::Block(n) => {
                 for s in n.body.iter() {
@@ -428,6 +445,63 @@ where
             Node::MemberAssgn(n) => {
                 walk(&w, Node::MemberExpr(&n.member));
                 walk(&w, Node::from_expr(&n.init));
+            }
+            Node::TypeExpression(n) => {
+                walk(&w, Node::MonoType(&n.monotype));
+                for cons in &n.constraints {
+                    walk(&w, Node::TypeConstraint(cons));
+                }
+            }
+            Node::MonoType(n) => match n {
+                MonoType::Tvar(_) => (),
+                MonoType::Basic(_) => (),
+                MonoType::Array(a) => walk(&w, Node::MonoType(&a.element)),
+                MonoType::Dict(d) => {
+                    walk(&w, Node::MonoType(&d.key));
+                    walk(&w, Node::MonoType(&d.val));
+                }
+                MonoType::Record(r) => {
+                    if let Some(tvar) = &r.tvar {
+                        walk(&w, Node::Identifier(tvar));
+                    }
+
+                    for property in &r.properties {
+                        walk(&w, Node::PropertyType(property));
+                    }
+                }
+                MonoType::Function(f) => {
+                    for param in &f.parameters {
+                        walk(&w, Node::ParameterType(param));
+                    }
+
+                    walk(&w, Node::MonoType(&f.monotype));
+                }
+            },
+            Node::PropertyType(n) => {
+                walk(&w, Node::Identifier(&n.name));
+                walk(&w, Node::MonoType(&n.monotype));
+            }
+            Node::ParameterType(n) => match n {
+                ParameterType::Required { name, monotype, .. } => {
+                    walk(&w, Node::Identifier(name));
+                    walk(&w, Node::MonoType(monotype));
+                }
+                ParameterType::Optional { name, monotype, .. } => {
+                    walk(&w, Node::Identifier(name));
+                    walk(&w, Node::MonoType(monotype));
+                }
+                ParameterType::Pipe { name, monotype, .. } => {
+                    if let Some(name) = name {
+                        walk(&w, Node::Identifier(name));
+                    }
+                    walk(&w, Node::MonoType(monotype));
+                }
+            },
+            Node::TypeConstraint(n) => {
+                walk(&w, Node::Identifier(&n.tvar));
+                for id in &n.kinds {
+                    walk(&w, Node::Identifier(id));
+                }
             }
         }
     }
