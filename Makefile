@@ -21,6 +21,7 @@ export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
 export CARGO_ARGS=
 export PATH := $(shell pwd)/bin:$(PATH)
+export FLATC=flatc
 
 define go_deps
 	$(shell env GO111MODULE=on go list -f "{{range .GoFiles}} {{$$.Dir}}/{{.}}{{end}}" $(1))
@@ -49,12 +50,12 @@ generate: $(GENERATED_TARGETS)
 ast/internal/fbast/ast_generated.go: ast/ast.fbs
 	$(GO_GENERATE) ./ast
 libflux/flux-core/src/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
-	flatc --rust -o libflux/flux-core/src/ast/flatbuffers ast/ast.fbs && rustfmt $@
+	$(FLATC) --rust -o libflux/flux-core/src/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
 internal/fbsemantic/semantic_generated.go: internal/fbsemantic/semantic.fbs
 	$(GO_GENERATE) ./internal/fbsemantic
 libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
-	flatc --rust -o libflux/flux-core/src/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
+	$(FLATC) --rust -o libflux/flux-core/src/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
 libflux/go/libflux/buildinfo.gen.go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 
@@ -178,7 +179,7 @@ test-release: Dockerfile_build
 bin/flux:
 	$(GO_BUILD) -o ./bin/flux ./internal/cmd/flux
 
-	
+
 libflux/target/release/fluxc: libflux
 	cd libflux && $(CARGO) build $(CARGO_ARGS) --release --bin fluxc
 

@@ -107,7 +107,7 @@ Here are a few examples of the language to get an idea of the syntax.
 
     // Functions are polymorphic
     add(a: 5.5, b: 2.5) // 8.0
-    
+
     // And strongly typed
     add(a: 5, b: 2.5) // type error
 
@@ -115,12 +115,12 @@ Here are a few examples of the language to get an idea of the syntax.
     // This is only possible within the influxdb repl (at the moment).
     import "influxdata/influxdb"
     data = influxdb.from(bucket:"telegraf/autogen")
-    
+
     // When running inside of influxdb, the import isn't needed.
     data = from(bucket:"telegraf/autogen")
 
     // Chain more transformation functions to further specify the desired data
-    cpu = data 
+    cpu = data
         // only get the last 5m of data
         |> range(start: -5m)
         // only get the "usage_user" data from the _measurement "cpu"
@@ -147,7 +147,7 @@ Here are a few examples of the language to get an idea of the syntax.
         |> yield()
 
     // Gather different data
-    mem = data 
+    mem = data
         // only get the last 5m of data
         |> range(start: -5m)
         // only get the "used_percent" data from the _measurement "mem"
@@ -174,22 +174,28 @@ If you are interested in contributing, please read the [contributing guide](http
 
 If you modify any Rust code, you will need to force Go to rebuild the library.
 
-```
+```bash
 $ go generate ./libflux/go/libflux
 ```
 
 If you create or change any Flux functions, you will need to rebuild the stdlib and inform Go that it must rebuild libflux:
-```
+```bash
 $ go generate ./stdlib ./libflux/go/libflux
 ```
 
 Your new Flux's code should be formatted to coexist nicely with the existing codebase with go fmt.  For example, if you add code to stdlib/universe:
-```
+```bash
 $ go fmt ./stdlib/universe/
 ```
 
 Don't forget to add your tests and make sure they work. Here is an example showing how to run the tests for the stdlib/universe package:
-```
+```bash
 $ go test ./stdlib/universe/
 ```
 
+If you modify the flatbuffer files you need to run `make generate` to update the generated bindings. To ensure that you have the correct version of `flatc` you may use docker with the following commands.
+
+```bash
+$ docker build -f Dockerfile_build --tag flux .
+$ make FLATC="docker run --volume $(pwd):/home/builder flux flatc" generate
+```
