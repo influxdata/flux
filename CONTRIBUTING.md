@@ -1,10 +1,10 @@
-# Contributing to Flux
+# Contribute to Flux
 
 ## Community Slack Channel
 When contributing to Flux, it is a good idea to join the [community Slack channel](https://www.influxdata.com/slack).
 The development team for Flux is in the `#flux` channel and we will be able to answer any questions or give any recommendations for development work from there.
 
-## Filing issues
+## File issues
 Filing issues on GitHub is one of the easiest and most useful ways to contribute to Flux.
 We value every request and we intend to triage every community issue within a week after it has been created.
 If it takes us longer than a week, then please try to contact us in the community Slack channel.
@@ -31,18 +31,18 @@ We really like to receive feature requests as they help us prioritize our work.
 Please be clear about your requirements. Incomplete feature requests may simply
 be closed if we don't understand what you would like to see added to Flux.
 
-## Contributing to the source code
+## Contribute to the source code
 
-### Signing the CLA
+### Sign the CLA
 In order to contribute back to Flux, you must sign the
 [InfluxData Contributor License Agreement](https://www.influxdata.com/legal/cla/) (CLA).
 
-### Finding an issue
+### Find an issue
 The Flux team regularly adds the [community](https://github.com/influxdata/flux/issues?q=is%3Aopen+is%3Aissue+label%3Acommunity) label to issues that we think would be accessible for a community member to take.
 Before starting to work on an issue, please inform us on GitHub about your intention to work on the issue by leaving a comment on the issue.
 This allows us to know that you want to work on the issue, that the issue is updated with the needed information, and to be ready for a pull request when the work is done.
 
-### Contributing to the source code
+### Contribute to the source code
 Flux uses Go modules and requires modules to be enabled to build from source.
 Please refer to the Go documentation on [modules](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more) for more information about how to enable module builds.
 To build and test the software, the following developer dependencies are required:
@@ -64,7 +64,7 @@ $ go test ./...
 
 If you use `go generate` on the scanner package, then the Ragel version above is needed to correctly generate the files.
 
-### Regenerating the standard library
+### Regenerate the standard library
 If you modify any `.flux` files in the repository, the standard library must be regenerated.
 This is done by running `go generate` in the following way.
 
@@ -72,7 +72,7 @@ This is done by running `go generate` in the following way.
 $ go generate ./stdlib
 ```
 
-### Regenerating checksums
+### Regenerate checksums
 
 If you modify any `.rs` files in the repository, checksums must be recomputed.
 This allows the Go–Rust interaction to work appropriately. 
@@ -82,11 +82,10 @@ From the repository root, run
 $ make generate
 ```
 
-### Contributing Flux Packages
+### Contribute Flux Packages
 
 If you have some Flux code that you think the wider community would benifit from please consider contributing it to the Flux repo.
-We have layed out specific guildines in the contrib [README](https://github.com/influxdata/flux/blob/master/stdlib/contrib/README.md).
-uu
+We have layed out specific guidelines in the contrib [README](https://github.com/influxdata/flux/blob/master/stdlib/contrib/README.md).
 
 ## Pull request guidelines
 
@@ -131,7 +130,7 @@ Every new public function or method requires a valid GoDoc.
 Comments within the code should be written with proper capitalization and punctuation at the end of the sentence.
 Please refer to [this blog post](https://blog.golang.org/godoc-documenting-go-code) about documenting Go code.
 
-### Updating markdown files for documentation
+### Update markdown files for documentation
 The Flux team uses markdown for our documentation.
 When writing markdown, please use the following guidelines:
 
@@ -139,7 +138,11 @@ When writing markdown, please use the following guidelines:
 - Use the `#` symbol for header sections.
 - Use the `-` symbol for bullet points.
 
-## Submitting a pull request
+#### Document Flux package source code
+When documenting Flux packages, use fluxdoc-compliant comments in your Flux source code.
+For more information, see [fluxdoc formatting](https://github.com/influxdata/flux/blob/master/docs/fluxdoc.md).
+
+## Submit a pull request
 To submit a pull request you should fork the Flux repository and make your change on a feature branch of your fork.
 Then generate a pull request from your branch against **master** of the Flux repository.
 Include in your pull request details of your change -- the **why** *and* the **how** -- as well as the testing you performed.
