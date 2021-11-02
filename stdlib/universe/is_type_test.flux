@@ -1,3 +1,5 @@
+package universe_test
+
 testcase isType {
     assert.equal(isType("a", "string"), true)
     assert.equal(isType("a", "strin"), false)
