@@ -86,9 +86,7 @@ impl Importer for HashMap<&str, PolyType> {
 #[derive(Debug, Display, PartialEq)]
 enum Error {
     #[display(fmt = "{}", _0)]
-    Parse(Errors<ast::check::Error>),
-    #[display(fmt = "{}", _0)]
-    Analysis(semantic::Error),
+    Semantic(Errors<semantic::Error>),
     #[display(
         fmt = "\n\n{}\n\n{}\n{}\n{}\n{}\n",
         r#""unexpected types:".red().bold()"#,
@@ -138,10 +136,7 @@ fn infer_types(
 
     let pkg = parse_program(src);
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
-    let (env, _) = analyzer.analyze_ast(pkg).map_err(|e| match e {
-        semantic::Error::InvalidAST(e) => Error::Parse(e),
-        _ => Error::Analysis(e),
-    })?;
+    let (env, _) = analyzer.analyze_ast(pkg).map_err(Error::Semantic)?;
     let got = env.values;
 
     // Parse polytype expressions in expected environment.
@@ -269,12 +264,15 @@ macro_rules! test_infer_err {
                             + &format!("\t{}: {}\n", name, poly))
                 )
             }
-            Err(err @ Error::Parse(_))
-            | Err(err @ Error::TypeMismatch {.. }) => {
+            Err(err @ Error::TypeMismatch {.. }) => {
                 panic!("{}", err)
             }
-            Err(Error::Analysis(_)) => {
-
+            Err(Error::Semantic(errors)) => {
+                for err in errors {
+                    if let semantic::Error::InvalidAST(_) = err {
+                        panic!("{}", err);
+                    }
+                }
             }
         }
     }};
@@ -3629,5 +3627,18 @@ fn error_types_do_not_suppress_additional_actual_errors() {
         err: r#"error @2:17-2:18: undefined identifier y
 
               error @3:17-2:18: expected int but found string"#,
+    }
+}
+
+#[test]
+fn parse_and_inference_errors_are_reported_simultaneously() {
+    test_error_msg! {
+        src: r#"
+            x = / 1
+            z = y + 1
+        "#,
+        err: "error at @2:17-2:18: invalid expression: invalid token for primary expression: DIV
+
+error @3:17-3:18: undefined identifier y",
     }
 }

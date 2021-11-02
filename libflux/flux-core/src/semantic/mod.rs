@@ -39,7 +39,7 @@ use thiserror::Error;
 pub enum Error {
     /// Errors that occur because of bad syntax or in valid AST
     #[error("{0}")]
-    InvalidAST(#[from] Errors<ast::check::Error>),
+    InvalidAST(#[from] ast::check::Error),
     /// Errors that occur converting AST to semantic graph
     #[error("{0}")]
     Convert(#[from] convert::Error),
@@ -48,7 +48,7 @@ pub enum Error {
     InvalidSemantic(#[from] check::Error),
     /// Errors that occur because of incompatible/incomplete types
     #[error("{0}")]
-    Inference(#[from] Errors<nodes::Error>),
+    Inference(#[from] nodes::Error),
 }
 
 /// Analyzer provides an API for analyzing Flux code.
@@ -87,7 +87,7 @@ impl<I: import::Importer> Analyzer<I> {
         pkgpath: String,
         file_name: String,
         src: &str,
-    ) -> Result<(env::Environment, nodes::Package), Error> {
+    ) -> Result<(env::Environment, nodes::Package), Errors<Error>> {
         let ast_file = parser::parse_string(file_name, src);
         let ast_pkg = ast::Package {
             base: ast_file.base.clone(),
@@ -101,7 +101,7 @@ impl<I: import::Importer> Analyzer<I> {
     pub fn analyze_ast(
         &mut self,
         ast_pkg: ast::Package,
-    ) -> Result<(env::Environment, nodes::Package), Error> {
+    ) -> Result<(env::Environment, nodes::Package), Errors<Error>> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
     /// Analyze Flux AST returning the semantic package and the package environment.
@@ -112,19 +112,39 @@ impl<I: import::Importer> Analyzer<I> {
         // operation.
         ast_pkg: ast::Package,
         sub: &mut sub::Substitution,
-    ) -> Result<(env::Environment, nodes::Package), Error> {
+    ) -> Result<(env::Environment, nodes::Package), Errors<Error>> {
+        let mut errors = Errors::new();
         if !self.config.skip_checks {
-            ast::check::check(ast::walk::Node::Package(&ast_pkg))?;
+            if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
+                errors.extend(err.into_iter().map(Error::from));
+            }
         }
 
-        let mut sem_pkg = convert::convert_package(ast_pkg, sub)?;
+        let mut sem_pkg = match convert::convert_package(ast_pkg, sub) {
+            Ok(sem_pkg) => sem_pkg,
+            Err(err) => {
+                errors.push(err.into());
+                return Err(errors);
+            }
+        };
         if !self.config.skip_checks {
-            check::check(&sem_pkg)?;
+            if let Err(err) = check::check(&sem_pkg) {
+                errors.push(err.into());
+            }
         }
 
         // Clone the environment as the inferred package may mutate it.
         let env = self.env.clone();
-        let env = nodes::infer_package(&mut sem_pkg, env, sub, &mut self.importer)?;
+        let env = match nodes::infer_package(&mut sem_pkg, env, sub, &mut self.importer) {
+            Ok(env) => env,
+            Err(err) => {
+                errors.extend(err.into_iter().map(Error::from));
+                return Err(errors);
+            }
+        };
+        if errors.has_errors() {
+            return Err(errors);
+        }
         Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
     }
 

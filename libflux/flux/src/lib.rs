@@ -925,9 +925,7 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
             Err(e) => {
                 let want = "error at @1:5-1:7: expected ARROW, got EOF\n\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF";
                 let got = format!("{}", e);
-                if want != got {
-                    panic!(r#"expected error "{}", got "{}""#, want, got)
-                }
+                assert_eq!(want, got);
             }
         }
     }

@@ -225,6 +225,7 @@ where
             Node::BuiltinStmt(n) => {
                 walk(v, Node::Identifier(&n.id));
             }
+            Node::ErrorStmt(_) => {}
             Node::Block(n) => match n {
                 Block::Variable(ref assgn, ref next) => {
                     walk(v, Node::VariableAssgn(assgn));
@@ -252,6 +253,7 @@ where
                 walk(v, Node::MemberExpr(&n.member));
                 walk(v, Node::from_expr(&n.init));
             }
+            Node::ErrorExpr(_) => (),
         };
     }
     v.done(node.clone());

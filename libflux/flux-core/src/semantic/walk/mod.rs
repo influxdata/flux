@@ -34,7 +34,9 @@ macro_rules! mk_node {
             DurationLit(&'a $($mut)? DurationLit),
             UintLit(&'a $($mut)? UintLit),
             BooleanLit(&'a $($mut)? BooleanLit),
-            DateTimeLit(&'a $($mut)? DateTimeLit), RegexpLit(&'a $($mut)? RegexpLit),
+            DateTimeLit(&'a $($mut)? DateTimeLit),
+            RegexpLit(&'a $($mut)? RegexpLit),
+            ErrorExpr(&'a $($mut)? SourceLocation),
 
             // Statements.
             ExprStmt(&'a $($mut)? ExprStmt),
@@ -43,6 +45,7 @@ macro_rules! mk_node {
             TestStmt(&'a $($mut)? TestStmt),
             TestCaseStmt(&'a $($mut)? TestCaseStmt),
             BuiltinStmt(&'a $($mut)? BuiltinStmt),
+            ErrorStmt(&'a $($mut)? SourceLocation),
 
             // StringExprPart.
             TextPart(&'a $($mut)? TextPart),
@@ -83,12 +86,14 @@ macro_rules! mk_node {
                     Self::BooleanLit(_) => write!(f, "BooleanLit"),
                     Self::DateTimeLit(_) => write!(f, "DateTimeLit"),
                     Self::RegexpLit(_) => write!(f, "RegexpLit"),
+                    Self::ErrorExpr(_) => write!(f, "ErrorExpr"),
                     Self::ExprStmt(_) => write!(f, "ExprStmt"),
                     Self::OptionStmt(_) => write!(f, "OptionStmt"),
                     Self::ReturnStmt(_) => write!(f, "ReturnStmt"),
                     Self::TestStmt(_) => write!(f, "TestStmt"),
                     Self::TestCaseStmt(_) => write!(f, "TestCaseStmt"),
                     Self::BuiltinStmt(_) => write!(f, "BuiltinStmt"),
+                    Self::ErrorStmt(_) => write!(f, "ErrorStmt"),
                     Self::Block(n) => match n {
                         Block::Variable(_, _) => write!(f, "Block::Variable"),
                         Block::Expr(_, _) => write!(f, "Block::Expr"),
@@ -139,12 +144,14 @@ macro_rules! mk_node {
                     Self::TestStmt(n) => &n.loc,
                     Self::TestCaseStmt(n) => &n.loc,
                     Self::BuiltinStmt(n) => &n.loc,
+                    Self::ErrorStmt(loc) => loc,
                     Self::Block(n) => n.loc(),
                     Self::Property(n) => &n.loc,
                     Self::TextPart(n) => &n.loc,
                     Self::InterpolatedPart(n) => &n.loc,
                     Self::VariableAssgn(n) => &n.loc,
                     Self::MemberAssgn(n) => &n.loc,
+                    Self::ErrorExpr(loc) => loc,
                 }
             }
 
@@ -216,6 +223,7 @@ macro_rules! mk_node {
                     Expression::Boolean(e) => Self::BooleanLit(e),
                     Expression::DateTime(e) => Self::DateTimeLit(e),
                     Expression::Regexp(e) => Self::RegexpLit(e),
+                    Expression::Error(e) => Self::ErrorExpr(e),
                 }
             }
             pub(crate) fn from_stmt(stmt: &'a $($mut)? Statement) -> Self {
@@ -227,6 +235,7 @@ macro_rules! mk_node {
                     Statement::Test(s) => Self::TestStmt(s),
                     Statement::TestCase(s) => Self::TestCaseStmt(s),
                     Statement::Builtin(s) => Self::BuiltinStmt(s),
+                    Statement::Error(s) => Self::ErrorStmt(s),
                 }
             }
             fn from_string_expr_part(sp: &'a $($mut)? StringExprPart) -> Self {
