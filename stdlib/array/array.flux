@@ -1,6 +1,7 @@
 // Package array provides functions for building tables from Flux arrays.
 //
 // introduced: 0.103.0
+// tags: array,tables
 package array
 
 
@@ -40,4 +41,6 @@ package array
 //
 // union(tables: [tags, wildcard_tag])
 // ```
+//
+// tags: inputs
 builtin from : (rows: [A]) => [A] where A: Record

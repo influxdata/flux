@@ -1,397 +1,463 @@
 // Package date provides date and time constants and functions.
+//
+// introduced: 0.37.0
+// tags: date/time
 package date
 
 
-// second is a function that returns the second of a specified time. Results
-//  range from [0 - 59].
+// second returns the second of a specified time. Results range from `[0 - 59]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the second of a time value
+// ## Examples
+// 
+// ### Return the second of a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.second(t: 2020-02-11T12:21:03.293534940Z)
+//
+// // Returns 3
 // ```
 //
 // ## Return the second of a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.second(t: -50s)
+//
+// // Returns 28
 // ```
 builtin second : (t: T) => int where T: Timeable
 
-// minute is a function that returns the minute of a specified time. Results
-//  range from [0 - 59].
+// minute returns the minute of a specified time. Results range from `[0 - 59]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//    Use an absolute time, relative duration, or integer. durations are
-//    relative to `now()`.
+//    Use an absolute time, relative duration, or integer.
+//    Durations are relative to `now()`.
 //
-// ## Return the minute of a time value
+// ## Examples
+// 
+// ### Return the minute of a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.minute(t: 2020-02-11T12:21:03.293534940Z)
+// // Returns 21
 // ```
 //
-// ## Return the minute of a relative duration
+// ### Return the minute of a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.minute(t: -45m)
+//
+// // Returns 6
 // ```
 builtin minute : (t: T) => int where T: Timeable
 
-// hour is a function that returns the hour of a specified time. Results
-//  range from [0 - 23].
+// hour returns the hour of a specified time. Results range from `[0 - 23]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the hour of a time value
+// ## Examples
+// 
+// ### Return the hour of a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.hour(t: 2020-02-11T12:21:03.293534940Z)
+//
+// // Returns 12
 // ```
 //
-// ## Return the hour of a relative duration
+// ### Return the hour of a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.hour(t: -8h)
+//
+// // Returns 7
 // ```
 builtin hour : (t: T) => int where T: Timeable
 
-// weekDay is a function that returns the day of the week for a specified time.
-//  Results range from [0 - 6].
+// weekDay returns the day of the week for a specified time.
+// Results range from `[0 - 6]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the day of the week for a time value
+// ## Examples
+// 
+// ### Return the day of the week for a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.weekDay(t: 2020-02-11T12:21:03.293534940Z)
+// 
+// // Returns 2
 // ```
 //
-// ## Return the day of the week for a relative duration
+// ### Return the day of the week for a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.weekDay(t: -84h)
+// 
+// // Returns 6
 // ```
 builtin weekDay : (t: T) => int where T: Timeable
 
-// monthDay is a function that returns the day of the month for a specified
-//  time. Results range from [1 - 31].
+// monthDay returns the day of the month for a specified time.
+// Results range from `[1 - 31]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the day of the month for a time value
+// ## Examples
+// 
+// ### Return the day of the month for a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.monthDay(t: 2020-02-11T12:21:03.293534940Z)
+//
+// // Returns 11
 // ```
 //
-// ## Return the day of the month for a relative duration
+// ### Return the day of the month for a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
-//option now = () => 2020-02-11T12:21:03.293534940Z
+// option now = () => 2020-02-11T12:21:03.293534940Z
 //
-//date.monthDay(t: -8d)
+// date.monthDay(t: -8d)
+// 
+// // Returns 25
 // ```
 builtin monthDay : (t: T) => int where T: Timeable
 
-// yearDay is a function that returns the day of the year for a specified time
-//  Results can include leap days and range from [ 1 - 366].
+// yearDay returns the day of the year for a specified time.
+// Results can include leap days and range from `[1 - 366]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the day of the year for a time value
+// ## Examples
 //
-// ```
+// ### Return the day of the year for a time value
+//
+// ```no_run
 // import "date"
 //
-//date.yearDay(t: 2020-02-11T12:21:03.293534940Z)
+// date.yearDay(t: 2020-02-11T12:21:03.293534940Z)
+// 
+// // Returns 42
 // ```
 //
-// ## Return the day of the year for a relative duration
+// ### Return the day of the year for a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.yearDay(t: -1mo)
+//
+// // Returns 276
 // ```
 builtin yearDay : (t: T) => int where T: Timeable
 
-// month is a function that returns the month of a specified time.
-//  Results range from [1 - 12].
+// month returns the month of a specified time. Results range from `[1 - 12]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the month of a time value
+// ## Examples
+// 
+// ### Return the month of a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
-//date.month(t: 2020-02-11T12:21:03.293534940Z)
+// date.month(t: 2020-02-11T12:21:03.293534940Z)
+// 
+// // Returns 2
 // ```
 //
-// ## Retrun the month of a relative duration
+// ### Return the month of a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.month(t: -3mo)
+//
+// // Returns 8
 // ```
 builtin month : (t: T) => int where T: Timeable
 
-// year is a function that returns the year of a specified time.
+// year returns the year of a specified time.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the year for a time value
+// ## Examples
+// 
+// ### Return the year for a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
-//date.year(t: 2020-02-11T12:21:03.293534940Z)
+// date.year(t: 2020-02-11T12:21:03.293534940Z)
+// 
+// // Returns 2020
 // ```
 //
-// ## Return the year for a relative duration
+// ### Return the year for a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.year(t: -14y)
+// 
+// // Returns 2007
 // ```
 builtin year : (t: T) => int where T: Timeable
 
-// week is a function that returns the ISO week of the year for a specified time.
-//  Results range from [1 - 53].
+// week returns the ISO week of the year for a specified time.
+// Results range from `[1 - 53]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`. 
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the week of the year
+// ## Examples
+// 
+// ### Return the week of the year
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.week(t: 2020-02-11T12:21:03.293534940Z)
+//
+// // Returns 7
 // ```
 //
-// ## Return the week of the year using a relative duration
+// ### Return the week of the year using a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.week(t: -12d)
+//
+// // Returns 42
 // ```
 builtin week : (t: T) => int where T: Timeable
 
-// Quarter returns the quarter for a specified time. Results range 
-//  from [1-4].
+// quarter returns the quarter for a specified time. Results range from `[1-4]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the quarter for a time value
+// ## Examples
+// 
+// ### Return the quarter for a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.quarter(t: 2020-02-11T12:21:03.293534940Z)
+// 
+// // Returns 1
 // ```
 //
-// ## Return the quarter for a relative duration
+// ### Return the quarter for a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.quarter(t: -7mo)
+// 
+// // Returns 2
 // ```
 builtin quarter : (t: T) => int where T: Timeable
 
-// Millisecond returns the milliseconds for a specified time.
-//  Results range from [0-999].
+// millisecond returns the milliseconds for a specified time.
+// Results range from `[0-999]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the millisecond of the time value
+// ## Examples
+// 
+// ### Return the millisecond of the time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.millisecond(t: 2020-02-11T12:21:03.293534940Z)
+// 
+// // Returns 293
 // ```
 //
-// ## Return the millisecond of a relative duration
+// ### Return the millisecond of a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.millisecond(t: -150ms)
+// 
+// // Returns 127
 // ```
 builtin millisecond : (t: T) => int where T: Timeable
 
-// Microsecond returns the microseconds for a specified time.
-//  Results range from [0-999999].
+// microsecond returns the microseconds for a specified time.
+// Results range `from [0-999999]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the microsecond of a time value
+// ## Examples
+// 
+// ### Return the microsecond of a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.microsecond(t: 2020-02-11T12:21:03.293534940Z)
+// 
+// // Returns 293534
 // ```
 //
-// ## Return the microsecond of a relative duration
+// ### Return the microsecond of a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.microsecond(t: -1890us)
+//
+// // Returns 322661
 // ```
 builtin microsecond : (t: T) => int where T: Timeable
 
-// Nanosecond returns the nanoseconds for a specified time.
-// Results range from [0-999999999].
+// nanosecond returns the nanoseconds for a specified time.
+// Results range from `[0-999999999]`.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// ## Return the nanosecond for a time value
+// ## Examples
+// 
+// ### Return the nanosecond for a time value
 //
-// ```
+// ```no_run
 // import "date"
 //
 // date.nanosecond(t: 2020-02-11T12:21:03.293534940Z)
+// 
+// // Returns 293534940
 // ```
 //
-// ## Return the nanosecond for a relative duration
+// ### Return the nanosecond for a relative duration
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
 //
 // date.nanosecond(t: -2111984ns)
+// 
+// // Returns 128412016
 // ```
 builtin nanosecond : (t: T) => int where T: Timeable
 
-// Truncate returns a time truncated to the specified duration unit.
+// truncate returns a time truncated to the specified duration unit.
 //
 // ## Parameters
-// - `t` is the time to operate on.
+// - t: Time to operate on.
 //
-//   Use an absolute time, relative duration, or integer. durations are
-//   relative to `now()`.
+//   Use an absolute time, relative duration, or integer.
+//   Durations are relative to `now()`.
 //
-// - `unit` is the unit of time to truncate to
+// - unit: Unit of time to truncate to.
 //
-//   Only use 1 and the unit of time to specify the unit. For example:
-//   1s, 1m, 1h.
+//   Only use 1 and the unit of time to specify the unit.
+//   For example: `1s`, `1m`, `1h`.
 //
-// ## Example
+// ## Examples
 //
-// ```
-// import "date"
+// ### Truncate time values
 //
-// date.truncate(
-//   t: 2019-07-17T12:05:21.012Z
-//   unit: 1s
-// )
-// ```
-//
-// ## Truncate time values
-//
-// ```
+// ```no_run
 // import "date"
 //
 // date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1s)
@@ -404,9 +470,9 @@ builtin nanosecond : (t: T) => int where T: Timeable
 // // Returns 2019-06-03T13:00:00.000000000Z
 // ```
 //
-// ## Truncate time values using durations
+// ### Truncate time values using relative durations
 //
-// ```
+// ```no_run
 // import "date"
 //
 // option now = () => 2020-01-01T00:00:30.500000000Z
