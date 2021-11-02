@@ -2,12 +2,16 @@ package compiler_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
+	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
@@ -600,6 +604,201 @@ func TestCompileAndEval(t *testing.T) {
 			if !cmp.Equal(tc.want, got, CmpOptions...) {
 				t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(tc.want, got, CmpOptions...))
 			}
+		})
+	}
+}
+
+func TestRuntimeTypeErrors(t *testing.T) {
+
+	pkg, err := runtime.StdLib().ImportPackageObject("internal/testutil")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sc := compiler.NewScope()
+	sc.Set("testutil", pkg)
+
+	inType := semantic.NewObjectType([]semantic.PropertyType{})
+	input := values.NewObjectWithValues(map[string]values.Value{})
+
+	testCases := []struct {
+		name string
+		fn   string
+		err  string
+	}{
+		{
+			name: "index into null value",
+			fn: `
+				import "internal/testutil"
+				() => {
+						n = testutil.makeAny(typ: "null")
+						return n[0]
+ 				}
+ 			`,
+			err: "cannot index into a null value",
+		},
+		{
+			name: "index into non-array",
+			fn: `
+				import "internal/testutil"
+				() => {
+						a = testutil.makeAny(typ: "string")
+						return a[0]
+ 				}
+ 			`,
+			err: "cannot index into a value of type string",
+		},
+		{
+			name: "index with null value",
+			fn: `
+				import "internal/testutil"
+				() => {
+					a = [0, 1, 2]
+					n = testutil.makeAny(typ: "null")
+					return a[n]
+				}
+			`,
+			err: "cannot index into an array with null value",
+		},
+		{
+			name: "index with non-int",
+			fn: `
+				import "internal/testutil"
+				() => {
+					a = [0, 1, 2]
+					i = testutil.makeAny(typ: "string")
+					return a[i]
+				}
+			`,
+			err: "cannot index into an array with value of type string",
+		},
+		{
+			name: `null value on LHS of "with"`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					n = testutil.makeAny(typ: "null")
+					return {n with a: 10}
+				}
+			`,
+			err: `null value on left hand side of "with"`,
+		},
+		{
+			name: `non-record on LHS of "with"`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					s = testutil.makeAny(typ: "string")
+					return {s with a: 10}
+				}
+			`,
+			err: `value on left hand side of "with" in record literal has type string`,
+		},
+		{
+			name: `non-bool on RHS of logical operator`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					s = testutil.makeAny(typ: "string")
+					return 1 == 1 and s
+				}
+			`,
+			err: `cannot use operand of type string with logical and`,
+		},
+		{
+			name: `non-bool on LHS of logical operator`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					s = testutil.makeAny(typ: "string")
+					return s or 1 == 1
+				}
+			`,
+			err: `cannot use operand of type string with logical or`,
+		},
+		{
+			name: `non-bool test in conditional expression`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					s = testutil.makeAny(typ: "string")
+					return if s then 1 else 2
+				}
+			`,
+			err: `cannot use test of type string in conditional expression`,
+		},
+		{
+			name: `null value in member expression`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					n = testutil.makeAny(typ: "null")
+					return n.foo
+				}
+			`,
+			err: `cannot access property of a null value`,
+		},
+		{
+			name: `non-record in member expression`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					s = testutil.makeAny(typ: "string")
+					return s.foo
+				}
+			`,
+			err: `cannot access property of a value with type string`,
+		},
+		{
+			name: `call a null value`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					n = testutil.makeAny(typ: "null")
+					return n()
+				}
+			`,
+			err: `attempt to call a null value`,
+		},
+		{
+			name: `call a non-function`,
+			fn: `
+				import "internal/testutil"
+				() => {
+					s = testutil.makeAny(typ: "string")
+					return s()
+				}
+			`,
+			err: `attempt to call a value of type string`,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			pkg, err := runtime.AnalyzeSource(tc.fn)
+			if err != nil {
+				t.Fatalf("unexpected error during analysis: %s", err)
+			}
+
+			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
+			fn := stmt.Expression.(*semantic.FunctionExpression)
+			f, err := compiler.Compile(sc, fn, inType)
+			if err != nil {
+				t.Fatalf("unexpected error during compilation: %s", err)
+			}
+
+			_, err = f.Eval(context.Background(), input)
+			if err == nil {
+				t.Fatal("expected error during evaluation, got nil")
+			}
+
+			if err := err.(*errors.Error); err.Code != codes.Invalid {
+				t.Fatalf("expected error to have code %q, but it had %q", codes.Invalid, err.Code)
+			}
+			if want, got := tc.err, err.Error(); !strings.Contains(got, want) {
+				t.Fatalf("expected evaluation error that contained %q, but it did not; error was %q", want, got)
+			}
+
 		})
 	}
 }

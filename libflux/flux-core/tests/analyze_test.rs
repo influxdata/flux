@@ -112,6 +112,7 @@ f(a: s)
                                 }),
                             })),
                         }),
+                        vectorized: None,
                     })),
                     ast::BaseNode::default().location,
                 ))),
