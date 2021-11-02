@@ -2,29 +2,28 @@
 package csv
 
 
-// from is a function that retrieves data from a comma separated value (CSV) data source.
-//
-// A stream of tables are returned, each unique series contained within its own table.
-// Each record in the table represents a single point in the series.
+// from retrieves data from a comma separated value (CSV) data source and 
+// returns a stream of tables.
 //
 // ## Parameters
 //
-// - csv: is CSV data.
+// - csv: CSV data.
 //
-//   Supports anonotated CSV or raw CSV. Use mode to specify the parsing mode.
+//   Supports anonotated CSV or raw CSV. Use `mode` to specify the parsing mode.
 //
-// - file: is the file path of the CSV file to query.
+// - file: File path of the CSV file to query.
 //
-//   The path can be absolute or relative. If relative, it is relative to the working
-//   directory of the `fluxd` process. The CSV file must exist in the same file
-//   system running the `fluxd` process.
+//   The path can be absolute or relative.
+//   If relative, it is relative to the working directory of the `fluxd` process.
+//   The CSV file must exist in the same file system running the `fluxd` process.
 //
-// - mode: is the CSV parsing mode. Default is annotations.
+// - mode: is the CSV parsing mode. Default is `annotations`.
 //
-//   Available annotation modes:
-//    - annotations: Use CSV notations to determine column data types.
-//    - raw: Parse all columns as strings and use the first row as the header row
-//    - and all subsequent rows as data.
+//     **Available annotation modes**
+//   
+//     - **annotations**: Use CSV notations to determine column data types.
+//     - **raw**: Parse all columns as strings and use the first row as the
+//       header row and all subsequent rows as data.
 //
 // ## Examples
 //
@@ -66,7 +65,6 @@ package csv
 // "
 //
 // > csv.from(csv: csvData)
-//
 // ```
 //
 // ### Query a raw CSV string

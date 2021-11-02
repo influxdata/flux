@@ -23,7 +23,7 @@ package array
 //     {foo: "bar", baz: 23.8},
 // ]
 //
-// array.from(rows: rows)
+// > array.from(rows: rows)
 // ```
 //
 // ### Union custom rows with query results
