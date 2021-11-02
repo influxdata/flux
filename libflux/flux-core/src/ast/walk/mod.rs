@@ -173,9 +173,9 @@ impl<'a> Node<'a> {
             Node::VariableAssgn(n) => &n.base,
             Node::MemberAssgn(n) => &n.base,
             Node::TypeExpression(n) => &n.base,
-            Node::MonoType(n) => &n.base(),
+            Node::MonoType(n) => n.base(),
             Node::PropertyType(n) => &n.base,
-            Node::ParameterType(n) => &n.base(),
+            Node::ParameterType(n) => n.base(),
             Node::TypeConstraint(n) => &n.base,
         }
     }

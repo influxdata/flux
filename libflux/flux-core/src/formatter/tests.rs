@@ -1271,14 +1271,14 @@ a",
 
 #[test]
 fn invalid_syntax() {
-    assert_unchanged(
-        r#"builtin diff : (
-    <-got: [A],
-    want: [A],
-    ?verbose: bool,
-    ?epsilon: float,
-    ?nansEqual: bool,
-    aoeustahoesih
-) => [{A with _diff: string}:]"#,
-    );
+    let script = r#"builtin diff : (
+        <-got: [A],
+        want: [A],
+        ?verbose: bool,
+        ?epsilon: float,
+        ?nansEqual: bool,
+        aoeustahoesih
+    ) => [{A with _diff: string}:]"#;
+
+    assert!(format(script).is_err());
 }
