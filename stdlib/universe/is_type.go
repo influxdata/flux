@@ -49,9 +49,8 @@ func IsType() values.Function {
 					result = type_ == "duration"
 				case semantic.Regexp:
 					result = type_ == "regexp"
-				// Could support composite types as well but knowing that something is an "array"
-				// without knowing the element type of that array seems less useful and potentially
-				// a cause for errors
+				// We explicitly only support the primitive types as we do not want callers to
+				// confuse `[int]` and `[string]` etc
 				// case semantic.Array:
 				// 	result = type_ == "array"
 				// case semantic.Object:
