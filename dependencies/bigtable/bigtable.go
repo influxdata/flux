@@ -7,6 +7,8 @@ import (
 
 	"cloud.google.com/go/bigtable"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 )
@@ -60,6 +62,13 @@ func (d DefaultProvider) NewClient(ctx context.Context, project, instance string
 		})),
 	}, opts...)
 	return bigtable.NewClient(ctx, project, instance, opts...)
+}
+
+// DefaultProvider is the default provider that uses the default bigtable client.
+type ErrorProvider struct{}
+
+func (ErrorProvider) NewClient(ctx context.Context, project, instance string, opts ...option.ClientOption) (*bigtable.Client, error) {
+	return nil, errors.New(codes.Invalid, "Provider.NewClient called on an error dependency")
 }
 
 // Forwarding types and functions for convenience.

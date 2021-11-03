@@ -139,3 +139,10 @@ func (d *defaultClient) Close() error {
 	d.client.Disconnect(250)
 	return nil
 }
+
+// ErrorDialer is the default dialer that uses the default mqtt client.
+type ErrorDialer struct{}
+
+func (d ErrorDialer) Dial(ctx context.Context, brokers []string, options Options) (Client, error) {
+	return nil, errors.New(codes.Invalid, "Dialer.Dial called on an error dependency")
+}

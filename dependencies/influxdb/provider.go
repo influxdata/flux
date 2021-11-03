@@ -132,6 +132,23 @@ func (u UnimplementedProvider) WriterFor(ctx context.Context, conf Config) (Writ
 	return nil, errors.New(codes.Unimplemented, "influxdb writer has not been implemented")
 }
 
+// ErrorProvider provides default implementations for a Provider.
+// This implements all of the Provider methods by returning an error
+// with the code codes.Unimplemented.
+type ErrorProvider struct{}
+
+func (u ErrorProvider) ReaderFor(ctx context.Context, conf Config, bounds flux.Bounds, predicateSet PredicateSet) (Reader, error) {
+	return nil, errors.New(codes.Invalid, "Provider.ReaderFor called on an error dependency")
+}
+
+func (u ErrorProvider) SeriesCardinalityReaderFor(ctx context.Context, conf Config, bounds flux.Bounds, predicateSet PredicateSet) (Reader, error) {
+	return nil, errors.New(codes.Invalid, "Provider.SeriesCardinalityReaderFor called on an error dependency")
+}
+
+func (u ErrorProvider) WriterFor(ctx context.Context, conf Config) (Writer, error) {
+	return nil, errors.New(codes.Invalid, "Provider.WriterFor called on an error dependency")
+}
+
 // NameOrID signifies the name of an organization/bucket
 // or an ID for an organization/bucket.
 type NameOrID struct {
