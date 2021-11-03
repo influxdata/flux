@@ -1,9 +1,14 @@
+// Package anomalydetection detects anomalies in time series data.
 package anomalydetection
 
 
 import "math"
 import "experimental"
 
+// mad TODO.
+//
+// ## Parameters
+// - threshold: deviation at which to report anamolies
 mad = (table=<-, threshold=3.0) => {
     // MEDiXi = med(x)
     data = table |> group(columns: ["_time"], mode: "by")

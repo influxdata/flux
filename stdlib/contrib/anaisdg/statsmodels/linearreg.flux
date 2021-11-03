@@ -1,10 +1,12 @@
+// Package statsmodels provides code for calculating linear regression.
 package statsmodels
-
 
 import "math"
 import "generate"
 
-// performs linear regression, calculates y_hat, and residuals squared (rse) 
+// linearRegression performs linear regression. It calculates and returns
+// [*ŷ*](https://en.wikipedia.org/wiki/Hat_operator#Estimated_value) (`y_hat`),
+// and [residual sum of errors](https://en.wikipedia.org/wiki/Residual_sum_of_squares) (`rse`).
 linearRegression = (tables=<-) => {
     renameAndSum = tables
         |> rename(columns: {_value: "y"})
