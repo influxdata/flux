@@ -42,7 +42,7 @@ package csv
 //
 // ```no_run
 // import "csv"
-
+//
 // csv.from(
 //     file: "/path/to/data-file.csv",
 //     mode: "raw",
@@ -74,14 +74,14 @@ package csv
 //
 // ```
 // import "csv"
-
+//
 // csvData = "
 // _start,_stop,_time,region,host,_value
 // 2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:00Z,east,A,15.43
 // 2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:20Z,east,B,59.25
 // 2018-05-08T20:50:00Z,2018-05-08T20:51:00Z,2018-05-08T20:50:40Z,east,C,52.62
 // "
-
+//
 // csv.from(
 //     csv: csvData,
 //     mode: "raw",
