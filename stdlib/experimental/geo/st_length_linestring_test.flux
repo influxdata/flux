@@ -182,11 +182,7 @@ t_stLength = (table=<-) => table
     // optional but it helps to see the train closing in
     |> geo.asTracks(groupBy: ["id", "trip_id"])
     |> geo.ST_LineString()
-    |> map(
-        fn: (r) => ({r with
-            _st_length: limitFloat(value: geo.ST_Length(geometry: {linestring: r.st_linestring})),
-        }),
-    )
+    |> map(fn: (r) => ({r with _st_length: limitFloat(value: geo.ST_Length(geometry: {linestring: r.st_linestring}))}))
     |> drop(columns: ["_start", "_stop"])
 
 test _stLength = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stLength})

@@ -26,8 +26,7 @@ builtin to : (
     ?orgID: string,
     ?host: string,
     ?token: string,
-) => [A] where
-    A: Record
+) => [A] where A: Record
 
 // An experimental version of join.
 builtin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record
@@ -38,11 +37,7 @@ builtin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record
 // using time elapsed between input records.
 // By default, it aligns to tables to 1970-01-01T00:00:00Z UTC.
 alignTime = (tables=<-, alignTo=time(v: 0)) => tables
-    |> stateDuration(
-        fn: (r) => true,
-        column: "timeDiff",
-        unit: 1ns,
-    )
+    |> stateDuration(fn: (r) => true, column: "timeDiff", unit: 1ns)
     |> map(fn: (r) => ({r with _time: time(v: int(v: alignTo) + r.timeDiff)}))
     |> drop(columns: ["timeDiff"])
 
@@ -57,12 +52,12 @@ builtin _window : (
 
 // An experimental version of window.
 window = (
-        tables=<-,
-        every=0s,
-        period=0s,
-        offset=0s,
-        location=location,
-        createEmpty=false,
+    tables=<-,
+    every=0s,
+    period=0s,
+    offset=0s,
+    location=location,
+    createEmpty=false,
 ) => tables
     |> _window(
         every,

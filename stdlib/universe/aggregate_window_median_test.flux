@@ -39,8 +39,4 @@ t_aggregate_window_median = (table=<-) => table
     |> range(start: 2019-01-09T19:44:30Z, stop: 2019-01-09T19:46:00Z)
     |> aggregateWindow(every: 30s, fn: median)
 
-test _aggregate_window_median = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_aggregate_window_median,
-})
+test _aggregate_window_median = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_aggregate_window_median})

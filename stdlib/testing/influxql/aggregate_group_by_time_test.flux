@@ -332,8 +332,4 @@ t_aggregate_group_by_time = (tables=<-) => tables
     |> rename(columns: {_time: "time", _value: "sum"})
     |> drop(columns: ["_field", "_start", "_stop"])
 
-test _aggregate_group_by_time = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_aggregate_group_by_time,
-})
+test _aggregate_group_by_time = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_aggregate_group_by_time})

@@ -6,9 +6,7 @@ import "experimental"
 import "influxdata/influxdb/v1"
 
 // Units
-option units = {
-    distance: "km",
-}
+option units = {distance: "km"}
 
 //
 // Builtin GIS functions
@@ -33,16 +31,7 @@ ST_Length = (geometry, units=units) => stLength(geometry: geometry, units: units
 
 // Non-standard
 ST_LineString = (tables=<-) => tables
-    |> reduce(
-        fn: (r, accumulator) => ({
-            __linestring: accumulator.__linestring + (if accumulator.__count > 0 then ", " else "") + string(v: r.lon) + " " + string(v: r.lat),
-            __count: accumulator.__count + 1,
-        }),
-        identity: {
-            __linestring: "",
-            __count: 0,
-        },
-    )
+    |> reduce(fn: (r, accumulator) => ({__linestring: accumulator.__linestring + (if accumulator.__count > 0 then ", " else "") + string(v: r.lon) + " " + string(v: r.lat), __count: accumulator.__count + 1}), identity: {__linestring: "", __count: 0})
     |> drop(columns: ["__count"])
     |> rename(columns: {__linestring: "st_linestring"})
 
@@ -57,8 +46,7 @@ builtin getGrid : (
     ?level: int,
     ?maxLevel: int,
     units: {distance: string},
-) => {level: int, set: [string]} where
-    T: Record
+) => {level: int, set: [string]} where T: Record
 
 // Returns level of specified cell ID token.
 builtin getLevel : (token: string) => int
@@ -109,15 +97,8 @@ shapeData = (tables=<-, latField, lonField, level) => tables
         }),
     )
     |> toRows()
-    |> map(
-        fn: (r) => ({r with
-            s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),
-        }),
-    )
-    |> experimental.group(
-        columns: ["s2_cell_id"],
-        mode: "extend",
-    )
+    |> map(fn: (r) => ({r with s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)}))
+    |> experimental.group(columns: ["s2_cell_id"], mode: "extend")
 
 //
 // Filtering functions
@@ -126,13 +107,13 @@ shapeData = (tables=<-, latField, lonField, level) => tables
 // It is a coarse filter, as the grid always overlays the region, the result will likely contain records
 // with lat/lon outside the specified region.
 gridFilter = (
-        tables=<-,
-        region,
-        minSize=24,
-        maxSize=-1,
-        level=-1,
-        s2cellIDLevel=-1,
-        units=units,
+    tables=<-,
+    region,
+    minSize=24,
+    maxSize=-1,
+    level=-1,
+    s2cellIDLevel=-1,
+    units=units,
 ) => {
     _s2cellIDLevel = if s2cellIDLevel == -1 then
         tables
@@ -166,13 +147,13 @@ strictFilter = (tables=<-, region) => tables
 // Checks to see if data is already pivoted and contains a lat column.
 // Returns pivoted data.
 filterRows = (
-        tables=<-,
-        region,
-        minSize=24,
-        maxSize=-1,
-        level=-1,
-        s2cellIDLevel=-1,
-        strict=true,
+    tables=<-,
+    region,
+    minSize=24,
+    maxSize=-1,
+    level=-1,
+    s2cellIDLevel=-1,
+    strict=true,
 ) => {
     _columns = tables
         |> columns(column: "_value")
@@ -223,11 +204,7 @@ groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
             |> duplicate(column: "s2_cell_id", as: newColumn)
     else
         tables
-            |> map(
-                fn: (r) => ({r with
-                    _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level),
-                }),
-            )
+            |> map(fn: (r) => ({r with _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)}))
             |> rename(columns: {_s2_cell_id_xxx: newColumn})
 
     return _prepared

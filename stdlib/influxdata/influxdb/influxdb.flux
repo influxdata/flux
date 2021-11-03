@@ -73,9 +73,7 @@ builtin cardinality : (
     start: A,
     ?stop: B,
     ?predicate: (r: {T with _measurement: string, _field: string, _value: S}) => bool,
-) => [{_start: time, _stop: time, _value: int}] where
-    A: Timeable,
-    B: Timeable
+) => [{_start: time, _stop: time, _value: int}] where A: Timeable, B: Timeable
 
 builtin from : (
     ?bucket: string,
@@ -98,16 +96,9 @@ builtin to : (
     ?measurementColumn: string,
     ?tagColumns: [string],
     ?fieldFn: (r: A) => B,
-) => [A] where
-    A: Record,
-    B: Record
+) => [A] where A: Record, B: Record
 
-builtin buckets : (
-    ?org: string,
-    ?orgID: string,
-    ?host: string,
-    ?token: string,
-) => [{
+builtin buckets : (?org: string, ?orgID: string, ?host: string, ?token: string) => [{
     name: string,
     id: string,
     organizationID: string,

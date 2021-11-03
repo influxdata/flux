@@ -40,8 +40,4 @@ t_rate = (table=<-) => table
     |> filter(fn: (r) => r._measurement == "net" and r._field == "bytes_recv")
     |> aggregate.rate(every: 20s, groupColumns: ["host", "interface"], unit: 1s)
 
-test rate = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_rate,
-})
+test rate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rate})

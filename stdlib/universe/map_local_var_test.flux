@@ -35,7 +35,7 @@ t_map_local = (table=<-) => table
     |> map(
         fn: (r) => {
             myVal = "const"
-
+    
             return {r with _value: myVal}
         },
     )

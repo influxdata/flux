@@ -120,13 +120,7 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 notify = (tables=<-, endpoint, data) => tables
     |> experimental.set(o: data)
     |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data))
-    |> map(
-        fn: (r) => ({r with
-            _measurement: "notifications",
-            _status_timestamp: int(v: r._time),
-            _time: now(),
-        }),
-    )
+    |> map(fn: (r) => ({r with _measurement: "notifications", _status_timestamp: int(v: r._time), _time: now()}))
     |> endpoint()
     |> experimental.group(mode: "extend", columns: ["_sent"])
     |> log()
@@ -255,13 +249,13 @@ deadman = (t, tables=<-) => tables
 // ```
 //
 check = (
-        tables=<-,
-        data,
-        messageFn,
-        crit=(r) => false,
-        warn=(r) => false,
-        info=(r) => false,
-        ok=(r) => true,
+    tables=<-,
+    data,
+    messageFn,
+    crit=(r) => false,
+    warn=(r) => false,
+    info=(r) => false,
+    ok=(r) => true,
 ) => tables
     |> experimental.set(o: data.tags)
     |> experimental.group(mode: "extend", columns: experimental.objectKeys(o: data.tags))
@@ -286,11 +280,7 @@ check = (
             _time: now(),
         }),
     )
-    |> map(
-        fn: (r) => ({r with
-            _message: messageFn(r: r),
-        }),
-    )
+    |> map(fn: (r) => ({r with _message: messageFn(r: r)}))
     |> experimental.group(
         mode: "extend",
         columns: [

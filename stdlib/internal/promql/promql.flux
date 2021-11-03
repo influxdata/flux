@@ -97,9 +97,7 @@ builtin promHistogramQuantile : (
     ?countColumn: string,
     ?upperBoundColumn: string,
     ?valueColumn: string,
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 // resets() implements functionality equivalent to PromQL's resets() function:
 //

@@ -7,48 +7,13 @@ import "dict"
 import "experimental/csv"
 
 sets = [
-    "airSensor": {
-        url: "https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv",
-        desc: "Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.",
-        size: "~600 KB",
-        type: "live",
-    },
-    "birdMigration": {
-        url: "https://influx-testdata.s3.amazonaws.com/bird-migration.csv",
-        desc: "2019 African bird migration data from the \"Movebank: Animal Tracking\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.",
-        size: "~1.2 MB",
-        type: "static",
-    },
-    "bitcoin": {
-        url: "https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv",
-        desc: "Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.",
-        size: "~700 KB",
-        type: "live",
-    },
-    "machineProduction": {
-        url: "https://influx-testdata.s3.amazonaws.com/machine-production.csv",
-        desc: "States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.",
-        size: "~11.9 MB",
-        type: "static",
-    },
-    "noaa": {
-        url: "https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv",
-        desc: "Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.",
-        size: "~1.3 MB",
-        type: "live",
-    },
-    "noaaWater": {
-        url: "https://influx-testdata.s3.amazonaws.com/noaa.csv",
-        desc: "Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.",
-        size: "~10.3 MB",
-        type: "static",
-    },
-    "usgs": {
-        url: "https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv",
-        desc: "USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.",
-        size: "~6 MB",
-        type: "live",
-    },
+    "airSensor": {url: "https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv", desc: "Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.", size: "~600 KB", type: "live"},
+    "birdMigration": {url: "https://influx-testdata.s3.amazonaws.com/bird-migration.csv", desc: "2019 African bird migration data from the \"Movebank: Animal Tracking\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.", size: "~1.2 MB", type: "static"},
+    "bitcoin": {url: "https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv", desc: "Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.", size: "~700 KB", type: "live"},
+    "machineProduction": {url: "https://influx-testdata.s3.amazonaws.com/machine-production.csv", desc: "States and metrics reported from four automated grinding wheel stations on a production line. Contains data from 2021-08-01.", size: "~11.9 MB", type: "static"},
+    "noaa": {url: "https://influx-testdata.s3.amazonaws.com/noaa-ndbc-latest-observations-annotated.csv", desc: "Latest observations from the NOAA National Data Buoy Center (NDBC). Contains only the most recent observations (no historical data). Data is updated approximately every 15m.", size: "~1.3 MB", type: "live"},
+    "noaaWater": {url: "https://influx-testdata.s3.amazonaws.com/noaa.csv", desc: "Water level observations from two stations reported by the NOAA Center for Operational Oceanographic Products and Services. Contains data between 2019-08-17 and 2019-09-17.", size: "~10.3 MB", type: "static"},
+    "usgs": {url: "https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv", desc: "USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.", size: "~6 MB", type: "live"},
 ]
 
 _setInfo = (set) => {

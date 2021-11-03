@@ -14,14 +14,6 @@ outData = "
 ,result,table,_time
 ,,0,2020-09-07T09:00:00Z
 "
-t_last_success = () => array.from(
-    rows: [
-        {_time: tasks.lastSuccess(orTime: -1d)},
-    ],
-)
+t_last_success = () => array.from(rows: [{_time: tasks.lastSuccess(orTime: -1d)}])
 
-test _last_success = () => ({
-    input: t_last_success(),
-    want: testing.loadMem(csv: outData),
-    fn: (tables=<-) => tables,
-})
+test _last_success = () => ({input: t_last_success(), want: testing.loadMem(csv: outData), fn: (tables=<-) => tables})

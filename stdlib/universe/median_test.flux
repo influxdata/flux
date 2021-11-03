@@ -35,8 +35,4 @@ t_median = (table=<-) => table
     |> range(start: 2019-01-01T00:00:00Z)
     |> median()
 
-test _median = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_median,
-})
+test _median = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_median})

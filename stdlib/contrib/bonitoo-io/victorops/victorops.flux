@@ -13,13 +13,13 @@ import "json"
 // `timestamp` - time - Incident timestamp. Default value: now().
 // `monitoringTool` - string - Monitoring agent name. Default value: "InfluxDB".
 alert = (
-        url,
-        messageType,
-        entityID="",
-        entityDisplayName="",
-        stateMessage="",
-        timestamp=now(),
-        monitoringTool="InfluxDB",
+    url,
+    messageType,
+    entityID="",
+    entityDisplayName="",
+    stateMessage="",
+    timestamp=now(),
+    monitoringTool="InfluxDB",
 ) => {
     alert = {
         message_type: messageType,
@@ -30,9 +30,7 @@ alert = (
         state_start_time: uint(v: timestamp) / uint(v: 1000000000),
         monitoring_tool: monitoringTool,
     }
-    headers = {
-        "Content-Type": "application/json",
-    }
+    headers = {"Content-Type": "application/json"}
     body = json.encode(v: alert)
 
     return http.post(headers: headers, url: url, data: body)
@@ -47,7 +45,7 @@ endpoint = (url, monitoringTool="InfluxDB") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == alert(

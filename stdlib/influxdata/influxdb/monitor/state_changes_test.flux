@@ -45,10 +45,7 @@ outData = "
 t_state_changes_any_to_warn = (table=<-) => table
     |> range(start: -1m)
     |> v1.fieldsAsCols()
-    |> monitor.stateChanges(
-        fromLevel: "any",
-        toLevel: "warn",
-    )
+    |> monitor.stateChanges(fromLevel: "any", toLevel: "warn")
     |> drop(columns: ["_start", "_stop"])
 
 test monitor_state_changes_any_to_warn = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_warn})

@@ -6,16 +6,76 @@ import "testing"
 
 inData = array.from(
     rows: [
-        {_time: 2018-05-22T20:00:00Z, _value: 6.05, _measurement: "m0", _field: "f0", t0: "a"},
-        {_time: 2018-05-22T20:00:10Z, _value: 9.41, _measurement: "m0", _field: "f0", t0: "a"},
-        {_time: 2018-05-22T20:00:20Z, _value: 6.65, _measurement: "m0", _field: "f0", t0: "a"},
-        {_time: 2018-05-22T20:00:30Z, _value: 4.37, _measurement: "m0", _field: "f0", t0: "a"},
-        {_time: 2018-05-22T20:00:40Z, _value: 4.25, _measurement: "m0", _field: "f0", t0: "a"},
-        {_time: 2018-05-22T20:00:00Z, _value: 6.87, _measurement: "m0", _field: "f0", t0: "b"},
-        {_time: 2018-05-22T20:00:10Z, _value: 0.66, _measurement: "m0", _field: "f0", t0: "b"},
-        {_time: 2018-05-22T20:00:20Z, _value: 1.57, _measurement: "m0", _field: "f0", t0: "b"},
-        {_time: 2018-05-22T20:00:30Z, _value: 0.97, _measurement: "m0", _field: "f0", t0: "b"},
-        {_time: 2018-05-22T20:00:40Z, _value: 3.01, _measurement: "m0", _field: "f0", t0: "b"},
+        {
+            _time: 2018-05-22T20:00:00Z,
+            _value: 6.05,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "a",
+        },
+        {
+            _time: 2018-05-22T20:00:10Z,
+            _value: 9.41,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "a",
+        },
+        {
+            _time: 2018-05-22T20:00:20Z,
+            _value: 6.65,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "a",
+        },
+        {
+            _time: 2018-05-22T20:00:30Z,
+            _value: 4.37,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "a",
+        },
+        {
+            _time: 2018-05-22T20:00:40Z,
+            _value: 4.25,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "a",
+        },
+        {
+            _time: 2018-05-22T20:00:00Z,
+            _value: 6.87,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "b",
+        },
+        {
+            _time: 2018-05-22T20:00:10Z,
+            _value: 0.66,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "b",
+        },
+        {
+            _time: 2018-05-22T20:00:20Z,
+            _value: 1.57,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "b",
+        },
+        {
+            _time: 2018-05-22T20:00:30Z,
+            _value: 0.97,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "b",
+        },
+        {
+            _time: 2018-05-22T20:00:40Z,
+            _value: 3.01,
+            _measurement: "m0",
+            _field: "f0",
+            t0: "b",
+        },
     ],
 )
     |> group(columns: ["_measurement", "_field", "t0"])
@@ -23,14 +83,62 @@ inData = array.from(
 testcase default {
     want = array.from(
         rows: [
-            {_time: 2018-05-22T20:00:10Z, _value: 0.336, _measurement: "m0", _field: "f0", t0: "a"},
-            {_time: 2018-05-22T20:00:20Z, _value: -0.276, _measurement: "m0", _field: "f0", t0: "a"},
-            {_time: 2018-05-22T20:00:30Z, _value: -0.228, _measurement: "m0", _field: "f0", t0: "a"},
-            {_time: 2018-05-22T20:00:40Z, _value: -0.012, _measurement: "m0", _field: "f0", t0: "a"},
-            {_time: 2018-05-22T20:00:10Z, _value: -0.621, _measurement: "m0", _field: "f0", t0: "b"},
-            {_time: 2018-05-22T20:00:20Z, _value: 0.091, _measurement: "m0", _field: "f0", t0: "b"},
-            {_time: 2018-05-22T20:00:30Z, _value: -0.06, _measurement: "m0", _field: "f0", t0: "b"},
-            {_time: 2018-05-22T20:00:40Z, _value: 0.204, _measurement: "m0", _field: "f0", t0: "b"},
+            {
+                _time: 2018-05-22T20:00:10Z,
+                _value: 0.336,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
+            {
+                _time: 2018-05-22T20:00:20Z,
+                _value: -0.276,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
+            {
+                _time: 2018-05-22T20:00:30Z,
+                _value: -0.228,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
+            {
+                _time: 2018-05-22T20:00:40Z,
+                _value: -0.012,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
+            {
+                _time: 2018-05-22T20:00:10Z,
+                _value: -0.621,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "b",
+            },
+            {
+                _time: 2018-05-22T20:00:20Z,
+                _value: 0.091,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "b",
+            },
+            {
+                _time: 2018-05-22T20:00:30Z,
+                _value: -0.06,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "b",
+            },
+            {
+                _time: 2018-05-22T20:00:40Z,
+                _value: 0.204,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "b",
+            },
         ],
     )
         |> group(columns: ["_measurement", "_field", "t0"])
@@ -46,9 +154,27 @@ testcase default {
 testcase non_negative {
     want = array.from(
         rows: [
-            {_time: 2018-05-22T20:00:10Z, _value: 0.336, _measurement: "m0", _field: "f0", t0: "a"},
-            {_time: 2018-05-22T20:00:20Z, _value: 0.091, _measurement: "m0", _field: "f0", t0: "b"},
-            {_time: 2018-05-22T20:00:40Z, _value: 0.204, _measurement: "m0", _field: "f0", t0: "b"},
+            {
+                _time: 2018-05-22T20:00:10Z,
+                _value: 0.336,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
+            {
+                _time: 2018-05-22T20:00:20Z,
+                _value: 0.091,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "b",
+            },
+            {
+                _time: 2018-05-22T20:00:40Z,
+                _value: 0.204,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "b",
+            },
         ],
     )
         |> group(columns: ["_measurement", "_field", "t0"])
@@ -65,10 +191,34 @@ testcase non_negative {
 testcase duplicate_times {
     want = array.from(
         rows: [
-            {_time: 2018-05-22T20:00:10Z, _value: 0.336, _measurement: "m0", _field: "f0", t0: "a"},
-            {_time: 2018-05-22T20:00:20Z, _value: -0.276, _measurement: "m0", _field: "f0", t0: "a"},
-            {_time: 2018-05-22T20:00:30Z, _value: -0.228, _measurement: "m0", _field: "f0", t0: "a"},
-            {_time: 2018-05-22T20:00:40Z, _value: -0.012, _measurement: "m0", _field: "f0", t0: "a"},
+            {
+                _time: 2018-05-22T20:00:10Z,
+                _value: 0.336,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
+            {
+                _time: 2018-05-22T20:00:20Z,
+                _value: -0.276,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
+            {
+                _time: 2018-05-22T20:00:30Z,
+                _value: -0.228,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
+            {
+                _time: 2018-05-22T20:00:40Z,
+                _value: -0.012,
+                _measurement: "m0",
+                _field: "f0",
+                t0: "a",
+            },
         ],
     )
         |> group(columns: ["_measurement", "_field"])

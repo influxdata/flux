@@ -24,9 +24,7 @@ builtin derivative : (
     ?nonNegative: bool,
     ?columns: [string],
     ?timeColumn: string,
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 builtin die : (msg: string) => A
 builtin difference : (<-tables: [T], ?nonNegative: bool, ?columns: [string], ?keepFirst: bool) => [R] where T: Record, R: Record
@@ -46,9 +44,7 @@ builtin histogram : (
     ?countColumn: string,
     bins: [float],
     ?normalize: bool,
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 builtin histogramQuantile : (
     <-tables: [A],
@@ -57,9 +53,7 @@ builtin histogramQuantile : (
     ?upperBoundColumn: string,
     ?valueColumn: string,
     ?minValue: float,
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 builtin holtWinters : (
     <-tables: [A],
@@ -69,9 +63,7 @@ builtin holtWinters : (
     ?column: string,
     ?timeColumn: string,
     ?seasonality: int,
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 builtin hourSelection : (<-tables: [A], start: int, stop: int, ?timeColumn: string) => [A] where A: Record
 builtin integral : (
@@ -80,9 +72,7 @@ builtin integral : (
     ?timeColumn: string,
     ?column: string,
     ?interpolate: string,
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 builtin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record
 builtin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record
@@ -103,19 +93,10 @@ builtin quantile : (
     q: float,
     ?compression: float,
     ?method: string,
-) => [A] where
-    A: Record
+) => [A] where A: Record
 
 builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B] where A: Record, B: Record
-builtin range : (
-    <-tables: [{A with _time: time}],
-    start: B,
-    ?stop: C,
-) => [{A with
-    _time: time,
-    _start: time,
-    _stop: time,
-}]
+builtin range : (<-tables: [{A with _time: time}], start: B, ?stop: C) => [{A with _time: time, _start: time, _stop: time}]
 
 builtin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C] where A: Record, B: Record, C: Record
 builtin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
@@ -134,9 +115,7 @@ builtin stateTracking : (
     ?durationColumn: string,
     ?durationUnit: duration,
     ?timeColumn: string,
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 builtin stddev : (<-tables: [A], ?column: string, ?mode: string) => [B] where A: Record, B: Record
 builtin sum : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
@@ -154,22 +133,20 @@ builtin _window : (
     startColumn: string,
     stopColumn: string,
     createEmpty: bool,
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 option location = timezone.utc
 
 window = (
-        tables=<-,
-        every=0s,
-        period=0s,
-        offset=0s,
-        location=location,
-        timeColumn="_time",
-        startColumn="_start",
-        stopColumn="_stop",
-        createEmpty=false,
+    tables=<-,
+    every=0s,
+    period=0s,
+    offset=0s,
+    location=location,
+    timeColumn="_time",
+    startColumn="_start",
+    stopColumn="_stop",
+    createEmpty=false,
 ) => tables
     |> _window(
         every,
@@ -219,10 +196,7 @@ timeWeightedAvg = (tables=<-, unit) => tables
     |> map(fn: (r) => ({r with _value: r._value * float(v: uint(v: unit)) / float(v: int(v: r._stop) - int(v: r._start))}))
 
 // covariance function with automatic join
-cov = (x, y, on, pearsonr=false) => join(
-    tables: {x: x, y: y},
-    on: on,
-)
+cov = (x, y, on, pearsonr=false) => join(tables: {x: x, y: y}, on: on)
     |> covariance(pearsonr: pearsonr, columns: ["_value_x", "_value_y"])
 pearsonr = (x, y, on) => cov(x: x, y: y, on: on, pearsonr: true)
 
@@ -236,16 +210,16 @@ else
 // The procedure is to window the data, perform an aggregate operation,
 // and then undo the windowing to produce an output table for every input table.
 aggregateWindow = (
-        every,
-        period=0s,
-        fn,
-        offset=0s,
-        location=location,
-        column="_value",
-        timeSrc="_stop",
-        timeDst="_time",
-        createEmpty=true,
-        tables=<-,
+    every,
+    period=0s,
+    fn,
+    offset=0s,
+    location=location,
+    column="_value",
+    timeSrc="_stop",
+    timeDst="_time",
+    createEmpty=true,
+    tables=<-,
 ) => tables
     |> window(
         every: every,
@@ -299,11 +273,11 @@ stateCount = (fn, column="stateCount", tables=<-) => tables
 //
 // The duration is represented as an integer in the units specified.
 stateDuration = (
-        fn,
-        column="stateDuration",
-        timeColumn="_time",
-        unit=1s,
-        tables=<-,
+    fn,
+    column="stateDuration",
+    timeColumn="_time",
+    unit=1s,
+    tables=<-,
 ) => tables
     |> stateTracking(durationColumn: column, timeColumn: timeColumn, fn: fn, durationUnit: unit)
 
@@ -324,12 +298,12 @@ bottom = (n, columns=["_value"], tables=<-) => tables
 // then it selects the highest or lowest records based on the column and the _sortLimit function.
 // The default reducer assumes no reducing needs to be performed.
 _highestOrLowest = (
-        n,
-        _sortLimit,
-        reducer,
-        column="_value",
-        groupColumns=[],
-        tables=<-,
+    n,
+    _sortLimit,
+    reducer,
+    column="_value",
+    groupColumns=[],
+    tables=<-,
 ) => tables
     |> group(columns: groupColumns)
     |> reducer()

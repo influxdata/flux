@@ -15,9 +15,7 @@ builtin to : (
     ?timeColumn: string,
     ?tagColumns: [string],
     ?valueColumns: [string],
-) => [B] where
-    A: Record,
-    B: Record
+) => [B] where A: Record, B: Record
 
 builtin publish : (
     broker: string,

@@ -43,10 +43,7 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
     // one table for each value, where r.p_x == P(value_x)
     P_k_x = training_data
         |> group(columns: ["_field", "_value", myClass])
-        |> reduce(
-            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),
-            identity: {sum: 0.0},
-        )
+        |> reduce(fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})
         |> group()
 
     // one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)

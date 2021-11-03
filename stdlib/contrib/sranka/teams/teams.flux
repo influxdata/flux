@@ -14,9 +14,7 @@ option summaryCutoff = 70
 // `text` - string - Message card text.
 // `summary` - string - Message card summary, it can be an empty string to generate summary from text.
 message = (url, title, text, summary="") => {
-    headers = {
-        "Content-Type": "application/json; charset=utf-8",
-    }
+    headers = {"Content-Type": "application/json; charset=utf-8"}
 
     // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields
     // using string body, object cannot be used because '@' is an illegal character in the object property key
@@ -47,16 +45,7 @@ endpoint = (url) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
-            return {r with
-                _sent: string(
-                    v: 2 == message(
-                        url: url,
-                        title: obj.title,
-                        text: obj.text,
-                        summary: if exists obj.summary then obj.summary else "",
-                    ) / 100,
-                ),
-            }
+    
+            return {r with _sent: string(v: 2 == message(url: url, title: obj.title, text: obj.text, summary: if exists obj.summary then obj.summary else "") / 100)}
         },
     )

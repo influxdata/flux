@@ -232,11 +232,7 @@ t_stDistance = (table=<-) => table
     |> v1.fieldsAsCols()
     // optional but it helps to see the train closing in
     |> geo.asTracks(groupBy: ["id", "trip_id"])
-    |> map(
-        fn: (r) => ({r with
-            _st_distance: limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {lat: r.lat, lon: r.lon})),
-        }),
-    )
+    |> map(fn: (r) => ({r with _st_distance: limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {lat: r.lat, lon: r.lon}))}))
     |> drop(columns: ["_start", "_stop"])
 
 test _stDistance = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDistance})

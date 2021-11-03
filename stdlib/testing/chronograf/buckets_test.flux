@@ -23,8 +23,4 @@ buckets_fn = (table=<-) => table
     |> rename(columns: {name: "_value"})
     |> keep(columns: ["_value"])
 
-test buckets = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: buckets_fn,
-})
+test buckets = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: buckets_fn})
