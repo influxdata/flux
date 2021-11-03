@@ -95,7 +95,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Negatable => Kind::Negatable,
             fb::Kind::Timeable => Kind::Timeable,
             fb::Kind::Stringable => Kind::Stringable,
-            fb::Kind::Primitive => Kind::Primitive,
+            fb::Kind::Basic => Kind::Basic,
             _ => unreachable!("Unknown fb::Kind"),
         }
     }
@@ -115,7 +115,7 @@ impl From<Kind> for fb::Kind {
             Kind::Negatable => fb::Kind::Negatable,
             Kind::Timeable => fb::Kind::Timeable,
             Kind::Stringable => fb::Kind::Stringable,
-            Kind::Primitive => fb::Kind::Primitive,
+            Kind::Basic => fb::Kind::Basic,
             _ => unreachable!("Unknown Kind"),
         }
     }

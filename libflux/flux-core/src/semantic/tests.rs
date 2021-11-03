@@ -3657,14 +3657,14 @@ error @3:17-3:18: undefined identifier y",
 fn primitive_kind_errors() {
     test_error_msg! {
         env: map![
-            "isType" => "(v: A, type: string) => bool where A: Primitive",
+            "isType" => "(v: A, type: string) => bool where A: Basic",
         ],
         src: r#"
             isType(v: {}, type: "record")
             isType(v: [], type: "array")
         "#,
-        err: "error @2:13-2:42: {} is not Primitive (argument v)
+        err: "error @2:13-2:42: {} is not Basic (argument v)
 
-error @3:13-3:41: [A] is not Primitive (argument v)",
+error @3:13-3:41: [A] is not Basic (argument v)",
     }
 }

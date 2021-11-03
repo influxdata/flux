@@ -96,6 +96,7 @@ table PolyType {
 
 enum Kind : ubyte {
   Addable,
+  Basic,
   Subtractable,
   Divisible,
   Numeric,
@@ -105,7 +106,6 @@ enum Kind : ubyte {
   Record,
   Negatable,
   Timeable,
-  Primitive,
   Stringable,
 }
 

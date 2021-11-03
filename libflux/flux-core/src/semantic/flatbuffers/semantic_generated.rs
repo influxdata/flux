@@ -280,6 +280,7 @@ pub mod fbsemantic {
     #[allow(non_camel_case_types)]
     pub const ENUM_VALUES_KIND: [Kind; 12] = [
         Kind::Addable,
+        Kind::Basic,
         Kind::Subtractable,
         Kind::Divisible,
         Kind::Numeric,
@@ -289,7 +290,6 @@ pub mod fbsemantic {
         Kind::Record,
         Kind::Negatable,
         Kind::Timeable,
-        Kind::Primitive,
         Kind::Stringable,
     ];
 
@@ -299,22 +299,23 @@ pub mod fbsemantic {
     #[allow(non_upper_case_globals)]
     impl Kind {
         pub const Addable: Self = Self(0);
-        pub const Subtractable: Self = Self(1);
-        pub const Divisible: Self = Self(2);
-        pub const Numeric: Self = Self(3);
-        pub const Comparable: Self = Self(4);
-        pub const Equatable: Self = Self(5);
-        pub const Nullable: Self = Self(6);
-        pub const Record: Self = Self(7);
-        pub const Negatable: Self = Self(8);
-        pub const Timeable: Self = Self(9);
-        pub const Primitive: Self = Self(10);
+        pub const Basic: Self = Self(1);
+        pub const Subtractable: Self = Self(2);
+        pub const Divisible: Self = Self(3);
+        pub const Numeric: Self = Self(4);
+        pub const Comparable: Self = Self(5);
+        pub const Equatable: Self = Self(6);
+        pub const Nullable: Self = Self(7);
+        pub const Record: Self = Self(8);
+        pub const Negatable: Self = Self(9);
+        pub const Timeable: Self = Self(10);
         pub const Stringable: Self = Self(11);
 
         pub const ENUM_MIN: u8 = 0;
         pub const ENUM_MAX: u8 = 11;
         pub const ENUM_VALUES: &'static [Self] = &[
             Self::Addable,
+            Self::Basic,
             Self::Subtractable,
             Self::Divisible,
             Self::Numeric,
@@ -324,13 +325,13 @@ pub mod fbsemantic {
             Self::Record,
             Self::Negatable,
             Self::Timeable,
-            Self::Primitive,
             Self::Stringable,
         ];
         /// Returns the variant's name or "" if unknown.
         pub fn variant_name(self) -> Option<&'static str> {
             match self {
                 Self::Addable => Some("Addable"),
+                Self::Basic => Some("Basic"),
                 Self::Subtractable => Some("Subtractable"),
                 Self::Divisible => Some("Divisible"),
                 Self::Numeric => Some("Numeric"),
@@ -340,7 +341,6 @@ pub mod fbsemantic {
                 Self::Record => Some("Record"),
                 Self::Negatable => Some("Negatable"),
                 Self::Timeable => Some("Timeable"),
-                Self::Primitive => Some("Primitive"),
                 Self::Stringable => Some("Stringable"),
                 _ => None,
             }

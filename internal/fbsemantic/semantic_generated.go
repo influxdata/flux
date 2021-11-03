@@ -99,21 +99,22 @@ type Kind byte
 
 const (
 	KindAddable      Kind = 0
-	KindSubtractable Kind = 1
-	KindDivisible    Kind = 2
-	KindNumeric      Kind = 3
-	KindComparable   Kind = 4
-	KindEquatable    Kind = 5
-	KindNullable     Kind = 6
-	KindRecord       Kind = 7
-	KindNegatable    Kind = 8
-	KindTimeable     Kind = 9
-	KindPrimitive    Kind = 10
+	KindBasic        Kind = 1
+	KindSubtractable Kind = 2
+	KindDivisible    Kind = 3
+	KindNumeric      Kind = 4
+	KindComparable   Kind = 5
+	KindEquatable    Kind = 6
+	KindNullable     Kind = 7
+	KindRecord       Kind = 8
+	KindNegatable    Kind = 9
+	KindTimeable     Kind = 10
 	KindStringable   Kind = 11
 )
 
 var EnumNamesKind = map[Kind]string{
 	KindAddable:      "Addable",
+	KindBasic:        "Basic",
 	KindSubtractable: "Subtractable",
 	KindDivisible:    "Divisible",
 	KindNumeric:      "Numeric",
@@ -123,12 +124,12 @@ var EnumNamesKind = map[Kind]string{
 	KindRecord:       "Record",
 	KindNegatable:    "Negatable",
 	KindTimeable:     "Timeable",
-	KindPrimitive:    "Primitive",
 	KindStringable:   "Stringable",
 }
 
 var EnumValuesKind = map[string]Kind{
 	"Addable":      KindAddable,
+	"Basic":        KindBasic,
 	"Subtractable": KindSubtractable,
 	"Divisible":    KindDivisible,
 	"Numeric":      KindNumeric,
@@ -138,7 +139,6 @@ var EnumValuesKind = map[string]Kind{
 	"Record":       KindRecord,
 	"Negatable":    KindNegatable,
 	"Timeable":     KindTimeable,
-	"Primitive":    KindPrimitive,
 	"Stringable":   KindStringable,
 }
 
