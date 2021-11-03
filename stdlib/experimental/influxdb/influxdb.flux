@@ -12,8 +12,4 @@ builtin api : (
     ?headers: [string:string],
     ?query: [string:string],
     ?timeout: duration,
-) => {
-    statusCode: int,
-    body: bytes,
-    headers: [string:string],
-}
+) => {statusCode: int, body: bytes, headers: [string:string]}

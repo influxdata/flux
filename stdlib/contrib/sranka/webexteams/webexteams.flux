@@ -11,21 +11,14 @@ import "json"
 // `text` - string - the message, in plain text.
 // `markdown` - string - the message, in markdown format as explained in https://developer.webex.com/docs/api/basics
 message = (
-        url="https://webexapis.com",
-        token,
-        roomId,
-        text,
-        markdown,
+    url="https://webexapis.com",
+    token,
+    roomId,
+    text,
+    markdown,
 ) => {
-    data = {
-        text: text,
-        markdown: markdown,
-        roomId: roomId,
-    }
-    headers = {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "Bearer " + token,
-    }
+    data = {text: text, markdown: markdown, roomId: roomId}
+    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
 
     content = json.encode(v: data)
 
@@ -41,7 +34,7 @@ endpoint = (url="https://webexapis.com", token) => (mapFn) => (tables=<-) => tab
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == message(

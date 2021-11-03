@@ -7,14 +7,7 @@ import "experimental/bitwise"
 import "testing"
 
 testcase uand {
-    cases = array.from(
-        rows: [
-            {a: 1, b: 1, want: 1},
-            {a: 1, b: 0, want: 0},
-            {a: 5, b: 1, want: 1},
-            {a: 5, b: 4, want: 4},
-        ],
-    )
+    cases = array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 0}, {a: 5, b: 1, want: 1}, {a: 5, b: 4, want: 4}])
         |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got = cases
@@ -26,14 +19,7 @@ testcase uand {
     testing.diff(want: want, got: got)
 }
 testcase uor {
-    cases = array.from(
-        rows: [
-            {a: 1, b: 1, want: 1},
-            {a: 1, b: 0, want: 1},
-            {a: 5, b: 1, want: 5},
-            {a: 5, b: 4, want: 5},
-        ],
-    )
+    cases = array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 5}, {a: 5, b: 4, want: 5}])
         |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got = cases
@@ -46,12 +32,7 @@ testcase uor {
 }
 
 testcase unot {
-    cases = array.from(
-        rows: [
-            {a: uint(v: 1), want: math.maxuint - uint(v: 1)},
-            {a: math.maxuint, want: uint(v: 0)},
-        ],
-    )
+    cases = array.from(rows: [{a: uint(v: 1), want: math.maxuint - uint(v: 1)}, {a: math.maxuint, want: uint(v: 0)}])
 
     got = cases
         |> map(fn: (r) => ({_value: bitwise.unot(a: r.a)}))
@@ -63,14 +44,7 @@ testcase unot {
 }
 
 testcase uclear {
-    cases = array.from(
-        rows: [
-            {a: 1, b: 1, want: 0},
-            {a: 1, b: 0, want: 1},
-            {a: 5, b: 1, want: 4},
-            {a: 5, b: 4, want: 1},
-        ],
-    )
+    cases = array.from(rows: [{a: 1, b: 1, want: 0}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 4}, {a: 5, b: 4, want: 1}])
         |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got = cases
@@ -82,14 +56,7 @@ testcase uclear {
     testing.diff(want: want, got: got)
 }
 testcase ulshift {
-    cases = array.from(
-        rows: [
-            {a: 1, b: 1, want: 2},
-            {a: 1, b: 0, want: 1},
-            {a: 5, b: 1, want: 10},
-            {a: 5, b: 4, want: 80},
-        ],
-    )
+    cases = array.from(rows: [{a: 1, b: 1, want: 2}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 10}, {a: 5, b: 4, want: 80}])
         |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got = cases
@@ -101,14 +68,7 @@ testcase ulshift {
     testing.diff(want: want, got: got)
 }
 testcase urshift {
-    cases = array.from(
-        rows: [
-            {a: 2, b: 1, want: 1},
-            {a: 1, b: 0, want: 1},
-            {a: 10, b: 1, want: 5},
-            {a: 80, b: 4, want: 5},
-        ],
-    )
+    cases = array.from(rows: [{a: 2, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 10, b: 1, want: 5}, {a: 80, b: 4, want: 5}])
         |> map(fn: (r) => ({a: uint(v: r.a), b: uint(v: r.b), want: uint(v: r.want)}))
 
     got = cases
@@ -145,14 +105,7 @@ testcase sand {
     testing.diff(want: want, got: got)
 }
 testcase sor {
-    cases = array.from(
-        rows: [
-            {a: 1, b: 1, want: 1},
-            {a: 1, b: 0, want: 1},
-            {a: 5, b: 1, want: 5},
-            {a: 5, b: 4, want: 5},
-        ],
-    )
+    cases = array.from(rows: [{a: 1, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 5}, {a: 5, b: 4, want: 5}])
 
     got = cases
         |> map(fn: (r) => ({_value: bitwise.sor(a: r.a, b: r.b)}))
@@ -164,12 +117,7 @@ testcase sor {
 }
 
 testcase snot {
-    cases = array.from(
-        rows: [
-            {a: 1, want: -2},
-            {a: math.maxint, want: math.minint},
-        ],
-    )
+    cases = array.from(rows: [{a: 1, want: -2}, {a: math.maxint, want: math.minint}])
 
     got = cases
         |> map(fn: (r) => ({_value: bitwise.snot(a: r.a)}))
@@ -181,14 +129,7 @@ testcase snot {
 }
 
 testcase sclear {
-    cases = array.from(
-        rows: [
-            {a: 1, b: 1, want: 0},
-            {a: 1, b: 0, want: 1},
-            {a: 5, b: 1, want: 4},
-            {a: 5, b: 4, want: 1},
-        ],
-    )
+    cases = array.from(rows: [{a: 1, b: 1, want: 0}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 4}, {a: 5, b: 4, want: 1}])
 
     got = cases
         |> map(fn: (r) => ({_value: bitwise.sclear(a: r.a, b: r.b)}))
@@ -199,14 +140,7 @@ testcase sclear {
     testing.diff(want: want, got: got)
 }
 testcase slshift {
-    cases = array.from(
-        rows: [
-            {a: 1, b: 1, want: 2},
-            {a: 1, b: 0, want: 1},
-            {a: 5, b: 1, want: 10},
-            {a: 5, b: 4, want: 80},
-        ],
-    )
+    cases = array.from(rows: [{a: 1, b: 1, want: 2}, {a: 1, b: 0, want: 1}, {a: 5, b: 1, want: 10}, {a: 5, b: 4, want: 80}])
 
     got = cases
         |> map(fn: (r) => ({_value: bitwise.slshift(a: r.a, b: r.b)}))
@@ -217,14 +151,7 @@ testcase slshift {
     testing.diff(want: want, got: got)
 }
 testcase srshift {
-    cases = array.from(
-        rows: [
-            {a: 2, b: 1, want: 1},
-            {a: 1, b: 0, want: 1},
-            {a: 10, b: 1, want: 5},
-            {a: 80, b: 4, want: 5},
-        ],
-    )
+    cases = array.from(rows: [{a: 2, b: 1, want: 1}, {a: 1, b: 0, want: 1}, {a: 10, b: 1, want: 5}, {a: 80, b: 4, want: 5}])
 
     got = cases
         |> map(fn: (r) => ({_value: bitwise.srshift(a: r.a, b: r.b)}))

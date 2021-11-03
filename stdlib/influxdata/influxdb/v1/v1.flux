@@ -24,12 +24,7 @@ builtin json : (?json: string, ?file: string) => [A] where A: Record
 //
 // v1.database()
 // ```
-builtin databases : (
-    ?org: string,
-    ?orgID: string,
-    ?host: string,
-    ?token: string,
-) => [{
+builtin databases : (?org: string, ?orgID: string, ?host: string, ?token: string) => [{
     organizationID: string,
     databaseName: string,
     retentionPolicy: string,

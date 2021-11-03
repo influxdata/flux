@@ -14,12 +14,12 @@ builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Re
 // This version of from is the equivalent of doing from |> range
 // as a single call.
 from = (
-        bucket,
-        start,
-        stop=now(),
-        org="",
-        host="",
-        token="",
+    bucket,
+    start,
+    stop=now(),
+    org="",
+    host="",
+    token="",
 ) => {
     source = if org != "" and host != "" and token != "" then
         influxdb.from(bucket, org, host, token)
@@ -55,15 +55,15 @@ _from = from
 // In order to filter by tags, the `where` function can be used to further
 // limit the amount of data selected.
 select = (
-        from,
-        start,
-        stop=now(),
-        m,
-        fields=[],
-        org="",
-        host="",
-        token="",
-        where=(r) => true,
+    from,
+    start,
+    stop=now(),
+    m,
+    fields=[],
+    org="",
+    host="",
+    token="",
+    where=(r) => true,
 ) => {
     bucket = from
     tables = _from(

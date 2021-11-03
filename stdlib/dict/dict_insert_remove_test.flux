@@ -6,13 +6,7 @@ import "dict"
 
 option now = () => 2030-01-01T00:00:00Z
 
-codes1 = dict.fromList(
-    pairs: [
-        {key: "internal", value: 0},
-        {key: "invalid", value: 1},
-        {key: "unknown", value: 3},
-    ],
-)
+codes1 = dict.fromList(pairs: [{key: "internal", value: 0}, {key: "invalid", value: 1}, {key: "unknown", value: 3}])
 codes2 = dict.remove(dict: codes1, key: "unknown")
 codes3 = dict.insert(dict: codes2, key: "unimplemented", value: 2)
 inData = "
@@ -51,17 +45,9 @@ t_dict = (table=<-) => table
             error_code1 = dict.get(dict: codes1, key: r.error_type, default: -1)
             error_code2 = dict.get(dict: codes2, key: r.error_type, default: -1)
             error_code3 = dict.get(dict: codes3, key: r.error_type, default: -1)
-
-            return {r with
-                error_code1: error_code1,
-                error_code2: error_code2,
-                error_code3: error_code3,
-            }
+    
+            return {r with error_code1: error_code1, error_code2: error_code2, error_code3: error_code3}
         },
     )
 
-test _dict = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_dict,
-})
+test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})

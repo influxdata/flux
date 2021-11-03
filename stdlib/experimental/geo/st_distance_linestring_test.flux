@@ -185,11 +185,7 @@ t_stDistanceLinestring = (table=<-) => table
     // optional but it helps to see the train closing in
     |> geo.asTracks(groupBy: ["id", "trip_id"])
     |> geo.ST_LineString()
-    |> map(
-        fn: (r) => ({r with
-            _st_distance: limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {linestring: r.st_linestring})),
-        }),
-    )
+    |> map(fn: (r) => ({r with _st_distance: limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {linestring: r.st_linestring}))}))
     |> drop(columns: ["_start", "_stop"])
 
 test _stDistanceLinestring = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDistanceLinestring})

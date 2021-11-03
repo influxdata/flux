@@ -6,13 +6,7 @@ import "dict"
 
 option now = () => 2030-01-01T00:00:00Z
 
-codes = dict.fromList(
-    pairs: [
-        {key: "internal", value: 0},
-        {key: "invalid", value: 1},
-        {key: "unimplemented", value: 2},
-    ],
-)
+codes = dict.fromList(pairs: [{key: "internal", value: 0}, {key: "invalid", value: 1}, {key: "unimplemented", value: 2}])
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string
 #group,false,false,false,true,true,true,false
@@ -47,13 +41,9 @@ t_dict = (table=<-) => table
     |> map(
         fn: (r) => {
             error_code = dict.get(dict: codes, key: r.error_type, default: -1)
-
+    
             return {r with error_code: error_code}
         },
     )
 
-test _dict = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_dict,
-})
+test _dict = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dict})

@@ -30,9 +30,6 @@ outData = "
 "
 t_reduce = (tables=<-) => tables
     |> range(start: 2018-05-21T13:09:22.885021542Z)
-    |> reduce(
-        fn: (r, accumulator) => ({sum: r._value + accumulator.sum, b: 1.0}),
-        identity: {sum: 0.0, b: 0.0},
-    )
+    |> reduce(fn: (r, accumulator) => ({sum: r._value + accumulator.sum, b: 1.0}), identity: {sum: 0.0, b: 0.0})
 
 test _reduce = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_reduce})

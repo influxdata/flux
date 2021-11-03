@@ -81,7 +81,7 @@ t_table_fns_findrecord_map = (table=<-) => table
                 |> filter(fn: (r) => r._measurement == "city_data" and r._field == "temp" and r.city == city)
                 |> mean()
                 |> findRecord(fn: (key) => true, idx: 0)
-
+    
             return {city: r.city, _time: stop, _value: agg._value, _field: "event_temp_mean"}
         },
     )

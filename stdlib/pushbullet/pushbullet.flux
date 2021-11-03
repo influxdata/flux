@@ -44,10 +44,7 @@ option defaultURL = "https://api.pushbullet.com/v2/pushes"
 // ```
 //
 pushData = (url=defaultURL, token="", data) => {
-    headers = {
-        "Access-Token": token,
-        "Content-Type": "application/json",
-    }
+    headers = {"Access-Token": token, "Content-Type": "application/json"}
     enc = json.encode(v: data)
 
     return http.post(headers: headers, url: url, data: enc)
@@ -88,11 +85,7 @@ pushData = (url=defaultURL, token="", data) => {
 // )
 // ```
 pushNote = (url=defaultURL, token="", title, text) => {
-    data = {
-        type: "note",
-        title: title,
-        body: text,
-    }
+    data = {type: "note", title: title, body: text}
 
     return pushData(token: token, url: url, data: data)
 }
@@ -133,16 +126,7 @@ endpoint = (url=defaultURL, token="") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
-            return {r with
-                _sent: string(
-                    v: 2 == pushNote(
-                        url: url,
-                        token: token,
-                        title: obj.title,
-                        text: obj.text,
-                    ) / 100,
-                ),
-            }
+    
+            return {r with _sent: string(v: 2 == pushNote(url: url, token: token, title: obj.title, text: obj.text) / 100)}
         },
     )

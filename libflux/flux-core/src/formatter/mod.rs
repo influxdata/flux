@@ -31,12 +31,14 @@ pub fn format(contents: &str) -> Result<String> {
     convert_to_string(&file)
 }
 
+const MULTILINE: usize = 4;
+
 /// Struct to hold data related to formatting such as formatted code,
 /// options, and errors.
 /// Provides methods for formatting files and strings of source code.
 pub struct Formatter {
     builder: String,
-    indentation: u32,
+    indentation: i32,
     // clear is true if the last line consists of only whitespace
     clear: bool,
     // temp_indent is true if we have a temporary indent because of a comment
@@ -52,6 +54,7 @@ pub struct Formatter {
     // temp_singleline is true then records will be formatted on a single line
     // in order to make them read more like a table.
     temp_singleline: bool,
+    safe_to_reindent: bool,
 }
 
 // INDENT_BYTES is 4 spaces as a constant byte slice
@@ -66,6 +69,7 @@ impl Default for Formatter {
             temp_indent: false,
             err: None,
             temp_singleline: false,
+            safe_to_reindent: true,
         }
     }
 }
@@ -117,7 +121,24 @@ impl Formatter {
         self.indentation -= 1;
     }
 
-    fn set_indent(&mut self, i: u32) {
+    fn reindent(&mut self, want_indent: i32) {
+        if !self.safe_to_reindent {
+            return;
+        }
+
+        let add_indent = want_indent - self.indentation;
+        // if there's no indentation to add, just return
+        if add_indent < 1 {
+            return;
+        }
+        let indents = INDENT_BYTES.repeat(add_indent as usize);
+        let mut newline = "\n".to_owned();
+        newline.push_str(&indents);
+        self.builder = self.builder.replace("\n", &newline);
+        // self.builder = self.builder.replace("\n + self.indentation", "\n" + want_indent);
+    }
+
+    fn set_indent(&mut self, i: i32) {
         self.indentation = i;
         self.temp_indent = false;
     }
@@ -125,10 +146,12 @@ impl Formatter {
     fn format_comments(&mut self, comments: &[ast::Comment]) {
         for c in comments {
             if !self.clear {
-                self.write_rune('\n');
+                if !self.builder.is_empty() {
+                    self.write_rune('\n');
+                    self.indent();
+                    self.write_indent();
+                }
                 self.temp_indent = true;
-                self.indent();
-                self.write_indent();
             }
             self.write_string(c.text.as_str());
             self.clear = true;
@@ -140,6 +163,28 @@ impl Formatter {
         self.write_string("// ");
         self.write_string(comment);
         self.write_rune('\n')
+    }
+
+    fn create_temp_formatter(&mut self) -> Formatter {
+        Formatter {
+            builder: String::new(),
+            indentation: self.indentation,
+            clear: self.clear,
+            temp_indent: self.temp_indent,
+            err: None,
+            temp_singleline: self.temp_singleline,
+            safe_to_reindent: true,
+        }
+    }
+
+    fn ingest_formatter(&mut self, temp_formatter: &mut Formatter) {
+        // if child is not safe for indentation, then parent is no longer safe for additional
+        // indentation
+        if !temp_formatter.safe_to_reindent {
+            self.safe_to_reindent = false;
+        }
+        temp_formatter.reindent(self.indentation);
+        self.write_string(&temp_formatter.builder);
     }
 
     /// Format a file.
@@ -273,8 +318,23 @@ impl Formatter {
     fn format_type_expression(&mut self, n: &ast::TypeExpression) {
         self.format_monotype(&n.monotype);
         if !n.constraints.is_empty() {
-            let multiline = n.constraints.len() > 4 || n.base.is_multiline();
+            let mut multiline = n.constraints.len() > MULTILINE;
+
+            let mut temp_formatters: Vec<Formatter> = Vec::new();
+
+            for c in &n.constraints {
+                let mut temp = self.create_temp_formatter();
+                temp.format_constraint(c);
+                // if any child node contains newlines, then that child and the parent node will be
+                // multiline as well
+                if temp.builder.contains('\n') {
+                    multiline = true;
+                }
+                temp_formatters.push(temp);
+            }
+
             self.write_string(" where");
+
             if multiline {
                 self.write_rune('\n');
                 self.indent();
@@ -282,18 +342,23 @@ impl Formatter {
             } else {
                 self.write_rune(' ');
             }
+
             let sep = match multiline {
                 true => ",\n",
                 false => ", ",
             };
-            for (i, c) in (&n.constraints).iter().enumerate() {
-                if i != 0 {
+            for (i, temp) in temp_formatters
+                .iter_mut()
+                .enumerate()
+                .take(n.constraints.len())
+            {
+                self.ingest_formatter(temp);
+                if i < n.constraints.len() - 1 {
                     self.write_string(sep);
                     if multiline {
                         self.write_indent();
                     }
                 }
-                self.format_constraint(c);
             }
             if multiline {
                 self.unindent();
@@ -311,28 +376,50 @@ impl Formatter {
             ast::MonoType::Function(fun) => self.format_function_type(fun),
         }
     }
+
     fn format_function_type(&mut self, n: &ast::FunctionType) {
-        let multiline = n.parameters.len() > 4 || n.base.is_multiline();
+        let mut multiline = n.parameters.len() > MULTILINE;
         self.format_comments(&n.base.comments);
         self.write_rune('(');
+
+        let mut temp_formatters: Vec<Formatter> = Vec::new();
+
+        for p in &n.parameters {
+            let mut temp = self.create_temp_formatter();
+            temp.format_parameter_type(p);
+            // if any child node contains newlines, then that child and the parent node will be
+            // multiline as well
+            if temp.builder.contains('\n') {
+                multiline = true;
+            }
+            temp_formatters.push(temp);
+        }
+
         if multiline {
             self.write_rune('\n');
             self.indent();
             self.write_indent();
         }
+
         let sep = match multiline {
             true => ",\n",
             false => ", ",
         };
-        for (i, p) in (&n.parameters).iter().enumerate() {
-            if i != 0 {
+
+        for (i, temp) in temp_formatters
+            .iter_mut()
+            .enumerate()
+            .take(n.parameters.len())
+        {
+            self.ingest_formatter(temp);
+            if i < n.parameters.len() - 1 {
                 self.write_string(sep);
                 if multiline {
                     self.write_indent();
                 }
             }
-            self.format_parameter_type(p);
         }
+
         if multiline {
             self.write_string(sep);
             self.unindent();
@@ -342,6 +429,7 @@ impl Formatter {
         self.write_string(" => ");
         self.format_monotype(&n.monotype);
     }
+
     fn format_parameter_type(&mut self, n: &ast::ParameterType) {
         match &n {
             ast::ParameterType::Required {
@@ -379,9 +467,23 @@ impl Formatter {
         }
     }
     fn format_record_type(&mut self, n: &ast::RecordType) {
-        let multiline = n.properties.len() > 4 || n.base.is_multiline();
+        let mut multiline = n.properties.len() > MULTILINE;
         self.format_comments(&n.base.comments);
         self.write_rune('{');
+
+        let mut temp_formatters: Vec<Formatter> = Vec::new();
+
+        for p in &n.properties {
+            let mut temp = self.create_temp_formatter();
+            temp.format_property_type(p);
+            // if any child node contains newlines, then that child and the parent node will be
+            // multiline as well
+            if temp.builder.contains('\n') {
+                multiline = true;
+            }
+            temp_formatters.push(temp);
+        }
+
         if let Some(tv) = &n.tvar {
             self.format_identifier(tv);
             self.write_string(" with");
@@ -394,19 +496,26 @@ impl Formatter {
             self.indent();
             self.write_indent();
         }
+
         let sep = match multiline {
             true => ",\n",
             false => ", ",
         };
-        for (i, p) in (&n.properties).iter().enumerate() {
-            if i != 0 {
+
+        for (i, temp) in temp_formatters
+            .iter_mut()
+            .enumerate()
+            .take(n.properties.len())
+        {
+            self.ingest_formatter(temp);
+            if i < n.properties.len() - 1 {
                 self.write_string(sep);
                 if multiline {
                     self.write_indent();
                 }
             }
-            self.format_property_type(p);
         }
+
         if multiline {
             self.write_string(sep);
             self.unindent();
@@ -414,6 +523,7 @@ impl Formatter {
         }
         self.write_rune('}');
     }
+
     fn format_property_type(&mut self, n: &ast::PropertyType) {
         self.format_identifier(&n.name);
         self.write_string(": ");
@@ -461,11 +571,27 @@ impl Formatter {
 
     fn format_function_expression(&mut self, n: &ast::FunctionExpr) {
         self.format_comments(&n.lparen);
-        let multiline = n.params.len() > 4 && n.base.is_multiline();
+        let mut multiline = n.params.len() > MULTILINE;
         self.write_rune('(');
+
+        let mut temp_formatters: Vec<Formatter> = Vec::new();
+
+        for property in &n.params {
+            let mut temp = self.create_temp_formatter();
+            // treat properties differently than in general case
+            temp.format_function_argument(property);
+            temp.format_comments(&property.comma);
+
+            // if any child node contains newlines, then that child and the parent node will be
+            // multiline as well
+            if temp.builder.contains('\n') {
+                multiline = true;
+            }
+            temp_formatters.push(temp);
+        }
+
         let sep;
         if multiline && n.params.len() > 1 {
-            self.indent();
             sep = ",\n";
             self.write_string("\n");
             self.indent();
@@ -473,22 +599,22 @@ impl Formatter {
         } else {
             sep = ", ";
         }
-        for (i, property) in (&n.params).iter().enumerate() {
-            if i != 0 {
+
+        for (i, temp) in temp_formatters.iter_mut().enumerate().take(n.params.len()) {
+            self.ingest_formatter(temp);
+            if i < n.params.len() - 1 {
                 self.write_string(sep);
                 if multiline {
                     self.write_indent();
                 }
             }
-            // treat properties differently than in general case
-            self.format_function_argument(property);
-            self.format_comments(&property.comma);
         }
+
         if multiline {
-            self.unindent();
             self.unindent();
             self.write_string(sep);
         }
+
         self.format_comments(&n.rparen);
         self.write_string(") ");
         self.format_comments(&n.arrow);
@@ -586,69 +712,119 @@ impl Formatter {
     }
 
     fn format_array_expression(&mut self, n: &ast::ArrayExpr) {
-        let multiline = n.elements.len() > 4 || n.base.is_multiline();
+        let mut multiline = n.elements.len() > MULTILINE;
         self.format_comments(&n.lbrack);
         self.write_rune('[');
+
+        let mut temp_formatters: Vec<Formatter> = Vec::new();
+
+        for item in &n.elements {
+            let mut temp = self.create_temp_formatter();
+
+            temp.format_node(&Node::from_expr(&item.expression));
+            temp.format_comments(&item.comma);
+
+            // if any child node contains newlines, then that child and the parent node will be
+            // multiline as well
+            if temp.builder.contains('\n') {
+                multiline = true;
+            }
+            temp_formatters.push(temp);
+        }
+
         if multiline {
             self.temp_singleline = true;
             self.write_rune('\n');
             self.indent();
             self.write_indent();
         }
+
         let sep = match multiline {
             true => ",\n",
             false => ", ",
         };
-        for (i, item) in (&n.elements).iter().enumerate() {
-            if i != 0 {
+
+        for (i, temp) in temp_formatters
+            .iter_mut()
+            .enumerate()
+            .take(n.elements.len())
+        {
+            self.ingest_formatter(temp);
+            if i < n.elements.len() - 1 {
                 self.write_string(sep);
                 if multiline {
-                    self.write_indent()
+                    self.write_indent();
                 }
             }
-            self.format_node(&Node::from_expr(&item.expression));
-            self.format_comments(&item.comma);
         }
+
         if multiline {
             self.temp_singleline = false;
             self.write_string(sep);
             self.unindent();
             self.write_indent();
         }
+
         self.format_comments(&n.rbrack);
         self.write_rune(']')
     }
 
     fn format_dict_expression(&mut self, n: &ast::DictExpr) {
-        let multiline = n.elements.len() > 4 || n.base.is_multiline();
+        let mut multiline = n.elements.len() > MULTILINE;
         self.format_comments(&n.lbrack);
         self.write_rune('[');
+
+        let mut temp_formatters: Vec<Formatter> = Vec::new();
+
+        if !n.elements.is_empty() {
+            for item in &n.elements {
+                let mut temp = self.create_temp_formatter();
+
+                temp.format_node(&Node::from_expr(&item.key));
+                temp.write_rune(':');
+                temp.write_rune(' ');
+                temp.format_node(&Node::from_expr(&item.val));
+                temp.format_comments(&item.comma);
+
+                // if any child node contains newlines, then that child and the parent node will be
+                // multiline as well
+                if temp.builder.contains('\n') {
+                    multiline = true;
+                }
+                temp_formatters.push(temp);
+            }
+        }
+
         if multiline {
             self.write_rune('\n');
             self.indent();
             self.write_indent();
         }
+
         let sep = match multiline {
             true => ",\n",
             false => ", ",
         };
-        if !n.elements.is_empty() {
-            for (i, item) in (&n.elements).iter().enumerate() {
-                if i != 0 {
-                    self.write_string(sep);
-                    if multiline {
-                        self.write_indent()
-                    }
+
+        for (i, temp) in temp_formatters
+            .iter_mut()
+            .enumerate()
+            .take(n.elements.len())
+        {
+            self.ingest_formatter(temp);
+
+            if i < n.elements.len() - 1 {
+                self.write_string(sep);
+                if multiline {
+                    self.write_indent()
                 }
-                self.format_node(&Node::from_expr(&item.key));
-                self.write_rune(':');
-                self.write_rune(' ');
-                self.format_node(&Node::from_expr(&item.val));
-                self.format_comments(&item.comma);
             }
-        } else {
+        }
+
+        if n.elements.is_empty() {
             self.write_rune(':');
         }
+
         if multiline {
             self.write_string(sep);
             self.unindent();
@@ -856,11 +1032,27 @@ impl Formatter {
         braces: bool,
         single_line: bool,
     ) {
-        let multiline = !single_line && (n.properties.len() > 4 || n.base.is_multiline());
+        let mut multiline = !single_line && n.properties.len() > MULTILINE;
         self.format_comments(&n.lbrace);
         if braces {
             self.write_rune('{');
         }
+        let mut temp_formatters: Vec<Formatter> = Vec::new();
+
+        for property in &n.properties {
+            let mut temp = self.create_temp_formatter();
+
+            temp.format_node(&Node::Property(property));
+            temp.format_comments(&property.comma);
+
+            // if any child node contains newlines, then that child and the parent node will be
+            // multiline as well
+            if temp.builder.contains('\n') {
+                multiline = true;
+            }
+            temp_formatters.push(temp);
+        }
+
         if let Some(with) = &n.with {
             self.format_identifier(&with.source);
             self.format_comments(&with.with);
@@ -869,25 +1061,32 @@ impl Formatter {
                 self.write_rune(' ');
             }
         }
+
         if multiline {
             self.write_rune('\n');
             self.indent();
             self.write_indent();
         }
+
         let sep = match multiline {
             true => ",\n",
             false => ", ",
         };
-        for (i, property) in (&n.properties).iter().enumerate() {
-            if i != 0 {
+
+        for (i, temp) in temp_formatters
+            .iter_mut()
+            .enumerate()
+            .take(n.properties.len())
+        {
+            self.ingest_formatter(temp);
+            if i < n.properties.len() - 1 {
                 self.write_string(sep);
                 if multiline {
-                    self.write_indent()
+                    self.write_indent();
                 }
             }
-            self.format_node(&Node::Property(property));
-            self.format_comments(&property.comma);
         }
+
         if multiline {
             self.write_string(sep);
             self.unindent();
@@ -1034,12 +1233,23 @@ impl Formatter {
             if !src.is_empty() {
                 // Preserve the exact literal if we have it
                 self.write_string(src);
+                if src.contains('\n') {
+                    self.safe_to_reindent = false;
+                }
                 return;
             }
         }
         // Write out escaped string value
         self.write_rune('"');
         let escaped_string = self.escape_string(&n.value);
+
+        // if the string literal contains any newlines, then its not safe to `reindent` the string
+        // literal. Applying `reindent` to string literals with newlines can break them
+        // e.g. csv data
+        if escaped_string.contains('\n') {
+            self.unindent();
+            self.safe_to_reindent = false;
+        }
         self.write_string(&escaped_string);
         self.write_rune('"');
     }

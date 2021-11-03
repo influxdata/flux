@@ -1559,8 +1559,4 @@ outData = "#group,false,false,false,false,false,true,false,true,true,false,false
 t_naive_bayes = (table=<-) => table
     |> naiveBayesClassifier.naiveBayes(myClass: "airborne", myField: "aquatic", myMeasurement: "zoo-data")
 
-test _naive_bayes = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_naive_bayes,
-})
+test _naive_bayes = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_naive_bayes})

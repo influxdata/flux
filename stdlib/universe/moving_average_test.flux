@@ -27,14 +27,7 @@ runTest = (n) => array.from(rows: inData)
 
 testcase normal {
     got = runTest(n: 6)
-    want = array.from(
-        rows: [
-            {_time: 2018-05-22T00:00:20Z, _value: 35.0, _measurement: "disk", _field: "used_percent"},
-            {_time: 2018-05-22T00:00:30Z, _value: 40.0, _measurement: "disk", _field: "used_percent"},
-            {_time: 2018-05-22T00:00:40Z, _value: 45.0, _measurement: "disk", _field: "used_percent"},
-            {_time: 2018-05-22T00:00:50Z, _value: 50.0, _measurement: "disk", _field: "used_percent"},
-        ],
-    )
+    want = array.from(rows: [{_time: 2018-05-22T00:00:20Z, _value: 35.0, _measurement: "disk", _field: "used_percent"}, {_time: 2018-05-22T00:00:30Z, _value: 40.0, _measurement: "disk", _field: "used_percent"}, {_time: 2018-05-22T00:00:40Z, _value: 45.0, _measurement: "disk", _field: "used_percent"}, {_time: 2018-05-22T00:00:50Z, _value: 50.0, _measurement: "disk", _field: "used_percent"}])
         |> group(columns: ["_measurement", "_field"])
 
     testing.diff(got, want) |> yield()
@@ -42,11 +35,7 @@ testcase normal {
 
 testcase unfilled {
     got = runTest(n: 1)
-    want = array.from(
-        rows: [
-            {_time: 2018-05-22T00:00:00Z, _value: 30.0, _measurement: "disk", _field: "used_percent"},
-        ],
-    )
+    want = array.from(rows: [{_time: 2018-05-22T00:00:00Z, _value: 30.0, _measurement: "disk", _field: "used_percent"}])
         |> group(columns: ["_measurement", "_field"])
 
     testing.diff(got, want) |> yield()
@@ -54,11 +43,7 @@ testcase unfilled {
 
 testcase exact {
     got = runTest(n: 3)
-    want = array.from(
-        rows: [
-            {_time: 2018-05-22T00:00:20Z, _value: 35.0, _measurement: "disk", _field: "used_percent"},
-        ],
-    )
+    want = array.from(rows: [{_time: 2018-05-22T00:00:20Z, _value: 35.0, _measurement: "disk", _field: "used_percent"}])
         |> group(columns: ["_measurement", "_field"])
 
     testing.diff(got, want) |> yield()

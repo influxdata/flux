@@ -43,13 +43,4 @@ package interpolate
 // 2021-01-08T00:00:00Z | 80.0
 // 2021-01-09T00:00:00Z | 90.0
 //
-builtin linear : (
-    <-tables: [{T with
-        _time: time,
-        _value: float,
-    }],
-    every: duration,
-) => [{T with
-    _time: time,
-    _value: float,
-}]
+builtin linear : (<-tables: [{T with _time: time, _value: float}], every: duration) => [{T with _time: time, _value: float}]

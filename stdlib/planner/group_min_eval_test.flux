@@ -49,8 +49,4 @@ group_min_fn = (tables=<-) => tables
     |> min()
     |> drop(columns: ["_measurement", "_time"])
 
-test group_min_evaluate = () => ({
-    input: testing.loadStorage(csv: input),
-    want: testing.loadMem(csv: output),
-    fn: group_min_fn,
-})
+test group_min_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_min_fn})

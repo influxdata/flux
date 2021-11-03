@@ -29,12 +29,7 @@ outData = "
 ,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732
 ,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
 "
-data = {
-    _check_id: "000000000000000a",
-    _check_name: "cpu threshold check",
-    _type: "threshold",
-    tags: {aaa: "vaaa", bbb: "vbbb"},
-}
+data = {_check_id: "000000000000000a", _check_name: "cpu threshold check", _type: "threshold", tags: {aaa: "vaaa", bbb: "vbbb"}}
 crit = (r) => r.usage_idle < 5.0
 warn = (r) => r.usage_idle < 10.0
 info = (r) => r.usage_idle < 25.0

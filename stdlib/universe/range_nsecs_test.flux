@@ -22,12 +22,7 @@ testcase range_nsecs_bare_last {
     )
         |> group(columns: ["_field", "_measurement"])
         |> testing.load()
-    want = array.from(
-        rows: [
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _field: "bar", _value: 5.0, _measurement: "mm"},
-        ],
-    )
+    want = array.from(rows: [{_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm"}, {_time: 2021-01-01T00:00:01.000000011Z, _field: "bar", _value: 5.0, _measurement: "mm"}])
         |> group(columns: ["_field", "_measurement"])
     got = input
         |> range(start: 2021-01-01T00:00:01.000000001Z, stop: 2021-01-01T00:00:01.000000015Z)
@@ -52,12 +47,7 @@ testcase range_nsecs_bare_max {
     )
         |> group(columns: ["_field", "_measurement"])
         |> testing.load()
-    want = array.from(
-        rows: [
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm"},
-            {_time: 2021-01-01T00:00:01.000000015Z, _field: "bar", _value: 6.0, _measurement: "mm"},
-        ],
-    )
+    want = array.from(rows: [{_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm"}, {_time: 2021-01-01T00:00:01.000000015Z, _field: "bar", _value: 6.0, _measurement: "mm"}])
         |> group(columns: ["_field", "_measurement"])
     got = input
         |> range(start: 2021-01-01T00:00:01.000000001Z, stop: 2021-01-01T00:00:01.000000024Z)
@@ -82,11 +72,7 @@ testcase range_nsecs_group_count {
     )
         |> group(columns: ["_field", "_measurement"])
         |> testing.load()
-    want = array.from(
-        rows: [
-            {_value: 4},
-        ],
-    )
+    want = array.from(rows: [{_value: 4}])
         |> group(columns: ["_field", "_measurement"])
     got = input
         |> range(start: 2021-01-01T00:00:01.000000001Z, stop: 2021-01-01T00:00:01.000000011Z)
@@ -99,25 +85,74 @@ testcase range_nsecs_group_count {
 testcase range_nsecs_group_max {
     input = array.from(
         rows: [
-            {_time: 2021-01-01T00:00:01.000000001Z, _field: "foo", _value: 1.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000002Z, _field: "foo", _value: 2.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000024Z, _field: "foo", _value: 11.24, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000009Z, _field: "bar", _value: 4.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _field: "bar", _value: 5.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000015Z, _field: "bar", _value: 6.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000022Z, _field: "bar", _value: 1.2, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000031Z, _field: "bar", _value: 0.28, _measurement: "mm", section: "1a"},
+            {
+                _time: 2021-01-01T00:00:01.000000001Z,
+                _field: "foo",
+                _value: 1.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000002Z,
+                _field: "foo",
+                _value: 2.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000005Z,
+                _field: "foo",
+                _value: 3.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000024Z,
+                _field: "foo",
+                _value: 11.24,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000009Z,
+                _field: "bar",
+                _value: 4.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000011Z,
+                _field: "bar",
+                _value: 5.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000015Z,
+                _field: "bar",
+                _value: 6.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000022Z,
+                _field: "bar",
+                _value: 1.2,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000031Z,
+                _field: "bar",
+                _value: 0.28,
+                _measurement: "mm",
+                section: "1a",
+            },
         ],
     )
         |> group(columns: ["_field", "_measurement"])
         |> testing.load()
-    want = array.from(
-        rows: [
-            {_value: 5.0, _time: 2021-01-01T00:00:01.000000011Z, section: "1a"},
-            {_value: 4.0, _time: 2021-01-01T00:00:01.000000009Z, section: "2b"},
-        ],
-    )
+    want = array.from(rows: [{_value: 5.0, _time: 2021-01-01T00:00:01.000000011Z, section: "1a"}, {_value: 4.0, _time: 2021-01-01T00:00:01.000000009Z, section: "2b"}])
         |> group(columns: ["_field", "_measurement", "section"])
     got = input
         |> range(start: 2021-01-01T00:00:01.000000001Z, stop: 2021-01-01T00:00:01.000000015Z)
@@ -130,26 +165,75 @@ testcase range_nsecs_group_max {
 testcase range_nsecs_group_sum {
     input = array.from(
         rows: [
-            {_time: 2021-01-01T00:00:01.000000001Z, _field: "foo", _value: 1.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000002Z, _field: "foo", _value: 2.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000024Z, _field: "foo", _value: 11.24, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000009Z, _field: "bar", _value: 4.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _field: "bar", _value: 5.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000015Z, _field: "bar", _value: 6.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000022Z, _field: "bar", _value: 1.2, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000031Z, _field: "bar", _value: 0.28, _measurement: "mm", section: "1a"},
+            {
+                _time: 2021-01-01T00:00:01.000000001Z,
+                _field: "foo",
+                _value: 1.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000002Z,
+                _field: "foo",
+                _value: 2.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000005Z,
+                _field: "foo",
+                _value: 3.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000024Z,
+                _field: "foo",
+                _value: 11.24,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000009Z,
+                _field: "bar",
+                _value: 4.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000011Z,
+                _field: "bar",
+                _value: 5.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000015Z,
+                _field: "bar",
+                _value: 6.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000022Z,
+                _field: "bar",
+                _value: 1.2,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000031Z,
+                _field: "bar",
+                _value: 0.28,
+                _measurement: "mm",
+                section: "1a",
+            },
         ],
     )
         |> group(columns: ["_field", "_measurement"])
         |> testing.load()
 
-    want = array.from(
-        rows: [
-            {_value: 9.0, section: "1a"},
-            {_value: 13.2, section: "2b"},
-        ],
-    )
+    want = array.from(rows: [{_value: 9.0, section: "1a"}, {_value: 13.2, section: "2b"}])
         |> group(columns: ["_field", "_measurement", "section"])
 
     got = input
@@ -163,26 +247,75 @@ testcase range_nsecs_group_sum {
 testcase range_nsecs_group_last {
     input = array.from(
         rows: [
-            {_time: 2021-01-01T00:00:01.000000001Z, _field: "foo", _value: 1.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000002Z, _field: "foo", _value: 2.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000009Z, _field: "foo", _value: 4.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _field: "foo", _value: 5.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000015Z, _field: "foo", _value: 6.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000022Z, _field: "foo", _value: 1.2, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000024Z, _field: "foo", _value: 11.24, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000031Z, _field: "foo", _value: 0.28, _measurement: "mm", section: "1a"},
+            {
+                _time: 2021-01-01T00:00:01.000000001Z,
+                _field: "foo",
+                _value: 1.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000002Z,
+                _field: "foo",
+                _value: 2.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000005Z,
+                _field: "foo",
+                _value: 3.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000009Z,
+                _field: "foo",
+                _value: 4.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000011Z,
+                _field: "foo",
+                _value: 5.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000015Z,
+                _field: "foo",
+                _value: 6.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000022Z,
+                _field: "foo",
+                _value: 1.2,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000024Z,
+                _field: "foo",
+                _value: 11.24,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000031Z,
+                _field: "foo",
+                _value: 0.28,
+                _measurement: "mm",
+                section: "1a",
+            },
         ],
     )
         |> group(columns: ["_field", "_measurement", "section"])
         |> testing.load()
 
-    want = array.from(
-        rows: [
-            {_value: 5.0, _time: 2021-01-01T00:00:01.000000011Z, section: "1a", _field: "foo"},
-            {_value: 1.2, _time: 2021-01-01T00:00:01.000000022Z, section: "2b", _field: "foo"},
-        ],
-    )
+    want = array.from(rows: [{_value: 5.0, _time: 2021-01-01T00:00:01.000000011Z, section: "1a", _field: "foo"}, {_value: 1.2, _time: 2021-01-01T00:00:01.000000022Z, section: "2b", _field: "foo"}])
         |> group(columns: ["_field", "_measurement", "section"])
 
     got = input
@@ -210,13 +343,7 @@ testcase range_nsecs_window_sum {
         |> group(columns: ["_field", "_measurement"])
         |> testing.load()
 
-    want = array.from(
-        rows: [
-            {_start: 2021-01-01T00:00:01.000000005Z, _stop: 2021-01-01T00:00:01.00000001Z, _value: 7.0},
-            {_start: 2021-01-01T00:00:01.00000001Z, _stop: 2021-01-01T00:00:01.00000002Z, _value: 11.0},
-            {_start: 2021-01-01T00:00:01.00000002Z, _stop: 2021-01-01T00:00:01.00000003Z, _value: 12.44},
-        ],
-    )
+    want = array.from(rows: [{_start: 2021-01-01T00:00:01.000000005Z, _stop: 2021-01-01T00:00:01.00000001Z, _value: 7.0}, {_start: 2021-01-01T00:00:01.00000001Z, _stop: 2021-01-01T00:00:01.00000002Z, _value: 11.0}, {_start: 2021-01-01T00:00:01.00000002Z, _stop: 2021-01-01T00:00:01.00000003Z, _value: 12.44}])
         |> group(columns: ["_field", "_measurement", "_start", "_stop"])
 
     got = input
@@ -231,27 +358,75 @@ testcase range_nsecs_window_sum {
 testcase range_nsecs_window_first {
     input = array.from(
         rows: [
-            {_time: 2021-01-01T00:00:01.000000001Z, _field: "foo", _value: 1.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000002Z, _field: "foo", _value: 2.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000009Z, _field: "foo", _value: 4.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _field: "foo", _value: 5.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000015Z, _field: "foo", _value: 6.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000022Z, _field: "foo", _value: 1.2, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000024Z, _field: "foo", _value: 11.24, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000031Z, _field: "foo", _value: 0.28, _measurement: "mm", section: "1a"},
+            {
+                _time: 2021-01-01T00:00:01.000000001Z,
+                _field: "foo",
+                _value: 1.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000002Z,
+                _field: "foo",
+                _value: 2.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000005Z,
+                _field: "foo",
+                _value: 3.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000009Z,
+                _field: "foo",
+                _value: 4.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000011Z,
+                _field: "foo",
+                _value: 5.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000015Z,
+                _field: "foo",
+                _value: 6.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000022Z,
+                _field: "foo",
+                _value: 1.2,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000024Z,
+                _field: "foo",
+                _value: 11.24,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000031Z,
+                _field: "foo",
+                _value: 0.28,
+                _measurement: "mm",
+                section: "1a",
+            },
         ],
     )
         |> group(columns: ["_field", "_measurement", "section"])
         |> testing.load()
 
-    want = array.from(
-        rows: [
-            {_time: 2021-01-01T00:00:01.000000001Z, _value: 1.0, section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _value: 5.0, section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000022Z, _value: 1.2, section: "1a"},
-        ],
-    )
+    want = array.from(rows: [{_time: 2021-01-01T00:00:01.000000001Z, _value: 1.0, section: "1a"}, {_time: 2021-01-01T00:00:01.000000011Z, _value: 5.0, section: "1a"}, {_time: 2021-01-01T00:00:01.000000022Z, _value: 1.2, section: "1a"}])
         |> group(columns: ["_field", "_measurement", "section"])
 
     got = input
@@ -265,15 +440,69 @@ testcase range_nsecs_window_first {
 testcase range_nsecs_window_min {
     input = array.from(
         rows: [
-            {_time: 2021-01-01T00:00:01.000000001Z, _field: "foo", _value: 1.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000002Z, _field: "foo", _value: 2.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000009Z, _field: "bar", _value: 4.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _field: "bar", _value: 5.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000015Z, _field: "bar", _value: 6.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000022Z, _field: "bar", _value: 1.2, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000024Z, _field: "foo", _value: 11.24, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000031Z, _field: "bar", _value: 0.28, _measurement: "mm", section: "1a"},
+            {
+                _time: 2021-01-01T00:00:01.000000001Z,
+                _field: "foo",
+                _value: 1.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000002Z,
+                _field: "foo",
+                _value: 2.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000005Z,
+                _field: "foo",
+                _value: 3.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000009Z,
+                _field: "bar",
+                _value: 4.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000011Z,
+                _field: "bar",
+                _value: 5.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000015Z,
+                _field: "bar",
+                _value: 6.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000022Z,
+                _field: "bar",
+                _value: 1.2,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000024Z,
+                _field: "foo",
+                _value: 11.24,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000031Z,
+                _field: "bar",
+                _value: 0.28,
+                _measurement: "mm",
+                section: "1a",
+            },
         ],
     )
         |> group(columns: ["_field", "_measurement", "section"])
@@ -303,15 +532,69 @@ testcase range_nsecs_window_min {
 testcase range_nsecs_agg_count {
     input = array.from(
         rows: [
-            {_time: 2021-01-01T00:00:01.000000001Z, _field: "foo", _value: 1.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000002Z, _field: "foo", _value: 2.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000009Z, _field: "bar", _value: 4.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _field: "bar", _value: 5.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000015Z, _field: "bar", _value: 6.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000022Z, _field: "bar", _value: 1.2, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000024Z, _field: "foo", _value: 11.24, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000031Z, _field: "bar", _value: 0.28, _measurement: "mm", section: "1a"},
+            {
+                _time: 2021-01-01T00:00:01.000000001Z,
+                _field: "foo",
+                _value: 1.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000002Z,
+                _field: "foo",
+                _value: 2.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000005Z,
+                _field: "foo",
+                _value: 3.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000009Z,
+                _field: "bar",
+                _value: 4.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000011Z,
+                _field: "bar",
+                _value: 5.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000015Z,
+                _field: "bar",
+                _value: 6.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000022Z,
+                _field: "bar",
+                _value: 1.2,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000024Z,
+                _field: "foo",
+                _value: 11.24,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000031Z,
+                _field: "bar",
+                _value: 0.28,
+                _measurement: "mm",
+                section: "1a",
+            },
         ],
     )
         |> group(columns: ["_field", "_measurement", "section"])
@@ -342,53 +625,88 @@ testcase range_nsecs_agg_count {
     got = input
         |> range(start: 2021-01-01T00:00:01Z, stop: 2021-01-01T00:00:01.00000005Z)
         |> aggregateWindow(every: 15ns, fn: count)
-        |> drop(
-            columns: [
-                "_start",
-                "_stop",
-                "_measurement",
-            ],
-        )
+        |> drop(columns: ["_start", "_stop", "_measurement"])
 
     testing.diff(got, want) |> yield()
 }
 testcase range_nsecs_agg_last {
     input = array.from(
         rows: [
-            {_time: 2021-01-01T00:00:01.000000001Z, _field: "foo", _value: 1.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000002Z, _field: "foo", _value: 2.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000005Z, _field: "foo", _value: 3.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000009Z, _field: "bar", _value: 4.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000011Z, _field: "bar", _value: 5.0, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000015Z, _field: "bar", _value: 6.0, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000022Z, _field: "bar", _value: 1.2, _measurement: "mm", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000024Z, _field: "foo", _value: 11.24, _measurement: "mm", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000031Z, _field: "bar", _value: 0.28, _measurement: "mm", section: "1a"},
+            {
+                _time: 2021-01-01T00:00:01.000000001Z,
+                _field: "foo",
+                _value: 1.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000002Z,
+                _field: "foo",
+                _value: 2.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000005Z,
+                _field: "foo",
+                _value: 3.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000009Z,
+                _field: "bar",
+                _value: 4.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000011Z,
+                _field: "bar",
+                _value: 5.0,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000015Z,
+                _field: "bar",
+                _value: 6.0,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000022Z,
+                _field: "bar",
+                _value: 1.2,
+                _measurement: "mm",
+                section: "2b",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000024Z,
+                _field: "foo",
+                _value: 11.24,
+                _measurement: "mm",
+                section: "1a",
+            },
+            {
+                _time: 2021-01-01T00:00:01.000000031Z,
+                _field: "bar",
+                _value: 0.28,
+                _measurement: "mm",
+                section: "1a",
+            },
         ],
     )
         |> group(columns: ["_field", "_measurement", "section"])
         |> testing.load()
 
-    want = array.from(
-        rows: [
-            {_time: 2021-01-01T00:00:01.000000009Z, _value: 3.0, _field: "foo", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000014Z, _value: 5.0, _field: "bar", section: "1a"},
-            {_time: 2021-01-01T00:00:01.000000014Z, _value: 4.0, _field: "bar", section: "2b"},
-            {_time: 2021-01-01T00:00:01.000000019Z, _value: 6.0, _field: "bar", section: "2b"},
-        ],
-    )
+    want = array.from(rows: [{_time: 2021-01-01T00:00:01.000000009Z, _value: 3.0, _field: "foo", section: "1a"}, {_time: 2021-01-01T00:00:01.000000014Z, _value: 5.0, _field: "bar", section: "1a"}, {_time: 2021-01-01T00:00:01.000000014Z, _value: 4.0, _field: "bar", section: "2b"}, {_time: 2021-01-01T00:00:01.000000019Z, _value: 6.0, _field: "bar", section: "2b"}])
         |> group(columns: ["_field", "_measurement", "section"])
 
     got = input
         |> range(start: 2021-01-01T00:00:01.000000005Z, stop: 2021-01-01T00:00:01.00000002Z)
         |> aggregateWindow(every: 5ns, offset: -1ns, fn: last, createEmpty: false)
-        |> drop(
-            columns: [
-                "_start",
-                "_stop",
-                "_measurement",
-            ],
-        )
+        |> drop(columns: ["_start", "_stop", "_measurement"])
 
     testing.diff(got, want) |> yield()
 }

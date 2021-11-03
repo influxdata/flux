@@ -181,11 +181,7 @@ t_stContainsLinestring = (table=<-) => table
     // optional but it helps to show the train crossing defined region
     |> geo.asTracks(groupBy: ["id", "trip_id"])
     |> geo.ST_LineString()
-    |> map(
-        fn: (r) => ({r with
-            _st_contains: geo.ST_Contains(region: bt, geometry: {linestring: r.st_linestring}),
-        }),
-    )
+    |> map(fn: (r) => ({r with _st_contains: geo.ST_Contains(region: bt, geometry: {linestring: r.st_linestring})}))
     |> drop(columns: ["_start", "_stop"])
 
 test _stContainsLinestring = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stContainsLinestring})

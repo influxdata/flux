@@ -46,18 +46,9 @@ tickscript_deadman = (table=<-) => table
     |> filter(fn: (r) => r._measurement == "testm" and r._field == metric_type and r.realm == tier)
     |> schema.fieldsAsCols()
     |> tickscript.groupBy(columns: ["host", "realm"])
-    |> tickscript.deadman(
-        check: check,
-        measurement: "testm",
-        threshold: 10,
-        id: (r) => "Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert",
-    )
+    |> tickscript.deadman(check: check, measurement: "testm", threshold: 10, id: (r) => "Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert")
     // to avoid issue with validation
     |> drop(columns: ["details"])
     |> drop(columns: ["_time"])
 
-test _tickscript_deadman = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: tickscript_deadman,
-})
+test _tickscript_deadman = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})

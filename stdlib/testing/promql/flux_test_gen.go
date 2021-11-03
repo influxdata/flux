@@ -9752,10 +9752,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 136,
-					Line:   57,
+					Line:   51,
 				},
 				File:   "extrapolatedRate_nocounter_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\nimport c \"csv\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155\r\noption testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )\n\ninData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n\"\noutData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,0.39599999999999996,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,1.2,prometheus\r\n\"\nt_extrapolatedRate = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: false, isRate: true)\n\ntest _extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\nimport c \"csv\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155\r\noption testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))\n\ninData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n\"\noutData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,0.39599999999999996,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,1.2,prometheus\r\n\"\nt_extrapolatedRate = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: false, isRate: true)\n\ntest _extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -9864,11 +9864,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   18,
+							Column: 365,
+							Line:   12,
 						},
 						File:   "extrapolatedRate_nocounter_test.flux",
-						Source: "testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+						Source: "testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 						Start: ast.Position{
 							Column: 8,
 							Line:   11,
@@ -9882,11 +9882,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   18,
+								Column: 365,
+								Line:   12,
 							},
 							File:   "extrapolatedRate_nocounter_test.flux",
-							Source: "(csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+							Source: "(csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 							Start: ast.Position{
 								Column: 30,
 								Line:   11,
@@ -10056,11 +10056,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   18,
+									Column: 365,
+									Line:   12,
 								},
 								File:   "extrapolatedRate_nocounter_test.flux",
-								Source: "c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+								Source: "c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 								Start: ast.Position{
 									Column: 39,
 									Line:   11,
@@ -10074,14 +10074,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 11,
-											Line:   17,
+											Column: 364,
+											Line:   12,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
-										Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+										Source: "fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 										Start: ast.Position{
-											Column: 9,
-											Line:   13,
+											Column: 12,
+											Line:   12,
 										},
 									},
 								},
@@ -10092,14 +10092,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   17,
+												Column: 364,
+												Line:   12,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
-											Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+											Source: "fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 											Start: ast.Position{
-												Column: 9,
-												Line:   13,
+												Column: 12,
+												Line:   12,
 											},
 										},
 									},
@@ -10110,14 +10110,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   13,
+													Column: 14,
+													Line:   12,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 9,
-													Line:   13,
+													Column: 12,
+													Line:   12,
 												},
 											},
 										},
@@ -10131,14 +10131,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   17,
+													Column: 364,
+													Line:   12,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
-												Source: "(r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+												Source: "(r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 												Start: ast.Position{
-													Column: 13,
-													Line:   13,
+													Column: 16,
+													Line:   12,
 												},
 											},
 										},
@@ -10148,14 +10148,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   17,
+														Column: 364,
+														Line:   12,
 													},
 													File:   "extrapolatedRate_nocounter_test.flux",
-													Source: "({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+													Source: "({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 													Start: ast.Position{
-														Column: 20,
-														Line:   13,
+														Column: 23,
+														Line:   12,
 													},
 												},
 											},
@@ -10165,14 +10165,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 10,
-															Line:   17,
+															Column: 363,
+															Line:   12,
 														},
 														File:   "extrapolatedRate_nocounter_test.flux",
-														Source: "{r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }",
+														Source: "{r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}",
 														Start: ast.Position{
-															Column: 21,
-															Line:   13,
+															Column: 24,
+															Line:   12,
 														},
 													},
 												},
@@ -10183,14 +10183,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 115,
-																Line:   14,
+																Column: 134,
+																Line:   12,
 															},
 															File:   "extrapolatedRate_nocounter_test.flux",
 															Source: "_field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   14,
+																Column: 32,
+																Line:   12,
 															},
 														},
 													},
@@ -10201,14 +10201,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
-																	Line:   14,
+																	Column: 38,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_nocounter_test.flux",
 																Source: "_field",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   14,
+																	Column: 32,
+																	Line:   12,
 																},
 															},
 														},
@@ -10223,14 +10223,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 114,
-																			Line:   14,
+																			Column: 133,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "msg: \"test input table does not have _field column\"",
 																		Start: ast.Position{
-																			Column: 63,
-																			Line:   14,
+																			Column: 82,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10241,14 +10241,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 114,
-																				Line:   14,
+																				Column: 133,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "msg: \"test input table does not have _field column\"",
 																			Start: ast.Position{
-																				Column: 63,
-																				Line:   14,
+																				Column: 82,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -10259,14 +10259,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 66,
-																					Line:   14,
+																					Column: 85,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_nocounter_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 63,
-																					Line:   14,
+																					Column: 82,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -10279,14 +10279,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 114,
-																					Line:   14,
+																					Column: 133,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_nocounter_test.flux",
 																				Source: "\"test input table does not have _field column\"",
 																				Start: ast.Position{
-																					Column: 68,
-																					Line:   14,
+																					Column: 87,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -10301,14 +10301,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 115,
-																		Line:   14,
+																		Column: 134,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "die(msg: \"test input table does not have _field column\")",
 																	Start: ast.Position{
-																		Column: 59,
-																		Line:   14,
+																		Column: 78,
+																		Line:   12,
 																	},
 																},
 															},
@@ -10318,14 +10318,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 62,
-																			Line:   14,
+																			Column: 81,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   14,
+																			Column: 78,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10339,14 +10339,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 115,
-																	Line:   14,
+																	Column: 134,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_nocounter_test.flux",
 																Source: "if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   14,
+																	Column: 40,
+																	Line:   12,
 																},
 															},
 														},
@@ -10356,14 +10356,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 53,
-																		Line:   14,
+																		Column: 72,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "r._field",
 																	Start: ast.Position{
-																		Column: 45,
-																		Line:   14,
+																		Column: 64,
+																		Line:   12,
 																	},
 																},
 															},
@@ -10374,14 +10374,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 46,
-																			Line:   14,
+																			Column: 65,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 45,
-																			Line:   14,
+																			Column: 64,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10393,14 +10393,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 53,
-																			Line:   14,
+																			Column: 72,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "_field",
 																		Start: ast.Position{
-																			Column: 47,
-																			Line:   14,
+																			Column: 66,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10415,14 +10415,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 39,
-																			Line:   14,
+																			Column: 58,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "r._field",
 																		Start: ast.Position{
-																			Column: 31,
-																			Line:   14,
+																			Column: 50,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10433,14 +10433,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 32,
-																				Line:   14,
+																				Column: 51,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 31,
-																				Line:   14,
+																				Column: 50,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -10452,14 +10452,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 39,
-																				Line:   14,
+																				Column: 58,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "_field",
 																			Start: ast.Position{
-																				Column: 33,
-																				Line:   14,
+																				Column: 52,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -10472,14 +10472,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 39,
-																		Line:   14,
+																		Column: 58,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "exists r._field",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   14,
+																		Column: 43,
+																		Line:   12,
 																	},
 																},
 															},
@@ -10495,14 +10495,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 139,
-																Line:   15,
+																Column: 262,
+																Line:   12,
 															},
 															File:   "extrapolatedRate_nocounter_test.flux",
 															Source: "_measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   15,
+																Column: 136,
+																Line:   12,
 															},
 														},
 													},
@@ -10513,14 +10513,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 25,
-																	Line:   15,
+																	Column: 148,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_nocounter_test.flux",
 																Source: "_measurement",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   15,
+																	Column: 136,
+																	Line:   12,
 																},
 															},
 														},
@@ -10535,14 +10535,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 138,
-																			Line:   15,
+																			Column: 261,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "msg: \"test input table does not have _measurement column\"",
 																		Start: ast.Position{
-																			Column: 81,
-																			Line:   15,
+																			Column: 204,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10553,14 +10553,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 138,
-																				Line:   15,
+																				Column: 261,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "msg: \"test input table does not have _measurement column\"",
 																			Start: ast.Position{
-																				Column: 81,
-																				Line:   15,
+																				Column: 204,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -10571,14 +10571,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 84,
-																					Line:   15,
+																					Column: 207,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_nocounter_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 81,
-																					Line:   15,
+																					Column: 204,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -10591,14 +10591,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 138,
-																					Line:   15,
+																					Column: 261,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_nocounter_test.flux",
 																				Source: "\"test input table does not have _measurement column\"",
 																				Start: ast.Position{
-																					Column: 86,
-																					Line:   15,
+																					Column: 209,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -10613,14 +10613,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 139,
-																		Line:   15,
+																		Column: 262,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "die(msg: \"test input table does not have _measurement column\")",
 																	Start: ast.Position{
-																		Column: 77,
-																		Line:   15,
+																		Column: 200,
+																		Line:   12,
 																	},
 																},
 															},
@@ -10630,14 +10630,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 80,
-																			Line:   15,
+																			Column: 203,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 77,
-																			Line:   15,
+																			Column: 200,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10651,14 +10651,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 139,
-																	Line:   15,
+																	Column: 262,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_nocounter_test.flux",
 																Source: "if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 																Start: ast.Position{
-																	Column: 27,
-																	Line:   15,
+																	Column: 150,
+																	Line:   12,
 																},
 															},
 														},
@@ -10668,14 +10668,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 71,
-																		Line:   15,
+																		Column: 194,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "r._measurement",
 																	Start: ast.Position{
-																		Column: 57,
-																		Line:   15,
+																		Column: 180,
+																		Line:   12,
 																	},
 																},
 															},
@@ -10686,14 +10686,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 58,
-																			Line:   15,
+																			Column: 181,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 57,
-																			Line:   15,
+																			Column: 180,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10705,14 +10705,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 71,
-																			Line:   15,
+																			Column: 194,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   15,
+																			Column: 182,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10727,14 +10727,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 51,
-																			Line:   15,
+																			Column: 174,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "r._measurement",
 																		Start: ast.Position{
-																			Column: 37,
-																			Line:   15,
+																			Column: 160,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10745,14 +10745,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 38,
-																				Line:   15,
+																				Column: 161,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 37,
-																				Line:   15,
+																				Column: 160,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -10764,14 +10764,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 51,
-																				Line:   15,
+																				Column: 174,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "_measurement",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   15,
+																				Column: 162,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -10784,14 +10784,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 51,
-																		Line:   15,
+																		Column: 174,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "exists r._measurement",
 																	Start: ast.Position{
-																		Column: 30,
-																		Line:   15,
+																		Column: 153,
+																		Line:   12,
 																	},
 																},
 															},
@@ -10807,14 +10807,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 111,
-																Line:   16,
+																Column: 362,
+																Line:   12,
 															},
 															File:   "extrapolatedRate_nocounter_test.flux",
 															Source: "_time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   16,
+																Column: 264,
+																Line:   12,
 															},
 														},
 													},
@@ -10825,14 +10825,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
-																	Line:   16,
+																	Column: 269,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_nocounter_test.flux",
 																Source: "_time",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   16,
+																	Column: 264,
+																	Line:   12,
 																},
 															},
 														},
@@ -10847,14 +10847,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 110,
-																			Line:   16,
+																			Column: 361,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "msg: \"test input table does not have _time column\"",
 																		Start: ast.Position{
-																			Column: 60,
-																			Line:   16,
+																			Column: 311,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10865,14 +10865,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 110,
-																				Line:   16,
+																				Column: 361,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "msg: \"test input table does not have _time column\"",
 																			Start: ast.Position{
-																				Column: 60,
-																				Line:   16,
+																				Column: 311,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -10883,14 +10883,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 63,
-																					Line:   16,
+																					Column: 314,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_nocounter_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 60,
-																					Line:   16,
+																					Column: 311,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -10903,14 +10903,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 110,
-																					Line:   16,
+																					Column: 361,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_nocounter_test.flux",
 																				Source: "\"test input table does not have _time column\"",
 																				Start: ast.Position{
-																					Column: 65,
-																					Line:   16,
+																					Column: 316,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -10925,14 +10925,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 111,
-																		Line:   16,
+																		Column: 362,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "die(msg: \"test input table does not have _time column\")",
 																	Start: ast.Position{
-																		Column: 56,
-																		Line:   16,
+																		Column: 307,
+																		Line:   12,
 																	},
 																},
 															},
@@ -10942,14 +10942,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 59,
-																			Line:   16,
+																			Column: 310,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 56,
-																			Line:   16,
+																			Column: 307,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -10963,14 +10963,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 111,
-																	Line:   16,
+																	Column: 362,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_nocounter_test.flux",
 																Source: "if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 																Start: ast.Position{
-																	Column: 20,
-																	Line:   16,
+																	Column: 271,
+																	Line:   12,
 																},
 															},
 														},
@@ -10980,14 +10980,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 50,
-																		Line:   16,
+																		Column: 301,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "r._time",
 																	Start: ast.Position{
-																		Column: 43,
-																		Line:   16,
+																		Column: 294,
+																		Line:   12,
 																	},
 																},
 															},
@@ -10998,14 +10998,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 44,
-																			Line:   16,
+																			Column: 295,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 43,
-																			Line:   16,
+																			Column: 294,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -11017,14 +11017,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 50,
-																			Line:   16,
+																			Column: 301,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "_time",
 																		Start: ast.Position{
-																			Column: 45,
-																			Line:   16,
+																			Column: 296,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -11039,14 +11039,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   16,
+																			Column: 288,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_nocounter_test.flux",
 																		Source: "r._time",
 																		Start: ast.Position{
-																			Column: 30,
-																			Line:   16,
+																			Column: 281,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -11057,14 +11057,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 31,
-																				Line:   16,
+																				Column: 282,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 30,
-																				Line:   16,
+																				Column: 281,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -11076,14 +11076,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 37,
-																				Line:   16,
+																				Column: 288,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_nocounter_test.flux",
 																			Source: "_time",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   16,
+																				Column: 283,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -11096,14 +11096,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 37,
-																		Line:   16,
+																		Column: 288,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_nocounter_test.flux",
 																	Source: "exists r._time",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   16,
+																		Column: 274,
+																		Line:   12,
 																	},
 																},
 															},
@@ -11121,14 +11121,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 23,
-																Line:   13,
+																Column: 26,
+																Line:   12,
 															},
 															File:   "extrapolatedRate_nocounter_test.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 22,
-																Line:   13,
+																Column: 25,
+																Line:   12,
 															},
 														},
 													},
@@ -11145,14 +11145,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   13,
+														Column: 18,
+														Line:   12,
 													},
 													File:   "extrapolatedRate_nocounter_test.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 14,
-														Line:   13,
+														Column: 17,
+														Line:   12,
 													},
 												},
 											},
@@ -11163,14 +11163,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   13,
+															Column: 18,
+															Line:   12,
 														},
 														File:   "extrapolatedRate_nocounter_test.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 14,
-															Line:   13,
+															Column: 17,
+															Line:   12,
 														},
 													},
 												},
@@ -11190,11 +11190,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   18,
+										Column: 365,
+										Line:   12,
 									},
 									File:   "extrapolatedRate_nocounter_test.flux",
-									Source: "map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+									Source: "map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 									Start: ast.Position{
 										Column: 8,
 										Line:   12,
@@ -11331,11 +11331,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   18,
+						Column: 365,
+						Line:   12,
 					},
 					File:   "extrapolatedRate_nocounter_test.flux",
-					Source: "option testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+					Source: "option testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 					Start: ast.Position{
 						Column: 1,
 						Line:   11,
@@ -11349,13 +11349,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   43,
+						Line:   37,
 					},
 					File:   "extrapolatedRate_nocounter_test.flux",
 					Source: "inData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   20,
+						Line:   14,
 					},
 				},
 			},
@@ -11366,13 +11366,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   20,
+							Line:   14,
 						},
 						File:   "extrapolatedRate_nocounter_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   20,
+							Line:   14,
 						},
 					},
 				},
@@ -11385,13 +11385,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   43,
+							Line:   37,
 						},
 						File:   "extrapolatedRate_nocounter_test.flux",
 						Source: "\"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   20,
+							Line:   14,
 						},
 					},
 				},
@@ -11404,13 +11404,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   52,
+						Line:   46,
 					},
 					File:   "extrapolatedRate_nocounter_test.flux",
 					Source: "outData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,0.39599999999999996,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,1.2,prometheus\r\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   44,
+						Line:   38,
 					},
 				},
 			},
@@ -11421,13 +11421,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   44,
+							Line:   38,
 						},
 						File:   "extrapolatedRate_nocounter_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   44,
+							Line:   38,
 						},
 					},
 				},
@@ -11440,13 +11440,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   52,
+							Line:   46,
 						},
 						File:   "extrapolatedRate_nocounter_test.flux",
 						Source: "\"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,0.39599999999999996,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,1.2,prometheus\r\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   44,
+							Line:   38,
 						},
 					},
 				},
@@ -11459,13 +11459,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 63,
-						Line:   55,
+						Line:   49,
 					},
 					File:   "extrapolatedRate_nocounter_test.flux",
 					Source: "t_extrapolatedRate = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: false, isRate: true)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   53,
+						Line:   47,
 					},
 				},
 			},
@@ -11476,13 +11476,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   53,
+							Line:   47,
 						},
 						File:   "extrapolatedRate_nocounter_test.flux",
 						Source: "t_extrapolatedRate",
 						Start: ast.Position{
 							Column: 1,
-							Line:   53,
+							Line:   47,
 						},
 					},
 				},
@@ -11496,13 +11496,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 63,
-							Line:   55,
+							Line:   49,
 						},
 						File:   "extrapolatedRate_nocounter_test.flux",
 						Source: "(table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: false, isRate: true)",
 						Start: ast.Position{
 							Column: 22,
-							Line:   53,
+							Line:   47,
 						},
 					},
 				},
@@ -11515,13 +11515,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   53,
+										Line:   47,
 									},
 									File:   "extrapolatedRate_nocounter_test.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 36,
-										Line:   53,
+										Line:   47,
 									},
 								},
 							},
@@ -11533,13 +11533,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   54,
+									Line:   48,
 								},
 								File:   "extrapolatedRate_nocounter_test.flux",
 								Source: "table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)",
 								Start: ast.Position{
 									Column: 36,
-									Line:   53,
+									Line:   47,
 								},
 							},
 						},
@@ -11551,13 +11551,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   54,
+											Line:   48,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z",
 										Start: ast.Position{
 											Column: 14,
-											Line:   54,
+											Line:   48,
 										},
 									},
 								},
@@ -11569,13 +11569,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   54,
+												Line:   48,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "start: 2018-12-18T20:50:00Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   54,
+												Line:   48,
 											},
 										},
 									},
@@ -11587,13 +11587,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   54,
+													Line:   48,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 14,
-													Line:   54,
+													Line:   48,
 												},
 											},
 										},
@@ -11607,13 +11607,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   54,
+													Line:   48,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "2018-12-18T20:50:00Z",
 												Start: ast.Position{
 													Column: 21,
-													Line:   54,
+													Line:   48,
 												},
 											},
 										},
@@ -11626,13 +11626,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   54,
+												Line:   48,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "stop: 2018-12-18T20:55:00Z",
 											Start: ast.Position{
 												Column: 43,
-												Line:   54,
+												Line:   48,
 											},
 										},
 									},
@@ -11644,13 +11644,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   54,
+													Line:   48,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "stop",
 												Start: ast.Position{
 													Column: 43,
-													Line:   54,
+													Line:   48,
 												},
 											},
 										},
@@ -11664,13 +11664,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   54,
+													Line:   48,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "2018-12-18T20:55:00Z",
 												Start: ast.Position{
 													Column: 49,
-													Line:   54,
+													Line:   48,
 												},
 											},
 										},
@@ -11686,13 +11686,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   54,
+										Line:   48,
 									},
 									File:   "extrapolatedRate_nocounter_test.flux",
 									Source: "range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   54,
+										Line:   48,
 									},
 								},
 							},
@@ -11703,13 +11703,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   54,
+											Line:   48,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 8,
-											Line:   54,
+											Line:   48,
 										},
 									},
 								},
@@ -11725,13 +11725,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 63,
-								Line:   55,
+								Line:   49,
 							},
 							File:   "extrapolatedRate_nocounter_test.flux",
 							Source: "table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: false, isRate: true)",
 							Start: ast.Position{
 								Column: 36,
-								Line:   53,
+								Line:   47,
 							},
 						},
 					},
@@ -11743,13 +11743,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 62,
-										Line:   55,
+										Line:   49,
 									},
 									File:   "extrapolatedRate_nocounter_test.flux",
 									Source: "isCounter: false, isRate: true",
 									Start: ast.Position{
 										Column: 32,
-										Line:   55,
+										Line:   49,
 									},
 								},
 							},
@@ -11761,13 +11761,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "isCounter: false",
 										Start: ast.Position{
 											Column: 32,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -11779,13 +11779,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "isCounter",
 											Start: ast.Position{
 												Column: 32,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -11799,13 +11799,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "false",
 											Start: ast.Position{
 												Column: 43,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -11818,13 +11818,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 62,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "isRate: true",
 										Start: ast.Position{
 											Column: 50,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -11836,13 +11836,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 56,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "isRate",
 											Start: ast.Position{
 												Column: 50,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -11856,13 +11856,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 62,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "true",
 											Start: ast.Position{
 												Column: 58,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -11878,13 +11878,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 63,
-									Line:   55,
+									Line:   49,
 								},
 								File:   "extrapolatedRate_nocounter_test.flux",
 								Source: "promql.extrapolatedRate(isCounter: false, isRate: true)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   55,
+									Line:   49,
 								},
 							},
 						},
@@ -11895,13 +11895,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   55,
+										Line:   49,
 									},
 									File:   "extrapolatedRate_nocounter_test.flux",
 									Source: "promql.extrapolatedRate",
 									Start: ast.Position{
 										Column: 8,
-										Line:   55,
+										Line:   49,
 									},
 								},
 							},
@@ -11913,13 +11913,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "promql",
 										Start: ast.Position{
 											Column: 8,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -11932,13 +11932,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "extrapolatedRate",
 										Start: ast.Position{
 											Column: 15,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -11958,13 +11958,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   53,
+								Line:   47,
 							},
 							File:   "extrapolatedRate_nocounter_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   53,
+								Line:   47,
 							},
 						},
 					},
@@ -11976,13 +11976,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   53,
+									Line:   47,
 								},
 								File:   "extrapolatedRate_nocounter_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
-									Line:   53,
+									Line:   47,
 								},
 							},
 						},
@@ -11995,13 +11995,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   53,
+								Line:   47,
 							},
 							File:   "extrapolatedRate_nocounter_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
-								Line:   53,
+								Line:   47,
 							},
 						},
 					}},
@@ -12016,13 +12016,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 136,
-							Line:   57,
+							Line:   51,
 						},
 						File:   "extrapolatedRate_nocounter_test.flux",
 						Source: "_extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   57,
+							Line:   51,
 						},
 					},
 				},
@@ -12033,13 +12033,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   57,
+								Line:   51,
 							},
 							File:   "extrapolatedRate_nocounter_test.flux",
 							Source: "_extrapolatedRate",
 							Start: ast.Position{
 								Column: 6,
-								Line:   57,
+								Line:   51,
 							},
 						},
 					},
@@ -12053,13 +12053,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 136,
-								Line:   57,
+								Line:   51,
 							},
 							File:   "extrapolatedRate_nocounter_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   57,
+								Line:   51,
 							},
 						},
 					},
@@ -12070,13 +12070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 136,
-									Line:   57,
+									Line:   51,
 								},
 								File:   "extrapolatedRate_nocounter_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 								Start: ast.Position{
 									Column: 32,
-									Line:   57,
+									Line:   51,
 								},
 							},
 						},
@@ -12087,13 +12087,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 135,
-										Line:   57,
+										Line:   51,
 									},
 									File:   "extrapolatedRate_nocounter_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate}",
 									Start: ast.Position{
 										Column: 33,
-										Line:   57,
+										Line:   51,
 									},
 								},
 							},
@@ -12105,13 +12105,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 73,
-											Line:   57,
+											Line:   51,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 34,
-											Line:   57,
+											Line:   51,
 										},
 									},
 								},
@@ -12123,13 +12123,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 34,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -12144,13 +12144,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   57,
+													Line:   51,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 61,
-													Line:   57,
+													Line:   51,
 												},
 											},
 										},
@@ -12162,13 +12162,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 72,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_nocounter_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 61,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -12180,13 +12180,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 64,
-															Line:   57,
+															Line:   51,
 														},
 														File:   "extrapolatedRate_nocounter_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 61,
-															Line:   57,
+															Line:   51,
 														},
 													},
 												},
@@ -12200,13 +12200,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
-															Line:   57,
+															Line:   51,
 														},
 														File:   "extrapolatedRate_nocounter_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 66,
-															Line:   57,
+															Line:   51,
 														},
 													},
 												},
@@ -12222,13 +12222,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 41,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -12239,13 +12239,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   57,
+													Line:   51,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 41,
-													Line:   57,
+													Line:   51,
 												},
 											},
 										},
@@ -12257,13 +12257,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_nocounter_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 41,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -12276,13 +12276,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_nocounter_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 49,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -12300,13 +12300,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 110,
-											Line:   57,
+											Line:   51,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 75,
-											Line:   57,
+											Line:   51,
 										},
 									},
 								},
@@ -12318,13 +12318,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 79,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 75,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -12339,13 +12339,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 109,
-													Line:   57,
+													Line:   51,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 97,
-													Line:   57,
+													Line:   51,
 												},
 											},
 										},
@@ -12357,13 +12357,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 109,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_nocounter_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 97,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -12375,13 +12375,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 100,
-															Line:   57,
+															Line:   51,
 														},
 														File:   "extrapolatedRate_nocounter_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 97,
-															Line:   57,
+															Line:   51,
 														},
 													},
 												},
@@ -12395,13 +12395,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 109,
-															Line:   57,
+															Line:   51,
 														},
 														File:   "extrapolatedRate_nocounter_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 102,
-															Line:   57,
+															Line:   51,
 														},
 													},
 												},
@@ -12417,13 +12417,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 81,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -12434,13 +12434,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 96,
-													Line:   57,
+													Line:   51,
 												},
 												File:   "extrapolatedRate_nocounter_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 81,
-													Line:   57,
+													Line:   51,
 												},
 											},
 										},
@@ -12452,13 +12452,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 88,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_nocounter_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 81,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -12471,13 +12471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 96,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_nocounter_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 89,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -12495,13 +12495,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 134,
-											Line:   57,
+											Line:   51,
 										},
 										File:   "extrapolatedRate_nocounter_test.flux",
 										Source: "fn: t_extrapolatedRate",
 										Start: ast.Position{
 											Column: 112,
-											Line:   57,
+											Line:   51,
 										},
 									},
 								},
@@ -12513,13 +12513,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 114,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 112,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -12533,13 +12533,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 134,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_nocounter_test.flux",
 											Source: "t_extrapolatedRate",
 											Start: ast.Position{
 												Column: 116,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -12563,13 +12563,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 136,
-						Line:   57,
+						Line:   51,
 					},
 					File:   "extrapolatedRate_nocounter_test.flux",
 					Source: "test _extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   57,
+						Line:   51,
 					},
 				},
 			},
@@ -12751,10 +12751,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 136,
-					Line:   57,
+					Line:   51,
 				},
 				File:   "extrapolatedRate_norate_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\nimport c \"csv\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155\r\noption testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )\n\ninData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n\"\noutData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,109.89999999999999,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,760,prometheus\r\n\"\nt_extrapolatedRate = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: true, isRate: false)\n\ntest _extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\nimport c \"csv\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155\r\noption testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))\n\ninData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n\"\noutData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,109.89999999999999,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,760,prometheus\r\n\"\nt_extrapolatedRate = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: true, isRate: false)\n\ntest _extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -12863,11 +12863,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   18,
+							Column: 365,
+							Line:   12,
 						},
 						File:   "extrapolatedRate_norate_test.flux",
-						Source: "testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+						Source: "testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 						Start: ast.Position{
 							Column: 8,
 							Line:   11,
@@ -12881,11 +12881,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   18,
+								Column: 365,
+								Line:   12,
 							},
 							File:   "extrapolatedRate_norate_test.flux",
-							Source: "(csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+							Source: "(csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 							Start: ast.Position{
 								Column: 30,
 								Line:   11,
@@ -13055,11 +13055,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   18,
+									Column: 365,
+									Line:   12,
 								},
 								File:   "extrapolatedRate_norate_test.flux",
-								Source: "c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+								Source: "c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 								Start: ast.Position{
 									Column: 39,
 									Line:   11,
@@ -13073,14 +13073,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 11,
-											Line:   17,
+											Column: 364,
+											Line:   12,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
-										Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+										Source: "fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 										Start: ast.Position{
-											Column: 9,
-											Line:   13,
+											Column: 12,
+											Line:   12,
 										},
 									},
 								},
@@ -13091,14 +13091,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   17,
+												Column: 364,
+												Line:   12,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
-											Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+											Source: "fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 											Start: ast.Position{
-												Column: 9,
-												Line:   13,
+												Column: 12,
+												Line:   12,
 											},
 										},
 									},
@@ -13109,14 +13109,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   13,
+													Column: 14,
+													Line:   12,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 9,
-													Line:   13,
+													Column: 12,
+													Line:   12,
 												},
 											},
 										},
@@ -13130,14 +13130,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   17,
+													Column: 364,
+													Line:   12,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
-												Source: "(r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+												Source: "(r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 												Start: ast.Position{
-													Column: 13,
-													Line:   13,
+													Column: 16,
+													Line:   12,
 												},
 											},
 										},
@@ -13147,14 +13147,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   17,
+														Column: 364,
+														Line:   12,
 													},
 													File:   "extrapolatedRate_norate_test.flux",
-													Source: "({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+													Source: "({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 													Start: ast.Position{
-														Column: 20,
-														Line:   13,
+														Column: 23,
+														Line:   12,
 													},
 												},
 											},
@@ -13164,14 +13164,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 10,
-															Line:   17,
+															Column: 363,
+															Line:   12,
 														},
 														File:   "extrapolatedRate_norate_test.flux",
-														Source: "{r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }",
+														Source: "{r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}",
 														Start: ast.Position{
-															Column: 21,
-															Line:   13,
+															Column: 24,
+															Line:   12,
 														},
 													},
 												},
@@ -13182,14 +13182,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 115,
-																Line:   14,
+																Column: 134,
+																Line:   12,
 															},
 															File:   "extrapolatedRate_norate_test.flux",
 															Source: "_field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   14,
+																Column: 32,
+																Line:   12,
 															},
 														},
 													},
@@ -13200,14 +13200,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
-																	Line:   14,
+																	Column: 38,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_norate_test.flux",
 																Source: "_field",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   14,
+																	Column: 32,
+																	Line:   12,
 																},
 															},
 														},
@@ -13222,14 +13222,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 114,
-																			Line:   14,
+																			Column: 133,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "msg: \"test input table does not have _field column\"",
 																		Start: ast.Position{
-																			Column: 63,
-																			Line:   14,
+																			Column: 82,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13240,14 +13240,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 114,
-																				Line:   14,
+																				Column: 133,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "msg: \"test input table does not have _field column\"",
 																			Start: ast.Position{
-																				Column: 63,
-																				Line:   14,
+																				Column: 82,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -13258,14 +13258,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 66,
-																					Line:   14,
+																					Column: 85,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_norate_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 63,
-																					Line:   14,
+																					Column: 82,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -13278,14 +13278,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 114,
-																					Line:   14,
+																					Column: 133,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_norate_test.flux",
 																				Source: "\"test input table does not have _field column\"",
 																				Start: ast.Position{
-																					Column: 68,
-																					Line:   14,
+																					Column: 87,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -13300,14 +13300,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 115,
-																		Line:   14,
+																		Column: 134,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "die(msg: \"test input table does not have _field column\")",
 																	Start: ast.Position{
-																		Column: 59,
-																		Line:   14,
+																		Column: 78,
+																		Line:   12,
 																	},
 																},
 															},
@@ -13317,14 +13317,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 62,
-																			Line:   14,
+																			Column: 81,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   14,
+																			Column: 78,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13338,14 +13338,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 115,
-																	Line:   14,
+																	Column: 134,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_norate_test.flux",
 																Source: "if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   14,
+																	Column: 40,
+																	Line:   12,
 																},
 															},
 														},
@@ -13355,14 +13355,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 53,
-																		Line:   14,
+																		Column: 72,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "r._field",
 																	Start: ast.Position{
-																		Column: 45,
-																		Line:   14,
+																		Column: 64,
+																		Line:   12,
 																	},
 																},
 															},
@@ -13373,14 +13373,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 46,
-																			Line:   14,
+																			Column: 65,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 45,
-																			Line:   14,
+																			Column: 64,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13392,14 +13392,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 53,
-																			Line:   14,
+																			Column: 72,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "_field",
 																		Start: ast.Position{
-																			Column: 47,
-																			Line:   14,
+																			Column: 66,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13414,14 +13414,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 39,
-																			Line:   14,
+																			Column: 58,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "r._field",
 																		Start: ast.Position{
-																			Column: 31,
-																			Line:   14,
+																			Column: 50,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13432,14 +13432,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 32,
-																				Line:   14,
+																				Column: 51,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 31,
-																				Line:   14,
+																				Column: 50,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -13451,14 +13451,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 39,
-																				Line:   14,
+																				Column: 58,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "_field",
 																			Start: ast.Position{
-																				Column: 33,
-																				Line:   14,
+																				Column: 52,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -13471,14 +13471,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 39,
-																		Line:   14,
+																		Column: 58,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "exists r._field",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   14,
+																		Column: 43,
+																		Line:   12,
 																	},
 																},
 															},
@@ -13494,14 +13494,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 139,
-																Line:   15,
+																Column: 262,
+																Line:   12,
 															},
 															File:   "extrapolatedRate_norate_test.flux",
 															Source: "_measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   15,
+																Column: 136,
+																Line:   12,
 															},
 														},
 													},
@@ -13512,14 +13512,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 25,
-																	Line:   15,
+																	Column: 148,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_norate_test.flux",
 																Source: "_measurement",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   15,
+																	Column: 136,
+																	Line:   12,
 																},
 															},
 														},
@@ -13534,14 +13534,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 138,
-																			Line:   15,
+																			Column: 261,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "msg: \"test input table does not have _measurement column\"",
 																		Start: ast.Position{
-																			Column: 81,
-																			Line:   15,
+																			Column: 204,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13552,14 +13552,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 138,
-																				Line:   15,
+																				Column: 261,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "msg: \"test input table does not have _measurement column\"",
 																			Start: ast.Position{
-																				Column: 81,
-																				Line:   15,
+																				Column: 204,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -13570,14 +13570,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 84,
-																					Line:   15,
+																					Column: 207,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_norate_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 81,
-																					Line:   15,
+																					Column: 204,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -13590,14 +13590,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 138,
-																					Line:   15,
+																					Column: 261,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_norate_test.flux",
 																				Source: "\"test input table does not have _measurement column\"",
 																				Start: ast.Position{
-																					Column: 86,
-																					Line:   15,
+																					Column: 209,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -13612,14 +13612,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 139,
-																		Line:   15,
+																		Column: 262,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "die(msg: \"test input table does not have _measurement column\")",
 																	Start: ast.Position{
-																		Column: 77,
-																		Line:   15,
+																		Column: 200,
+																		Line:   12,
 																	},
 																},
 															},
@@ -13629,14 +13629,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 80,
-																			Line:   15,
+																			Column: 203,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 77,
-																			Line:   15,
+																			Column: 200,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13650,14 +13650,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 139,
-																	Line:   15,
+																	Column: 262,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_norate_test.flux",
 																Source: "if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 																Start: ast.Position{
-																	Column: 27,
-																	Line:   15,
+																	Column: 150,
+																	Line:   12,
 																},
 															},
 														},
@@ -13667,14 +13667,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 71,
-																		Line:   15,
+																		Column: 194,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "r._measurement",
 																	Start: ast.Position{
-																		Column: 57,
-																		Line:   15,
+																		Column: 180,
+																		Line:   12,
 																	},
 																},
 															},
@@ -13685,14 +13685,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 58,
-																			Line:   15,
+																			Column: 181,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 57,
-																			Line:   15,
+																			Column: 180,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13704,14 +13704,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 71,
-																			Line:   15,
+																			Column: 194,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   15,
+																			Column: 182,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13726,14 +13726,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 51,
-																			Line:   15,
+																			Column: 174,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "r._measurement",
 																		Start: ast.Position{
-																			Column: 37,
-																			Line:   15,
+																			Column: 160,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13744,14 +13744,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 38,
-																				Line:   15,
+																				Column: 161,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 37,
-																				Line:   15,
+																				Column: 160,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -13763,14 +13763,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 51,
-																				Line:   15,
+																				Column: 174,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "_measurement",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   15,
+																				Column: 162,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -13783,14 +13783,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 51,
-																		Line:   15,
+																		Column: 174,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "exists r._measurement",
 																	Start: ast.Position{
-																		Column: 30,
-																		Line:   15,
+																		Column: 153,
+																		Line:   12,
 																	},
 																},
 															},
@@ -13806,14 +13806,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 111,
-																Line:   16,
+																Column: 362,
+																Line:   12,
 															},
 															File:   "extrapolatedRate_norate_test.flux",
 															Source: "_time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   16,
+																Column: 264,
+																Line:   12,
 															},
 														},
 													},
@@ -13824,14 +13824,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
-																	Line:   16,
+																	Column: 269,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_norate_test.flux",
 																Source: "_time",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   16,
+																	Column: 264,
+																	Line:   12,
 																},
 															},
 														},
@@ -13846,14 +13846,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 110,
-																			Line:   16,
+																			Column: 361,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "msg: \"test input table does not have _time column\"",
 																		Start: ast.Position{
-																			Column: 60,
-																			Line:   16,
+																			Column: 311,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13864,14 +13864,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 110,
-																				Line:   16,
+																				Column: 361,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "msg: \"test input table does not have _time column\"",
 																			Start: ast.Position{
-																				Column: 60,
-																				Line:   16,
+																				Column: 311,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -13882,14 +13882,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 63,
-																					Line:   16,
+																					Column: 314,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_norate_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 60,
-																					Line:   16,
+																					Column: 311,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -13902,14 +13902,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 110,
-																					Line:   16,
+																					Column: 361,
+																					Line:   12,
 																				},
 																				File:   "extrapolatedRate_norate_test.flux",
 																				Source: "\"test input table does not have _time column\"",
 																				Start: ast.Position{
-																					Column: 65,
-																					Line:   16,
+																					Column: 316,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -13924,14 +13924,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 111,
-																		Line:   16,
+																		Column: 362,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "die(msg: \"test input table does not have _time column\")",
 																	Start: ast.Position{
-																		Column: 56,
-																		Line:   16,
+																		Column: 307,
+																		Line:   12,
 																	},
 																},
 															},
@@ -13941,14 +13941,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 59,
-																			Line:   16,
+																			Column: 310,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 56,
-																			Line:   16,
+																			Column: 307,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -13962,14 +13962,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 111,
-																	Line:   16,
+																	Column: 362,
+																	Line:   12,
 																},
 																File:   "extrapolatedRate_norate_test.flux",
 																Source: "if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 																Start: ast.Position{
-																	Column: 20,
-																	Line:   16,
+																	Column: 271,
+																	Line:   12,
 																},
 															},
 														},
@@ -13979,14 +13979,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 50,
-																		Line:   16,
+																		Column: 301,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "r._time",
 																	Start: ast.Position{
-																		Column: 43,
-																		Line:   16,
+																		Column: 294,
+																		Line:   12,
 																	},
 																},
 															},
@@ -13997,14 +13997,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 44,
-																			Line:   16,
+																			Column: 295,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 43,
-																			Line:   16,
+																			Column: 294,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -14016,14 +14016,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 50,
-																			Line:   16,
+																			Column: 301,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "_time",
 																		Start: ast.Position{
-																			Column: 45,
-																			Line:   16,
+																			Column: 296,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -14038,14 +14038,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   16,
+																			Column: 288,
+																			Line:   12,
 																		},
 																		File:   "extrapolatedRate_norate_test.flux",
 																		Source: "r._time",
 																		Start: ast.Position{
-																			Column: 30,
-																			Line:   16,
+																			Column: 281,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -14056,14 +14056,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 31,
-																				Line:   16,
+																				Column: 282,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 30,
-																				Line:   16,
+																				Column: 281,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -14075,14 +14075,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 37,
-																				Line:   16,
+																				Column: 288,
+																				Line:   12,
 																			},
 																			File:   "extrapolatedRate_norate_test.flux",
 																			Source: "_time",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   16,
+																				Column: 283,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -14095,14 +14095,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 37,
-																		Line:   16,
+																		Column: 288,
+																		Line:   12,
 																	},
 																	File:   "extrapolatedRate_norate_test.flux",
 																	Source: "exists r._time",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   16,
+																		Column: 274,
+																		Line:   12,
 																	},
 																},
 															},
@@ -14120,14 +14120,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 23,
-																Line:   13,
+																Column: 26,
+																Line:   12,
 															},
 															File:   "extrapolatedRate_norate_test.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 22,
-																Line:   13,
+																Column: 25,
+																Line:   12,
 															},
 														},
 													},
@@ -14144,14 +14144,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   13,
+														Column: 18,
+														Line:   12,
 													},
 													File:   "extrapolatedRate_norate_test.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 14,
-														Line:   13,
+														Column: 17,
+														Line:   12,
 													},
 												},
 											},
@@ -14162,14 +14162,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   13,
+															Column: 18,
+															Line:   12,
 														},
 														File:   "extrapolatedRate_norate_test.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 14,
-															Line:   13,
+															Column: 17,
+															Line:   12,
 														},
 													},
 												},
@@ -14189,11 +14189,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   18,
+										Column: 365,
+										Line:   12,
 									},
 									File:   "extrapolatedRate_norate_test.flux",
-									Source: "map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+									Source: "map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 									Start: ast.Position{
 										Column: 8,
 										Line:   12,
@@ -14330,11 +14330,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   18,
+						Column: 365,
+						Line:   12,
 					},
 					File:   "extrapolatedRate_norate_test.flux",
-					Source: "option testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+					Source: "option testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 					Start: ast.Position{
 						Column: 1,
 						Line:   11,
@@ -14348,13 +14348,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   43,
+						Line:   37,
 					},
 					File:   "extrapolatedRate_norate_test.flux",
 					Source: "inData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   20,
+						Line:   14,
 					},
 				},
 			},
@@ -14365,13 +14365,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   20,
+							Line:   14,
 						},
 						File:   "extrapolatedRate_norate_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   20,
+							Line:   14,
 						},
 					},
 				},
@@ -14384,13 +14384,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   43,
+							Line:   37,
 						},
 						File:   "extrapolatedRate_norate_test.flux",
 						Source: "\"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   20,
+							Line:   14,
 						},
 					},
 				},
@@ -14403,13 +14403,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   52,
+						Line:   46,
 					},
 					File:   "extrapolatedRate_norate_test.flux",
 					Source: "outData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,109.89999999999999,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,760,prometheus\r\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   44,
+						Line:   38,
 					},
 				},
 			},
@@ -14420,13 +14420,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   44,
+							Line:   38,
 						},
 						File:   "extrapolatedRate_norate_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   44,
+							Line:   38,
 						},
 					},
 				},
@@ -14439,13 +14439,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   52,
+							Line:   46,
 						},
 						File:   "extrapolatedRate_norate_test.flux",
 						Source: "\"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,109.89999999999999,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,760,prometheus\r\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   44,
+							Line:   38,
 						},
 					},
 				},
@@ -14458,13 +14458,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 63,
-						Line:   55,
+						Line:   49,
 					},
 					File:   "extrapolatedRate_norate_test.flux",
 					Source: "t_extrapolatedRate = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: true, isRate: false)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   53,
+						Line:   47,
 					},
 				},
 			},
@@ -14475,13 +14475,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   53,
+							Line:   47,
 						},
 						File:   "extrapolatedRate_norate_test.flux",
 						Source: "t_extrapolatedRate",
 						Start: ast.Position{
 							Column: 1,
-							Line:   53,
+							Line:   47,
 						},
 					},
 				},
@@ -14495,13 +14495,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 63,
-							Line:   55,
+							Line:   49,
 						},
 						File:   "extrapolatedRate_norate_test.flux",
 						Source: "(table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: true, isRate: false)",
 						Start: ast.Position{
 							Column: 22,
-							Line:   53,
+							Line:   47,
 						},
 					},
 				},
@@ -14514,13 +14514,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   53,
+										Line:   47,
 									},
 									File:   "extrapolatedRate_norate_test.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 36,
-										Line:   53,
+										Line:   47,
 									},
 								},
 							},
@@ -14532,13 +14532,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   54,
+									Line:   48,
 								},
 								File:   "extrapolatedRate_norate_test.flux",
 								Source: "table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)",
 								Start: ast.Position{
 									Column: 36,
-									Line:   53,
+									Line:   47,
 								},
 							},
 						},
@@ -14550,13 +14550,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   54,
+											Line:   48,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z",
 										Start: ast.Position{
 											Column: 14,
-											Line:   54,
+											Line:   48,
 										},
 									},
 								},
@@ -14568,13 +14568,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   54,
+												Line:   48,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "start: 2018-12-18T20:50:00Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   54,
+												Line:   48,
 											},
 										},
 									},
@@ -14586,13 +14586,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   54,
+													Line:   48,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 14,
-													Line:   54,
+													Line:   48,
 												},
 											},
 										},
@@ -14606,13 +14606,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   54,
+													Line:   48,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "2018-12-18T20:50:00Z",
 												Start: ast.Position{
 													Column: 21,
-													Line:   54,
+													Line:   48,
 												},
 											},
 										},
@@ -14625,13 +14625,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   54,
+												Line:   48,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "stop: 2018-12-18T20:55:00Z",
 											Start: ast.Position{
 												Column: 43,
-												Line:   54,
+												Line:   48,
 											},
 										},
 									},
@@ -14643,13 +14643,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   54,
+													Line:   48,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "stop",
 												Start: ast.Position{
 													Column: 43,
-													Line:   54,
+													Line:   48,
 												},
 											},
 										},
@@ -14663,13 +14663,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   54,
+													Line:   48,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "2018-12-18T20:55:00Z",
 												Start: ast.Position{
 													Column: 49,
-													Line:   54,
+													Line:   48,
 												},
 											},
 										},
@@ -14685,13 +14685,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   54,
+										Line:   48,
 									},
 									File:   "extrapolatedRate_norate_test.flux",
 									Source: "range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   54,
+										Line:   48,
 									},
 								},
 							},
@@ -14702,13 +14702,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   54,
+											Line:   48,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 8,
-											Line:   54,
+											Line:   48,
 										},
 									},
 								},
@@ -14724,13 +14724,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 63,
-								Line:   55,
+								Line:   49,
 							},
 							File:   "extrapolatedRate_norate_test.flux",
 							Source: "table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.extrapolatedRate(isCounter: true, isRate: false)",
 							Start: ast.Position{
 								Column: 36,
-								Line:   53,
+								Line:   47,
 							},
 						},
 					},
@@ -14742,13 +14742,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 62,
-										Line:   55,
+										Line:   49,
 									},
 									File:   "extrapolatedRate_norate_test.flux",
 									Source: "isCounter: true, isRate: false",
 									Start: ast.Position{
 										Column: 32,
-										Line:   55,
+										Line:   49,
 									},
 								},
 							},
@@ -14760,13 +14760,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "isCounter: true",
 										Start: ast.Position{
 											Column: 32,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -14778,13 +14778,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "isCounter",
 											Start: ast.Position{
 												Column: 32,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -14798,13 +14798,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 47,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "true",
 											Start: ast.Position{
 												Column: 43,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -14817,13 +14817,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 62,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "isRate: false",
 										Start: ast.Position{
 											Column: 49,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -14835,13 +14835,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 55,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "isRate",
 											Start: ast.Position{
 												Column: 49,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -14855,13 +14855,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 62,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "false",
 											Start: ast.Position{
 												Column: 57,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -14877,13 +14877,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 63,
-									Line:   55,
+									Line:   49,
 								},
 								File:   "extrapolatedRate_norate_test.flux",
 								Source: "promql.extrapolatedRate(isCounter: true, isRate: false)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   55,
+									Line:   49,
 								},
 							},
 						},
@@ -14894,13 +14894,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   55,
+										Line:   49,
 									},
 									File:   "extrapolatedRate_norate_test.flux",
 									Source: "promql.extrapolatedRate",
 									Start: ast.Position{
 										Column: 8,
-										Line:   55,
+										Line:   49,
 									},
 								},
 							},
@@ -14912,13 +14912,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "promql",
 										Start: ast.Position{
 											Column: 8,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -14931,13 +14931,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "extrapolatedRate",
 										Start: ast.Position{
 											Column: 15,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -14957,13 +14957,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   53,
+								Line:   47,
 							},
 							File:   "extrapolatedRate_norate_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   53,
+								Line:   47,
 							},
 						},
 					},
@@ -14975,13 +14975,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   53,
+									Line:   47,
 								},
 								File:   "extrapolatedRate_norate_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
-									Line:   53,
+									Line:   47,
 								},
 							},
 						},
@@ -14994,13 +14994,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   53,
+								Line:   47,
 							},
 							File:   "extrapolatedRate_norate_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
-								Line:   53,
+								Line:   47,
 							},
 						},
 					}},
@@ -15015,13 +15015,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 136,
-							Line:   57,
+							Line:   51,
 						},
 						File:   "extrapolatedRate_norate_test.flux",
 						Source: "_extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   57,
+							Line:   51,
 						},
 					},
 				},
@@ -15032,13 +15032,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   57,
+								Line:   51,
 							},
 							File:   "extrapolatedRate_norate_test.flux",
 							Source: "_extrapolatedRate",
 							Start: ast.Position{
 								Column: 6,
-								Line:   57,
+								Line:   51,
 							},
 						},
 					},
@@ -15052,13 +15052,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 136,
-								Line:   57,
+								Line:   51,
 							},
 							File:   "extrapolatedRate_norate_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   57,
+								Line:   51,
 							},
 						},
 					},
@@ -15069,13 +15069,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 136,
-									Line:   57,
+									Line:   51,
 								},
 								File:   "extrapolatedRate_norate_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 								Start: ast.Position{
 									Column: 32,
-									Line:   57,
+									Line:   51,
 								},
 							},
 						},
@@ -15086,13 +15086,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 135,
-										Line:   57,
+										Line:   51,
 									},
 									File:   "extrapolatedRate_norate_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate}",
 									Start: ast.Position{
 										Column: 33,
-										Line:   57,
+										Line:   51,
 									},
 								},
 							},
@@ -15104,13 +15104,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 73,
-											Line:   57,
+											Line:   51,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 34,
-											Line:   57,
+											Line:   51,
 										},
 									},
 								},
@@ -15122,13 +15122,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 34,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -15143,13 +15143,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   57,
+													Line:   51,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 61,
-													Line:   57,
+													Line:   51,
 												},
 											},
 										},
@@ -15161,13 +15161,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 72,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_norate_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 61,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -15179,13 +15179,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 64,
-															Line:   57,
+															Line:   51,
 														},
 														File:   "extrapolatedRate_norate_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 61,
-															Line:   57,
+															Line:   51,
 														},
 													},
 												},
@@ -15199,13 +15199,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
-															Line:   57,
+															Line:   51,
 														},
 														File:   "extrapolatedRate_norate_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 66,
-															Line:   57,
+															Line:   51,
 														},
 													},
 												},
@@ -15221,13 +15221,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 41,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -15238,13 +15238,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   57,
+													Line:   51,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 41,
-													Line:   57,
+													Line:   51,
 												},
 											},
 										},
@@ -15256,13 +15256,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_norate_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 41,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -15275,13 +15275,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_norate_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 49,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -15299,13 +15299,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 110,
-											Line:   57,
+											Line:   51,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 75,
-											Line:   57,
+											Line:   51,
 										},
 									},
 								},
@@ -15317,13 +15317,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 79,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 75,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -15338,13 +15338,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 109,
-													Line:   57,
+													Line:   51,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 97,
-													Line:   57,
+													Line:   51,
 												},
 											},
 										},
@@ -15356,13 +15356,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 109,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_norate_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 97,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -15374,13 +15374,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 100,
-															Line:   57,
+															Line:   51,
 														},
 														File:   "extrapolatedRate_norate_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 97,
-															Line:   57,
+															Line:   51,
 														},
 													},
 												},
@@ -15394,13 +15394,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 109,
-															Line:   57,
+															Line:   51,
 														},
 														File:   "extrapolatedRate_norate_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 102,
-															Line:   57,
+															Line:   51,
 														},
 													},
 												},
@@ -15416,13 +15416,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 81,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -15433,13 +15433,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 96,
-													Line:   57,
+													Line:   51,
 												},
 												File:   "extrapolatedRate_norate_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 81,
-													Line:   57,
+													Line:   51,
 												},
 											},
 										},
@@ -15451,13 +15451,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 88,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_norate_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 81,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -15470,13 +15470,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 96,
-														Line:   57,
+														Line:   51,
 													},
 													File:   "extrapolatedRate_norate_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 89,
-														Line:   57,
+														Line:   51,
 													},
 												},
 											},
@@ -15494,13 +15494,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 134,
-											Line:   57,
+											Line:   51,
 										},
 										File:   "extrapolatedRate_norate_test.flux",
 										Source: "fn: t_extrapolatedRate",
 										Start: ast.Position{
 											Column: 112,
-											Line:   57,
+											Line:   51,
 										},
 									},
 								},
@@ -15512,13 +15512,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 114,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 112,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -15532,13 +15532,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 134,
-												Line:   57,
+												Line:   51,
 											},
 											File:   "extrapolatedRate_norate_test.flux",
 											Source: "t_extrapolatedRate",
 											Start: ast.Position{
 												Column: 116,
-												Line:   57,
+												Line:   51,
 											},
 										},
 									},
@@ -15562,13 +15562,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 136,
-						Line:   57,
+						Line:   51,
 					},
 					File:   "extrapolatedRate_norate_test.flux",
 					Source: "test _extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   57,
+						Line:   51,
 					},
 				},
 			},
@@ -22155,10 +22155,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 128,
-					Line:   39,
+					Line:   34,
 				},
 				File:   "labelReplace_empty_dst_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,double,string\r\n#group,false,false,true,true,false,true\r\n#default,outData,,,,,\r\n,result,table,_field,src,_value,_measurement\r\n,,0,metric_name,source-value-10,1,prometheus\r\n,,0,metric_name,source-value-10,2,prometheus\r\n,,1,metric_name,source-value-20,3,prometheus\r\n,,1,metric_name,source-value-20,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \".*\",\n        replacement: \"\",\n    )\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,double,string\r\n#group,false,false,true,true,false,true\r\n#default,outData,,,,,\r\n,result,table,_field,src,_value,_measurement\r\n,,0,metric_name,source-value-10,1,prometheus\r\n,,0,metric_name,source-value-10,2,prometheus\r\n,,1,metric_name,source-value-20,3,prometheus\r\n,,1,metric_name,source-value-20,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \".*\", replacement: \"\")\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -22376,11 +22376,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   37,
+						Column: 92,
+						Line:   32,
 					},
 					File:   "labelReplace_empty_dst_test.flux",
-					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \".*\",\n        replacement: \"\",\n    )",
+					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \".*\", replacement: \"\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -22413,11 +22413,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   37,
+							Column: 92,
+							Line:   32,
 						},
 						File:   "labelReplace_empty_dst_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \".*\",\n        replacement: \"\",\n    )",
+						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \".*\", replacement: \"\")",
 						Start: ast.Position{
 							Column: 18,
 							Line:   29,
@@ -22759,11 +22759,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   37,
+								Column: 92,
+								Line:   32,
 							},
 							File:   "labelReplace_empty_dst_test.flux",
-							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \".*\",\n        replacement: \"\",\n    )",
+							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \".*\", replacement: \"\")",
 							Start: ast.Position{
 								Column: 32,
 								Line:   29,
@@ -22777,14 +22777,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 24,
-										Line:   36,
+										Column: 91,
+										Line:   32,
 									},
 									File:   "labelReplace_empty_dst_test.flux",
-									Source: "source: \"src\",\n        destination: \"dst\",\n        regex: \".*\",\n        replacement: \"\"",
+									Source: "source: \"src\", destination: \"dst\", regex: \".*\", replacement: \"\"",
 									Start: ast.Position{
-										Column: 9,
-										Line:   33,
+										Column: 28,
+										Line:   32,
 									},
 								},
 							},
@@ -22795,14 +22795,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   33,
+											Column: 41,
+											Line:   32,
 										},
 										File:   "labelReplace_empty_dst_test.flux",
 										Source: "source: \"src\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   33,
+											Column: 28,
+											Line:   32,
 										},
 									},
 								},
@@ -22813,14 +22813,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   33,
+												Column: 34,
+												Line:   32,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "source",
 											Start: ast.Position{
-												Column: 9,
-												Line:   33,
+												Column: 28,
+												Line:   32,
 											},
 										},
 									},
@@ -22833,14 +22833,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   33,
+												Column: 41,
+												Line:   32,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "\"src\"",
 											Start: ast.Position{
-												Column: 17,
-												Line:   33,
+												Column: 36,
+												Line:   32,
 											},
 										},
 									},
@@ -22852,14 +22852,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   34,
+											Column: 61,
+											Line:   32,
 										},
 										File:   "labelReplace_empty_dst_test.flux",
 										Source: "destination: \"dst\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   34,
+											Column: 43,
+											Line:   32,
 										},
 									},
 								},
@@ -22870,14 +22870,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   34,
+												Column: 54,
+												Line:   32,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "destination",
 											Start: ast.Position{
-												Column: 9,
-												Line:   34,
+												Column: 43,
+												Line:   32,
 											},
 										},
 									},
@@ -22890,14 +22890,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   34,
+												Column: 61,
+												Line:   32,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "\"dst\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   34,
+												Column: 56,
+												Line:   32,
 											},
 										},
 									},
@@ -22909,14 +22909,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 20,
-											Line:   35,
+											Column: 74,
+											Line:   32,
 										},
 										File:   "labelReplace_empty_dst_test.flux",
 										Source: "regex: \".*\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   35,
+											Column: 63,
+											Line:   32,
 										},
 									},
 								},
@@ -22927,14 +22927,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   35,
+												Column: 68,
+												Line:   32,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "regex",
 											Start: ast.Position{
-												Column: 9,
-												Line:   35,
+												Column: 63,
+												Line:   32,
 											},
 										},
 									},
@@ -22947,14 +22947,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   35,
+												Column: 74,
+												Line:   32,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "\".*\"",
 											Start: ast.Position{
-												Column: 16,
-												Line:   35,
+												Column: 70,
+												Line:   32,
 											},
 										},
 									},
@@ -22966,14 +22966,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
-											Line:   36,
+											Column: 91,
+											Line:   32,
 										},
 										File:   "labelReplace_empty_dst_test.flux",
 										Source: "replacement: \"\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   36,
+											Column: 76,
+											Line:   32,
 										},
 									},
 								},
@@ -22984,14 +22984,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   36,
+												Column: 87,
+												Line:   32,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "replacement",
 											Start: ast.Position{
-												Column: 9,
-												Line:   36,
+												Column: 76,
+												Line:   32,
 											},
 										},
 									},
@@ -23004,14 +23004,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   36,
+												Column: 91,
+												Line:   32,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "\"\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   36,
+												Column: 89,
+												Line:   32,
 											},
 										},
 									},
@@ -23026,11 +23026,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   37,
+									Column: 92,
+									Line:   32,
 								},
 								File:   "labelReplace_empty_dst_test.flux",
-								Source: "promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \".*\",\n        replacement: \"\",\n    )",
+								Source: "promql.labelReplace(source: \"src\", destination: \"dst\", regex: \".*\", replacement: \"\")",
 								Start: ast.Position{
 									Column: 8,
 									Line:   32,
@@ -23165,13 +23165,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 128,
-							Line:   39,
+							Line:   34,
 						},
 						File:   "labelReplace_empty_dst_test.flux",
 						Source: "_labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   34,
 						},
 					},
 				},
@@ -23182,13 +23182,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_empty_dst_test.flux",
 							Source: "_labelReplace",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -23202,13 +23202,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 128,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_empty_dst_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -23219,13 +23219,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 128,
-									Line:   39,
+									Line:   34,
 								},
 								File:   "labelReplace_empty_dst_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   39,
+									Line:   34,
 								},
 							},
 						},
@@ -23236,13 +23236,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
-										Line:   39,
+										Line:   34,
 									},
 									File:   "labelReplace_empty_dst_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   39,
+										Line:   34,
 									},
 								},
 							},
@@ -23254,13 +23254,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_empty_dst_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 30,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -23272,13 +23272,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 30,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -23293,13 +23293,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_empty_dst_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 57,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -23311,13 +23311,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_empty_dst_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 57,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -23329,13 +23329,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_empty_dst_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 57,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -23349,13 +23349,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 68,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_empty_dst_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 62,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -23371,13 +23371,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 37,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -23388,13 +23388,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_empty_dst_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 37,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -23406,13 +23406,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_empty_dst_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 37,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -23425,13 +23425,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_empty_dst_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 45,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -23449,13 +23449,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_empty_dst_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 71,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -23467,13 +23467,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 71,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -23488,13 +23488,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 105,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_empty_dst_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 93,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -23506,13 +23506,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 105,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_empty_dst_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 93,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -23524,13 +23524,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_empty_dst_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 93,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -23544,13 +23544,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 105,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_empty_dst_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 98,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -23566,13 +23566,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 77,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -23583,13 +23583,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 92,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_empty_dst_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 77,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -23601,13 +23601,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_empty_dst_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 77,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -23620,13 +23620,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 92,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_empty_dst_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 85,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -23644,13 +23644,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_empty_dst_test.flux",
 										Source: "fn: t_labelReplace",
 										Start: ast.Position{
 											Column: 108,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -23662,13 +23662,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 108,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -23682,13 +23682,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_empty_dst_test.flux",
 											Source: "t_labelReplace",
 											Start: ast.Position{
 												Column: 112,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -23712,13 +23712,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 128,
-						Line:   39,
+						Line:   34,
 					},
 					File:   "labelReplace_empty_dst_test.flux",
 					Source: "test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   34,
 					},
 				},
 			},
@@ -23845,10 +23845,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 128,
-					Line:   39,
+					Line:   34,
 				},
 				File:   "labelReplace_full_string_match_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,destination-value-10,1,prometheus\r\n,,0,metric_name,source-value-10,destination-value-10,2,prometheus\r\n,,1,metric_name,source-value-20,destination-value-20,3,prometheus\r\n,,1,metric_name,source-value-20,destination-value-20,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,destination-value-10,1,prometheus\r\n,,0,metric_name,source-value-10,destination-value-10,2,prometheus\r\n,,1,metric_name,source-value-20,destination-value-20,3,prometheus\r\n,,1,metric_name,source-value-20,destination-value-20,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"destination-value-$1\")\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -24066,11 +24066,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   37,
+						Column: 127,
+						Line:   32,
 					},
 					File:   "labelReplace_full_string_match_test.flux",
-					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )",
+					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"destination-value-$1\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -24103,11 +24103,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   37,
+							Column: 127,
+							Line:   32,
 						},
 						File:   "labelReplace_full_string_match_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )",
+						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"destination-value-$1\")",
 						Start: ast.Position{
 							Column: 18,
 							Line:   29,
@@ -24449,11 +24449,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   37,
+								Column: 127,
+								Line:   32,
 							},
 							File:   "labelReplace_full_string_match_test.flux",
-							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )",
+							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"destination-value-$1\")",
 							Start: ast.Position{
 								Column: 32,
 								Line:   29,
@@ -24467,14 +24467,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 44,
-										Line:   36,
+										Column: 126,
+										Line:   32,
 									},
 									File:   "labelReplace_full_string_match_test.flux",
-									Source: "source: \"src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"destination-value-$1\"",
+									Source: "source: \"src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"destination-value-$1\"",
 									Start: ast.Position{
-										Column: 9,
-										Line:   33,
+										Column: 28,
+										Line:   32,
 									},
 								},
 							},
@@ -24485,14 +24485,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   33,
+											Column: 41,
+											Line:   32,
 										},
 										File:   "labelReplace_full_string_match_test.flux",
 										Source: "source: \"src\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   33,
+											Column: 28,
+											Line:   32,
 										},
 									},
 								},
@@ -24503,14 +24503,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   33,
+												Column: 34,
+												Line:   32,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "source",
 											Start: ast.Position{
-												Column: 9,
-												Line:   33,
+												Column: 28,
+												Line:   32,
 											},
 										},
 									},
@@ -24523,14 +24523,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   33,
+												Column: 41,
+												Line:   32,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "\"src\"",
 											Start: ast.Position{
-												Column: 17,
-												Line:   33,
+												Column: 36,
+												Line:   32,
 											},
 										},
 									},
@@ -24542,14 +24542,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   34,
+											Column: 61,
+											Line:   32,
 										},
 										File:   "labelReplace_full_string_match_test.flux",
 										Source: "destination: \"dst\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   34,
+											Column: 43,
+											Line:   32,
 										},
 									},
 								},
@@ -24560,14 +24560,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   34,
+												Column: 54,
+												Line:   32,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "destination",
 											Start: ast.Position{
-												Column: 9,
-												Line:   34,
+												Column: 43,
+												Line:   32,
 											},
 										},
 									},
@@ -24580,14 +24580,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   34,
+												Column: 61,
+												Line:   32,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "\"dst\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   34,
+												Column: 56,
+												Line:   32,
 											},
 										},
 									},
@@ -24599,14 +24599,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 35,
-											Line:   35,
+											Column: 89,
+											Line:   32,
 										},
 										File:   "labelReplace_full_string_match_test.flux",
 										Source: "regex: \"source-value-(.*)\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   35,
+											Column: 63,
+											Line:   32,
 										},
 									},
 								},
@@ -24617,14 +24617,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   35,
+												Column: 68,
+												Line:   32,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "regex",
 											Start: ast.Position{
-												Column: 9,
-												Line:   35,
+												Column: 63,
+												Line:   32,
 											},
 										},
 									},
@@ -24637,14 +24637,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
-												Line:   35,
+												Column: 89,
+												Line:   32,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "\"source-value-(.*)\"",
 											Start: ast.Position{
-												Column: 16,
-												Line:   35,
+												Column: 70,
+												Line:   32,
 											},
 										},
 									},
@@ -24656,14 +24656,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 44,
-											Line:   36,
+											Column: 126,
+											Line:   32,
 										},
 										File:   "labelReplace_full_string_match_test.flux",
 										Source: "replacement: \"destination-value-$1\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   36,
+											Column: 91,
+											Line:   32,
 										},
 									},
 								},
@@ -24674,14 +24674,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   36,
+												Column: 102,
+												Line:   32,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "replacement",
 											Start: ast.Position{
-												Column: 9,
-												Line:   36,
+												Column: 91,
+												Line:   32,
 											},
 										},
 									},
@@ -24694,14 +24694,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
-												Line:   36,
+												Column: 126,
+												Line:   32,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "\"destination-value-$1\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   36,
+												Column: 104,
+												Line:   32,
 											},
 										},
 									},
@@ -24716,11 +24716,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   37,
+									Column: 127,
+									Line:   32,
 								},
 								File:   "labelReplace_full_string_match_test.flux",
-								Source: "promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )",
+								Source: "promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"destination-value-$1\")",
 								Start: ast.Position{
 									Column: 8,
 									Line:   32,
@@ -24855,13 +24855,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 128,
-							Line:   39,
+							Line:   34,
 						},
 						File:   "labelReplace_full_string_match_test.flux",
 						Source: "_labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   34,
 						},
 					},
 				},
@@ -24872,13 +24872,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_full_string_match_test.flux",
 							Source: "_labelReplace",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -24892,13 +24892,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 128,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_full_string_match_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -24909,13 +24909,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 128,
-									Line:   39,
+									Line:   34,
 								},
 								File:   "labelReplace_full_string_match_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   39,
+									Line:   34,
 								},
 							},
 						},
@@ -24926,13 +24926,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
-										Line:   39,
+										Line:   34,
 									},
 									File:   "labelReplace_full_string_match_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   39,
+										Line:   34,
 									},
 								},
 							},
@@ -24944,13 +24944,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_full_string_match_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 30,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -24962,13 +24962,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 30,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -24983,13 +24983,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_full_string_match_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 57,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -25001,13 +25001,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_full_string_match_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 57,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -25019,13 +25019,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_full_string_match_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 57,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -25039,13 +25039,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 68,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_full_string_match_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 62,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -25061,13 +25061,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 37,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -25078,13 +25078,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_full_string_match_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 37,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -25096,13 +25096,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_full_string_match_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 37,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -25115,13 +25115,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_full_string_match_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 45,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -25139,13 +25139,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_full_string_match_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 71,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -25157,13 +25157,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 71,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -25178,13 +25178,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 105,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_full_string_match_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 93,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -25196,13 +25196,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 105,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_full_string_match_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 93,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -25214,13 +25214,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_full_string_match_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 93,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -25234,13 +25234,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 105,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_full_string_match_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 98,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -25256,13 +25256,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 77,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -25273,13 +25273,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 92,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_full_string_match_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 77,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -25291,13 +25291,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_full_string_match_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 77,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -25310,13 +25310,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 92,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_full_string_match_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 85,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -25334,13 +25334,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_full_string_match_test.flux",
 										Source: "fn: t_labelReplace",
 										Start: ast.Position{
 											Column: 108,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -25352,13 +25352,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 108,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -25372,13 +25372,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_full_string_match_test.flux",
 											Source: "t_labelReplace",
 											Start: ast.Position{
 												Column: 112,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -25402,13 +25402,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 128,
-						Line:   39,
+						Line:   34,
 					},
 					File:   "labelReplace_full_string_match_test.flux",
 					Source: "test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   34,
 					},
 				},
 			},
@@ -25535,10 +25535,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 128,
-					Line:   39,
+					Line:   34,
 				},
 				File:   "labelReplace_multiple_groups_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,source-value-10,1,prometheus\r\n,,0,metric_name,source-value-10,source-value-10,2,prometheus\r\n,,1,metric_name,source-value-20,source-value-20,3,prometheus\r\n,,1,metric_name,source-value-20,source-value-20,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"(.*)-value-(.*)\",\n        replacement: \"$1-value-$2\",\n    )\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,source-value-10,1,prometheus\r\n,,0,metric_name,source-value-10,source-value-10,2,prometheus\r\n,,1,metric_name,source-value-20,source-value-20,3,prometheus\r\n,,1,metric_name,source-value-20,source-value-20,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"(.*)-value-(.*)\", replacement: \"$1-value-$2\")\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -25756,11 +25756,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   37,
+						Column: 116,
+						Line:   32,
 					},
 					File:   "labelReplace_multiple_groups_test.flux",
-					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"(.*)-value-(.*)\",\n        replacement: \"$1-value-$2\",\n    )",
+					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"(.*)-value-(.*)\", replacement: \"$1-value-$2\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -25793,11 +25793,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   37,
+							Column: 116,
+							Line:   32,
 						},
 						File:   "labelReplace_multiple_groups_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"(.*)-value-(.*)\",\n        replacement: \"$1-value-$2\",\n    )",
+						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"(.*)-value-(.*)\", replacement: \"$1-value-$2\")",
 						Start: ast.Position{
 							Column: 18,
 							Line:   29,
@@ -26139,11 +26139,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   37,
+								Column: 116,
+								Line:   32,
 							},
 							File:   "labelReplace_multiple_groups_test.flux",
-							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"(.*)-value-(.*)\",\n        replacement: \"$1-value-$2\",\n    )",
+							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"(.*)-value-(.*)\", replacement: \"$1-value-$2\")",
 							Start: ast.Position{
 								Column: 32,
 								Line:   29,
@@ -26157,14 +26157,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 35,
-										Line:   36,
+										Column: 115,
+										Line:   32,
 									},
 									File:   "labelReplace_multiple_groups_test.flux",
-									Source: "source: \"src\",\n        destination: \"dst\",\n        regex: \"(.*)-value-(.*)\",\n        replacement: \"$1-value-$2\"",
+									Source: "source: \"src\", destination: \"dst\", regex: \"(.*)-value-(.*)\", replacement: \"$1-value-$2\"",
 									Start: ast.Position{
-										Column: 9,
-										Line:   33,
+										Column: 28,
+										Line:   32,
 									},
 								},
 							},
@@ -26175,14 +26175,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   33,
+											Column: 41,
+											Line:   32,
 										},
 										File:   "labelReplace_multiple_groups_test.flux",
 										Source: "source: \"src\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   33,
+											Column: 28,
+											Line:   32,
 										},
 									},
 								},
@@ -26193,14 +26193,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   33,
+												Column: 34,
+												Line:   32,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "source",
 											Start: ast.Position{
-												Column: 9,
-												Line:   33,
+												Column: 28,
+												Line:   32,
 											},
 										},
 									},
@@ -26213,14 +26213,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   33,
+												Column: 41,
+												Line:   32,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "\"src\"",
 											Start: ast.Position{
-												Column: 17,
-												Line:   33,
+												Column: 36,
+												Line:   32,
 											},
 										},
 									},
@@ -26232,14 +26232,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   34,
+											Column: 61,
+											Line:   32,
 										},
 										File:   "labelReplace_multiple_groups_test.flux",
 										Source: "destination: \"dst\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   34,
+											Column: 43,
+											Line:   32,
 										},
 									},
 								},
@@ -26250,14 +26250,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   34,
+												Column: 54,
+												Line:   32,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "destination",
 											Start: ast.Position{
-												Column: 9,
-												Line:   34,
+												Column: 43,
+												Line:   32,
 											},
 										},
 									},
@@ -26270,14 +26270,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   34,
+												Column: 61,
+												Line:   32,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "\"dst\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   34,
+												Column: 56,
+												Line:   32,
 											},
 										},
 									},
@@ -26289,14 +26289,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 33,
-											Line:   35,
+											Column: 87,
+											Line:   32,
 										},
 										File:   "labelReplace_multiple_groups_test.flux",
 										Source: "regex: \"(.*)-value-(.*)\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   35,
+											Column: 63,
+											Line:   32,
 										},
 									},
 								},
@@ -26307,14 +26307,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   35,
+												Column: 68,
+												Line:   32,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "regex",
 											Start: ast.Position{
-												Column: 9,
-												Line:   35,
+												Column: 63,
+												Line:   32,
 											},
 										},
 									},
@@ -26327,14 +26327,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 33,
-												Line:   35,
+												Column: 87,
+												Line:   32,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "\"(.*)-value-(.*)\"",
 											Start: ast.Position{
-												Column: 16,
-												Line:   35,
+												Column: 70,
+												Line:   32,
 											},
 										},
 									},
@@ -26346,14 +26346,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 35,
-											Line:   36,
+											Column: 115,
+											Line:   32,
 										},
 										File:   "labelReplace_multiple_groups_test.flux",
 										Source: "replacement: \"$1-value-$2\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   36,
+											Column: 89,
+											Line:   32,
 										},
 									},
 								},
@@ -26364,14 +26364,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   36,
+												Column: 100,
+												Line:   32,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "replacement",
 											Start: ast.Position{
-												Column: 9,
-												Line:   36,
+												Column: 89,
+												Line:   32,
 											},
 										},
 									},
@@ -26384,14 +26384,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
-												Line:   36,
+												Column: 115,
+												Line:   32,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "\"$1-value-$2\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   36,
+												Column: 102,
+												Line:   32,
 											},
 										},
 									},
@@ -26406,11 +26406,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   37,
+									Column: 116,
+									Line:   32,
 								},
 								File:   "labelReplace_multiple_groups_test.flux",
-								Source: "promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"(.*)-value-(.*)\",\n        replacement: \"$1-value-$2\",\n    )",
+								Source: "promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"(.*)-value-(.*)\", replacement: \"$1-value-$2\")",
 								Start: ast.Position{
 									Column: 8,
 									Line:   32,
@@ -26545,13 +26545,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 128,
-							Line:   39,
+							Line:   34,
 						},
 						File:   "labelReplace_multiple_groups_test.flux",
 						Source: "_labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   34,
 						},
 					},
 				},
@@ -26562,13 +26562,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_multiple_groups_test.flux",
 							Source: "_labelReplace",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -26582,13 +26582,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 128,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_multiple_groups_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -26599,13 +26599,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 128,
-									Line:   39,
+									Line:   34,
 								},
 								File:   "labelReplace_multiple_groups_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   39,
+									Line:   34,
 								},
 							},
 						},
@@ -26616,13 +26616,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
-										Line:   39,
+										Line:   34,
 									},
 									File:   "labelReplace_multiple_groups_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   39,
+										Line:   34,
 									},
 								},
 							},
@@ -26634,13 +26634,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_multiple_groups_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 30,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -26652,13 +26652,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 30,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -26673,13 +26673,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_multiple_groups_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 57,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -26691,13 +26691,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_multiple_groups_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 57,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -26709,13 +26709,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_multiple_groups_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 57,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -26729,13 +26729,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 68,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_multiple_groups_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 62,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -26751,13 +26751,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 37,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -26768,13 +26768,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_multiple_groups_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 37,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -26786,13 +26786,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_multiple_groups_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 37,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -26805,13 +26805,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_multiple_groups_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 45,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -26829,13 +26829,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_multiple_groups_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 71,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -26847,13 +26847,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 71,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -26868,13 +26868,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 105,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_multiple_groups_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 93,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -26886,13 +26886,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 105,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_multiple_groups_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 93,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -26904,13 +26904,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_multiple_groups_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 93,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -26924,13 +26924,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 105,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_multiple_groups_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 98,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -26946,13 +26946,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 77,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -26963,13 +26963,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 92,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_multiple_groups_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 77,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -26981,13 +26981,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_multiple_groups_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 77,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -27000,13 +27000,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 92,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_multiple_groups_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 85,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -27024,13 +27024,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_multiple_groups_test.flux",
 										Source: "fn: t_labelReplace",
 										Start: ast.Position{
 											Column: 108,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -27042,13 +27042,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 108,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -27062,13 +27062,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_multiple_groups_test.flux",
 											Source: "t_labelReplace",
 											Start: ast.Position{
 												Column: 112,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -27092,13 +27092,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 128,
-						Line:   39,
+						Line:   34,
 					},
 					File:   "labelReplace_multiple_groups_test.flux",
 					Source: "test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   34,
 					},
 				},
 			},
@@ -27225,10 +27225,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 128,
-					Line:   39,
+					Line:   34,
 				},
 				File:   "labelReplace_src_empty_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,value-,1,prometheus\r\n,,0,metric_name,source-value-10,value-,2,prometheus\r\n,,1,metric_name,source-value-20,value-,3,prometheus\r\n,,1,metric_name,source-value-20,value-,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"(.*)\",\n        replacement: \"value-$1\",\n    )\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,value-,1,prometheus\r\n,,0,metric_name,source-value-10,value-,2,prometheus\r\n,,1,metric_name,source-value-20,value-,3,prometheus\r\n,,1,metric_name,source-value-20,value-,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"(.*)\", replacement: \"value-$1\")\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -27446,11 +27446,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   37,
+						Column: 114,
+						Line:   32,
 					},
 					File:   "labelReplace_src_empty_test.flux",
-					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"(.*)\",\n        replacement: \"value-$1\",\n    )",
+					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"(.*)\", replacement: \"value-$1\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -27483,11 +27483,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   37,
+							Column: 114,
+							Line:   32,
 						},
 						File:   "labelReplace_src_empty_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"(.*)\",\n        replacement: \"value-$1\",\n    )",
+						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"(.*)\", replacement: \"value-$1\")",
 						Start: ast.Position{
 							Column: 18,
 							Line:   29,
@@ -27829,11 +27829,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   37,
+								Column: 114,
+								Line:   32,
 							},
 							File:   "labelReplace_src_empty_test.flux",
-							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"(.*)\",\n        replacement: \"value-$1\",\n    )",
+							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"(.*)\", replacement: \"value-$1\")",
 							Start: ast.Position{
 								Column: 32,
 								Line:   29,
@@ -27847,14 +27847,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 32,
-										Line:   36,
+										Column: 113,
+										Line:   32,
 									},
 									File:   "labelReplace_src_empty_test.flux",
-									Source: "source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"(.*)\",\n        replacement: \"value-$1\"",
+									Source: "source: \"nonexistent-src\", destination: \"dst\", regex: \"(.*)\", replacement: \"value-$1\"",
 									Start: ast.Position{
-										Column: 9,
-										Line:   33,
+										Column: 28,
+										Line:   32,
 									},
 								},
 							},
@@ -27865,14 +27865,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 34,
-											Line:   33,
+											Column: 53,
+											Line:   32,
 										},
 										File:   "labelReplace_src_empty_test.flux",
 										Source: "source: \"nonexistent-src\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   33,
+											Column: 28,
+											Line:   32,
 										},
 									},
 								},
@@ -27883,14 +27883,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   33,
+												Column: 34,
+												Line:   32,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "source",
 											Start: ast.Position{
-												Column: 9,
-												Line:   33,
+												Column: 28,
+												Line:   32,
 											},
 										},
 									},
@@ -27903,14 +27903,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 34,
-												Line:   33,
+												Column: 53,
+												Line:   32,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "\"nonexistent-src\"",
 											Start: ast.Position{
-												Column: 17,
-												Line:   33,
+												Column: 36,
+												Line:   32,
 											},
 										},
 									},
@@ -27922,14 +27922,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   34,
+											Column: 73,
+											Line:   32,
 										},
 										File:   "labelReplace_src_empty_test.flux",
 										Source: "destination: \"dst\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   34,
+											Column: 55,
+											Line:   32,
 										},
 									},
 								},
@@ -27940,14 +27940,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   34,
+												Column: 66,
+												Line:   32,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "destination",
 											Start: ast.Position{
-												Column: 9,
-												Line:   34,
+												Column: 55,
+												Line:   32,
 											},
 										},
 									},
@@ -27960,14 +27960,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   34,
+												Column: 73,
+												Line:   32,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "\"dst\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   34,
+												Column: 68,
+												Line:   32,
 											},
 										},
 									},
@@ -27979,14 +27979,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   35,
+											Column: 88,
+											Line:   32,
 										},
 										File:   "labelReplace_src_empty_test.flux",
 										Source: "regex: \"(.*)\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   35,
+											Column: 75,
+											Line:   32,
 										},
 									},
 								},
@@ -27997,14 +27997,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   35,
+												Column: 80,
+												Line:   32,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "regex",
 											Start: ast.Position{
-												Column: 9,
-												Line:   35,
+												Column: 75,
+												Line:   32,
 											},
 										},
 									},
@@ -28017,14 +28017,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   35,
+												Column: 88,
+												Line:   32,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "\"(.*)\"",
 											Start: ast.Position{
-												Column: 16,
-												Line:   35,
+												Column: 82,
+												Line:   32,
 											},
 										},
 									},
@@ -28036,14 +28036,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 32,
-											Line:   36,
+											Column: 113,
+											Line:   32,
 										},
 										File:   "labelReplace_src_empty_test.flux",
 										Source: "replacement: \"value-$1\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   36,
+											Column: 90,
+											Line:   32,
 										},
 									},
 								},
@@ -28054,14 +28054,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   36,
+												Column: 101,
+												Line:   32,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "replacement",
 											Start: ast.Position{
-												Column: 9,
-												Line:   36,
+												Column: 90,
+												Line:   32,
 											},
 										},
 									},
@@ -28074,14 +28074,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 32,
-												Line:   36,
+												Column: 113,
+												Line:   32,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "\"value-$1\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   36,
+												Column: 103,
+												Line:   32,
 											},
 										},
 									},
@@ -28096,11 +28096,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   37,
+									Column: 114,
+									Line:   32,
 								},
 								File:   "labelReplace_src_empty_test.flux",
-								Source: "promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"(.*)\",\n        replacement: \"value-$1\",\n    )",
+								Source: "promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"(.*)\", replacement: \"value-$1\")",
 								Start: ast.Position{
 									Column: 8,
 									Line:   32,
@@ -28235,13 +28235,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 128,
-							Line:   39,
+							Line:   34,
 						},
 						File:   "labelReplace_src_empty_test.flux",
 						Source: "_labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   34,
 						},
 					},
 				},
@@ -28252,13 +28252,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_src_empty_test.flux",
 							Source: "_labelReplace",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -28272,13 +28272,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 128,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_src_empty_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -28289,13 +28289,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 128,
-									Line:   39,
+									Line:   34,
 								},
 								File:   "labelReplace_src_empty_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   39,
+									Line:   34,
 								},
 							},
 						},
@@ -28306,13 +28306,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
-										Line:   39,
+										Line:   34,
 									},
 									File:   "labelReplace_src_empty_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   39,
+										Line:   34,
 									},
 								},
 							},
@@ -28324,13 +28324,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_empty_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 30,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -28342,13 +28342,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 30,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -28363,13 +28363,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_empty_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 57,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -28381,13 +28381,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_empty_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 57,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -28399,13 +28399,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_empty_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 57,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -28419,13 +28419,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 68,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_empty_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 62,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -28441,13 +28441,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 37,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -28458,13 +28458,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_empty_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 37,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -28476,13 +28476,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_empty_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 37,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -28495,13 +28495,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_empty_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 45,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -28519,13 +28519,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_empty_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 71,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -28537,13 +28537,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 71,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -28558,13 +28558,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 105,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_empty_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 93,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -28576,13 +28576,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 105,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_empty_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 93,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -28594,13 +28594,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_empty_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 93,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -28614,13 +28614,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 105,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_empty_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 98,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -28636,13 +28636,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 77,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -28653,13 +28653,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 92,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_empty_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 77,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -28671,13 +28671,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_empty_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 77,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -28690,13 +28690,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 92,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_empty_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 85,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -28714,13 +28714,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_empty_test.flux",
 										Source: "fn: t_labelReplace",
 										Start: ast.Position{
 											Column: 108,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -28732,13 +28732,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 108,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -28752,13 +28752,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_empty_test.flux",
 											Source: "t_labelReplace",
 											Start: ast.Position{
 												Column: 112,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -28782,13 +28782,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 128,
-						Line:   39,
+						Line:   34,
 					},
 					File:   "labelReplace_src_empty_test.flux",
 					Source: "test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   34,
 					},
 				},
 			},
@@ -28915,10 +28915,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 128,
-					Line:   39,
+					Line:   34,
 				},
 				File:   "labelReplace_src_nonexistent_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"value-$1\",\n    )\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"value-$1\")\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -29136,11 +29136,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   37,
+						Column: 127,
+						Line:   32,
 					},
 					File:   "labelReplace_src_nonexistent_test.flux",
-					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"value-$1\",\n    )",
+					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"value-$1\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -29173,11 +29173,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   37,
+							Column: 127,
+							Line:   32,
 						},
 						File:   "labelReplace_src_nonexistent_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"value-$1\",\n    )",
+						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"value-$1\")",
 						Start: ast.Position{
 							Column: 18,
 							Line:   29,
@@ -29519,11 +29519,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   37,
+								Column: 127,
+								Line:   32,
 							},
 							File:   "labelReplace_src_nonexistent_test.flux",
-							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"value-$1\",\n    )",
+							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"value-$1\")",
 							Start: ast.Position{
 								Column: 32,
 								Line:   29,
@@ -29537,14 +29537,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 32,
-										Line:   36,
+										Column: 126,
+										Line:   32,
 									},
 									File:   "labelReplace_src_nonexistent_test.flux",
-									Source: "source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"value-$1\"",
+									Source: "source: \"nonexistent-src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"value-$1\"",
 									Start: ast.Position{
-										Column: 9,
-										Line:   33,
+										Column: 28,
+										Line:   32,
 									},
 								},
 							},
@@ -29555,14 +29555,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 34,
-											Line:   33,
+											Column: 53,
+											Line:   32,
 										},
 										File:   "labelReplace_src_nonexistent_test.flux",
 										Source: "source: \"nonexistent-src\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   33,
+											Column: 28,
+											Line:   32,
 										},
 									},
 								},
@@ -29573,14 +29573,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   33,
+												Column: 34,
+												Line:   32,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "source",
 											Start: ast.Position{
-												Column: 9,
-												Line:   33,
+												Column: 28,
+												Line:   32,
 											},
 										},
 									},
@@ -29593,14 +29593,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 34,
-												Line:   33,
+												Column: 53,
+												Line:   32,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "\"nonexistent-src\"",
 											Start: ast.Position{
-												Column: 17,
-												Line:   33,
+												Column: 36,
+												Line:   32,
 											},
 										},
 									},
@@ -29612,14 +29612,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   34,
+											Column: 73,
+											Line:   32,
 										},
 										File:   "labelReplace_src_nonexistent_test.flux",
 										Source: "destination: \"dst\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   34,
+											Column: 55,
+											Line:   32,
 										},
 									},
 								},
@@ -29630,14 +29630,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   34,
+												Column: 66,
+												Line:   32,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "destination",
 											Start: ast.Position{
-												Column: 9,
-												Line:   34,
+												Column: 55,
+												Line:   32,
 											},
 										},
 									},
@@ -29650,14 +29650,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   34,
+												Column: 73,
+												Line:   32,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "\"dst\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   34,
+												Column: 68,
+												Line:   32,
 											},
 										},
 									},
@@ -29669,14 +29669,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 35,
-											Line:   35,
+											Column: 101,
+											Line:   32,
 										},
 										File:   "labelReplace_src_nonexistent_test.flux",
 										Source: "regex: \"source-value-(.*)\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   35,
+											Column: 75,
+											Line:   32,
 										},
 									},
 								},
@@ -29687,14 +29687,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   35,
+												Column: 80,
+												Line:   32,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "regex",
 											Start: ast.Position{
-												Column: 9,
-												Line:   35,
+												Column: 75,
+												Line:   32,
 											},
 										},
 									},
@@ -29707,14 +29707,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
-												Line:   35,
+												Column: 101,
+												Line:   32,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "\"source-value-(.*)\"",
 											Start: ast.Position{
-												Column: 16,
-												Line:   35,
+												Column: 82,
+												Line:   32,
 											},
 										},
 									},
@@ -29726,14 +29726,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 32,
-											Line:   36,
+											Column: 126,
+											Line:   32,
 										},
 										File:   "labelReplace_src_nonexistent_test.flux",
 										Source: "replacement: \"value-$1\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   36,
+											Column: 103,
+											Line:   32,
 										},
 									},
 								},
@@ -29744,14 +29744,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   36,
+												Column: 114,
+												Line:   32,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "replacement",
 											Start: ast.Position{
-												Column: 9,
-												Line:   36,
+												Column: 103,
+												Line:   32,
 											},
 										},
 									},
@@ -29764,14 +29764,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 32,
-												Line:   36,
+												Column: 126,
+												Line:   32,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "\"value-$1\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   36,
+												Column: 116,
+												Line:   32,
 											},
 										},
 									},
@@ -29786,11 +29786,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   37,
+									Column: 127,
+									Line:   32,
 								},
 								File:   "labelReplace_src_nonexistent_test.flux",
-								Source: "promql.labelReplace(\n        source: \"nonexistent-src\",\n        destination: \"dst\",\n        regex: \"source-value-(.*)\",\n        replacement: \"value-$1\",\n    )",
+								Source: "promql.labelReplace(source: \"nonexistent-src\", destination: \"dst\", regex: \"source-value-(.*)\", replacement: \"value-$1\")",
 								Start: ast.Position{
 									Column: 8,
 									Line:   32,
@@ -29925,13 +29925,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 128,
-							Line:   39,
+							Line:   34,
 						},
 						File:   "labelReplace_src_nonexistent_test.flux",
 						Source: "_labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   34,
 						},
 					},
 				},
@@ -29942,13 +29942,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_src_nonexistent_test.flux",
 							Source: "_labelReplace",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -29962,13 +29962,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 128,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_src_nonexistent_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -29979,13 +29979,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 128,
-									Line:   39,
+									Line:   34,
 								},
 								File:   "labelReplace_src_nonexistent_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   39,
+									Line:   34,
 								},
 							},
 						},
@@ -29996,13 +29996,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
-										Line:   39,
+										Line:   34,
 									},
 									File:   "labelReplace_src_nonexistent_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   39,
+										Line:   34,
 									},
 								},
 							},
@@ -30014,13 +30014,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_nonexistent_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 30,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -30032,13 +30032,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 30,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -30053,13 +30053,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_nonexistent_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 57,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -30071,13 +30071,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_nonexistent_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 57,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -30089,13 +30089,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_nonexistent_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 57,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -30109,13 +30109,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 68,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_nonexistent_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 62,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -30131,13 +30131,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 37,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -30148,13 +30148,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_nonexistent_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 37,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -30166,13 +30166,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_nonexistent_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 37,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -30185,13 +30185,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_nonexistent_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 45,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -30209,13 +30209,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_nonexistent_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 71,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -30227,13 +30227,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 71,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -30248,13 +30248,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 105,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_nonexistent_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 93,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -30266,13 +30266,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 105,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_nonexistent_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 93,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -30284,13 +30284,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_nonexistent_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 93,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -30304,13 +30304,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 105,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_nonexistent_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 98,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -30326,13 +30326,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 77,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -30343,13 +30343,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 92,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_nonexistent_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 77,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -30361,13 +30361,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_nonexistent_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 77,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -30380,13 +30380,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 92,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_nonexistent_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 85,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -30404,13 +30404,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_nonexistent_test.flux",
 										Source: "fn: t_labelReplace",
 										Start: ast.Position{
 											Column: 108,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -30422,13 +30422,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 108,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -30442,13 +30442,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_nonexistent_test.flux",
 											Source: "t_labelReplace",
 											Start: ast.Position{
 												Column: 112,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -30472,13 +30472,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 128,
-						Line:   39,
+						Line:   34,
 					},
 					File:   "labelReplace_src_nonexistent_test.flux",
 					Source: "test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   34,
 					},
 				},
 			},
@@ -30605,10 +30605,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 128,
-					Line:   39,
+					Line:   34,
 				},
 				File:   "labelReplace_src_not_matched_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"non-matching-regex\",\n        replacement: \"value-$1\",\n    )\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"non-matching-regex\", replacement: \"value-$1\")\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -30826,11 +30826,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   37,
+						Column: 116,
+						Line:   32,
 					},
 					File:   "labelReplace_src_not_matched_test.flux",
-					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"non-matching-regex\",\n        replacement: \"value-$1\",\n    )",
+					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"non-matching-regex\", replacement: \"value-$1\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -30863,11 +30863,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   37,
+							Column: 116,
+							Line:   32,
 						},
 						File:   "labelReplace_src_not_matched_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"non-matching-regex\",\n        replacement: \"value-$1\",\n    )",
+						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"non-matching-regex\", replacement: \"value-$1\")",
 						Start: ast.Position{
 							Column: 18,
 							Line:   29,
@@ -31209,11 +31209,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   37,
+								Column: 116,
+								Line:   32,
 							},
 							File:   "labelReplace_src_not_matched_test.flux",
-							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"non-matching-regex\",\n        replacement: \"value-$1\",\n    )",
+							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"non-matching-regex\", replacement: \"value-$1\")",
 							Start: ast.Position{
 								Column: 32,
 								Line:   29,
@@ -31227,14 +31227,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 32,
-										Line:   36,
+										Column: 115,
+										Line:   32,
 									},
 									File:   "labelReplace_src_not_matched_test.flux",
-									Source: "source: \"src\",\n        destination: \"dst\",\n        regex: \"non-matching-regex\",\n        replacement: \"value-$1\"",
+									Source: "source: \"src\", destination: \"dst\", regex: \"non-matching-regex\", replacement: \"value-$1\"",
 									Start: ast.Position{
-										Column: 9,
-										Line:   33,
+										Column: 28,
+										Line:   32,
 									},
 								},
 							},
@@ -31245,14 +31245,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   33,
+											Column: 41,
+											Line:   32,
 										},
 										File:   "labelReplace_src_not_matched_test.flux",
 										Source: "source: \"src\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   33,
+											Column: 28,
+											Line:   32,
 										},
 									},
 								},
@@ -31263,14 +31263,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   33,
+												Column: 34,
+												Line:   32,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "source",
 											Start: ast.Position{
-												Column: 9,
-												Line:   33,
+												Column: 28,
+												Line:   32,
 											},
 										},
 									},
@@ -31283,14 +31283,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   33,
+												Column: 41,
+												Line:   32,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "\"src\"",
 											Start: ast.Position{
-												Column: 17,
-												Line:   33,
+												Column: 36,
+												Line:   32,
 											},
 										},
 									},
@@ -31302,14 +31302,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   34,
+											Column: 61,
+											Line:   32,
 										},
 										File:   "labelReplace_src_not_matched_test.flux",
 										Source: "destination: \"dst\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   34,
+											Column: 43,
+											Line:   32,
 										},
 									},
 								},
@@ -31320,14 +31320,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   34,
+												Column: 54,
+												Line:   32,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "destination",
 											Start: ast.Position{
-												Column: 9,
-												Line:   34,
+												Column: 43,
+												Line:   32,
 											},
 										},
 									},
@@ -31340,14 +31340,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   34,
+												Column: 61,
+												Line:   32,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "\"dst\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   34,
+												Column: 56,
+												Line:   32,
 											},
 										},
 									},
@@ -31359,14 +31359,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
-											Line:   35,
+											Column: 90,
+											Line:   32,
 										},
 										File:   "labelReplace_src_not_matched_test.flux",
 										Source: "regex: \"non-matching-regex\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   35,
+											Column: 63,
+											Line:   32,
 										},
 									},
 								},
@@ -31377,14 +31377,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   35,
+												Column: 68,
+												Line:   32,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "regex",
 											Start: ast.Position{
-												Column: 9,
-												Line:   35,
+												Column: 63,
+												Line:   32,
 											},
 										},
 									},
@@ -31397,14 +31397,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 36,
-												Line:   35,
+												Column: 90,
+												Line:   32,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "\"non-matching-regex\"",
 											Start: ast.Position{
-												Column: 16,
-												Line:   35,
+												Column: 70,
+												Line:   32,
 											},
 										},
 									},
@@ -31416,14 +31416,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 32,
-											Line:   36,
+											Column: 115,
+											Line:   32,
 										},
 										File:   "labelReplace_src_not_matched_test.flux",
 										Source: "replacement: \"value-$1\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   36,
+											Column: 92,
+											Line:   32,
 										},
 									},
 								},
@@ -31434,14 +31434,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   36,
+												Column: 103,
+												Line:   32,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "replacement",
 											Start: ast.Position{
-												Column: 9,
-												Line:   36,
+												Column: 92,
+												Line:   32,
 											},
 										},
 									},
@@ -31454,14 +31454,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 32,
-												Line:   36,
+												Column: 115,
+												Line:   32,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "\"value-$1\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   36,
+												Column: 105,
+												Line:   32,
 											},
 										},
 									},
@@ -31476,11 +31476,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   37,
+									Column: 116,
+									Line:   32,
 								},
 								File:   "labelReplace_src_not_matched_test.flux",
-								Source: "promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"non-matching-regex\",\n        replacement: \"value-$1\",\n    )",
+								Source: "promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"non-matching-regex\", replacement: \"value-$1\")",
 								Start: ast.Position{
 									Column: 8,
 									Line:   32,
@@ -31615,13 +31615,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 128,
-							Line:   39,
+							Line:   34,
 						},
 						File:   "labelReplace_src_not_matched_test.flux",
 						Source: "_labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   34,
 						},
 					},
 				},
@@ -31632,13 +31632,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_src_not_matched_test.flux",
 							Source: "_labelReplace",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -31652,13 +31652,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 128,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_src_not_matched_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -31669,13 +31669,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 128,
-									Line:   39,
+									Line:   34,
 								},
 								File:   "labelReplace_src_not_matched_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   39,
+									Line:   34,
 								},
 							},
 						},
@@ -31686,13 +31686,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
-										Line:   39,
+										Line:   34,
 									},
 									File:   "labelReplace_src_not_matched_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   39,
+										Line:   34,
 									},
 								},
 							},
@@ -31704,13 +31704,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_not_matched_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 30,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -31722,13 +31722,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 30,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -31743,13 +31743,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_not_matched_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 57,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -31761,13 +31761,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_not_matched_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 57,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -31779,13 +31779,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_not_matched_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 57,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -31799,13 +31799,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 68,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_not_matched_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 62,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -31821,13 +31821,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 37,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -31838,13 +31838,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_not_matched_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 37,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -31856,13 +31856,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_not_matched_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 37,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -31875,13 +31875,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_not_matched_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 45,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -31899,13 +31899,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_not_matched_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 71,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -31917,13 +31917,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 71,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -31938,13 +31938,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 105,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_not_matched_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 93,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -31956,13 +31956,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 105,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_not_matched_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 93,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -31974,13 +31974,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_not_matched_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 93,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -31994,13 +31994,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 105,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_src_not_matched_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 98,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -32016,13 +32016,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 77,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -32033,13 +32033,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 92,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_src_not_matched_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 77,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -32051,13 +32051,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_not_matched_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 77,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -32070,13 +32070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 92,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_src_not_matched_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 85,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -32094,13 +32094,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_src_not_matched_test.flux",
 										Source: "fn: t_labelReplace",
 										Start: ast.Position{
 											Column: 108,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -32112,13 +32112,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 108,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -32132,13 +32132,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_src_not_matched_test.flux",
 											Source: "t_labelReplace",
 											Start: ast.Position{
 												Column: 112,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -32162,13 +32162,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 128,
-						Line:   39,
+						Line:   34,
 					},
 					File:   "labelReplace_src_not_matched_test.flux",
 					Source: "test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   34,
 					},
 				},
 			},
@@ -32295,10 +32295,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 128,
-					Line:   39,
+					Line:   34,
 				},
 				File:   "labelReplace_sub_string_match_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double,string\r\n#group,false,false,false,true,true,true,false,true\r\n#default,inData,,,,,,,\r\n,result,table,_time,_field,src,dst,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\noutData = \"\n#datatype,string,long,string,string,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_field,src,dst,_value,_measurement\r\n,,0,metric_name,source-value-10,original-destination-value,1,prometheus\r\n,,0,metric_name,source-value-10,original-destination-value,2,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,3,prometheus\r\n,,1,metric_name,source-value-20,original-destination-value,4,prometheus\r\n\"\nt_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"value-(.*)\", replacement: \"destination-value-$1\")\n\ntest _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -32516,11 +32516,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   37,
+						Column: 120,
+						Line:   32,
 					},
 					File:   "labelReplace_sub_string_match_test.flux",
-					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )",
+					Source: "t_labelReplace = (table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"value-(.*)\", replacement: \"destination-value-$1\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   29,
@@ -32553,11 +32553,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   37,
+							Column: 120,
+							Line:   32,
 						},
 						File:   "labelReplace_sub_string_match_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )",
+						Source: "(table=<-) => table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"value-(.*)\", replacement: \"destination-value-$1\")",
 						Start: ast.Position{
 							Column: 18,
 							Line:   29,
@@ -32899,11 +32899,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   37,
+								Column: 120,
+								Line:   32,
 							},
 							File:   "labelReplace_sub_string_match_test.flux",
-							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )",
+							Source: "table\n    |> range(start: 1980-01-01T00:00:00Z)\n    |> drop(columns: [\"_start\", \"_stop\"])\n    |> promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"value-(.*)\", replacement: \"destination-value-$1\")",
 							Start: ast.Position{
 								Column: 32,
 								Line:   29,
@@ -32917,14 +32917,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 44,
-										Line:   36,
+										Column: 119,
+										Line:   32,
 									},
 									File:   "labelReplace_sub_string_match_test.flux",
-									Source: "source: \"src\",\n        destination: \"dst\",\n        regex: \"value-(.*)\",\n        replacement: \"destination-value-$1\"",
+									Source: "source: \"src\", destination: \"dst\", regex: \"value-(.*)\", replacement: \"destination-value-$1\"",
 									Start: ast.Position{
-										Column: 9,
-										Line:   33,
+										Column: 28,
+										Line:   32,
 									},
 								},
 							},
@@ -32935,14 +32935,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   33,
+											Column: 41,
+											Line:   32,
 										},
 										File:   "labelReplace_sub_string_match_test.flux",
 										Source: "source: \"src\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   33,
+											Column: 28,
+											Line:   32,
 										},
 									},
 								},
@@ -32953,14 +32953,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   33,
+												Column: 34,
+												Line:   32,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "source",
 											Start: ast.Position{
-												Column: 9,
-												Line:   33,
+												Column: 28,
+												Line:   32,
 											},
 										},
 									},
@@ -32973,14 +32973,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   33,
+												Column: 41,
+												Line:   32,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "\"src\"",
 											Start: ast.Position{
-												Column: 17,
-												Line:   33,
+												Column: 36,
+												Line:   32,
 											},
 										},
 									},
@@ -32992,14 +32992,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   34,
+											Column: 61,
+											Line:   32,
 										},
 										File:   "labelReplace_sub_string_match_test.flux",
 										Source: "destination: \"dst\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   34,
+											Column: 43,
+											Line:   32,
 										},
 									},
 								},
@@ -33010,14 +33010,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   34,
+												Column: 54,
+												Line:   32,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "destination",
 											Start: ast.Position{
-												Column: 9,
-												Line:   34,
+												Column: 43,
+												Line:   32,
 											},
 										},
 									},
@@ -33030,14 +33030,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   34,
+												Column: 61,
+												Line:   32,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "\"dst\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   34,
+												Column: 56,
+												Line:   32,
 											},
 										},
 									},
@@ -33049,14 +33049,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 28,
-											Line:   35,
+											Column: 82,
+											Line:   32,
 										},
 										File:   "labelReplace_sub_string_match_test.flux",
 										Source: "regex: \"value-(.*)\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   35,
+											Column: 63,
+											Line:   32,
 										},
 									},
 								},
@@ -33067,14 +33067,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   35,
+												Column: 68,
+												Line:   32,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "regex",
 											Start: ast.Position{
-												Column: 9,
-												Line:   35,
+												Column: 63,
+												Line:   32,
 											},
 										},
 									},
@@ -33087,14 +33087,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 28,
-												Line:   35,
+												Column: 82,
+												Line:   32,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "\"value-(.*)\"",
 											Start: ast.Position{
-												Column: 16,
-												Line:   35,
+												Column: 70,
+												Line:   32,
 											},
 										},
 									},
@@ -33106,14 +33106,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 44,
-											Line:   36,
+											Column: 119,
+											Line:   32,
 										},
 										File:   "labelReplace_sub_string_match_test.flux",
 										Source: "replacement: \"destination-value-$1\"",
 										Start: ast.Position{
-											Column: 9,
-											Line:   36,
+											Column: 84,
+											Line:   32,
 										},
 									},
 								},
@@ -33124,14 +33124,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   36,
+												Column: 95,
+												Line:   32,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "replacement",
 											Start: ast.Position{
-												Column: 9,
-												Line:   36,
+												Column: 84,
+												Line:   32,
 											},
 										},
 									},
@@ -33144,14 +33144,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
-												Line:   36,
+												Column: 119,
+												Line:   32,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "\"destination-value-$1\"",
 											Start: ast.Position{
-												Column: 22,
-												Line:   36,
+												Column: 97,
+												Line:   32,
 											},
 										},
 									},
@@ -33166,11 +33166,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   37,
+									Column: 120,
+									Line:   32,
 								},
 								File:   "labelReplace_sub_string_match_test.flux",
-								Source: "promql.labelReplace(\n        source: \"src\",\n        destination: \"dst\",\n        regex: \"value-(.*)\",\n        replacement: \"destination-value-$1\",\n    )",
+								Source: "promql.labelReplace(source: \"src\", destination: \"dst\", regex: \"value-(.*)\", replacement: \"destination-value-$1\")",
 								Start: ast.Position{
 									Column: 8,
 									Line:   32,
@@ -33305,13 +33305,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 128,
-							Line:   39,
+							Line:   34,
 						},
 						File:   "labelReplace_sub_string_match_test.flux",
 						Source: "_labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   34,
 						},
 					},
 				},
@@ -33322,13 +33322,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_sub_string_match_test.flux",
 							Source: "_labelReplace",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -33342,13 +33342,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 128,
-								Line:   39,
+								Line:   34,
 							},
 							File:   "labelReplace_sub_string_match_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   39,
+								Line:   34,
 							},
 						},
 					},
@@ -33359,13 +33359,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 128,
-									Line:   39,
+									Line:   34,
 								},
 								File:   "labelReplace_sub_string_match_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   39,
+									Line:   34,
 								},
 							},
 						},
@@ -33376,13 +33376,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
-										Line:   39,
+										Line:   34,
 									},
 									File:   "labelReplace_sub_string_match_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   39,
+										Line:   34,
 									},
 								},
 							},
@@ -33394,13 +33394,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_sub_string_match_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 30,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -33412,13 +33412,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 30,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -33433,13 +33433,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_sub_string_match_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 57,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -33451,13 +33451,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_sub_string_match_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 57,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -33469,13 +33469,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_sub_string_match_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 57,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -33489,13 +33489,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 68,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_sub_string_match_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 62,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -33511,13 +33511,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 37,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -33528,13 +33528,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_sub_string_match_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 37,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -33546,13 +33546,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_sub_string_match_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 37,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -33565,13 +33565,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 56,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_sub_string_match_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 45,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -33589,13 +33589,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_sub_string_match_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 71,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -33607,13 +33607,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 71,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -33628,13 +33628,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 105,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_sub_string_match_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 93,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -33646,13 +33646,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 105,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_sub_string_match_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 93,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -33664,13 +33664,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_sub_string_match_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 93,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -33684,13 +33684,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 105,
-															Line:   39,
+															Line:   34,
 														},
 														File:   "labelReplace_sub_string_match_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 98,
-															Line:   39,
+															Line:   34,
 														},
 													},
 												},
@@ -33706,13 +33706,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 77,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -33723,13 +33723,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 92,
-													Line:   39,
+													Line:   34,
 												},
 												File:   "labelReplace_sub_string_match_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 77,
-													Line:   39,
+													Line:   34,
 												},
 											},
 										},
@@ -33741,13 +33741,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_sub_string_match_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 77,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -33760,13 +33760,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 92,
-														Line:   39,
+														Line:   34,
 													},
 													File:   "labelReplace_sub_string_match_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 85,
-														Line:   39,
+														Line:   34,
 													},
 												},
 											},
@@ -33784,13 +33784,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
-											Line:   39,
+											Line:   34,
 										},
 										File:   "labelReplace_sub_string_match_test.flux",
 										Source: "fn: t_labelReplace",
 										Start: ast.Position{
 											Column: 108,
-											Line:   39,
+											Line:   34,
 										},
 									},
 								},
@@ -33802,13 +33802,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 108,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -33822,13 +33822,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
-												Line:   39,
+												Line:   34,
 											},
 											File:   "labelReplace_sub_string_match_test.flux",
 											Source: "t_labelReplace",
 											Start: ast.Position{
 												Column: 112,
-												Line:   39,
+												Line:   34,
 											},
 										},
 									},
@@ -33852,13 +33852,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 128,
-						Line:   39,
+						Line:   34,
 					},
 					File:   "labelReplace_sub_string_match_test.flux",
 					Source: "test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   34,
 					},
 				},
 			},
@@ -33985,10 +33985,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 136,
-					Line:   58,
+					Line:   52,
 				},
 				File:   "linearRegression_nopredict_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\nimport c \"csv\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155\r\noption testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )\n\ninData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus\r\n\"\noutData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,2.545714285714286,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,4.857142857142857,prometheus\r\n\"\nt_linearRegression = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: false, fromNow: 0.0)\n\ntest _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\nimport c \"csv\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155\r\noption testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))\n\ninData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus\r\n\"\noutData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,2.545714285714286,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,4.857142857142857,prometheus\r\n\"\nt_linearRegression = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: false, fromNow: 0.0)\n\ntest _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -34097,11 +34097,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   18,
+							Column: 365,
+							Line:   12,
 						},
 						File:   "linearRegression_nopredict_test.flux",
-						Source: "testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+						Source: "testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 						Start: ast.Position{
 							Column: 8,
 							Line:   11,
@@ -34115,11 +34115,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   18,
+								Column: 365,
+								Line:   12,
 							},
 							File:   "linearRegression_nopredict_test.flux",
-							Source: "(csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+							Source: "(csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 							Start: ast.Position{
 								Column: 30,
 								Line:   11,
@@ -34289,11 +34289,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   18,
+									Column: 365,
+									Line:   12,
 								},
 								File:   "linearRegression_nopredict_test.flux",
-								Source: "c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+								Source: "c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 								Start: ast.Position{
 									Column: 39,
 									Line:   11,
@@ -34307,14 +34307,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 11,
-											Line:   17,
+											Column: 364,
+											Line:   12,
 										},
 										File:   "linearRegression_nopredict_test.flux",
-										Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+										Source: "fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 										Start: ast.Position{
-											Column: 9,
-											Line:   13,
+											Column: 12,
+											Line:   12,
 										},
 									},
 								},
@@ -34325,14 +34325,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   17,
+												Column: 364,
+												Line:   12,
 											},
 											File:   "linearRegression_nopredict_test.flux",
-											Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+											Source: "fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 											Start: ast.Position{
-												Column: 9,
-												Line:   13,
+												Column: 12,
+												Line:   12,
 											},
 										},
 									},
@@ -34343,14 +34343,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   13,
+													Column: 14,
+													Line:   12,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 9,
-													Line:   13,
+													Column: 12,
+													Line:   12,
 												},
 											},
 										},
@@ -34364,14 +34364,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   17,
+													Column: 364,
+													Line:   12,
 												},
 												File:   "linearRegression_nopredict_test.flux",
-												Source: "(r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+												Source: "(r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 												Start: ast.Position{
-													Column: 13,
-													Line:   13,
+													Column: 16,
+													Line:   12,
 												},
 											},
 										},
@@ -34381,14 +34381,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   17,
+														Column: 364,
+														Line:   12,
 													},
 													File:   "linearRegression_nopredict_test.flux",
-													Source: "({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+													Source: "({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 													Start: ast.Position{
-														Column: 20,
-														Line:   13,
+														Column: 23,
+														Line:   12,
 													},
 												},
 											},
@@ -34398,14 +34398,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 10,
-															Line:   17,
+															Column: 363,
+															Line:   12,
 														},
 														File:   "linearRegression_nopredict_test.flux",
-														Source: "{r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }",
+														Source: "{r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}",
 														Start: ast.Position{
-															Column: 21,
-															Line:   13,
+															Column: 24,
+															Line:   12,
 														},
 													},
 												},
@@ -34416,14 +34416,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 115,
-																Line:   14,
+																Column: 134,
+																Line:   12,
 															},
 															File:   "linearRegression_nopredict_test.flux",
 															Source: "_field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   14,
+																Column: 32,
+																Line:   12,
 															},
 														},
 													},
@@ -34434,14 +34434,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
-																	Line:   14,
+																	Column: 38,
+																	Line:   12,
 																},
 																File:   "linearRegression_nopredict_test.flux",
 																Source: "_field",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   14,
+																	Column: 32,
+																	Line:   12,
 																},
 															},
 														},
@@ -34456,14 +34456,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 114,
-																			Line:   14,
+																			Column: 133,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "msg: \"test input table does not have _field column\"",
 																		Start: ast.Position{
-																			Column: 63,
-																			Line:   14,
+																			Column: 82,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34474,14 +34474,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 114,
-																				Line:   14,
+																				Column: 133,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "msg: \"test input table does not have _field column\"",
 																			Start: ast.Position{
-																				Column: 63,
-																				Line:   14,
+																				Column: 82,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -34492,14 +34492,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 66,
-																					Line:   14,
+																					Column: 85,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_nopredict_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 63,
-																					Line:   14,
+																					Column: 82,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -34512,14 +34512,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 114,
-																					Line:   14,
+																					Column: 133,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_nopredict_test.flux",
 																				Source: "\"test input table does not have _field column\"",
 																				Start: ast.Position{
-																					Column: 68,
-																					Line:   14,
+																					Column: 87,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -34534,14 +34534,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 115,
-																		Line:   14,
+																		Column: 134,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "die(msg: \"test input table does not have _field column\")",
 																	Start: ast.Position{
-																		Column: 59,
-																		Line:   14,
+																		Column: 78,
+																		Line:   12,
 																	},
 																},
 															},
@@ -34551,14 +34551,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 62,
-																			Line:   14,
+																			Column: 81,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   14,
+																			Column: 78,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34572,14 +34572,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 115,
-																	Line:   14,
+																	Column: 134,
+																	Line:   12,
 																},
 																File:   "linearRegression_nopredict_test.flux",
 																Source: "if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   14,
+																	Column: 40,
+																	Line:   12,
 																},
 															},
 														},
@@ -34589,14 +34589,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 53,
-																		Line:   14,
+																		Column: 72,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "r._field",
 																	Start: ast.Position{
-																		Column: 45,
-																		Line:   14,
+																		Column: 64,
+																		Line:   12,
 																	},
 																},
 															},
@@ -34607,14 +34607,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 46,
-																			Line:   14,
+																			Column: 65,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 45,
-																			Line:   14,
+																			Column: 64,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34626,14 +34626,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 53,
-																			Line:   14,
+																			Column: 72,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "_field",
 																		Start: ast.Position{
-																			Column: 47,
-																			Line:   14,
+																			Column: 66,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34648,14 +34648,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 39,
-																			Line:   14,
+																			Column: 58,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "r._field",
 																		Start: ast.Position{
-																			Column: 31,
-																			Line:   14,
+																			Column: 50,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34666,14 +34666,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 32,
-																				Line:   14,
+																				Column: 51,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 31,
-																				Line:   14,
+																				Column: 50,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -34685,14 +34685,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 39,
-																				Line:   14,
+																				Column: 58,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "_field",
 																			Start: ast.Position{
-																				Column: 33,
-																				Line:   14,
+																				Column: 52,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -34705,14 +34705,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 39,
-																		Line:   14,
+																		Column: 58,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "exists r._field",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   14,
+																		Column: 43,
+																		Line:   12,
 																	},
 																},
 															},
@@ -34728,14 +34728,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 139,
-																Line:   15,
+																Column: 262,
+																Line:   12,
 															},
 															File:   "linearRegression_nopredict_test.flux",
 															Source: "_measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   15,
+																Column: 136,
+																Line:   12,
 															},
 														},
 													},
@@ -34746,14 +34746,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 25,
-																	Line:   15,
+																	Column: 148,
+																	Line:   12,
 																},
 																File:   "linearRegression_nopredict_test.flux",
 																Source: "_measurement",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   15,
+																	Column: 136,
+																	Line:   12,
 																},
 															},
 														},
@@ -34768,14 +34768,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 138,
-																			Line:   15,
+																			Column: 261,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "msg: \"test input table does not have _measurement column\"",
 																		Start: ast.Position{
-																			Column: 81,
-																			Line:   15,
+																			Column: 204,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34786,14 +34786,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 138,
-																				Line:   15,
+																				Column: 261,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "msg: \"test input table does not have _measurement column\"",
 																			Start: ast.Position{
-																				Column: 81,
-																				Line:   15,
+																				Column: 204,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -34804,14 +34804,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 84,
-																					Line:   15,
+																					Column: 207,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_nopredict_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 81,
-																					Line:   15,
+																					Column: 204,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -34824,14 +34824,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 138,
-																					Line:   15,
+																					Column: 261,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_nopredict_test.flux",
 																				Source: "\"test input table does not have _measurement column\"",
 																				Start: ast.Position{
-																					Column: 86,
-																					Line:   15,
+																					Column: 209,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -34846,14 +34846,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 139,
-																		Line:   15,
+																		Column: 262,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "die(msg: \"test input table does not have _measurement column\")",
 																	Start: ast.Position{
-																		Column: 77,
-																		Line:   15,
+																		Column: 200,
+																		Line:   12,
 																	},
 																},
 															},
@@ -34863,14 +34863,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 80,
-																			Line:   15,
+																			Column: 203,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 77,
-																			Line:   15,
+																			Column: 200,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34884,14 +34884,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 139,
-																	Line:   15,
+																	Column: 262,
+																	Line:   12,
 																},
 																File:   "linearRegression_nopredict_test.flux",
 																Source: "if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 																Start: ast.Position{
-																	Column: 27,
-																	Line:   15,
+																	Column: 150,
+																	Line:   12,
 																},
 															},
 														},
@@ -34901,14 +34901,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 71,
-																		Line:   15,
+																		Column: 194,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "r._measurement",
 																	Start: ast.Position{
-																		Column: 57,
-																		Line:   15,
+																		Column: 180,
+																		Line:   12,
 																	},
 																},
 															},
@@ -34919,14 +34919,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 58,
-																			Line:   15,
+																			Column: 181,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 57,
-																			Line:   15,
+																			Column: 180,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34938,14 +34938,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 71,
-																			Line:   15,
+																			Column: 194,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   15,
+																			Column: 182,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34960,14 +34960,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 51,
-																			Line:   15,
+																			Column: 174,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "r._measurement",
 																		Start: ast.Position{
-																			Column: 37,
-																			Line:   15,
+																			Column: 160,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -34978,14 +34978,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 38,
-																				Line:   15,
+																				Column: 161,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 37,
-																				Line:   15,
+																				Column: 160,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -34997,14 +34997,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 51,
-																				Line:   15,
+																				Column: 174,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "_measurement",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   15,
+																				Column: 162,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -35017,14 +35017,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 51,
-																		Line:   15,
+																		Column: 174,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "exists r._measurement",
 																	Start: ast.Position{
-																		Column: 30,
-																		Line:   15,
+																		Column: 153,
+																		Line:   12,
 																	},
 																},
 															},
@@ -35040,14 +35040,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 111,
-																Line:   16,
+																Column: 362,
+																Line:   12,
 															},
 															File:   "linearRegression_nopredict_test.flux",
 															Source: "_time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   16,
+																Column: 264,
+																Line:   12,
 															},
 														},
 													},
@@ -35058,14 +35058,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
-																	Line:   16,
+																	Column: 269,
+																	Line:   12,
 																},
 																File:   "linearRegression_nopredict_test.flux",
 																Source: "_time",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   16,
+																	Column: 264,
+																	Line:   12,
 																},
 															},
 														},
@@ -35080,14 +35080,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 110,
-																			Line:   16,
+																			Column: 361,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "msg: \"test input table does not have _time column\"",
 																		Start: ast.Position{
-																			Column: 60,
-																			Line:   16,
+																			Column: 311,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -35098,14 +35098,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 110,
-																				Line:   16,
+																				Column: 361,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "msg: \"test input table does not have _time column\"",
 																			Start: ast.Position{
-																				Column: 60,
-																				Line:   16,
+																				Column: 311,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -35116,14 +35116,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 63,
-																					Line:   16,
+																					Column: 314,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_nopredict_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 60,
-																					Line:   16,
+																					Column: 311,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -35136,14 +35136,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 110,
-																					Line:   16,
+																					Column: 361,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_nopredict_test.flux",
 																				Source: "\"test input table does not have _time column\"",
 																				Start: ast.Position{
-																					Column: 65,
-																					Line:   16,
+																					Column: 316,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -35158,14 +35158,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 111,
-																		Line:   16,
+																		Column: 362,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "die(msg: \"test input table does not have _time column\")",
 																	Start: ast.Position{
-																		Column: 56,
-																		Line:   16,
+																		Column: 307,
+																		Line:   12,
 																	},
 																},
 															},
@@ -35175,14 +35175,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 59,
-																			Line:   16,
+																			Column: 310,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 56,
-																			Line:   16,
+																			Column: 307,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -35196,14 +35196,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 111,
-																	Line:   16,
+																	Column: 362,
+																	Line:   12,
 																},
 																File:   "linearRegression_nopredict_test.flux",
 																Source: "if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 																Start: ast.Position{
-																	Column: 20,
-																	Line:   16,
+																	Column: 271,
+																	Line:   12,
 																},
 															},
 														},
@@ -35213,14 +35213,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 50,
-																		Line:   16,
+																		Column: 301,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "r._time",
 																	Start: ast.Position{
-																		Column: 43,
-																		Line:   16,
+																		Column: 294,
+																		Line:   12,
 																	},
 																},
 															},
@@ -35231,14 +35231,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 44,
-																			Line:   16,
+																			Column: 295,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 43,
-																			Line:   16,
+																			Column: 294,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -35250,14 +35250,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 50,
-																			Line:   16,
+																			Column: 301,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "_time",
 																		Start: ast.Position{
-																			Column: 45,
-																			Line:   16,
+																			Column: 296,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -35272,14 +35272,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   16,
+																			Column: 288,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_nopredict_test.flux",
 																		Source: "r._time",
 																		Start: ast.Position{
-																			Column: 30,
-																			Line:   16,
+																			Column: 281,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -35290,14 +35290,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 31,
-																				Line:   16,
+																				Column: 282,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 30,
-																				Line:   16,
+																				Column: 281,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -35309,14 +35309,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 37,
-																				Line:   16,
+																				Column: 288,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_nopredict_test.flux",
 																			Source: "_time",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   16,
+																				Column: 283,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -35329,14 +35329,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 37,
-																		Line:   16,
+																		Column: 288,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_nopredict_test.flux",
 																	Source: "exists r._time",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   16,
+																		Column: 274,
+																		Line:   12,
 																	},
 																},
 															},
@@ -35354,14 +35354,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 23,
-																Line:   13,
+																Column: 26,
+																Line:   12,
 															},
 															File:   "linearRegression_nopredict_test.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 22,
-																Line:   13,
+																Column: 25,
+																Line:   12,
 															},
 														},
 													},
@@ -35378,14 +35378,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   13,
+														Column: 18,
+														Line:   12,
 													},
 													File:   "linearRegression_nopredict_test.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 14,
-														Line:   13,
+														Column: 17,
+														Line:   12,
 													},
 												},
 											},
@@ -35396,14 +35396,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   13,
+															Column: 18,
+															Line:   12,
 														},
 														File:   "linearRegression_nopredict_test.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 14,
-															Line:   13,
+															Column: 17,
+															Line:   12,
 														},
 													},
 												},
@@ -35423,11 +35423,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   18,
+										Column: 365,
+										Line:   12,
 									},
 									File:   "linearRegression_nopredict_test.flux",
-									Source: "map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+									Source: "map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 									Start: ast.Position{
 										Column: 8,
 										Line:   12,
@@ -35564,11 +35564,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   18,
+						Column: 365,
+						Line:   12,
 					},
 					File:   "linearRegression_nopredict_test.flux",
-					Source: "option testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+					Source: "option testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 					Start: ast.Position{
 						Column: 1,
 						Line:   11,
@@ -35582,13 +35582,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   44,
+						Line:   38,
 					},
 					File:   "linearRegression_nopredict_test.flux",
 					Source: "inData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus\r\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   20,
+						Line:   14,
 					},
 				},
 			},
@@ -35599,13 +35599,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   20,
+							Line:   14,
 						},
 						File:   "linearRegression_nopredict_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   20,
+							Line:   14,
 						},
 					},
 				},
@@ -35618,13 +35618,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   44,
+							Line:   38,
 						},
 						File:   "linearRegression_nopredict_test.flux",
 						Source: "\"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus\r\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   20,
+							Line:   14,
 						},
 					},
 				},
@@ -35637,13 +35637,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   53,
+						Line:   47,
 					},
 					File:   "linearRegression_nopredict_test.flux",
 					Source: "outData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,2.545714285714286,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,4.857142857142857,prometheus\r\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   45,
+						Line:   39,
 					},
 				},
 			},
@@ -35654,13 +35654,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   45,
+							Line:   39,
 						},
 						File:   "linearRegression_nopredict_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   45,
+							Line:   39,
 						},
 					},
 				},
@@ -35673,13 +35673,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   53,
+							Line:   47,
 						},
 						File:   "linearRegression_nopredict_test.flux",
 						Source: "\"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,0,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,2.545714285714286,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,4.857142857142857,prometheus\r\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   45,
+							Line:   39,
 						},
 					},
 				},
@@ -35692,13 +35692,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 61,
-						Line:   56,
+						Line:   50,
 					},
 					File:   "linearRegression_nopredict_test.flux",
 					Source: "t_linearRegression = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: false, fromNow: 0.0)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   54,
+						Line:   48,
 					},
 				},
 			},
@@ -35709,13 +35709,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   54,
+							Line:   48,
 						},
 						File:   "linearRegression_nopredict_test.flux",
 						Source: "t_linearRegression",
 						Start: ast.Position{
 							Column: 1,
-							Line:   54,
+							Line:   48,
 						},
 					},
 				},
@@ -35729,13 +35729,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 61,
-							Line:   56,
+							Line:   50,
 						},
 						File:   "linearRegression_nopredict_test.flux",
 						Source: "(table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: false, fromNow: 0.0)",
 						Start: ast.Position{
 							Column: 22,
-							Line:   54,
+							Line:   48,
 						},
 					},
 				},
@@ -35748,13 +35748,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   54,
+										Line:   48,
 									},
 									File:   "linearRegression_nopredict_test.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 36,
-										Line:   54,
+										Line:   48,
 									},
 								},
 							},
@@ -35766,13 +35766,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   55,
+									Line:   49,
 								},
 								File:   "linearRegression_nopredict_test.flux",
 								Source: "table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)",
 								Start: ast.Position{
 									Column: 36,
-									Line:   54,
+									Line:   48,
 								},
 							},
 						},
@@ -35784,13 +35784,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z",
 										Start: ast.Position{
 											Column: 14,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -35802,13 +35802,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "start: 2018-12-18T20:50:00Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -35820,13 +35820,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   55,
+													Line:   49,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 14,
-													Line:   55,
+													Line:   49,
 												},
 											},
 										},
@@ -35840,13 +35840,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   55,
+													Line:   49,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "2018-12-18T20:50:00Z",
 												Start: ast.Position{
 													Column: 21,
-													Line:   55,
+													Line:   49,
 												},
 											},
 										},
@@ -35859,13 +35859,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "stop: 2018-12-18T20:55:00Z",
 											Start: ast.Position{
 												Column: 43,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -35877,13 +35877,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   55,
+													Line:   49,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "stop",
 												Start: ast.Position{
 													Column: 43,
-													Line:   55,
+													Line:   49,
 												},
 											},
 										},
@@ -35897,13 +35897,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   55,
+													Line:   49,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "2018-12-18T20:55:00Z",
 												Start: ast.Position{
 													Column: 49,
-													Line:   55,
+													Line:   49,
 												},
 											},
 										},
@@ -35919,13 +35919,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   55,
+										Line:   49,
 									},
 									File:   "linearRegression_nopredict_test.flux",
 									Source: "range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   55,
+										Line:   49,
 									},
 								},
 							},
@@ -35936,13 +35936,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 8,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -35958,13 +35958,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 61,
-								Line:   56,
+								Line:   50,
 							},
 							File:   "linearRegression_nopredict_test.flux",
 							Source: "table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: false, fromNow: 0.0)",
 							Start: ast.Position{
 								Column: 36,
-								Line:   54,
+								Line:   48,
 							},
 						},
 					},
@@ -35976,13 +35976,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 60,
-										Line:   56,
+										Line:   50,
 									},
 									File:   "linearRegression_nopredict_test.flux",
 									Source: "predict: false, fromNow: 0.0",
 									Start: ast.Position{
 										Column: 32,
-										Line:   56,
+										Line:   50,
 									},
 								},
 							},
@@ -35994,13 +35994,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   56,
+											Line:   50,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "predict: false",
 										Start: ast.Position{
 											Column: 32,
-											Line:   56,
+											Line:   50,
 										},
 									},
 								},
@@ -36012,13 +36012,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   56,
+												Line:   50,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "predict",
 											Start: ast.Position{
 												Column: 32,
-												Line:   56,
+												Line:   50,
 											},
 										},
 									},
@@ -36032,13 +36032,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   56,
+												Line:   50,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "false",
 											Start: ast.Position{
 												Column: 41,
-												Line:   56,
+												Line:   50,
 											},
 										},
 									},
@@ -36051,13 +36051,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 60,
-											Line:   56,
+											Line:   50,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "fromNow: 0.0",
 										Start: ast.Position{
 											Column: 48,
-											Line:   56,
+											Line:   50,
 										},
 									},
 								},
@@ -36069,13 +36069,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 55,
-												Line:   56,
+												Line:   50,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "fromNow",
 											Start: ast.Position{
 												Column: 48,
-												Line:   56,
+												Line:   50,
 											},
 										},
 									},
@@ -36089,13 +36089,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 60,
-												Line:   56,
+												Line:   50,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "0.0",
 											Start: ast.Position{
 												Column: 57,
-												Line:   56,
+												Line:   50,
 											},
 										},
 									},
@@ -36111,13 +36111,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   56,
+									Line:   50,
 								},
 								File:   "linearRegression_nopredict_test.flux",
 								Source: "promql.linearRegression(predict: false, fromNow: 0.0)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   56,
+									Line:   50,
 								},
 							},
 						},
@@ -36128,13 +36128,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   56,
+										Line:   50,
 									},
 									File:   "linearRegression_nopredict_test.flux",
 									Source: "promql.linearRegression",
 									Start: ast.Position{
 										Column: 8,
-										Line:   56,
+										Line:   50,
 									},
 								},
 							},
@@ -36146,13 +36146,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   56,
+											Line:   50,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "promql",
 										Start: ast.Position{
 											Column: 8,
-											Line:   56,
+											Line:   50,
 										},
 									},
 								},
@@ -36165,13 +36165,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   56,
+											Line:   50,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "linearRegression",
 										Start: ast.Position{
 											Column: 15,
-											Line:   56,
+											Line:   50,
 										},
 									},
 								},
@@ -36191,13 +36191,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   54,
+								Line:   48,
 							},
 							File:   "linearRegression_nopredict_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   54,
+								Line:   48,
 							},
 						},
 					},
@@ -36209,13 +36209,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   54,
+									Line:   48,
 								},
 								File:   "linearRegression_nopredict_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
-									Line:   54,
+									Line:   48,
 								},
 							},
 						},
@@ -36228,13 +36228,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   54,
+								Line:   48,
 							},
 							File:   "linearRegression_nopredict_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
-								Line:   54,
+								Line:   48,
 							},
 						},
 					}},
@@ -36249,13 +36249,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 136,
-							Line:   58,
+							Line:   52,
 						},
 						File:   "linearRegression_nopredict_test.flux",
 						Source: "_linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   58,
+							Line:   52,
 						},
 					},
 				},
@@ -36266,13 +36266,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   58,
+								Line:   52,
 							},
 							File:   "linearRegression_nopredict_test.flux",
 							Source: "_linearRegression",
 							Start: ast.Position{
 								Column: 6,
-								Line:   58,
+								Line:   52,
 							},
 						},
 					},
@@ -36286,13 +36286,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 136,
-								Line:   58,
+								Line:   52,
 							},
 							File:   "linearRegression_nopredict_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   58,
+								Line:   52,
 							},
 						},
 					},
@@ -36303,13 +36303,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 136,
-									Line:   58,
+									Line:   52,
 								},
 								File:   "linearRegression_nopredict_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 								Start: ast.Position{
 									Column: 32,
-									Line:   58,
+									Line:   52,
 								},
 							},
 						},
@@ -36320,13 +36320,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 135,
-										Line:   58,
+										Line:   52,
 									},
 									File:   "linearRegression_nopredict_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression}",
 									Start: ast.Position{
 										Column: 33,
-										Line:   58,
+										Line:   52,
 									},
 								},
 							},
@@ -36338,13 +36338,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 73,
-											Line:   58,
+											Line:   52,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 34,
-											Line:   58,
+											Line:   52,
 										},
 									},
 								},
@@ -36356,13 +36356,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 34,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -36377,13 +36377,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   58,
+													Line:   52,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 61,
-													Line:   58,
+													Line:   52,
 												},
 											},
 										},
@@ -36395,13 +36395,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 72,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_nopredict_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 61,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -36413,13 +36413,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 64,
-															Line:   58,
+															Line:   52,
 														},
 														File:   "linearRegression_nopredict_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 61,
-															Line:   58,
+															Line:   52,
 														},
 													},
 												},
@@ -36433,13 +36433,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
-															Line:   58,
+															Line:   52,
 														},
 														File:   "linearRegression_nopredict_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 66,
-															Line:   58,
+															Line:   52,
 														},
 													},
 												},
@@ -36455,13 +36455,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 41,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -36472,13 +36472,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   58,
+													Line:   52,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 41,
-													Line:   58,
+													Line:   52,
 												},
 											},
 										},
@@ -36490,13 +36490,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_nopredict_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 41,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -36509,13 +36509,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_nopredict_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 49,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -36533,13 +36533,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 110,
-											Line:   58,
+											Line:   52,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 75,
-											Line:   58,
+											Line:   52,
 										},
 									},
 								},
@@ -36551,13 +36551,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 79,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 75,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -36572,13 +36572,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 109,
-													Line:   58,
+													Line:   52,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 97,
-													Line:   58,
+													Line:   52,
 												},
 											},
 										},
@@ -36590,13 +36590,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 109,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_nopredict_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 97,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -36608,13 +36608,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 100,
-															Line:   58,
+															Line:   52,
 														},
 														File:   "linearRegression_nopredict_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 97,
-															Line:   58,
+															Line:   52,
 														},
 													},
 												},
@@ -36628,13 +36628,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 109,
-															Line:   58,
+															Line:   52,
 														},
 														File:   "linearRegression_nopredict_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 102,
-															Line:   58,
+															Line:   52,
 														},
 													},
 												},
@@ -36650,13 +36650,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 81,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -36667,13 +36667,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 96,
-													Line:   58,
+													Line:   52,
 												},
 												File:   "linearRegression_nopredict_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 81,
-													Line:   58,
+													Line:   52,
 												},
 											},
 										},
@@ -36685,13 +36685,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 88,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_nopredict_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 81,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -36704,13 +36704,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 96,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_nopredict_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 89,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -36728,13 +36728,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 134,
-											Line:   58,
+											Line:   52,
 										},
 										File:   "linearRegression_nopredict_test.flux",
 										Source: "fn: t_linearRegression",
 										Start: ast.Position{
 											Column: 112,
-											Line:   58,
+											Line:   52,
 										},
 									},
 								},
@@ -36746,13 +36746,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 114,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 112,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -36766,13 +36766,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 134,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_nopredict_test.flux",
 											Source: "t_linearRegression",
 											Start: ast.Position{
 												Column: 116,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -36796,13 +36796,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 136,
-						Line:   58,
+						Line:   52,
 					},
 					File:   "linearRegression_nopredict_test.flux",
 					Source: "test _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   58,
+						Line:   52,
 					},
 				},
 			},
@@ -36984,10 +36984,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 136,
-					Line:   58,
+					Line:   52,
 				},
 				File:   "linearRegression_predict_test.flux",
-				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\nimport c \"csv\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155\r\noption testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )\n\ninData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus\r\n\"\noutData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,1888.5057142857145,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,3756.8571428571427,prometheus\r\n\"\nt_linearRegression = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: true, fromNow: 600.0)\n\ntest _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
+				Source: "package promql_test\n\n\nimport \"testing\"\nimport \"internal/promql\"\nimport c \"csv\"\n\noption now = () => 2030-01-01T00:00:00Z\n\n// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155\r\noption testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))\n\ninData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus\r\n\"\noutData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,1888.5057142857145,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,3756.8571428571427,prometheus\r\n\"\nt_linearRegression = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: true, fromNow: 600.0)\n\ntest _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -37096,11 +37096,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   18,
+							Column: 365,
+							Line:   12,
 						},
 						File:   "linearRegression_predict_test.flux",
-						Source: "testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+						Source: "testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 						Start: ast.Position{
 							Column: 8,
 							Line:   11,
@@ -37114,11 +37114,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   18,
+								Column: 365,
+								Line:   12,
 							},
 							File:   "linearRegression_predict_test.flux",
-							Source: "(csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+							Source: "(csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 							Start: ast.Position{
 								Column: 30,
 								Line:   11,
@@ -37288,11 +37288,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   18,
+									Column: 365,
+									Line:   12,
 								},
 								File:   "linearRegression_predict_test.flux",
-								Source: "c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+								Source: "c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 								Start: ast.Position{
 									Column: 39,
 									Line:   11,
@@ -37306,14 +37306,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 11,
-											Line:   17,
+											Column: 364,
+											Line:   12,
 										},
 										File:   "linearRegression_predict_test.flux",
-										Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+										Source: "fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 										Start: ast.Position{
-											Column: 9,
-											Line:   13,
+											Column: 12,
+											Line:   12,
 										},
 									},
 								},
@@ -37324,14 +37324,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   17,
+												Column: 364,
+												Line:   12,
 											},
 											File:   "linearRegression_predict_test.flux",
-											Source: "fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+											Source: "fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 											Start: ast.Position{
-												Column: 9,
-												Line:   13,
+												Column: 12,
+												Line:   12,
 											},
 										},
 									},
@@ -37342,14 +37342,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   13,
+													Column: 14,
+													Line:   12,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 9,
-													Line:   13,
+													Column: 12,
+													Line:   12,
 												},
 											},
 										},
@@ -37363,14 +37363,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   17,
+													Column: 364,
+													Line:   12,
 												},
 												File:   "linearRegression_predict_test.flux",
-												Source: "(r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+												Source: "(r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 												Start: ast.Position{
-													Column: 13,
-													Line:   13,
+													Column: 16,
+													Line:   12,
 												},
 											},
 										},
@@ -37380,14 +37380,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   17,
+														Column: 364,
+														Line:   12,
 													},
 													File:   "linearRegression_predict_test.flux",
-													Source: "({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        })",
+													Source: "({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")})",
 													Start: ast.Position{
-														Column: 20,
-														Line:   13,
+														Column: 23,
+														Line:   12,
 													},
 												},
 											},
@@ -37397,14 +37397,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 10,
-															Line:   17,
+															Column: 363,
+															Line:   12,
 														},
 														File:   "linearRegression_predict_test.flux",
-														Source: "{r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }",
+														Source: "{r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}",
 														Start: ast.Position{
-															Column: 21,
-															Line:   13,
+															Column: 24,
+															Line:   12,
 														},
 													},
 												},
@@ -37415,14 +37415,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 115,
-																Line:   14,
+																Column: 134,
+																Line:   12,
 															},
 															File:   "linearRegression_predict_test.flux",
 															Source: "_field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   14,
+																Column: 32,
+																Line:   12,
 															},
 														},
 													},
@@ -37433,14 +37433,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
-																	Line:   14,
+																	Column: 38,
+																	Line:   12,
 																},
 																File:   "linearRegression_predict_test.flux",
 																Source: "_field",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   14,
+																	Column: 32,
+																	Line:   12,
 																},
 															},
 														},
@@ -37455,14 +37455,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 114,
-																			Line:   14,
+																			Column: 133,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "msg: \"test input table does not have _field column\"",
 																		Start: ast.Position{
-																			Column: 63,
-																			Line:   14,
+																			Column: 82,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37473,14 +37473,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 114,
-																				Line:   14,
+																				Column: 133,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "msg: \"test input table does not have _field column\"",
 																			Start: ast.Position{
-																				Column: 63,
-																				Line:   14,
+																				Column: 82,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -37491,14 +37491,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 66,
-																					Line:   14,
+																					Column: 85,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_predict_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 63,
-																					Line:   14,
+																					Column: 82,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -37511,14 +37511,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 114,
-																					Line:   14,
+																					Column: 133,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_predict_test.flux",
 																				Source: "\"test input table does not have _field column\"",
 																				Start: ast.Position{
-																					Column: 68,
-																					Line:   14,
+																					Column: 87,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -37533,14 +37533,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 115,
-																		Line:   14,
+																		Column: 134,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "die(msg: \"test input table does not have _field column\")",
 																	Start: ast.Position{
-																		Column: 59,
-																		Line:   14,
+																		Column: 78,
+																		Line:   12,
 																	},
 																},
 															},
@@ -37550,14 +37550,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 62,
-																			Line:   14,
+																			Column: 81,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   14,
+																			Column: 78,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37571,14 +37571,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 115,
-																	Line:   14,
+																	Column: 134,
+																	Line:   12,
 																},
 																File:   "linearRegression_predict_test.flux",
 																Source: "if exists r._field then r._field else die(msg: \"test input table does not have _field column\")",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   14,
+																	Column: 40,
+																	Line:   12,
 																},
 															},
 														},
@@ -37588,14 +37588,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 53,
-																		Line:   14,
+																		Column: 72,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "r._field",
 																	Start: ast.Position{
-																		Column: 45,
-																		Line:   14,
+																		Column: 64,
+																		Line:   12,
 																	},
 																},
 															},
@@ -37606,14 +37606,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 46,
-																			Line:   14,
+																			Column: 65,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 45,
-																			Line:   14,
+																			Column: 64,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37625,14 +37625,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 53,
-																			Line:   14,
+																			Column: 72,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "_field",
 																		Start: ast.Position{
-																			Column: 47,
-																			Line:   14,
+																			Column: 66,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37647,14 +37647,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 39,
-																			Line:   14,
+																			Column: 58,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "r._field",
 																		Start: ast.Position{
-																			Column: 31,
-																			Line:   14,
+																			Column: 50,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37665,14 +37665,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 32,
-																				Line:   14,
+																				Column: 51,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 31,
-																				Line:   14,
+																				Column: 50,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -37684,14 +37684,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 39,
-																				Line:   14,
+																				Column: 58,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "_field",
 																			Start: ast.Position{
-																				Column: 33,
-																				Line:   14,
+																				Column: 52,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -37704,14 +37704,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 39,
-																		Line:   14,
+																		Column: 58,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "exists r._field",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   14,
+																		Column: 43,
+																		Line:   12,
 																	},
 																},
 															},
@@ -37727,14 +37727,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 139,
-																Line:   15,
+																Column: 262,
+																Line:   12,
 															},
 															File:   "linearRegression_predict_test.flux",
 															Source: "_measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   15,
+																Column: 136,
+																Line:   12,
 															},
 														},
 													},
@@ -37745,14 +37745,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 25,
-																	Line:   15,
+																	Column: 148,
+																	Line:   12,
 																},
 																File:   "linearRegression_predict_test.flux",
 																Source: "_measurement",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   15,
+																	Column: 136,
+																	Line:   12,
 																},
 															},
 														},
@@ -37767,14 +37767,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 138,
-																			Line:   15,
+																			Column: 261,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "msg: \"test input table does not have _measurement column\"",
 																		Start: ast.Position{
-																			Column: 81,
-																			Line:   15,
+																			Column: 204,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37785,14 +37785,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 138,
-																				Line:   15,
+																				Column: 261,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "msg: \"test input table does not have _measurement column\"",
 																			Start: ast.Position{
-																				Column: 81,
-																				Line:   15,
+																				Column: 204,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -37803,14 +37803,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 84,
-																					Line:   15,
+																					Column: 207,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_predict_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 81,
-																					Line:   15,
+																					Column: 204,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -37823,14 +37823,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 138,
-																					Line:   15,
+																					Column: 261,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_predict_test.flux",
 																				Source: "\"test input table does not have _measurement column\"",
 																				Start: ast.Position{
-																					Column: 86,
-																					Line:   15,
+																					Column: 209,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -37845,14 +37845,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 139,
-																		Line:   15,
+																		Column: 262,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "die(msg: \"test input table does not have _measurement column\")",
 																	Start: ast.Position{
-																		Column: 77,
-																		Line:   15,
+																		Column: 200,
+																		Line:   12,
 																	},
 																},
 															},
@@ -37862,14 +37862,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 80,
-																			Line:   15,
+																			Column: 203,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 77,
-																			Line:   15,
+																			Column: 200,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37883,14 +37883,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 139,
-																	Line:   15,
+																	Column: 262,
+																	Line:   12,
 																},
 																File:   "linearRegression_predict_test.flux",
 																Source: "if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\")",
 																Start: ast.Position{
-																	Column: 27,
-																	Line:   15,
+																	Column: 150,
+																	Line:   12,
 																},
 															},
 														},
@@ -37900,14 +37900,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 71,
-																		Line:   15,
+																		Column: 194,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "r._measurement",
 																	Start: ast.Position{
-																		Column: 57,
-																		Line:   15,
+																		Column: 180,
+																		Line:   12,
 																	},
 																},
 															},
@@ -37918,14 +37918,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 58,
-																			Line:   15,
+																			Column: 181,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 57,
-																			Line:   15,
+																			Column: 180,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37937,14 +37937,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 71,
-																			Line:   15,
+																			Column: 194,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "_measurement",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   15,
+																			Column: 182,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37959,14 +37959,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 51,
-																			Line:   15,
+																			Column: 174,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "r._measurement",
 																		Start: ast.Position{
-																			Column: 37,
-																			Line:   15,
+																			Column: 160,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -37977,14 +37977,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 38,
-																				Line:   15,
+																				Column: 161,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 37,
-																				Line:   15,
+																				Column: 160,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -37996,14 +37996,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 51,
-																				Line:   15,
+																				Column: 174,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "_measurement",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   15,
+																				Column: 162,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -38016,14 +38016,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 51,
-																		Line:   15,
+																		Column: 174,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "exists r._measurement",
 																	Start: ast.Position{
-																		Column: 30,
-																		Line:   15,
+																		Column: 153,
+																		Line:   12,
 																	},
 																},
 															},
@@ -38039,14 +38039,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 111,
-																Line:   16,
+																Column: 362,
+																Line:   12,
 															},
 															File:   "linearRegression_predict_test.flux",
 															Source: "_time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 															Start: ast.Position{
-																Column: 13,
-																Line:   16,
+																Column: 264,
+																Line:   12,
 															},
 														},
 													},
@@ -38057,14 +38057,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
-																	Line:   16,
+																	Column: 269,
+																	Line:   12,
 																},
 																File:   "linearRegression_predict_test.flux",
 																Source: "_time",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   16,
+																	Column: 264,
+																	Line:   12,
 																},
 															},
 														},
@@ -38079,14 +38079,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 110,
-																			Line:   16,
+																			Column: 361,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "msg: \"test input table does not have _time column\"",
 																		Start: ast.Position{
-																			Column: 60,
-																			Line:   16,
+																			Column: 311,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -38097,14 +38097,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 110,
-																				Line:   16,
+																				Column: 361,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "msg: \"test input table does not have _time column\"",
 																			Start: ast.Position{
-																				Column: 60,
-																				Line:   16,
+																				Column: 311,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -38115,14 +38115,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 63,
-																					Line:   16,
+																					Column: 314,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_predict_test.flux",
 																				Source: "msg",
 																				Start: ast.Position{
-																					Column: 60,
-																					Line:   16,
+																					Column: 311,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -38135,14 +38135,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 110,
-																					Line:   16,
+																					Column: 361,
+																					Line:   12,
 																				},
 																				File:   "linearRegression_predict_test.flux",
 																				Source: "\"test input table does not have _time column\"",
 																				Start: ast.Position{
-																					Column: 65,
-																					Line:   16,
+																					Column: 316,
+																					Line:   12,
 																				},
 																			},
 																		},
@@ -38157,14 +38157,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 111,
-																		Line:   16,
+																		Column: 362,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "die(msg: \"test input table does not have _time column\")",
 																	Start: ast.Position{
-																		Column: 56,
-																		Line:   16,
+																		Column: 307,
+																		Line:   12,
 																	},
 																},
 															},
@@ -38174,14 +38174,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 59,
-																			Line:   16,
+																			Column: 310,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "die",
 																		Start: ast.Position{
-																			Column: 56,
-																			Line:   16,
+																			Column: 307,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -38195,14 +38195,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 111,
-																	Line:   16,
+																	Column: 362,
+																	Line:   12,
 																},
 																File:   "linearRegression_predict_test.flux",
 																Source: "if exists r._time then r._time else die(msg: \"test input table does not have _time column\")",
 																Start: ast.Position{
-																	Column: 20,
-																	Line:   16,
+																	Column: 271,
+																	Line:   12,
 																},
 															},
 														},
@@ -38212,14 +38212,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 50,
-																		Line:   16,
+																		Column: 301,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "r._time",
 																	Start: ast.Position{
-																		Column: 43,
-																		Line:   16,
+																		Column: 294,
+																		Line:   12,
 																	},
 																},
 															},
@@ -38230,14 +38230,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 44,
-																			Line:   16,
+																			Column: 295,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 43,
-																			Line:   16,
+																			Column: 294,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -38249,14 +38249,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 50,
-																			Line:   16,
+																			Column: 301,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "_time",
 																		Start: ast.Position{
-																			Column: 45,
-																			Line:   16,
+																			Column: 296,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -38271,14 +38271,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   16,
+																			Column: 288,
+																			Line:   12,
 																		},
 																		File:   "linearRegression_predict_test.flux",
 																		Source: "r._time",
 																		Start: ast.Position{
-																			Column: 30,
-																			Line:   16,
+																			Column: 281,
+																			Line:   12,
 																		},
 																	},
 																},
@@ -38289,14 +38289,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 31,
-																				Line:   16,
+																				Column: 282,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 30,
-																				Line:   16,
+																				Column: 281,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -38308,14 +38308,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 37,
-																				Line:   16,
+																				Column: 288,
+																				Line:   12,
 																			},
 																			File:   "linearRegression_predict_test.flux",
 																			Source: "_time",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   16,
+																				Column: 283,
+																				Line:   12,
 																			},
 																		},
 																	},
@@ -38328,14 +38328,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 37,
-																		Line:   16,
+																		Column: 288,
+																		Line:   12,
 																	},
 																	File:   "linearRegression_predict_test.flux",
 																	Source: "exists r._time",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   16,
+																		Column: 274,
+																		Line:   12,
 																	},
 																},
 															},
@@ -38353,14 +38353,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 23,
-																Line:   13,
+																Column: 26,
+																Line:   12,
 															},
 															File:   "linearRegression_predict_test.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 22,
-																Line:   13,
+																Column: 25,
+																Line:   12,
 															},
 														},
 													},
@@ -38377,14 +38377,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   13,
+														Column: 18,
+														Line:   12,
 													},
 													File:   "linearRegression_predict_test.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 14,
-														Line:   13,
+														Column: 17,
+														Line:   12,
 													},
 												},
 											},
@@ -38395,14 +38395,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   13,
+															Column: 18,
+															Line:   12,
 														},
 														File:   "linearRegression_predict_test.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 14,
-															Line:   13,
+															Column: 17,
+															Line:   12,
 														},
 													},
 												},
@@ -38422,11 +38422,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   18,
+										Column: 365,
+										Line:   12,
 									},
 									File:   "linearRegression_predict_test.flux",
-									Source: "map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+									Source: "map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 									Start: ast.Position{
 										Column: 8,
 										Line:   12,
@@ -38563,11 +38563,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   18,
+						Column: 365,
+						Line:   12,
 					},
 					File:   "linearRegression_predict_test.flux",
-					Source: "option testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(\n        fn: (r) => ({r with\n            _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"),\n            _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"),\n            _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\"),\n        }),\n    )",
+					Source: "option testing.loadStorage = (csv) => c.from(csv: csv)\n    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: \"test input table does not have _field column\"), _measurement: if exists r._measurement then r._measurement else die(msg: \"test input table does not have _measurement column\"), _time: if exists r._time then r._time else die(msg: \"test input table does not have _time column\")}))",
 					Start: ast.Position{
 						Column: 1,
 						Line:   11,
@@ -38581,13 +38581,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   44,
+						Line:   38,
 					},
 					File:   "linearRegression_predict_test.flux",
 					Source: "inData = \"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus\r\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   20,
+						Line:   14,
 					},
 				},
 			},
@@ -38598,13 +38598,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   20,
+							Line:   14,
 						},
 						File:   "linearRegression_predict_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   20,
+							Line:   14,
 						},
 					},
 				},
@@ -38617,13 +38617,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   44,
+							Line:   38,
 						},
 						File:   "linearRegression_predict_test.flux",
 						Source: "\"\r\n#datatype,string,long,dateTime:RFC3339,string,double,string\r\n#group,false,false,false,true,false,true\r\n#default,inData,,,,,\r\n,result,table,_time,_field,_value,_measurement\r\n,,0,2018-12-18T20:52:33Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:43Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:52:53Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:03Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:13Z,metric_name1,1,prometheus\r\n,,0,2018-12-18T20:53:23Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:52:33Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:43Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:52:53Z,metric_name2,1,prometheus\r\n,,1,2018-12-18T20:53:03Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:13Z,metric_name2,100,prometheus\r\n,,1,2018-12-18T20:53:23Z,metric_name2,100,prometheus\r\n,,2,2018-12-18T20:52:33Z,metric_name3,100,prometheus\r\n,,2,2018-12-18T20:52:43Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:52:53Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:03Z,metric_name3,200,prometheus\r\n,,2,2018-12-18T20:53:13Z,metric_name3,300,prometheus\r\n,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus\r\n,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus\r\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   20,
+							Line:   14,
 						},
 					},
 				},
@@ -38636,13 +38636,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   53,
+						Line:   47,
 					},
 					File:   "linearRegression_predict_test.flux",
 					Source: "outData = \"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,1888.5057142857145,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,3756.8571428571427,prometheus\r\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   45,
+						Line:   39,
 					},
 				},
 			},
@@ -38653,13 +38653,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   45,
+							Line:   39,
 						},
 						File:   "linearRegression_predict_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   45,
+							Line:   39,
 						},
 					},
 				},
@@ -38672,13 +38672,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   53,
+							Line:   47,
 						},
 						File:   "linearRegression_predict_test.flux",
 						Source: "\"\r\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string\r\n#group,false,false,true,true,true,false,true\r\n#default,outData,,,,,,\r\n,result,table,_start,_stop,_field,_value,_measurement\r\n,,0,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name1,1,prometheus\r\n,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,1888.5057142857145,prometheus\r\n,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,3756.8571428571427,prometheus\r\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   45,
+							Line:   39,
 						},
 					},
 				},
@@ -38691,13 +38691,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 62,
-						Line:   56,
+						Line:   50,
 					},
 					File:   "linearRegression_predict_test.flux",
 					Source: "t_linearRegression = (table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: true, fromNow: 600.0)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   54,
+						Line:   48,
 					},
 				},
 			},
@@ -38708,13 +38708,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   54,
+							Line:   48,
 						},
 						File:   "linearRegression_predict_test.flux",
 						Source: "t_linearRegression",
 						Start: ast.Position{
 							Column: 1,
-							Line:   54,
+							Line:   48,
 						},
 					},
 				},
@@ -38728,13 +38728,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 62,
-							Line:   56,
+							Line:   50,
 						},
 						File:   "linearRegression_predict_test.flux",
 						Source: "(table=<-) => table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: true, fromNow: 600.0)",
 						Start: ast.Position{
 							Column: 22,
-							Line:   54,
+							Line:   48,
 						},
 					},
 				},
@@ -38747,13 +38747,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   54,
+										Line:   48,
 									},
 									File:   "linearRegression_predict_test.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 36,
-										Line:   54,
+										Line:   48,
 									},
 								},
 							},
@@ -38765,13 +38765,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
-									Line:   55,
+									Line:   49,
 								},
 								File:   "linearRegression_predict_test.flux",
 								Source: "table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)",
 								Start: ast.Position{
 									Column: 36,
-									Line:   54,
+									Line:   48,
 								},
 							},
 						},
@@ -38783,13 +38783,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z",
 										Start: ast.Position{
 											Column: 14,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -38801,13 +38801,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "start: 2018-12-18T20:50:00Z",
 											Start: ast.Position{
 												Column: 14,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -38819,13 +38819,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   55,
+													Line:   49,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "start",
 												Start: ast.Position{
 													Column: 14,
-													Line:   55,
+													Line:   49,
 												},
 											},
 										},
@@ -38839,13 +38839,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   55,
+													Line:   49,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "2018-12-18T20:50:00Z",
 												Start: ast.Position{
 													Column: 21,
-													Line:   55,
+													Line:   49,
 												},
 											},
 										},
@@ -38858,13 +38858,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
-												Line:   55,
+												Line:   49,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "stop: 2018-12-18T20:55:00Z",
 											Start: ast.Position{
 												Column: 43,
-												Line:   55,
+												Line:   49,
 											},
 										},
 									},
@@ -38876,13 +38876,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   55,
+													Line:   49,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "stop",
 												Start: ast.Position{
 													Column: 43,
-													Line:   55,
+													Line:   49,
 												},
 											},
 										},
@@ -38896,13 +38896,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
-													Line:   55,
+													Line:   49,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "2018-12-18T20:55:00Z",
 												Start: ast.Position{
 													Column: 49,
-													Line:   55,
+													Line:   49,
 												},
 											},
 										},
@@ -38918,13 +38918,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   55,
+										Line:   49,
 									},
 									File:   "linearRegression_predict_test.flux",
 									Source: "range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   55,
+										Line:   49,
 									},
 								},
 							},
@@ -38935,13 +38935,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   55,
+											Line:   49,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "range",
 										Start: ast.Position{
 											Column: 8,
-											Line:   55,
+											Line:   49,
 										},
 									},
 								},
@@ -38957,13 +38957,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 62,
-								Line:   56,
+								Line:   50,
 							},
 							File:   "linearRegression_predict_test.flux",
 							Source: "table\n    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)\n    |> promql.linearRegression(predict: true, fromNow: 600.0)",
 							Start: ast.Position{
 								Column: 36,
-								Line:   54,
+								Line:   48,
 							},
 						},
 					},
@@ -38975,13 +38975,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 61,
-										Line:   56,
+										Line:   50,
 									},
 									File:   "linearRegression_predict_test.flux",
 									Source: "predict: true, fromNow: 600.0",
 									Start: ast.Position{
 										Column: 32,
-										Line:   56,
+										Line:   50,
 									},
 								},
 							},
@@ -38993,13 +38993,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   56,
+											Line:   50,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "predict: true",
 										Start: ast.Position{
 											Column: 32,
-											Line:   56,
+											Line:   50,
 										},
 									},
 								},
@@ -39011,13 +39011,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   56,
+												Line:   50,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "predict",
 											Start: ast.Position{
 												Column: 32,
-												Line:   56,
+												Line:   50,
 											},
 										},
 									},
@@ -39031,13 +39031,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   56,
+												Line:   50,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "true",
 											Start: ast.Position{
 												Column: 41,
-												Line:   56,
+												Line:   50,
 											},
 										},
 									},
@@ -39050,13 +39050,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 61,
-											Line:   56,
+											Line:   50,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "fromNow: 600.0",
 										Start: ast.Position{
 											Column: 47,
-											Line:   56,
+											Line:   50,
 										},
 									},
 								},
@@ -39068,13 +39068,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   56,
+												Line:   50,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "fromNow",
 											Start: ast.Position{
 												Column: 47,
-												Line:   56,
+												Line:   50,
 											},
 										},
 									},
@@ -39088,13 +39088,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 61,
-												Line:   56,
+												Line:   50,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "600.0",
 											Start: ast.Position{
 												Column: 56,
-												Line:   56,
+												Line:   50,
 											},
 										},
 									},
@@ -39110,13 +39110,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 62,
-									Line:   56,
+									Line:   50,
 								},
 								File:   "linearRegression_predict_test.flux",
 								Source: "promql.linearRegression(predict: true, fromNow: 600.0)",
 								Start: ast.Position{
 									Column: 8,
-									Line:   56,
+									Line:   50,
 								},
 							},
 						},
@@ -39127,13 +39127,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   56,
+										Line:   50,
 									},
 									File:   "linearRegression_predict_test.flux",
 									Source: "promql.linearRegression",
 									Start: ast.Position{
 										Column: 8,
-										Line:   56,
+										Line:   50,
 									},
 								},
 							},
@@ -39145,13 +39145,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   56,
+											Line:   50,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "promql",
 										Start: ast.Position{
 											Column: 8,
-											Line:   56,
+											Line:   50,
 										},
 									},
 								},
@@ -39164,13 +39164,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   56,
+											Line:   50,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "linearRegression",
 										Start: ast.Position{
 											Column: 15,
-											Line:   56,
+											Line:   50,
 										},
 									},
 								},
@@ -39190,13 +39190,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   54,
+								Line:   48,
 							},
 							File:   "linearRegression_predict_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   54,
+								Line:   48,
 							},
 						},
 					},
@@ -39208,13 +39208,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   54,
+									Line:   48,
 								},
 								File:   "linearRegression_predict_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
-									Line:   54,
+									Line:   48,
 								},
 							},
 						},
@@ -39227,13 +39227,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   54,
+								Line:   48,
 							},
 							File:   "linearRegression_predict_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
-								Line:   54,
+								Line:   48,
 							},
 						},
 					}},
@@ -39248,13 +39248,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 136,
-							Line:   58,
+							Line:   52,
 						},
 						File:   "linearRegression_predict_test.flux",
 						Source: "_linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   58,
+							Line:   52,
 						},
 					},
 				},
@@ -39265,13 +39265,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   58,
+								Line:   52,
 							},
 							File:   "linearRegression_predict_test.flux",
 							Source: "_linearRegression",
 							Start: ast.Position{
 								Column: 6,
-								Line:   58,
+								Line:   52,
 							},
 						},
 					},
@@ -39285,13 +39285,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 136,
-								Line:   58,
+								Line:   52,
 							},
 							File:   "linearRegression_predict_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   58,
+								Line:   52,
 							},
 						},
 					},
@@ -39302,13 +39302,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 136,
-									Line:   58,
+									Line:   52,
 								},
 								File:   "linearRegression_predict_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 								Start: ast.Position{
 									Column: 32,
-									Line:   58,
+									Line:   52,
 								},
 							},
 						},
@@ -39319,13 +39319,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 135,
-										Line:   58,
+										Line:   52,
 									},
 									File:   "linearRegression_predict_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression}",
 									Start: ast.Position{
 										Column: 33,
-										Line:   58,
+										Line:   52,
 									},
 								},
 							},
@@ -39337,13 +39337,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 73,
-											Line:   58,
+											Line:   52,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 34,
-											Line:   58,
+											Line:   52,
 										},
 									},
 								},
@@ -39355,13 +39355,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 34,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -39376,13 +39376,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
-													Line:   58,
+													Line:   52,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 61,
-													Line:   58,
+													Line:   52,
 												},
 											},
 										},
@@ -39394,13 +39394,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 72,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_predict_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 61,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -39412,13 +39412,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 64,
-															Line:   58,
+															Line:   52,
 														},
 														File:   "linearRegression_predict_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 61,
-															Line:   58,
+															Line:   52,
 														},
 													},
 												},
@@ -39432,13 +39432,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
-															Line:   58,
+															Line:   52,
 														},
 														File:   "linearRegression_predict_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 66,
-															Line:   58,
+															Line:   52,
 														},
 													},
 												},
@@ -39454,13 +39454,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 41,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -39471,13 +39471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   58,
+													Line:   52,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 41,
-													Line:   58,
+													Line:   52,
 												},
 											},
 										},
@@ -39489,13 +39489,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_predict_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 41,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -39508,13 +39508,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_predict_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 49,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -39532,13 +39532,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 110,
-											Line:   58,
+											Line:   52,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 75,
-											Line:   58,
+											Line:   52,
 										},
 									},
 								},
@@ -39550,13 +39550,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 79,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 75,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -39571,13 +39571,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 109,
-													Line:   58,
+													Line:   52,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 97,
-													Line:   58,
+													Line:   52,
 												},
 											},
 										},
@@ -39589,13 +39589,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 109,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_predict_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 97,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -39607,13 +39607,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 100,
-															Line:   58,
+															Line:   52,
 														},
 														File:   "linearRegression_predict_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 97,
-															Line:   58,
+															Line:   52,
 														},
 													},
 												},
@@ -39627,13 +39627,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 109,
-															Line:   58,
+															Line:   52,
 														},
 														File:   "linearRegression_predict_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 102,
-															Line:   58,
+															Line:   52,
 														},
 													},
 												},
@@ -39649,13 +39649,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 110,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 81,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -39666,13 +39666,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 96,
-													Line:   58,
+													Line:   52,
 												},
 												File:   "linearRegression_predict_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 81,
-													Line:   58,
+													Line:   52,
 												},
 											},
 										},
@@ -39684,13 +39684,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 88,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_predict_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 81,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -39703,13 +39703,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 96,
-														Line:   58,
+														Line:   52,
 													},
 													File:   "linearRegression_predict_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 89,
-														Line:   58,
+														Line:   52,
 													},
 												},
 											},
@@ -39727,13 +39727,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 134,
-											Line:   58,
+											Line:   52,
 										},
 										File:   "linearRegression_predict_test.flux",
 										Source: "fn: t_linearRegression",
 										Start: ast.Position{
 											Column: 112,
-											Line:   58,
+											Line:   52,
 										},
 									},
 								},
@@ -39745,13 +39745,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 114,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 112,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -39765,13 +39765,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 134,
-												Line:   58,
+												Line:   52,
 											},
 											File:   "linearRegression_predict_test.flux",
 											Source: "t_linearRegression",
 											Start: ast.Position{
 												Column: 116,
-												Line:   58,
+												Line:   52,
 											},
 										},
 									},
@@ -39795,13 +39795,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 136,
-						Line:   58,
+						Line:   52,
 					},
 					File:   "linearRegression_predict_test.flux",
 					Source: "test _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   58,
+						Line:   52,
 					},
 				},
 			},

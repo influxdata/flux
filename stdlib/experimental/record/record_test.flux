@@ -15,13 +15,7 @@ testcase polymorphic_default {
     // define function with polymorphic default value for r
     f = (r=record.any) => ({r with x: true})
 
-    want = array.from(
-        rows: [
-            {pass: true},
-            {pass: true},
-            {pass: true},
-        ],
-    )
+    want = array.from(rows: [{pass: true}, {pass: true}, {pass: true}])
 
     got = array.from(
         rows: [
@@ -42,41 +36,19 @@ testcase polymorphic_default {
 testcase record_get_primitive {
     obj = {x: 1}
 
-    want = array.from(
-        rows: [
-            {x: 1},
-            {x: 0},
-        ],
-    )
+    want = array.from(rows: [{x: 1}, {x: 0}])
 
-    got = array.from(
-        rows: [
-            {x: record.get(r: obj, key: "x", default: 0)},
-            {x: record.get(r: obj, key: "y", default: 0)},
-        ],
-    )
+    got = array.from(rows: [{x: record.get(r: obj, key: "x", default: 0)}, {x: record.get(r: obj, key: "y", default: 0)}])
 
     testing.diff(got: got, want: want)
 }
 
 testcase record_get_record {
-    obj = {
-        details: {x: 1},
-    }
+    obj = {details: {x: 1}}
 
-    want = array.from(
-        rows: [
-            {details: "{\"x\":1}"},
-            {details: "{}"},
-        ],
-    )
+    want = array.from(rows: [{details: "{\"x\":1}"}, {details: "{}"}])
 
-    got = array.from(
-        rows: [
-            {details: string(v: json.encode(v: record.get(r: obj, key: "details", default: record.any)))},
-            {details: string(v: json.encode(v: record.get(r: obj, key: "nosuchfield", default: record.any)))},
-        ],
-    )
+    got = array.from(rows: [{details: string(v: json.encode(v: record.get(r: obj, key: "details", default: record.any)))}, {details: string(v: json.encode(v: record.get(r: obj, key: "nosuchfield", default: record.any)))}])
 
     testing.diff(got: got, want: want)
 }

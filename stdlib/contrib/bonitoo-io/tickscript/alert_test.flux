@@ -65,8 +65,4 @@ tickscript_alert = (table=<-) => table
     )
     |> drop(columns: ["_time"])
 
-test _tickscript_alert = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: tickscript_alert,
-})
+test _tickscript_alert = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})

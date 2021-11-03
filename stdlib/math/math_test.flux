@@ -29,11 +29,5 @@ testcase atan2 {
     )
 }
 testcase dim {
-    xytest(
-        fn: math.dim,
-        rows: [
-            {x: 10.0, y: 5.0, _value: 5.0},
-            {x: 10.0, y: 15.0, _value: 0.0},
-        ],
-    )
+    xytest(fn: math.dim, rows: [{x: 10.0, y: 5.0, _value: 5.0}, {x: 10.0, y: 15.0, _value: 0.0}])
 }

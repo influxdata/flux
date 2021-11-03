@@ -45,18 +45,10 @@ outData = "
 ,,2,0000000000000001,http-rule,00000000000002,http-endpoint,000000000000000a,cpu threshold check,warn,notifications,whoa!,cpu,1527018860000000000,1527018860000000000,2018-05-22T19:54:40Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05,true
 "
 endpoint = () => (tables=<-) => tables |> experimental.set(o: {_sent: "true"})
-notification = {
-    _notification_rule_id: "0000000000000001",
-    _notification_rule_name: "http-rule",
-    _notification_endpoint_id: "00000000000002",
-    _notification_endpoint_name: "http-endpoint",
-}
+notification = {_notification_rule_id: "0000000000000001", _notification_rule_name: "http-rule", _notification_endpoint_id: "00000000000002", _notification_endpoint_name: "http-endpoint"}
 t_notify = (table=<-) => table
     |> range(start: -1m)
     |> v1.fieldsAsCols()
-    |> monitor.notify(
-        data: notification,
-        endpoint: endpoint(),
-    )
+    |> monitor.notify(data: notification, endpoint: endpoint())
 
 test monitor_notify = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_notify})

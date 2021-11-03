@@ -30,14 +30,7 @@ inData = array.from(
 )
 
 testcase quantile_with_group {
-    want = array.from(
-        rows: [
-            {_value: 7.34, t0: "a"},
-            {_value: 3.975, t0: "b"},
-            {_value: 8.1275, t0: "c"},
-            {_value: 5.51, t0: "d"},
-        ],
-    )
+    want = array.from(rows: [{_value: 7.34, t0: "a"}, {_value: 3.975, t0: "b"}, {_value: 8.1275, t0: "c"}, {_value: 5.51, t0: "d"}])
         |> group(columns: ["t0"])
 
     got = inData
@@ -50,11 +43,7 @@ testcase quantile_with_group {
 }
 
 testcase quantile_without_group {
-    want = array.from(
-        rows: [
-            {_value: 6.5},
-        ],
-    )
+    want = array.from(rows: [{_value: 6.5}])
 
     got = inData
         |> range(start: 2018-05-22T20:00:00Z, stop: 2018-05-22T20:01:00Z)

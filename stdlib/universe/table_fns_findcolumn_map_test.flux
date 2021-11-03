@@ -81,7 +81,7 @@ t_table_fns_findcolumn_map = (table=<-) => table
                 |> filter(fn: (r) => r._measurement == "city_data" and r._field == "temp" and r.city == city)
                 |> mean()
                 |> findColumn(fn: (key) => true, column: "_value")
-
+    
             return {city: r.city, _time: stop, _value: agg[0], _field: "event_temp_mean"}
         },
     )

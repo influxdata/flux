@@ -181,11 +181,7 @@ t_stIntersectsLinestring = (table=<-) => table
     // optional but it helps to see train crossing defined region
     |> geo.asTracks(groupBy: ["id", "trip_id"])
     |> geo.ST_LineString()
-    |> map(
-        fn: (r) => ({r with
-            _st_intersects: geo.ST_Intersects(region: bt, geometry: {linestring: r.st_linestring}),
-        }),
-    )
+    |> map(fn: (r) => ({r with _st_intersects: geo.ST_Intersects(region: bt, geometry: {linestring: r.st_linestring})}))
     |> drop(columns: ["_start", "_stop"])
 
 test _stIntersectsLinestring = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stIntersectsLinestring})

@@ -29,13 +29,8 @@ _json = (table=<-) => table
     |> map(
         fn: (r) => {
             data = json.parse(data: bytes(v: r._value))
-
-            return {
-                _time: r._time,
-                a: data.a,
-                b: data.b,
-                c: data.c,
-            }
+    
+            return {_time: r._time, a: data.a, b: data.b, c: data.c}
         },
     )
 

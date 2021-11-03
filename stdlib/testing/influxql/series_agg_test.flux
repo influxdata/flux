@@ -696,8 +696,4 @@ t_difference = (tables=<-) => tables
     |> drop(columns: ["_start", "_stop", "_field"])
     |> rename(columns: {_value: "difference"})
 
-test _difference = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_difference,
-})
+test _difference = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})

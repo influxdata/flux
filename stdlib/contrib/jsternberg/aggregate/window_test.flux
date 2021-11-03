@@ -47,8 +47,4 @@ aggregate_window = (table=<-) => table
         },
     )
 
-test _aggregate_window = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: aggregate_window,
-})
+test _aggregate_window = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: aggregate_window})

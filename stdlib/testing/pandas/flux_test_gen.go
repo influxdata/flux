@@ -8876,10 +8876,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 150,
-					Line:   41,
+					Line:   36,
 				},
 				File:   "endswith_strings_regexp_hasSuffix_test.flux",
-				Source: "package pandas_test\n\n\nimport \"testing\"\nimport \"strings\"\nimport \"regexp\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,a ,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:36Z,k9ngm ,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:54:16Z,13F2 ,used_percent,disk,disk1,apfs,host.local,/\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,a ,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9ngm ,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2 ,used_percent,disk,disk1,apfs,host.local,/\n\"\nre = regexp.compile(v: \" \")\nt_string_regexp_hasSuffix = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> filter(\n        fn: (r) => regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        ),\n    )\n\ntest _string_regexp_hasSuffix = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasSuffix})",
+				Source: "package pandas_test\n\n\nimport \"testing\"\nimport \"strings\"\nimport \"regexp\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,a ,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:36Z,k9ngm ,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:54:16Z,13F2 ,used_percent,disk,disk1,apfs,host.local,/\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string\n#group,false,false,true,true,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,,,\n,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,a ,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9ngm ,used_percent,disk,disk1,apfs,host.local,/\n,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2 ,used_percent,disk,disk1,apfs,host.local,/\n\"\nre = regexp.compile(v: \" \")\nt_string_regexp_hasSuffix = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))))\n\ntest _string_regexp_hasSuffix = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasSuffix})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -9290,11 +9290,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   39,
+						Column: 167,
+						Line:   34,
 					},
 					File:   "endswith_strings_regexp_hasSuffix_test.flux",
-					Source: "t_string_regexp_hasSuffix = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> filter(\n        fn: (r) => regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        ),\n    )",
+					Source: "t_string_regexp_hasSuffix = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))))",
 					Start: ast.Position{
 						Column: 1,
 						Line:   32,
@@ -9327,11 +9327,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   39,
+							Column: 167,
+							Line:   34,
 						},
 						File:   "endswith_strings_regexp_hasSuffix_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> filter(\n        fn: (r) => regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        ),\n    )",
+						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))))",
 						Start: ast.Position{
 							Column: 29,
 							Line:   32,
@@ -9499,11 +9499,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   39,
+								Column: 167,
+								Line:   34,
 							},
 							File:   "endswith_strings_regexp_hasSuffix_test.flux",
-							Source: "table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> filter(\n        fn: (r) => regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        ),\n    )",
+							Source: "table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))))",
 							Start: ast.Position{
 								Column: 43,
 								Line:   32,
@@ -9517,14 +9517,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   38,
+										Column: 166,
+										Line:   34,
 									},
 									File:   "endswith_strings_regexp_hasSuffix_test.flux",
-									Source: "fn: (r) => regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        )",
+									Source: "fn: (r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)))",
 									Start: ast.Position{
-										Column: 9,
-										Line:   35,
+										Column: 15,
+										Line:   34,
 									},
 								},
 							},
@@ -9535,14 +9535,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 10,
-											Line:   38,
+											Column: 166,
+											Line:   34,
 										},
 										File:   "endswith_strings_regexp_hasSuffix_test.flux",
-										Source: "fn: (r) => regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        )",
+										Source: "fn: (r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)))",
 										Start: ast.Position{
-											Column: 9,
-											Line:   35,
+											Column: 15,
+											Line:   34,
 										},
 									},
 								},
@@ -9553,14 +9553,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   35,
+												Column: 17,
+												Line:   34,
 											},
 											File:   "endswith_strings_regexp_hasSuffix_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 9,
-												Line:   35,
+												Column: 15,
+												Line:   34,
 											},
 										},
 									},
@@ -9574,14 +9574,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 10,
-												Line:   38,
+												Column: 166,
+												Line:   34,
 											},
 											File:   "endswith_strings_regexp_hasSuffix_test.flux",
-											Source: "(r) => regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        )",
+											Source: "(r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)))",
 											Start: ast.Position{
-												Column: 13,
-												Line:   35,
+												Column: 19,
+												Line:   34,
 											},
 										},
 									},
@@ -9592,14 +9592,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 120,
-														Line:   37,
+														Column: 165,
+														Line:   34,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
-													Source: "r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))",
+													Source: "r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))",
 													Start: ast.Position{
-														Column: 13,
-														Line:   36,
+														Column: 51,
+														Line:   34,
 													},
 												},
 											},
@@ -9610,14 +9610,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 18,
-															Line:   36,
+															Column: 56,
+															Line:   34,
 														},
 														File:   "endswith_strings_regexp_hasSuffix_test.flux",
 														Source: "r: re",
 														Start: ast.Position{
-															Column: 13,
-															Line:   36,
+															Column: 51,
+															Line:   34,
 														},
 													},
 												},
@@ -9628,14 +9628,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 14,
-																Line:   36,
+																Column: 52,
+																Line:   34,
 															},
 															File:   "endswith_strings_regexp_hasSuffix_test.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 13,
-																Line:   36,
+																Column: 51,
+																Line:   34,
 															},
 														},
 													},
@@ -9648,14 +9648,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 18,
-																Line:   36,
+																Column: 56,
+																Line:   34,
 															},
 															File:   "endswith_strings_regexp_hasSuffix_test.flux",
 															Source: "re",
 															Start: ast.Position{
-																Column: 16,
-																Line:   36,
+																Column: 54,
+																Line:   34,
 															},
 														},
 													},
@@ -9667,14 +9667,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 120,
-															Line:   37,
+															Column: 165,
+															Line:   34,
 														},
 														File:   "endswith_strings_regexp_hasSuffix_test.flux",
 														Source: "v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))",
 														Start: ast.Position{
-															Column: 13,
-															Line:   37,
+															Column: 58,
+															Line:   34,
 														},
 													},
 												},
@@ -9685,14 +9685,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 14,
-																Line:   37,
+																Column: 59,
+																Line:   34,
 															},
 															File:   "endswith_strings_regexp_hasSuffix_test.flux",
 															Source: "v",
 															Start: ast.Position{
-																Column: 13,
-																Line:   37,
+																Column: 58,
+																Line:   34,
 															},
 														},
 													},
@@ -9706,14 +9706,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 119,
-																	Line:   37,
+																	Column: 164,
+																	Line:   34,
 																},
 																File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																Source: "v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)",
 																Start: ast.Position{
-																	Column: 34,
-																	Line:   37,
+																	Column: 79,
+																	Line:   34,
 																},
 															},
 														},
@@ -9724,14 +9724,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 45,
-																		Line:   37,
+																		Column: 90,
+																		Line:   34,
 																	},
 																	File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																	Source: "v: r._value",
 																	Start: ast.Position{
-																		Column: 34,
-																		Line:   37,
+																		Column: 79,
+																		Line:   34,
 																	},
 																},
 															},
@@ -9742,14 +9742,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 35,
-																			Line:   37,
+																			Column: 80,
+																			Line:   34,
 																		},
 																		File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																		Source: "v",
 																		Start: ast.Position{
-																			Column: 34,
-																			Line:   37,
+																			Column: 79,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -9762,14 +9762,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 45,
-																			Line:   37,
+																			Column: 90,
+																			Line:   34,
 																		},
 																		File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																		Source: "r._value",
 																		Start: ast.Position{
-																			Column: 37,
-																			Line:   37,
+																			Column: 82,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -9780,14 +9780,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 38,
-																				Line:   37,
+																				Column: 83,
+																				Line:   34,
 																			},
 																			File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 37,
-																				Line:   37,
+																				Column: 82,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -9799,14 +9799,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 45,
-																				Line:   37,
+																				Column: 90,
+																				Line:   34,
 																			},
 																			File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																			Source: "_value",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   37,
+																				Column: 84,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -9820,14 +9820,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 85,
-																		Line:   37,
+																		Column: 130,
+																		Line:   34,
 																	},
 																	File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																	Source: "start: strings.strlen(v: r._value) - 1",
 																	Start: ast.Position{
-																		Column: 47,
-																		Line:   37,
+																		Column: 92,
+																		Line:   34,
 																	},
 																},
 															},
@@ -9838,14 +9838,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 52,
-																			Line:   37,
+																			Column: 97,
+																			Line:   34,
 																		},
 																		File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																		Source: "start",
 																		Start: ast.Position{
-																			Column: 47,
-																			Line:   37,
+																			Column: 92,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -9858,14 +9858,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 85,
-																			Line:   37,
+																			Column: 130,
+																			Line:   34,
 																		},
 																		File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																		Source: "strings.strlen(v: r._value) - 1",
 																		Start: ast.Position{
-																			Column: 54,
-																			Line:   37,
+																			Column: 99,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -9876,14 +9876,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 80,
-																					Line:   37,
+																					Column: 125,
+																					Line:   34,
 																				},
 																				File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																				Source: "v: r._value",
 																				Start: ast.Position{
-																					Column: 69,
-																					Line:   37,
+																					Column: 114,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -9894,14 +9894,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 80,
-																						Line:   37,
+																						Column: 125,
+																						Line:   34,
 																					},
 																					File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																					Source: "v: r._value",
 																					Start: ast.Position{
-																						Column: 69,
-																						Line:   37,
+																						Column: 114,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -9912,14 +9912,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 70,
-																							Line:   37,
+																							Column: 115,
+																							Line:   34,
 																						},
 																						File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																						Source: "v",
 																						Start: ast.Position{
-																							Column: 69,
-																							Line:   37,
+																							Column: 114,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -9932,14 +9932,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 80,
-																							Line:   37,
+																							Column: 125,
+																							Line:   34,
 																						},
 																						File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																						Source: "r._value",
 																						Start: ast.Position{
-																							Column: 72,
-																							Line:   37,
+																							Column: 117,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -9950,14 +9950,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 73,
-																								Line:   37,
+																								Column: 118,
+																								Line:   34,
 																							},
 																							File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																							Source: "r",
 																							Start: ast.Position{
-																								Column: 72,
-																								Line:   37,
+																								Column: 117,
+																								Line:   34,
 																							},
 																						},
 																					},
@@ -9969,14 +9969,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 80,
-																								Line:   37,
+																								Column: 125,
+																								Line:   34,
 																							},
 																							File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																							Source: "_value",
 																							Start: ast.Position{
-																								Column: 74,
-																								Line:   37,
+																								Column: 119,
+																								Line:   34,
 																							},
 																						},
 																					},
@@ -9993,14 +9993,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 81,
-																				Line:   37,
+																				Column: 126,
+																				Line:   34,
 																			},
 																			File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																			Source: "strings.strlen(v: r._value)",
 																			Start: ast.Position{
-																				Column: 54,
-																				Line:   37,
+																				Column: 99,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -10010,14 +10010,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 68,
-																					Line:   37,
+																					Column: 113,
+																					Line:   34,
 																				},
 																				File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																				Source: "strings.strlen",
 																				Start: ast.Position{
-																					Column: 54,
-																					Line:   37,
+																					Column: 99,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -10028,14 +10028,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 61,
-																						Line:   37,
+																						Column: 106,
+																						Line:   34,
 																					},
 																					File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																					Source: "strings",
 																					Start: ast.Position{
-																						Column: 54,
-																						Line:   37,
+																						Column: 99,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -10047,14 +10047,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 68,
-																						Line:   37,
+																						Column: 113,
+																						Line:   34,
 																					},
 																					File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																					Source: "strlen",
 																					Start: ast.Position{
-																						Column: 62,
-																						Line:   37,
+																						Column: 107,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -10072,14 +10072,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 85,
-																				Line:   37,
+																				Column: 130,
+																				Line:   34,
 																			},
 																			File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																			Source: "1",
 																			Start: ast.Position{
-																				Column: 84,
-																				Line:   37,
+																				Column: 129,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -10092,14 +10092,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 119,
-																		Line:   37,
+																		Column: 164,
+																		Line:   34,
 																	},
 																	File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																	Source: "end: strings.strlen(v: r._value)",
 																	Start: ast.Position{
-																		Column: 87,
-																		Line:   37,
+																		Column: 132,
+																		Line:   34,
 																	},
 																},
 															},
@@ -10110,14 +10110,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 90,
-																			Line:   37,
+																			Column: 135,
+																			Line:   34,
 																		},
 																		File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																		Source: "end",
 																		Start: ast.Position{
-																			Column: 87,
-																			Line:   37,
+																			Column: 132,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -10131,14 +10131,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 118,
-																				Line:   37,
+																				Column: 163,
+																				Line:   34,
 																			},
 																			File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																			Source: "v: r._value",
 																			Start: ast.Position{
-																				Column: 107,
-																				Line:   37,
+																				Column: 152,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -10149,14 +10149,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 118,
-																					Line:   37,
+																					Column: 163,
+																					Line:   34,
 																				},
 																				File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																				Source: "v: r._value",
 																				Start: ast.Position{
-																					Column: 107,
-																					Line:   37,
+																					Column: 152,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -10167,14 +10167,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 108,
-																						Line:   37,
+																						Column: 153,
+																						Line:   34,
 																					},
 																					File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 107,
-																						Line:   37,
+																						Column: 152,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -10187,14 +10187,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 118,
-																						Line:   37,
+																						Column: 163,
+																						Line:   34,
 																					},
 																					File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																					Source: "r._value",
 																					Start: ast.Position{
-																						Column: 110,
-																						Line:   37,
+																						Column: 155,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -10205,14 +10205,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 111,
-																							Line:   37,
+																							Column: 156,
+																							Line:   34,
 																						},
 																						File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 110,
-																							Line:   37,
+																							Column: 155,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -10224,14 +10224,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 118,
-																							Line:   37,
+																							Column: 163,
+																							Line:   34,
 																						},
 																						File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																						Source: "_value",
 																						Start: ast.Position{
-																							Column: 112,
-																							Line:   37,
+																							Column: 157,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -10248,14 +10248,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 119,
-																			Line:   37,
+																			Column: 164,
+																			Line:   34,
 																		},
 																		File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																		Source: "strings.strlen(v: r._value)",
 																		Start: ast.Position{
-																			Column: 92,
-																			Line:   37,
+																			Column: 137,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -10265,14 +10265,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 106,
-																				Line:   37,
+																				Column: 151,
+																				Line:   34,
 																			},
 																			File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																			Source: "strings.strlen",
 																			Start: ast.Position{
-																				Column: 92,
-																				Line:   37,
+																				Column: 137,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -10283,14 +10283,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 99,
-																					Line:   37,
+																					Column: 144,
+																					Line:   34,
 																				},
 																				File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																				Source: "strings",
 																				Start: ast.Position{
-																					Column: 92,
-																					Line:   37,
+																					Column: 137,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -10302,14 +10302,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 106,
-																					Line:   37,
+																					Column: 151,
+																					Line:   34,
 																				},
 																				File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																				Source: "strlen",
 																				Start: ast.Position{
-																					Column: 100,
-																					Line:   37,
+																					Column: 145,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -10329,14 +10329,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 120,
-																Line:   37,
+																Column: 165,
+																Line:   34,
 															},
 															File:   "endswith_strings_regexp_hasSuffix_test.flux",
 															Source: "strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))",
 															Start: ast.Position{
-																Column: 16,
-																Line:   37,
+																Column: 61,
+																Line:   34,
 															},
 														},
 													},
@@ -10346,14 +10346,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 33,
-																	Line:   37,
+																	Column: 78,
+																	Line:   34,
 																},
 																File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																Source: "strings.substring",
 																Start: ast.Position{
-																	Column: 16,
-																	Line:   37,
+																	Column: 61,
+																	Line:   34,
 																},
 															},
 														},
@@ -10364,14 +10364,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 23,
-																		Line:   37,
+																		Column: 68,
+																		Line:   34,
 																	},
 																	File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																	Source: "strings",
 																	Start: ast.Position{
-																		Column: 16,
-																		Line:   37,
+																		Column: 61,
+																		Line:   34,
 																	},
 																},
 															},
@@ -10383,14 +10383,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 33,
-																		Line:   37,
+																		Column: 78,
+																		Line:   34,
 																	},
 																	File:   "endswith_strings_regexp_hasSuffix_test.flux",
 																	Source: "substring",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   37,
+																		Column: 69,
+																		Line:   34,
 																	},
 																},
 															},
@@ -10410,14 +10410,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 10,
-													Line:   38,
+													Column: 166,
+													Line:   34,
 												},
 												File:   "endswith_strings_regexp_hasSuffix_test.flux",
-												Source: "regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        )",
+												Source: "regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)))",
 												Start: ast.Position{
-													Column: 20,
-													Line:   35,
+													Column: 26,
+													Line:   34,
 												},
 											},
 										},
@@ -10427,14 +10427,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 44,
-														Line:   35,
+														Column: 50,
+														Line:   34,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
 													Source: "regexp.matchRegexpString",
 													Start: ast.Position{
-														Column: 20,
-														Line:   35,
+														Column: 26,
+														Line:   34,
 													},
 												},
 											},
@@ -10445,14 +10445,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
-															Line:   35,
+															Column: 32,
+															Line:   34,
 														},
 														File:   "endswith_strings_regexp_hasSuffix_test.flux",
 														Source: "regexp",
 														Start: ast.Position{
-															Column: 20,
-															Line:   35,
+															Column: 26,
+															Line:   34,
 														},
 													},
 												},
@@ -10464,14 +10464,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 44,
-															Line:   35,
+															Column: 50,
+															Line:   34,
 														},
 														File:   "endswith_strings_regexp_hasSuffix_test.flux",
 														Source: "matchRegexpString",
 														Start: ast.Position{
-															Column: 27,
-															Line:   35,
+															Column: 33,
+															Line:   34,
 														},
 													},
 												},
@@ -10489,14 +10489,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 15,
-													Line:   35,
+													Column: 21,
+													Line:   34,
 												},
 												File:   "endswith_strings_regexp_hasSuffix_test.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 14,
-													Line:   35,
+													Column: 20,
+													Line:   34,
 												},
 											},
 										},
@@ -10507,14 +10507,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   35,
+														Column: 21,
+														Line:   34,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 14,
-														Line:   35,
+														Column: 20,
+														Line:   34,
 													},
 												},
 											},
@@ -10534,11 +10534,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   39,
+									Column: 167,
+									Line:   34,
 								},
 								File:   "endswith_strings_regexp_hasSuffix_test.flux",
-								Source: "filter(\n        fn: (r) => regexp.matchRegexpString(\n            r: re,\n            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),\n        ),\n    )",
+								Source: "filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))))",
 								Start: ast.Position{
 									Column: 8,
 									Line:   34,
@@ -10634,13 +10634,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 150,
-							Line:   41,
+							Line:   36,
 						},
 						File:   "endswith_strings_regexp_hasSuffix_test.flux",
 						Source: "_string_regexp_hasSuffix = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasSuffix})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   41,
+							Line:   36,
 						},
 					},
 				},
@@ -10651,13 +10651,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   41,
+								Line:   36,
 							},
 							File:   "endswith_strings_regexp_hasSuffix_test.flux",
 							Source: "_string_regexp_hasSuffix",
 							Start: ast.Position{
 								Column: 6,
-								Line:   41,
+								Line:   36,
 							},
 						},
 					},
@@ -10671,13 +10671,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 150,
-								Line:   41,
+								Line:   36,
 							},
 							File:   "endswith_strings_regexp_hasSuffix_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasSuffix})",
 							Start: ast.Position{
 								Column: 33,
-								Line:   41,
+								Line:   36,
 							},
 						},
 					},
@@ -10688,13 +10688,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 150,
-									Line:   41,
+									Line:   36,
 								},
 								File:   "endswith_strings_regexp_hasSuffix_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasSuffix})",
 								Start: ast.Position{
 									Column: 39,
-									Line:   41,
+									Line:   36,
 								},
 							},
 						},
@@ -10705,13 +10705,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 149,
-										Line:   41,
+										Line:   36,
 									},
 									File:   "endswith_strings_regexp_hasSuffix_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasSuffix}",
 									Start: ast.Position{
 										Column: 40,
-										Line:   41,
+										Line:   36,
 									},
 								},
 							},
@@ -10723,13 +10723,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
-											Line:   41,
+											Line:   36,
 										},
 										File:   "endswith_strings_regexp_hasSuffix_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 41,
-											Line:   41,
+											Line:   36,
 										},
 									},
 								},
@@ -10741,13 +10741,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   41,
+												Line:   36,
 											},
 											File:   "endswith_strings_regexp_hasSuffix_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 41,
-												Line:   41,
+												Line:   36,
 											},
 										},
 									},
@@ -10762,13 +10762,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 79,
-													Line:   41,
+													Line:   36,
 												},
 												File:   "endswith_strings_regexp_hasSuffix_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 68,
-													Line:   41,
+													Line:   36,
 												},
 											},
 										},
@@ -10780,13 +10780,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 79,
-														Line:   41,
+														Line:   36,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 68,
-														Line:   41,
+														Line:   36,
 													},
 												},
 											},
@@ -10798,13 +10798,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 71,
-															Line:   41,
+															Line:   36,
 														},
 														File:   "endswith_strings_regexp_hasSuffix_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 68,
-															Line:   41,
+															Line:   36,
 														},
 													},
 												},
@@ -10818,13 +10818,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 79,
-															Line:   41,
+															Line:   36,
 														},
 														File:   "endswith_strings_regexp_hasSuffix_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 73,
-															Line:   41,
+															Line:   36,
 														},
 													},
 												},
@@ -10840,13 +10840,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 80,
-												Line:   41,
+												Line:   36,
 											},
 											File:   "endswith_strings_regexp_hasSuffix_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 48,
-												Line:   41,
+												Line:   36,
 											},
 										},
 									},
@@ -10857,13 +10857,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 67,
-													Line:   41,
+													Line:   36,
 												},
 												File:   "endswith_strings_regexp_hasSuffix_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 48,
-													Line:   41,
+													Line:   36,
 												},
 											},
 										},
@@ -10875,13 +10875,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 55,
-														Line:   41,
+														Line:   36,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 48,
-														Line:   41,
+														Line:   36,
 													},
 												},
 											},
@@ -10894,13 +10894,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 67,
-														Line:   41,
+														Line:   36,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 56,
-														Line:   41,
+														Line:   36,
 													},
 												},
 											},
@@ -10918,13 +10918,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 117,
-											Line:   41,
+											Line:   36,
 										},
 										File:   "endswith_strings_regexp_hasSuffix_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 82,
-											Line:   41,
+											Line:   36,
 										},
 									},
 								},
@@ -10936,13 +10936,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 86,
-												Line:   41,
+												Line:   36,
 											},
 											File:   "endswith_strings_regexp_hasSuffix_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 82,
-												Line:   41,
+												Line:   36,
 											},
 										},
 									},
@@ -10957,13 +10957,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 116,
-													Line:   41,
+													Line:   36,
 												},
 												File:   "endswith_strings_regexp_hasSuffix_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 104,
-													Line:   41,
+													Line:   36,
 												},
 											},
 										},
@@ -10975,13 +10975,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 116,
-														Line:   41,
+														Line:   36,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 104,
-														Line:   41,
+														Line:   36,
 													},
 												},
 											},
@@ -10993,13 +10993,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 107,
-															Line:   41,
+															Line:   36,
 														},
 														File:   "endswith_strings_regexp_hasSuffix_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 104,
-															Line:   41,
+															Line:   36,
 														},
 													},
 												},
@@ -11013,13 +11013,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 116,
-															Line:   41,
+															Line:   36,
 														},
 														File:   "endswith_strings_regexp_hasSuffix_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 109,
-															Line:   41,
+															Line:   36,
 														},
 													},
 												},
@@ -11035,13 +11035,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 117,
-												Line:   41,
+												Line:   36,
 											},
 											File:   "endswith_strings_regexp_hasSuffix_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 88,
-												Line:   41,
+												Line:   36,
 											},
 										},
 									},
@@ -11052,13 +11052,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 103,
-													Line:   41,
+													Line:   36,
 												},
 												File:   "endswith_strings_regexp_hasSuffix_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 88,
-													Line:   41,
+													Line:   36,
 												},
 											},
 										},
@@ -11070,13 +11070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 95,
-														Line:   41,
+														Line:   36,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 88,
-														Line:   41,
+														Line:   36,
 													},
 												},
 											},
@@ -11089,13 +11089,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 103,
-														Line:   41,
+														Line:   36,
 													},
 													File:   "endswith_strings_regexp_hasSuffix_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 96,
-														Line:   41,
+														Line:   36,
 													},
 												},
 											},
@@ -11113,13 +11113,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 148,
-											Line:   41,
+											Line:   36,
 										},
 										File:   "endswith_strings_regexp_hasSuffix_test.flux",
 										Source: "fn: t_string_regexp_hasSuffix",
 										Start: ast.Position{
 											Column: 119,
-											Line:   41,
+											Line:   36,
 										},
 									},
 								},
@@ -11131,13 +11131,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 121,
-												Line:   41,
+												Line:   36,
 											},
 											File:   "endswith_strings_regexp_hasSuffix_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 119,
-												Line:   41,
+												Line:   36,
 											},
 										},
 									},
@@ -11151,13 +11151,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 148,
-												Line:   41,
+												Line:   36,
 											},
 											File:   "endswith_strings_regexp_hasSuffix_test.flux",
 											Source: "t_string_regexp_hasSuffix",
 											Start: ast.Position{
 												Column: 123,
-												Line:   41,
+												Line:   36,
 											},
 										},
 									},
@@ -11181,13 +11181,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 150,
-						Line:   41,
+						Line:   36,
 					},
 					File:   "endswith_strings_regexp_hasSuffix_test.flux",
 					Source: "test _string_regexp_hasSuffix = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasSuffix})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   41,
+						Line:   36,
 					},
 				},
 			},

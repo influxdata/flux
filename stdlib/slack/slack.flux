@@ -69,23 +69,15 @@ option defaultURL = "https://slack.com/api/chat.postMessage"
 // ```
 //
 message = (
-        url=defaultURL,
-        token="",
-        channel,
-        text,
-        color,
+    url=defaultURL,
+    token="",
+    channel,
+    text,
+    color,
 ) => {
-    attachments = [
-        {color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]},
-    ]
-    data = {
-        channel: channel,
-        attachments: attachments,
-    }
-    headers = {
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json",
-    }
+    attachments = [{color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]}]
+    data = {channel: channel, attachments: attachments}
+    headers = {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
     enc = json.encode(v: data)
 
     return http.post(headers: headers, url: url, data: enc)
@@ -126,7 +118,7 @@ endpoint = (url=defaultURL, token="") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == message(

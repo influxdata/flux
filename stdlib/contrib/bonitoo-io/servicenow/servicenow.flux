@@ -57,18 +57,18 @@ import "json"
 // ```
 //
 event = (
-        url,
-        username,
-        password,
-        source="Flux",
-        node="",
-        metricType="",
-        resource="",
-        metricName="",
-        messageKey="",
-        description,
-        severity,
-        additionalInfo=record.any,
+    url,
+    username,
+    password,
+    source="Flux",
+    node="",
+    metricType="",
+    resource="",
+    metricName="",
+    messageKey="",
+    description,
+    severity,
+    additionalInfo=record.any,
 ) => {
     event = {
         source: source,
@@ -95,15 +95,8 @@ event = (
         // shouldn't happen
         additional_info: if additionalInfo == record.any then "" else string(v: json.encode(v: additionalInfo)),
     }
-    payload = {
-        records: [
-            event,
-        ],
-    }
-    headers = {
-        "Authorization": http.basicAuth(u: username, p: password),
-        "Content-Type": "application/json",
-    }
+    payload = {records: [event]}
+    headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
     body = json.encode(v: payload)
 
     return http.post(headers: headers, url: url, data: body)
@@ -160,7 +153,7 @@ endpoint = (url, username, password, source="Flux") => (mapFn) => (tables=<-) =>
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == event(

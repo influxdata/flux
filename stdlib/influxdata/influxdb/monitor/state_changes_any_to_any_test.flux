@@ -46,10 +46,7 @@ outData = "
 t_state_changes_any_to_any = (table=<-) => table
     |> range(start: -1m)
     |> v1.fieldsAsCols()
-    |> monitor.stateChanges(
-        fromLevel: "any",
-        toLevel: "any",
-    )
+    |> monitor.stateChanges(fromLevel: "any", toLevel: "any")
     |> drop(columns: ["_start", "_stop"])
 
 test monitor_state_changes_any_to_any = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})

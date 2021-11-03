@@ -698,8 +698,4 @@ t_cumulative_sum = (tables=<-) => tables
     |> drop(columns: ["_start", "_stop", "_field"])
     |> rename(columns: {_time: "time", _value: "cumulative_sum"})
 
-test _cumulative_sum = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_cumulative_sum,
-})
+test _cumulative_sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cumulative_sum})

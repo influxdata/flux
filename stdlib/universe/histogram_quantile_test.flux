@@ -38,11 +38,6 @@ outData = "
 "
 t_histogram_quantile = (table=<-) => table
     |> range(start: 2018-05-22T19:53:00Z)
-    |> histogramQuantile(
-        quantile: 0.9,
-        upperBoundColumn: "upperBound",
-        countColumn: "count",
-        valueColumn: "quant",
-    )
+    |> histogramQuantile(quantile: 0.9, upperBoundColumn: "upperBound", countColumn: "count", valueColumn: "quant")
 
 test _histogram_quantile = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram_quantile})

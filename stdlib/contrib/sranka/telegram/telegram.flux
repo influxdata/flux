@@ -18,13 +18,13 @@ option defaultSilent = true
 // `disableWebPagePreview` - bool - Disables preview of web links in the sent messages when "true". Defaults to "false"
 // `silent` - bool - Messages are sent silently (https://telegram.org/blog/channels-2-0#silent-messages) when "true". Defaults to "true".
 message = (
-        url=defaultURL,
-        token,
-        channel,
-        text,
-        parseMode=defaultParseMode,
-        disableWebPagePreview=defaultDisableWebPagePreview,
-        silent=defaultSilent,
+    url=defaultURL,
+    token,
+    channel,
+    text,
+    parseMode=defaultParseMode,
+    disableWebPagePreview=defaultDisableWebPagePreview,
+    silent=defaultSilent,
 ) => {
     data = {
         chat_id: channel,
@@ -33,9 +33,7 @@ message = (
         disable_web_page_preview: disableWebPagePreview,
         disable_notification: silent,
     }
-    headers = {
-        "Content-Type": "application/json; charset=utf-8",
-    }
+    headers = {"Content-Type": "application/json; charset=utf-8"}
     enc = json.encode(v: data)
 
     return http.post(headers: headers, url: url + token + "/sendMessage", data: enc)
@@ -52,7 +50,7 @@ endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePre
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == message(

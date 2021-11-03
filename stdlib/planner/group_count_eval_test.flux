@@ -48,8 +48,4 @@ group_count_fn = (tables=<-) => tables
     |> group(columns: ["_start", "_stop", "host"])
     |> count()
 
-test group_count_evaluate = () => ({
-    input: testing.loadStorage(csv: input),
-    want: testing.loadMem(csv: output),
-    fn: group_count_fn,
-})
+test group_count_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_count_fn})

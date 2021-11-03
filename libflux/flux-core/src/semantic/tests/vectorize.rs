@@ -56,7 +56,8 @@ fn vectorize_with_construction() -> anyhow::Result<()> {
     expect_test::expect![[r#"
         (r) => {
             return {r:{G with a:v[B]} with b: r:{G with a:v[B]}.a:v[B]}:{G with b:v[B], a:v[B]}
-        }:(r:{G with a:B}) => {G with b:B, a:B}"#]].assert_eq(&crate::semantic::formatter::format_node(
+        }:(r:{G with a:B}) => {G with b:B, a:B}"#]]
+    .assert_eq(&crate::semantic::formatter::format_node(
         Node::FunctionExpr(function),
     )?);
 

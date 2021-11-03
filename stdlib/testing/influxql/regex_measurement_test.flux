@@ -67,8 +67,4 @@ t_regex_measurement = (tables=<-) => tables
     |> keep(columns: ["_time", "_value", "_measurement"])
     |> rename(columns: {_time: "time", _value: "n"})
 
-test _regex_measurement = () => ({
-    input: testing.loadStorage(csv: inData),
-    want: testing.loadMem(csv: outData),
-    fn: t_regex_measurement,
-})
+test _regex_measurement = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_regex_measurement})

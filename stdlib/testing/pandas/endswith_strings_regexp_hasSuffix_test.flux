@@ -31,11 +31,6 @@ outData = "
 re = regexp.compile(v: " ")
 t_string_regexp_hasSuffix = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> filter(
-        fn: (r) => regexp.matchRegexpString(
-            r: re,
-            v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value)),
-        ),
-    )
+    |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.substring(v: r._value, start: strings.strlen(v: r._value) - 1, end: strings.strlen(v: r._value))))
 
 test _string_regexp_hasSuffix = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasSuffix})
