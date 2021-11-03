@@ -227,7 +227,19 @@ impl<'a> example::Executor for CLIExecutor<'a> {
             .arg(tmpfile.path())
             .output()?;
 
-        Ok(String::from_utf8(output.stdout)?)
+        if output.status.success() {
+            Ok(String::from_utf8(output.stdout)?)
+        } else {
+            let stderr = String::from_utf8(output.stderr)?;
+            // Find error in output
+            for line in stderr.lines() {
+                if let Some(msg) = line.strip_prefix("Error: ") {
+                    bail!("{}", msg)
+                }
+            }
+            // we didn't find a specific error message, report the entire stderr
+            bail!("stderr: {}", stderr)
+        }
     }
 }
 
