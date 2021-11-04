@@ -47,9 +47,9 @@ enum FluxDoc {
         /// Directory containing Flux source code.
         #[structopt(short, long, parse(from_os_str))]
         dir: PathBuf,
-        /// Limit the number of diagnostics to report. Default 10.
+        /// Limit the number of diagnostics to report. Default 10. 0 means no limit.
         #[structopt(short, long)]
-        limit: Option<i32>,
+        limit: Option<usize>,
         /// Honor the exception list.
         #[structopt(long)]
         allow_exceptions: bool,
@@ -156,7 +156,7 @@ fn dump(
 fn lint(
     stdlib_dir: Option<&Path>,
     dir: &Path,
-    limit: Option<i32>,
+    limit: Option<usize>,
     allow_exceptions: bool,
 ) -> Result<()> {
     let stdlib_dir = match stdlib_dir {
@@ -164,7 +164,8 @@ fn lint(
         None => Path::new(DEFAULT_STDLIB_PATH),
     };
     let limit = match limit {
-        Some(limit) => limit as usize,
+        Some(limit) if limit == 0 => usize::MAX,
+        Some(limit) => limit,
         None => 10,
     };
     let exceptions = if allow_exceptions {
@@ -174,13 +175,16 @@ fn lint(
     };
     let (_, mut diagnostics) = parse_docs(stdlib_dir, dir, exceptions)?;
     if !diagnostics.is_empty() {
-        let rest = diagnostics.len() as i64 - limit as i64;
+        let rest = match limit {
+            usize::MAX => 0,
+            _ => diagnostics.len() - limit,
+        };
         println!("Found {} diagnostics", diagnostics.len());
         diagnostics.truncate(limit);
         for d in diagnostics {
             println!("{}", d);
         }
-        if rest > 0 {
+        if rest > 0 && limit != usize::MAX {
             println!("Hiding the remaining {} diagnostics", rest);
         }
         bail!("docs do not pass lint");
