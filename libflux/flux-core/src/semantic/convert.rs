@@ -43,8 +43,7 @@ pub enum Error {
 /// Result encapsulates any error during the conversion process.
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// convert_package converts an [AST package] node to its semantic representation using
-/// the provided [`Fresher`].
+/// convert_package converts an [AST package] node to its semantic representation.
 ///
 /// Note: most external callers of this function will want to use the analyze()
 /// function in the flux crate instead, which is aware of everything in the Flux stdlib and prelude.

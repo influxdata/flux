@@ -1,4 +1,7 @@
-#![cfg_attr(feature = "strict", deny(warnings))]
+#![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
+
+//! This module provides the public facing API for Flux's Go runtime, including formatting,
+//! parsing, and standard library analysis.
 
 extern crate fluxcore;
 extern crate serde_aux;
@@ -88,9 +91,13 @@ impl From<&mut anyhow::Error> for Box<ErrorHandle> {
 
 /// Frees a previously allocated error.
 ///
-/// Note: we use the pattern described here: https://doc.rust-lang.org/std/boxed/index.html#memory-layout
-/// wherein a pointer where ownership is being transferred is modeled as a Box, and if it could be
-/// null, then it's wrapped in an Option.
+/// ## Memory layout
+///
+/// We use the memory layout pattern described in the [`std::boxed`] module,
+/// wherein a pointer where ownership is being transferred is modeled as a [`Box`], and if it could be
+/// null, then it's wrapped in an [`Option`].
+///
+/// [`std::boxed`]: https://doc.rust-lang.org/std/boxed/index.html#memory-layout
 #[no_mangle]
 pub extern "C" fn flux_free_error(_err: Option<Box<ErrorHandle>>) {}
 
@@ -139,6 +146,7 @@ pub fn parse(fname: String, src: &str) -> ast::Package {
     p.parse_file(fname).into()
 }
 
+/// Format the Flux AST.
 #[no_mangle]
 pub extern "C" fn flux_ast_format(
     ast_pkg: &ast::Package,
@@ -181,9 +189,13 @@ pub unsafe extern "C" fn flux_ast_get_error(
 
 /// Frees an AST package.
 ///
-/// Note: we use the pattern described here: https://doc.rust-lang.org/std/boxed/index.html#memory-layout
-/// wherein a pointer where ownership is being transferred is modeled as a Box, and if it could be
-/// null, then it's wrapped in an Option.
+/// ## Memory layout
+///
+/// We use the memory layout pattern described in the [`std::boxed`] module,
+/// wherein a pointer where ownership is being transferred is modeled as a [`Box`], and if it could be
+/// null, then it's wrapped in an [`Option`].
+///
+/// [`std::boxed`]: https://doc.rust-lang.org/std/boxed/index.html#memory-layout
 #[no_mangle]
 pub extern "C" fn flux_free_ast_pkg(_: Option<Box<ast::Package>>) {}
 
