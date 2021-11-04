@@ -1,11 +1,24 @@
-//Final working code as of August 11, 2020
-//Currently supports single field classification and binary data sets 
-//Please ensure Ruby is installed
+// Package naiveBayesClassifier provides an implementation of
+// a naive Bayes classifier.
+//
+// Currently supports single field classification and binary data sets.
+//
+// For information about demonstrating functions in this package, see the
+// [package README on GitHub](https://github.com/influxdata/flux/blob/master/stdlib/contrib/RohanSreerama5/naiveBayesClassifier/README.md).
 package naiveBayesClassifier
 
 
 import "system"
 
+
+// naiveBayes performs a naive Bayes classification.
+//
+// ## Parameters
+//
+// - myMeasurement: Measurement to use as training data.
+// - myField: Field to use as training data.
+// - myClass: Class to classify against.
+// - tables: Input data. Default is piped-forward data (`<-`).
 naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
     training_data = tables
         //data for 3 days
@@ -21,7 +34,7 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
         |> group()
 
     //|> yield(name: "test data")
-    //data preparation 
+    //data preparation
     r = training_data
         |> group(columns: ["_field"])
         |> count()
@@ -60,12 +73,12 @@ naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
         |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))
 
     //added P(value_x) to table
-    //calculated probabilities for training data 
+    //calculated probabilities for training data
     Probability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: ["_value", "_field"], method: "inner")
         |> map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))
 
     //|> yield(name: "final")
-    //predictions for test data computed 
+    //predictions for test data computed
     predictOverall = (tables=<-) => {
         r = tables
             |> keep(columns: ["_value", "Animal_name", "_field"])
