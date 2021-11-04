@@ -1,4 +1,4 @@
-// Package statsmodels provides code for calculating linear regression.
+// Package statsmodels provides functions for calculating statistical models.
 package statsmodels
 
 import "math"
