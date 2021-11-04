@@ -49,7 +49,7 @@ enum FluxDoc {
         dir: PathBuf,
         /// Limit the number of diagnostics to report. Default 10. 0 means no limit.
         #[structopt(short, long)]
-        limit: Option<usize>,
+        limit: Option<isize>,
         /// Honor the exception list.
         #[structopt(long)]
         allow_exceptions: bool,
@@ -156,7 +156,7 @@ fn dump(
 fn lint(
     stdlib_dir: Option<&Path>,
     dir: &Path,
-    limit: Option<usize>,
+    limit: Option<isize>,
     allow_exceptions: bool,
 ) -> Result<()> {
     let stdlib_dir = match stdlib_dir {
@@ -164,7 +164,7 @@ fn lint(
         None => Path::new(DEFAULT_STDLIB_PATH),
     };
     let limit = match limit {
-        Some(limit) if limit == 0 => usize::MAX,
+        Some(limit) if limit == 0 => isize::MAX,
         Some(limit) => limit,
         None => 10,
     };
@@ -175,16 +175,13 @@ fn lint(
     };
     let (_, mut diagnostics) = parse_docs(stdlib_dir, dir, exceptions)?;
     if !diagnostics.is_empty() {
-        let rest = match limit {
-            usize::MAX => 0,
-            _ => diagnostics.len() - limit,
-        };
+        let rest = diagnostics.len() - limit as usize;
         println!("Found {} diagnostics", diagnostics.len());
         diagnostics.truncate(limit);
         for d in diagnostics {
             println!("{}", d);
         }
-        if rest > 0 && limit != usize::MAX {
+        if rest > 0 {
             println!("Hiding the remaining {} diagnostics", rest);
         }
         bail!("docs do not pass lint");
