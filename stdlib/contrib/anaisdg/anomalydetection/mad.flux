@@ -8,7 +8,18 @@ import "experimental"
 // mad TODO.
 //
 // ## Parameters
-// - threshold: deviation at which to report anamolies
+// - threshold: Deviation threshold for anomalies.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+// 
+// ### Use the MAD algorithm to detect anomalies
+// ```
+// import "contrib/anaisdg/anomalydetection"
+// import "sampledata"
+// 
+// < sampledata.float()
+// >     |> anomalydetection.mad(threshold: 1.0)
 mad = (table=<-, threshold=3.0) => {
     // MEDiXi = med(x)
     data = table |> group(columns: ["_time"], mode: "by")
