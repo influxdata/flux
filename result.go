@@ -199,6 +199,16 @@ type GroupKey interface {
 	Equal(o GroupKey) bool
 	Less(o GroupKey) bool
 	String() string
+
+	// EqualTrueNulls should be functionally identical to Equal,
+	// with the exception that two nulls should never be treated
+	// as equal - the idea being that, by strict technical definition,
+	// null should not equal null. Therefore, this implementation is
+	// closer to the `true` null behavior.
+	//
+	// This is useful for transformations like join()
+	// that repurpose group keys for something other than grouping.
+	EqualTrueNulls(o GroupKey) bool
 }
 
 // GroupKeys provides a sortable collection of group keys.
