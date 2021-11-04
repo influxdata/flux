@@ -5,7 +5,15 @@ package anomalydetection
 import "math"
 import "experimental"
 
-// mad TODO.
+// mad uses the median absolute deviation (MAD) algorithm to detect anomalies in a data set.
+//
+// Input data requires `_time` and `_value` columns.
+// Output data is grouped by `_time` and includes the following columns of interest:
+//
+// - **\_value**: difference between of the original `_value` from the computed MAD
+//   divided by the median difference.
+// - **MAD**: median absolute deviation of the group.
+// - **level**: anomaly indicator set to either `anomaly` or `normal`.
 //
 // ## Parameters
 // - threshold: Deviation threshold for anomalies.
