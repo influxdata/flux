@@ -748,9 +748,7 @@ func (c *MergeJoinCache) registerKey(id execute.DatasetID, key flux.GroupKey) {
 	switch id {
 
 	case c.leftID:
-
 		c.buffers[c.rightID].iterate(func(groupKey flux.GroupKey) {
-
 			keys := map[execute.DatasetID]flux.GroupKey{
 				c.leftID:  key,
 				c.rightID: groupKey,
@@ -772,9 +770,7 @@ func (c *MergeJoinCache) registerKey(id execute.DatasetID, key flux.GroupKey) {
 		})
 
 	case c.rightID:
-
 		c.buffers[c.leftID].iterate(func(groupKey flux.GroupKey) {
-
 			keys := map[execute.DatasetID]flux.GroupKey{
 				c.leftID:  groupKey,
 				c.rightID: key,
@@ -841,19 +837,6 @@ func (c *MergeJoinCache) buildPostJoinSchema() {
 	for j, column := range c.schema.columns {
 		c.colIndex[column] = j
 	}
-}
-
-// equalJoinKeys compares two keys for equality.
-// Null values are not considered equal when joining (unlike when grouping).
-func equalJoinkeys(left, right flux.GroupKey) bool {
-
-	for j, v := range left.Values() {
-		// value.Equal will return false if both sides are null
-		if !v.Equal(right.Value(j)) {
-			return false
-		}
-	}
-	return true
 }
 
 // Find indexes of column names missing between the two tables
@@ -928,8 +911,7 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 
 	// Perform sort merge join
 	for !leftSet.Empty() && !rightSet.Empty() {
-		if equalJoinkeys(leftKey, rightKey) {
-
+		if leftKey.EqualTrueNulls(rightKey) {
 			for l := leftSet.Start; l < leftSet.Stop; l++ {
 				for r := rightSet.Start; r < rightSet.Stop; r++ {
 
