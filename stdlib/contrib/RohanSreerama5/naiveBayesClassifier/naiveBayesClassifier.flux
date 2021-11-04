@@ -10,7 +10,6 @@ package naiveBayesClassifier
 
 import "system"
 
-
 // naiveBayes performs a naive Bayes classification.
 //
 // ## Parameters
