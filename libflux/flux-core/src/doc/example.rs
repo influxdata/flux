@@ -1,7 +1,7 @@
 //! Parse documentation examples for their code and execute them collecting their inputs and
 //! outputs.
 
-use anyhow::{bail, Result};
+use anyhow::{bail, Context, Result};
 use csv::StringRecord;
 use pad::PadStr;
 use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag};
@@ -26,10 +26,12 @@ pub fn evaluate_package_examples(
     executor: &mut impl Executor,
 ) -> Result<()> {
     for example in docs.examples.iter_mut() {
-        evaluate_example(example, executor)?;
+        evaluate_example(example, executor)
+            .context(format!("executing example for package {}", &docs.path))?;
     }
-    for (_, doc) in docs.members.iter_mut() {
-        evaluate_doc_examples(doc, executor)?;
+    for (name, doc) in docs.members.iter_mut() {
+        evaluate_doc_examples(doc, executor)
+            .context(format!("executing example for {}.{}", &docs.path, name))?;
     }
     Ok(())
 }
@@ -232,6 +234,7 @@ const ANNOTATION_IDX: usize = 0;
 const RESULT_IDX: usize = 1;
 const TABLE_IDX: usize = 2;
 const DATA_START_IDX: usize = 3;
+const ERROR_LABEL: &str = "error";
 const DATATYPE_LABEL: &str = "#datatype";
 const DEFAULT_LABEL: &str = "#default";
 const GROUP_LABEL: &str = "#group";
@@ -302,6 +305,9 @@ fn parse_all_results(data: &str) -> Result<HashMap<String, Vec<Table>>> {
     // Any annotation rows reset this counter.
     let mut i: usize = 0;
 
+    // Indicates if we found an error encoded into the csv table.
+    let mut is_error = false;
+
     // Current ID of the table
     let mut table_id = "".to_string();
     for record in records {
@@ -311,6 +317,9 @@ fn parse_all_results(data: &str) -> Result<HashMap<String, Vec<Table>>> {
             None => bail!("could not read annotation column"),
         };
         match annotation {
+            ERROR_LABEL => {
+                is_error = true;
+            }
             DATATYPE_LABEL => {
                 if table.ready {
                     tables.push(table.to_markdown());
@@ -340,6 +349,13 @@ fn parse_all_results(data: &str) -> Result<HashMap<String, Vec<Table>>> {
             }
             _ => {
                 if i == 0 {
+                    if is_error {
+                        // We have an error and not a header so return the error
+                        match record.get(ANNOTATION_IDX) {
+                            Some(err) => bail!("flux error: {}", err),
+                            None => bail!("flux error: unknown"),
+                        }
+                    }
                     // Header row
                     table.header = record
                         .iter()
@@ -534,12 +550,48 @@ array.from(
 
             array.from(
                 rows: [
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:13:30Z, _value: false},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:13:40Z, _value: true},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:13:50Z, _value: false},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:14:00Z, _value: false},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:14:10Z, _value: true},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:14:20Z, _value: true},
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:13:30Z,
+                        _value: false,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:13:40Z,
+                        _value: true,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:13:50Z,
+                        _value: false,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:14:00Z,
+                        _value: false,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:14:10Z,
+                        _value: true,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:14:20Z,
+                        _value: true,
+                    },
                 ],
             )
                 |> map(fn: (r) => ({r with _value: "b"}))
@@ -551,12 +603,48 @@ array.from(
 
             array.from(
                 rows: [
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:13:30Z, _value: false},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:13:40Z, _value: true},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:13:50Z, _value: false},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:14:00Z, _value: false},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:14:10Z, _value: true},
-                    {_measurement: "m0", _field: "f0", t0: "tagvalue", _time: 2018-12-19T22:14:20Z, _value: true},
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:13:30Z,
+                        _value: false,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:13:40Z,
+                        _value: true,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:13:50Z,
+                        _value: false,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:14:00Z,
+                        _value: false,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:14:10Z,
+                        _value: true,
+                    },
+                    {
+                        _measurement: "m0",
+                        _field: "f0",
+                        t0: "tagvalue",
+                        _time: 2018-12-19T22:14:20Z,
+                        _value: true,
+                    },
                 ],
             )
                 |> yield(name: "input")
@@ -615,5 +703,17 @@ array.from(
             | b    | 14      |
         "#]];
         want_output.assert_eq(output.as_str());
+    }
+    #[test]
+    fn test_parse_results_error_table() {
+        let data = r#"error,reference
+encoded error message,5
+"#;
+
+        let err = parse_results(data).unwrap_err();
+        assert_eq!(
+            "flux error: encoded error message",
+            err.to_string().as_str()
+        );
     }
 }
