@@ -798,6 +798,7 @@ from(bucket: v.bucket)
         let errh = unsafe { flux_ast_get_error(ast) };
         assert_eq!(
             "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
+
 error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF",
             errh.unwrap().err.into_string().unwrap()
         );
@@ -922,11 +923,9 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         match analyze(ast) {
             Ok(_) => panic!("expected an error, got none"),
             Err(e) => {
-                let want = "error at @1:5-1:7: expected ARROW, got EOF\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF";
+                let want = "error at @1:5-1:7: expected ARROW, got EOF\n\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF";
                 let got = format!("{}", e);
-                if want != got {
-                    panic!(r#"expected error "{}", got "{}""#, want, got)
-                }
+                assert_eq!(want, got);
             }
         }
     }
