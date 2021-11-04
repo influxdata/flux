@@ -528,7 +528,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/join_panic_test.flux":                                                        "165809f897023f15cf8cd9499e83e9ed9f2c63b330f984a418f2588c1606707f",
 	"stdlib/universe/join_test.flux":                                                              "e5d894f43ba93b0cf56b010a9797be99ed938a403673c1ada627e46a500dc8eb",
 	"stdlib/universe/join_two_same_sources_test.flux":                                             "e5679c7111377d04ed76394e14c8ad06a693aa2fa68cebe227c7b13156e47fe1",
-	"stdlib/universe/join_unsorted_columns_test.flux":                                             "1c4199b469a1e64d1742a7649dfa890250292b35736b8dac9f79bd728fd709bc",
+	"stdlib/universe/join_unsorted_columns_test.flux":                                             "f05ca43211a3688acf554ba8678bcbefcff32ec25edfdc22f0a7e332c79ea2ea",
 	"stdlib/universe/join_use_previous_test.flux":                                                 "b161efc97bf77fb7fea4f25c69408132c7e34e2b2fa6cc3b1d203c85f3d47801",
 	"stdlib/universe/kama_test.flux":                                                              "6e8b63bf2a3dcfb797b96dcf2eeff3857740d8e8cf1b8ee56de7fc9a8af819b6",
 	"stdlib/universe/kama_v2_test.flux":                                                           "49251c487c9957b724c83543d2c93a57b9a8efc82c69ebbc1a3f4196d7bdfef1",
