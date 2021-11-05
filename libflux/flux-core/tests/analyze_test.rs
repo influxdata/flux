@@ -84,7 +84,7 @@ f(a: s)
                     },
                     Expression::Function(Box::new(FunctionExpr {
                         loc: ast::BaseNode::default().location,
-                        typ: MonoType::Fun(Box::new(f_type)),
+                        typ: MonoType::from(f_type),
                         params: vec![FunctionParameter {
                             loc: ast::BaseNode::default().location,
                             is_pipe: false,
@@ -124,7 +124,7 @@ f(a: s)
                         pipe: None,
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
-                            typ: MonoType::Fun(Box::new(f_call_int_type)),
+                            typ: MonoType::from(f_call_int_type),
                             name: "f".to_string(),
                         }),
                         arguments: vec![Property {
@@ -149,7 +149,7 @@ f(a: s)
                         pipe: None,
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
-                            typ: MonoType::Fun(Box::new(f_call_string_type)),
+                            typ: MonoType::from(f_call_string_type),
                             name: "f".to_string(),
                         }),
                         arguments: vec![Property {
