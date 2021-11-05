@@ -24,7 +24,7 @@ The alerta.alert() function sends an alert to [Alerta](https://alerta.io/).
 | attributes | record | Alert attributes (optional). |
 | origin | string | Alert origin. Default is "InfluxDB". |
 | type | string | Event type. Default is "". |
-| type | time | The time alert was generated. Default is `now()`. |
+| timestamp | time | The time alert was generated. Default is `now()`. |
 
 Example:
 
@@ -87,7 +87,7 @@ The `mapFn` accepts a row and returns a record with the following fields:
 - tags
 - attributes
 - type
-- type
+- timestamp
 
 _For more information, see `alerta.alert()` parameters._
 
