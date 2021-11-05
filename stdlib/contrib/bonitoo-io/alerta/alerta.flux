@@ -4,6 +4,7 @@
 package alerta
 
 
+import "experimental/record"
 import "http"
 import "json"
 import "strings"
@@ -81,7 +82,7 @@ alert = (
     value="",
     text="",
     tags=[],
-    attributes,
+    attributes=record.any,
     origin="InfluxDB",
     type="",
     timestamp=now(),
@@ -97,7 +98,7 @@ alert = (
             value: value,
             text: text,
             tags: tags,
-            attributes: attributes,
+            attributes: if attributes == record.any then {} else attributes,
             origin: origin,
             type: type,
             createTime: strings.substring(v: string(v: timestamp), start: 0, end: 23) + "Z",
@@ -201,15 +202,15 @@ endpoint = (url, apiKey, environment="", origin="") =>
                                                 event: obj.event,
                                                 environment: environment,
                                                 severity: obj.severity,
-                                                service: obj.service,
-                                                group: obj.group,
-                                                value: obj.value,
-                                                text: obj.text,
-                                                tags: obj.tags,
-                                                attributes: obj.attributes,
+                                                service: record.get(r: obj, key: "service", default: []),
+                                                group: record.get(r: obj, key: "group", default: ""),
+                                                value: record.get(r: obj, key: "value", default: ""),
+                                                text: record.get(r: obj, key: "text", default: ""),
+                                                tags: record.get(r: obj, key: "tags", default: []),
+                                                attributes: record.get(r: obj, key: "attributes", default: record.any),
                                                 origin: origin,
-                                                type: obj.type,
-                                                timestamp: obj.timestamp,
+                                                type: record.get(r: obj, key: "type", default: ""),
+                                                timestamp: record.get(r: obj, key: "timestamp", default: now()),
                                             ) / 100,
                                 ),
                         }
