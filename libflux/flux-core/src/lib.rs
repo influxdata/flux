@@ -34,6 +34,8 @@ pub mod parser;
 pub mod scanner;
 pub mod semantic;
 
+mod errors;
+
 use anyhow::{bail, Result};
 
 use fnv::FnvHasher;

@@ -366,7 +366,7 @@ pub unsafe extern "C" fn flux_find_var_type(
         |e| Some(Box::from(e)),
         |t| {
             let mut builder = flatbuffers::FlatBufferBuilder::new();
-            let (fb_mono_type, typ_type) = build_type(&mut builder, t);
+            let (fb_mono_type, typ_type) = build_type(&mut builder, &t);
             let fb_mono_type_holder = fb::MonoTypeHolder::create(
                 &mut builder,
                 &MonoTypeHolderArgs {
@@ -575,7 +575,7 @@ mod tests {
     use fluxcore::semantic::convert::convert_polytype;
     use fluxcore::semantic::fresh::Fresher;
     use fluxcore::semantic::sub::Substitution;
-    use fluxcore::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
+    use fluxcore::semantic::types::{MonoType, Property, Ptr, Record, Tvar, TvarMap};
 
     pub struct MonoTypeNormalizer {
         tv_map: TvarMap,
@@ -601,15 +601,16 @@ mod tests {
                     *tv = *v;
                 }
                 MonoType::Arr(arr) => {
-                    self.normalize(&mut arr.as_mut().0);
+                    self.normalize(&mut Ptr::make_mut(arr).0);
                 }
                 MonoType::Record(r) => {
-                    if let Record::Extension { head, tail } = r.as_mut() {
+                    if let Record::Extension { head, tail } = Ptr::make_mut(r) {
                         self.normalize(&mut head.v);
                         self.normalize(tail);
                     }
                 }
                 MonoType::Fun(f) => {
+                    let f = Ptr::make_mut(f);
                     for (_, mut v) in f.req.iter_mut() {
                         self.normalize(&mut v);
                     }
@@ -798,6 +799,7 @@ from(bucket: v.bucket)
         let errh = unsafe { flux_ast_get_error(ast) };
         assert_eq!(
             "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
+
 error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF",
             errh.unwrap().err.into_string().unwrap()
         );
@@ -922,11 +924,9 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         match analyze(ast) {
             Ok(_) => panic!("expected an error, got none"),
             Err(e) => {
-                let want = "error at @1:5-1:7: expected ARROW, got EOF\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF";
+                let want = "error at @1:5-1:7: expected ARROW, got EOF\n\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF";
                 let got = format!("{}", e);
-                if want != got {
-                    panic!(r#"expected error "{}", got "{}""#, want, got)
-                }
+                assert_eq!(want, got);
             }
         }
     }

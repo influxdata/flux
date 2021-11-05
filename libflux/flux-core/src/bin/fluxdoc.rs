@@ -47,9 +47,9 @@ enum FluxDoc {
         /// Directory containing Flux source code.
         #[structopt(short, long, parse(from_os_str))]
         dir: PathBuf,
-        /// Limit the number of diagnostics to report. Default 10.
+        /// Limit the number of diagnostics to report. Default 10. 0 means no limit.
         #[structopt(short, long)]
-        limit: Option<i32>,
+        limit: Option<i64>,
         /// Honor the exception list.
         #[structopt(long)]
         allow_exceptions: bool,
@@ -156,7 +156,7 @@ fn dump(
 fn lint(
     stdlib_dir: Option<&Path>,
     dir: &Path,
-    limit: Option<i32>,
+    limit: Option<i64>,
     allow_exceptions: bool,
 ) -> Result<()> {
     let stdlib_dir = match stdlib_dir {
@@ -164,7 +164,8 @@ fn lint(
         None => Path::new(DEFAULT_STDLIB_PATH),
     };
     let limit = match limit {
-        Some(limit) => limit as usize,
+        Some(limit) if limit == 0 => i64::MAX,
+        Some(limit) => limit,
         None => 10,
     };
     let exceptions = if allow_exceptions {
@@ -174,9 +175,9 @@ fn lint(
     };
     let (_, mut diagnostics) = parse_docs(stdlib_dir, dir, exceptions)?;
     if !diagnostics.is_empty() {
-        let rest = diagnostics.len() as i64 - limit as i64;
+        let rest = diagnostics.len() as i64 - limit;
         println!("Found {} diagnostics", diagnostics.len());
-        diagnostics.truncate(limit);
+        diagnostics.truncate(limit as usize);
         for d in diagnostics {
             println!("{}", d);
         }
@@ -226,7 +227,19 @@ impl<'a> example::Executor for CLIExecutor<'a> {
             .arg(tmpfile.path())
             .output()?;
 
-        Ok(String::from_utf8(output.stdout)?)
+        if output.status.success() {
+            Ok(String::from_utf8(output.stdout)?)
+        } else {
+            let stderr = String::from_utf8(output.stderr)?;
+            // Find error in output
+            for line in stderr.lines() {
+                if let Some(msg) = line.strip_prefix("Error: ") {
+                    bail!("{}", msg)
+                }
+            }
+            // we didn't find a specific error message, report the entire stderr
+            bail!("stderr: {}", stderr)
+        }
     }
 }
 
@@ -237,7 +250,7 @@ impl<'a> example::Executor for CLIExecutor<'a> {
 // high standard going forward.
 //
 // See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
-const EXCEPTIONS: [&str; 94] = [
+const EXCEPTIONS: &[&str] = &[
     "contrib",
     "contrib/RohanSreerama5",
     "contrib/RohanSreerama5/images",

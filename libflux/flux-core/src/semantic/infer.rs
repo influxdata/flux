@@ -116,8 +116,6 @@ pub fn solve(cons: &Constraints, sub: &mut Substitution) -> Result<(), Error> {
             }
             Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                let exp = exp.clone();
-                let act = act.clone();
                 log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
                 exp.unify(act, sub).map_err(|err| Error {
                     loc: loc.clone(),

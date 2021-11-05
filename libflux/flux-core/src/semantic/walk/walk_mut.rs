@@ -42,12 +42,14 @@ impl NodeMut<'_> {
             NodeMut::BooleanLit(ref mut n) => n.loc = loc,
             NodeMut::DateTimeLit(ref mut n) => n.loc = loc,
             NodeMut::RegexpLit(ref mut n) => n.loc = loc,
+            NodeMut::ErrorExpr(ref mut n) => **n = loc,
             NodeMut::ExprStmt(ref mut n) => n.loc = loc,
             NodeMut::OptionStmt(ref mut n) => n.loc = loc,
             NodeMut::ReturnStmt(ref mut n) => n.loc = loc,
             NodeMut::TestStmt(ref mut n) => n.loc = loc,
             NodeMut::TestCaseStmt(ref mut n) => n.loc = loc,
             NodeMut::BuiltinStmt(ref mut n) => n.loc = loc,
+            NodeMut::ErrorStmt(ref mut n) => **n = loc,
             NodeMut::Block(_) => (),
             NodeMut::Property(ref mut n) => n.loc = loc,
             NodeMut::TextPart(ref mut n) => n.loc = loc,
@@ -236,6 +238,7 @@ where
             NodeMut::BuiltinStmt(ref mut n) => {
                 walk_mut(v, &mut NodeMut::Identifier(&mut n.id));
             }
+            NodeMut::ErrorStmt(_) => {}
             NodeMut::Block(ref mut n) => match n {
                 Block::Variable(ref mut assgn, ref mut next) => {
                     walk_mut(v, &mut NodeMut::VariableAssgn(assgn));
@@ -263,6 +266,7 @@ where
                 walk_mut(v, &mut NodeMut::MemberExpr(&mut n.member));
                 walk_mut(v, &mut NodeMut::from_expr(&mut n.init));
             }
+            NodeMut::ErrorExpr(_) => (),
         };
     }
     v.done(node);

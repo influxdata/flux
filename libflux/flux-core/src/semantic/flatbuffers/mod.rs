@@ -208,7 +208,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             walk::Node::IdentifierExpr(id) => {
                 let name = v.create_string(&id.name);
                 let id_typ = id.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, id_typ);
+                let (typ, typ_type) = types::build_type(v.builder, &id_typ);
 
                 let ident = fbsemantic::IdentifierExpression::create(
                     v.builder,
@@ -256,7 +256,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (argument, argument_type) = v.pop_expr();
 
                 let unary_typ = unary.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, unary_typ);
+                let (typ, typ_type) = types::build_type(v.builder, &unary_typ);
                 let unary = fbsemantic::UnaryExpression::create(
                     v.builder,
                     &fbsemantic::UnaryExpressionArgs {
@@ -287,7 +287,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 };
 
                 let obj_type = obj.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, obj_type);
+                let (typ, typ_type) = types::build_type(v.builder, &obj_type);
 
                 let obj = fbsemantic::ObjectExpression::create(
                     v.builder,
@@ -309,7 +309,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (index, index_type) = v.pop_expr();
                 let (array, array_type) = v.pop_expr();
                 let ind_type = ind.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, ind_type);
+                let (typ, typ_type) = types::build_type(v.builder, &ind_type);
 
                 let index = fbsemantic::IndexExpression::create(
                     v.builder,
@@ -334,7 +334,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (object, object_type) = v.pop_expr();
 
                 let member_typ = member.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, member_typ);
+                let (typ, typ_type) = types::build_type(v.builder, &member_typ);
 
                 let mem = fbsemantic::MemberExpression::create(
                     v.builder,
@@ -418,7 +418,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 };
 
                 let call_typ = call.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, call_typ);
+                let (typ, typ_type) = types::build_type(v.builder, &call_typ);
 
                 let call = fbsemantic::CallExpression::create(
                     v.builder,
@@ -445,7 +445,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 let (left, left_type) = v.pop_expr();
 
                 let bin_typ = bin.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, bin_typ);
+                let (typ, typ_type) = types::build_type(v.builder, &bin_typ);
 
                 let bin = fbsemantic::BinaryExpression::create(
                     v.builder,
@@ -515,7 +515,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 ));
 
                 let func_typ = func.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, func_typ);
+                let (typ, typ_type) = types::build_type(v.builder, &func_typ);
 
                 let func = fbsemantic::FunctionExpression::create(
                     v.builder,
@@ -575,7 +575,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                 };
                 v.expr_stack.truncate(start);
                 let arr_typ = array.typ.clone();
-                let (typ, typ_type) = types::build_type(v.builder, arr_typ);
+                let (typ, typ_type) = types::build_type(v.builder, &arr_typ);
 
                 let array = fbsemantic::ArrayExpression::create(
                     v.builder,
@@ -615,7 +615,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     Some(v.builder.create_vector(items.as_slice()))
                 };
                 v.expr_stack.truncate(start);
-                let (typ, typ_type) = types::build_type(v.builder, dict.typ.clone());
+                let (typ, typ_type) = types::build_type(v.builder, &dict.typ.clone());
 
                 let dict = fbsemantic::DictExpression::create(
                     v.builder,
@@ -904,6 +904,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                         files,
                     },
                 ));
+            }
+
+            walk::Node::ErrorStmt(_) | walk::Node::ErrorExpr(_) => {
+                unreachable!("We should never try to serialize error nodes")
             }
         }
     }

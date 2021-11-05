@@ -82,7 +82,7 @@ func (k *groupKey) ValueTime(j int) values.Time {
 }
 
 func (k *groupKey) Equal(o flux.GroupKey) bool {
-	return groupKeyEqual(k, o)
+	return groupKeyEqual(k, o, false)
 }
 
 func (k *groupKey) Less(o flux.GroupKey) bool {
@@ -100,6 +100,10 @@ func (k *groupKey) String() string {
 	}
 	b.WriteRune('}')
 	return b.String()
+}
+
+func (k *groupKey) EqualTrueNulls(o flux.GroupKey) bool {
+	return groupKeyEqual(k, o, true)
 }
 
 func (k *groupKey) hash64() (h uint64) {
@@ -154,7 +158,7 @@ func (k *groupKey) hash64() (h uint64) {
 	return h
 }
 
-func groupKeyEqual(a *groupKey, other flux.GroupKey) bool {
+func groupKeyEqual(a *groupKey, other flux.GroupKey, truenulls bool) bool {
 	b, ok := other.(*groupKey)
 	if !ok {
 		b = newGroupKey(other.Cols(), other.Values())
@@ -169,9 +173,14 @@ func groupKeyEqual(a *groupKey, other flux.GroupKey) bool {
 			return false
 		}
 		if anull, bnull := a.values[idx].IsNull(), b.values[jdx].IsNull(); anull && bnull {
-			// Both key columns are null, consider them equal
-			// So that rows are assigned to the same table.
-			continue
+			if truenulls {
+				// If the caller explicitly wants null != null (ex: join), return false here
+				return false
+			} else {
+				// Otherwise, if both key columns are null, consider them equal
+				// so that rows are assigned to the same table.
+				continue
+			}
 		} else if anull || bnull {
 			return false
 		}

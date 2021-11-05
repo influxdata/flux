@@ -17,6 +17,7 @@
 /release-notes.txt
 cmake-build-debug
 /generated_docs
+/stdlib-compiled
 
 # exclude any files with the name flux but
 # include any directories that share the same name.

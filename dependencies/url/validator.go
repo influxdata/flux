@@ -82,3 +82,13 @@ func isPrivateIP(ip net.IP) bool {
 	}
 	return false
 }
+
+type ErrorValidator struct{}
+
+func (ErrorValidator) Validate(*url.URL) error {
+	return errors.New(codes.Invalid, "Validator.Validate called on an error dependency")
+}
+
+func (ErrorValidator) ValidateIP(net.IP) error {
+	return errors.New(codes.Invalid, "Validator.ValidateIP called on an error dependency")
+}

@@ -1,14 +1,16 @@
 //! Checking the AST.
 
-use std::fmt;
 use thiserror::Error;
 
-use crate::ast::{walk, PropertyKey, SourceLocation};
+use crate::{
+    ast::{walk, PropertyKey, SourceLocation},
+    errors::Errors,
+};
 
 /// Inspects an AST node and returns a list of found AST errors plus
 /// any errors existed before `ast.check()` is performed.
-pub fn check(node: walk::Node) -> Result<(), Errors> {
-    let mut errors = vec![];
+pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
+    let mut errors = Errors::new();
     walk::walk(
         &walk::create_visitor(&mut |n| {
             // collect any errors we found prior to ast.check().
@@ -67,7 +69,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors> {
     if errors.is_empty() {
         Ok(())
     } else {
-        Err(Errors(errors))
+        Err(errors)
     }
 }
 
@@ -80,25 +82,6 @@ pub struct Error {
     /// Error message.
     pub message: String,
 }
-
-/// Set of any errors encountered when checking the AST.
-#[derive(Debug, PartialEq)]
-pub struct Errors(pub Vec<Error>);
-
-impl fmt::Display for Errors {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.0
-                .iter()
-                .map(|err| err.to_string())
-                .collect::<Vec<_>>()
-                .join("\n")
-        )
-    }
-}
-impl std::error::Error for Errors {}
 
 #[cfg(test)]
 mod tests;

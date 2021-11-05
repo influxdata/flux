@@ -12,9 +12,9 @@ extern crate derivative;
 
 use crate::{
     ast,
+    errors::Errors,
     semantic::{
         env::Environment,
-        errors::Errors,
         import::Importer,
         infer::{self, Constraint, Constraints},
         sub::{Substitutable, Substituter, Substitution},
@@ -169,6 +169,7 @@ pub enum Statement {
     Test(Box<TestStmt>),
     TestCase(Box<TestCaseStmt>),
     Builtin(BuiltinStmt),
+    Error(ast::SourceLocation),
 }
 
 impl Statement {
@@ -181,6 +182,7 @@ impl Statement {
             Statement::Test(stmt) => Statement::Test(Box::new(stmt.apply(sub))),
             Statement::TestCase(stmt) => Statement::TestCase(Box::new(stmt.apply(sub))),
             Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(sub)),
+            Statement::Error(stmt) => Statement::Error(stmt),
         }
     }
 }
@@ -226,6 +228,8 @@ pub enum Expression {
     Boolean(BooleanLit),
     DateTime(DateTimeLit),
     Regexp(RegexpLit),
+
+    Error(ast::SourceLocation),
 }
 
 impl Expression {
@@ -253,6 +257,7 @@ impl Expression {
             Expression::Boolean(_) => MonoType::Bool,
             Expression::DateTime(_) => MonoType::Time,
             Expression::Regexp(_) => MonoType::Regexp,
+            Expression::Error(_) => MonoType::Error,
         }
     }
     #[allow(missing_docs)]
@@ -279,6 +284,7 @@ impl Expression {
             Expression::Boolean(lit) => &lit.loc,
             Expression::DateTime(lit) => &lit.loc,
             Expression::Regexp(lit) => &lit.loc,
+            Expression::Error(loc) => loc,
         }
     }
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
@@ -304,6 +310,7 @@ impl Expression {
             Expression::Boolean(lit) => lit.infer(),
             Expression::DateTime(lit) => lit.infer(),
             Expression::Regexp(lit) => lit.infer(),
+            Expression::Error(_) => Ok(Constraints::empty()),
         }
     }
     fn apply(self, sub: &Substitution) -> Self {
@@ -329,6 +336,7 @@ impl Expression {
             Expression::Boolean(lit) => Expression::Boolean(lit.apply(sub)),
             Expression::DateTime(lit) => Expression::DateTime(lit.apply(sub)),
             Expression::Regexp(lit) => Expression::Regexp(lit.apply(sub)),
+            Expression::Error(loc) => Expression::Error(loc),
         }
     }
 
@@ -520,6 +528,7 @@ impl File {
                     infer.error(stmt.loc.clone(), ErrorKind::InvalidReturn);
                     Ok::<_, Error>(rest)
                 }
+                Statement::Error(_) => Ok(rest),
             })?;
 
         for name in imports {

@@ -18,10 +18,6 @@ use thiserror::Error;
 pub enum Error {
     #[error("TestCase is not supported in semantic analysis")]
     TestCase,
-    #[error("BadStatement is not supported in semantic analysis")]
-    BadStatement,
-    #[error("BadExpression is not supported in semantic analysis")]
-    BadExpression,
     #[error("invalid named type {0}")]
     InvalidNamedType(String),
     #[error("function types can have at most one pipe parameter")]
@@ -141,7 +137,7 @@ fn convert_statement(stmt: ast::Statement, sub: &mut Substitution) -> Result<Sta
         ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(
             convert_variable_assignment(*s, sub)?,
         ))),
-        ast::Statement::Bad(_) => Err(Error::BadStatement),
+        ast::Statement::Bad(s) => Ok(Statement::Error(s.base.location.clone())),
     }
 }
 
@@ -418,7 +414,7 @@ fn convert_expression(expr: ast::Expression, sub: &mut Substitution) -> Result<E
             Ok(Expression::DateTime(convert_date_time_literal(lit, sub)?))
         }
         ast::Expression::PipeLit(_) => Err(Error::InvalidPipeLit),
-        ast::Expression::Bad(_) => Err(Error::BadExpression),
+        ast::Expression::Bad(bad) => Ok(Expression::Error(bad.base.location.clone())),
     }
 }
 
@@ -2960,9 +2956,7 @@ mod tests {
                 eof: vec![],
             }],
         };
-        let want = "BadStatement is not supported in semantic analysis".to_string();
-        let got = test_convert(pkg).unwrap_err().to_string();
-        assert_eq!(want, got);
+        test_convert(pkg).unwrap();
     }
     #[test]
     fn test_convert_bad_expr() {
@@ -2988,9 +2982,7 @@ mod tests {
                 eof: vec![],
             }],
         };
-        let want = "BadExpression is not supported in semantic analysis".to_string();
-        let got = test_convert(pkg).unwrap_err().to_string();
-        assert_eq!(want, got);
+        test_convert(pkg).unwrap();
     }
 
     #[test]
