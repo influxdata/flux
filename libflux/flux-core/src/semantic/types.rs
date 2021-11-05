@@ -821,14 +821,14 @@ impl Tvar {
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) {
-        match cons.get_mut(&self) {
+        match cons.get_mut(self) {
             Some(kinds) => {
                 if !kinds.contains(&with) {
                     kinds.push(with);
                 }
             }
             None => {
-                cons.insert(self.clone(), vec![with]);
+                cons.insert(*self, vec![with]);
             }
         }
     }

@@ -398,11 +398,10 @@ where
             {
                 self.clone_types = i;
                 self.next = Some(typ);
-                self.next()
             } else {
                 self.clone_types = usize::max_value();
-                self.next()
             }
+            self.next()
         }
     }
 

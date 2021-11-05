@@ -620,8 +620,8 @@ fn build_arg<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     arg: (&String, &MonoType, bool, bool),
 ) -> flatbuffers::WIPOffset<fb::Argument<'a>> {
-    let name = builder.create_string(&arg.0);
-    let (buf_offset, typ) = build_type(builder, &arg.1);
+    let name = builder.create_string(arg.0);
+    let (buf_offset, typ) = build_type(builder, arg.1);
     fb::Argument::create(
         builder,
         &fb::ArgumentArgs {
