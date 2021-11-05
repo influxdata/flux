@@ -6,18 +6,14 @@ The generated JSON is used to build the public-facing Flux standard library
 documentation and ensure documentation is up-to-date and featur-complete with
 each new Flux release.
 
-**Note:** Packages are required to pass the `fluxdoc` linter before being merged
-into `master` unless listed as an exception in
-[`/libflux/flux-core/src/bin/fluxdoc.rs`](https://github.com/influxdata/flux/blob/master/libflux/flux-core/src/bin/fluxdoc.rs).
-
 ## Syntax and structure
 Each `.flux` package file in `/stdlib` should include comments using the
 following syntax and structure.
 Flux comment lines begin with `//`.
 
 ### Use Markdown
-Inline Flux documentation uses Markdown or, to be more specific,
-[GitHub Flavored Markdown (GFM)](https://guides.github.com/features/mastering-markdown/).
+Inline Flux documentation uses Markdown or, more specifically,
+[CommonMark)](https://spec.commonmark.org/).
 For consistency, use the the following Markdown conventions:
 
 - `#` header syntax
@@ -26,15 +22,16 @@ For consistency, use the the following Markdown conventions:
 
 ### Package summary documentation
 Add package summary documentation before the package statement in the `.flux` package file.
-Package summary documentation consists of a **headline**, **description**, and
-**metadata** to be used by clients when consuming the JSON `fluxdoc` output.
+Package summary documentation consists of a **headline**, **description**, 
+**examples**, and **metadata** to be used by clients when consuming the JSON `fluxdoc` output.
 
 - **headline**: _First paragraph_ of the package documentation that describes
   what the package does. Must begin with `Package <pkg-name>`.
 - **description** _(Optional)_: All paragraphs between the first paragraph and
   optional metadata. Provides additional details about the package.
+- **examples** _(Optional)_: _See [Package and function examples](#package-and-function-examples)._
 - **metadata** _(Optional)_: Metadata that provides helpful information about
-  the package. See [Package metadata](#package-metadata).
+  the package. _See [Package metadata](#package-metadata)_.
 
 #### Package metadata
 Package metadata are string key-value pairs separated by `:`.
@@ -50,6 +47,13 @@ Each key-value pair must be on a single line.
 // Package examplePkg provides functions that do x and y.
 //
 // Package description with additional details not provided in the headline.
+//
+// ## Examples
+// ```
+// import "examplePkg"
+//
+// examplePkg.foo()
+// ```
 //
 // introduced: 0.123.0
 // tags: tag1,tag2,tag3
@@ -68,7 +72,7 @@ consuming the JSON `fluxdoc` output.
 - **description** _(Optional)_: All paragraphs between the first paragraph and
   parameters. Provides additional details about the function.
 - **parameters**: _See [Function parameters](#function-parameters)._
-- **examples**: _(Optional)_: _See [Function examples](#function-examples)._
+- **examples**: _(Optional)_: _See [Package and function examples](#package-and-function-examples)._
 - **metadata** _(Optional)_: Metadata that provides helpful information about
   the package. _See [Function metadata](#function-metadata)._
 
@@ -82,6 +86,12 @@ Each list item must follow these conventions:
 - Provide a description of the parameter after the parameter name and colon.
       
 ##### Parameter description guidelines
+- The first paragraph of the parameter description is used as the short description.
+- The first paragraph and all subsequent content are used as the long description.
+- Parameter descriptions can contain any valid markdown.
+  If there are multiple paragraphs, lists, or other elements that need to be
+  included in the description, indent them them under the parameter list item to
+  nest them as part of the parameter description.
 - Avoid starting parameter descriptions with an article (the, a, an).
   For example: 
   
@@ -95,12 +105,8 @@ Each list item must follow these conventions:
     ```
 - If a parameter has a default value, specify the default in the description
   with "Default is `defaultValue`."
-- Parameter descriptions can contain any valid markdown.
-  If there are multiple paragraphs, lists, or other elements that need to be
-  included in the description, indent them them under the parameter list item to
-  nest them as part of the parameter description.
 
-#### Function examples
+#### Package and function examples
 Identify the beginning of the examples list with the `## Examples` header.
 Identify each example with a descriptive title formatted as an h3 header
 (`### Example descriptive title`).
@@ -181,6 +187,13 @@ Use the following tags to categorize functions based on their usage and function
 ## Full package documentation example
 ```js
 // Package pkgName provides functions that do x and y.
+//
+// ## Examples
+// ```
+// import "pkgName"
+//
+// option pkgName.foo == "bar'
+// ```
 //
 // introduced: 0.140.0
 // contributors: [@username](https://github.com/username/) (GitHub)
