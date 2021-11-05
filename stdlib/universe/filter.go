@@ -344,6 +344,7 @@ func (t *filterTransformation) filterChunk(fn *execute.RowPredicatePreparedFn, c
 
 func (t *filterTransformation) filter(fn *execute.RowPredicatePreparedFn, cr flux.ColReader, record values.Object, indices []int, mem arrowmem.Allocator) (*arrowmem.Buffer, error) {
 	cols, l := cr.Cols(), cr.Len()
+
 	bitset := arrowmem.NewResizableBuffer(mem)
 	bitset.Resize(l)
 	for i := 0; i < l; i++ {

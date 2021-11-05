@@ -17,6 +17,35 @@ type dynamicFn struct {
 	scope      compiler.Scope
 	fn         *semantic.FunctionExpression
 	recordName string
+	compiledFn *compiledFn
+}
+
+type compiledFn struct {
+	fn         compiler.Func
+	inType     semantic.MonoType
+	recordType semantic.MonoType
+	cols       []flux.ColMeta
+	extraTypes map[string]semantic.MonoType
+}
+
+func (f *compiledFn) isCacheHit(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) bool {
+	if len(f.cols) != len(cols) {
+		return false
+	}
+	for i := range f.cols {
+		if f.cols[i] != cols[i] {
+			return false
+		}
+	}
+	if len(f.extraTypes) != len(extraTypes) {
+		return false
+	}
+	for k, v := range f.extraTypes {
+		if w, ok := extraTypes[k]; !ok || v != w {
+			return false
+		}
+	}
+	return true
 }
 
 func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamicFn {
@@ -43,36 +72,55 @@ func (f *dynamicFn) typeof(cols []flux.ColMeta) (semantic.MonoType, error) {
 	return semantic.NewObjectType(properties), nil
 }
 
+func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) error {
+
+	// If the types have not changed we do not need to recompile, just use the cached version
+	if f.compiledFn == nil || !f.compiledFn.isCacheHit(cols, extraTypes) {
+		// Prepare the type of the record column.
+		recordType, err := f.typeof(cols)
+		if err != nil {
+			return err
+		}
+
+		// Prepare the arguments type.
+		properties := []semantic.PropertyType{
+			{Key: []byte(f.recordName), Value: recordType},
+		}
+		for name, typ := range extraTypes {
+			properties = append(properties, semantic.PropertyType{
+				Key:   []byte(name),
+				Value: typ,
+			})
+		}
+
+		inType := semantic.NewObjectType(properties)
+		fn, err := compiler.Compile(f.scope, f.fn, inType)
+		if err != nil {
+			return err
+		}
+		f.compiledFn = &compiledFn{
+			fn:         fn,
+			inType:     inType,
+			recordType: recordType,
+			cols:       cols,
+			extraTypes: extraTypes,
+		}
+	}
+	return nil
+}
+
 func (f *dynamicFn) prepare(cols []flux.ColMeta, extraTypes map[string]semantic.MonoType) (preparedFn, error) {
-	// Prepare the type of the record column.
-	recordType, err := f.typeof(cols)
-	if err != nil {
-		return preparedFn{}, err
-	}
-
-	// Prepare the arguments type.
-	properties := []semantic.PropertyType{
-		{Key: []byte(f.recordName), Value: recordType},
-	}
-	for name, typ := range extraTypes {
-		properties = append(properties, semantic.PropertyType{
-			Key:   []byte(name),
-			Value: typ,
-		})
-	}
-
-	inType := semantic.NewObjectType(properties)
-	fn, err := compiler.Compile(f.scope, f.fn, inType)
+	err := f.compileFunction(cols, extraTypes)
 	if err != nil {
 		return preparedFn{}, err
 	}
 
 	// Construct the arguments that will be used when evaluating the function.
-	arg0 := values.NewObject(recordType)
-	args := values.NewObject(inType)
+	arg0 := values.NewObject(f.compiledFn.recordType)
+	args := values.NewObject(f.compiledFn.inType)
 	args.Set(f.recordName, arg0)
 	return preparedFn{
-		fn:         fn,
+		fn:         f.compiledFn.fn,
 		recordName: f.recordName,
 		arg0:       arg0,
 		args:       args,

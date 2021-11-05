@@ -26,15 +26,8 @@ type Evaluator interface {
 }
 
 type compiledFn struct {
-	root       Evaluator
-	inputScope Scope
-}
-
-func (c compiledFn) buildScope(input values.Object) error {
-	input.Range(func(k string, v values.Value) {
-		c.inputScope.Set(k, v)
-	})
-	return nil
+	root        Evaluator
+	parentScope Scope
 }
 
 // Type returns the return type of the compiled function.
@@ -43,11 +36,12 @@ func (c compiledFn) Type() semantic.MonoType {
 }
 
 func (c compiledFn) Eval(ctx context.Context, input values.Object) (values.Value, error) {
-	if err := c.buildScope(input); err != nil {
-		return nil, err
-	}
+	inputScope := nestScope(c.parentScope)
+	input.Range(func(k string, v values.Value) {
+		inputScope.Set(k, v)
+	})
 
-	return eval(ctx, c.root, c.inputScope)
+	return eval(ctx, c.root, inputScope)
 }
 
 type Scope interface {
@@ -91,9 +85,8 @@ func eval(ctx context.Context, e Evaluator, scope Scope) (values.Value, error) {
 }
 
 type blockEvaluator struct {
-	t     semantic.MonoType
-	body  []Evaluator
-	value values.Value
+	t    semantic.MonoType
+	body []Evaluator
 }
 
 func (e *blockEvaluator) Type() semantic.MonoType {
@@ -102,13 +95,14 @@ func (e *blockEvaluator) Type() semantic.MonoType {
 
 func (e *blockEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
 	var err error
+	var value values.Value
 	for _, b := range e.body {
-		e.value, err = eval(ctx, b, scope)
+		value, err = eval(ctx, b, scope)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return e.value, nil
+	return value, nil
 }
 
 type returnEvaluator struct {
