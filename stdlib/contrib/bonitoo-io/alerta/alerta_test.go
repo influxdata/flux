@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -48,7 +47,6 @@ process = alerta.endpoint(url: url, apiKey: apiKey)(mapFn: (r) => ({
     text: "",
     tags: ["dc1"],
     attributes: {metric_name:r.metric_name},
-    origin: "InfluxDB",
     type: "external",
     timestamp: now()
 }))
@@ -72,7 +70,7 @@ func TestAlertaPost(t *testing.T) {
 		origin string
 		alert  Alert
 		fn     string
-		extras bool
+		extras string
 	}{
 		{
 			name: "alert with defaults",
@@ -83,9 +81,7 @@ func TestAlertaPost(t *testing.T) {
 				Severity: "major",
 				Service:  []string{},
 				Tags:     []string{},
-				Attributes: map[string]interface{}{
-					"metric": "usage_user",
-				},
+				Attributes: map[string]interface{}{},
 				Type:      "external",
 				Timestamp: "2021-04-01T01:02:03.456Z", // precision is cut for Alerta to 3 decimal digits
 			},
@@ -111,7 +107,11 @@ func TestAlertaPost(t *testing.T) {
 				Timestamp: "2021-04-01T01:02:03.456Z", // precision is cut for Alerta to 3 decimal digits
 			},
 			fn:     "alerta.endpoint(url: url, apiKey: apiKey, environment: environment, origin: origin)",
-			extras: true,
+			extras: `service: [r.node],
+tags: ["dc1"],
+attributes: {metric:r.metric_name},
+value: r.description,
+`,
 		},
 	}
 
@@ -128,7 +128,6 @@ url = "` + tc.URL + `"
 apiKey = "some key"
 environment = "` + tc.env + `"
 origin = "` + tc.origin + `"
-extras = ` + strconv.FormatBool(tc.extras) + `
 
 data = "
 #group,false,false,false,false,false,false,false,false,false
@@ -143,13 +142,7 @@ endpoint = ` + tc.fn + `(mapFn: (r) => ({
     resource: r.resource,
     event: r.alert_id,
     severity: r.severity,
-    service: if extras then [r.node] else [],
-    group: "",
-    value: r.description,
-    text: "",
-    tags: if extras then ["dc1"] else [],
-    attributes: {metric:r.metric_name},
-    origin: "InfluxDB",
+`+ tc.extras +`
     type: "external",
     timestamp: 2021-04-01T01:02:03.456789000Z
 }))
