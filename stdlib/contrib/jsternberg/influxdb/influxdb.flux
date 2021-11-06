@@ -1,18 +1,36 @@
+// Package influxdb TODO
 package influxdb
 
 
 import "influxdata/influxdb"
 import "influxdata/influxdb/v1"
 
+// _mask does TODO
+//
 // _mask will hide the given columns from downstream
 // transformations. It will not perform any copies and
 // it will not regroup. This should only be used when
 // the user knows it can't cause a key conflict.
+// 
+// ## Parameters
+// 
+// - columns:  TODO
 builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record
 
+// from TODO
+// 
 // from will retrieve data from a bucket between the start and stop time.
 // This version of from is the equivalent of doing from |> range
 // as a single call.
+//
+// ## Parameters
+// 
+// - bucket: TODO
+// - start: TODO
+// - stop: TODO
+// - org: TODO
+// - host: TODO
+// - token: TODO
 from = (
     bucket,
     start,
@@ -44,6 +62,15 @@ from = (
 // _from allows us to reference the from function from
 // within the select call which has a function parameter
 // with the same name.
+//
+// ## Parameters
+// 
+// - bucket: TODO
+// - start: TODO
+// - stop: TODO
+// - org: TODO
+// - host: TODO
+// - token: TODO
 _from = from
 
 // select will select data from an influxdb instance within
@@ -54,6 +81,18 @@ _from = from
 //
 // In order to filter by tags, the `where` function can be used to further
 // limit the amount of data selected.
+//
+// ## Parameters
+//
+// - from: TODO
+// - start: TODO
+// - stop: TODO
+// - m: TODO
+// - fields: TODO
+// - org: TODO
+// - host: TODO
+// - token: TODO
+// - where: TODO
 select = (
     from,
     start,
