@@ -1,3 +1,4 @@
+// Package bigpanda provides functions to interact with the BigPan
 package bigpanda
 
 
@@ -5,12 +6,19 @@ import "http"
 import "json"
 import "strings"
 
+// defaultUrl is the default for the alerts API endpoint.
 option defaultUrl = "https://api.bigpanda.io/data/v2/alerts"
+// defaultTokenPrefix is the header prefix for the token.
 option defaultTokenPrefix = "Bearer"
 
-// `statusFromLevel` turns a level from the status object into a BigPanda status
-// `level` - string - levels on status objects can be one of the following ok,info,warn,crit,unknown
+// statusFromLevel creates BigPanda status from a given level.
+// 
 // BigPanda accepts one of ok,critical,warning,acknowledged.
+//
+// ## Parameters
+// 
+// - level: - string - levels on status objects can be one of the following:
+//   `ok`, `info`, `warn`, `crit`, `unknown`.
 statusFromLevel = (level) => {
     lvl = strings.toLower(v: level)
     sev = if lvl == "warn" then
@@ -27,12 +35,16 @@ statusFromLevel = (level) => {
     return sev
 }
 
-// `sendAlert` sends a single alert to BigPanda as described in https://docs.bigpanda.io/reference#alerts API. 
-// `token` - string - BigPanda authorization Bearer token
-// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).
-// `appKey` - string - BigPanda App Key.
-// `status` - string - Status of the BigPanda alert. One of ok, critical, warning, acknowledged.
-// `rec` - record - additional data appended to alert
+// sendAlert sends a single alert to BigPanda as described in the
+// bigpanda [API reference](https://docs.bigpanda.io/reference#alerts API). 
+//
+// ## Parameters
+// 
+// - token: - string - BigPanda authorization Bearer token
+// - url: - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).
+// - appKey: - string - BigPanda App Key.
+// - status: - string - Status of the BigPanda alert. One of ok, critical, warning, acknowledged.
+// - rec: - record - additional data appended to alert
 sendAlert = (
     url,
     token,
@@ -46,12 +58,17 @@ sendAlert = (
     return http.post(headers: headers, url: url, data: json.encode(v: data))
 }
 
-// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send alert to BigPanda for each table row.
-// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).
-// `token` - string - BigPanda authorization Bearer token
-// `appKey` - string - BigPanda App Key.
-// The returned factory function accepts a `mapFn` parameter.
-// The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and appKey).
+// endpoint creates a factory function that creates a target function for a
+// pipeline (`|>`) to send an alert to BigPanda for each table row.
+// 
+// ## Parameters
+// 
+// - url: - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).
+// - token: - string - BigPanda authorization Bearer token
+// - appKey: - string - BigPanda App Key.
+//   The returned factory function accepts a `mapFn` parameter.
+//   The `mapFn` must return an object with all properties defined
+//   in the `sendAlert` function arguments (except url, apiKey and appKey).
 endpoint = (url=defaultUrl, token, appKey) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
