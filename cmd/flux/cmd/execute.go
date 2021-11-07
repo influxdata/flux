@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/influxdata/flux"
@@ -14,14 +15,17 @@ import (
 
 // executeCmd represents the execute command
 var executeCmd = &cobra.Command{
-	Use:   "execute",
-	Short: "Execute a Flux script",
-	Long:  "Execute a Flux script from string or file (use @ as prefix to the file)",
-	Args:  cobra.ExactArgs(1),
-	RunE:  execute,
+	Use:                "execute",
+	Short:              "Execute a Flux script",
+	Long:               "Execute a Flux script from string or file (use @ as prefix to the file, or pass with -f flag)",
+	Args:               cobra.MaximumNArgs(1),
+	RunE:               execute,
+	PreRunE:            validate,
+	DisableFlagParsing: false,
 }
 
 func init() {
+	executeCmd.Flags().StringP("file", "f", "", "script to be executed")
 	rootCmd.AddCommand(executeCmd)
 }
 
@@ -46,10 +50,31 @@ func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies
 	return ip.Inject(ctx), deps
 }
 
+func validate(cmd *cobra.Command, args []string) error {
+	file, err := cmd.Flags().GetString("file")
+	if err != nil {
+		return err
+	}
+	if file == "" && len(args) == 0 {
+		return errors.New("Execute requires either argument or -f file path")
+	}
+	if file != "" && len(args) > 0 {
+		return errors.New("Execute cannot have both -f file path and argument")
+	}
+	return nil
+}
+
 func execute(cmd *cobra.Command, args []string) error {
 	fluxinit.FluxInit()
 	ctx, deps := injectDependencies(context.Background())
 	r := repl.New(ctx, deps)
+	file, err := cmd.Flags().GetString("file")
+	if err != nil {
+		return err
+	}
+	if file != "" {
+		args = []string{"@" + file}
+	}
 	if err := r.Input(args[0]); err != nil {
 		return fmt.Errorf("failed to execute query: %v", err)
 	}

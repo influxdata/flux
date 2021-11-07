@@ -1452,6 +1452,133 @@ fn test_statement() {
 }
 
 #[test]
+fn shebang() {
+    let mut p = Parser::new(
+        r#"#! /usr/bin/env flux
+			from()"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(2, 4, 2, 10),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(2, 4, 2, 10),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Call(Box::new(CallExpr {
+                    base: BaseNode {
+                        location: loc.get(2, 4, 2, 10),
+                        ..BaseNode::default()
+                    },
+                    callee: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(2, 4, 2, 8),
+                            comments: vec![ast::Comment {
+                                text: String::from("#! /usr/bin/env flux"),
+                            }],
+                            ..BaseNode::default()
+                        },
+                        name: "from".to_string()
+                    }),
+                    lparen: vec![],
+                    arguments: vec![],
+                    rparen: vec![],
+                })),
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn linebreak_shebang() {
+    let mut p = Parser::new(
+        "\n#! /usr/bin/env flux\n// Comment"
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(2,1,2,21),
+                ..BaseNode::default()
+            },
+            name: String::new(),
+            metadata: String::from("parser-type=rust"),
+            package: None,
+            imports: Vec::new(),
+            body: vec![
+                Statement::Bad(
+                    Box::new(BadStmt {
+                        base: BaseNode {
+                            location: loc.get(2,1,2,21),
+                            ..BaseNode::default()
+                        },
+                        text: String::from("#! /usr/bin/env flux"),
+                    },
+                )),
+            ],
+            eof: vec![
+                ast::Comment {
+                    text: String::from("// Comment"),
+                },
+            ],
+        },
+    )
+}
+
+#[test]
+fn whitespace_shebang() {
+    let mut p = Parser::new(
+        " #! /usr/bin/env flux\n// Comment"
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1,2,1,22),
+                ..BaseNode::default()
+            },
+            name: String::new(),
+            metadata: String::from("parser-type=rust"),
+            package: None,
+            imports: Vec::new(),
+            body: vec![
+                Statement::Bad(
+                    Box::new(BadStmt {
+                        base: BaseNode {
+                            location: loc.get(1,2,1,22),
+                            ..BaseNode::default()
+                        },
+                        text: String::from("#! /usr/bin/env flux"),
+                    },
+                )),
+            ],
+            eof: vec![
+                ast::Comment {
+                    text: String::from("// Comment"),
+                },
+            ],
+        },
+    )
+}
+
+
+
+#[test]
 fn comment() {
     let mut p = Parser::new(
         r#"// Comment

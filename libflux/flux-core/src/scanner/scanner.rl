@@ -56,6 +56,7 @@ use crate::scanner::*;
 
     # The newline is optional so that a comment at the end of a file is considered valid.
     single_line_comment = "//" [^\n]* newline?;
+    shebang = "#!" [^\n]*;
 
     # Whitespace is standard ws and control codes->
     # (Note that newlines are handled separately; see notes above)
@@ -79,6 +80,7 @@ use crate::scanner::*;
 
     # This machine does not contain the regex literal.
     main := |*
+        shebang => { if *cur_line == 1 && ts == 0 {tok = TokenType::Comment; }; fbreak;};
         single_line_comment => { tok = TokenType::Comment; fbreak; };
 
         "and" => { tok = TokenType::And; fbreak; };
