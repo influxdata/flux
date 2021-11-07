@@ -47,7 +47,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/scanner/mod.rs":                                                        "2e15c9e0a73d0936d2eaeec030b636786db6dbe7aab673045de3a3e815c49f8a",
 	"libflux/flux-core/src/scanner/scanner.rl":                                                    "2e5a5c18939a5bc24a2e6f0fac37c05d29c3410ad330c4e0b31ccd23c9abe268",
 	"libflux/flux-core/src/scanner/scanner_generated.rs":                                          "53e9176da01f88689026911b2373c7a8e4a3f953895e2bee0ebe39b82ba2050a",
-	"libflux/flux-core/src/scanner/tests.rs":                                                      "e8a07af293311388a4c83f3b3160b465bdaa0b43272ede70bdc4558a567bbeb7",
+	"libflux/flux-core/src/scanner/tests.rs":                                                      "79d05cdbf2f38a5c79d78c7bbfb21854d83bdee596fa504dcc818fbc2bf3a03d",
 	"libflux/flux-core/src/scanner/token.rs":                                                      "5090c2ac4b341566a85f7d9ed9b48746dd2084ec2f3effdb4a7dc16cf34d44b9",
 	"libflux/flux-core/src/scanner/unicode.rl":                                                    "f923f3b385ddfa65c74427b11971785fc25ea806ca03d547045de808e16ef9a1",
 	"libflux/flux-core/src/scanner/unicode.rl.COPYING":                                            "6cf2d5d26d52772ded8a5f0813f49f83dfa76006c5f398713be3854fe7bc4c7e",

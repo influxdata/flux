@@ -1628,6 +1628,162 @@ a
 }
 
 #[test]
+fn test_scan_shebang() {
+    let text = r#"#! /usr/bin/env -S flux --file
+1"#;
+    let mut s = Scanner::new(text);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Int,
+            lit: String::from("1"),
+            start_offset: 31,
+            end_offset: 32,
+            start_pos: Position { line: 2, column: 1 },
+            end_pos: Position { line: 2, column: 2 },
+            comments: vec![Comment {
+                text: String::from("#! /usr/bin/env -S flux --file"),
+            }],
+        }
+    );
+
+    // with regex
+    let mut s = Scanner::new(text);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Int,
+            lit: String::from("1"),
+            start_offset: 31,
+            end_offset: 32,
+            start_pos: Position { line: 2, column: 1 },
+            end_pos: Position { line: 2, column: 2 },
+            comments: vec![Comment {
+                text: String::from("#! /usr/bin/env -S flux --file"),
+            }],
+        }
+    );
+}
+
+#[test]
+fn test_scan_shebang_trailing() {
+    let text = r#" #! /usr/bin/env -S flux --file
+1"#;
+    let mut s = Scanner::new(text);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Illegal,
+            lit: String::from("#! /usr/bin/env -S flux --file"),
+            start_offset: 1,
+            end_offset: 31,
+            start_pos: Position { line: 1, column: 2 },
+            end_pos: Position { line: 1, column: 32 },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Int,
+            lit: String::from("1"),
+            start_offset: 32,
+            end_offset: 33,
+            start_pos: Position { line: 2, column: 1 },
+            end_pos: Position { line: 2, column: 2 },
+            comments: vec![],
+        }
+    );
+
+    // with regex
+    let mut s = Scanner::new(text);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Illegal,
+            lit: String::from("#! /usr/bin/env -S flux --file"),
+            start_offset: 1,
+            end_offset: 31,
+            start_pos: Position { line: 1, column: 2 },
+            end_pos: Position { line: 1, column: 32 },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Int,
+            lit: String::from("1"),
+            start_offset: 32,
+            end_offset: 33,
+            start_pos: Position { line: 2, column: 1 },
+            end_pos: Position { line: 2, column: 2 },
+            comments: vec![],
+        }
+    );
+}
+
+#[test]
+fn test_scan_shebang_newline() {
+    let text = r#"
+#! /usr/bin/env -S flux --file
+
+1"#;
+    let mut s = Scanner::new(text);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Illegal,
+            lit: String::from("#! /usr/bin/env -S flux --file"),
+            start_offset: 1,
+            end_offset: 31,
+            start_pos: Position { line: 2, column: 1 },
+            end_pos: Position { line: 2, column: 31 },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Int,
+            lit: String::from("1"),
+            start_offset: 33,
+            end_offset: 34,
+            start_pos: Position { line: 4, column: 1 },
+            end_pos: Position { line: 4, column: 2 },
+            comments: vec![],
+        }
+    );
+
+    // with regex
+    let mut s = Scanner::new(text);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Illegal,
+            lit: String::from("#! /usr/bin/env -S flux --file"),
+            start_offset: 1,
+            end_offset: 31,
+            start_pos: Position { line: 2, column: 1 },
+            end_pos: Position { line: 2, column: 31 },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TokenType::Int,
+            lit: String::from("1"),
+            start_offset: 33,
+            end_offset: 34,
+            start_pos: Position { line: 4, column: 1 },
+            end_pos: Position { line: 4, column: 2 },
+            comments: vec![],
+        }
+    );
+}
+
+#[test]
 fn test_scan_eof() {
     let text = r#""#;
     let mut s = Scanner::new(text);
