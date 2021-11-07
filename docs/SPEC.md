@@ -67,6 +67,11 @@ Comments begin with the character sequence `//` and stop at the end of the line.
 Comments cannot start inside string or regexp literals.
 Comments act like newlines.
 
+#### Shebang Comments
+
+If the first line of a flux script begins with the magic bytes `#!` it is treated as a comment.
+Flux scripts may be executed directly with the shebang `#! /usr/bin/env -S flux execute -f` in unix like operating systems where `env` supports the `-S` flag for argument splitting.
+
 #### Tokens
 
 Flux is built up from tokens.
