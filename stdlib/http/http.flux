@@ -109,7 +109,7 @@ builtin basicAuth : (u: string, p: string) => string
 //
 builtin pathEscape : (inputString: string) => string
 
-// endpoint iterates over input data sends an HTTP POST request per input row to
+// endpoint iterates over input data and sends a single POST request per input row to
 // a specficied URL.
 // 
 // This function is designed to be used with `monitor.notify()`.

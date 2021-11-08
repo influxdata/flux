@@ -5,7 +5,7 @@
 package generate
 
 
-// from generates data using provided parameter values.
+// from generates data using the provided parameter values.
 // 
 // ## Parameters
 // - count: Number of rows to generate.
