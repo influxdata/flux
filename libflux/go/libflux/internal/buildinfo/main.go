@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -59,8 +60,14 @@ func lsFiles(path string) ([]string, error) {
 	// We want cached + others - excluded - deleted
 	sort.Strings(excluded)
 	sort.Strings(deleted)
+
+	testRegex, err := regexp.Compile("/tests/|/tests.rs|/benches/")
+	if err != nil {
+		return nil, err
+	}
+
 	skip := func(f string) bool {
-		return contains(excluded, f) || contains(deleted, f)
+		return contains(excluded, f) || contains(deleted, f) || testRegex.MatchString(f)
 	}
 	filtered := make([]string, 0, len(cached)+len(others))
 	// add cached
