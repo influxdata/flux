@@ -5,7 +5,6 @@
 package hex
 
 // int converts a hexadecimal string to an integer.
-// tag: type-conversion
 //
 // ## Parameters
 //
@@ -20,10 +19,10 @@ package hex
 //
 // // Returns 1234
 // ```
+// tag: type-conversion
 builtin int : (v: string) => int
 
 // string converts a Flux basic type to a hexadecimal string.
-// tag: type-conversion
 //
 // The function is similar to `string()`, but encodes int, uint, and bytes
 // types to hexadecimal lowercase characters.
@@ -117,10 +116,10 @@ builtin int : (v: string) => int
 // data
 //   |> map(fn:(r) => ({ r with _value: hex.string(v: r.foo) }))
 // ```
+// tag: type-conversion
 builtin string : (v: A) => string
 
 // uint converts a hexadecimal string to an unsigned integer.
-// tag: type-conversion
 //
 // ## Parameters
 //
@@ -135,10 +134,10 @@ builtin string : (v: A) => string
 //
 // // Returns 1234
 // ```
+// tag: type-conversion
 builtin uint : (v: string) => uint
 
 // bytes converts a hexadecimal string to bytes.
-// tag: type-conversion
 //
 // ## Parameters
 //
@@ -151,6 +150,7 @@ builtin uint : (v: string) => uint
 //
 // hex.bytes(v: "FF5733")
 //
-// Returns [255 87 51] (bytes)
+// // Returns [255 87 51] (bytes)
 // ```
+// tag: type-conversion
 builtin bytes : (v: string) => bytes
