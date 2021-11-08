@@ -92,12 +92,34 @@ alert = (
 //
 // ## Parameters
 //
-// - check: TODO
-// - measurement: TODO
-// - threshold: TODO
-// - id: TODO
-// - message: TODO
-// - topic: TODO
+// - check: (Required) InfluxDB check data. See [tickscript.defineCheck()](https://docs.influxdata.com/flux/v0.x/stdlib/contrib/bonitoo-io/tickscript/definecheck/).
+// - measurement: (Required) Measurement name. Should match the queried measurement.
+// - threshold: Count threshold.
+//   The function assigns a `crit` status to input tables with a number of rows less than or equal to the threshold.
+//   Default is `0`.
+// - id: Function that returns the InfluxDB check ID provided by the check record.
+//   Default is `(r) => "${r._check_id}"`.
+// - message: Function that returns the InfluxDB check message using data from input rows.
+//   Default is `(r) => "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive")`.
+// - topic: Check topic. Default is `""`.
+//
+// ## Examples
+//
+// ### Example deadman check
+// ```
+// import "contrib/bonitoo-io/tickscript"
+// 
+// option task = {name: "Example task", every: 1m;}
+// 
+// from(bucket: "example-bucket")
+//   |> range(start: -task.every)
+//   |> filter(fn: (r) => r._measurement == "pulse" and r._field == "value")
+//   |> tickscript.deadman(
+//     check: tickscript.defineCheck(id: "000000000000", name: "task/${r.service}"),
+//     measurement: "pulse",
+//     threshold: 2
+//   )
+//```
 deadman = (
     check,
     measurement,
