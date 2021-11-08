@@ -1,3 +1,5 @@
+// Package tickscript provides functions for working with
+// [TICKscript](https://docs.influxdata.com/kapacitor/v1.6/tick/).
 package tickscript
 
 
@@ -9,11 +11,29 @@ import "influxdata/influxdb/schema"
 import "universe"
 
 // defineCheck creates custom check data required by alert() and deadman()
+//
+// ## Parameters
+//
+// - id: TODO
+// - name: TODO
+// - type: TODO
 defineCheck = (id, name, type="custom") => {
     return {_check_id: id, _check_name: name, _type: type, tags: {}}
 }
 
 // alert is a helper function similar to TICKscript alert.
+//
+// ## Parameters
+//
+// - check: TODO
+// - id: TODO
+// - details: TODO
+// - message: TODO
+// - crit: TODO
+// - warn: TODO
+// - info: TODO
+// - ok: TODO
+// - topic: TODO
 alert = (
     check,
     id=(r) => "${r._check_id}",
@@ -50,6 +70,15 @@ alert = (
 }
 
 // deadman is a helper function similar to TICKscript deadman.
+//
+// ## Parameters
+//
+// - check: TODO
+// - measurement: TODO
+// - threshold: TODO
+// - id: TODO
+// - message: TODO
+// - topic: TODO
 deadman = (
     check,
     measurement,
@@ -109,6 +138,12 @@ deadman = (
 //   query("SELECT x AS y")
 //   query("SELECT f(x) AS y") without time grouping
 //
+//
+// ## Parameters
+//
+// - column: TODO
+// - fn: TODO
+// - as: TODO
 select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
     _column = column
     _as = as
@@ -124,6 +159,14 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
 //   query("SELECT f(x) AS y")
 //     .groupBy(time(t), ...)
 //
+//
+// ## Parameters
+//
+// - column: TODO
+// - fn: TODO
+// - as: TODO
+// - every: TODO
+// - defaultValue: TODO
 selectWindow = (
     column="_value",
     fn,
@@ -146,11 +189,20 @@ selectWindow = (
 //
 //   |median('x)'
 //      .as(y)
+// 
+// ## Parameters
 //
+// - as: TODO
+// - column: TODO
+// - fn: TODO
 compute = select
 
 // groupBy groups by specified columns.
 // It is a convenience function, it adds _measurement column which is required by monitor.check().
+//
+// ## Parameters
+//
+// - columns: TODO
 groupBy = (columns, tables=<-) => tables
     |> group(columns: columns)
     // required by monitor.check
@@ -158,6 +210,12 @@ groupBy = (columns, tables=<-) => tables
 
 // join merges two streams using standard join().
 // It is meant a convenience function, it ensures _measurement column exists and is in the group key.
+//
+// ## Parameters
+//
+// - tables: TODO
+// - measurement: TODO
+// - on: TODO
 join = (tables, on=["_time"], measurement) => universe.join(tables: tables, on: on)
     |> map(fn: (r) => ({r with _measurement: measurement}))
     // required by monitor.check
