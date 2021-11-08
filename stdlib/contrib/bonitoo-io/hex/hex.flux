@@ -9,6 +9,17 @@ package hex
 // ## Parameters
 //
 // - v: String to convert.
+//
+// ## Examples
+//
+// ```
+// import "contrib/bonitoo-io/hex"
+//
+// hex.int(v: "4d2")
+//
+// // Returns 1234
+//
+// ```
 builtin int : (v: string) => int
 
 // string converts a Flux basic type to a hexadecimal string.
@@ -19,6 +30,16 @@ builtin int : (v: string) => int
 // ## Parameters
 //
 // - v: Value to convert.
+//
+// ## Examples
+//
+// ```
+// import "contrib/bonitoo-io/hex"
+//
+// hex.string(v: 1234)
+//
+// // Returns 4d2
+// ```
 builtin string : (v: A) => string
 
 // uint converts a hexadecimal string to an unsigned integer.
@@ -26,6 +47,16 @@ builtin string : (v: A) => string
 // ## Parameters
 //
 // - v: String to convert.
+//
+// ## Examples
+//
+// ```
+// import "contrib/bonitoo-io/hex"
+//
+// hex.uint(v: "4d2")
+//
+// // Returns 1234
+// ```
 builtin uint : (v: string) => uint
 
 // bytes converts a hexadecimal string to bytes.
@@ -33,4 +64,14 @@ builtin uint : (v: string) => uint
 // ## Parameters
 //
 // - v: String to convert.
+//
+// ## Examples
+//
+// ```
+// import "contrib/bonitoo-io/hex"
+//
+// hex.bytes(v: "FF5733")
+//
+// Returns [255 87 51] (bytes)
+// ```
 builtin bytes : (v: string) => bytes
