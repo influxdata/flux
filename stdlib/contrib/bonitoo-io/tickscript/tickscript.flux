@@ -1,5 +1,5 @@
-// Package tickscript provides functions for working with
-// [TICKscript](https://docs.influxdata.com/kapacitor/v1.6/tick/).
+// Package tickscript provides functions to help migrate
+// Kapacitor [TICKscripts](https://docs.influxdata.com/kapacitor/v1.6/tick/) to Flux tasks.
 package tickscript
 
 
@@ -10,18 +10,37 @@ import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/schema"
 import "universe"
 
-// defineCheck creates custom check data required by alert() and deadman()
+// defineCheck creates custom check data required by `alert()` and `deadman()`.
 //
 // ## Parameters
 //
-// - id: TODO
-// - name: TODO
-// - type: TODO
+// - id: InfluxDB check ID. 
+// - name: InfluxDB check name. (Required)
+// - type: InfluxDB check type. Default is `custom`.
+//
+// ## Examples
+// ### Generate InfluxDB check data
+// ```
+// import "contrib/bonitoo-io/tickscript"
+// 
+// tickscript.defineCheck(
+//   id: "000000000000",
+//   name: "Example check name",
+// )
+// 
+// // The function above returns: {
+// //   _check_id: "000000000000",
+// //   _check_name: "Example check name",
+// //   _type: "custom",
+// //   tags: {}
+// //  }
+// ```
 defineCheck = (id, name, type="custom") => {
     return {_check_id: id, _check_name: name, _type: type, tags: {}}
 }
 
-// alert is a helper function similar to TICKscript alert.
+// alert is a helper function similar to
+// TICKscript [`alert()`](https://docs.influxdata.com/kapacitor/v1.6/nodes/alert_node/).
 //
 // ## Parameters
 //
@@ -69,7 +88,7 @@ alert = (
         )
 }
 
-// deadman is a helper function similar to TICKscript deadman.
+// deadman is a helper function similar to TICKscript [`deadman()`](https://docs.influxdata.com/kapacitor/v1.6/nodes/stream_node/#deadman).
 //
 // ## Parameters
 //
@@ -184,17 +203,17 @@ selectWindow = (
         |> rename(fn: (column) => if column == _column then _as else column)
 }
 
-// compute computes aggregated value of the input data.
-// It is a convenience function to be used as
-//
-//   |median('x)'
-//      .as(y)
+// compute is an alias for tickscript.select() that
+// changes a column’s name and optionally applies an aggregate or selector
+// function.
 // 
 // ## Parameters
 //
-// - as: TODO
-// - column: TODO
-// - fn: TODO
+// - as: (Required) New column name.
+// - column: Column to operate on. Default is `_value`.
+// - fn: [Aggregate](https://docs.influxdata.com/flux/v0.x/function-types/#aggregates) or
+//   [selector](https://docs.influxdata.com/flux/v0.x/function-types/#selectors)
+//   function to apply.
 compute = select
 
 // groupBy groups by specified columns.
