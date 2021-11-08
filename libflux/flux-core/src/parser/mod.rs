@@ -106,32 +106,56 @@ impl Parser {
         }
     }
 
-    // expect will continuously scan the input until it reads the requested
-    // token. If a token has been buffered by peek, then the token will
-    // be read if it matches or will be discarded if it is the wrong token.
+    // expect will check if the next token is `exp` and error if it is not in either case the token
+    // is consumed and returned
     fn expect(&mut self, exp: TokenType) -> Token {
-        loop {
-            let t = self.scan();
-            match t.tok {
-                tok if tok == exp => return t,
-                TokenType::Eof => {
-                    self.errs
-                        .push(format!("expected {}, got EOF", format!("{}", exp)));
-                    return t;
-                }
-                _ => {
-                    let pos = ast::Position::from(&t.start_pos);
-                    self.errs.push(format!(
-                        "expected {}, got {} ({}) at {}:{}",
-                        format!("{}", exp),
-                        format!("{}", t.tok),
-                        t.lit,
-                        pos.line,
-                        pos.column,
-                    ));
-                }
+        let t = self.scan();
+        match t.tok {
+            tok if tok == exp => (),
+            TokenType::Eof => {
+                self.errs
+                    .push(format!("expected {}, got EOF", format!("{}", exp)));
+            }
+            _ => {
+                let pos = ast::Position::from(&t.start_pos);
+                self.errs.push(format!(
+                    "expected {}, got {} ({}) at {}:{}",
+                    format!("{}", exp),
+                    format!("{}", t.tok),
+                    t.lit,
+                    pos.line,
+                    pos.column,
+                ));
             }
         }
+        t
+    }
+
+    // If `exp` is not the next token this will record an error and continue without consuming the
+    // token so that the next step in the parse may use it
+    fn expect_or_skip(&mut self, exp: TokenType) -> Token {
+        let t = self.scan();
+        match t.tok {
+            tok if tok == exp => (),
+            TokenType::Eof => {
+                self.errs
+                    .push(format!("expected {}, got EOF", format!("{}", exp)));
+                self.t = Some(t.clone());
+            }
+            _ => {
+                let pos = ast::Position::from(&t.start_pos);
+                self.errs.push(format!(
+                    "expected {}, got {} ({}) at {}:{}",
+                    format!("{}", exp),
+                    format!("{}", t.tok),
+                    t.lit,
+                    pos.line,
+                    pos.column,
+                ));
+                self.t = Some(t.clone());
+            }
+        }
+        t
     }
 
     // open will open a new block. It will expect that the next token
@@ -879,10 +903,21 @@ impl Parser {
             let t = t.clone();
             let if_tok = self.scan();
             let test = self.parse_expression();
-            let then_tok = self.expect(TokenType::Then);
-            let cons = self.parse_expression();
-            let else_tok = self.expect(TokenType::Else);
-            let alt = self.parse_expression();
+
+            let then_tok = self.expect_or_skip(TokenType::Then);
+            let cons = if then_tok.tok == TokenType::Then {
+                self.parse_expression()
+            } else {
+                self.create_placeholder_expression(then_tok.clone())
+            };
+
+            let else_tok = self.expect_or_skip(TokenType::Else);
+            let alt = if else_tok.tok == TokenType::Else {
+                self.parse_expression()
+            } else {
+                self.create_placeholder_expression(else_tok.clone())
+            };
+
             return Expression::Conditional(Box::new(ConditionalExpr {
                 base: self.base_node_from_other_end(&t, alt.base()),
                 tk_if: if_tok.comments,
@@ -1319,6 +1354,22 @@ impl Parser {
                 "invalid token for primary expression: {}",
                 format!("{}", t.tok)
             ),
+            expression: None,
+        }))
+    }
+
+    fn create_placeholder_expression(&mut self, t: Token) -> Expression {
+        Expression::Bad(Box::new(BadExpr {
+            // Do not use `self.base_node_*` in order not to steal errors.
+            // The BadExpr is an error per se. We want to leave errors to parents.
+            base: BaseNode {
+                location: self.source_location(
+                    &ast::Position::from(&t.start_pos),
+                    &ast::Position::from(&t.end_pos),
+                ),
+                ..BaseNode::default()
+            },
+            text: "".to_string(),
             expression: None,
         }))
     }
@@ -2057,7 +2108,7 @@ impl Parser {
         rparen: Token,
         params: Vec<Property>,
     ) -> Expression {
-        let arrow = self.expect(TokenType::Arrow);
+        let arrow = self.expect_or_skip(TokenType::Arrow);
         self.parse_function_body_expression(lparen, rparen, arrow, params)
     }
     fn parse_function_body_expression(

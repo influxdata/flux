@@ -449,84 +449,270 @@ fn illegal_expression() {
 fn missing_arrow_in_function_expression() {
     let mut p = Parser::new(r#"(a, b) a + b"#);
     let parsed = p.parse_file("".to_string());
-    let loc = Locator::new(&p.source[..]);
-    assert_eq!(
-        parsed,
+    expect_test::expect![[r#"
         File {
             base: BaseNode {
-                location: loc.get(1, 1, 1, 13),
-                ..BaseNode::default()
-            },
-            name: "".to_string(),
-            metadata: "parser-type=rust".to_string(),
-            package: None,
-            imports: vec![],
-            body: vec![Statement::Expr(Box::new(ExprStmt {
-                base: BaseNode {
-                    location: loc.get(1, 1, 1, 13),
-                    ..BaseNode::default()
-                },
-                expression: Expression::Function(Box::new(FunctionExpr {
-                    base: BaseNode {
-                        location: loc.get(1, 1, 1, 13),
-                        errors: vec![
-                            "expected ARROW, got IDENT (a) at 1:8".to_string(),
-                            "expected ARROW, got ADD (+) at 1:10".to_string(),
-                            "expected ARROW, got IDENT (b) at 1:12".to_string(),
-                            "expected ARROW, got EOF".to_string()
-                        ],
-                        ..BaseNode::default()
+                location: SourceLocation {
+                    file: Some(
+                        "",
+                    ),
+                    start: Position {
+                        line: 1,
+                        column: 1,
                     },
-                    lparen: vec![],
-                    params: vec![
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 2, 1, 3),
-                                ..BaseNode::default()
-                            },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 2, 1, 3),
-                                    ..BaseNode::default()
-                                },
-                                name: "a".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
-                        },
-                        Property {
-                            base: BaseNode {
-                                location: loc.get(1, 5, 1, 6),
-                                ..BaseNode::default()
-                            },
-                            key: PropertyKey::Identifier(Identifier {
-                                base: BaseNode {
-                                    location: loc.get(1, 5, 1, 6),
-                                    ..BaseNode::default()
-                                },
-                                name: "b".to_string()
-                            }),
-                            separator: vec![],
-                            value: None,
-                            comma: vec![],
-                        }
-                    ],
-                    rparen: vec![],
-                    arrow: vec![],
-                    body: FunctionBody::Expr(Expression::Bad(Box::new(BadExpr {
+                    end: Position {
+                        line: 1,
+                        column: 13,
+                    },
+                    source: Some(
+                        "(a, b) a + b",
+                    ),
+                },
+                comments: [],
+                errors: [],
+            },
+            name: "",
+            metadata: "parser-type=rust",
+            package: None,
+            imports: [],
+            body: [
+                Expr(
+                    ExprStmt {
                         base: BaseNode {
-                            location: loc.get(1, 13, 1, 13),
-                            ..BaseNode::default()
+                            location: SourceLocation {
+                                file: Some(
+                                    "",
+                                ),
+                                start: Position {
+                                    line: 1,
+                                    column: 1,
+                                },
+                                end: Position {
+                                    line: 1,
+                                    column: 13,
+                                },
+                                source: Some(
+                                    "(a, b) a + b",
+                                ),
+                            },
+                            comments: [],
+                            errors: [],
                         },
-                        text: "invalid token for primary expression: EOF".to_string(),
-                        expression: None
-                    }))),
-                }))
-            }))],
-            eof: vec![],
-        },
-    )
+                        expression: Function(
+                            FunctionExpr {
+                                base: BaseNode {
+                                    location: SourceLocation {
+                                        file: Some(
+                                            "",
+                                        ),
+                                        start: Position {
+                                            line: 1,
+                                            column: 1,
+                                        },
+                                        end: Position {
+                                            line: 1,
+                                            column: 13,
+                                        },
+                                        source: Some(
+                                            "(a, b) a + b",
+                                        ),
+                                    },
+                                    comments: [],
+                                    errors: [],
+                                },
+                                lparen: [],
+                                params: [
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                file: Some(
+                                                    "",
+                                                ),
+                                                start: Position {
+                                                    line: 1,
+                                                    column: 2,
+                                                },
+                                                end: Position {
+                                                    line: 1,
+                                                    column: 3,
+                                                },
+                                                source: Some(
+                                                    "a",
+                                                ),
+                                            },
+                                            comments: [],
+                                            errors: [],
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        file: Some(
+                                                            "",
+                                                        ),
+                                                        start: Position {
+                                                            line: 1,
+                                                            column: 2,
+                                                        },
+                                                        end: Position {
+                                                            line: 1,
+                                                            column: 3,
+                                                        },
+                                                        source: Some(
+                                                            "a",
+                                                        ),
+                                                    },
+                                                    comments: [],
+                                                    errors: [],
+                                                },
+                                                name: "a",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                    Property {
+                                        base: BaseNode {
+                                            location: SourceLocation {
+                                                file: Some(
+                                                    "",
+                                                ),
+                                                start: Position {
+                                                    line: 1,
+                                                    column: 5,
+                                                },
+                                                end: Position {
+                                                    line: 1,
+                                                    column: 6,
+                                                },
+                                                source: Some(
+                                                    "b",
+                                                ),
+                                            },
+                                            comments: [],
+                                            errors: [],
+                                        },
+                                        key: Identifier(
+                                            Identifier {
+                                                base: BaseNode {
+                                                    location: SourceLocation {
+                                                        file: Some(
+                                                            "",
+                                                        ),
+                                                        start: Position {
+                                                            line: 1,
+                                                            column: 5,
+                                                        },
+                                                        end: Position {
+                                                            line: 1,
+                                                            column: 6,
+                                                        },
+                                                        source: Some(
+                                                            "b",
+                                                        ),
+                                                    },
+                                                    comments: [],
+                                                    errors: [],
+                                                },
+                                                name: "b",
+                                            },
+                                        ),
+                                        separator: [],
+                                        value: None,
+                                        comma: [],
+                                    },
+                                ],
+                                rparen: [],
+                                arrow: [],
+                                body: Expr(
+                                    Binary(
+                                        BinaryExpr {
+                                            base: BaseNode {
+                                                location: SourceLocation {
+                                                    file: Some(
+                                                        "",
+                                                    ),
+                                                    start: Position {
+                                                        line: 1,
+                                                        column: 8,
+                                                    },
+                                                    end: Position {
+                                                        line: 1,
+                                                        column: 13,
+                                                    },
+                                                    source: Some(
+                                                        "a + b",
+                                                    ),
+                                                },
+                                                comments: [],
+                                                errors: [],
+                                            },
+                                            operator: AdditionOperator,
+                                            left: Identifier(
+                                                Identifier {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            file: Some(
+                                                                "",
+                                                            ),
+                                                            start: Position {
+                                                                line: 1,
+                                                                column: 8,
+                                                            },
+                                                            end: Position {
+                                                                line: 1,
+                                                                column: 9,
+                                                            },
+                                                            source: Some(
+                                                                "a",
+                                                            ),
+                                                        },
+                                                        comments: [],
+                                                        errors: [
+                                                            "expected ARROW, got IDENT (a) at 1:8",
+                                                        ],
+                                                    },
+                                                    name: "a",
+                                                },
+                                            ),
+                                            right: Identifier(
+                                                Identifier {
+                                                    base: BaseNode {
+                                                        location: SourceLocation {
+                                                            file: Some(
+                                                                "",
+                                                            ),
+                                                            start: Position {
+                                                                line: 1,
+                                                                column: 12,
+                                                            },
+                                                            end: Position {
+                                                                line: 1,
+                                                                column: 13,
+                                                            },
+                                                            source: Some(
+                                                                "b",
+                                                            ),
+                                                        },
+                                                        comments: [],
+                                                        errors: [],
+                                                    },
+                                                    name: "b",
+                                                },
+                                            ),
+                                        },
+                                    ),
+                                ),
+                            },
+                        ),
+                    },
+                ),
+            ],
+            eof: [],
+        }
+    "#]]
+    .assert_debug_eq(&parsed);
 }
 
 #[test]
@@ -695,4 +881,19 @@ fn index_with_unexpected_rparen() {
             eof: vec![],
         },
     )
+}
+
+#[test]
+fn issue_4231() {
+    let mut p = Parser::new(
+        r#"
+map(fn: (r) => ({ r with _value: if true and false then 1}) )
+"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    expect_test::expect![[r#"error at @2:34-2:59: expected ELSE, got RBRACE (}) at 2:58"#]].assert_eq(
+        &ast::check::check(ast::walk::Node::File(&parsed))
+            .unwrap_err()
+            .to_string(),
+    );
 }
