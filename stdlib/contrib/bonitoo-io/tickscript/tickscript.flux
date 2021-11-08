@@ -2,7 +2,6 @@
 // Kapacitor [TICKscripts](https://docs.influxdata.com/kapacitor/v1.6/tick/) to Flux tasks.
 package tickscript
 
-
 import "experimental"
 import "experimental/array"
 import "influxdata/influxdb"
@@ -14,20 +13,21 @@ import "universe"
 //
 // ## Parameters
 //
-// - id: InfluxDB check ID. 
+// - id: InfluxDB check ID.
 // - name: InfluxDB check name. (Required)
-// - type: InfluxDB check type. Default is `custom`.
+// - type: InfluxDB check type. One of `threshold`, `deadman`, `custom`.
+//   Default is `custom`.
 //
 // ## Examples
 // ### Generate InfluxDB check data
 // ```
 // import "contrib/bonitoo-io/tickscript"
-// 
+//
 // tickscript.defineCheck(
 //   id: "000000000000",
 //   name: "Example check name",
 // )
-// 
+//
 // // The function above returns: {
 // //   _check_id: "000000000000",
 // //   _check_name: "Example check name",
@@ -39,20 +39,30 @@ defineCheck = (id, name, type="custom") => {
     return {_check_id: id, _check_name: name, _type: type, tags: {}}
 }
 
-// alert is a helper function similar to
+// alert identifies events of varying severity levels
+// and writes them to the `statuses` measurement in the InfluxDB `_monitoring`
+// system bucket.
+
+// This function is comparable to
 // TICKscript [`alert()`](https://docs.influxdata.com/kapacitor/v1.6/nodes/alert_node/).
 //
 // ## Parameters
 //
-// - check: TODO
-// - id: TODO
-// - details: TODO
-// - message: TODO
-// - crit: TODO
-// - warn: TODO
-// - info: TODO
-// - ok: TODO
-// - topic: TODO
+// - check: (Required) InfluxDB check data.
+//   See [tickscript.defineCheck()].
+// - id: Function that returns the InfluxDB check ID provided by the check record.
+//   Default is `(r) => "${r._check_id}"`.
+// - details: Function to return the InfluxDB check details using data from input rows.
+//   Default is `(r) => ""`.
+// - message: Function to return the InfluxDB check message using data from input rows.
+//   Default is `(r) => "Threshold Check: ${r._check_name} is: ${r._level}"`.
+// - crit: Predicate function to determine `crit` status. Default is `(r) => false`.
+// - warn: Predicate function to determine `warn` status. Default is `(r) => false`.
+// - info: Predicate function to determine `info` status. Default is `(r) => false`.
+// - ok: Predicate function to determine `ok` status. Default is `(r) => true`.
+// - topic: Check topic. Default is `""`.
+//
+// [tickscript.defineCheck()]: https://docs.influxdata.com/flux/v0.x/stdlib/contrib/bonitoo-io/tickscript/definecheck/
 alert = (
     check,
     id=(r) => "${r._check_id}",
@@ -108,9 +118,9 @@ alert = (
 // ### Example deadman check
 // ```
 // import "contrib/bonitoo-io/tickscript"
-// 
+//
 // option task = {name: "Example task", every: 1m;}
-// 
+//
 // from(bucket: "example-bucket")
 //   |> range(start: -task.every)
 //   |> filter(fn: (r) => r._measurement == "pulse" and r._field == "value")
@@ -136,7 +146,7 @@ deadman = (
         |> set(key: "_measurement", value: measurement)
         // required by monitor.check
         |> experimental.group(columns: ["_measurement"], mode: "extend")
-        // input tables are expected to be pivoted already    
+        // input tables are expected to be pivoted already
         |> schema.fieldsAsCols()
     _counts = union(tables: [_dummy, tables])
         |> keep(columns: ["_measurement", "_time"])
@@ -144,7 +154,7 @@ deadman = (
         |> duplicate(column: "_measurement", as: "__value__")
         |> count(column: "__value__")
         |> findColumn(fn: (key) => key._measurement == measurement, column: "__value__")
-    _tables = 
+    _tables =
         // only dummy table is in the concatenated stream
         if _counts[0] == 1 then
             _dummy
@@ -182,9 +192,9 @@ deadman = (
 //
 // ## Parameters
 //
-// - column: TODO
-// - fn: TODO
-// - as: TODO
+// - column:
+// - fn:
+// - as:
 select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
     _column = column
     _as = as
@@ -194,20 +204,16 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
         |> rename(fn: (column) => if column == _column then _as else column)
 }
 
-// selectWindow selects a column with time grouping and computes aggregated values.
-// It is a convenience function to be used as
-//
-//   query("SELECT f(x) AS y")
-//     .groupBy(time(t), ...)
-//
+// select changes a column’s name and optionally
+// applies an aggregate or selector function to values in the column.
 //
 // ## Parameters
 //
-// - column: TODO
-// - fn: TODO
-// - as: TODO
-// - every: TODO
-// - defaultValue: TODO
+// - column:
+// - fn:
+// - as:
+// - every:
+// - defaultValue:
 selectWindow = (
     column="_value",
     fn,
@@ -228,7 +234,7 @@ selectWindow = (
 // compute is an alias for tickscript.select() that
 // changes a column’s name and optionally applies an aggregate or selector
 // function.
-// 
+//
 // ## Parameters
 //
 // - as: (Required) New column name.
@@ -243,7 +249,7 @@ compute = select
 //
 // ## Parameters
 //
-// - columns: TODO
+// - columns:
 groupBy = (columns, tables=<-) => tables
     |> group(columns: columns)
     // required by monitor.check
@@ -254,9 +260,29 @@ groupBy = (columns, tables=<-) => tables
 //
 // ## Parameters
 //
-// - tables: TODO
-// - measurement: TODO
-// - on: TODO
+// - tables: (Required) Map of two streams to join.
+// - measurement: (Required) Measurement name to use in results.
+// - on: List of columns to join on. Default is `["_time"]`.
+//
+// ## Examples
+// ### Join two streams of data
+//
+// [INPUT DATA]
+//
+// ```
+// import "contrib/bonitoo-io/tickscript"
+// 
+// metrics = //...
+// states = //...
+// 
+// tickscript.join(
+//   tables: {metric: metrics, state: states},
+//   on: ["_time", "host"],
+//   measurement: "example-m"
+// )
+//```
+//
+// [OUTPUT DATA]
 join = (tables, on=["_time"], measurement) => universe.join(tables: tables, on: on)
     |> map(fn: (r) => ({r with _measurement: measurement}))
     // required by monitor.check
