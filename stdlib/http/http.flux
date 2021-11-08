@@ -6,12 +6,12 @@ package http
 
 import "experimental"
 
-// post submits an HTTP POST request to the specified URL with headers and data
+// post sends an HTTP POST request to the specified URL with headers and data
 // and returns the HTTP status code.
 //
 // ## Parameters
 //
-// - url: URL to POST to.
+// - url: URL to send the POST reqeust to.
 // - headers: Headers to include with the POST request.
 //
 //    **Header keys with special characters:**
@@ -125,7 +125,7 @@ builtin pathEscape : (inputString: string) => string
 // _For information about properties, see `http.post`._
 //
 // ## Parameters
-// - url: URL to POST to.
+// - url: URL to send the POST reqeust to.
 //
 // ## Examples
 //
