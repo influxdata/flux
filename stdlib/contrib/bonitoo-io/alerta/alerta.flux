@@ -30,7 +30,7 @@ import "strings"
 // 
 // ## Examples
 // ### Send the last reported value and status to Alerta
-// ```
+// ````no_run
 // import "contrib/bonitoo-io/alerta"
 // import "influxdata/influxdb/secrets"
 // 
@@ -140,7 +140,7 @@ alert = (
 //
 // ## Examples
 // ### Send critical alerts to Alerta
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/alerta"
 // import "influxdata/influxdb/secrets"
 // 
