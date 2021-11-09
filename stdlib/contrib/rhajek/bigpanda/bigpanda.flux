@@ -21,7 +21,7 @@ option defaultTokenPrefix = "Bearer"
 //
 // ## Parameters
 // 
-// - level: - string - levels on status objects can be one of the following:
+// - level: levels on status objects can be one of the following:
 //   `ok`, `info`, `warn`, `crit`, `unknown`.
 statusFromLevel = (level) => {
     lvl = strings.toLower(v: level)
@@ -44,11 +44,11 @@ statusFromLevel = (level) => {
 //
 // ## Parameters
 // 
-// - token: - string - BigPanda authorization Bearer token
-// - url: - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).
-// - appKey: - string - BigPanda App Key.
-// - status: - string - Status of the BigPanda alert. One of ok, critical, warning, acknowledged.
-// - rec: - record - additional data appended to alert
+// - token: BigPanda authorization Bearer token
+// - url: base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).
+// - appKey: BigPanda App Key.
+// - status: Status of the BigPanda alert. One of ok, critical, warning, acknowledged.
+// - rec: additional data appended to alert
 sendAlert = (
     url,
     token,
@@ -66,10 +66,10 @@ sendAlert = (
 // 
 // ## Parameters
 // 
-// - url: - string - BigPanda [alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works).
+// - url: BigPanda [alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works).
 //   Default is the value of the `bigpanda.defaultURL` option.
-// - token: - string - (Required) [BigPanda API Authorization token (API key)](https://docs.bigpanda.io/docs/api-key-management).
-// - appKey: - string - (Required) BigPanda [App Key](https://docs.bigpanda.io/reference#integrating-monitoring-systems).
+// - token: (Required) [BigPanda API Authorization token (API key)](https://docs.bigpanda.io/docs/api-key-management).
+// - appKey: (Required) BigPanda [App Key](https://docs.bigpanda.io/reference#integrating-monitoring-systems).
 // 
 //   The returned factory function accepts a `mapFn` parameter.
 //   The `mapFn` must return an object with all properties defined
