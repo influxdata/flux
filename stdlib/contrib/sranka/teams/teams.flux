@@ -14,11 +14,38 @@ import "strings"
 // Default is `70`.
 option summaryCutoff = 70
 
-// `message` sends a single message to Microsoft Teams via incoming web hook.
-// `url` - string - incoming web hook URL
-// `title` - string - Message card title.
-// `text` - string - Message card text.
-// `summary` - string - Message card summary, it can be an empty string to generate summary from text.
+// message sends a single message to a Microsoft Teams channel using an [incoming webhook].
+//
+// [incoming webhook]: https://docs.microsoft.com/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook
+//
+// ## Parameters
+//
+// - url: Incoming webhook URL.
+// - title: Message card title.
+// - text: Message card text.
+// - summary: Message card summary.
+//   Default is `""`.
+//   If no summary is provided, Flux generates the summary from the message text.
+//
+// ## Examples
+// ### Send the last reported status to a Microsoft Teams channel
+// ```no_run
+// import "contrib/sranka/teams"
+//
+// lastReported =
+//   from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses")
+//     |> last()
+//     |> findRecord(fn: (key) => true, idx: 0)
+//
+// teams.message(
+//   url: "https://outlook.office.com/webhook/example-webhook",
+//   title: "Disk Usage"
+//   text: "Disk usage is: *${lastReported.status}*.",
+//   summary: "Disk usage is ${lastReported.status}"
+// )
+// ```
 message = (url, title, text, summary="") => {
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
@@ -44,37 +71,37 @@ message = (url, title, text, summary="") => {
 }
 
 // endpoint sends a message to a Microsoft Teams channel using data from table rows.
-// 
+//
 // ## Parameters
 // - url: Incoming webhook URL.
-// 
+//
 // ## Usage
 // `teams.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
-// 
+//
 // ### mapFn
 // A function that builds the object used to generate the POST request. Requires an `r` parameter.
-// 
+//
 // `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
-// 
+//
 // - `title`
 // - `text`
 // - `summary`
-// 
+//
 // For more information, see `teams.message` parameters.
-// 
+//
 // ## Examples
 // ### Send critical statuses to a Microsoft Teams channel
 // ```no_run
 // import "contrib/sranka/teams"
-// 
+//
 // url = "https://outlook.office.com/webhook/example-webhook"
 // endpoint = teams.endpoint(url: url)
-// 
+//
 // crit_statuses = from(bucket: "example-bucket")
 //   |> range(start: -1m)
 //   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
-// 
+//
 // crit_statuses
 //   |> endpoint(mapFn: (r) => ({
 //       title: "Disk Usage"
