@@ -13,10 +13,13 @@ import "json"
 
 // defaultURL is the default Telegram bot URL. Default is `https://api.telegram.org/bot`.
 option defaultURL = "https://api.telegram.org/bot"
+
 // defaultParseMode is the default [Telegram parse mode](https://core.telegram.org/bots/api#formatting-options). Default is `MarkdownV2`.
 option defaultParseMode = "MarkdownV2"
+
 // defaultDisableWebPagePreview - Use Telegram web page preview by default. Default is `false`.
 option defaultDisableWebPagePreview = false
+
 // defaultSilent - Send silent Telegram notifications by default. Default is `true`.
 option defaultSilent = true
 
@@ -96,7 +99,6 @@ message = (
     return http.post(headers: headers, url: url + token + "/sendMessage", data: enc)
 }
 
-
 // endpoint sends a message to a Telegram channel using data from table rows.
 // 
 // ```
@@ -163,12 +165,7 @@ message = (
 // ```
 // 
 // tag: notification-endpoints
-endpoint = (
-    url=defaultURL,
-    token,
-    parseMode=defaultParseMode,
-    disableWebPagePreview=defaultDisableWebPagePreview
-) => (mapFn) => (tables=<-) => tables
+endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
