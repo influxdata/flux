@@ -10,7 +10,8 @@ import "array"
 import "dict"
 import "experimental/csv"
 
-sets = [
+// _sets contains information about available sample data sets.
+_sets = [
     "airSensor": {url: "https://influx-testdata.s3.amazonaws.com/air-sensor-data-annotated.csv", desc: "Simulated office building air sensor data with temperature, humidity, and carbon monoxide metrics. Data is updated approximately every 15m.", size: "~600 KB", type: "live"},
     "birdMigration": {url: "https://influx-testdata.s3.amazonaws.com/bird-migration.csv", desc: "2019 African bird migration data from the \"Movebank: Animal Tracking\" dataset. Contains geotemporal data between 2019-01-01 and 2019-12-31.", size: "~1.2 MB", type: "static"},
     "bitcoin": {url: "https://influx-testdata.s3.amazonaws.com/bitcoin-historical-annotated.csv", desc: "Bitcoin price data from the last 30 days – Powered by CoinDesk – https://www.coindesk.com/price/bitcoin. Data is updated approximately every 15m.", size: "~700 KB", type: "live"},
@@ -20,8 +21,9 @@ sets = [
     "usgs": {url: "https://influx-testdata.s3.amazonaws.com/usgs-earthquake-all-week-annotated.csv", desc: "USGS earthquake data from the last week. Contains geotemporal data collected from USGS seismic sensors around the world. Data is updated approximately every 15m.", size: "~6 MB", type: "live"},
 ]
 
+// _setInfo retrieves information about a specific data set.
 _setInfo = (set) => {
-    _setDict = dict.get(dict: sets, key: set, default: {url: "", desc: "", size: "", type: ""})
+    _setDict = dict.get(dict: _sets, key: set, default: {url: "", desc: "", size: "", type: ""})
 
     return {
         name: set,

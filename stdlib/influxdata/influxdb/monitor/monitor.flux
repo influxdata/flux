@@ -10,6 +10,7 @@ import "experimental"
 import "influxdata/influxdb/v1"
 import "influxdata/influxdb"
 
+// bucket is the default bucket to store InfluxDB monitoring data in.
 bucket = "_monitoring"
 
 // write persists check statuses to an InfluxDB bucket.
@@ -98,12 +99,21 @@ from = (start, stop=now(), fn=(r) => true) => influxdb.from(bucket: bucket)
     |> filter(fn: fn)
     |> v1.fieldsAsCols()
 
-// levels describing the result of a check
+// levelOK is the string representation of the "ok" level.
 levelOK = "ok"
+
+// levelInfo is the string representation of the "info" level.
 levelInfo = "info"
+
+// levelWarn is the string representation of the "warn" level.
 levelWarn = "warn"
+
+// levelCrit is the string representation of the "crit" level.
 levelCrit = "crit"
+
+// levelUnknown is the string representation of the an unknown level.
 levelUnknown = "unknown"
+
 _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
     toLevelFilter = if toLevel == "any" then
         (r) => r._level != fromLevel and exists r._level
@@ -356,7 +366,7 @@ deadman = (t, tables=<-) => tables
 // - warn: Predicate function that determines `warn` status. Default is `(r) => false`.
 // - info: Predicate function that determines `info` status. Default is `(r) => false`.
 // - ok: Predicate function that determines `ok` status. `Default is (r) => true`.
-// - messagefn: Predicate function that constructs a message to append to each row.
+// - messageFn: Predicate function that constructs a message to append to each row.
 // 
 //   The message is stored in the `_message` column.
 //
