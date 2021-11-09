@@ -12,7 +12,7 @@ package rows
 //
 // ## Parameters
 //
-// - fn: - function - A single argument function to apply to each record.
+// - fn: A single argument function to apply to each record.
 //   The return value must be a record.
 //   (Use the with operator to preserve columns not in the group
 //   and not explicitly mapped in the operation.)_
