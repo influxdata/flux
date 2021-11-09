@@ -11,7 +11,7 @@ import "experimental"
 //
 // ## Parameters
 //
-// - url: URL to send the POST reqeust to.
+// - url: URL to send the POST request to.
 // - headers: Headers to include with the POST request.
 //
 //    **Header keys with special characters:**
