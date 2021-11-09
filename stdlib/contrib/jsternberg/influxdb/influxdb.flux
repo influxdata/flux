@@ -1,4 +1,6 @@
-// Package influxdb TODO
+// Package influxdb provides additional functions for querying data from InfluxDB.
+//
+// introduced: 0.77.0
 package influxdb
 
 
@@ -73,26 +75,96 @@ from = (
 // - token: TODO
 _from = from
 
-// select will select data from an influxdb instance within
-// the range between `start` and `stop` from the bucket specified by
-// the `from` parameter. It will select the specific measurement
-// and it will only include fields that are included in the list of
-// `fields`.
-//
-// In order to filter by tags, the `where` function can be used to further
-// limit the amount of data selected.
-//
+
+// select is an alternate implementation of `from()`,
+// `range()`, `filter()` and `pivot()` that returns pivoted query results and masks
+// the `_measurement`, `_start`, and `_stop` columns. Results are similar to those
+// returned by InfluxQL `SELECT` statements.
+// 
 // ## Parameters
-//
-// - from: TODO
-// - start: TODO
-// - stop: TODO
-// - m: TODO
-// - fields: TODO
-// - org: TODO
-// - host: TODO
-// - token: TODO
-// - where: TODO
+// - from: (Required) Name of the bucket to query.
+// - start: (Required) Earliest time to include in results.
+//   Results include points that match the specified start time.
+//   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
+//   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
+//   Durations are relative to `now()`.
+// - stop: Latest time to include in results.
+//   Results exclude points that match the specified stop time.
+//   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
+//   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
+//   Durations are relative to `now()`.
+//   Defaults to `now()`.
+// - m: (Required) Name of the measurement to query.
+// - fields: List of fields to query. Returns all fields when list is empty or unspecified.
+//   Defaults to `[]`.
+// - where: A single argument predicate function that evaluates true or false
+//   and filters results based on tag values.
+//   Records are passed to the function before fields are pivoted into columns.
+//   Records that evaluate to true are included in the output tables.
+//   Records that evaluate to null or false are not included in the output tables.
+//   Defaults to `(r) => true`.
+//   (Records evaluated in fn functions are represented by r, short for “record” or “row”.)
+// - host: URL of the InfluxDB instance to query.
+//   See [InfluxDB URLs](https://docs.influxdata.com/influxdb/v2.1/reference/urls/)
+//   or [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/v2.1/reference/regions/).
+// - org: Organization name.
+// - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/v2.1/security/tokens/).
+// 
+// ## Examples
+// 
+// ### Query a single field
+// ```no_run
+// import "contrib/jsternberg/influxdb"
+// 
+// influxdb.select(
+//   from: "example-bucket",
+//   start: -1d,
+//   m: "example-measurement",
+//   fields: ["field1"]
+// )
+// ```
+// 
+// ### Query multiple fields
+// ```no_run
+// import "contrib/jsternberg/influxdb"
+// 
+// influxdb.select(
+//   from: "example-bucket",
+//   start: -1d,
+//   m: "example-measurement",
+//   fields: ["field1", "field2", "field3"]
+// )
+// ```
+// 
+// ### Query all fields and filter by tags
+// ```no_run
+// import "contrib/jsternberg/influxdb"
+// 
+// influxdb.select(
+//   from: "example-bucket",
+//   start: -1d,
+//   m: "example-measurement",
+//   where: (r) => r.host == "host1" and r.region == "us-west"
+// )
+// ```
+// 
+// ### Query data from a remote InfluxDB Cloud instance
+// ```no_run
+// import "contrib/jsternberg/influxdb"
+// import "influxdata/influxdb/secrets"
+// 
+// token = secrets.get(key: "INFLUXDB_CLOUD_TOKEN")
+// 
+// influxdb.select(
+//   from: "example-bucket",
+//   start: -1d,
+//   m: "example-measurement",
+//   fields: ["field1", "field2"],
+//   host: "https://us-west-2-1.aws.cloud2.influxdata.com",
+//   org: "example-org",
+//   token: token
+// )
+// ```
 select = (
     from,
     start,
