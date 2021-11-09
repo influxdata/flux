@@ -13,12 +13,12 @@ import "json"
 //
 // ## Parameters
 //
-// - url: - string - Base URL of Webex API endpoint (without a trailing slash).
+// - url: Base URL of Webex API endpoint (without a trailing slash).
 //   Default is `https://webexapis.com`.
-// - token: - string - (Required) [Webex API access token](https://developer.webex.com/docs/api/getting-started).
-// - roomId: - string - (Required) Room ID to send the message to.
-// - text: - string - (Required) Plain text message.
-// - markdown: - string - (Required) [Markdown formatted message](https://developer.webex.com/docs/api/basics#formatting-messages).
+// - token: (Required) [Webex API access token](https://developer.webex.com/docs/api/getting-started).
+// - roomId: (Required) Room ID to send the message to.
+// - text: (Required) Plain text message.
+// - markdown: (Required) [Markdown formatted message](https://developer.webex.com/docs/api/basics#formatting-messages).
 //
 // ## Examples
 // ### Send the last reported status to Webex Teams
@@ -61,9 +61,9 @@ message = (
 //
 // ## Parameters
 //
-// - url: - string - Base URL of Webex API endpoint (without a trailing slash).
+// - url: Base URL of Webex API endpoint (without a trailing slash).
 //   Default is `https://webexapis.com`.
-// - token: - string - (Required) [Webex API access token](https://developer.webex.com/docs/api/getting-started).
+// - token: (Required) [Webex API access token](https://developer.webex.com/docs/api/getting-started).
 //
 // ## Usage
 // `webexteams.endpoint` is a factory function that outputs another function.
