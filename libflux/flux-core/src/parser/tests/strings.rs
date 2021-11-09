@@ -19,7 +19,6 @@ fn parse_string_literal() {
 fn parse_string_literal_invalid_string() {
     let errors = vec![
         "expected STRING, got QUOTE (\") at 1:1",
-        "expected STRING, got EOF",
         "invalid string literal",
     ];
 

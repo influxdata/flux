@@ -1765,3 +1765,1099 @@ fn two_logical_operations_with_parens() {
         },
     )
 }
+
+#[test]
+fn binary_expression() {
+    let mut p = Parser::new(r#"_value < 10.0"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 14),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 14),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Binary(Box::new(BinaryExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 14),
+                        ..BaseNode::default()
+                    },
+                    operator: Operator::LessThanOperator,
+                    left: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 7),
+                            ..BaseNode::default()
+                        },
+                        name: "_value".to_string()
+                    }),
+                    right: Expression::Float(FloatLit {
+                        base: BaseNode {
+                            location: loc.get(1, 10, 1, 14),
+                            ..BaseNode::default()
+                        },
+                        value: 10.0
+                    })
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn member_expression_binary_expression() {
+    let mut p = Parser::new(r#"r._value < 10.0"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 16),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 16),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Binary(Box::new(BinaryExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    operator: Operator::LessThanOperator,
+                    left: Expression::Member(Box::new(MemberExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 9),
+                            ..BaseNode::default()
+                        },
+                        object: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 1, 1, 2),
+                                ..BaseNode::default()
+                            },
+                            name: "r".to_string()
+                        }),
+                        lbrack: vec![],
+                        property: PropertyKey::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 3, 1, 9),
+                                ..BaseNode::default()
+                            },
+                            name: "_value".to_string()
+                        }),
+                        rbrack: vec![],
+                    })),
+                    right: Expression::Float(FloatLit {
+                        base: BaseNode {
+                            location: loc.get(1, 12, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        value: 10.0
+                    })
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn var_as_binary_expression_of_other_vars() {
+    let mut p = Parser::new(
+        r#"a = 1
+            b = 2
+            c = a + b
+            d = a"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 4, 18),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 6),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 2),
+                            ..BaseNode::default()
+                        },
+                        name: "a".to_string()
+                    },
+                    init: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 6),
+                            ..BaseNode::default()
+                        },
+                        value: 1
+                    })
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(2, 13, 2, 18),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(2, 13, 2, 14),
+                            ..BaseNode::default()
+                        },
+                        name: "b".to_string()
+                    },
+                    init: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(2, 17, 2, 18),
+                            ..BaseNode::default()
+                        },
+                        value: 2
+                    })
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(3, 13, 3, 22),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(3, 13, 3, 14),
+                            ..BaseNode::default()
+                        },
+                        name: "c".to_string()
+                    },
+                    init: Expression::Binary(Box::new(BinaryExpr {
+                        base: BaseNode {
+                            location: loc.get(3, 17, 3, 22),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::AdditionOperator,
+                        left: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(3, 17, 3, 18),
+                                ..BaseNode::default()
+                            },
+                            name: "a".to_string()
+                        }),
+                        right: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(3, 21, 3, 22),
+                                ..BaseNode::default()
+                            },
+                            name: "b".to_string()
+                        })
+                    }))
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(4, 13, 4, 18),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(4, 13, 4, 14),
+                            ..BaseNode::default()
+                        },
+                        name: "d".to_string()
+                    },
+                    init: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(4, 17, 4, 18),
+                            ..BaseNode::default()
+                        },
+                        name: "a".to_string()
+                    })
+                }))
+            ],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn var_as_unary_expression_of_other_vars() {
+    let mut p = Parser::new(
+        r#"a = 5
+            c = -a"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 2, 19),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 6),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 2),
+                            ..BaseNode::default()
+                        },
+                        name: "a".to_string()
+                    },
+                    init: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 6),
+                            ..BaseNode::default()
+                        },
+                        value: 5
+                    })
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(2, 13, 2, 19),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(2, 13, 2, 14),
+                            ..BaseNode::default()
+                        },
+                        name: "c".to_string()
+                    },
+                    init: Expression::Unary(Box::new(UnaryExpr {
+                        base: BaseNode {
+                            location: loc.get(2, 17, 2, 19),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::SubtractionOperator,
+                        argument: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(2, 18, 2, 19),
+                                ..BaseNode::default()
+                            },
+                            name: "a".to_string()
+                        })
+                    }))
+                }))
+            ],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn var_as_both_binary_and_unary_expressions() {
+    let mut p = Parser::new(
+        r#"a = 5
+            c = 10 * -a"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 2, 24),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 6),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 2),
+                            ..BaseNode::default()
+                        },
+                        name: "a".to_string()
+                    },
+                    init: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 6),
+                            ..BaseNode::default()
+                        },
+                        value: 5
+                    })
+                })),
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(2, 13, 2, 24),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(2, 13, 2, 14),
+                            ..BaseNode::default()
+                        },
+                        name: "c".to_string()
+                    },
+                    init: Expression::Binary(Box::new(BinaryExpr {
+                        base: BaseNode {
+                            location: loc.get(2, 17, 2, 24),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::MultiplicationOperator,
+                        left: Expression::Integer(IntegerLit {
+                            base: BaseNode {
+                                location: loc.get(2, 17, 2, 19),
+                                ..BaseNode::default()
+                            },
+                            value: 10
+                        }),
+                        right: Expression::Unary(Box::new(UnaryExpr {
+                            base: BaseNode {
+                                location: loc.get(2, 22, 2, 24),
+                                ..BaseNode::default()
+                            },
+                            operator: Operator::SubtractionOperator,
+                            argument: Expression::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(2, 23, 2, 24),
+                                    ..BaseNode::default()
+                                },
+                                name: "a".to_string()
+                            })
+                        }))
+                    }))
+                }))
+            ],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn unary_expressions_within_logical_expression() {
+    let mut p = Parser::new(
+        r#"a = 5.0
+            10.0 * -a == -0.5 or a == 6.0"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 2, 42),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 8),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 2),
+                            ..BaseNode::default()
+                        },
+                        name: "a".to_string()
+                    },
+                    init: Expression::Float(FloatLit {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 8),
+                            ..BaseNode::default()
+                        },
+                        value: 5.0
+                    })
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(2, 13, 2, 42),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Logical(Box::new(LogicalExpr {
+                        base: BaseNode {
+                            location: loc.get(2, 13, 2, 42),
+                            ..BaseNode::default()
+                        },
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Binary(Box::new(BinaryExpr {
+                            base: BaseNode {
+                                location: loc.get(2, 13, 2, 30),
+                                ..BaseNode::default()
+                            },
+                            operator: Operator::EqualOperator,
+                            left: Expression::Binary(Box::new(BinaryExpr {
+                                base: BaseNode {
+                                    location: loc.get(2, 13, 2, 22),
+                                    ..BaseNode::default()
+                                },
+                                operator: Operator::MultiplicationOperator,
+                                left: Expression::Float(FloatLit {
+                                    base: BaseNode {
+                                        location: loc.get(2, 13, 2, 17),
+                                        ..BaseNode::default()
+                                    },
+                                    value: 10.0
+                                }),
+                                right: Expression::Unary(Box::new(UnaryExpr {
+                                    base: BaseNode {
+                                        location: loc.get(2, 20, 2, 22),
+                                        ..BaseNode::default()
+                                    },
+                                    operator: Operator::SubtractionOperator,
+                                    argument: Expression::Identifier(Identifier {
+                                        base: BaseNode {
+                                            location: loc.get(2, 21, 2, 22),
+                                            ..BaseNode::default()
+                                        },
+                                        name: "a".to_string()
+                                    })
+                                }))
+                            })),
+                            right: Expression::Unary(Box::new(UnaryExpr {
+                                base: BaseNode {
+                                    location: loc.get(2, 26, 2, 30),
+                                    ..BaseNode::default()
+                                },
+                                operator: Operator::SubtractionOperator,
+                                argument: Expression::Float(FloatLit {
+                                    base: BaseNode {
+                                        location: loc.get(2, 27, 2, 30),
+                                        ..BaseNode::default()
+                                    },
+                                    value: 0.5
+                                })
+                            }))
+                        })),
+                        right: Expression::Binary(Box::new(BinaryExpr {
+                            base: BaseNode {
+                                location: loc.get(2, 34, 2, 42),
+                                ..BaseNode::default()
+                            },
+                            operator: Operator::EqualOperator,
+                            left: Expression::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(2, 34, 2, 35),
+                                    ..BaseNode::default()
+                                },
+                                name: "a".to_string()
+                            }),
+                            right: Expression::Float(FloatLit {
+                                base: BaseNode {
+                                    location: loc.get(2, 39, 2, 42),
+                                    ..BaseNode::default()
+                                },
+                                value: 6.0
+                            })
+                        }))
+                    }))
+                }))
+            ],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn unary_expression_with_member_expression() {
+    let mut p = Parser::new(r#"not m.b"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 8),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 8),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Unary(Box::new(UnaryExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 8),
+                        ..BaseNode::default()
+                    },
+                    operator: Operator::NotOperator,
+                    argument: Expression::Member(Box::new(MemberExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 8),
+                            ..BaseNode::default()
+                        },
+                        object: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 5, 1, 6),
+                                ..BaseNode::default()
+                            },
+                            name: "m".to_string()
+                        }),
+                        lbrack: vec![],
+                        property: PropertyKey::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 7, 1, 8),
+                                ..BaseNode::default()
+                            },
+                            name: "b".to_string()
+                        }),
+                        rbrack: vec![],
+                    }))
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn unary_expressions_with_too_many_comments() {
+    let mut p = Parser::new(
+        r#"// define a
+a = 5.0
+// eval this
+10.0 * -a == -0.5
+	// or this
+	or a == 6.0"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(2, 1, 6, 13),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Variable(Box::new(VariableAssgn {
+                    base: BaseNode {
+                        location: loc.get(2, 1, 2, 8),
+                        ..BaseNode::default()
+                    },
+                    id: Identifier {
+                        base: BaseNode {
+                            location: loc.get(2, 1, 2, 2),
+                            comments: vec![ast::Comment {
+                                text: String::from("// define a\n"),
+                            }],
+                            ..BaseNode::default()
+                        },
+                        name: "a".to_string()
+                    },
+                    init: Expression::Float(FloatLit {
+                        base: BaseNode {
+                            location: loc.get(2, 5, 2, 8),
+                            ..BaseNode::default()
+                        },
+                        value: 5.0
+                    })
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(4, 1, 6, 13),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Logical(Box::new(LogicalExpr {
+                        base: BaseNode {
+                            location: loc.get(4, 1, 6, 13),
+                            comments: vec![ast::Comment {
+                                text: String::from("// or this\n"),
+                            }],
+                            ..BaseNode::default()
+                        },
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Binary(Box::new(BinaryExpr {
+                            base: BaseNode {
+                                location: loc.get(4, 1, 4, 18),
+                                ..BaseNode::default()
+                            },
+                            operator: Operator::EqualOperator,
+                            left: Expression::Binary(Box::new(BinaryExpr {
+                                base: BaseNode {
+                                    location: loc.get(4, 1, 4, 10),
+                                    ..BaseNode::default()
+                                },
+                                operator: Operator::MultiplicationOperator,
+                                left: Expression::Float(FloatLit {
+                                    base: BaseNode {
+                                        location: loc.get(4, 1, 4, 5),
+                                        comments: vec![ast::Comment {
+                                            text: String::from("// eval this\n"),
+                                        }],
+                                        ..BaseNode::default()
+                                    },
+                                    value: 10.0
+                                }),
+                                right: Expression::Unary(Box::new(UnaryExpr {
+                                    base: BaseNode {
+                                        location: loc.get(4, 8, 4, 10),
+                                        ..BaseNode::default()
+                                    },
+                                    operator: Operator::SubtractionOperator,
+                                    argument: Expression::Identifier(Identifier {
+                                        base: BaseNode {
+                                            location: loc.get(4, 9, 4, 10),
+                                            ..BaseNode::default()
+                                        },
+                                        name: "a".to_string()
+                                    })
+                                }))
+                            })),
+                            right: Expression::Unary(Box::new(UnaryExpr {
+                                base: BaseNode {
+                                    location: loc.get(4, 14, 4, 18),
+                                    ..BaseNode::default()
+                                },
+                                operator: Operator::SubtractionOperator,
+                                argument: Expression::Float(FloatLit {
+                                    base: BaseNode {
+                                        location: loc.get(4, 15, 4, 18),
+                                        ..BaseNode::default()
+                                    },
+                                    value: 0.5
+                                })
+                            }))
+                        })),
+                        right: Expression::Binary(Box::new(BinaryExpr {
+                            base: BaseNode {
+                                location: loc.get(6, 5, 6, 13),
+                                ..BaseNode::default()
+                            },
+                            operator: Operator::EqualOperator,
+                            left: Expression::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(6, 5, 6, 6),
+                                    ..BaseNode::default()
+                                },
+                                name: "a".to_string()
+                            }),
+                            right: Expression::Float(FloatLit {
+                                base: BaseNode {
+                                    location: loc.get(6, 10, 6, 13),
+                                    ..BaseNode::default()
+                                },
+                                value: 6.0
+                            })
+                        }))
+                    }))
+                }))
+            ],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn mix_unary_logical_and_binary_expressions() {
+    let mut p = Parser::new(
+        r#"
+            not (f() == 6.0 * x) or fail()"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(2, 13, 2, 43),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(2, 13, 2, 43),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Logical(Box::new(LogicalExpr {
+                    base: BaseNode {
+                        location: loc.get(2, 13, 2, 43),
+                        ..BaseNode::default()
+                    },
+                    operator: LogicalOperator::OrOperator,
+                    left: Expression::Unary(Box::new(UnaryExpr {
+                        base: BaseNode {
+                            location: loc.get(2, 13, 2, 33),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::NotOperator,
+                        argument: Expression::Paren(Box::new(ParenExpr {
+                            base: BaseNode {
+                                location: loc.get(2, 17, 2, 33),
+                                ..BaseNode::default()
+                            },
+                            lparen: vec![],
+                            expression: Expression::Binary(Box::new(BinaryExpr {
+                                base: BaseNode {
+                                    location: loc.get(2, 18, 2, 32),
+                                    ..BaseNode::default()
+                                },
+                                operator: Operator::EqualOperator,
+                                left: Expression::Call(Box::new(CallExpr {
+                                    base: BaseNode {
+                                        location: loc.get(2, 18, 2, 21),
+                                        ..BaseNode::default()
+                                    },
+                                    lparen: vec![],
+                                    callee: Expression::Identifier(Identifier {
+                                        base: BaseNode {
+                                            location: loc.get(2, 18, 2, 19),
+                                            ..BaseNode::default()
+                                        },
+                                        name: "f".to_string()
+                                    }),
+                                    arguments: vec![],
+                                    rparen: vec![],
+                                })),
+                                right: Expression::Binary(Box::new(BinaryExpr {
+                                    base: BaseNode {
+                                        location: loc.get(2, 25, 2, 32),
+                                        ..BaseNode::default()
+                                    },
+                                    operator: Operator::MultiplicationOperator,
+                                    left: Expression::Float(FloatLit {
+                                        base: BaseNode {
+                                            location: loc.get(2, 25, 2, 28),
+                                            ..BaseNode::default()
+                                        },
+                                        value: 6.0
+                                    }),
+                                    right: Expression::Identifier(Identifier {
+                                        base: BaseNode {
+                                            location: loc.get(2, 31, 2, 32),
+                                            ..BaseNode::default()
+                                        },
+                                        name: "x".to_string()
+                                    })
+                                }))
+                            })),
+                            rparen: vec![],
+                        }))
+                    })),
+                    right: Expression::Call(Box::new(CallExpr {
+                        base: BaseNode {
+                            location: loc.get(2, 37, 2, 43),
+                            ..BaseNode::default()
+                        },
+                        lparen: vec![],
+                        callee: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(2, 37, 2, 41),
+                                ..BaseNode::default()
+                            },
+                            name: "fail".to_string()
+                        }),
+                        arguments: vec![],
+                        rparen: vec![],
+                    })),
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
+    let mut p = Parser::new(
+        r#"
+            (not (f() == 6.0 * x) or fail())"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(2, 13, 2, 45),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(2, 13, 2, 45),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Paren(Box::new(ParenExpr {
+                    base: BaseNode {
+                        location: loc.get(2, 13, 2, 45),
+                        ..BaseNode::default()
+                    },
+                    lparen: vec![],
+                    expression: Expression::Logical(Box::new(LogicalExpr {
+                        base: BaseNode {
+                            location: loc.get(2, 14, 2, 44),
+                            ..BaseNode::default()
+                        },
+                        operator: LogicalOperator::OrOperator,
+                        left: Expression::Unary(Box::new(UnaryExpr {
+                            base: BaseNode {
+                                location: loc.get(2, 14, 2, 34),
+                                ..BaseNode::default()
+                            },
+                            operator: Operator::NotOperator,
+                            argument: Expression::Paren(Box::new(ParenExpr {
+                                base: BaseNode {
+                                    location: loc.get(2, 18, 2, 34),
+                                    ..BaseNode::default()
+                                },
+                                lparen: vec![],
+                                expression: Expression::Binary(Box::new(BinaryExpr {
+                                    base: BaseNode {
+                                        location: loc.get(2, 19, 2, 33),
+                                        ..BaseNode::default()
+                                    },
+                                    operator: Operator::EqualOperator,
+                                    left: Expression::Call(Box::new(CallExpr {
+                                        base: BaseNode {
+                                            location: loc.get(2, 19, 2, 22),
+                                            ..BaseNode::default()
+                                        },
+                                        lparen: vec![],
+                                        callee: Expression::Identifier(Identifier {
+                                            base: BaseNode {
+                                                location: loc.get(2, 19, 2, 20),
+                                                ..BaseNode::default()
+                                            },
+                                            name: "f".to_string()
+                                        }),
+                                        arguments: vec![],
+                                        rparen: vec![],
+                                    })),
+                                    right: Expression::Binary(Box::new(BinaryExpr {
+                                        base: BaseNode {
+                                            location: loc.get(2, 26, 2, 33),
+                                            ..BaseNode::default()
+                                        },
+                                        operator: Operator::MultiplicationOperator,
+                                        left: Expression::Float(FloatLit {
+                                            base: BaseNode {
+                                                location: loc.get(2, 26, 2, 29),
+                                                ..BaseNode::default()
+                                            },
+                                            value: 6.0
+                                        }),
+                                        right: Expression::Identifier(Identifier {
+                                            base: BaseNode {
+                                                location: loc.get(2, 32, 2, 33),
+                                                ..BaseNode::default()
+                                            },
+                                            name: "x".to_string()
+                                        })
+                                    }))
+                                })),
+                                rparen: vec![],
+                            }))
+                        })),
+                        right: Expression::Call(Box::new(CallExpr {
+                            base: BaseNode {
+                                location: loc.get(2, 38, 2, 44),
+                                ..BaseNode::default()
+                            },
+                            lparen: vec![],
+                            callee: Expression::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(2, 38, 2, 42),
+                                    ..BaseNode::default()
+                                },
+                                name: "fail".to_string()
+                            }),
+                            arguments: vec![],
+                            rparen: vec![],
+                        })),
+                    })),
+                    rparen: vec![],
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn modulo_op_ints() {
+    let mut p = Parser::new(r#"3 % 8"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 6),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 6),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Binary(Box::new(BinaryExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 6),
+                        ..BaseNode::default()
+                    },
+                    operator: Operator::ModuloOperator,
+                    left: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 2),
+                            ..BaseNode::default()
+                        },
+                        value: 3
+                    }),
+                    right: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 6),
+                            ..BaseNode::default()
+                        },
+                        value: 8
+                    })
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn modulo_op_floats() {
+    let mut p = Parser::new(r#"8.3 % 3.1"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 10),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 10),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Binary(Box::new(BinaryExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 10),
+                        ..BaseNode::default()
+                    },
+                    operator: Operator::ModuloOperator,
+                    left: Expression::Float(FloatLit {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 4),
+                            ..BaseNode::default()
+                        },
+                        value: 8.3
+                    }),
+                    right: Expression::Float(FloatLit {
+                        base: BaseNode {
+                            location: loc.get(1, 7, 1, 10),
+                            ..BaseNode::default()
+                        },
+                        value: 3.1
+                    })
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn power_op() {
+    let mut p = Parser::new(r#"2 ^ 4"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 6),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 6),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Binary(Box::new(BinaryExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 6),
+                        ..BaseNode::default()
+                    },
+                    operator: Operator::PowerOperator,
+                    left: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 2),
+                            ..BaseNode::default()
+                        },
+                        value: 2
+                    }),
+                    right: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 6),
+                            ..BaseNode::default()
+                        },
+                        value: 4
+                    })
+                }))
+            }))],
+            eof: vec![],
+        },
+    )
+}

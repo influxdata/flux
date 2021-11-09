@@ -26,7 +26,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                     location: n.base.location.clone(),
                     message: format!("invalid statement: {}", n.text),
                 }),
-                walk::Node::BadExpr(n) => errors.push(Error {
+                walk::Node::BadExpr(n) if !n.text.is_empty() => errors.push(Error {
                     location: n.base.location.clone(),
                     message: format!("invalid expression: {}", n.text),
                 }),
