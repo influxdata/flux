@@ -257,7 +257,6 @@ const EXCEPTIONS: &[&str] = &[
     "contrib/anaisdg/statsmodels",
     "contrib/bonitoo-io",
     "contrib/bonitoo-io/servicenow",
-    "contrib/bonitoo-io/tickscript",
     "contrib/bonitoo-io/victorops",
     "contrib/bonitoo-io/zenoss",
     "contrib/chobbs",
