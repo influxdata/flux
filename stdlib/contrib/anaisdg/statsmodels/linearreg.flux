@@ -11,19 +11,17 @@ import "generate"
 // and [residual sum of errors](https://en.wikipedia.org/wiki/Residual_sum_of_squares) (`rse`).
 // Output data includes the following columns:
 //
-// - **N**: number of points in the calculation.
-// - **slope**: slope of the calculated regression.
-// - **sx**: ...
-// - **sxx**: ...
-// - **sxy**: ...
-// - **sy**: ...
-// - **errors**: ...
-// - **x**: ...
-// - **y**: ...
-// - **y\_hat**: ...
-//
-// ## Parameters
-// - tables: Input data. Default is piped-forward data (`<-`).
+// - **N**: Number of points in the calculation.
+// - **slope**: Slope of the calculated regression.
+// - **sx**: Sum of x.
+// - **sxx**: Sum of x squared.
+// - **sxy**: Sum of x*y.
+// - **sy**: Sum of y.
+// - **errors**: Residual sum of squares.
+//   Defined by `(r.y - r.y_hat) ^ 2` in this context
+// - **x**:
+// - **y**: field value
+// - **y\_hat**:
 //
 // ## Examples
 //

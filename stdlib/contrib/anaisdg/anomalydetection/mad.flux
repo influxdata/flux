@@ -17,7 +17,6 @@ import "experimental"
 //
 // ## Parameters
 // - threshold: Deviation threshold for anomalies.
-// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 // 

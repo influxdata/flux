@@ -73,7 +73,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/naiveBayesClassifier.flux":                "b648da8fe9a66bf4992bd2dee93c5d8bb696d8103de5b81e63a5b835936b25bc",
 	"stdlib/contrib/anaisdg/anomalydetection/mad.flux":                                            "ce22598b07c34389caf499c472570c384de125d1bea2555c82559bc14f54d9d9",
 	"stdlib/contrib/anaisdg/anomalydetection/mad_test.flux":                                       "ba55de9927f0ba9bc065bc359090a35675812181def2aaa9a4fd466bcd335826",
-	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                                           "731ef677e8930566367e60d1f807bc212730953292fbeb30c0030f4762a12425",
+	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                                           "f26fd5de2d141e8b697ef522bbbc4d60a097103e062ad6a8234a206c08895d9c",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                                      "347f8d80901d6f2fa4bb66a1a560fd71a4ea73ea9c4215213f076d12f7c33920",
 	"stdlib/contrib/bonitoo-io/alerta/alerta.flux":                                                "4581953dd424e6790c9c71300864a44f5262d125fd7116e13fa5705a9603728d",
 	"stdlib/contrib/bonitoo-io/hex/hex.flux":                                                      "7a959661a5c0a03560ac016f53d4a612092c8655fe412b6b14d11821382a0dd3",
