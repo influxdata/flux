@@ -12,21 +12,21 @@ import "strings"
 //
 // ## Parameters
 //
-// - url: - string - (Required) Alerta URL.
-// - apiKey: - string - (Required) Alerta API key.
-// - resource: - string - (Required) Resource associated with the alert.
-// - event: - string - (Required) Event name.
-// - environment: - string - Alerta environment. Valid values: "Production", "Development" or empty string (default).
-// - severity: - string - (Required) Event severity. See [Alerta severities](https://docs.alerta.io/en/latest/api/alert.html#alert-severities).
-// - service: - arrays of string - List of affected services. Default is `[]`.
-// - group: - string - Alerta event group. Default is `""`.
-// - value: - string - Event value.  Default is `""`.
-// - text: - string - Alerta text description. Default is `""`.
-// - tags: - array of strings - List of event tags. Default is `[]`.
-// - attributes: - record - (Required) Alert attributes.
-// - origin: - string - monitoring component.
-// - type: - string - Event type. Default is `""`.
-// - timestamp: - time - time alert was generated. Default is `now()`.
+// - url: (Required) Alerta URL.
+// - apiKey: (Required) Alerta API key.
+// - resource: (Required) Resource associated with the alert.
+// - event: (Required) Event name.
+// - environment: Alerta environment. Valid values: "Production", "Development" or empty string (default).
+// - severity: (Required) Event severity. See [Alerta severities](https://docs.alerta.io/en/latest/api/alert.html#alert-severities).
+// - service: List of affected services. Default is `[]`.
+// - group: Alerta event group. Default is `""`.
+// - value: Event value.  Default is `""`.
+// - text: Alerta text description. Default is `""`.
+// - tags: List of event tags. Default is `[]`.
+// - attributes: (Required) Alert attributes.
+// - origin: monitoring component.
+// - type: Event type. Default is `""`.
+// - timestamp: time alert was generated. Default is `now()`.
 // 
 // ## Examples
 // ### Send the last reported value and status to Alerta
@@ -109,11 +109,11 @@ alert = (
 //
 // ## Parameters
 // 
-// - url: - string - (Required) Alerta URL.
-// - apiKey: - string - (Required) Alerta API key.
-// - environment: - string - Alert environment. Default is `""`.
+// - url: (Required) Alerta URL.
+// - apiKey: (Required) Alerta API key.
+// - environment: Alert environment. Default is `""`.
 //   Valid values: "Production", "Development" or empty string (default).
-// - origin: - string - Alert origin. Default is `"InfluxDB"`.
+// - origin: Alert origin. Default is `"InfluxDB"`.
 //
 // ## Usage
 // `alerta.endpoint` is a factory function that outputs another function.
