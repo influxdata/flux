@@ -75,7 +75,6 @@ from = (
 // - token: TODO
 _from = from
 
-
 // select is an alternate implementation of `from()`,
 // `range()`, `filter()` and `pivot()` that returns pivoted query results and masks
 // the `_measurement`, `_start`, and `_stop` columns. Results are similar to those
