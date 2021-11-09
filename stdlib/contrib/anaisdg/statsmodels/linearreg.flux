@@ -19,9 +19,9 @@ import "generate"
 // - **sy**: Sum of y.
 // - **errors**: Residual sum of squares.
 //   Defined by `(r.y - r.y_hat) ^ 2` in this context
-// - **x**:
-// - **y**: field value
-// - **y\_hat**:
+// - **x**: An index [1,2,3,4...n], with the assumption that the timestamps are regularly spaced.
+// - **y**: Field value
+// - **y\_hat**: Linear regression values
 //
 // ## Examples
 //
