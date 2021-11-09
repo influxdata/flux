@@ -6,9 +6,13 @@ import "http"
 import "json"
 import "strings"
 
-// defaultUrl is the default for the alerts API endpoint.
+// defaultUrl The default [BigPanda alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works)
+// for functions in the BigPanda package.
+// Default is `https://api.bigpanda.io/data/v2/alerts`.
 option defaultUrl = "https://api.bigpanda.io/data/v2/alerts"
-// defaultTokenPrefix is the header prefix for the token.
+
+// defaultTokenPrefix default HTTP authentication schema to use when authenticating with BigPanda.
+// Default is `Bearer`.
 option defaultTokenPrefix = "Bearer"
 
 // statusFromLevel creates BigPanda status from a given level.
@@ -58,14 +62,15 @@ sendAlert = (
     return http.post(headers: headers, url: url, data: json.encode(v: data))
 }
 
-// endpoint creates a factory function that creates a target function for a
-// pipeline (`|>`) to send an alert to BigPanda for each table row.
+// endpoint sends alerts to [BigPanda](https://www.bigpanda.io/) using data from input rows.
 // 
 // ## Parameters
 // 
-// - url: - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).
-// - token: - string - BigPanda authorization Bearer token
-// - appKey: - string - BigPanda App Key.
+// - url: - string - BigPanda [alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works).
+//   Default is the value of the `bigpanda.defaultURL` option.
+// - token: - string - (Required) [BigPanda API Authorization token (API key)](https://docs.bigpanda.io/docs/api-key-management).
+// - appKey: - string - (Required) BigPanda [App Key](https://docs.bigpanda.io/reference#integrating-monitoring-systems).
+// 
 //   The returned factory function accepts a `mapFn` parameter.
 //   The `mapFn` must return an object with all properties defined
 //   in the `sendAlert` function arguments (except url, apiKey and appKey).
