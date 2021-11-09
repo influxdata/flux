@@ -5,9 +5,36 @@ package statsmodels
 import "math"
 import "generate"
 
-// linearRegression performs linear regression. It calculates and returns
-// [*ŷ*](https://en.wikipedia.org/wiki/Hat_operator#Estimated_value) (`y_hat`),
+// linearRegression performs a linear regression.
+//
+// It calculates and returns [*ŷ*](https://en.wikipedia.org/wiki/Hat_operator#Estimated_value) (`y_hat`),
 // and [residual sum of errors](https://en.wikipedia.org/wiki/Residual_sum_of_squares) (`rse`).
+// Output data includes the following columns:
+//
+// - **N**: number of points in the calculation.
+// - **slope**: slope of the calculated regression.
+// - **sx**: ...
+// - **sxx**: ...
+// - **sxy**: ...
+// - **sy**: ...
+// - **errors**: ...
+// - **x**: ...
+// - **y**: ...
+// - **y\_hat**: ...
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// ## Examples
+//
+// ### Perform a linear regression on a dataset
+// ```
+// import "contrib/anaisdg/statsmodels"
+// import "sampledata"
+//
+// < sampledata.float()
+// >     |> statsmodels.linearRegression()
+// ```
 linearRegression = (tables=<-) => {
     renameAndSum = tables
         |> rename(columns: {_value: "y"})
