@@ -214,6 +214,7 @@ builtin from : (
 //     is specified. 
 //
 // - timeColumn: Time column of the output. Default is `"_time"`.
+// - measurementColumn: Measurement column of the output. Default is `"_measurement"`.
 // - tagColumns: Tag columns in the output. Defaults to all columns with type
 //   `string`, excluding all value columns and columns identified by `fieldFn`.
 // - fieldFn: Function that maps a field key to a field value and returns a record.
