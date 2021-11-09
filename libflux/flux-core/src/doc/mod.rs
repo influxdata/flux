@@ -478,8 +478,10 @@ fn parse_package_values(
             _ => None,
         } {
             if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
-                let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
-                members.insert(name.clone(), doc);
+                if !name.starts_with("_") {
+                    let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
+                    members.insert(name.clone(), doc);
+                }
             } else {
                 bail!("type of value {} not found in environment", &name);
             }
@@ -1190,6 +1192,28 @@ mod test {
         let src = "
         // Package foo does a thing.
         package foo
+        ";
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: None,
+                members: BTreeMap::default(),
+                examples: Vec::new(),
+                metadata: None,
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_package_private_values() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        _thisIsPrivate = 1
         ";
         assert_docs_full(
             src,
