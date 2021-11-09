@@ -27,19 +27,19 @@ import "json"
 //   - `warning`
 //   - `info`
 //   - `clear`
-// - source:  Source name. Default is `"Flux"`.:
-// - node:  Node name or IP address related to the event.
+// - source: Source name. Default is `"Flux"`.:
+// - node: Node name or IP address related to the event.
 //   Default is an empty string (`""`).
-// - metricType:  Metric type related to the event (for example, `CPU`).
+// - metricType: Metric type related to the event (for example, `CPU`).
 //   Default is an empty string (`""`).
-// - resource:  Resource related to the event (for example, `CPU-1`).
+// - resource: Resource related to the event (for example, `CPU-1`).
 //   Default is an empty string (`""`).
-// - metricName:  Metric name related to the event (for example, `usage_idle`).
+// - metricName: Metric name related to the event (for example, `usage_idle`).
 //   Default is an empty string (`""`).
-// - messageKey:  Unique identifier of the event (for example, the InfluxDB alert ID).
+// - messageKey: Unique identifier of the event (for example, the InfluxDB alert ID).
 //   Default is an empty string (`""`).
 //   If an empty string, ServiceNow generates a value.
-// - additionalInfo:  Additional information to include with the event.
+// - additionalInfo: Additional information to include with the event.
 //
 // ## Examples
 // ### Send the last reported value and incident type to ServiceNow
