@@ -2,6 +2,7 @@
 // Kapacitor [TICKscripts](https://docs.influxdata.com/kapacitor/v1.6/tick/) to Flux tasks.
 package tickscript
 
+
 import "experimental"
 import "experimental/array"
 import "influxdata/influxdb"
@@ -153,7 +154,7 @@ deadman = (
         |> duplicate(column: "_measurement", as: "__value__")
         |> count(column: "__value__")
         |> findColumn(fn: (key) => key._measurement == measurement, column: "__value__")
-    _tables =
+    _tables = 
         // only dummy table is in the concatenated stream
         if _counts[0] == 1 then
             _dummy
