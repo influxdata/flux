@@ -12,9 +12,62 @@ import "strings"
 
 // respondersToJSON converts an array of Opsgenie responder strings
 // to a string-encoded JSON array that can be embedded in an alert message.
+//
+// ## Parameters
+// - v: (Required) Array of Opsgenie responder strings.
+//   Responder strings must begin with
+//   `user: `, `team: `, `escalation: `, or `schedule: `.
 builtin respondersToJSON : (v: [string]) => string
 
 // sendAlert sends an alert message to Opsgenie.
+// 
+// ## Parameters
+// 
+// - url: Opsgenie API URL. Defaults to `https://api.opsgenie.com/v2/alerts`.
+// - apiKey: (Required) Opsgenie API authorization key.
+// - message: (Required) Alert message text.
+//   130 characters or less.
+// - alias: Opsgenie alias usee to de-deduplicate alerts.
+//   250 characters or less.
+//   Defaults to [message](https://docs.influxdata.com/flux/v0.x/stdlib/contrib/sranka/opsgenie/sendalert/#message).
+// - description: Alert description. 15000 characters or less.
+// - priority: Opsgenie alert priority.
+//   Valid values include:
+//   - `P1`
+//   - `P2`
+//   - `P3` (default)
+//   - `P4`
+//   - `P5`
+// - responders: List of responder teams or users.
+//   Use the `user: ` prefix for users and `teams: ` prefix for teams.
+// - tags: Alert tags.
+// - entity: Alert entity used to specify the alert domain.
+// - actions: List of actions available for the alert.
+// - details: Additional alert details. Must be a JSON-encoded map of key-value string pairs.
+// - visibleTo: List of teams and users the alert will be visible to without sending notifications.
+//   Use the `user: ` prefix for users and `teams: ` prefix for teams.
+// 
+// ## Examples
+// ### Send the last reported status to a Opsgenie
+// ```no_run
+// import "influxdata/influxdb/secrets"
+// import "contrib/sranka/opsgenie"
+// 
+// apiKey = secrets.get(key: "OPSGENIE_APIKEY")
+// 
+// lastReported =
+//   from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses")
+//     |> last()
+//     |> findRecord(fn: (key) => true, idx: 0)
+//     opsgenie.sendAlert(
+//       apiKey: apiKey,
+//       message: "Disk usage is: ${lastReported.status}.",
+//       alias: "example-disk-usage",
+//       responders: ["user:john@example.com", "team:itcrowd"]
+//     )
+// ```
 sendAlert = (
     url="https://api.opsgenie.com/v2/alerts",
     apiKey,
