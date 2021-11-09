@@ -17,7 +17,6 @@ import "system"
 // - myMeasurement: Measurement to use as training data.
 // - myField: Field to use as training data.
 // - myClass: Class to classify against.
-// - tables: Input data. Default is piped-forward data (`<-`).
 naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
     training_data = tables
         //data for 3 days
