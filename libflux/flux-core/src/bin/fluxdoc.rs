@@ -272,8 +272,6 @@ const EXCEPTIONS: &[&str] = &[
     "contrib/jsternberg/influxdb",
     "contrib/jsternberg/math",
     "contrib/jsternberg/rows",
-    "contrib/rhajek",
-    "contrib/rhajek/bigpanda",
     "contrib/sranka",
     "contrib/sranka/opsgenie",
     "contrib/sranka/sensu",
