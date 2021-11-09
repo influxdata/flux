@@ -1,17 +1,68 @@
+// Package victorops provides functions that send events to [VictorOps](https://victorops.com/).
+//
+// > VictorOps is now Splunk On-Call
+//
+//
+// ## Set up VictorOps
+// To send events to VictorOps with Flux:
+//
+// 1. [Enable the VictorOps REST Endpoint Integration](https://help.victorops.com/knowledge-base/rest-endpoint-integration-guide/).
+// 2. [Create a REST integration routing key](https://help.victorops.com/knowledge-base/routing-keys/).
+// 3. [Create a VictorOps API key](https://help.victorops.com/knowledge-base/api/).
+//
+// introduced: 0.108.0
 package victorops
 
 
 import "http"
 import "json"
 
-// `alert` sends an alert to VictorOps.
-// `url` - string - VictorOps REST endpoint URL. No default.
-// `messageType` - string - Alert behaviour. Valid values: "CRITICAL", "WARNING", "INFO".
-// `entityID` - string - Incident ID.
-// `entityDisplayName` - string - Incident summary.
-// `stateMessage` - string - Incident verbose message.
-// `timestamp` - time - Incident timestamp. Default value: now().
-// `monitoringTool` - string - Monitoring agent name. Default value: "InfluxDB".
+// alert sends an alert to VictorOps.
+//
+// ## Parameters
+//
+// - url (Required) VictorOps REST endpoint integration URL.
+//   Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
+//   Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
+// - monitoringTool: Monitoring agent name. Default is `""`.
+// - messageType: (Required) VictorOps message type (alert behavior).
+//   Valid values:
+//   - `CRITICAL`
+//   - `WARNING`
+//   - `INFO`
+// - entityID: Incident ID. Default is `""`.
+// - entityDisplayName: Incident display name or summary. Default is `""`.
+// - stateMessage: Verbose incident message. Default is `""`.
+// - timestamp: Incident start time. Default is `now()`.
+//
+// ## Examples
+// ### Send the last reported value and incident type to VictorOps
+//
+// ```no_run
+// import "contrib/bonitoo-io/victorops"
+// import "influxdata/influxdb/secrets"
+//
+// apiKey = secrets.get(key: "VICTOROPS_API_KEY")
+// routingKey = secrets.get(key: "VICTOROPS_ROUTING_KEY")
+//
+// lastReported =
+//   from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_idle")
+//     |> last()
+//     |> findRecord(fn: (key) => true, idx: 0)
+//
+// victorops.alert(
+//   url: "https://alert.victorops.com/integrations/generic/00000000/alert/${apiKey}/${routingKey}",
+//   messageType:
+//     if lastReported._value < 1.0 then "CRITICAL"
+//     else if lastReported._value < 5.0 then "WARNING"
+//     else "INFO",
+//   entityID: "example-alert-1",
+//   entityDisplayName: "Example Alert 1",
+//   stateMessage: "Last reported cpu_idle was ${string(v: r._value)}."
+// )
+// ```
 alert = (
     url,
     messageType,
@@ -36,11 +87,58 @@ alert = (
     return http.post(headers: headers, url: url, data: body)
 }
 
-// `endpoint` creates the endpoint for the VictorOps.
-// `url` - string - VictorOps REST endpoint URL. No default.
-// The returned factory function accepts a `mapFn` parameter.
-// `monitoringTool` - string - Monitoring agent name. Default value: "InfluxDB".
-// The `mapFn` must return an object with `messageType`, `entityID`, `entityDisplayName`, `stateMessage`, `timestamp` fields as defined in the `alert` function arguments.
+// endpoint sends events to VictorOps using data from input rows.
+//
+// ## Parameters
+// - url: (Required) VictorOps REST endpoint integration URL.
+//   Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
+//   Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
+//
+// ## Usage
+// `victorops.endpoint` is a factory function that outputs another function.
+// The output function requires a `mapFn` parameter.
+//
+// ### mapFn
+// A function that builds the object used to generate the POST request. Requires an `r` parameter.
+//
+// `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
+//
+// - monitoringTool
+// - messageType
+// - entityID
+// - entityDisplayName
+// - stateMessage
+// - timestamp
+//
+// For more information, see victorops.event() parameters.
+//
+// ## Examples
+// ### Send critical events to VictorOps
+//
+// ```no_run
+// import "contrib/bonitoo-io/victorops"
+// import "influxdata/influxdb/secrets"
+//
+// apiKey = secrets.get(key: "VICTOROPS_API_KEY")
+// routingKey = secrets.get(key: "VICTOROPS_ROUTING_KEY")
+// url = "https://alert.victorops.com/integrations/generic/00000000/alert/${apiKey}/${routingKey}"
+// endpoint = victorops.endpoint(url: url)
+//
+// crit_events = from(bucket: "example-bucket")
+//   |> range(start: -1m)
+//   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+//
+// crit_events
+//   |> endpoint(mapFn: (r) => ({
+//       monitoringTool: "InfluxDB"
+//       messageType: "CRITICAL",
+//       entityID: "${r.host}-${r._field)-critical",
+//       entityDisplayName: "Critical alert for ${r.host}",
+//       stateMessage: "${r.host} is in a critical state. ${r._field} is ${string(v: r._value)}.",
+//       timestamp: now()
+//     })
+//   )()
+// ```
 endpoint = (url, monitoringTool="InfluxDB") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
