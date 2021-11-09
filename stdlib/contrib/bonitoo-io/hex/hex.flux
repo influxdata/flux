@@ -4,6 +4,7 @@
 // introduced: 0.131.0
 package hex
 
+
 // int converts a hexadecimal string to an integer.
 //
 // ## Parameters
