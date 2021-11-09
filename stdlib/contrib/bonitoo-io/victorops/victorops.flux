@@ -21,7 +21,7 @@ import "json"
 //
 // ## Parameters
 //
-// - url (Required) VictorOps REST endpoint integration URL.
+// - url: (Required) VictorOps REST endpoint integration URL.
 //   Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
 //   Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
 // - monitoringTool: Monitoring agent name. Default is `""`.
@@ -93,6 +93,8 @@ alert = (
 // - url: (Required) VictorOps REST endpoint integration URL.
 //   Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
 //   Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
+// - monitoringTool: Tool to use for monitoring.
+//   Default is `InfluxDB`.
 //
 // ## Usage
 // `victorops.endpoint` is a factory function that outputs another function.
