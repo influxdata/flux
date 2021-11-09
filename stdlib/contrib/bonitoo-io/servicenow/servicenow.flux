@@ -15,11 +15,11 @@ import "json"
 // ServiceNow Event API fields are described in
 // [ServiceNow Create Event documentation](https://docs.servicenow.com/bundle/paris-it-operations-management/page/product/event-management/task/t_EMCreateEventManually.html).
 //
-// - url: - string - (Required) ServiceNow web service URL.
-// - username: - string -  (Required) ServiceNow username to use for HTTP BASIC authentication.
-// - password: - string -  (Required) ServiceNow password to use for HTTP BASIC authentication.
-// - description: - string -  (Required) Event description.
-// - severity: - string -  (Required) Severity of the event.
+// - url: (Required) ServiceNow web service URL.
+// - username: (Required) ServiceNow username to use for HTTP BASIC authentication.
+// - password: (Required) ServiceNow password to use for HTTP BASIC authentication.
+// - description: (Required) Event description.
+// - severity: (Required) Severity of the event.
 //   Supported values:
 //   - `critical`
 //   - `major`
@@ -27,19 +27,19 @@ import "json"
 //   - `warning`
 //   - `info`
 //   - `clear`
-// - source: - string -  Source name. Default is `"Flux"`.:
-// - node: - string -  Node name or IP address related to the event.
+// - source:  Source name. Default is `"Flux"`.:
+// - node:  Node name or IP address related to the event.
 //   Default is an empty string (`""`).
-// - metricType: - string -  Metric type related to the event (for example, `CPU`).
+// - metricType:  Metric type related to the event (for example, `CPU`).
 //   Default is an empty string (`""`).
-// - resource: - string -  Resource related to the event (for example, `CPU-1`).
+// - resource:  Resource related to the event (for example, `CPU-1`).
 //   Default is an empty string (`""`).
-// - metricName: - string -  Metric name related to the event (for example, `usage_idle`).
+// - metricName:  Metric name related to the event (for example, `usage_idle`).
 //   Default is an empty string (`""`).
-// - messageKey: - string -  Unique identifier of the event (for example, the InfluxDB alert ID).
+// - messageKey:  Unique identifier of the event (for example, the InfluxDB alert ID).
 //   Default is an empty string (`""`).
 //   If an empty string, ServiceNow generates a value.
-// - additionalInfo: - record -  Additional information to include with the event.
+// - additionalInfo:  Additional information to include with the event.
 //
 // ## Examples
 // ### Send the last reported value and incident type to ServiceNow
