@@ -298,8 +298,6 @@ const EXCEPTIONS: &[&str] = &[
     "experimental/record",
     "experimental/table",
     "experimental/usage",
-    "generate",
-    "http",
     "influxdata",
     "influxdata/influxdb",
     "influxdata/influxdb/internal",
