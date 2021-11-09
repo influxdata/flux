@@ -42,16 +42,16 @@ option defaultSilent = true
 //
 // ## Parameters
 // 
-// - url: - string - URL of the Telegram bot endpoint. Default is `https://api.telegram.org/bot`.
-// - token: - string - (Required) Telegram bot token.
-// - channel: - string - (Required) Telegram channel ID.
-// - text: - string - Message text.
-// - parseMode: - string - [Parse mode](https://core.telegram.org/bots/api#formatting-options)
+// - url: URL of the Telegram bot endpoint. Default is `https://api.telegram.org/bot`.
+// - token: (Required) Telegram bot token.
+// - channel: (Required) Telegram channel ID.
+// - text: Message text.
+// - parseMode: [Parse mode](https://core.telegram.org/bots/api#formatting-options)
 //   of the message text.
 //   Default is `MarkdownV2`.
-// - disableWebPagePreview: - bool - Disable preview of web links in the sent message.
+// - disableWebPagePreview: Disable preview of web links in the sent message.
 //   Default is `false`.
-// - silent: - bool - Send message [silently](https://telegram.org/blog/channels-2-0#silent-messages).
+// - silent: Send message [silently](https://telegram.org/blog/channels-2-0#silent-messages).
 //   Default is `true`.
 // 
 // ## Examples
@@ -130,12 +130,12 @@ message = (
 //
 // ## Parameters
 // 
-// - url: - string - URL of the Telegram bot endpoint. Default is `https://api.telegram.org/bot`.
-// - token: - string - (Required) Telegram bot token.
-// - parseMode: - string - [Parse mode](https://core.telegram.org/bots/api#formatting-options)
+// - url: URL of the Telegram bot endpoint. Default is `https://api.telegram.org/bot`.
+// - token: (Required) Telegram bot token.
+// - parseMode: [Parse mode](https://core.telegram.org/bots/api#formatting-options)
 //   of the message text.
 //   Default is `MarkdownV2`.
-// - disableWebPagePreview: - bool - Disable preview of web links in the sent message.
+// - disableWebPagePreview: Disable preview of web links in the sent message.
 //   Default is false.
 // 
 //   The returned factory function accepts a `mapFn` parameter.
