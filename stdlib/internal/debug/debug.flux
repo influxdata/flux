@@ -12,3 +12,5 @@ builtin slurp : (<-tables: [A]) => [A] where A: Record
 
 // sink will discard all data that comes into it.
 builtin sink : (<-tables: [A]) => [A] where A: Record
+
+option vectorize = false

@@ -44,3 +44,9 @@ testcase sink {
 
     testing.diff(got, want) |> yield()
 }
+
+testcase get_option {
+    got =
+    want = true
+    testing.diff(got, want)
+}

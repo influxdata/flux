@@ -2,6 +2,7 @@ package universe
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/influxdata/flux"
@@ -142,6 +143,12 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
+	}
+
+	if vectorize, ok := interpreter.GetOption(t.ctx, "internal/debug", "vectorize"); ok && vectorize.Type().Nature() == semantic.Bool {
+		if vectorize.Bool() {
+			fmt.Printf("Vectorization enabled! (But not yet implemented)\n")
+		}
 	}
 
 	// TODO(jsternberg): Use type inference. The original algorithm

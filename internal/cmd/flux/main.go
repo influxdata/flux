@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/opentracing/opentracing-go"
 	"github.com/spf13/cobra"
 	jaegercfg "github.com/uber/jaeger-client-go/config"
@@ -105,6 +106,7 @@ func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies
 			},
 		},
 	}
+
 	return ip.Inject(ctx), deps
 }
 
