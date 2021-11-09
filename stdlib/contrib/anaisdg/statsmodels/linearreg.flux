@@ -1,6 +1,7 @@
 // Package statsmodels provides functions for calculating statistical models.
 package statsmodels
 
+
 import "math"
 import "generate"
 
