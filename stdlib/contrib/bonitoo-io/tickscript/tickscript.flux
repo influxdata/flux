@@ -2,7 +2,6 @@
 // Kapacitor [TICKscripts](https://docs.influxdata.com/kapacitor/v1.6/tick/) to Flux tasks.
 package tickscript
 
-
 import "experimental"
 import "experimental/array"
 import "influxdata/influxdb"
@@ -154,7 +153,7 @@ deadman = (
         |> duplicate(column: "_measurement", as: "__value__")
         |> count(column: "__value__")
         |> findColumn(fn: (key) => key._measurement == measurement, column: "__value__")
-    _tables = 
+    _tables =
         // only dummy table is in the concatenated stream
         if _counts[0] == 1 then
             _dummy
@@ -183,18 +182,61 @@ deadman = (
         )
 }
 
-// select selects a column and optionally computes aggregated value.
-// It is meant to be a convenience function to be used for:
+// select changes a column’s name
+// and optionally applies an aggregate or selector function to values in the column.
 //
-//   query("SELECT x AS y")
-//   query("SELECT f(x) AS y") without time grouping
+// ## TICKscript helper function
 //
+// tickscript.select() is a helper function meant to replicate TICKscript operations like the following:
+// ```
+// // Rename
+// query("SELECT x AS y")
+//
+// // Aggregate and rename
+// query("SELECT f(x) AS y")
+// ```
 //
 // ## Parameters
 //
-// - column:
-// - fn:
-// - as:
+// - column: Column to operate on. Default is `_value`.
+// - fn: [Aggregate](https://docs.influxdata.com/flux/v0.x/function-types/#aggregates)
+//   or [selector](https://docs.influxdata.com/flux/v0.x/function-types/#selectors)
+//   function to apply.
+// - as: (Required) New column name.
+//
+// ## Examples
+//
+// ### Change the name of the value column
+// ```
+// import "contrib/bonitoo-io/tickscript"
+//
+// data
+//   |> tickscript.select(as: "example-name")
+// ```
+// [INPUT DATA]
+//
+// ### Change the name of the value column and apply an aggregate function
+// import "contrib/bonitoo-io/tickscript"
+// ```
+// data
+//   |> tickscript.select(
+//     as: "sum",
+//     fn: sum
+//   )
+// ```
+// [INPUT DATA]
+//
+// ### Change the name of the value column and apply a selector function
+// import "contrib/bonitoo-io/tickscript"
+// ```
+// data
+//   |> tickscript.select(
+//     as: "max",
+//     fn: max
+//   )
+// ```
+// [INPUT DATA]
+//
 select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
     _column = column
     _as = as
@@ -204,16 +246,41 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
         |> rename(fn: (column) => if column == _column then _as else column)
 }
 
-// select changes a column’s name and optionally
-// applies an aggregate or selector function to values in the column.
+// selectWindow changes a column’s name, windows rows by time,
+// and applies an aggregate or selector function the specified column for each window of time.
+//
+// ## TICKscript helper function
+// `tickscript.selectWindow` is a helper function meant to replicate TICKscript operations like the following:
+// ```
+// Rename, window, and aggregate
+// query("SELECT f(x) AS y")
+//   .groupBy(time(t), ...)
+// ```
 //
 // ## Parameters
 //
-// - column:
-// - fn:
-// - as:
-// - every:
-// - defaultValue:
+// - column: - string - Column to operate on. Default is _value.
+// - fn: - function - (Required) Aggregate or selector function to apply.
+// - as: - string - (Required) New column name.
+// - every: - duration - (Required) Duration of windows.
+// - defaultValue: (Required) Default fill value for null values in column.
+//   Must be the same data type as column.
+//
+// ## Examples
+// ### Change the name of, window, and then aggregate the value column
+// ```
+// import "contrib/bonitoo-io/tickscript"
+//
+// data
+//   |> tickscript.selectWindow(
+//     fn: sum,
+//     as: "example-name",
+//     every: 1h,
+//     defaultValue: 0.0
+//   )
+// ```
+//
+// tags: transformations
 selectWindow = (
     column="_value",
     fn,
@@ -244,25 +311,39 @@ selectWindow = (
 //   function to apply.
 compute = select
 
-// groupBy groups by specified columns.
-// It is a convenience function, it adds _measurement column which is required by monitor.check().
+// groupBy groups results by the `_measurement` column and other specified columns.
+//
+// This function is comparable to [Kapacitor QueryNode .groupBy](https://docs.influxdata.com/kapacitor/v1.6/nodes/query_node/#groupby).
+//
+// (To group by intervals of time, use `window()` or `tickscript.selectWindow()`.)
 //
 // ## Parameters
+// - columns: (Required) List of columns to group by.
 //
-// - columns:
+// ## Examples
+// ### Group by host and region
+// import "contrib/bonitoo-io/tickscript"
+// ```
+// data
+//   |> tickscript.groupBy(
+//     columns: ["host", "region"]
+//   )
+// ```
 groupBy = (columns, tables=<-) => tables
     |> group(columns: columns)
     // required by monitor.check
     |> experimental.group(columns: ["_measurement"], mode: "extend")
 
-// join merges two streams using standard join().
-// It is meant a convenience function, it ensures _measurement column exists and is in the group key.
+// join merges two input streams into a single output stream
+// based on specified columns with equal values and appends a new measurement name.
+//
+// This function is comparable to [Kapacitor JoinNode](https://docs.influxdata.com/kapacitor/v1.6/nodes/join_node/).
 //
 // ## Parameters
 //
-// - tables: (Required) Map of two streams to join.
-// - measurement: (Required) Measurement name to use in results.
-// - on: List of columns to join on. Default is `["_time"]`.
+// - tables: - record -(Required) Map of two streams to join.
+// - on: - array of strings - List of columns to join on. Default is `["_time"]`.
+// - measurement: - string -(Required) Measurement name to use in results.
 //
 // ## Examples
 // ### Join two streams of data
@@ -271,10 +352,10 @@ groupBy = (columns, tables=<-) => tables
 //
 // ```
 // import "contrib/bonitoo-io/tickscript"
-// 
+//
 // metrics = //...
 // states = //...
-// 
+//
 // tickscript.join(
 //   tables: {metric: metrics, state: states},
 //   on: ["_time", "host"],
