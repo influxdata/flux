@@ -46,34 +46,34 @@ import "json"
 // ## Examples
 // ### Send the last reported value and incident type to ServiceNow
 // ```
-import "contrib/bonitoo-io/servicenow"
-import "influxdata/influxdb/secrets"
-
-username = secrets.get(key: "SERVICENOW_USERNAME")
-password = secrets.get(key: "SERVICENOW_PASSWORD")
-
-lastReported = from(bucket: "example-bucket")
-    |> range(start: -1m)
-    |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_idle")
-    |> last()
-    |> findRecord(fn: (key) => true, idx: 0)
-
-servicenow.event(
-    url: "https://tenant.service-now.com/api/global/em/jsonv2",
-    username: username,
-    password: password,
-    node: lastReported.host,
-    metricType: lastReported._measurement,
-    resource: lastReported.instance,
-    metricName: lastReported._field,
-    severity: if lastReported._value < 1.0 then
-        "critical"
-    else if lastReported._value < 5.0 then
-        "warning"
-    else
-        "info",
-    additionalInfo: {"devId": r.dev_id},
-)
+// import "contrib/bonitoo-io/servicenow"
+// import "influxdata/influxdb/secrets"
+//
+// username = secrets.get(key: "SERVICENOW_USERNAME")
+// password = secrets.get(key: "SERVICENOW_PASSWORD")
+//
+// lastReported = from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_idle")
+//     |> last()
+//     |> findRecord(fn: (key) => true, idx: 0)
+//
+// servicenow.event(
+//     url: "https://tenant.service-now.com/api/global/em/jsonv2",
+//     username: username,
+//     password: password,
+//     node: lastReported.host,
+//     metricType: lastReported._measurement,
+//     resource: lastReported.instance,
+//     metricName: lastReported._field,
+//     severity: if lastReported._value < 1.0 then
+//         "critical"
+//     else if lastReported._value < 5.0 then
+//         "warning"
+//     else
+//         "info",
+//     additionalInfo: {"devId": r.dev_id},
+// )
 // ```
 //
 // tags: single notification
