@@ -29,7 +29,7 @@ package influxdb
 //      The cardinality calculation excludes points that match the specified start time.
 //      Use a relative duration or absolute time. For example, `-1h` or `2019-08-28T22:00:00Z`.
 //      Durations are relative to `now()`. Default is `now()`.
-
+// 
 // - predicate: Predicate function that filters records.
 //      Default is `(r) => true`.
 //
