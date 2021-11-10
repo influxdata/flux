@@ -85,7 +85,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/bonitoo-io/tickscript/tickscript.flux":                                        "57cf84063ce7d0f068582647b77b23a97771fd2a1830ecb0be916bdaa6bf1990",
 	"stdlib/contrib/bonitoo-io/victorops/victorops.flux":                                          "a0b56a84973e64b617d1f54ba9f0c20307fa0b1a5cff1bc77217c536f522b5ac",
 	"stdlib/contrib/bonitoo-io/zenoss/zenoss.flux":                                                "a7163b4f3fdf1c9be65472180c2be3a2bfe017909fcfd20affd9b067fff36844",
-	"stdlib/contrib/chobbs/discord/discord.flux":                                                  "95e3afb297f55b8da577df328a6abe8ace1547218e87999d5a33c43200f946c0",
+	"stdlib/contrib/chobbs/discord/discord.flux":                                                  "1efd1698a6b42f4c30a377bd36c16ac46158882364ab0f456a65444bb122997d",
 	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                                          "f84201ed6db96baa965da048c9b2ea50a2bc0b27b7ee98e7668aa693108f4674",
 	"stdlib/contrib/jsternberg/aggregate/table_test.flux":                                         "a9db9dbb205f801f5b39372abe68056187937ea6aabef0e5c3049c278e7359a7",
 	"stdlib/contrib/jsternberg/aggregate/window_test.flux":                                        "4e6354fe16a8f2db2e020e0021226aac9059cc26b720d2ab4204180a4aad1e4d",

@@ -26,24 +26,26 @@ option discordURL = "https://discordapp.com/api/webhooks/"
 // ```no_run
 // import "contrib/chobbs/discord"
 // import "influxdata/influxdb/secrets"
-//
+// 
 // token = secrets.get(key: "DISCORD_TOKEN")
-//
-// lastReported =
-//   from(bucket: "example-bucket")
+// 
+// lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses")
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
-//
+// 
 // discord.send(
-//   webhookToken:token,
-//   webhookID: "1234567890",
-//   username: "chobbs",
-//   content: "The current status is \"${lastReported.status}\".",
-//   avatar_url: "https://staff-photos.net/pic.jpg"
+//     webhookToken: token,
+//     webhookID: "1234567890",
+//     username: "chobbs",
+//     content: "The current status is \"${lastReported.status}\".",
+//     avatar_url: "https://staff-photos.net/pic.jpg",
 // )
 // ```
+//
+// tags: single notification
+//
 send = (
     webhookToken,
     webhookID,
@@ -58,16 +60,16 @@ send = (
     return http.post(headers: headers, url: discordURL + webhookID + "/" + webhookToken, data: encode)
 }
 
-// endpoint sends a single message to a Discord channel using a [Discord webhook] and data from table rows.
-//
-// [Discord webhook]: https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks&?page=3
+// endpoint sends a single message to a Discord channel using a
+// [Discord webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks&?page=3)
+// and data from table rows.
 //
 // ## Parameters
 // - webhookToken: Discord [webhook token](https://discord.com/developers/docs/resources/webhook).
 // - webhookID: Discord [webhook ID](https://discord.com/developers/docs/resources/webhook).
 // - username: Override the Discord webhook’s default username.
 // - avatar_url: Override the Discord webhook’s default avatar.
-//
+// - tables: Input data. Default is piped-forward data (`<-`).
 // ## Usage
 // `discord.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
@@ -87,24 +89,28 @@ send = (
 // ```no_run
 // import "influxdata/influxdb/secrets"
 // import "contrib/chobbs/discord"
-//
+// 
 // discordToken = secrets.get(key: "DISCORD_TOKEN")
 // endpoint = telegram.endpoint(
-//   webhookToken: discordToken,
-//   webhookID: "123456789",
-//   username: "critBot"
+//     webhookToken: discordToken,
+//     webhookID: "123456789",
+//     username: "critBot",
 // )
-//
+// 
 // crit_statuses = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
-//
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+// 
 // crit_statuses
-//   |> endpoint(mapFn: (r) => ({
-//       content: "The status is critical!",
-//     })
-//   )()
+//     |> endpoint(
+//         mapFn: (r) => ({
+//             content: "The status is critical!",
+//         }),
+//     )()
 // ```
+//
+// tags: notifcation endpoints,transformations
+//
 endpoint = (webhookToken, webhookID, username, avatar_url="") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
