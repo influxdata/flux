@@ -15,10 +15,10 @@ import "json"
 //
 // - url: Base URL of Webex API endpoint (without a trailing slash).
 //   Default is `https://webexapis.com`.
-// - token: (Required) [Webex API access token](https://developer.webex.com/docs/api/getting-started).
-// - roomId: (Required) Room ID to send the message to.
-// - text: (Required) Plain text message.
-// - markdown: (Required) [Markdown formatted message](https://developer.webex.com/docs/api/basics#formatting-messages).
+// - token: [Webex API access token](https://developer.webex.com/docs/api/getting-started).
+// - roomId: Room ID to send the message to.
+// - text: Plain text message.
+// - markdown: [Markdown formatted message](https://developer.webex.com/docs/api/basics#formatting-messages).
 //
 // ## Examples
 // ### Send the last reported status to Webex Teams
@@ -28,20 +28,22 @@ import "json"
 //
 // apiToken = secrets.get(key: "WEBEX_API_TOKEN")
 //
-// lastReported =
-//   from(bucket: "example-bucket")
+// lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses")
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
 //
 // webexteams.message(
-//   token: apiToken,
-//   roomId: "Y2lzY29zcGFyazovL3VzL1JPT00vYmJjZWIxYWQtNDNmMS0zYjU4LTkxNDctZjE0YmIwYzRkMTU0",
-//   text: "Disk usage is ${lastReported.status}.",
-//   markdown: "Disk usage is **${lastReported.status}**."
+//     token: apiToken,
+//     roomId: "Y2lzY29zcGFyazovL3VzL1JPT00vYmJjZWIxYWQtNDNmMS0zYjU4LTkxNDctZjE0YmIwYzRkMTU0",
+//     text: "Disk usage is ${lastReported.status}.",
+//     markdown: "Disk usage is **${lastReported.status}**.",
 // )
 // ```
+//
+// tags: single notification
+//
 message = (
     url="https://webexapis.com",
     token,
@@ -63,7 +65,8 @@ message = (
 //
 // - url: Base URL of Webex API endpoint (without a trailing slash).
 //   Default is `https://webexapis.com`.
-// - token: (Required) [Webex API access token](https://developer.webex.com/docs/api/getting-started).
+// - token: [Webex API access token](https://developer.webex.com/docs/api/getting-started).
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
 // `webexteams.endpoint` is a factory function that outputs another function.
@@ -82,25 +85,27 @@ message = (
 //
 // ## Examples
 // ### Send the last reported status to Webex Teams
-// ```
+// ```no_run
 // import "contrib/sranka/webexteams"
 // import "influxdata/influxdb/secrets"
 //
 // token = secrets.get(key: "WEBEX_API_KEY")
 //
 // from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses")
-//   |> last()
-//   |> tableFind(fn: (key) => true)
-//   |> webexteams.endpoint(token: token)(mapFn: (r) => ({
-//       roomId: "Y2lzY29zcGFyazovL3VzL1JPT00vYmJjZWIxYWQtNDNmMS0zYjU4LTkxNDctZjE0YmIwYzRkMTU0",
-//       text: "",
-//       markdown: "Disk usage is **${r.status}**.",
-//   })
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses")
+//     |> last()
+//     |> tableFind(fn: (key) => true)
+//     |> webexteams.endpoint(token: token)(
+//         mapFn: (r) => ({
+//             roomId: "Y2lzY29zcGFyazovL3VzL1JPT00vYmJjZWIxYWQtNDNmMS0zYjU4LTkxNDctZjE0YmIwYzRkMTU0",
+//             text: "",
+//             markdown: "Disk usage is **${r.status}**.",
+//         }),
+//     )()
 // ```
 //
-// tags: notification-endpoins
+// tags: notification endpoints,transformations
 endpoint = (url="https://webexapis.com", token) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
