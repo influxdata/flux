@@ -1,10 +1,9 @@
 // Package sensu provides functions for sending events to [Sensu Go](https://docs.sensu.io/sensu-go/latest/).
 //
-//
 // ## Sensu API Key authentication
 //
 // The Flux Sensu package only supports [Sensu API key authentication](https://docs.sensu.io/sensu-go/latest/api/#authenticate-with-an-api-key).
-// All `sensu` functions require an apiKey parameter to successfully authenticate with your Sensu service.
+// All `sensu` functions require an `apiKey` parameter to successfully authenticate with your Sensu service.
 // For information about managing Sensu API keys, see the [Sensu APIKeys API documentation](https://docs.sensu.io/sensu-go/latest/api/apikeys/).
 //
 // introduced: 0.90.0
@@ -18,45 +17,66 @@ import "json"
 // by replacing non-alphanumeric characters (`[a-zA-Z0-9_.-]`) with underscores (`_`).
 //
 // ## Parameters
-// - v: (Required) String to operate on.
+// - v: String to operate on.
+//
+// ## Examples
+//
+// ### Convert a string into a Sensu name
+// ```
+// import "contrib/sranka/sensu"
+//
+// sensu.toSensuName(v: "Example name conversion")
+//
+// // Returns "Example_name_conversion"
+// ```
+//
 builtin toSensuName : (v: string) => string
 
 // event sends a single event to the [Sensu Events API](https://docs.sensu.io/sensu-go/latest/api/events/#create-a-new-event).
 //
 // ## Parameters
 //
-// - url: (Required) Base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture)
+// - url: Base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture)
 //   without a trailing slash.
+//
 //   Example: `http://localhost:8080`.
-// - apiKey: (Required) Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).
-// - checkName: (Required) Check name.
+//
+// - apiKey: Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).
+// - checkName: Check name.
+//
 //   Use alphanumeric characters, underscores (`_`), periods (`.`), and hyphens (`-`).
 //   All other characters are replaced with an underscore.
-// - text: (Required) Event text.
+//
+// - text: Event text.
+//
 //   Mapped to `output` in the Sensu Events API request.
+//
 // - handlers: Sensu handlers to execute. Default is `[]`.
 // - status: Event status code that indicates [state](https://docs.influxdata.com/flux/v0.x/stdlib/contrib/sranka/sensu/event/#state).
 //   Default is `0`.
-//   |-----------------|-------------------------|
+// 
 //   | Status code     | State                   |
-//   |-----------------|-------------------------|
+//   | :-------------- | :---------------------- |
 //   | 0               | OK                      |
 //   | 1               | WARNING                 |
 //   | 2               | CRITICAL                |
 //   | Any other value | UNKNOWN or custom state |
-//   |-----------------|-------------------------|
+//
 // - state: Event state.
 //   Default is `"passing"` for `0` [status](https://docs.influxdata.com/flux/v0.x/stdlib/contrib/sranka/sensu/event/#status) and `"failing"` for other statuses.
-//   The following values are accepted:
+//
+//   **Accepted values**:
 //   - `"failing"`
 //   - `"passing"`
 //   - `"flapping"`
+//
 // - namespace: [Sensu namespace](https://docs.sensu.io/sensu-go/latest/reference/rbac/).
 //   Default is `"default"`.
 // - entityName: Event source.
+//   Default is `influxdb`.
+//
 //   Use alphanumeric characters, underscores (`_`), periods (`.`), and hyphens (`-`).
 //   All other characters are replaced with an underscore.
-//   Default is `influxdb`.
 //
 // ## Examples
 // ### Send the last reported status to Sensu
@@ -66,19 +86,22 @@ builtin toSensuName : (v: string) => string
 //
 // apiKey = secrets.get(key: "SENSU_API_KEY")
 //
-// lastReported =
-//   from(bucket: "example-bucket")
+// lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses")
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
-//     sensu.event(
-//       url: "http://localhost:8080",
-//       apiKey: apiKey,
-//       checkName: "diskUsage",
-//       text: "Disk usage is **${lastReported.status}**.",
-//     )
+//
+// sensu.event(
+//     url: "http://localhost:8080",
+//     apiKey: apiKey,
+//     checkName: "diskUsage",
+//     text: "Disk usage is **${lastReported.status}**.",
+// )
 // ```
+//
+// tags: single notification
+//
 event = (
     url,
     apiKey,
@@ -113,21 +136,24 @@ event = (
 // using data from table rows.
 //
 // ## Parameters
-// - url: (Required) Base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture)
+// - url: Base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture)
 //   *without a trailing slash*.
 //   Example: `http://localhost:8080`.
-// - apiKey: (Required) Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).
+// - apiKey: Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).
 // - handlers: [Sensu handlers](https://docs.sensu.io/sensu-go/latest/reference/handlers/) to execute.
 //   Default is `[]`.
 // - namespace: [Sensu namespace](https://docs.sensu.io/sensu-go/latest/reference/rbac/).
 //   Default is `default`.
 // - entityName: Event source.
+// - Default is `influxdb`.
+//
 //   Use alphanumeric characters, underscores (`_`), periods (`.`), and hyphens (`-`).
 //   All other characters are replaced with an underscore.
-//   Default is `influxdb`.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
-// sensu.endpoint is a factory function that outputs another function.
+// `sensu.endpoint()` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
 // `mapFn`
@@ -139,7 +165,7 @@ event = (
 // - `text`
 // - `status`
 //
-// For more information, see sensu.event() parameters.
+// For more information, see `sensu.event()` parameters.
 //
 // ## Examples
 // ### Send critical status events to Sensu
@@ -149,22 +175,26 @@ event = (
 //
 // token = secrets.get(key: "TELEGRAM_TOKEN")
 // endpoint = sensu.endpoint(
-//   url: "http://localhost:8080",
-//   apiKey: apiKey
+//     url: "http://localhost:8080",
+//     apiKey: apiKey,
 // )
 //
 // crit_statuses = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
 //
 // crit_statuses
-//   |> endpoint(mapFn: (r) => ({
-//       checkName: "critStatus",
-//       text: "Status is critical",
-//       status: 2
-//     })
-//   )()
+//     |> endpoint(
+//         mapFn: (r) => ({
+//             checkName: "critStatus",
+//             text: "Status is critical",
+//             status: 2,
+//         }),
+//     )()
 // ```
+//
+// tags: notification endpoints,transformations
+//
 endpoint = (
     url,
     apiKey,
