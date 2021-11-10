@@ -50,6 +50,7 @@ builtin int : (v: string) => int
 // 
 // // Returns "true"
 // ```
+//
 // ### Convert a duration to a hexadecimal string value
 // ```
 // import "contrib/bonitoo-io/hex"
@@ -85,6 +86,7 @@ builtin int : (v: string) => int
 // 
 // // Returns "162e"
 // ```
+//
 // ### Convert a float to a hexadecimal string value
 // ```
 // import "contrib/bonitoo-io/hex"
@@ -93,6 +95,7 @@ builtin int : (v: string) => int
 // 
 // // Returns "10.12"
 // ```
+//
 // ### Convert bytes to a hexadecimal string value
 // ```
 // import "contrib/bonitoo-io/hex"
@@ -101,10 +104,11 @@ builtin int : (v: string) => int
 // ```
 // 
 // // Returns "48656c6c6f20776f726c6421"
+// ```
 // 
 // ### Convert all values in a column to hexadecimal string values
-// Use map() to iterate over and update all input rows.
-// Use hex.string() to update the value of a column.
+// Use `map()` to iterate over and update all input rows.
+// Use `hex.string()` to update the value of a column.
 // The following example uses data provided by the sampledata package.
 // 
 // ```
@@ -112,10 +116,10 @@ builtin int : (v: string) => int
 // import "contrib/bonitoo-io/hex"
 // 
 // data = sampledata.int()
-//   |> map(fn: (r) => ({ r with _value: r._value * 1000 }))
+//     |> map(fn: (r) => ({ r with _value: r._value * 1000 }))
 // 
-// data
-//   |> map(fn:(r) => ({ r with _value: hex.string(v: r.foo) }))
+// < data
+// >     |> map(fn:(r) => ({ r with _value: hex.string(v: r.foo) }))
 // ```
 // tag: type-conversion
 builtin string : (v: A) => string
@@ -127,7 +131,7 @@ builtin string : (v: A) => string
 // - v: String to convert.
 //
 // ## Examples
-// ### Convert hexadecimal string to unsigned integer
+// ### Convert a hexadecimal string to an unsigned integer
 // ```
 // import "contrib/bonitoo-io/hex"
 //
@@ -145,7 +149,7 @@ builtin uint : (v: string) => uint
 // - v: String to convert.
 //
 // ## Examples
-// ### Convert string into bytes
+// ### Convert a hexadecimal string into bytes
 // ```
 // import "contrib/bonitoo-io/hex"
 //
