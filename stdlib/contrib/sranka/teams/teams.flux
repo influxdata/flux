@@ -14,9 +14,8 @@ import "strings"
 // Default is `70`.
 option summaryCutoff = 70
 
-// message sends a single message to a Microsoft Teams channel using an [incoming webhook].
-//
-// [incoming webhook]: https://docs.microsoft.com/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook
+// message sends a single message to a Microsoft Teams channel using an
+// [incoming webhook](https://docs.microsoft.com/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook).
 //
 // ## Parameters
 //
@@ -25,27 +24,30 @@ option summaryCutoff = 70
 // - text: Message card text.
 // - summary: Message card summary.
 //   Default is `""`.
+//
 //   If no summary is provided, Flux generates the summary from the message text.
 //
 // ## Examples
 // ### Send the last reported status to a Microsoft Teams channel
 // ```no_run
 // import "contrib/sranka/teams"
-//
-// lastReported =
-//   from(bucket: "example-bucket")
+// 
+// lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses")
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
-//
+// 
 // teams.message(
-//   url: "https://outlook.office.com/webhook/example-webhook",
-//   title: "Disk Usage"
-//   text: "Disk usage is: *${lastReported.status}*.",
-//   summary: "Disk usage is ${lastReported.status}"
+//     url: "https://outlook.office.com/webhook/example-webhook",
+//     title: "Disk Usage",
+//     text: "Disk usage is: *${lastReported.status}*.",
+//     summary: "Disk usage is ${lastReported.status}",
 // )
 // ```
+//
+// tags: single notification
+//
 message = (url, title, text, summary="") => {
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
@@ -74,6 +76,7 @@ message = (url, title, text, summary="") => {
 //
 // ## Parameters
 // - url: Incoming webhook URL.
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
 // `teams.endpoint` is a factory function that outputs another function.
@@ -99,17 +102,21 @@ message = (url, title, text, summary="") => {
 // endpoint = teams.endpoint(url: url)
 //
 // crit_statuses = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
 //
 // crit_statuses
-//   |> endpoint(mapFn: (r) => ({
-//       title: "Disk Usage"
-//       text: "Disk usage is: **${r.status}**.",
-//       summary: "Disk usage is ${r.status}"
-//     })
-//   )()
+//     |> endpoint(
+//         mapFn: (r) => ({
+//             title: "Disk Usage",
+//             text: "Disk usage is: **${r.status}**.",
+//             summary: "Disk usage is ${r.status}",
+//         }),
+//     )()
 // ```
+//
+// tags: notification endpoints,transformations
+//
 endpoint = (url) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
