@@ -136,7 +136,9 @@ func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 	return nil
 }
 
-const packagesKey int = iota
+type key int
+
+const packagesKey key = iota
 
 type Packages map[string]*Package
 
