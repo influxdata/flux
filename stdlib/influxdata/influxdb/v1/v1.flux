@@ -130,6 +130,9 @@ builtin databases : (?org: string, ?orgID: string, ?host: string, ?token: string
 // have the same timestamp.
 //
 // **Deprecated**: See influxdata/influxdata/schema.fieldsAsCols.
+// 
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 //
@@ -246,7 +249,7 @@ measurementTagValues = schema.measurementTagValues
 //
 tagKeys = schema.tagKeys
 
-// MeasurementTagKeys returns the list of tag keys for a specific measurement.
+// measurementTagKeys returns the list of tag keys for a specific measurement.
 //
 // Results include a single table with a single column, `_value`.
 //

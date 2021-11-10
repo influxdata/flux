@@ -219,6 +219,7 @@ builtin from : (
 //   `string`, excluding all value columns and columns identified by `fieldFn`.
 // - fieldFn: Function that maps a field key to a field value and returns a record.
 //   Default is `(r) => ({ [r._field]: r._value })`.
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 //
