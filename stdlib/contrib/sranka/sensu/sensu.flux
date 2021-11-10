@@ -39,7 +39,7 @@ builtin toSensuName : (v: string) => string
 // - url: Base URL of [Sensu API](https://docs.sensu.io/sensu-go/latest/migrate/#architecture)
 //   without a trailing slash.
 //
-//   Example: `http://localhost:8080`.
+//   Example: `http://localhost:8080`
 //
 // - apiKey: Sensu [API Key](https://docs.sensu.io/sensu-go/latest/operations/control-access/).
 // - checkName: Check name.
