@@ -5,6 +5,9 @@
 //
 // For information about demonstrating functions in this package, see the
 // [package README on GitHub](https://github.com/influxdata/flux/blob/master/stdlib/contrib/RohanSreerama5/naiveBayesClassifier/README.md).
+//
+// introduced: v0.86.0
+//
 package naiveBayesClassifier
 
 
@@ -17,6 +20,10 @@ import "system"
 // - myMeasurement: Measurement to use as training data.
 // - myField: Field to use as training data.
 // - myClass: Class to classify against.
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
+// tags: transformations
+//
 naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {
     training_data = tables
         //data for 3 days
