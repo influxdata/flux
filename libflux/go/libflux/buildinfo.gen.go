@@ -67,6 +67,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux/templates/value.html":                                                           "2af699af2535f83635acbc75c92d2ee941c2335350fc7e82ceb2dccf479360bf",
 	"libflux/include/influxdata/flux.h":                                                           "dc9556757c40e2a8557d535e8132e8bc0c88e371f2ac5eb2b7b1c0b236e92653",
 	"stdlib/array/array.flux":                                                                     "d06a0415f5f7999310675c433bd3f6a638e27bedf2efe4eab7bf7be76acaea8a",
+	"stdlib/array/array_test.flux":                                                                "649c3e017bca32c1cdbfef81288f84226dc5cac73be9975cb6b1286cd3637775",
 	"stdlib/array/from_group_test.flux":                                                           "029a60a7f16efd370bc0ff85f37a7d638d450903f143be83072bbc6c574c6e68",
 	"stdlib/array/from_test.flux":                                                                 "7876a2321474fa670bb81a2ab209e5ffab89dc0fd93f670f270bddbf99c1a071",
 	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/bayes_test.flux":                          "719b4d5b7d7edef97b4769ad797748a06dfb7a4ef321d0b320263441ae06bc79",

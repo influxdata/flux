@@ -517,7 +517,13 @@ func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpressio
 		}
 		elements[i] = v
 	}
-	return values.NewArrayWithBacking(a.TypeOf(), elements), nil
+	arrayType := semantic.MonoType{}
+	if len(elements) > 0 {
+		arrayType = semantic.NewArrayType(elements[0].Type())
+	} else {
+		arrayType = a.TypeOf()
+	}
+	return values.NewArrayWithBacking(arrayType, elements), nil
 }
 
 func (itrp *Interpreter) doDict(ctx context.Context, e *semantic.DictExpression, scope values.Scope) (values.Value, error) {
