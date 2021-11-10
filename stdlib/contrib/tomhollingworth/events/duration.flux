@@ -10,15 +10,16 @@ package events
 // and associates the duration with the first record (start of the event).
 // To calculate the duration of the last event,
 // the function compares the timestamp of the final record
-// to the timestamp in the stopColumn or the specified stop time.
+// to the timestamp in the `stopColumn` or the specified stop time.
 //
-// > ## Similar functions
-// > events.duration() is similar to elapsed() and stateDuration(), but differs in important ways:
-// >
-// >elapsed() drops the first record. events.duration() does not.
-// >stateDuration() calculates the total time spent in a state (determined by a predicate function). events.duration() returns the duration between all records and their subsequent records.
-// >
-// >For examples, see below.
+// ### Similar functions
+// `events.duration()` is similar to `elapsed()` and `stateDuration()`, but differs in important ways:
+// 
+// - `elapsed()` drops the first record. `events.duration()` does not.
+// - `stateDuration()` calculates the total time spent in a state (determined by a predicate function).
+//   `events.duration()` returns the duration between all records and their subsequent records.
+// 
+// See the example [below](#compared-to-similar-functions).
 //
 // ## Parameters
 // - unit: Duration unit of the calculated state duration.
