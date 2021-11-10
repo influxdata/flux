@@ -150,8 +150,6 @@ event = (
 //   Use alphanumeric characters, underscores (`_`), periods (`.`), and hyphens (`-`).
 //   All other characters are replaced with an underscore.
 //
-// - tables: Input data. Default is piped-forward data (`<-`).
-//
 // ## Usage
 // `sensu.endpoint()` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
