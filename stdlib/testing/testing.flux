@@ -1,7 +1,7 @@
 // Package testing functions test piped-forward data in specific ways and return errors if the tests fail.
 package testing
 
-
+import "array"
 import c "csv"
 
 // assertEquals tests whether two streams have identical data.
@@ -341,4 +341,17 @@ benchmark = (case) => {
     tc = case()
 
     return tc.input |> tc.fn()
+}
+
+// assertEquals tests whether two values are equal
+//
+// ## Parameters
+// - `got` is the value to test.
+// - `want` is the expected data to test against.
+//
+assertEqualValues = (got, want) => {
+    return diff(
+            got: array.from(rows: [{ v: got }]),
+            want: array.from(rows: [{ v: want }])
+        ) |> yield()
 }
