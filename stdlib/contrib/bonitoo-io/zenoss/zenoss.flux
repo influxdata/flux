@@ -12,9 +12,9 @@ import "json"
 // ## Parameters
 // - url: Zenoss [router endpoint URL](https://help.zenoss.com/zsd/RM/configuring-resource-manager/enabling-access-to-browser-interfaces/creating-and-changing-public-endpoints).
 // - username: Zenoss username to use for HTTP BASIC authentication.
-//   Default is "" (no authentication).
+//   Default is `""` (no authentication).
 // - password: Zenoss password to use for HTTP BASIC authentication.
-//   Default is "" (no authentication).
+//   Default is `""` (no authentication).
 // - action: Zenoss router name.
 //   Default is "EventsRouter".
 // - method: [EventsRouter method](https://help.zenoss.com/dev/collection-zone-and-resource-manager-apis/codebase/routers/router-reference/eventsrouter).
@@ -22,13 +22,13 @@ import "json"
 // - type: Event type.
 //   Default is "rpc".
 // - tid: Temporary request transaction ID.
-//   Default is 1.
+//   Default is `1`.
 // - summary: Event summary.
-//   Default is "".
+//   Default is `""`.
 // - device: Related device.
-//   Default is "".
+//   Default is `""`.
 // - component: Related component.
-//   Default is "".
+//   Default is `""`.
 // - severity: [Event severity level](https://help.zenoss.com/zsd/RM/administering-resource-manager/event-management/event-severity-levels).
 //
 //   **Supported values**:
