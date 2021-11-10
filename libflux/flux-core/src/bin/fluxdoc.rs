@@ -252,9 +252,6 @@ impl<'a> example::Executor for CLIExecutor<'a> {
 // See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
 const EXCEPTIONS: &[&str] = &[
     "contrib",
-    "contrib/RohanSreerama5",
-    "contrib/RohanSreerama5/images",
-    "contrib/RohanSreerama5/naiveBayesClassifier",
     "contrib/anaisdg",
     "contrib/anaisdg/anomalydetection",
     "contrib/anaisdg/statsmodels",
