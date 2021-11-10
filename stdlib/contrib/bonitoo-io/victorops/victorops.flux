@@ -1,6 +1,6 @@
 // Package victorops provides functions that send events to [VictorOps](https://victorops.com/).
 //
-// > VictorOps is now Splunk On-Call
+// **Note**: VictorOps is now Splunk On-Call
 //
 //
 // ## Set up VictorOps
@@ -21,12 +21,15 @@ import "json"
 //
 // ## Parameters
 //
-// - url: (Required) VictorOps REST endpoint integration URL.
-//   Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
-//   Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
+// - url: VictorOps REST endpoint integration URL.
+//   
+//    Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
+//    Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
+//
 // - monitoringTool: Monitoring agent name. Default is `""`.
-// - messageType: (Required) VictorOps message type (alert behavior).
-//   Valid values:
+// - messageType: VictorOps message type (alert behavior).
+//
+//   **Valid values**:
 //   - `CRITICAL`
 //   - `WARNING`
 //   - `INFO`
@@ -45,24 +48,28 @@ import "json"
 // apiKey = secrets.get(key: "VICTOROPS_API_KEY")
 // routingKey = secrets.get(key: "VICTOROPS_ROUTING_KEY")
 //
-// lastReported =
-//   from(bucket: "example-bucket")
+// lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_idle")
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
 //
 // victorops.alert(
-//   url: "https://alert.victorops.com/integrations/generic/00000000/alert/${apiKey}/${routingKey}",
-//   messageType:
-//     if lastReported._value < 1.0 then "CRITICAL"
-//     else if lastReported._value < 5.0 then "WARNING"
-//     else "INFO",
-//   entityID: "example-alert-1",
-//   entityDisplayName: "Example Alert 1",
-//   stateMessage: "Last reported cpu_idle was ${string(v: r._value)}."
+//     url: "https://alert.victorops.com/integrations/generic/00000000/alert/${apiKey}/${routingKey}",
+//     messageType: if lastReported._value < 1.0 then
+//         "CRITICAL"
+//     else if lastReported._value < 5.0 then
+//         "WARNING"
+//     else
+//         "INFO",
+//     entityID: "example-alert-1",
+//     entityDisplayName: "Example Alert 1",
+//     stateMessage: "Last reported cpu_idle was ${string(v: r._value)}.",
 // )
 // ```
+//
+// tags: single notification
+//
 alert = (
     url,
     messageType,
@@ -90,11 +97,14 @@ alert = (
 // endpoint sends events to VictorOps using data from input rows.
 //
 // ## Parameters
-// - url: (Required) VictorOps REST endpoint integration URL.
+// - url: VictorOps REST endpoint integration URL.
+//
 //   Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
 //   Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
+//
 // - monitoringTool: Tool to use for monitoring.
 //   Default is `InfluxDB`.
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
 // `victorops.endpoint` is a factory function that outputs another function.
@@ -112,7 +122,7 @@ alert = (
 // - stateMessage
 // - timestamp
 //
-// For more information, see victorops.event() parameters.
+// For more information, see `victorops.event()` parameters.
 //
 // ## Examples
 // ### Send critical events to VictorOps
@@ -127,20 +137,24 @@ alert = (
 // endpoint = victorops.endpoint(url: url)
 //
 // crit_events = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
 //
 // crit_events
-//   |> endpoint(mapFn: (r) => ({
-//       monitoringTool: "InfluxDB"
-//       messageType: "CRITICAL",
-//       entityID: "${r.host}-${r._field)-critical",
-//       entityDisplayName: "Critical alert for ${r.host}",
-//       stateMessage: "${r.host} is in a critical state. ${r._field} is ${string(v: r._value)}.",
-//       timestamp: now()
-//     })
-//   )()
+//     |> endpoint(
+//         mapFn: (r) => ({
+//             monitoringTool: "InfluxDB",
+//             messageType: "CRITICAL",
+//             entityID: "${r.host}-${r._field}-critical",
+//             entityDisplayName: "Critical alert for ${r.host}",
+//             stateMessage: "${r.host} is in a critical state. ${r._field} is ${string(v: r._value)}.",
+//             timestamp: now(),
+//         }),
+//     )()
 // ```
+//
+// tags: notification endpoints,transformations
+//
 endpoint = (url, monitoringTool="InfluxDB") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
