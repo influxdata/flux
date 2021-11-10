@@ -45,7 +45,7 @@ option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 // ### Query notification events from the last hour
 // ```no_run
 // import "influxdata/influxdb/monitor"
-
+// 
 // monitor.logs(
 //     start: -2h,
 //     fn: (r) => true,
@@ -279,7 +279,7 @@ stateChangesOnly = (tables=<-) => {
 // ```
 // import "array"
 // import "influxdata/influxdb/monitor"
-
+//
 // data = array.from(
 //     rows: [
 //         {_time: 2021-01-01T00:00:00Z, _level: "ok"},
