@@ -66,6 +66,9 @@ import "strings"
 //   timestamp: now(),
 // )
 // ```
+//
+// tags: single notification
+//
 alert = (
     url,
     apiKey,
@@ -146,35 +149,38 @@ alert = (
 // 
 // apiKey = secrets.get(key: "ALERTA_API_KEY")
 // endpoint = alerta.endpoint(
-//   url: "https://alerta.io:8080/alert",
-//   apiKey: apiKey,
-//   environment: "Production",
-//   origin: "InfluxDB"
+//     url: "https://alerta.io:8080/alert",
+//     apiKey: apiKey,
+//     environment: "Production",
+//     origin: "InfluxDB",
 // )
 // 
 // crit_events = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
 // 
 // crit_events
-//   |> endpoint(mapFn: (r) => {
-//     return { r with
-//       resource: "example-resource",
-//       event: "example-event",
-//       severity: "critical",
-//       service: r.service,
-//       group: "example-group",
-//       value: r.status,
-//       text: "Status is critical.",
-//       tags: ["ex1", "ex2"],
-//       attributes: {},
-//       type: "exampleAlertType",
-//       timestamp: now(),
-//     }
-//   })()
+//     |> endpoint(
+//         mapFn: (r) => {
+//             return {r with
+//                 resource: "example-resource",
+//                 event: "example-event",
+//                 severity: "critical",
+//                 service: r.service,
+//                 group: "example-group",
+//                 value: r.status,
+//                 text: "Status is critical.",
+//                 tags: ["ex1", "ex2"],
+//                 attributes: {},
+//                 type: "exampleAlertType",
+//                 timestamp: now(),
+//             }
+//         },
+//     )()
 // ```
 // 
-// tags: notification-endpoints
+// tags: notification endpoints,transformations
+//
 endpoint = (url, apiKey, environment="", origin="") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
