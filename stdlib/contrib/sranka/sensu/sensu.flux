@@ -192,7 +192,6 @@ event = (
 // ```
 //
 // tags: notification endpoints,transformations
-//
 endpoint = (
     url,
     apiKey,
