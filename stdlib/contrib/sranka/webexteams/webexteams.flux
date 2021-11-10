@@ -66,7 +66,6 @@ message = (
 // - url: Base URL of Webex API endpoint (without a trailing slash).
 //   Default is `https://webexapis.com`.
 // - token: [Webex API access token](https://developer.webex.com/docs/api/getting-started).
-// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
 // `webexteams.endpoint` is a factory function that outputs another function.
