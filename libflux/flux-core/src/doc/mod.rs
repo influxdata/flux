@@ -587,7 +587,11 @@ fn parse_function_doc(
         })
     }
     // Validate all parameters were documented
-    let params_on_type: Vec<&String> = fun_typ.req.keys().chain(fun_typ.opt.keys()).collect();
+    let mut params_on_type: Vec<&String> = fun_typ.req.keys().chain(fun_typ.opt.keys()).collect();
+    if let Some(pipe) = &fun_typ.pipe {
+        // Add pipe parameter to set if it exists
+        params_on_type.push(&pipe.k)
+    }
     for name in &params_on_type {
         if !contains_parameter(&parameters, name.as_str()) {
             diagnostics.push(Diagnostic {
@@ -596,6 +600,7 @@ fn parse_function_doc(
             });
         }
     }
+
     // Validate extra parameters are not documented
     for param in &parameters {
         if !param.name.is_empty() && !params_on_type.iter().any(|&name| name == &param.name) {
@@ -1803,9 +1808,10 @@ foo.a
         //
         // ## Parameters
         // - x: is any value.
+        // - p: is any value piped to the function.
         //
         // More description after the parameter list.
-        f = (x) => x
+        f = (x,p=<-) => p + x
         ";
         let loc = Locator::new(&src[..]);
         assert_docs_full(
@@ -1820,15 +1826,23 @@ foo.a
                         name: "f".to_string(),
                         headline: "f is a function.".to_string(),
                         description: Some("More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.".to_string()),
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is any value.".to_string(),
-                            description: None,
-                            required: true,
-                        }],
-                        flux_type: "(x:A) => A".to_string(),
+                        parameters: vec![
+                            ParameterDoc{
+                                name: "x".to_string(),
+                                headline: "x: is any value.".to_string(),
+                                description: None,
+                                required: true,
+                            },
+                            ParameterDoc{
+                                name: "p".to_string(),
+                                headline: "p: is any value piped to the function.".to_string(),
+                                description: None,
+                                required: false,
+                            }
+                        ],
+                        flux_type: "(<-p:A, x:A) => A where A: Addable".to_string(),
                         is_option: false,
-                        source_location: loc.get(14,9,14,21),
+                        source_location: loc.get(15,9,15,30),
                         examples: vec![],
                         metadata: None,
                     })),
@@ -2100,6 +2114,53 @@ foo.a
             vec![Diagnostic {
                 msg: "missing documentation for parameter \"y\"".to_string(),
                 loc: loc.get(9, 9, 9, 29),
+            }],
+        );
+    }
+    #[test]
+    fn test_function_doc_missing_pipe_parameter() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // add is a function.
+        //
+        // ## Parameters
+        // - x: is any value.
+        add = (x,y=<-) => x + y
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: None,
+                members: map![
+                    "add" => Doc::Function(Box::new(FunctionDoc{
+                        name: "add".to_string(),
+                        headline: "add is a function.".to_string(),
+                        description: None,
+                        parameters: vec![ParameterDoc{
+                            name: "x".to_string(),
+                            headline: "x: is any value.".to_string(),
+                            description: None,
+                            required: true,
+                        }],
+                        flux_type: "(<-y:A, x:A) => A where A: Addable".to_string(),
+                        is_option: false,
+                        source_location: loc.get(9, 9, 9, 32),
+                        examples: vec![],
+                        metadata: None,
+                    })),
+                ],
+                examples: Vec::new(),
+                metadata: None,
+            },
+            vec![Diagnostic {
+                msg: "missing documentation for parameter \"y\"".to_string(),
+                loc: loc.get(9, 9, 9, 32),
             }],
         );
     }
