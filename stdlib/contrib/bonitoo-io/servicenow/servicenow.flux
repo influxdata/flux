@@ -45,7 +45,7 @@ import "json"
 //
 // ## Examples
 // ### Send the last reported value and incident type to ServiceNow
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/servicenow"
 // import "influxdata/influxdb/secrets"
 //
@@ -77,7 +77,6 @@ import "json"
 // ```
 //
 // tags: single notification
-//
 event = (
     url,
     username,
@@ -185,7 +184,6 @@ event = (
 // ```
 //
 // tags: notification endpoints
-//
 endpoint = (url, username, password, source="Flux") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
