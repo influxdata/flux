@@ -26,25 +26,12 @@ option defaultSilent = true
 // message sends a single message to a Telegram channel
 // using the [`sendMessage`](https://core.telegram.org/bots/api#sendmessage) method of the Telegram Bot API.
 //
-// ```
-// import "contrib/sranka/telegram"
-// 
-// telegram.message(
-//   url: "https://api.telegram.org/bot",
-//   token: "S3crEtTel3gRamT0k3n",
-//   channel: "-12345",
-//   text: "Example message text",
-//   parseMode: "MarkdownV2",
-//   disableWebPagePreview: false,
-//   silent: true
-// )
-// ```
 //
 // ## Parameters
 // 
 // - url: URL of the Telegram bot endpoint. Default is `https://api.telegram.org/bot`.
-// - token: (Required) Telegram bot token.
-// - channel: (Required) Telegram channel ID.
+// - token: Telegram bot token.
+// - channel: Telegram channel ID.
 // - text: Message text.
 // - parseMode: [Parse mode](https://core.telegram.org/bots/api#formatting-options)
 //   of the message text.
@@ -58,25 +45,27 @@ option defaultSilent = true
 // 
 // ### Send the last reported status to Telegram
 // 
-// ```
+// ```no_run
 // import "influxdata/influxdb/secrets"
 // import "contrib/sranka/telegram"
-// 
+//
 // token = secrets.get(key: "TELEGRAM_TOKEN")
-// 
-// lastReported =
-//   from(bucket: "example-bucket")
+//
+// lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses")
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
-// 
-//     telegram.message(
-//       token: token,
-//       channel: "-12345"
-//       text: "Disk usage is **${lastReported.status}**.",
-//     )
+//
+// telegram.message(
+//     token: token,
+//     channel: "-12345",
+//     text: "Disk usage is **${lastReported.status}**.",
+// )
 // ```
+//
+// tags: single notification
+//
 message = (
     url=defaultURL,
     token,
@@ -101,16 +90,6 @@ message = (
 
 // endpoint sends a message to a Telegram channel using data from table rows.
 // 
-// ```
-// import "contrib/sranka/telegram"
-// 
-// telegram.endpoint(
-//   url: "https://api.telegram.org/bot",
-//   token: "S3crEtTel3gRamT0k3n",
-//   parseMode: "MarkdownV2",
-//   disableWebPagePreview: false,
-// )
-// ```
 // 
 // ## Usage
 // 
@@ -131,40 +110,46 @@ message = (
 // ## Parameters
 // 
 // - url: URL of the Telegram bot endpoint. Default is `https://api.telegram.org/bot`.
-// - token: (Required) Telegram bot token.
+// - token: Telegram bot token.
 // - parseMode: [Parse mode](https://core.telegram.org/bots/api#formatting-options)
 //   of the message text.
 //   Default is `MarkdownV2`.
 // - disableWebPagePreview: Disable preview of web links in the sent message.
 //   Default is false.
 // 
-//   The returned factory function accepts a `mapFn` parameter.
-//   The `mapFn` must return an object with `channel`, `text`, and `silent`,
-//   as defined in the `message` function arguments.
+// The returned factory function accepts a `mapFn` parameter.
+// The `mapFn` must return an record with the following properties:
+//
+// - `channel`
+// - `text`
+// - `silent`
+//
+// See `telegram.message` parameters for more information.
 //
 // ## Examples
 // ### Send critical statuses to a Telegram channel
-// ```
+// ```no_run
 // import "influxdata/influxdb/secrets"
 // import "contrib/sranka/telegram"
-// 
+//
 // token = secrets.get(key: "TELEGRAM_TOKEN")
 // endpoint = telegram.endpoint(token: token)
-// 
+//
 // crit_statuses = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
-// 
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+//
 // crit_statuses
-//   |> endpoint(mapFn: (r) => ({
-//       channel: "-12345",
-//       text: "Disk usage is **${r.status}**.",
-//       silent: true
-//     })
-//   )()
+//     |> endpoint(
+//         mapFn: (r) => ({
+//             channel: "-12345",
+//             text: "Disk usage is **${r.status}**.",
+//             silent: true,
+//         }),
+//     )()
 // ```
 // 
-// tag: notification-endpoints
+// tag: notification endpoints, transformations
 endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
