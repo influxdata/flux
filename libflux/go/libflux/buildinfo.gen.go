@@ -236,11 +236,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/sample/sample.flux":                                               "aa0f03519a3bef31587a98a04dd4d4f6f7ec0e05f306f28855fd8c884da4048d",
 	"stdlib/influxdata/influxdb/schema/influxFieldsAsCols_test.flux":                              "df849dac66af2cb8d91398cb009e09cfa0028037b893c2e1a1811ba12959bf98",
 	"stdlib/influxdata/influxdb/schema/influxRawQuery_test.flux":                                  "2eddea62591de2af43a9364f5f25195fb8427261b61778b8a282d21dd5d16e8f",
-<<<<<<< HEAD
 	"stdlib/influxdata/influxdb/schema/schema.flux":                                               "d11c02d786f944b906d5dbfa8f93bcb9b97fc3a3b3ba902341f1998d626f12df",
-=======
-	"stdlib/influxdata/influxdb/schema/schema.flux":                                               "60b998740c864a911828b0af534773ce9296be5e41c519f1361fbc5f5d1e6ffa",
->>>>>>> 1e3a9890 (feat(doc): add inline docs to influxdb schema, secrets, tasks, and v1 packages)
 	"stdlib/influxdata/influxdb/schema/show_fields_test.flux":                                     "fa3774d7fa544d49dd407b2e349a813aac86827dbaaf2cc72e92af2d7c1e5a7b",
 	"stdlib/influxdata/influxdb/schema/show_fields_with_meas_pred_test.flux":                      "ce4eb3c7f9833be2eb5d7c85d1bb68d12344933a36915612b7d36903b096448e",
 	"stdlib/influxdata/influxdb/schema/show_fields_with_pred_test.flux":                           "5edfadc36b9683c7d048d368cc29cf71aff6fe68ab02fb328cf9f5bb420cd33c",
@@ -261,11 +257,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/tasks/last_success_without_option_test.flux":                      "a09edd4c48fb2f2d8b006656266f6647a2eaf649268d9dce2b9bbfb7f57dbd66",
 	"stdlib/influxdata/influxdb/tasks/tasks.flux":                                                 "a9a18c5e661df7be62f6cafbba35fd59571d58e0e41efe46c63eacd1be06929f",
 	"stdlib/influxdata/influxdb/to_test.flux":                                                     "f8f677ad81f048c6ffa62e352a4cab5c8baa0856905415ba5784aefcf1c1b776",
-<<<<<<< HEAD
 	"stdlib/influxdata/influxdb/v1/v1.flux":                                                       "a16b1eac47f8f9daba019c90cbf3bc727cb4a5fa25a03b08fd8bff334acd8cef",
-=======
-	"stdlib/influxdata/influxdb/v1/v1.flux":                                                       "7b80cc8062d0e339556f7054a1accec44e5c4773853be977fb350b8842783f59",
->>>>>>> 1e3a9890 (feat(doc): add inline docs to influxdb schema, secrets, tasks, and v1 packages)
 	"stdlib/internal/boolean/boolean.flux":                                                        "1c0a1564911dd5f4c35c17efb32158ab31c51b20ac0f25175545e50aadc87c94",
 	"stdlib/internal/debug/debug.flux":                                                            "b265cd8ca251dfeabf6a26fcca99fbf1ae70211b94ff9b1da4d9f35cf6bc51c0",
 	"stdlib/internal/debug/debug_test.flux":                                                       "346864b2f73708c85611e90089c7503b12d6ee9c4dd1317e755c1ffb5d4d4a02",
