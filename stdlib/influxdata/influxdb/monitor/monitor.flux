@@ -14,9 +14,17 @@ import "influxdata/influxdb"
 bucket = "_monitoring"
 
 // write persists check statuses to an InfluxDB bucket.
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
 option write = (tables=<-) => tables |> experimental.to(bucket: bucket)
 
 // log persists notification events to an InfluxDB bucket.
+//
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+//
 option log = (tables=<-) => tables |> experimental.to(bucket: bucket)
 
 // logs retrieves notification events stored in the `notifications` measurement 
@@ -165,6 +173,8 @@ _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 //     information about sent notifications and automatically assigns these values.
 //     If writing a custom notification task, we recommend using **unique arbitrary**
 //     values for data record properties.
+// 
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 //
@@ -272,6 +282,7 @@ stateChangesOnly = (tables=<-) => {
 // ## Parameters
 // - fromLevel: Level to detect a change from. Default is `"any"`.
 // - toLevel: Level to detect a change to. Default is `"any"`.
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 // 
@@ -384,6 +395,8 @@ deadman = (t, tables=<-) => tables
 //     check statuses and automatically assigns these values.
 //     If writing a custom check task, we recommend using **unique arbitrary**
 //     values for data record properties.
+// 
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 // 

@@ -133,7 +133,7 @@ tagKeys = (bucket, predicate=(r) => true, start=-30d) => from(bucket: bucket)
 //
 measurementTagValues = (bucket, measurement, tag) => tagValues(bucket: bucket, tag: tag, predicate: (r) => r._measurement == measurement)
 
-// MeasurementTagKeys returns the list of tag keys for a specific measurement.
+// measurementTagKeys returns the list of tag keys for a specific measurement.
 //
 // Results include a single table with a single column, `_value`.
 //
