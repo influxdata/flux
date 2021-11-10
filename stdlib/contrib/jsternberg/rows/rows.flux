@@ -36,7 +36,6 @@ package rows
 // - It’s not in the group key.
 // - It’s not explicitly mapped in the operation.
 // - The `with` operator was not used to include existing columns.
-```
 //
 // ### Preserve all columns in the operation
 //
