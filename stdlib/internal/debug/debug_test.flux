@@ -46,7 +46,11 @@ testcase sink {
 }
 
 testcase get_option {
-    got =
-    want = true
-    testing.diff(got, want)
+    got = debug.getOption(pkg: "internal/debug", name: "vectorize")
+    want = false
+
+    testing.diff(
+            got: array.from(rows: [{ v: got }]),
+            want: array.from(rows: [{ v: want }])
+        ) |> yield()
 }
