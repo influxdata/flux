@@ -30,48 +30,69 @@ package events
 // - stopColumn: Name of the stop column.
 //   Default is `"_stop"`.
 // - stop: The latest time to use when calculating results.
+//
 //   If provided, `stop` overrides the time value in the `stopColumn`.
+//
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 // ### Calculate the duration of states
 //
 // ```
+// import "array"
 // import "contrib/tomhollingworth/events"
-//
-// data
-//   |> events.duration(
-//     unit: 1m,
-//     stop: 2020-01-02T00:00:00Z
-//   )
+// 
+// # data = array.from(
+// #     rows: [
+// #         {_time: 2020-01-01T00:00:00Z, state: "ok"},
+// #         {_time: 2020-01-01T00:12:34Z, state: "warn"},
+// #         {_time: 2020-01-01T00:25:01Z, state: "ok"},
+// #         {_time: 2020-01-01T16:07:55Z, state: "crit"},
+// #         {_time: 2020-01-01T16:54:21Z, state: "warn"},
+// #         {_time: 2020-01-01T18:20:45Z, state: "ok"},
+// #     ],
+// # )
+// #
+// < data
+//     |> events.duration(
+//         unit: 1m,
+//         stop: 2020-01-02T00:00:00Z,
+// >     )
 // ```
 //
-// ## Compared to similar functions
+// ### Compared to similar functions
 //
 // The example below includes output values of
 // `events.duration()`, `elapsed()`, and `stateDuration()`
 // related to the `_time` and `state` values of input data.
 //
-// [INPUT]
-//
-// ### Functions
-//
 // ```
-// data |> events.duration(
-//   unit: 1m,
-//   stop: 2020-01-02T00:00:00Z
-// )
+// import "array"
+// import "contrib/tomhollingworth/events"
 //
-// data |> elapsed(
-//   unit: 1m
+// # data = array.from(
+// #     rows: [
+// #         {_time: 2020-01-01T00:00:00Z, state: "ok"},
+// #         {_time: 2020-01-01T00:12:34Z, state: "warn"},
+// #         {_time: 2020-01-01T00:25:01Z, state: "ok"},
+// #         {_time: 2020-01-01T16:07:55Z, state: "crit"},
+// #         {_time: 2020-01-01T16:54:21Z, state: "warn"},
+// #         {_time: 2020-01-01T18:20:45Z, state: "ok"},
+// #     ],
+// # )
+// #
+// union(
+//     tables: [
+//         data |> events.duration(unit: 1m, stop: 2020-01-02T00:00:00Z) |> map(fn: (r) => ({_time: r._time, state: r.state, function: "events.Duration()", value: r.duration})),
+//         data |> elapsed(unit: 1m) |> map(fn: (r) => ({_time: r._time, state: r.state, function: "elapsed()", value: r.elapsed})),
+//         data |> stateDuration(unit: 1m, fn: (r) => true) |> map(fn: (r) => ({_time: r._time, state: r.state, function: "stateDuration()", value: r.stateDuration})),
+//     ],
 // )
-//
-// data |> stateDuration(
-//   unit: 1m,
-//   fn: (r) => true
-// )
+// >     |> pivot(rowKey: ["_time", "state"], columnKey: ["function"], valueColumn: "value")
 // ```
 //
-// [OUTPUT]
+// tags: transformations,events
+//
 builtin duration : (
     <-tables: [A],
     ?unit: duration,
