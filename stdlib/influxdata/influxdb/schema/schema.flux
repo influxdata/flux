@@ -137,8 +137,6 @@ measurementTagValues = (bucket, measurement, tag) => tagValues(bucket: bucket, t
 //
 // Results include a single table with a single column, `_value`.
 //
-// Results include a single table with a single column, `_value`.
-//
 // ## Parameters
 // - bucket: Bucket to return tag keys from for a specific measurement.
 // - measurement: Measurement to return tag keys from.
