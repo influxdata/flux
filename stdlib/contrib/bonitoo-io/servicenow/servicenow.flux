@@ -15,12 +15,14 @@ import "json"
 // ServiceNow Event API fields are described in
 // [ServiceNow Create Event documentation](https://docs.servicenow.com/bundle/paris-it-operations-management/page/product/event-management/task/t_EMCreateEventManually.html).
 //
-// - url: (Required) ServiceNow web service URL.
-// - username: (Required) ServiceNow username to use for HTTP BASIC authentication.
-// - password: (Required) ServiceNow password to use for HTTP BASIC authentication.
-// - description: (Required) Event description.
-// - severity: (Required) Severity of the event.
+// - url: ServiceNow web service URL.
+// - username: ServiceNow username to use for HTTP BASIC authentication.
+// - password: ServiceNow password to use for HTTP BASIC authentication.
+// - description: Event description.
+// - severity: Severity of the event.
+//
 //   Supported values:
+//
 //   - `critical`
 //   - `major`
 //   - `minor`
@@ -44,34 +46,38 @@ import "json"
 // ## Examples
 // ### Send the last reported value and incident type to ServiceNow
 // ```
-// import "contrib/bonitoo-io/servicenow"
-// import "influxdata/influxdb/secrets"
-//
-// username = secrets.get(key: "SERVICENOW_USERNAME")
-// password = secrets.get(key: "SERVICENOW_PASSWORD")
-//
-// lastReported =
-//   from(bucket: "example-bucket")
-//     |> range(start: -1m)
-//     |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_idle")
-//     |> last()
-//     |> findRecord(fn: (key) => true, idx: 0)
-//
-// servicenow.event(
-//     url: "https://tenant.service-now.com/api/global/em/jsonv2",
-//     username: username,
-//     password: password,
-//     node: lastReported.host,
-//     metricType: lastReported._measurement,
-//     resource: lastReported.instance,
-//     metricName: lastReported._field,
-//     severity:
-//         if lastReported._value < 1.0 then "critical"
-//         else if lastReported._value < 5.0 then "warning"
-//         else "info",
-//     additionalInfo: {"devId": r.dev_id}
-// )
+import "contrib/bonitoo-io/servicenow"
+import "influxdata/influxdb/secrets"
+
+username = secrets.get(key: "SERVICENOW_USERNAME")
+password = secrets.get(key: "SERVICENOW_PASSWORD")
+
+lastReported = from(bucket: "example-bucket")
+    |> range(start: -1m)
+    |> filter(fn: (r) => r._measurement == "cpu" and r._field == "usage_idle")
+    |> last()
+    |> findRecord(fn: (key) => true, idx: 0)
+
+servicenow.event(
+    url: "https://tenant.service-now.com/api/global/em/jsonv2",
+    username: username,
+    password: password,
+    node: lastReported.host,
+    metricType: lastReported._measurement,
+    resource: lastReported.instance,
+    metricName: lastReported._field,
+    severity: if lastReported._value < 1.0 then
+        "critical"
+    else if lastReported._value < 5.0 then
+        "warning"
+    else
+        "info",
+    additionalInfo: {"devId": r.dev_id},
+)
 // ```
+//
+// tags: single notification
+//
 event = (
     url,
     username,
@@ -121,11 +127,11 @@ event = (
 // endpoint sends events to [ServiceNow](https://servicenow.com/) using data from input rows.
 //
 // ## Parameters
-// - url: (Required) ServiceNow web service URL.
-// - username: (Required) ServiceNow username to use for HTTP BASIC authentication.
-// - password: (Required) ServiceNow password to use for HTTP BASIC authentication.
+// - url: ServiceNow web service URL.
+// - username: ServiceNow username to use for HTTP BASIC authentication.
+// - password: ServiceNow password to use for HTTP BASIC authentication.
 //
-// ## Usage:
+// ## Usage
 // `servicenow.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
@@ -177,6 +183,9 @@ event = (
 //       })
 //     )()
 // ```
+//
+// tags: notification endpoints
+//
 endpoint = (url, username, password, source="Flux") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
