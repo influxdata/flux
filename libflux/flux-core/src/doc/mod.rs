@@ -1,5 +1,7 @@
 //! Generate documentation from source code comments.
 
+#![deny(missing_docs)]
+
 pub mod example;
 
 use lazy_static::lazy_static;
