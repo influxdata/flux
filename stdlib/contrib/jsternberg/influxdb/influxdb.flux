@@ -7,19 +7,9 @@ package influxdb
 import "influxdata/influxdb"
 import "influxdata/influxdb/v1"
 
-// _mask does TODO
-//
-// _mask will hide the given columns from downstream
-// transformations. It will not perform any copies and
-// it will not regroup. This should only be used when
-// the user knows it can't cause a key conflict.
-// 
-// ## Parameters
-// 
-// - columns:  TODO
 builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record
 
-// from TODO
+// from retrieves data from an InfluxDB data source.
 // 
 // from will retrieve data from a bucket between the start and stop time.
 // This version of from is the equivalent of doing from |> range
@@ -27,12 +17,23 @@ builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Re
 //
 // ## Parameters
 // 
-// - bucket: TODO
-// - start: TODO
-// - stop: TODO
-// - org: TODO
-// - host: TODO
-// - token: TODO
+// - bucket: Name of the bucket to query. InfluxDB 1.x or Enterprise: Provide an empty string (`""`).
+// - start: (Required) Earliest time to include in results.
+//   Results include points that match the specified start time.
+//   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
+//   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
+//   Durations are relative to `now()`.
+// - stop: Latest time to include in results.
+//   Results exclude points that match the specified stop time.
+//   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
+//   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
+//   Durations are relative to `now()`.
+//   Defaults to `now()`.
+// - host: URL of the InfluxDB instance to query.
+//   See [InfluxDB URLs](https://docs.influxdata.com/influxdb/v2.1/reference/urls/)
+//   or [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/v2.1/reference/regions/).
+// - org: Organization name.
+// - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/v2.1/security/tokens/).
 from = (
     bucket,
     start,
@@ -61,18 +62,6 @@ from = (
     return source |> range(start, stop)
 }
 
-// _from allows us to reference the from function from
-// within the select call which has a function parameter
-// with the same name.
-//
-// ## Parameters
-// 
-// - bucket: TODO
-// - start: TODO
-// - stop: TODO
-// - org: TODO
-// - host: TODO
-// - token: TODO
 _from = from
 
 // select is an alternate implementation of `from()`,
