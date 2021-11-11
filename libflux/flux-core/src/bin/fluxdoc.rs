@@ -256,11 +256,6 @@ const EXCEPTIONS: &[&str] = &[
     "contrib/anaisdg/anomalydetection",
     "contrib/anaisdg/statsmodels",
     "contrib/bonitoo-io",
-<<<<<<< HEAD
-    "contrib/bonitoo-io/alerta",
-=======
-    "contrib/bonitoo-io/hex",
->>>>>>> fca044d1 (fix: remove from exceptions)
     "contrib/bonitoo-io/servicenow",
     "contrib/bonitoo-io/tickscript",
     "contrib/bonitoo-io/victorops",
