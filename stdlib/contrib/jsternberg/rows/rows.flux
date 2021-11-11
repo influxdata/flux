@@ -16,6 +16,8 @@ package rows
 //
 //   _(Use the `with` operator to preserve columns not in the group key
 //   and not explicitly mapped in the operation.)_
+// 
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 //
 // ## Examples
