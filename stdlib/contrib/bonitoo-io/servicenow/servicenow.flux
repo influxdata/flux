@@ -9,27 +9,25 @@ import "http"
 import "json"
 
 // event sends an event to [ServiceNow](https://servicenow.com/).
-//
-// ## Parameters:
-//
+// 
 // ServiceNow Event API fields are described in
 // [ServiceNow Create Event documentation](https://docs.servicenow.com/bundle/paris-it-operations-management/page/product/event-management/task/t_EMCreateEventManually.html).
+//
+// ## Parameters
 //
 // - url: ServiceNow web service URL.
 // - username: ServiceNow username to use for HTTP BASIC authentication.
 // - password: ServiceNow password to use for HTTP BASIC authentication.
 // - description: Event description.
 // - severity: Severity of the event.
-//
 //   Supported values:
-//
 //   - `critical`
 //   - `major`
 //   - `minor`
 //   - `warning`
 //   - `info`
 //   - `clear`
-// - source: Source name. Default is `"Flux"`.:
+// - source: Source name. Default is `"Flux"`.
 // - node: Node name or IP address related to the event.
 //   Default is an empty string (`""`).
 // - metricType: Metric type related to the event (for example, `CPU`).
@@ -126,11 +124,14 @@ event = (
 // endpoint sends events to [ServiceNow](https://servicenow.com/) using data from input rows.
 //
 // ## Parameters
+// 
 // - url: ServiceNow web service URL.
 // - username: ServiceNow username to use for HTTP BASIC authentication.
 // - password: ServiceNow password to use for HTTP BASIC authentication.
+// - source: Source name. Default is `"Flux"`.
 //
 // ## Usage
+// 
 // `servicenow.endpoint` is a factory function that outputs another function.
 // The output function requires a `mapFn` parameter.
 //
