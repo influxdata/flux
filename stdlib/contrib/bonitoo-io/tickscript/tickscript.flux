@@ -375,7 +375,7 @@ compute = select
 // **Note**: To group by time intervals, use `window()` or `tickscript.selectWindow()`.
 //
 // ## Parameters
-// - columns: (Required) List of columns to group by.
+// - columns: List of columns to group by.
 //
 // ## Examples
 // ### Group by host and region
