@@ -23,11 +23,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "f5d113f9eb90a7b22b984012f7292757bb373393fe0f319170ed7652d1ce7709",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
 	"libflux/flux-core/src/bin/fluxc.rs":                                                          "68d16ddef3a6c6f6db04a969cef91a0e22ee74ecc52e5f57905fde88ae2da87b",
-<<<<<<< HEAD
-	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "8454fd40540bf51a694e9c9ca1405495a2a84c2a5c94c53a1ff1f2c5bfef3e16",
-=======
-	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "7f6998f7d1b9b37b70552eb5c043a478b4b05ba4c052d038cb2e482b3258d3a3",
->>>>>>> 2b10c7e4 (fix: make gen)
+	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "52720f9bf575df3be57c50a8aaa3a1028ccb27583f03f8ab899df002b42693ac",
 	"libflux/flux-core/src/doc/example.rs":                                                        "452f8ce0b427f15a740a29847214b9b7dce65a3c86d01a9695372abc5e59c625",
 	"libflux/flux-core/src/doc/mod.rs":                                                            "64fd8620605df34af55277e68624b8c9ddcffb0f3b00b4814f5a650919fd0543",
 	"libflux/flux-core/src/errors.rs":                                                             "d4a89c84b469ca63a9431c2c1860b6d8eeff1d3b548ba05887a3db4b2462c93c",
@@ -106,7 +102,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/sranka/teams/teams.flux":                                                      "1e1fb47a4c0ef5fb5be458828eeaba0189933402306a67f3941d3ca336dad094",
 	"stdlib/contrib/sranka/telegram/telegram.flux":                                                "f12a34949e986fa0a5a4d37ee20e86894cef90e74bf0b7f584dcf2bb52412422",
 	"stdlib/contrib/sranka/webexteams/webexteams.flux":                                            "46e55ed0a72cfd29d3e87e1802e5d2d7e337418884e910d58df0bf40ae88ac24",
-	"stdlib/contrib/tomhollingworth/events/duration.flux":                                         "2f8ea63ab08f58620b8b2e6adadae867f34a202604305d714823e034ae0daed1",
+	"stdlib/contrib/tomhollingworth/events/duration.flux":                                         "6cdb81fa427b925822bd9ed2fdd91015f25d1d64eadfa5a02ba3dd04702159a8",
 	"stdlib/contrib/tomhollingworth/events/duration_test.flux":                                    "c819d173ebb9ebe7b972ffe35ed00766d43638437806b0b7c96f3326394e0bbc",
 	"stdlib/contrib/tomhollingworth/events/duration_with_stop_test.flux":                          "a8bb67d9c1dda6dd3d4d56095251e4cea01f393910145f74b5ef4d95febc0345",
 	"stdlib/csv/csv.flux":                                                                         "9a1bd7f6a7c210befbeb593556a22e6a7accd7973b6ea1f2b481ddda8a7d825c",
