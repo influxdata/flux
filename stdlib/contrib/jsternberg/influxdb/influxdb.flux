@@ -9,31 +9,37 @@ import "influxdata/influxdb/v1"
 
 builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record
 
-// from retrieves data from an InfluxDB data source.
-// 
-// from will retrieve data from a bucket between the start and stop time.
-// This version of from is the equivalent of doing from |> range
-// as a single call.
+// from retrieves data from an InfluxDB bucket between the `start` and `stop` times.
+//
+// This version of `from` is equivalent to `from() |> range()` in a single call.
 //
 // ## Parameters
 // 
-// - bucket: Name of the bucket to query. InfluxDB 1.x or Enterprise: Provide an empty string (`""`).
-// - start: (Required) Earliest time to include in results.
+// - bucket: Name of the bucket to query.
+//
+//   **InfluxDB 1.x or Enterprise**: Provide an empty string (`""`).
+//
+// - start: Earliest time to include in results.
+//
 //   Results include points that match the specified start time.
 //   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
 //   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
 //   Durations are relative to `now()`.
-// - stop: Latest time to include in results.
+//
+// - stop: Latest time to include in results. Default is `now()`.
+//
 //   Results exclude points that match the specified stop time.
 //   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
 //   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
 //   Durations are relative to `now()`.
-//   Defaults to `now()`.
+//   
 // - host: URL of the InfluxDB instance to query.
-//   See [InfluxDB URLs](https://docs.influxdata.com/influxdb/v2.1/reference/urls/)
-//   or [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/v2.1/reference/regions/).
+//
+//   See [InfluxDB OSS URLs](https://docs.influxdata.com/influxdb/latest/reference/urls/)
+//   or [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/cloud/reference/regions/).
+//
 // - org: Organization name.
-// - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/v2.1/security/tokens/).
+// - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/latest/security/tokens/).
 from = (
     bucket,
     start,
@@ -70,33 +76,41 @@ _from = from
 // returned by InfluxQL `SELECT` statements.
 // 
 // ## Parameters
-// - from: (Required) Name of the bucket to query.
-// - start: (Required) Earliest time to include in results.
+// - from: Name of the bucket to query.
+// - start: Earliest time to include in results.
+//
 //   Results include points that match the specified start time.
 //   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
 //   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
 //   Durations are relative to `now()`.
-// - stop: Latest time to include in results.
+//
+// - stop: Latest time to include in results. Default is `now()`.
+//
 //   Results exclude points that match the specified stop time.
 //   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
 //   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
 //   Durations are relative to `now()`.
-//   Defaults to `now()`.
-// - m: (Required) Name of the measurement to query.
-// - fields: List of fields to query. Returns all fields when list is empty or unspecified.
-//   Defaults to `[]`.
-// - where: A single argument predicate function that evaluates true or false
+//   
+// - m: Name of the measurement to query.
+// - fields: List of fields to query. Default is`[]`.
+//
+//   _Returns all fields when list is empty or unspecified._
+//   
+// - where: Single argument predicate function that evaluates `true` or `false`
 //   and filters results based on tag values.
+//   Default is `(r) => true`.
+//
 //   Records are passed to the function before fields are pivoted into columns.
-//   Records that evaluate to true are included in the output tables.
-//   Records that evaluate to null or false are not included in the output tables.
-//   Defaults to `(r) => true`.
-//   (Records evaluated in fn functions are represented by r, short for “record” or “row”.)
+//   Records that evaluate to `true` are included in the output tables.
+//   Records that evaluate to _null_ or `false` are not included in the output tables.
+//   
 // - host: URL of the InfluxDB instance to query.
-//   See [InfluxDB URLs](https://docs.influxdata.com/influxdb/v2.1/reference/urls/)
-//   or [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/v2.1/reference/regions/).
+//
+//   See [InfluxDB OSS URLs](https://docs.influxdata.com/influxdb/latest/reference/urls/)
+//   or [InfluxDB Cloud regions](https://docs.influxdata.com/influxdb/cloud/reference/regions/).
+//
 // - org: Organization name.
-// - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/v2.1/security/tokens/).
+// - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/latest/security/tokens/).
 // 
 // ## Examples
 // 
@@ -105,10 +119,10 @@ _from = from
 // import "contrib/jsternberg/influxdb"
 // 
 // influxdb.select(
-//   from: "example-bucket",
-//   start: -1d,
-//   m: "example-measurement",
-//   fields: ["field1"]
+//     from: "example-bucket",
+//     start: -1d,
+//     m: "example-measurement",
+//     fields: ["field1"],
 // )
 // ```
 // 
@@ -117,22 +131,22 @@ _from = from
 // import "contrib/jsternberg/influxdb"
 // 
 // influxdb.select(
-//   from: "example-bucket",
-//   start: -1d,
-//   m: "example-measurement",
-//   fields: ["field1", "field2", "field3"]
+//     from: "example-bucket",
+//     start: -1d,
+//     m: "example-measurement",
+//     fields: ["field1", "field2", "field3"],
 // )
 // ```
 // 
 // ### Query all fields and filter by tags
 // ```no_run
 // import "contrib/jsternberg/influxdb"
-// 
+//
 // influxdb.select(
-//   from: "example-bucket",
-//   start: -1d,
-//   m: "example-measurement",
-//   where: (r) => r.host == "host1" and r.region == "us-west"
+//     from: "example-bucket",
+//     start: -1d,
+//     m: "example-measurement",
+//     where: (r) => r.host == "host1" and r.region == "us-west",
 // )
 // ```
 // 
@@ -144,15 +158,18 @@ _from = from
 // token = secrets.get(key: "INFLUXDB_CLOUD_TOKEN")
 // 
 // influxdb.select(
-//   from: "example-bucket",
-//   start: -1d,
-//   m: "example-measurement",
-//   fields: ["field1", "field2"],
-//   host: "https://us-west-2-1.aws.cloud2.influxdata.com",
-//   org: "example-org",
-//   token: token
+//     from: "example-bucket",
+//     start: -1d,
+//     m: "example-measurement",
+//     fields: ["field1", "field2"],
+//     host: "https://us-west-2-1.aws.cloud2.influxdata.com",
+//     org: "example-org",
+//     token: token,
 // )
 // ```
+//
+// tags: inputs
+//
 select = (
     from,
     start,
