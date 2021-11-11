@@ -159,7 +159,7 @@ alert = (
 // ## Examples
 //
 // ### Detect when a series stops reporting
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/tickscript"
 // 
 // option task = {name: "Example task", every: 1m}
