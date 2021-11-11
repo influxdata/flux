@@ -1,4 +1,4 @@
-// Package bigpanda provides functions to interact with the BigPan
+// Package bigpanda provides functions to interact with the BigPana.
 package bigpanda
 
 
@@ -48,7 +48,7 @@ statusFromLevel = (level) => {
 // - url: base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).
 // - appKey: BigPanda App Key.
 // - status: Status of the BigPanda alert. One of ok, critical, warning, acknowledged.
-// - rec: additional data appended to alert
+// - rec: Additional data appended to alert.
 sendAlert = (
     url,
     token,
@@ -68,8 +68,8 @@ sendAlert = (
 // 
 // - url: BigPanda [alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works).
 //   Default is the value of the `bigpanda.defaultURL` option.
-// - token: (Required) [BigPanda API Authorization token (API key)](https://docs.bigpanda.io/docs/api-key-management).
-// - appKey: (Required) BigPanda [App Key](https://docs.bigpanda.io/reference#integrating-monitoring-systems).
+// - token: [BigPanda API Authorization token (API key)](https://docs.bigpanda.io/docs/api-key-management).
+// - appKey: BigPanda [App Key](https://docs.bigpanda.io/reference#integrating-monitoring-systems).
 // 
 //   The returned factory function accepts a `mapFn` parameter.
 //   The `mapFn` must return an object with all properties defined

@@ -96,7 +96,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/jsternberg/rows/map_test.flux":                                                "29848eaca7a06e472b7ef1ecd1b1e97b019d1e4da6201e69e9e526754aa0648e",
 	"stdlib/contrib/jsternberg/rows/map_with_test.flux":                                           "bb5dca0af95793506199aa9d16061513d28c9384c88521fc72ed9320867d2696",
 	"stdlib/contrib/jsternberg/rows/rows.flux":                                                    "9be29b5fe3b5eca1df4e873494920c02b0e6bb4f761c5ff6bb0eb4e637b5c3c6",
-	"stdlib/contrib/rhajek/bigpanda/bigpanda.flux":                                                "9e755c6cb337f581cf92dfaa86ab708862615dff2a70360f39a76017699e0c78",
+	"stdlib/contrib/rhajek/bigpanda/bigpanda.flux":                                                "e0e99af8c0fe423e0bac3f3007c7e4297202af2a5223da211e13f99ad498c514",
 	"stdlib/contrib/sranka/opsgenie/opsgenie.flux":                                                "d3ce6acae81c6bac12eda064360195fb65113562c887b9d2ff1957e0f328810a",
 	"stdlib/contrib/sranka/sensu/sensu.flux":                                                      "1f9e349e176712b034908aad78dbcb8d1828413d5df58379725ba4af13520ea2",
 	"stdlib/contrib/sranka/teams/teams.flux":                                                      "1e1fb47a4c0ef5fb5be458828eeaba0189933402306a67f3941d3ca336dad094",
