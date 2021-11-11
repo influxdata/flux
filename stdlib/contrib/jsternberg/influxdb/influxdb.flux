@@ -3,7 +3,6 @@
 // introduced: 0.77.0
 package influxdb
 
-
 import "influxdata/influxdb"
 import "influxdata/influxdb/v1"
 
@@ -14,7 +13,7 @@ builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Re
 // This version of `from` is equivalent to `from() |> range()` in a single call.
 //
 // ## Parameters
-// 
+//
 // - bucket: Name of the bucket to query.
 //
 //   **InfluxDB 1.x or Enterprise**: Provide an empty string (`""`).
@@ -32,7 +31,7 @@ builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Re
 //   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
 //   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
 //   Durations are relative to `now()`.
-//   
+//
 // - host: URL of the InfluxDB instance to query.
 //
 //   See [InfluxDB OSS URLs](https://docs.influxdata.com/influxdb/latest/reference/urls/)
@@ -40,6 +39,34 @@ builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Re
 //
 // - org: Organization name.
 // - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/latest/security/tokens/).
+// ## Examples
+//
+// ### Query using the bucket name
+//
+// ```
+// from(bucket: "example-bucket")
+// ```
+//
+// ### Query using the bucket ID
+//
+// ```
+// from(bucketID: "0261d8287f4d6000")
+// ```
+//
+// ### Query a remote InfluxDB Cloud instance
+//
+// ```
+// import "influxdata/influxdb/secrets"
+//
+// token = secrets.get(key: "INFLUXDB_CLOUD_TOKEN")
+//
+// from(
+//   bucket: "example-bucket",
+//   host: "https://us-west-2-1.aws.cloud2.influxdata.com",
+//   org: "example-org",
+//   token: token
+// )
+// ```
 from = (
     bucket,
     start,
@@ -67,14 +94,13 @@ from = (
 
     return source |> range(start, stop)
 }
-
 _from = from
 
 // select is an alternate implementation of `from()`,
 // `range()`, `filter()` and `pivot()` that returns pivoted query results and masks
 // the `_measurement`, `_start`, and `_stop` columns. Results are similar to those
 // returned by InfluxQL `SELECT` statements.
-// 
+//
 // ## Parameters
 // - from: Name of the bucket to query.
 // - start: Earliest time to include in results.
@@ -90,12 +116,12 @@ _from = from
 //   Use a relative duration, absolute time, or integer (Unix timestamp in seconds).
 //   For example, `-1h`, `2019-08-28T22:00:00Z`, or `1567029600`.
 //   Durations are relative to `now()`.
-//   
+//
 // - m: Name of the measurement to query.
 // - fields: List of fields to query. Default is`[]`.
 //
 //   _Returns all fields when list is empty or unspecified._
-//   
+//
 // - where: Single argument predicate function that evaluates `true` or `false`
 //   and filters results based on tag values.
 //   Default is `(r) => true`.
@@ -103,7 +129,7 @@ _from = from
 //   Records are passed to the function before fields are pivoted into columns.
 //   Records that evaluate to `true` are included in the output tables.
 //   Records that evaluate to _null_ or `false` are not included in the output tables.
-//   
+//
 // - host: URL of the InfluxDB instance to query.
 //
 //   See [InfluxDB OSS URLs](https://docs.influxdata.com/influxdb/latest/reference/urls/)
@@ -111,13 +137,13 @@ _from = from
 //
 // - org: Organization name.
 // - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/latest/security/tokens/).
-// 
+//
 // ## Examples
-// 
+//
 // ### Query a single field
 // ```no_run
 // import "contrib/jsternberg/influxdb"
-// 
+//
 // influxdb.select(
 //     from: "example-bucket",
 //     start: -1d,
@@ -125,11 +151,11 @@ _from = from
 //     fields: ["field1"],
 // )
 // ```
-// 
+//
 // ### Query multiple fields
 // ```no_run
 // import "contrib/jsternberg/influxdb"
-// 
+//
 // influxdb.select(
 //     from: "example-bucket",
 //     start: -1d,
@@ -137,7 +163,7 @@ _from = from
 //     fields: ["field1", "field2", "field3"],
 // )
 // ```
-// 
+//
 // ### Query all fields and filter by tags
 // ```no_run
 // import "contrib/jsternberg/influxdb"
@@ -149,14 +175,14 @@ _from = from
 //     where: (r) => r.host == "host1" and r.region == "us-west",
 // )
 // ```
-// 
+//
 // ### Query data from a remote InfluxDB Cloud instance
 // ```no_run
 // import "contrib/jsternberg/influxdb"
 // import "influxdata/influxdb/secrets"
-// 
+//
 // token = secrets.get(key: "INFLUXDB_CLOUD_TOKEN")
-// 
+//
 // influxdb.select(
 //     from: "example-bucket",
 //     start: -1d,
