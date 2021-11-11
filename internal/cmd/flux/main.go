@@ -105,6 +105,7 @@ func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies
 			},
 		},
 	}
+
 	return ip.Inject(ctx), deps
 }
 

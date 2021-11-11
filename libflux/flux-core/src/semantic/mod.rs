@@ -145,6 +145,7 @@ impl<I: import::Importer> Analyzer<I> {
         if errors.has_errors() {
             return Err(errors);
         }
+
         Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
     }
 
