@@ -82,7 +82,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/bonitoo-io/tickscript/alert_with_topic_test.flux":                             "9e0a5e50abecdd3e9c12e3ba84a05a944d83ae63ecf98755e9d2472c4003f94c",
 	"stdlib/contrib/bonitoo-io/tickscript/deadman_empty_test.flux":                                "3aa3c114ea061b5f3d72eeaf0b4c703a55d17fe70cece849c5ac3baec56c93c2",
 	"stdlib/contrib/bonitoo-io/tickscript/deadman_threshold_test.flux":                            "77a78e3a28a281cf5abed324c2d6d6681ad84d415dbd0021ce7f5a0256e42a9d",
-	"stdlib/contrib/bonitoo-io/tickscript/tickscript.flux":                                        "095c57015c843dee0159ba42f2b7c7946c2fe15a3afef7ae6e284b66f3110dec",
+	"stdlib/contrib/bonitoo-io/tickscript/tickscript.flux":                                        "57cf84063ce7d0f068582647b77b23a97771fd2a1830ecb0be916bdaa6bf1990",
 	"stdlib/contrib/bonitoo-io/victorops/victorops.flux":                                          "a0b56a84973e64b617d1f54ba9f0c20307fa0b1a5cff1bc77217c536f522b5ac",
 	"stdlib/contrib/bonitoo-io/zenoss/zenoss.flux":                                                "a7163b4f3fdf1c9be65472180c2be3a2bfe017909fcfd20affd9b067fff36844",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                                  "c7dc7d5a3d2ea20f2a37a4772facdf4346d2c5a5e1a09c656ce60dc9d0ab6de4",
