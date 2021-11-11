@@ -145,7 +145,7 @@ event = (
 // - namespace: [Sensu namespace](https://docs.sensu.io/sensu-go/latest/reference/rbac/).
 //   Default is `default`.
 // - entityName: Event source.
-// - Default is `influxdb`.
+//   Default is `influxdb`.
 //
 //   Use alphanumeric characters, underscores (`_`), periods (`.`), and hyphens (`-`).
 //   All other characters are replaced with an underscore.
