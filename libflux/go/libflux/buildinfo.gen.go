@@ -283,7 +283,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/v1/v1.flux":                                                       "ffeb4f61ad803cde7a61a3efe07c1f830053969b12a70a4abf74ec43bbaa1ca5",
 	"stdlib/internal/boolean/boolean.flux":                                                        "1c0a1564911dd5f4c35c17efb32158ab31c51b20ac0f25175545e50aadc87c94",
 	"stdlib/internal/debug/debug.flux":                                                            "b265cd8ca251dfeabf6a26fcca99fbf1ae70211b94ff9b1da4d9f35cf6bc51c0",
-	"stdlib/internal/debug/debug_test.flux":                                                       "3165396e2c27e115af41c806abbfa6d16011bd344ad81f02769f219e11d76d21",
+	"stdlib/internal/debug/debug_test.flux":                                                       "346864b2f73708c85611e90089c7503b12d6ee9c4dd1317e755c1ffb5d4d4a02",
 	"stdlib/internal/gen/gen.flux":                                                                "9af35dba81d7cc0215204b1f9a9d8ee541dd54909e4038d8c0007e8f80860b79",
 	"stdlib/internal/influxql/influxql.flux":                                                      "9f7f871e5d0f2e1ffffe9c2ed8b1e2e16858e2d35b7dec90edcee1c74011af15",
 	"stdlib/internal/promql/join_test.flux":                                                       "33eaa02598afbdbbf3c43711549d782b8d3e0144131ad2a074833748172bab09",

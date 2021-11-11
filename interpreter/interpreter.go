@@ -103,7 +103,7 @@ func (itrp *Interpreter) doFile(ctx context.Context, file *semantic.File, scope 
 		return err
 	}
 	for _, i := range file.Imports {
-		if err := itrp.doImport(i, ctx, scope, importer); err != nil {
+		if err := itrp.doImport(ctx, i, scope, importer); err != nil {
 			return err
 		}
 	}
@@ -146,7 +146,7 @@ func (p Packages) Inject(ctx context.Context) context.Context {
 	return context.WithValue(ctx, packagesKey, p)
 }
 
-func GetPackages(ctx context.Context) Packages {
+func getPackages(ctx context.Context) Packages {
 	v := ctx.Value(packagesKey)
 	if v == nil {
 		return nil
@@ -155,7 +155,7 @@ func GetPackages(ctx context.Context) Packages {
 }
 
 func GetOption(ctx context.Context, pkg string, option string) (values.Value, bool) {
-	packages := GetPackages(ctx)
+	packages := getPackages(ctx)
 	if packages == nil {
 		return values.InvalidValue, false
 	}
@@ -165,7 +165,7 @@ func GetOption(ctx context.Context, pkg string, option string) (values.Value, bo
 	return values.InvalidValue, false
 }
 
-func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, ctx context.Context, scope values.Scope, importer Importer) error {
+func (itrp *Interpreter) doImport(ctx context.Context, dec *semantic.ImportDeclaration, scope values.Scope, importer Importer) error {
 	path := dec.Path.Value
 	pkg, err := importer.ImportPackageObject(path)
 	if err != nil {
@@ -175,7 +175,7 @@ func (itrp *Interpreter) doImport(dec *semantic.ImportDeclaration, ctx context.C
 	if dec.As != nil {
 		name = dec.As.Name
 	}
-	if packages := GetPackages(ctx); packages != nil {
+	if packages := getPackages(ctx); packages != nil {
 		packages[path] = pkg
 	}
 	scope.Set(name, pkg)

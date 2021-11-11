@@ -49,8 +49,27 @@ testcase get_option {
     got = debug.getOption(pkg: "internal/debug", name: "vectorize")
     want = false
 
-    testing.diff(
-            got: array.from(rows: [{ v: got }]),
-            want: array.from(rows: [{ v: want }])
-        ) |> yield()
+    testing.diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
+        |> yield()
+}
+
+testcase get_option2 {
+    option debug.vectorize = true
+
+    got = debug.getOption(pkg: "internal/debug", name: "vectorize")
+    want = true
+
+    testing.diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
+        |> yield()
+}
+
+testcase get_option_in_map {
+    option debug.vectorize = true
+
+    got = array.from(rows: [{v: 123}])
+        |> map(fn: (r) => ({v: debug.getOption(pkg: "internal/debug", name: "vectorize")}))
+    want = true
+
+    testing.diff(got: got, want: array.from(rows: [{v: want}]))
+        |> yield()
 }
