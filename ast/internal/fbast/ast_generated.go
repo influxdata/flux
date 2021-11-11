@@ -463,13 +463,6 @@ func GetRootAsNamedType(buf []byte, offset flatbuffers.UOffsetT) *NamedType {
 	return x
 }
 
-func GetSizePrefixedRootAsNamedType(buf []byte, offset flatbuffers.UOffsetT) *NamedType {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &NamedType{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *NamedType) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -529,13 +522,6 @@ func GetRootAsTvarType(buf []byte, offset flatbuffers.UOffsetT) *TvarType {
 	return x
 }
 
-func GetSizePrefixedRootAsTvarType(buf []byte, offset flatbuffers.UOffsetT) *TvarType {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &TvarType{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *TvarType) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -592,13 +578,6 @@ func GetRootAsArrayType(buf []byte, offset flatbuffers.UOffsetT) *ArrayType {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ArrayType{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsArrayType(buf []byte, offset flatbuffers.UOffsetT) *ArrayType {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ArrayType{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -669,13 +648,6 @@ func GetRootAsDictType(buf []byte, offset flatbuffers.UOffsetT) *DictType {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &DictType{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsDictType(buf []byte, offset flatbuffers.UOffsetT) *DictType {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &DictType{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -776,13 +748,6 @@ func GetRootAsPropertyType(buf []byte, offset flatbuffers.UOffsetT) *PropertyTyp
 	return x
 }
 
-func GetSizePrefixedRootAsPropertyType(buf []byte, offset flatbuffers.UOffsetT) *PropertyType {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &PropertyType{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *PropertyType) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -869,13 +834,6 @@ func GetRootAsRecordType(buf []byte, offset flatbuffers.UOffsetT) *RecordType {
 	return x
 }
 
-func GetSizePrefixedRootAsRecordType(buf []byte, offset flatbuffers.UOffsetT) *RecordType {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &RecordType{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *RecordType) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -958,13 +916,6 @@ func GetRootAsParameterType(buf []byte, offset flatbuffers.UOffsetT) *ParameterT
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ParameterType{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsParameterType(buf []byte, offset flatbuffers.UOffsetT) *ParameterType {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ParameterType{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1069,13 +1020,6 @@ func GetRootAsFunctionType(buf []byte, offset flatbuffers.UOffsetT) *FunctionTyp
 	return x
 }
 
-func GetSizePrefixedRootAsFunctionType(buf []byte, offset flatbuffers.UOffsetT) *FunctionType {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &FunctionType{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *FunctionType) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1172,13 +1116,6 @@ func GetRootAsTypeConstraint(buf []byte, offset flatbuffers.UOffsetT) *TypeConst
 	return x
 }
 
-func GetSizePrefixedRootAsTypeConstraint(buf []byte, offset flatbuffers.UOffsetT) *TypeConstraint {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &TypeConstraint{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *TypeConstraint) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1261,13 +1198,6 @@ func GetRootAsTypeExpression(buf []byte, offset flatbuffers.UOffsetT) *TypeExpre
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &TypeExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsTypeExpression(buf []byte, offset flatbuffers.UOffsetT) *TypeExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &TypeExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1401,13 +1331,6 @@ func GetRootAsSourceLocation(buf []byte, offset flatbuffers.UOffsetT) *SourceLoc
 	return x
 }
 
-func GetSizePrefixedRootAsSourceLocation(buf []byte, offset flatbuffers.UOffsetT) *SourceLocation {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &SourceLocation{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *SourceLocation) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1489,13 +1412,6 @@ func GetRootAsComment(buf []byte, offset flatbuffers.UOffsetT) *Comment {
 	return x
 }
 
-func GetSizePrefixedRootAsComment(buf []byte, offset flatbuffers.UOffsetT) *Comment {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Comment{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *Comment) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1531,13 +1447,6 @@ func GetRootAsBaseNode(buf []byte, offset flatbuffers.UOffsetT) *BaseNode {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BaseNode{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsBaseNode(buf []byte, offset flatbuffers.UOffsetT) *BaseNode {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &BaseNode{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1633,13 +1542,6 @@ func GetRootAsPackage(buf []byte, offset flatbuffers.UOffsetT) *Package {
 	return x
 }
 
-func GetSizePrefixedRootAsPackage(buf []byte, offset flatbuffers.UOffsetT) *Package {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Package{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *Package) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1728,13 +1630,6 @@ func GetRootAsFile(buf []byte, offset flatbuffers.UOffsetT) *File {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &File{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsFile(buf []byte, offset flatbuffers.UOffsetT) *File {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &File{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1871,13 +1766,6 @@ func GetRootAsPackageClause(buf []byte, offset flatbuffers.UOffsetT) *PackageCla
 	return x
 }
 
-func GetSizePrefixedRootAsPackageClause(buf []byte, offset flatbuffers.UOffsetT) *PackageClause {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &PackageClause{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *PackageClause) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1934,13 +1822,6 @@ func GetRootAsImportDeclaration(buf []byte, offset flatbuffers.UOffsetT) *Import
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ImportDeclaration{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsImportDeclaration(buf []byte, offset flatbuffers.UOffsetT) *ImportDeclaration {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ImportDeclaration{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2019,13 +1900,6 @@ func GetRootAsWrappedStatement(buf []byte, offset flatbuffers.UOffsetT) *Wrapped
 	return x
 }
 
-func GetSizePrefixedRootAsWrappedStatement(buf []byte, offset flatbuffers.UOffsetT) *WrappedStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &WrappedStatement{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *WrappedStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2080,13 +1954,6 @@ func GetRootAsBadStatement(buf []byte, offset flatbuffers.UOffsetT) *BadStatemen
 	return x
 }
 
-func GetSizePrefixedRootAsBadStatement(buf []byte, offset flatbuffers.UOffsetT) *BadStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &BadStatement{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *BadStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2138,13 +2005,6 @@ func GetRootAsVariableAssignment(buf []byte, offset flatbuffers.UOffsetT) *Varia
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &VariableAssignment{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsVariableAssignment(buf []byte, offset flatbuffers.UOffsetT) *VariableAssignment {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &VariableAssignment{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2234,13 +2094,6 @@ func GetRootAsMemberAssignment(buf []byte, offset flatbuffers.UOffsetT) *MemberA
 	return x
 }
 
-func GetSizePrefixedRootAsMemberAssignment(buf []byte, offset flatbuffers.UOffsetT) *MemberAssignment {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &MemberAssignment{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *MemberAssignment) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2327,13 +2180,6 @@ func GetRootAsExpressionStatement(buf []byte, offset flatbuffers.UOffsetT) *Expr
 	return x
 }
 
-func GetSizePrefixedRootAsExpressionStatement(buf []byte, offset flatbuffers.UOffsetT) *ExpressionStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ExpressionStatement{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *ExpressionStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2401,13 +2247,6 @@ func GetRootAsReturnStatement(buf []byte, offset flatbuffers.UOffsetT) *ReturnSt
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ReturnStatement{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsReturnStatement(buf []byte, offset flatbuffers.UOffsetT) *ReturnStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ReturnStatement{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2481,13 +2320,6 @@ func GetRootAsOptionStatement(buf []byte, offset flatbuffers.UOffsetT) *OptionSt
 	return x
 }
 
-func GetSizePrefixedRootAsOptionStatement(buf []byte, offset flatbuffers.UOffsetT) *OptionStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &OptionStatement{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *OptionStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2558,13 +2390,6 @@ func GetRootAsBuiltinStatement(buf []byte, offset flatbuffers.UOffsetT) *Builtin
 	return x
 }
 
-func GetSizePrefixedRootAsBuiltinStatement(buf []byte, offset flatbuffers.UOffsetT) *BuiltinStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &BuiltinStatement{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *BuiltinStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2621,13 +2446,6 @@ func GetRootAsTestStatement(buf []byte, offset flatbuffers.UOffsetT) *TestStatem
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &TestStatement{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsTestStatement(buf []byte, offset flatbuffers.UOffsetT) *TestStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &TestStatement{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2698,13 +2516,6 @@ func GetRootAsTestCaseStatement(buf []byte, offset flatbuffers.UOffsetT) *TestCa
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &TestCaseStatement{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsTestCaseStatement(buf []byte, offset flatbuffers.UOffsetT) *TestCaseStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &TestCaseStatement{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2799,13 +2610,6 @@ func GetRootAsWrappedExpression(buf []byte, offset flatbuffers.UOffsetT) *Wrappe
 	return x
 }
 
-func GetSizePrefixedRootAsWrappedExpression(buf []byte, offset flatbuffers.UOffsetT) *WrappedExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &WrappedExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *WrappedExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2857,13 +2661,6 @@ func GetRootAsBinaryExpression(buf []byte, offset flatbuffers.UOffsetT) *BinaryE
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BinaryExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsBinaryExpression(buf []byte, offset flatbuffers.UOffsetT) *BinaryExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &BinaryExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2979,13 +2776,6 @@ func GetRootAsLogicalExpression(buf []byte, offset flatbuffers.UOffsetT) *Logica
 	return x
 }
 
-func GetSizePrefixedRootAsLogicalExpression(buf []byte, offset flatbuffers.UOffsetT) *LogicalExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &LogicalExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *LogicalExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3098,13 +2888,6 @@ func GetRootAsUnaryExpression(buf []byte, offset flatbuffers.UOffsetT) *UnaryExp
 	return x
 }
 
-func GetSizePrefixedRootAsUnaryExpression(buf []byte, offset flatbuffers.UOffsetT) *UnaryExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &UnaryExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *UnaryExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3190,13 +2973,6 @@ func GetRootAsBooleanLiteral(buf []byte, offset flatbuffers.UOffsetT) *BooleanLi
 	return x
 }
 
-func GetSizePrefixedRootAsBooleanLiteral(buf []byte, offset flatbuffers.UOffsetT) *BooleanLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &BooleanLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *BooleanLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3252,13 +3028,6 @@ func GetRootAsDateTimeLiteral(buf []byte, offset flatbuffers.UOffsetT) *DateTime
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &DateTimeLiteral{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsDateTimeLiteral(buf []byte, offset flatbuffers.UOffsetT) *DateTimeLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &DateTimeLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3350,13 +3119,6 @@ func GetRootAsDurationLiteral(buf []byte, offset flatbuffers.UOffsetT) *Duration
 	return x
 }
 
-func GetSizePrefixedRootAsDurationLiteral(buf []byte, offset flatbuffers.UOffsetT) *DurationLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &DurationLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *DurationLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3426,13 +3188,6 @@ func GetRootAsDuration(buf []byte, offset flatbuffers.UOffsetT) *Duration {
 	return x
 }
 
-func GetSizePrefixedRootAsDuration(buf []byte, offset flatbuffers.UOffsetT) *Duration {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Duration{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *Duration) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3487,13 +3242,6 @@ func GetRootAsFloatLiteral(buf []byte, offset flatbuffers.UOffsetT) *FloatLitera
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &FloatLiteral{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsFloatLiteral(buf []byte, offset flatbuffers.UOffsetT) *FloatLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &FloatLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3555,13 +3303,6 @@ func GetRootAsIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *IntegerLi
 	return x
 }
 
-func GetSizePrefixedRootAsIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *IntegerLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &IntegerLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *IntegerLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3620,13 +3361,6 @@ func GetRootAsPipeLiteral(buf []byte, offset flatbuffers.UOffsetT) *PipeLiteral 
 	return x
 }
 
-func GetSizePrefixedRootAsPipeLiteral(buf []byte, offset flatbuffers.UOffsetT) *PipeLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &PipeLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *PipeLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3667,13 +3401,6 @@ func GetRootAsRegexpLiteral(buf []byte, offset flatbuffers.UOffsetT) *RegexpLite
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &RegexpLiteral{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsRegexpLiteral(buf []byte, offset flatbuffers.UOffsetT) *RegexpLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &RegexpLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3731,13 +3458,6 @@ func GetRootAsStringLiteral(buf []byte, offset flatbuffers.UOffsetT) *StringLite
 	return x
 }
 
-func GetSizePrefixedRootAsStringLiteral(buf []byte, offset flatbuffers.UOffsetT) *StringLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &StringLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *StringLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3789,13 +3509,6 @@ func GetRootAsUnsignedIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *U
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &UnsignedIntegerLiteral{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsUnsignedIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *UnsignedIntegerLiteral {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &UnsignedIntegerLiteral{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3857,13 +3570,6 @@ func GetRootAsIdentifier(buf []byte, offset flatbuffers.UOffsetT) *Identifier {
 	return x
 }
 
-func GetSizePrefixedRootAsIdentifier(buf []byte, offset flatbuffers.UOffsetT) *Identifier {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Identifier{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *Identifier) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3915,13 +3621,6 @@ func GetRootAsStringExpression(buf []byte, offset flatbuffers.UOffsetT) *StringE
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &StringExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsStringExpression(buf []byte, offset flatbuffers.UOffsetT) *StringExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &StringExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3991,13 +3690,6 @@ func GetRootAsStringExpressionPart(buf []byte, offset flatbuffers.UOffsetT) *Str
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &StringExpressionPart{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsStringExpressionPart(buf []byte, offset flatbuffers.UOffsetT) *StringExpressionPart {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &StringExpressionPart{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4082,13 +3774,6 @@ func GetRootAsParenExpression(buf []byte, offset flatbuffers.UOffsetT) *ParenExp
 	return x
 }
 
-func GetSizePrefixedRootAsParenExpression(buf []byte, offset flatbuffers.UOffsetT) *ParenExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ParenExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *ParenExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -4156,13 +3841,6 @@ func GetRootAsArrayExpression(buf []byte, offset flatbuffers.UOffsetT) *ArrayExp
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ArrayExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsArrayExpression(buf []byte, offset flatbuffers.UOffsetT) *ArrayExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ArrayExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4235,13 +3913,6 @@ func GetRootAsDictExpression(buf []byte, offset flatbuffers.UOffsetT) *DictExpre
 	return x
 }
 
-func GetSizePrefixedRootAsDictExpression(buf []byte, offset flatbuffers.UOffsetT) *DictExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &DictExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *DictExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -4308,13 +3979,6 @@ func GetRootAsDictItem(buf []byte, offset flatbuffers.UOffsetT) *DictItem {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &DictItem{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsDictItem(buf []byte, offset flatbuffers.UOffsetT) *DictItem {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &DictItem{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4396,13 +4060,6 @@ func GetRootAsFunctionExpression(buf []byte, offset flatbuffers.UOffsetT) *Funct
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &FunctionExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsFunctionExpression(buf []byte, offset flatbuffers.UOffsetT) *FunctionExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &FunctionExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4502,13 +4159,6 @@ func GetRootAsBlock(buf []byte, offset flatbuffers.UOffsetT) *Block {
 	return x
 }
 
-func GetSizePrefixedRootAsBlock(buf []byte, offset flatbuffers.UOffsetT) *Block {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Block{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *Block) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -4575,13 +4225,6 @@ func GetRootAsCallExpression(buf []byte, offset flatbuffers.UOffsetT) *CallExpre
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &CallExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsCallExpression(buf []byte, offset flatbuffers.UOffsetT) *CallExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &CallExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4668,13 +4311,6 @@ func GetRootAsConditionalExpression(buf []byte, offset flatbuffers.UOffsetT) *Co
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ConditionalExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsConditionalExpression(buf []byte, offset flatbuffers.UOffsetT) *ConditionalExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ConditionalExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4802,13 +4438,6 @@ func GetRootAsProperty(buf []byte, offset flatbuffers.UOffsetT) *Property {
 	return x
 }
 
-func GetSizePrefixedRootAsProperty(buf []byte, offset flatbuffers.UOffsetT) *Property {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &Property{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *Property) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -4903,13 +4532,6 @@ func GetRootAsMemberExpression(buf []byte, offset flatbuffers.UOffsetT) *MemberE
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &MemberExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsMemberExpression(buf []byte, offset flatbuffers.UOffsetT) *MemberExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &MemberExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -5010,13 +4632,6 @@ func GetRootAsIndexExpression(buf []byte, offset flatbuffers.UOffsetT) *IndexExp
 	return x
 }
 
-func GetSizePrefixedRootAsIndexExpression(buf []byte, offset flatbuffers.UOffsetT) *IndexExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &IndexExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *IndexExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -5114,13 +4729,6 @@ func GetRootAsObjectExpression(buf []byte, offset flatbuffers.UOffsetT) *ObjectE
 	return x
 }
 
-func GetSizePrefixedRootAsObjectExpression(buf []byte, offset flatbuffers.UOffsetT) *ObjectExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &ObjectExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
-	return x
-}
-
 func (rcv *ObjectExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -5203,13 +4811,6 @@ func GetRootAsPipeExpression(buf []byte, offset flatbuffers.UOffsetT) *PipeExpre
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &PipeExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsPipeExpression(buf []byte, offset flatbuffers.UOffsetT) *PipeExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &PipeExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -5296,13 +4897,6 @@ func GetRootAsBadExpression(buf []byte, offset flatbuffers.UOffsetT) *BadExpress
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BadExpression{}
 	x.Init(buf, n+offset)
-	return x
-}
-
-func GetSizePrefixedRootAsBadExpression(buf []byte, offset flatbuffers.UOffsetT) *BadExpression {
-	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
-	x := &BadExpression{}
-	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
