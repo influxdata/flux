@@ -90,6 +90,7 @@ statusFromLevel = (level) => {
 // - token: BigPanda [API Authorization token (API key)](https://docs.bigpanda.io/docs/api-key-management).
 // - appKey: BigPanda [App Key](https://docs.bigpanda.io/reference#integrating-monitoring-systems).
 // - status: BigPanda [alert status](https://docs.bigpanda.io/reference#alerts).
+//
 //   Supported statuses:
 //   - `ok`
 //   - `critical`
