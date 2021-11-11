@@ -1,4 +1,4 @@
-// Package bigpanda provides functions to interact with the BigPana.
+// Package bigpanda provides functions for sending alerts to [BigPanda](https://www.bigpanda.io/).
 package bigpanda
 
 
@@ -6,23 +6,67 @@ import "http"
 import "json"
 import "strings"
 
-// defaultUrl The default [BigPanda alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works)
-// for functions in the BigPanda package.
+// defaultUrl is the default [BigPanda alerts API URL](https://docs.bigpanda.io/reference#alerts-how-it-works)
+// for functions in the `bigpanda` package.
 // Default is `https://api.bigpanda.io/data/v2/alerts`.
 option defaultUrl = "https://api.bigpanda.io/data/v2/alerts"
 
-// defaultTokenPrefix default HTTP authentication schema to use when authenticating with BigPanda.
+// defaultTokenPrefix is the default HTTP authentication scheme to use when authenticating with BigPanda.
 // Default is `Bearer`.
 option defaultTokenPrefix = "Bearer"
 
-// statusFromLevel creates BigPanda status from a given level.
+// statusFromLevel converts an alert level to a BigPanda status.
 // 
-// BigPanda accepts one of ok,critical,warning,acknowledged.
+// BigPanda accepts one of ok, warning, or critical,.
 //
 // ## Parameters
 // 
-// - level: levels on status objects can be one of the following:
-//   `ok`, `info`, `warn`, `crit`, `unknown`.
+// - level: Alert level.
+//
+//   ##### Supported alert levels
+//
+//   | Alert level | BigPanda status |
+//   | :---------- | :--------------|
+//   | crit        | critical        |
+//   | warn        | warning         |
+//   | info        | ok              |
+//   | ok          | ok              |
+//
+//   _All other alert levels return a `critical` BigPanda status._
+//
+// ## Examples
+// ### Convert an alert level to a BigPanda status
+// ```
+// import "contrib/rhajek/bigpanda"
+//
+// bigpanda.statusFromLevel(level: "crit")
+//
+// // Returns "critical"
+// ```
+//
+// ### Convert alert levels in a stream of tables to BigPanda statuses
+// Use `map()` to iterate over rows in a stream of tables and convert alert levels to Big Panda statuses.
+//
+// ```
+// # import "array"
+// import "contrib/rhajek/bigpanda"
+//
+// # data = array.from(
+// #     rows: [
+// #         {_time: 2021-01-01T00:00:00Z, _level: "ok"},
+// #         {_time: 2021-01-01T00:01:00Z, _level: "info"},
+// #         {_time: 2021-01-01T00:02:00Z, _level: "warn"},
+// #         {_time: 2021-01-01T00:03:00Z, _level: "crit"},
+// #     ],
+// # )
+// # 
+// < data
+//     |> map(
+//         fn: (r) => ({r with
+//             big_panda_status: bigpanda.statusFromLevel(level: r._level),
+//         }),
+// >     )
+// ```
 statusFromLevel = (level) => {
     lvl = strings.toLower(v: level)
     sev = if lvl == "warn" then
@@ -39,8 +83,7 @@ statusFromLevel = (level) => {
     return sev
 }
 
-// sendAlert sends a single alert to BigPanda as described in the
-// bigpanda [API reference](https://docs.bigpanda.io/reference#alerts API). 
+// sendAlert sends an alert to [BigPanda](https://www.bigpanda.io/). 
 //
 // ## Parameters
 // 
