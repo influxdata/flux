@@ -67,6 +67,8 @@ builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Re
 //   token: token
 // )
 // ```
+//
+// tags: inputs
 from = (
     bucket,
     start,
