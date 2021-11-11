@@ -548,12 +548,10 @@ impl Formatter {
     }
 
     fn format_function_argument(&mut self, n: &semantic::nodes::FunctionParameter) {
+        self.format_identifier(&n.key);
         if let Some(v) = &n.default {
-            self.format_identifier(&n.key);
             self.write_rune('=');
             self.format_node(&walk::Node::from_expr(v));
-        } else {
-            self.format_identifier(&n.key);
         }
     }
 
