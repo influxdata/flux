@@ -69,7 +69,6 @@ send = (
 // - webhookID: Discord [webhook ID](https://discord.com/developers/docs/resources/webhook).
 // - username: Override the Discord webhook’s default username.
 // - avatar_url: Override the Discord webhook’s default avatar.
-// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
 // `discord.endpoint` is a factory function that outputs another function.
