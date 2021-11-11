@@ -101,7 +101,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/sranka/sensu/sensu.flux":                                                      "1f00da935de703303abdb0e3bb2ab334380a82f3d430289307e8dcbb81936fd4",
 	"stdlib/contrib/sranka/teams/teams.flux":                                                      "1e1fb47a4c0ef5fb5be458828eeaba0189933402306a67f3941d3ca336dad094",
 	"stdlib/contrib/sranka/telegram/telegram.flux":                                                "f12a34949e986fa0a5a4d37ee20e86894cef90e74bf0b7f584dcf2bb52412422",
-	"stdlib/contrib/sranka/webexteams/webexteams.flux":                                            "c1d242c1600f8bf08de66b53798c84b325af2ff59a27d751eeaee6363317e762",
+	"stdlib/contrib/sranka/webexteams/webexteams.flux":                                            "46e55ed0a72cfd29d3e87e1802e5d2d7e337418884e910d58df0bf40ae88ac24",
 	"stdlib/contrib/tomhollingworth/events/duration.flux":                                         "2f8ea63ab08f58620b8b2e6adadae867f34a202604305d714823e034ae0daed1",
 	"stdlib/contrib/tomhollingworth/events/duration_test.flux":                                    "c819d173ebb9ebe7b972ffe35ed00766d43638437806b0b7c96f3326394e0bbc",
 	"stdlib/contrib/tomhollingworth/events/duration_with_stop_test.flux":                          "a8bb67d9c1dda6dd3d4d56095251e4cea01f393910145f74b5ef4d95febc0345",
