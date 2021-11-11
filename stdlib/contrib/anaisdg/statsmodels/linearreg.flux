@@ -23,6 +23,10 @@ import "generate"
 // - **y**: Field value
 // - **y\_hat**: Linear regression values
 //
+// ## Parameters
+// - tables: Input data. Default is piped-forward data (`<-`).
+// 
+//
 // ## Examples
 //
 // ### Perform a linear regression on a dataset
