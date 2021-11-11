@@ -77,7 +77,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                                      "347f8d80901d6f2fa4bb66a1a560fd71a4ea73ea9c4215213f076d12f7c33920",
 	"stdlib/contrib/bonitoo-io/alerta/alerta.flux":                                                "6f0c18eb1d495af04697a5185acbc384047ec21fa378c4350bf4fcb3a7a58399",
 	"stdlib/contrib/bonitoo-io/hex/hex.flux":                                                      "7a959661a5c0a03560ac016f53d4a612092c8655fe412b6b14d11821382a0dd3",
-	"stdlib/contrib/bonitoo-io/servicenow/servicenow.flux":                                        "909a682b5be4ef22727ca59d3ecb36d3afd8ee4b29a2c8fd0d8776273c826b69",
+	"stdlib/contrib/bonitoo-io/servicenow/servicenow.flux":                                        "582752a421ee9ab21c6942c2fa792a1b9cd687e8cd5ad279fd5abea9a92b10fa",
 	"stdlib/contrib/bonitoo-io/tickscript/alert_test.flux":                                        "7636315671214cdccf63d70162e53bd4f9025008bd3587a7f751634fd6e0344f",
 	"stdlib/contrib/bonitoo-io/tickscript/alert_with_topic_test.flux":                             "9e0a5e50abecdd3e9c12e3ba84a05a944d83ae63ecf98755e9d2472c4003f94c",
 	"stdlib/contrib/bonitoo-io/tickscript/deadman_empty_test.flux":                                "3aa3c114ea061b5f3d72eeaf0b4c703a55d17fe70cece849c5ac3baec56c93c2",
