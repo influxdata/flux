@@ -40,32 +40,38 @@ builtin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Re
 //
 // - org: Organization name.
 // - token: InfluxDB [API token](https://docs.influxdata.com/influxdb/latest/security/tokens/).
+//
 // ## Examples
 //
 // ### Query using the bucket name
 //
-// ```
-// from(bucket: "example-bucket")
+// ```no_run
+// import "contrib/jsternberg/influxdb"
+//
+// influxdb.from(bucket: "example-bucket")
 // ```
 //
 // ### Query using the bucket ID
 //
-// ```
-// from(bucketID: "0261d8287f4d6000")
+// ```no_run
+// import "contrib/jsternberg/influxdb"
+//
+// influxdb.from(bucketID: "0261d8287f4d6000")
 // ```
 //
 // ### Query a remote InfluxDB Cloud instance
 //
-// ```
+// ```no_run
+// import "contrib/jsternberg/influxdb"
 // import "influxdata/influxdb/secrets"
 //
-// token = secrets.get(key: "INFLUXDB_CLOUD_TOKEN")
+// influxdb.token = secrets.get(key: "INFLUXDB_CLOUD_TOKEN")
 //
 // from(
-//   bucket: "example-bucket",
-//   host: "https://us-west-2-1.aws.cloud2.influxdata.com",
-//   org: "example-org",
-//   token: token
+//     bucket: "example-bucket",
+//     host: "https://us-west-2-1.aws.cloud2.influxdata.com",
+//     org: "example-org",
+//     token: token,
 // )
 // ```
 //
