@@ -193,9 +193,9 @@ Don't forget to add your tests and make sure they work. Here is an example showi
 $ go test ./stdlib/universe/
 ```
 
-If you modify the flatbuffer files you need to run `make generate` to update the generated bindings. To ensure that you have the correct version of `flatc` you may use docker with the following commands.
+If you modify the flatbuffer files you need to run `make generate` to update the generated bindings. To ensure that you have the correct version of `flatc` you may use `./install_flatc.sh`.
 
 ```bash
-$ docker build -f Dockerfile_build --tag flux .
-$ make FLATC="docker run --volume $(pwd):/home/builder flux flatc" generate
+$ ./install_flatc.sh
+$ make generate
 ```

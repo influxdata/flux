@@ -8,7 +8,7 @@ GO_ARGS=-tags '$(GO_TAGS)'
 
 # This invokes a custom package config during Go builds, such that
 # the Rust library libflux is built on the fly.
-export PKG_CONFIG:=$(PWD)/pkg-config.sh
+export PKG_CONFIG:=$(shell pwd)/pkg-config.sh
 
 export GOOS=$(shell go env GOOS)
 export GO_BUILD=env GO111MODULE=on go build $(GO_ARGS)
@@ -21,7 +21,6 @@ export GO_VET=env GO111MODULE=on go vet $(GO_ARGS)
 export CARGO=cargo
 export CARGO_ARGS=
 export PATH := $(shell pwd)/bin:$(PATH)
-export FLATC=flatc
 
 define go_deps
 	$(shell env GO111MODULE=on go list -f "{{range .GoFiles}} {{$$.Dir}}/{{.}}{{end}}" $(1))
@@ -50,12 +49,12 @@ generate: $(GENERATED_TARGETS)
 ast/internal/fbast/ast_generated.go: ast/ast.fbs
 	$(GO_GENERATE) ./ast
 libflux/flux-core/src/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
-	$(FLATC) --rust -o libflux/flux-core/src/ast/flatbuffers ast/ast.fbs && rustfmt $@
+	flatc --rust -o libflux/flux-core/src/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
 internal/fbsemantic/semantic_generated.go: internal/fbsemantic/semantic.fbs
 	$(GO_GENERATE) ./internal/fbsemantic
 libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
-	$(FLATC) --rust -o libflux/flux-core/src/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
+	flatc --rust -o libflux/flux-core/src/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
 libflux/go/libflux/buildinfo.gen.go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 

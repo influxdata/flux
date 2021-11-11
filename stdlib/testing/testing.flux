@@ -1,6 +1,7 @@
 // Package testing functions test piped-forward data in specific ways and return errors if the tests fail.
 package testing
 
+
 import "array"
 import c "csv"
 
@@ -350,8 +351,6 @@ benchmark = (case) => {
 // - `want` is the expected data to test against.
 //
 assertEqualValues = (got, want) => {
-    return diff(
-            got: array.from(rows: [{ v: got }]),
-            want: array.from(rows: [{ v: want }])
-        ) |> yield()
+    return diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
+        |> yield()
 }

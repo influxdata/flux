@@ -1,5 +1,6 @@
 package universe_test
 
+
 import "testing"
 
 testcase isType {
