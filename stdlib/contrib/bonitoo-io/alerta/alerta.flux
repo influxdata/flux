@@ -1,3 +1,6 @@
+// Package alerta provides functions that send alerts to [Alerta](https://alerta.io/).
+//
+// introduced: 0.115.0
 package alerta
 
 
@@ -5,21 +8,67 @@ import "http"
 import "json"
 import "strings"
 
-// alert sends an alert to Alerta.
-// `url` - string - Alerta URL.
-// `apiKey` - string - Alerta API key.
-// `resource` - string - resource under alarm.
-// `event` - string - event name.
-// `environment` - string - environment. Valid values: "Production", "Development" or empty string (default).
-// `severity` - string - event severity. See https://docs.alerta.io/en/latest/api/alert.html#alert-severities.
-// `service` - arrays of string - list of affected services.
-// `group` - string - event group.
-// `value` - string - event value.
-// `text` - string - text description.
-// `type` - string - event type.
-// `origin` - string - monitoring component.
-// `timestamp` - time - time alert was generated.
-// `timeout` - int - seconds before alert is considered stale.
+// alert sends an alert to [Alerta](https://alerta.io/).
+//
+// ## Parameters
+//
+// - url: (Required) Alerta URL.
+// - apiKey: (Required) Alerta API key.
+// - resource: (Required) Resource associated with the alert.
+// - event: (Required) Event name.
+// - environment: Alerta environment. Valid values: "Production", "Development" or empty string (default).
+// - severity: (Required) Event severity. See [Alerta severities](https://docs.alerta.io/en/latest/api/alert.html#alert-severities).
+// - service: List of affected services. Default is `[]`.
+// - group: Alerta event group. Default is `""`.
+// - value: Event value.  Default is `""`.
+// - text: Alerta text description. Default is `""`.
+// - tags: List of event tags. Default is `[]`.
+// - attributes: (Required) Alert attributes.
+// - origin: monitoring component.
+// - type: Event type. Default is `""`.
+// - timestamp: time alert was generated. Default is `now()`.
+// 
+// ## Examples
+// ### Send the last reported value and status to Alerta
+// ````no_run
+// import "contrib/bonitoo-io/alerta"
+// import "influxdata/influxdb/secrets"
+// 
+// apiKey = secrets.get(key: "ALERTA_API_KEY")
+// 
+// lastReported =
+//   from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) =>
+//       r._measurement == "example-measurement" and
+//       r._field == "level"
+//     )
+//     |> last()
+//     |> findRecord(fn: (key) => true, idx: 0)
+// 
+// severity = if lastReported._value > 50 then "warning" else "ok"
+// 
+// alerta.alert(
+//   url: "https://alerta.io:8080/alert",
+//   apiKey: apiKey,
+//   resource: "example-resource",
+//   event: "Example event",
+//   environment: "Production",
+//   severity: severity,
+//   service: ["example-service"],
+//   group: "example-group",
+//   value: string(v: lastReported._value),
+//   text: "Service is ${severity}. The last reported value was ${string(v: lastReported._value)}.",
+//   tags: ["ex1", "ex2"],
+//   attributes: {},
+//   origin: "InfluxDB",
+//   type: "exampleAlertType",
+//   timestamp: now(),
+// )
+// ```
+//
+// tags: single notification
+//
 alert = (
     url,
     apiKey,
@@ -59,14 +108,79 @@ alert = (
     return http.post(headers: headers, url: url, data: body)
 }
 
-// endpoint creates the endpoint for the Alerta.
-// `url` - string - VictorOps REST endpoint URL. No default.
-// `apiKey` - string - Alerta API key.
-// `environment` - string - environment. Valid values: "Production", "Development" or empty string (default).
-// `origin` - string - monitoring component.
-// The returned factory function accepts a `mapFn` parameter.
-// The `mapFn` must return an object with `resource`, `event`, `severity`, `service`, `group`, `value`, `text`,
-// `tags`, `attributes`, `origin`, `type` and `timestamp` fields as defined in the `alert` function arguments.
+// endpoint sends alerts to Alerta using data from input rows.
+//
+// ## Parameters
+// 
+// - url: (Required) Alerta URL.
+// - apiKey: (Required) Alerta API key.
+// - environment: Alert environment. Default is `""`.
+//   Valid values: "Production", "Development" or empty string (default).
+// - origin: Alert origin. Default is `"InfluxDB"`.
+//
+// ## Usage
+// `alerta.endpoint` is a factory function that outputs another function.
+//     The output function requires a `mapFn` parameter.
+// 
+// ### mapFn
+// A function that builds the object used to generate the POST request. Requires an `r` parameter.
+// 
+// `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
+// 
+// - `resource`
+// - `event`
+// - `severity`
+// - `service`
+// - `group`
+// - `value`
+// - `text`
+// - `tags`
+// - `attributes`
+// - `type`
+// - `timestamp`
+// 
+// For more information, see `alerta.alert()` parameters.
+//
+// ## Examples
+// ### Send critical alerts to Alerta
+// ```no_run
+// import "contrib/bonitoo-io/alerta"
+// import "influxdata/influxdb/secrets"
+// 
+// apiKey = secrets.get(key: "ALERTA_API_KEY")
+// endpoint = alerta.endpoint(
+//     url: "https://alerta.io:8080/alert",
+//     apiKey: apiKey,
+//     environment: "Production",
+//     origin: "InfluxDB",
+// )
+// 
+// crit_events = from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+// 
+// crit_events
+//     |> endpoint(
+//         mapFn: (r) => {
+//             return {r with
+//                 resource: "example-resource",
+//                 event: "example-event",
+//                 severity: "critical",
+//                 service: r.service,
+//                 group: "example-group",
+//                 value: r.status,
+//                 text: "Status is critical.",
+//                 tags: ["ex1", "ex2"],
+//                 attributes: {},
+//                 type: "exampleAlertType",
+//                 timestamp: now(),
+//             }
+//         },
+//     )()
+// ```
+// 
+// tags: notification endpoints,transformations
+//
 endpoint = (url, apiKey, environment="", origin="") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
