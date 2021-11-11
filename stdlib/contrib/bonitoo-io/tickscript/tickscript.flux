@@ -376,6 +376,8 @@ compute = select
 //
 // ## Parameters
 // - columns: List of columns to group by.
+// 
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 // ### Group by host and region
