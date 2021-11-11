@@ -1,4 +1,4 @@
-// Package servicenow  provides functions for sending events to ServiceNow.
+// Package servicenow  provides functions for sending events to [ServiceNow](https://www.servicenow.com/).
 //
 // introduced: 0.136.0
 package servicenow
