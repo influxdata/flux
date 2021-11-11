@@ -171,29 +171,30 @@ sendAlert = (
 // ### Send critical alerts to BigPanda
 //
 // ```no_run
-// import "contrib/rhajek/bigpanda"
 // import "influxdata/influxdb/secrets"
 // import "json"
 //
 // token = secrets.get(key: "BIGPANDA_API_KEY")
 // endpoint = bigpanda.endpoint(
-//   token: token,
-//   appKey: "example-app-key"
+//     token: token,
+//     appKey: "example-app-key",
 // )
 //
 // crit_events = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
-
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+//
 // crit_events
-//   |> endpoint(mapFn: (r) => {
-//     return { r with
-//       status: "critical",
-//       check: "critical-status-check",
-//       description: "${r._field} is critical: ${string(v: r._value)}"
-//       tags: json.encode(v: [{"name": "host", "value": r.host}]),
-//     }
-//   })()
+//     |> endpoint(
+//         mapFn: (r) => {
+//             return {r with
+//                 status: "critical",
+//                 check: "critical-status-check",
+//                 description: "${r._field} is critical: ${string(v: r._value)}",
+//                 tags: json.encode(v: [{"name": "host", "value": r.host}]),
+//             }
+//         },
+//     )()
 // ```
 //
 // tags: notification endpoint
