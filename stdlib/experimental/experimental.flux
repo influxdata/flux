@@ -1,8 +1,7 @@
-// Package experimental includes experimental functions and packages that
-// perform various tasks.
+// Package experimental includes experimental functions and packages.
 //
 // ### Experimental packages are subject to change
-// Please note that experimental packages and functions and may:
+// Please note that experimental packages and functions may:
 // 
 // - be moved or promoted to a permanent location
 // - undergo API changes
@@ -425,7 +424,7 @@ builtin _window : (
 // A single input record can be placed into zero or more output tables depending
 // on the specific windowing function.
 // 
-// By default the start boundary of a window will align with the Unix epoch (zero time)
+// By default the start boundary of a window will align with the Unix epoch
 // modified by the offset of the `location` option.
 // 
 // #### Calendar months and years
@@ -591,8 +590,8 @@ builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
 // 
 // Each input table represents a single histogram.
 // Each input table represents a single histogram.
-// Input tables must have two columns—a count column (`_value`) and an upper bound
-// column (`le`), and neither column can be part of the group key.
+// Input tables must have two columns: a count column (`_value`) and an upper bound
+// column (`le`). Neither column can be part of the group key.
 // 
 // The count is the number of values that are less than or equal to the upper bound value (`le`).
 // Input tables can have an unlimited number of records; each record represents an entry in the histogram.
@@ -609,7 +608,7 @@ builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
 // 
 // ## Parameters
 // - quantile: Quantile to compute (`[0.0 - 1.0]`).
-// - minValue: assumed minimum value of the dataset. Default is `0.0`.
+// - minValue: Assumed minimum value of the dataset. Default is `0.0`.
 // 
 //   When the quantile falls below the lowest upper bound, the function
 //   interpolates values between `minValue` and the lowest upper bound.
