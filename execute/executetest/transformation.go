@@ -375,7 +375,7 @@ func (test *TfUrlValidationTest) Run(t *testing.T) {
 			c := execute.NewTableBuilderCache(UnlimitedAllocator)
 			deps := dependenciestest.Default()
 			if tc.Validator != nil {
-				deps.Deps.URLValidator = tc.Validator
+				deps.Deps.Deps.URLValidator = tc.Validator
 			}
 			_, err := test.CreateFn(d, deps, c, tc.Spec)
 			if err != nil {

@@ -8,8 +8,10 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/bigtable"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/dependencies/mqtt"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/opentracing/opentracing-go"
@@ -98,15 +100,23 @@ func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies
 	// to access the url validator in deps to validate the user-specified url.
 	ctx = deps.Inject(ctx)
 
-	ip := influxdb.Dependency{
+	ctx = influxdb.Dependency{
 		Provider: &influxdb.HttpProvider{
 			DefaultConfig: influxdb.Config{
 				Host: DefaultInfluxDBHost,
 			},
 		},
-	}
+	}.Inject(ctx)
 
-	return ip.Inject(ctx), deps
+	ctx = bigtable.Dependency{
+		Provider: bigtable.DefaultProvider{},
+	}.Inject(ctx)
+
+	ctx = mqtt.Dependency{
+		Dialer: mqtt.DefaultDialer{},
+	}.Inject(ctx)
+
+	return ctx, deps
 }
 
 func main() {
