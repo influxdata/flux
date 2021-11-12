@@ -83,10 +83,16 @@ clean:
 cleangenerate:
 	rm -rf $(GENERATED_TARGETS)
 
-fmt: $(SOURCES_NO_VENDOR)
+fmt-go:
 	go fmt ./...
+
+fmt-rust:
 	cd libflux; $(CARGO) fmt
+
+fmt-flux:
 	$(GO_RUN) ./cmd/flux/main.go fmt -w ./stdlib
+
+fmt: $(SOURCES_NO_VENDOR) fmt-go fmt-rust fmt-flux
 
 checkfmt:
 	./etc/checkfmt.sh
