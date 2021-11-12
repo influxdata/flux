@@ -839,10 +839,12 @@ impl Parser {
         stop_tokens: &[TokenType],
     ) -> Option<Expression> {
         let mut expr = init;
-        while {
-            let t = self.peek();
-            !stop_tokens.contains(&t.tok) && self.more()
-        } {
+
+        let should_continue = |parser: &mut Self| {
+            let t = parser.peek();
+            !stop_tokens.contains(&t.tok) && parser.more()
+        };
+        while should_continue(self) {
             let e = self.parse_expression();
             if let Expression::Bad(_) = e {
                 // We got a BadExpression, push the error and consume the token.
