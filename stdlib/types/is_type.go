@@ -1,4 +1,4 @@
-package universe
+package types
 
 import (
 	"context"
@@ -12,13 +12,13 @@ import (
 const IsTypeKind = "isType"
 
 func init() {
-	runtime.RegisterPackageValue("universe", IsTypeKind, IsType())
+	runtime.RegisterPackageValue("types", IsTypeKind, IsType())
 }
 
 func IsType() values.Function {
 	return values.NewFunction(
 		IsTypeKind,
-		runtime.MustLookupBuiltinType("universe", IsTypeKind),
+		runtime.MustLookupBuiltinType("types", IsTypeKind),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			return interpreter.DoFunctionCallContext(func(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
 				v, err := args.GetRequired("v")

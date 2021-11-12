@@ -190,11 +190,6 @@ builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: b
 // die returns a fatal error from within a flux script
 builtin die : (msg: string) => A
 
-// Returns true if `v` is an object matching `type`.
-// This function can only check against the basic types:
-// `string`, `bytes`, `int`, `uint`, `float`, `bool`, `time`, `duration`, `regexp`.
-builtin isType : (v: A, type: string) => bool where A: Basic
-
 // Time weighted average where values at the beginning and end of the range are linearly interpolated.
 timeWeightedAvg = (tables=<-, unit) => tables
     |> integral(unit: unit, interpolate: "linear")

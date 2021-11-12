@@ -1,4 +1,4 @@
-package universe_test
+package types_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/influxdata/flux/stdlib/types"
 	"github.com/influxdata/flux/values"
 )
 
@@ -53,7 +53,7 @@ func TestIsType(t *testing.T) {
 
 func isTypeTestHelper(t *testing.T, tc isTypeCase) {
 	t.Run(tc.name, func(t *testing.T) {
-		isTypeFn := universe.IsType()
+		isTypeFn := types.IsType()
 
 		fluxArg := values.NewObjectWithValues(map[string]values.Value{
 			"v":    tc.value,
