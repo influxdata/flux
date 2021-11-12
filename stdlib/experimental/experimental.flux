@@ -12,6 +12,7 @@
 // introduced: 0.39.0
 package experimental
 
+
 // addDuration adds a duration to a time value and returns the resulting time value.
 //
 // ## Parameters
@@ -40,7 +41,7 @@ builtin addDuration : (d: duration, to: time) => time
 //
 // ## Parameters
 // - d: Duration to subtract.
-// - to: Time to subtract the duration from.
+// - from: Time to subtract the duration from.
 //
 // ## Examples
 //
@@ -725,7 +726,7 @@ builtin mode : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // An aggregate method that takes the average of the two points closest to the quantile value.
 // When used, `experimental.quantile()` outputs non-null records with values
 // that fall within the specified quantile.
-
+// 
 // ##### exact_selector
 // A selector method that returns the data point for which at least `q` points are less than.
 // When used, `experimental.quantile()` outputs the non-null record with the
