@@ -589,7 +589,6 @@ builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
 // cumulative distribution of the dataset.
 // 
 // Each input table represents a single histogram.
-// Each input table represents a single histogram.
 // Input tables must have two columns: a count column (`_value`) and an upper bound
 // column (`le`). Neither column can be part of the group key.
 // 
@@ -612,7 +611,7 @@ builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
 // 
 //   When the quantile falls below the lowest upper bound, the function
 //   interpolates values between `minValue` and the lowest upper bound.
-//   When `minValue` is equal to negative infinity, the lowest upper bound is used.
+//   If `minValue` is equal to negative infinity, the lowest upper bound is used.
 // 
 // - tables: Input data. Default is piped-forward data (`<-`).
 // 
@@ -880,8 +879,8 @@ builtin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: 
 // kaufmansAMA calculates the Kaufman's Adaptive Moving Average (KAMA) of input
 // tables using the `_value` column in each table.
 // 
-// Kaufman's Adaptive Moving Average is a trend-following indicator designed to account
-// for market noise or volatility.
+// Kaufman's Adaptive Moving Average is a trend-following indicator designed to
+// account for market noise or volatility.
 // 
 // ## Parameters
 // - n: Period or number of points to use in the calculation.
@@ -1057,10 +1056,9 @@ builtin min : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // 
 // `null` is considered a unique value.
 // 
-// `experimental.unique` outputs a single table for each input table and does
-// the following:
-// 
-// - Outputs a single record for each unique value.
+// #### Function behavior
+// - Outputs a single table for each input table. 
+// - Outputs a single record for each unique value in an input table.
 // - Leaves group keys, columns, and values unmodified.
 // - Drops emtpy tables.
 // 
@@ -1089,12 +1087,10 @@ builtin unique : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // or equal to the bound are counted in the bin.
 // Bin counts are cumulative.
 // 
-// `experimental.histogram()` outputs a single table for each input table.
-// Each output table represents a unique histogram.
-// Output tables have the same group key as the corresponding input table.
-// 
-// The function does the following:
-// 
+// #### Function behavior
+// - Outputs a single table for each input table.
+// - Each output table represents a unique histogram.
+// - Output tables have the same group key as the corresponding input table.
 // - Drops columns that are not part of the group key.
 // - Adds an `le` column to store upper bound values.
 // - Stores bin counts in the `_value` column.
