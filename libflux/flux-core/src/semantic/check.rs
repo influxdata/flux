@@ -12,6 +12,8 @@ use crate::{
     },
 };
 
+use codespan_reporting::diagnostic;
+
 // OptionMap maps the name of a Flux option (including an optional package qualifier)
 // to its corresponding option statement.
 type OptionMap<'a> = HashMap<(Option<&'a str>, &'a str), &'a nodes::OptionStmt>;
@@ -64,6 +66,19 @@ impl std::fmt::Display for ErrorKind {
 }
 
 impl std::error::Error for Error {}
+
+impl Error {
+    pub(crate) fn as_diagnostic(
+        &self,
+        source: &dyn crate::semantic::Source,
+    ) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_labels(vec![diagnostic::Label::primary(
+            (),
+            source.codespan_range(&self.location),
+        )
+        .with_message(self.error.to_string())])
+    }
+}
 
 /// This function checks a semantic graph, looking for errors.
 ///

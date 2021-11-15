@@ -24,8 +24,13 @@ mod tests;
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
 
-use std::convert::TryFrom;
+use std::{convert::TryFrom, ops::Range};
 
+use codespan_reporting::{
+    diagnostic,
+    files::Files,
+    term::{self, termcolor::WriteColor},
+};
 use thiserror::Error;
 
 use crate::{
@@ -235,6 +240,56 @@ fn build_record(
         cons += constraints;
     }
     (r, cons)
+}
+
+pub(crate) trait Source {
+    fn codespan_range(&self, location: &ast::SourceLocation) -> Range<usize>;
+}
+
+impl Source for codespan_reporting::files::SimpleFile<&str, &str> {
+    fn codespan_range(&self, location: &ast::SourceLocation) -> Range<usize> {
+        let start = self
+            .line_range((), location.start.line as usize - 1)
+            .unwrap()
+            .start;
+        let end = self
+            .line_range((), location.end.line as usize - 1)
+            .unwrap()
+            .start;
+        start + location.start.column as usize - 1..end + location.end.column as usize - 1
+    }
+}
+
+impl Error {
+    /// Prints the errors
+    pub fn pretty(errors: &Errors<Self>, source: &str) -> String {
+        let mut buffer = term::termcolor::Buffer::no_color();
+        let files = codespan_reporting::files::SimpleFile::new("", source);
+        for err in errors {
+            err.pretty_fmt(&files, &mut buffer).unwrap();
+        }
+        String::from_utf8(buffer.into_inner()).unwrap()
+    }
+
+    fn pretty_fmt(
+        &self,
+        files: &codespan_reporting::files::SimpleFile<&str, &str>,
+        writer: &mut dyn WriteColor,
+    ) -> Result<(), codespan_reporting::files::Error> {
+        let diagnostic = self.as_diagnostic(files);
+
+        term::emit(writer, &term::Config::default(), files, &diagnostic)?;
+        Ok(())
+    }
+
+    fn as_diagnostic(&self, source: &dyn Source) -> diagnostic::Diagnostic<()> {
+        match self {
+            Self::InvalidAST(err) => err.as_diagnostic(source),
+            Self::Convert(err) => err.as_diagnostic(source),
+            Self::InvalidSemantic(err) => err.as_diagnostic(source),
+            Self::Inference(err) => err.as_diagnostic(source),
+        }
+    }
 }
 
 /// Analyzer provides an API for analyzing Flux code.

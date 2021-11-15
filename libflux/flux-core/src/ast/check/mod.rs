@@ -1,5 +1,6 @@
 //! Checking the AST.
 
+use codespan_reporting::diagnostic;
 use thiserror::Error;
 
 use crate::{
@@ -94,6 +95,19 @@ pub type Error = Located<ErrorKind>;
 pub struct ErrorKind {
     /// Error message.
     pub message: String,
+}
+
+impl Error {
+    pub(crate) fn as_diagnostic(
+        &self,
+        source: &dyn crate::semantic::Source,
+    ) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_labels(vec![diagnostic::Label::primary(
+            (),
+            source.codespan_range(&self.location),
+        )
+        .with_message(self.error.to_string())])
+    }
 }
 
 #[cfg(test)]

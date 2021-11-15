@@ -89,6 +89,15 @@ enum Error {
     },
 }
 
+impl Error {
+    fn pretty(&self, source: &str) -> String {
+        match self {
+            Self::Semantic(err) => semantic::Error::pretty(err, source),
+            _ => self.to_string(),
+        }
+    }
+}
+
 impl std::error::Error for Error {}
 
 fn infer_types(
@@ -321,6 +330,34 @@ macro_rules! test_error_msg {
                 if e.to_string() != $err {
                     panic!("\n\nexpected error:\n\t{}\n\ngot error:\n\t{}\n\n", $err, e)
                 }
+            }
+            Ok(_) => panic!("expected error, instead program passed type checking"),
+        }
+    }};
+}
+
+macro_rules! test_pretty_error_msg {
+    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::default();
+        $(
+            imp = $imp;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::default();
+        $(
+            env = $env;
+        )?
+        match infer_types(
+            $src,
+            env,
+            imp,
+            None,
+            AnalyzerConfig::default(),
+        ) {
+            Err(e) => {
+                let got = e.pretty($src);
+                $err.assert_eq(&got);
             }
             Ok(_) => panic!("expected error, instead program passed type checking"),
         }
@@ -3680,7 +3717,7 @@ error @3:17-3:18: undefined identifier y",
 
 #[test]
 fn primitive_kind_errors() {
-    test_error_msg! {
+    test_pretty_error_msg! {
         env: map![
             "isType" => "(v: A, type: string) => bool where A: Basic",
         ],
@@ -3688,9 +3725,20 @@ fn primitive_kind_errors() {
             isType(v: {}, type: "record")
             isType(v: [], type: "array")
         "#,
-        err: "error @2:13-2:42: {} is not Basic (argument v)
+        err: expect_test::expect![[r#"
+            error: 
+              ┌─ :2:13
+              │
+            2 │             isType(v: {}, type: "record")
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ {} is not Basic (argument v)
 
-error @3:13-3:41: [A] is not Basic (argument v)",
+            error: 
+              ┌─ :3:13
+              │
+            3 │             isType(v: [], type: "array")
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [A] is not Basic (argument v)
+
+        "#]]
     }
 }
 

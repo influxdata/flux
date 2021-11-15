@@ -14,6 +14,7 @@ use std::{collections::HashMap, fmt::Debug, vec::Vec};
 
 use anyhow::{anyhow, bail, Result as AnyhowResult};
 use chrono::{prelude::DateTime, FixedOffset};
+use codespan_reporting::diagnostic;
 use derivative::Derivative;
 use derive_more::Display;
 
@@ -67,6 +68,19 @@ pub enum ErrorKind {
 }
 
 impl std::error::Error for Error {}
+
+impl Error {
+    pub(crate) fn as_diagnostic(
+        &self,
+        source: &dyn crate::semantic::Source,
+    ) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_labels(vec![diagnostic::Label::primary(
+            (),
+            source.codespan_range(&self.location),
+        )
+        .with_message(self.error.to_string())])
+    }
+}
 
 impl Substitutable for ErrorKind {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
