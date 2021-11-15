@@ -101,7 +101,7 @@ type mapTransformation struct {
 }
 
 func NewMapTransformation(ctx context.Context, spec *MapProcedureSpec, id execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	fn := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
+	fn := execute.NewRowMapFn(ctx, spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	t := &mapTransformation{
 		d:   execute.NewPassthroughDataset(id),
 		ctx: ctx,

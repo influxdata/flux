@@ -1,0 +1,277 @@
+package compiler
+
+import (
+	"context"
+
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/semantic"
+)
+
+{{range $op := .Equality.Operators}}
+func new{{.Name}}Evaluator(ret, left, right int, ltyp, rtyp semantic.MonoType) (Evaluator, error) {
+	switch ltyp.Nature() {
+	{{range $self := $.Equality.Types}}
+	{{ $l := index $.Types $self.Type}}
+	case semantic.{{$l.Nature}}:
+		switch rtyp.Nature() {
+		case semantic.{{$l.Nature}}:
+			return &{{$l.name}}{{$op.Name}}Evaluator{
+				evaluator: evaluator{
+					t: semantic.BasicBool,
+					ret: ret,
+				},
+				left: left,
+				right: right,
+			}, nil
+		{{range $other := $self.OtherTypes}}
+		{{ $r := index $.Types $other.Name}}
+		case semantic.{{$r.Nature}}:
+			return &{{$l.name}}{{$r.Name}}{{$op.Name}}Evaluator{
+				evaluator: evaluator{
+					t: semantic.BasicBool,
+					ret: ret,
+				},
+				left: left,
+				right: right,
+			}, nil
+		{{end}}
+		}
+	{{end}}
+	}
+	return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v {{$op.Op}} %v", ltyp.Nature(), rtyp.Nature())
+}
+
+{{range $self := $.Equality.Types}}
+{{ $l := index $.Types $self.Type}}
+type {{$l.name}}{{$op.Name}}Evaluator struct{
+	evaluator
+	left, right int
+}
+
+func (e *{{$l.name}}{{$op.Name}}Evaluator) Eval(ctx context.Context, scope []Value, origin int) error {
+	lv, rv := scope[e.left], scope[e.right]
+	if lv.IsNull() || rv.IsNull() {
+		scope[e.ret] = Value{}
+		return nil
+	}
+	scope[e.ret] = NewBool(lv.{{$l.Value}}() {{$op.Op}} rv.{{$l.Value}}())
+	return nil
+}
+
+{{range $other := $self.OtherTypes}}
+{{ $r := index $.Types $other.Name}}
+type {{$l.name}}{{$r.Name}}{{$op.Name}}Evaluator struct{
+	evaluator
+	left, right int
+}
+
+func (e *{{$l.name}}{{$r.Name}}{{$op.Name}}Evaluator) Eval(ctx context.Context, scope []Value, origin int) error {
+	lv, rv := scope[e.left], scope[e.right]
+	if lv.IsNull() || rv.IsNull() {
+		scope[e.ret] = Value{}
+		return nil
+	}
+	{{if .Cast}}
+	scope[e.ret] = NewBool({{.Cast}}(lv.{{$l.Value}}()) {{$op.Op}} rv.{{$r.Value}}())
+	{{else}}
+	scope[e.ret] = NewBool(lv.{{$l.Value}}() {{$op.Op}} {{$l.Type}}(rv.{{$r.Value}}()))
+	{{end}}
+	return nil
+}
+{{end}}
+{{end}}
+{{end}}
+
+{{range $op := .Comparison.Operators}}
+func new{{.Name}}Evaluator(ret, left, right int, ltyp, rtyp semantic.MonoType) (Evaluator, error) {
+	switch ltyp.Nature() {
+	{{range $self := $.Comparison.Types}}
+	{{ $l := index $.Types $self.Type}}
+	case semantic.{{$l.Nature}}:
+		switch rtyp.Nature() {
+		case semantic.{{$l.Nature}}:
+			return &{{$l.name}}{{$op.Name}}Evaluator{
+				evaluator: evaluator{
+					t: semantic.BasicBool,
+					ret: ret,
+				},
+				left: left,
+				right: right,
+			}, nil
+		{{range $other := $self.OtherTypes}}
+		{{ $r := index $.Types $other.Name}}
+		case semantic.{{$r.Nature}}:
+			return &{{$l.name}}{{$r.Name}}{{$op.Name}}Evaluator{
+				evaluator: evaluator{
+					t: semantic.BasicBool,
+					ret: ret,
+				},
+				left: left,
+				right: right,
+			}, nil
+		{{end}}
+		}
+	{{end}}
+	}
+	return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v {{$op.Op}} %v", ltyp.Nature(), rtyp.Nature())
+}
+
+{{range $self := $.Comparison.Types}}
+{{ $l := index $.Types $self.Type}}
+type {{$l.name}}{{$op.Name}}Evaluator struct{
+	evaluator
+	left, right int
+}
+
+func (e *{{$l.name}}{{$op.Name}}Evaluator) Eval(ctx context.Context, scope []Value, origin int) error {
+	lv, rv := scope[e.left], scope[e.right]
+	if lv.IsNull() || rv.IsNull() {
+		scope[e.ret] = Value{}
+		return nil
+	}
+	scope[e.ret] = NewBool(lv.{{$l.Value}}() {{$op.Op}} rv.{{$l.Value}}())
+	return nil
+}
+
+{{range $other := $self.OtherTypes}}
+{{ $r := index $.Types $other.Name}}
+type {{$l.name}}{{$r.Name}}{{$op.Name}}Evaluator struct{
+	evaluator
+	left, right int
+}
+
+func (e *{{$l.name}}{{$r.Name}}{{$op.Name}}Evaluator) Eval(ctx context.Context, scope []Value, origin int) error {
+	lv, rv := scope[e.left], scope[e.right]
+	if lv.IsNull() || rv.IsNull() {
+		scope[e.ret] = Value{}
+		return nil
+	}
+	{{if .Cast}}
+	scope[e.ret] = NewBool({{.Cast}}(lv.{{$l.Value}}()) {{$op.Op}} rv.{{$r.Value}}())
+	{{else}}
+	scope[e.ret] = NewBool(lv.{{$l.Value}}() {{$op.Op}} {{$l.Type}}(rv.{{$r.Value}}()))
+	{{end}}
+	return nil
+}
+{{end}}
+{{end}}
+{{end}}
+
+func newAddEvaluator(ret, left, right int, typ semantic.MonoType) (Evaluator, error) {
+	switch typ.Nature() {
+	{{range $self := .Addable.Types}}
+	{{ $l := index $.Types $self}}
+	case semantic.{{$l.Nature}}:
+		return &{{$l.name}}AddEvaluator{
+			evaluator: evaluator{
+				t: typ,
+				ret: ret,
+			},
+			left: left,
+			right: right,
+		}, nil
+	{{end}}
+	}
+	return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v + %v", typ.Nature(), typ.Nature())
+}
+
+{{range $self := .Addable.Types}}
+{{ $l := index $.Types $self}}
+type {{$l.name}}AddEvaluator struct{
+	evaluator
+	left, right int
+}
+
+func (e *{{$l.name}}AddEvaluator) Eval(ctx context.Context, scope []Value, origin int) error {
+	lv, rv := scope[e.left], scope[e.right]
+	if lv.IsNull() || rv.IsNull() {
+		scope[e.ret] = Value{}
+		return nil
+	}
+	scope[e.ret] = New{{$l.Name}}(lv.{{$l.Value}}() + rv.{{$l.Value}}())
+	return nil
+}
+{{end}}
+
+func newSubtractEvaluator(ret, left, right int, typ semantic.MonoType) (Evaluator, error) {
+	switch typ.Nature() {
+	{{range $self := .Subtractable.Types}}
+	{{ $l := index $.Types $self}}
+	case semantic.{{$l.Nature}}:
+		return &{{$l.name}}SubtractEvaluator{
+			evaluator: evaluator{
+				t: typ,
+				ret: ret,
+			},
+			left: left,
+			right: right,
+		}, nil
+	{{end}}
+	}
+	return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v + %v", typ.Nature(), typ.Nature())
+}
+
+{{range $self := .Subtractable.Types}}
+{{ $l := index $.Types $self}}
+type {{$l.name}}SubtractEvaluator struct{
+	evaluator
+	left, right int
+}
+
+func (e *{{$l.name}}SubtractEvaluator) Eval(ctx context.Context, scope []Value, origin int) error {
+	lv, rv := scope[e.left], scope[e.right]
+	if lv.IsNull() || rv.IsNull() {
+		scope[e.ret] = Value{}
+		return nil
+	}
+	scope[e.ret] = New{{$l.Name}}(lv.{{$l.Value}}() + rv.{{$l.Value}}())
+	return nil
+}
+{{end}}
+
+{{range $op := .Divisible.Operators}}
+func new{{$op.Name}}Evaluator(ret, left, right int, typ semantic.MonoType) (Evaluator, error) {
+	switch typ.Nature() {
+	{{range $self := $.Divisible.Types}}
+	{{ $l := index $.Types $self}}
+	case semantic.{{$l.Nature}}:
+		return &{{$l.name}}{{$op.Name}}Evaluator{
+			evaluator: evaluator{
+				t: typ,
+				ret: ret,
+			},
+			left: left,
+			right: right,
+		}, nil
+	{{end}}
+	}
+	{{if eq $op.Name "Mod"}}
+	return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v %% %v", typ.Nature(), typ.Nature())
+	{{else}}
+	return nil, errors.Newf(codes.Invalid, "unsupported binary expression %v {{$op.Op}} %v", typ.Nature(), typ.Nature())
+	{{end}}
+}
+
+{{range $self := $.Divisible.Types}}
+{{ $l := index $.Types $self}}
+type {{$l.name}}{{$op.Name}}Evaluator struct{
+	evaluator
+	left, right int
+}
+
+func (e *{{$l.name}}{{$op.Name}}Evaluator) Eval(ctx context.Context, scope []Value, origin int) error {
+	lv, rv := scope[e.left], scope[e.right]
+	if lv.IsNull() || rv.IsNull() {
+		scope[e.ret] = Value{}
+		return nil
+	}
+	{{if eq $op.Name "Mod"}}
+	scope[e.ret] = New{{$l.Name}}(mod{{$l.Name}}(lv.{{$l.Value}}(), rv.{{$l.Value}}()))
+	{{else}}
+	scope[e.ret] = New{{$l.Name}}(lv.{{$l.Value}}() {{$op.Op}} rv.{{$l.Value}}())
+	{{end}}
+	return nil
+}
+{{end}}
+{{end}}

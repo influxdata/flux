@@ -162,7 +162,7 @@ type stateTrackingTransformation struct {
 }
 
 func NewStateTrackingTransformation(ctx context.Context, spec *StateTrackingProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*stateTrackingTransformation, error) {
-	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
+	fn := execute.NewRowPredicateFn(ctx, spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &stateTrackingTransformation{
 		d:              d,
 		cache:          cache,

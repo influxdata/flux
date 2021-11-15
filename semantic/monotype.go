@@ -22,6 +22,7 @@ type MonoType struct {
 	mt  fbsemantic.MonoType
 	tbl fbTabler
 	n   Nature
+	s   string
 }
 
 // NewMonoType constructs a new monotype from a FlatBuffers table and the given kind of monotype.
@@ -46,11 +47,13 @@ func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error)
 		return MonoType{}, errors.Newf(codes.Internal, "unknown type (%v)", t)
 	}
 	tbler.Init(tbl.Bytes, tbl.Pos)
-	return MonoType{
+	mt := MonoType{
 		mt:  t,
 		tbl: tbler,
 		n:   nature(tbl, t),
-	}, nil
+	}
+	mt.s = mt.String()
+	return mt, nil
 }
 
 func (mt MonoType) Nature() Nature {
@@ -579,12 +582,13 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 			sb.WriteString(extends.string(m))
 			sb.WriteString(" with ")
 		}
-		sprops, err := mt.SortedProperties()
+		nprops, err := mt.NumProperties()
 		if err != nil {
 			return "<" + err.Error() + ">"
 		}
 		needBar := false
-		for _, prop := range sprops {
+		for i := 0; i < nprops; i++ {
+			prop, err := mt.RecordProperty(i)
 			if needBar {
 				sb.WriteString(", ")
 			} else {

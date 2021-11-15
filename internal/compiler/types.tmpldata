@@ -1,0 +1,129 @@
+{
+  "Equality": {
+    "Operators": [
+      {"Name": "Equals", "Op": "=="},
+      {"Name": "NotEquals", "Op": "!="}
+    ],
+    "Types": [
+      {
+        "Type": "Int",
+        "OtherTypes": [
+          {"Name": "Uint", "Cast": "uint64"},
+          {"Name": "Float", "Cast": "float64"}
+        ]
+      },
+      {
+        "Type": "Uint",
+        "OtherTypes": [
+          {"Name": "Int"},
+          {"Name": "Float", "Cast": "float64"}
+        ]
+      },
+      {
+        "Type": "Float",
+        "OtherTypes": [
+          {"Name": "Int"},
+          {"Name": "Uint"}
+        ]
+      },
+      {"Type": "String"},
+      {"Type": "Bool"},
+      {"Type": "Time"}
+    ]
+  },
+  "Comparison": {
+    "Operators": [
+      {"Name": "LessThan", "Op": "<"},
+      {"Name": "GreaterThan", "Op": ">"},
+      {"Name": "LessThanEqual", "Op": "<="},
+      {"Name": "GreaterThanEqual", "Op": ">="}
+    ],
+    "Types": [
+      {
+        "Type": "Int",
+        "OtherTypes": [
+          {"Name": "Uint", "Cast": "uint64"},
+          {"Name": "Float", "Cast": "float64"}
+        ]
+      },
+      {
+        "Type": "Uint",
+        "OtherTypes": [
+          {"Name": "Int"},
+          {"Name": "Float", "Cast": "float64"}
+        ]
+      },
+      {
+        "Type": "Float",
+        "OtherTypes": [
+          {"Name": "Int"},
+          {"Name": "Uint"}
+        ]
+      },
+      {
+        "Type": "String"
+      },
+      {
+        "Type": "Time"
+      }
+    ]
+  },
+  "Addable": {
+    "Types": ["Int", "Uint", "Float", "String"]
+  },
+  "Subtractable": {
+    "Types": ["Int", "Uint", "Float"]
+  },
+  "Divisible": {
+    "Operators": [
+      {"Name": "Mul", "Op": "*"},
+      {"Name": "Div", "Op": "/"},
+      {"Name": "Mod", "Op": "%"}
+    ],
+    "Types": ["Int", "Uint", "Float"]
+  },
+  "Types": {
+    "Float": {
+      "Name": "Float",
+      "name": "float",
+      "Type": "float64",
+      "Nature": "Float",
+      "Value": "Float"
+    },
+    "Int": {
+      "Name": "Int",
+      "name": "int",
+      "Type": "int64",
+      "Nature": "Int",
+      "Value": "Int"
+    },
+    "Uint": {
+      "Name": "Uint",
+      "name": "uint",
+      "Type": "uint64",
+      "Nature": "UInt",
+      "Value": "Uint"
+    },
+    "String": {
+      "Name": "String",
+      "name": "string",
+      "Type": "string",
+      "Nature": "String",
+      "Value": "Str"
+    },
+    "Bool": {
+      "Name": "Bool",
+      "name": "bool",
+      "Type": "bool",
+      "Nature": "Bool",
+      "Value": "Bool"
+    },
+    "Time": {
+      "Name": "Time",
+      "name": "time",
+      "Type": "values.Time",
+      "Nature": "Time",
+      "Value": "Time"
+    }
+  }
+}

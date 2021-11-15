@@ -82,7 +82,7 @@ func (t *ToTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey)
 func NewToTransformation(ctx context.Context, d execute.Dataset, cache execute.TableBuilderCache, spec *ToProcedureSpec, deps influxdb.Provider) (*ToTransformation, error) {
 	var fn *execute.RowMapFn
 	if spec.Spec.FieldFn.Fn != nil {
-		fn = execute.NewRowMapFn(spec.Spec.FieldFn.Fn, compiler.ToScope(spec.Spec.FieldFn.Scope))
+		fn = execute.NewRowMapFn(ctx, spec.Spec.FieldFn.Fn, compiler.ToScope(spec.Spec.FieldFn.Scope))
 	}
 
 	org := NameOrID{

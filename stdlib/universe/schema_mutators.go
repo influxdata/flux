@@ -86,7 +86,7 @@ func (m *schemaFnMutator) compile(fn interpreter.ResolvedFunction) error {
 	in := semantic.NewObjectType([]semantic.PropertyType{
 		{Key: []byte(schemaFnMutatorParamName), Value: semantic.BasicString},
 	})
-	preparedFn, err := compiler.Compile(compiler.ToScope(fn.Scope), fn.Fn, in)
+	preparedFn, err := compiler.Compile(context.Background(), compiler.ToScope(fn.Scope), fn.Fn, in)
 	if err != nil {
 		return err
 	}

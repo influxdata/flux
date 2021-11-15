@@ -120,7 +120,7 @@ type reduceTransformation struct {
 }
 
 func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*reduceTransformation, error) {
-	fn := execute.NewRowReduceFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
+	fn := execute.NewRowReduceFn(ctx, spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &reduceTransformation{
 		d:        d,
 		cache:    cache,

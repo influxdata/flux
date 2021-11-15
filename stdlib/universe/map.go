@@ -121,7 +121,7 @@ type mapTransformation struct {
 }
 
 func NewMapTransformation(ctx context.Context, spec *MapProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*mapTransformation, error) {
-	fn := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
+	fn := execute.NewRowMapFn(ctx, spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &mapTransformation{
 		d:        d,
 		cache:    cache,

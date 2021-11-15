@@ -1,16 +1,23 @@
 package compiler
 
 import (
+	"context"
+
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
-func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) (Func, error) {
+func Compile(ctx context.Context, scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) (Func, error) {
 	if scope == nil {
 		scope = NewScope()
 	}
+	//
+	// if feature.ValueCompiler().Enabled(ctx) {
+	// 	return compiler.Compile(scope, f, in)
+	// }
+
 	if in.Nature() != semantic.Object {
 		return nil, errors.Newf(codes.Invalid, "function input must be an object @ %v", f.Location())
 	}

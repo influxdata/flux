@@ -64,7 +64,7 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 		return nil, err
 	}
 
-	fn := execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
+	fn := execute.NewTablePredicateFn(ctx, predicate.Fn, compiler.ToScope(predicate.Scope))
 	t, err := tableFind(ctx, to, fn)
 	if err != nil {
 		return nil, err
@@ -345,7 +345,7 @@ func findColumnCall(ctx context.Context, args values.Object) (values.Value, erro
 	if err != nil {
 		return nil, err
 	}
-	fn := execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
+	fn := execute.NewTablePredicateFn(ctx, predicate.Fn, compiler.ToScope(predicate.Scope))
 
 	col, err := arguments.GetRequiredString(getColumnColumnArg)
 	if err != nil {
@@ -409,7 +409,7 @@ func findRecordCall(ctx context.Context, args values.Object) (values.Value, erro
 	if err != nil {
 		return nil, err
 	}
-	fn := execute.NewTablePredicateFn(predicate.Fn, compiler.ToScope(predicate.Scope))
+	fn := execute.NewTablePredicateFn(ctx, predicate.Fn, compiler.ToScope(predicate.Scope))
 
 	rowIdx, err := arguments.GetRequiredInt(getRecordIndexArg)
 	if err != nil {

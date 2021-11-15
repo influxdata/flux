@@ -125,7 +125,7 @@ func TestRowMapFn_Eval(t *testing.T) {
 
 			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 			fn := stmt.Expression.(*semantic.FunctionExpression)
-			f, err := execute.NewRowMapFn(fn, nil).Prepare(tc.data.ColMeta)
+			f, err := execute.NewRowMapFn(context.Background(), fn, nil).Prepare(tc.data.ColMeta)
 			if err != nil {
 				if tc.prepareErr != nil {
 					if !cmp.Equal(tc.prepareErr.Error(), err.Error()) {
@@ -179,7 +179,7 @@ func testRowPredicateFn_EvalRow(t *testing.T, scope compiler.Scope) {
 
 		stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 		fn := stmt.Expression.(*semantic.FunctionExpression)
-		return execute.NewRowPredicateFn(fn, scope)
+		return execute.NewRowPredicateFn(context.Background(), fn, scope)
 	}
 
 	testCases := []struct {

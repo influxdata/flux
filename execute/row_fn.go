@@ -14,6 +14,7 @@ import (
 type dynamicFn struct {
 	// Configuration attributes. These are initialized once
 	// on creation and used for each new compilation.
+	ctx        context.Context
 	scope      compiler.Scope
 	fn         *semantic.FunctionExpression
 	recordName string
@@ -48,8 +49,9 @@ func (f *compiledFn) isCacheHit(cols []flux.ColMeta, extraTypes map[string]seman
 	return true
 }
 
-func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamicFn {
+func newDynamicFn(ctx context.Context, fn *semantic.FunctionExpression, scope compiler.Scope) dynamicFn {
 	return dynamicFn{
+		ctx:        ctx,
 		scope:      scope,
 		fn:         fn,
 		recordName: fn.Parameters.List[0].Key.Name,
@@ -94,7 +96,7 @@ func (f *dynamicFn) compileFunction(cols []flux.ColMeta, extraTypes map[string]s
 		}
 
 		inType := semantic.NewObjectType(properties)
-		fn, err := compiler.Compile(f.scope, f.fn, inType)
+		fn, err := compiler.Compile(f.ctx, f.scope, f.fn, inType)
 		if err != nil {
 			return err
 		}
@@ -199,9 +201,9 @@ type TablePredicateFn struct {
 	dynamicFn
 }
 
-func NewTablePredicateFn(fn *semantic.FunctionExpression, scope compiler.Scope) *TablePredicateFn {
+func NewTablePredicateFn(ctx context.Context, fn *semantic.FunctionExpression, scope compiler.Scope) *TablePredicateFn {
 	return &TablePredicateFn{
-		dynamicFn: newDynamicFn(fn, scope),
+		dynamicFn: newDynamicFn(ctx, fn, scope),
 	}
 }
 
@@ -247,8 +249,8 @@ type RowPredicateFn struct {
 	dynamicFn
 }
 
-func NewRowPredicateFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowPredicateFn {
-	r := newDynamicFn(fn, scope)
+func NewRowPredicateFn(ctx context.Context, fn *semantic.FunctionExpression, scope compiler.Scope) *RowPredicateFn {
+	r := newDynamicFn(ctx, fn, scope)
 	return &RowPredicateFn{dynamicFn: r}
 }
 
@@ -303,9 +305,9 @@ type RowMapFn struct {
 	dynamicFn
 }
 
-func NewRowMapFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowMapFn {
+func NewRowMapFn(ctx context.Context, fn *semantic.FunctionExpression, scope compiler.Scope) *RowMapFn {
 	return &RowMapFn{
-		dynamicFn: newDynamicFn(fn, scope),
+		dynamicFn: newDynamicFn(ctx, fn, scope),
 	}
 }
 
@@ -341,9 +343,9 @@ type RowReduceFn struct {
 	dynamicFn
 }
 
-func NewRowReduceFn(fn *semantic.FunctionExpression, scope compiler.Scope) *RowReduceFn {
+func NewRowReduceFn(ctx context.Context, fn *semantic.FunctionExpression, scope compiler.Scope) *RowReduceFn {
 	return &RowReduceFn{
-		dynamicFn: newDynamicFn(fn, scope),
+		dynamicFn: newDynamicFn(ctx, fn, scope),
 	}
 }
 

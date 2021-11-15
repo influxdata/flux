@@ -150,7 +150,7 @@ type filterTransformation struct {
 }
 
 func NewFilterTransformation(ctx context.Context, spec *FilterProcedureSpec, id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
+	fn := execute.NewRowPredicateFn(ctx, spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	t := &filterTransformation{
 		d:               execute.NewPassthroughDataset(id),
 		fn:              fn,
