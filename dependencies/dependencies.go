@@ -11,14 +11,14 @@ import (
 )
 
 type Dependencies struct {
-	flux.Dependencies
+	flux.Deps
 	influxdb influxdb.Dependency
 	bigtable bigtable.Dependency
 	mqtt     mqtt.Dependency
 }
 
 func (d Dependencies) Inject(ctx context.Context) context.Context {
-	return d.mqtt.Inject(d.bigtable.Inject(d.influxdb.Inject(d.Dependencies.Inject(ctx))))
+	return d.mqtt.Inject(d.bigtable.Inject(d.influxdb.Inject(d.Deps.Inject(ctx))))
 }
 
 func NewDefaultDependencies(defaultInfluxDBHost string) Dependencies {
@@ -26,7 +26,7 @@ func NewDefaultDependencies(defaultInfluxDBHost string) Dependencies {
 	deps.Deps.FilesystemService = filesystem.SystemFS
 
 	return Dependencies{
-		Dependencies: deps,
+		Deps: deps,
 
 		influxdb: influxdb.Dependency{
 			Provider: &influxdb.HttpProvider{
@@ -50,7 +50,7 @@ func NewErrorDependencies() Dependencies {
 	deps := flux.NewEmptyDependencies()
 
 	return Dependencies{
-		Dependencies: deps,
+		Deps: deps,
 
 		influxdb: influxdb.Dependency{
 			Provider: &influxdb.ErrorProvider{},
