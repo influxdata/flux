@@ -23,6 +23,9 @@
 //!
 use std::collections::HashMap;
 
+use colored::*;
+use derive_more::Display;
+
 use crate::{
     ast::{self, get_err_type_expression},
     errors::Errors,
@@ -39,8 +42,6 @@ use crate::{
         Analyzer, AnalyzerConfig,
     },
 };
-
-use {colored::*, derive_more::Display};
 
 mod vectorize;
 

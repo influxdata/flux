@@ -1,17 +1,17 @@
 //! Semantic representations of types.
 
-use crate::semantic::{
-    fresh::{Fresh, Fresher},
-    sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
-};
-
-use derive_more::Display;
-
 use std::{
     cmp,
     collections::{BTreeMap, BTreeSet, HashMap},
     fmt,
     fmt::Write,
+};
+
+use derive_more::Display;
+
+use crate::semantic::{
+    fresh::{Fresh, Fresher},
+    sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
 };
 
 /// For use in generics where the specific type of map is not mentioned.
@@ -1620,13 +1620,14 @@ pub trait MaxTvar {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use std::collections::BTreeMap;
 
-    use crate::ast::get_err_type_expression;
-    use crate::parser;
-    use crate::semantic::convert::{convert_monotype, convert_polytype};
+    use super::*;
+    use crate::{
+        ast::get_err_type_expression,
+        parser,
+        semantic::convert::{convert_monotype, convert_polytype},
+    };
 
     /// `polytype` is a utility method that returns a `PolyType` from a string.
     pub fn polytype(typ: &str) -> PolyType {

@@ -1,9 +1,8 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
-use crate::semantic::env::Environment;
-use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
-
-use crate::semantic::fresh::Fresher;
+use crate::semantic::{
+    env::Environment, flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher,
+};
 
 #[rustfmt::skip]
 use crate::semantic::{
@@ -639,11 +638,11 @@ fn build_arg<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::get_err_type_expression;
-    use crate::parser;
-    use crate::semantic::convert::convert_polytype;
-    use crate::semantic::sub::Substitution;
-    use crate::semantic::types::SemanticMap;
+    use crate::{
+        ast::get_err_type_expression,
+        parser,
+        semantic::{convert::convert_polytype, sub::Substitution, types::SemanticMap},
+    };
 
     #[rustfmt::skip]
     use crate::semantic::flatbuffers::semantic_generated::fbsemantic::{

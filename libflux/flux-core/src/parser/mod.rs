@@ -1,14 +1,9 @@
 //! The Flux parser.
 
-use std::collections::HashMap;
-use std::mem;
-use std::str;
+use std::{collections::HashMap, mem, str};
 
 use super::DefaultHasher;
-use crate::ast;
-use crate::ast::*;
-use crate::scanner;
-use crate::scanner::*;
+use crate::{ast, ast::*, scanner, scanner::*};
 
 mod strconv;
 

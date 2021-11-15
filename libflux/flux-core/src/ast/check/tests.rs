@@ -1,11 +1,13 @@
-use super::*;
-
 use std::iter::FromIterator;
 
-use crate::ast::Expression::Integer;
-use crate::ast::Statement::Variable;
-use crate::ast::{BaseNode, File, Identifier, IntegerLit, Position, VariableAssgn};
-use crate::parser::parse_string;
+use super::*;
+use crate::{
+    ast::{
+        BaseNode, Expression::Integer, File, Identifier, IntegerLit, Position, Statement::Variable,
+        VariableAssgn,
+    },
+    parser::parse_string,
+};
 
 #[test]
 fn test_object_check() {

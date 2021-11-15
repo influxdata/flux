@@ -1,12 +1,12 @@
 //! Parse documentation examples for their code and execute them collecting their inputs and
 //! outputs.
 
+use std::{collections::HashMap, ops::Range};
+
 use anyhow::{bail, Context, Result};
 use csv::StringRecord;
 use pad::PadStr;
 use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag};
-use std::collections::HashMap;
-use std::ops::Range;
 
 use crate::{
     doc::{Doc, Example, PackageDoc, Table},
@@ -404,12 +404,13 @@ fn parse_all_results(data: &str) -> Result<HashMap<String, Vec<Table>>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{evaluate_package_examples, parse_results, preprocess, Executor};
+    use std::collections::BTreeMap;
 
-    use crate::doc::{Example, PackageDoc};
     use anyhow::Result;
     use expect_test::{expect, Expect};
-    use std::collections::BTreeMap;
+
+    use super::{evaluate_package_examples, parse_results, preprocess, Executor};
+    use crate::doc::{Example, PackageDoc};
 
     struct MockExecutor<'a> {
         code: Expect,

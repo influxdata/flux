@@ -6,15 +6,14 @@ mod ast_generated;
 #[cfg(test)]
 mod monotype;
 
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
-use crate::ast;
-use crate::ast::walk;
 use anyhow::{anyhow, bail, Error, Result};
 use ast_generated::fbast;
 use chrono::Offset;
 use flatbuffers::{UnionWIPOffset, WIPOffset};
+
+use crate::{ast, ast::walk};
 
 /// Accept the given AST package and return a FlatBuffers serialization of it as a Vec<u8>.
 /// The FlatBuffers builder starts from the end of a buffer towards the beginning, so we must

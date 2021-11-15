@@ -1,9 +1,10 @@
-use super::*;
 use std::str;
 
 // This gives us a colorful diff.
 #[cfg(test)]
 use pretty_assertions::assert_eq;
+
+use super::*;
 
 fn assert_unchanged(script: &str) {
     let output = format(script).unwrap();

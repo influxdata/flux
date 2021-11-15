@@ -1,12 +1,16 @@
 //! Semantic graph formatter.
 #![cfg_attr(feature = "strict", allow(warnings))]
 
-use crate::ast;
-use crate::semantic;
-use crate::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
-use crate::semantic::walk;
 use anyhow::{anyhow, Error, Result};
 use chrono::SecondsFormat;
+
+use crate::{
+    ast, semantic,
+    semantic::{
+        types::{MonoType, PolyType, Tvar, TvarKinds},
+        walk,
+    },
+};
 
 #[cfg(test)]
 mod tests;

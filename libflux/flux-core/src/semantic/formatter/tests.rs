@@ -1,8 +1,11 @@
-use crate::semantic::env::Environment;
-use crate::semantic::formatter::format;
-use crate::semantic::types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar};
-use crate::semantic::Analyzer;
 use expect_test::{expect, Expect};
+
+use crate::semantic::{
+    env::Environment,
+    formatter::format,
+    types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar},
+    Analyzer,
+};
 
 fn check(actual: &str, expect: Expect) {
     let mut analyzer = Analyzer::new_with_defaults(Environment::default(), PolyTypeMap::new());
