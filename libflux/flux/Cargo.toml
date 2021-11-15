@@ -31,8 +31,9 @@ version = "0.2"
 features = ["js"]
 
 [dev-dependencies]
-maplit = "1.0.2"
 criterion = "0.3.3"
+expect-test = "1"
+maplit = "1.0.2"
 pretty_assertions = "1"
 
 [build-dependencies]

@@ -808,12 +808,11 @@ from(bucket: v.bucket)
         let ast = crate::parser::parse_string("test".to_string(), "x = 3 + / 10 - \"");
         let ast = Box::into_raw(Box::new(ast.into()));
         let errh = unsafe { flux_ast_get_error(ast) };
-        assert_eq!(
-            "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
 
-error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF",
-            errh.unwrap().err.into_string().unwrap()
-        );
+        expect_test::expect![[r#"
+            error test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
+
+            error test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF"#]].assert_eq(&errh.unwrap().err.into_string().unwrap());
     }
 
     #[test]
@@ -935,9 +934,10 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         match analyze(ast) {
             Ok(_) => panic!("expected an error, got none"),
             Err(e) => {
-                let want = "error at @1:5-1:7: expected ARROW, got EOF\n\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF";
-                let got = format!("{}", e);
-                assert_eq!(want, got);
+                expect_test::expect![[r#"
+                    error @1:5-1:7: expected ARROW, got EOF
+
+                    error @1:7-1:7: invalid expression: invalid token for primary expression: EOF"#]].assert_eq(&e.to_string());
             }
         }
     }

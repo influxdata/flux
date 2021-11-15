@@ -177,6 +177,12 @@ pub struct Located<E> {
     pub error: E,
 }
 
+impl<T: StdError> StdError for Located<T> {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        self.error.source()
+    }
+}
+
 /// Constructs a located error
 pub fn located<E>(location: ast::SourceLocation, error: E) -> Located<E> {
     Located { location, error }

@@ -3648,7 +3648,7 @@ fn parse_and_inference_errors_are_reported_simultaneously() {
             x = / 1
             z = y + 1
         "#,
-        err: "error at @2:17-2:18: invalid expression: invalid token for primary expression: DIV
+        err: "error @2:17-2:18: invalid expression: invalid token for primary expression: DIV
 
 error @3:17-3:18: undefined identifier y",
     }

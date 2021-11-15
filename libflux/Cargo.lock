@@ -440,6 +440,7 @@ version = "0.5.1"
 dependencies = [
  "anyhow",
  "criterion",
+ "expect-test",
  "flatbuffers",
  "flux-core",
  "getrandom",
