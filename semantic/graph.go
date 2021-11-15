@@ -572,7 +572,8 @@ type FunctionExpression struct {
 	Defaults   *ObjectExpression
 	Block      *Block
 
-	typ MonoType
+	typ        MonoType
+	Vectorized Expression
 }
 
 func (*FunctionExpression) NodeType() string { return "FunctionExpression" }
@@ -591,6 +592,9 @@ func (e *FunctionExpression) Copy() Node {
 		ne.Defaults = e.Defaults.Copy().(*ObjectExpression)
 	}
 	ne.Block = e.Block.Copy().(*Block)
+	if e.Vectorized != nil {
+		ne.Vectorized = e.Vectorized.Copy().(Expression)
+	}
 
 	return ne
 }

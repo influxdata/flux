@@ -1,6 +1,6 @@
 use super::*;
 use crate::semantic::{
-    nodes::{FunctionExpr, Package},
+    nodes::{Expression, Package},
     walk::{walk, Node},
 };
 
@@ -17,12 +17,14 @@ fn vectorize(src: &str) -> anyhow::Result<Package> {
     Ok(pkg)
 }
 
-fn get_vectorized_function(pkg: &Package) -> &FunctionExpr {
+fn get_vectorized_function(pkg: &Package) -> &Expression {
     let mut function = None;
     walk(
         &mut |node| {
             if let Node::FunctionExpr(func) = node {
-                function = func.vectorized.as_ref();
+                if func.vectorized.is_some() {
+                    function = func.vectorized.as_ref();
+                }
             }
         },
         Node::Package(&pkg),
@@ -40,7 +42,7 @@ fn vectorize_field_access() -> anyhow::Result<()> {
         (r) => {
             return {a: r:{J with b:v[D], a:v[B]}.a:v[B], b: r:{J with b:v[D], a:v[B]}.b:v[D]}:{a:v[B], b:v[D]}
         }:(r:{J with b:D, a:B}) => {a:B, b:D}"#]].assert_eq(&crate::semantic::formatter::format_node(
-        Node::FunctionExpr(function),
+        Node::from_expr(function),
     )?);
 
     Ok(())
@@ -56,9 +58,9 @@ fn vectorize_with_construction() -> anyhow::Result<()> {
         (r) => {
             return {r:{G with a:v[B]} with b: r:{G with a:v[B]}.a:v[B]}:{G with b:v[B], a:v[B]}
         }:(r:{G with a:B}) => {G with b:B, a:B}"#]]
-    .assert_eq(&crate::semantic::formatter::format_node(
-        Node::FunctionExpr(function),
-    )?);
+    .assert_eq(&crate::semantic::formatter::format_node(Node::from_expr(
+        function,
+    ))?);
 
     Ok(())
 }

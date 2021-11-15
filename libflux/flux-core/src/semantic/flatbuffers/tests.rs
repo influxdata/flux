@@ -495,6 +495,9 @@ fn compare_exprs(
                 }
                 block_len += 1;
             }
+            if let Some(vectorized) = &semantic_fe.vectorized {
+                compare_exprs(&vectorized, fb_fe.vectorized_type(), &fb_fe.vectorized())?;
+            }
             Ok(())
         }
         (

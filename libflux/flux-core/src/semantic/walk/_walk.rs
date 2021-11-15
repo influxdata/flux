@@ -148,6 +148,9 @@ where
                     walk(v, Node::FunctionParameter(param));
                 }
                 walk(v, Node::Block(&n.body));
+                if let Some(ref vectorized) = n.vectorized {
+                    walk(v, Node::from_expr(vectorized));
+                }
             }
             Node::FunctionParameter(n) => {
                 walk(v, Node::Identifier(&n.key));

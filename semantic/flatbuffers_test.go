@@ -292,6 +292,8 @@ func getFnExprFlatBuffer() (*semantic.Package, []byte) {
 	fbsemantic.FunctionExpressionAddLoc(b, exprLoc)
 	fbsemantic.FunctionExpressionAddTyp(b, funTy)
 	fbsemantic.FunctionExpressionAddTypType(b, fbsemantic.MonoTypeFun)
+	fbsemantic.FunctionExpressionAddVectorized(b, 0)
+	fbsemantic.FunctionExpressionAddVectorizedType(b, fbsemantic.ExpressionFunctionExpression)
 	fe := fbsemantic.FunctionExpressionEnd(b)
 
 	str := b.CreateString("f")

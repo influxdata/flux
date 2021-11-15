@@ -277,6 +277,7 @@ table FunctionExpression {
   params:[FunctionParameter];
   body:Block;
   typ:MonoType;
+  vectorized:Expression;
 }
 
 table FunctionParameter {
