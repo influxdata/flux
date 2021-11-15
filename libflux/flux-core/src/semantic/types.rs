@@ -311,6 +311,7 @@ impl Substitutable for Error {
 // Kinds are ordered by name so that polytypes are displayed deterministically
 pub enum Kind {
     Addable,
+    Basic,
     Comparable,
     Divisible,
     Equatable,
@@ -579,7 +580,7 @@ impl MonoType {
         match self {
             MonoType::Error => Ok(()),
             MonoType::Bool => match with {
-                Kind::Equatable | Kind::Nullable | Kind::Stringable => Ok(()),
+                Kind::Equatable | Kind::Nullable | Kind::Basic | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
                     act: self.clone(),
                     exp: with,
@@ -593,6 +594,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Basic
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -608,6 +610,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Basic
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -623,6 +626,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Basic
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -635,6 +639,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Basic
                 | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
                     act: self.clone(),
@@ -646,6 +651,7 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable
+                | Kind::Basic
                 | Kind::Stringable
                 | Kind::Timeable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -658,18 +664,22 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Timeable
+                | Kind::Basic
                 | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
                     act: self.clone(),
                     exp: with,
                 }),
             },
-            MonoType::Regexp => Err(Error::CannotConstrain {
-                act: self.clone(),
-                exp: with,
-            }),
+            MonoType::Regexp => match with {
+                Kind::Basic => Ok(()),
+                _ => Err(Error::CannotConstrain {
+                    act: self.clone(),
+                    exp: with,
+                }),
+            },
             MonoType::Bytes => match with {
-                Kind::Equatable => Ok(()),
+                Kind::Equatable | Kind::Basic => Ok(()),
                 _ => Err(Error::CannotConstrain {
                     act: self.clone(),
                     exp: with,
@@ -2569,6 +2579,7 @@ mod tests {
             Kind::Record,
             Kind::Negatable,
             Kind::Timeable,
+            Kind::Basic,
             Kind::Stringable,
         ];
         let mut str_kinds: Vec<_> = kinds.iter().map(|k| k.to_string()).collect();
