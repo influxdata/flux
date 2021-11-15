@@ -16,7 +16,6 @@ func main() {
 			Host: func(v string) *string { return &v }(cmd.DefaultInfluxDBHost),
 		},
 		universe.MergeFiltersRule{},
-		universe.OptimizeSortRule{},
 		universe.OptimizeWindowRule{},
 	)
 	cmd.Execute()

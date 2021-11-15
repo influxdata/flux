@@ -2,7 +2,7 @@
 // https://github.com/benbjohnson/tmpl
 //
 // DO NOT EDIT!
-// Source: derivative2.gen.go.tmpl
+// Source: derivative.gen.go.tmpl
 
 package universe
 
