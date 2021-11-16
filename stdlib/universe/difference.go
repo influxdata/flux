@@ -18,6 +18,7 @@ type DifferenceOpSpec struct {
 	NonNegative bool     `json:"nonNegative"`
 	Columns     []string `json:"columns"`
 	KeepFirst   bool     `json:"keepFirst"`
+	InitialZero bool     `json:"initialZero"`
 }
 
 func init() {
@@ -62,6 +63,14 @@ func createDifferenceOpSpec(args flux.Arguments, a *flux.Administration) (flux.O
 		spec.KeepFirst = false
 	}
 
+	if initialZero, ok, err := args.GetBool("initialZero"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.InitialZero = initialZero
+	} else {
+		spec.InitialZero = false
+	}
+
 	return spec, nil
 }
 
@@ -78,6 +87,7 @@ type DifferenceProcedureSpec struct {
 	NonNegative bool     `json:"non_negative"`
 	Columns     []string `json:"columns"`
 	KeepFirst   bool     `json:"keepFirst"`
+	InitialZero bool     `json:"initialZero"`
 }
 
 func newDifferenceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -90,6 +100,7 @@ func newDifferenceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan
 		NonNegative: spec.NonNegative,
 		Columns:     spec.Columns,
 		KeepFirst:   spec.KeepFirst,
+		InitialZero: spec.InitialZero,
 	}, nil
 }
 
@@ -130,6 +141,7 @@ type differenceTransformation struct {
 	nonNegative bool
 	columns     []string
 	keepFirst   bool
+	initialZero bool
 }
 
 func NewDifferenceTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *DifferenceProcedureSpec) *differenceTransformation {
@@ -139,6 +151,7 @@ func NewDifferenceTransformation(d execute.Dataset, cache execute.TableBuilderCa
 		nonNegative: spec.NonNegative,
 		columns:     spec.Columns,
 		keepFirst:   spec.KeepFirst,
+		initialZero: spec.InitialZero,
 	}
 }
 
@@ -184,7 +197,7 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 		}); err != nil {
 			return err
 		}
-		differences[j] = newDifference(t.nonNegative)
+		differences[j] = newDifference(t.nonNegative, t.initialZero)
 	}
 
 	// We need to drop the first row since its difference is undefined
@@ -229,7 +242,11 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 							return err
 						}
 					} else {
-						if err := builder.AppendNil(j); err != nil {
+						if i == 0 && t.keepFirst && t.initialZero {
+							if err := builder.AppendInt(j, 0); err != nil {
+								return err
+							}
+						} else if err := builder.AppendNil(j); err != nil {
 							return err
 						}
 					}
@@ -255,7 +272,11 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 							return err
 						}
 					} else {
-						if err := builder.AppendNil(j); err != nil {
+						if i == 0 && t.keepFirst && t.initialZero {
+							if err := builder.AppendInt(j, 0); err != nil {
+								return err
+							}
+						} else if err := builder.AppendNil(j); err != nil {
 							return err
 						}
 					}
@@ -281,7 +302,11 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 							return err
 						}
 					} else {
-						if err := builder.AppendNil(j); err != nil {
+						if i == 0 && t.keepFirst && t.initialZero {
+							if err := builder.AppendFloat(j, 0); err != nil {
+								return err
+							}
+						} else if err := builder.AppendNil(j); err != nil {
 							return err
 						}
 					}
@@ -319,14 +344,16 @@ func (t *differenceTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func newDifference(nonNegative bool) *difference {
+func newDifference(nonNegative, initialZero bool) *difference {
 	return &difference{
 		nonNegative: nonNegative,
+		initialZero: initialZero,
 	}
 }
 
 type difference struct {
 	nonNegative bool
+	initialZero bool
 
 	valid       bool
 	pIntValue   int64
@@ -344,8 +371,11 @@ func (d *difference) updateInt(v int64, valid bool) (int64, bool) {
 		d.valid = true
 		return 0, false
 	}
-	if diff := v - prev; diff >= 0 || !d.nonNegative {
+	diff := v - prev
+	if diff >= 0 || !d.nonNegative {
 		return diff, true
+	} else if d.nonNegative && d.initialZero && v >= 0 {
+		return v, true
 	}
 	return 0, false
 }
@@ -362,8 +392,11 @@ func (d *difference) updateUInt(v uint64, valid bool) (int64, bool) {
 	}
 	// Note: the unsigned substraction works correctly even for negative differences
 	// because of two's-complement arithmetic.
-	if diff := int64(v - prev); diff >= 0 || !d.nonNegative {
+	diff := int64(v - prev)
+	if diff >= 0 || !d.nonNegative {
 		return diff, true
+	} else if d.nonNegative && d.initialZero && int64(v) >= 0 {
+		return int64(v), true
 	}
 	return 0, false
 }
@@ -378,8 +411,11 @@ func (d *difference) updateFloat(v float64, valid bool) (float64, bool) {
 		d.valid = true
 		return 0, false
 	}
-	if diff := v - prev; diff >= 0 || !d.nonNegative {
+	diff := v - prev
+	if diff >= 0 || !d.nonNegative {
 		return diff, true
+	} else if d.nonNegative && d.initialZero && v >= 0 {
+		return v, true
 	}
 	return 0, false
 }
