@@ -1,16 +1,19 @@
 //! Various conversions from AST nodes to their associated
 //! types in the semantic graph.
 
-use crate::ast;
-use crate::semantic::nodes::*;
-use crate::semantic::sub::Substitution;
-use crate::semantic::types;
-use crate::semantic::types::MonoType;
-use crate::semantic::types::MonoTypeMap;
-use crate::semantic::types::SemanticMap;
 use std::collections::BTreeMap;
 
 use thiserror::Error;
+
+use crate::{
+    ast,
+    semantic::{
+        nodes::*,
+        sub::Substitution,
+        types,
+        types::{MonoType, MonoTypeMap, SemanticMap},
+    },
+};
 
 /// Error that categorizes errors when converting from AST to semantic graph.
 #[derive(Error, Debug, PartialEq)]
@@ -291,6 +294,7 @@ pub fn convert_polytype(
                         "Negatable" => kinds.push(types::Kind::Negatable),
                         "Timeable" => kinds.push(types::Kind::Timeable),
                         "Record" => kinds.push(types::Kind::Record),
+                        "Basic" => kinds.push(types::Kind::Basic),
                         "Stringable" => kinds.push(types::Kind::Stringable),
                         _ => {
                             return Err(Error::InvalidConstraint(k.name.clone()));
@@ -798,10 +802,13 @@ fn convert_date_time_literal(lit: ast::DateTimeLit, _: &mut Substitution) -> Res
 // We create a default base node and clone it in various AST nodes.
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::semantic::sub;
-    use crate::semantic::types::{MonoType, Tvar};
     use pretty_assertions::assert_eq;
+
+    use super::*;
+    use crate::semantic::{
+        sub,
+        types::{MonoType, Tvar},
+    };
 
     // type_info() is used for the expected semantic graph.
     // The id for the Tvar does not matter, because that is not compared.

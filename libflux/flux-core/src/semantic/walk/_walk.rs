@@ -1,7 +1,9 @@
-use crate::ast::SourceLocation;
-use crate::semantic::nodes::*;
-use crate::semantic::types::MonoType;
 use std::fmt;
+
+use crate::{
+    ast::SourceLocation,
+    semantic::{nodes::*, types::MonoType},
+};
 
 mk_node!(
     /// Represents any structure that can appear in the semantic graph.

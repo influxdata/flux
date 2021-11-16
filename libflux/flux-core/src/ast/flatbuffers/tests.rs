@@ -1,11 +1,11 @@
 extern crate flatbuffers;
 extern crate walkdir;
 
-use super::ast_generated::fbast;
-use crate::ast;
+use anyhow::{anyhow, Result};
 use chrono::FixedOffset;
 
-use anyhow::{anyhow, Result};
+use super::ast_generated::fbast;
+use crate::ast;
 
 #[test]
 fn test_flatbuffers_ast() {

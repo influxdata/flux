@@ -1,8 +1,8 @@
-use crate::ast;
-use crate::parser::parse_string;
-use crate::semantic::convert;
-use crate::semantic::nodes;
-use crate::semantic::sub::Substitution;
+use crate::{
+    ast,
+    parser::parse_string,
+    semantic::{convert, nodes, sub::Substitution},
+};
 
 pub fn compile(source: &str) -> nodes::Package {
     let file = parse_string("".to_string(), source);

@@ -1,5 +1,4 @@
 use super::*;
-
 use crate::semantic::{
     nodes::{FunctionExpr, Package},
     walk::{walk, Node},

@@ -47,6 +47,7 @@ import (
 	prometheus1 "github.com/influxdata/flux/stdlib/testing/prometheus"
 	promql1 "github.com/influxdata/flux/stdlib/testing/promql"
 	usage "github.com/influxdata/flux/stdlib/testing/usage"
+	types "github.com/influxdata/flux/stdlib/types"
 	universe "github.com/influxdata/flux/stdlib/universe"
 )
 
@@ -95,6 +96,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, prometheus1.FluxTestPackages...)
 	pkgs = append(pkgs, promql1.FluxTestPackages...)
 	pkgs = append(pkgs, usage.FluxTestPackages...)
+	pkgs = append(pkgs, types.FluxTestPackages...)
 	pkgs = append(pkgs, universe.FluxTestPackages...)
 	return pkgs
 }()

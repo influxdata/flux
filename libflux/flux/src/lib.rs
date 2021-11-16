@@ -12,14 +12,18 @@ extern crate serde_derive;
 #[macro_use]
 extern crate pretty_assertions;
 
-use anyhow::{self, bail, Result};
+use std::{ffi::*, mem, os::raw::c_char};
 
+use anyhow::{self, bail, Result};
+pub use fluxcore::{ast, formatter, scanner, semantic, *};
 use fluxcore::{
     parser::Parser,
     semantic::{
         env::Environment,
-        flatbuffers::semantic_generated::fbsemantic as fb,
-        flatbuffers::types::{build_env, build_type},
+        flatbuffers::{
+            semantic_generated::fbsemantic as fb,
+            types::{build_env, build_type},
+        },
         nodes::Package,
         sub::Substitution,
         types::{MonoType, PolyType, TvarKinds},
@@ -27,16 +31,7 @@ use fluxcore::{
     },
 };
 
-pub use fluxcore::ast;
-pub use fluxcore::formatter;
-pub use fluxcore::scanner;
-pub use fluxcore::semantic;
-pub use fluxcore::*;
-
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use std::ffi::*;
-use std::mem;
-use std::os::raw::c_char;
 
 /// Prelude are the names and types of values that are inscope in all Flux scripts.
 pub fn prelude() -> Option<Environment> {
@@ -578,16 +573,20 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
+    use fluxcore::{
+        ast,
+        ast::get_err_type_expression,
+        parser::Parser,
+        semantic::{
+            convert::convert_polytype,
+            fresh::Fresher,
+            sub::Substitution,
+            types::{MonoType, Property, Ptr, Record, Tvar, TvarMap},
+        },
+    };
+
     use super::{new_semantic_analyzer, AnalyzerConfig};
-    use crate::parser;
-    use crate::{analyze, find_var_type, flux_ast_get_error};
-    use fluxcore::ast;
-    use fluxcore::ast::get_err_type_expression;
-    use fluxcore::parser::Parser;
-    use fluxcore::semantic::convert::convert_polytype;
-    use fluxcore::semantic::fresh::Fresher;
-    use fluxcore::semantic::sub::Substitution;
-    use fluxcore::semantic::types::{MonoType, Property, Ptr, Record, Tvar, TvarMap};
+    use crate::{analyze, find_var_type, flux_ast_get_error, parser};
 
     pub struct MonoTypeNormalizer {
         tv_map: TvarMap,

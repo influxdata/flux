@@ -2,13 +2,18 @@
 
 pub mod example;
 
+use std::{
+    collections::BTreeMap,
+    iter::{Iterator, Peekable},
+    mem,
+    ops::Range,
+};
+
+use anyhow::{bail, Result};
+use derive_more::Display;
 use lazy_static::lazy_static;
 use pulldown_cmark::{Event, OffsetIter, Parser as MarkdownParser, Tag};
 use regex::Regex;
-use std::collections::BTreeMap;
-use std::iter::{Iterator, Peekable};
-use std::mem;
-use std::ops::Range;
 
 use crate::{
     ast,
@@ -17,9 +22,6 @@ use crate::{
         types::{Function, MonoType, PolyType},
     },
 };
-
-use anyhow::{bail, Result};
-use derive_more::Display;
 
 /// Diagnostic represents an issue with the documentation comments.
 /// Something about the formatting or content of the comments does not meet expectations.
@@ -1125,19 +1127,18 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod test {
+    use std::collections::BTreeMap;
+
     use super::{
         parse_package_doc_comments, shorten, Diagnostic, Diagnostics, Doc, Example, FunctionDoc,
         PackageDoc, ParameterDoc, Parser, Token, ValueDoc,
     };
-
     use crate::{
         ast,
         ast::tests::Locator,
         parser::parse_string,
         semantic::{env::Environment, types::PolyTypeMap, Analyzer},
     };
-
-    use std::collections::BTreeMap;
 
     macro_rules! map {
         ($( $key: expr => $val: expr ),*$(,)?) => {{

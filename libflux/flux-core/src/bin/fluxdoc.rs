@@ -1,16 +1,17 @@
-use std::fs::File;
-use std::io::{self, Write};
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::{
+    fs::File,
+    io::{self, Write},
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use anyhow::{bail, Context, Result};
-use structopt::StructOpt;
-
 use fluxcore::{
     doc,
     doc::example,
     semantic::{bootstrap, Analyzer},
 };
+use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "generate and validate Flux source code documentation")]

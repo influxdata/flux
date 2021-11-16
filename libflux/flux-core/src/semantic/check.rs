@@ -1,14 +1,16 @@
 //! Checking the semantic graph.
 
-use crate::ast;
-use crate::semantic::nodes;
-use crate::semantic::nodes::Assignment;
-use crate::semantic::nodes::Expression;
-use crate::semantic::nodes::Statement;
-use crate::semantic::walk;
-use crate::semantic::walk::Node;
-
 use std::collections::HashMap;
+
+use crate::{
+    ast,
+    semantic::{
+        nodes,
+        nodes::{Assignment, Expression, Statement},
+        walk,
+        walk::Node,
+    },
+};
 
 // OptionMap maps the name of a Flux option (including an optional package qualifier)
 // to its corresponding option statement.
@@ -282,13 +284,12 @@ impl<'a> walk::Visitor<'a> for OptionDepVisitor<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::ast;
-    use crate::parser;
-    use crate::semantic::check;
-    use crate::semantic::convert;
-    use crate::semantic::nodes;
-    use crate::semantic::sub;
     use anyhow::Result;
+
+    use crate::{
+        ast, parser,
+        semantic::{check, convert, nodes, sub},
+    };
 
     fn merge_ast_files(files: Vec<ast::File>) -> ast::Package {
         let pkg = ast::Package {

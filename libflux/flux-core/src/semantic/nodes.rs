@@ -10,6 +10,13 @@
 extern crate chrono;
 extern crate derivative;
 
+use std::{collections::HashMap, fmt::Debug, vec::Vec};
+
+use anyhow::{anyhow, bail, Result as AnyhowResult};
+use chrono::{prelude::DateTime, FixedOffset};
+use derivative::Derivative;
+use derive_more::Display;
+
 use crate::{
     ast,
     errors::Errors,
@@ -24,13 +31,6 @@ use crate::{
         },
     },
 };
-
-use std::{collections::HashMap, fmt::Debug, vec::Vec};
-
-use anyhow::{anyhow, bail, Result as AnyhowResult};
-use chrono::{prelude::DateTime, FixedOffset};
-use derivative::Derivative;
-use derive_more::Display;
 
 /// Result returned from the various 'infer' methods defined in this
 /// module. The result of inferring an expression or statement is a
@@ -2059,9 +2059,13 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast;
-    use crate::semantic::types::{MonoType, Tvar};
-    use crate::semantic::walk::{walk, Node};
+    use crate::{
+        ast,
+        semantic::{
+            types::{MonoType, Tvar},
+            walk::{walk, Node},
+        },
+    };
 
     #[test]
     fn duration_conversion_ok() {

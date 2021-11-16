@@ -1,8 +1,10 @@
 //! Type environments.
 use std::{fmt, mem};
 
-use crate::semantic::sub::{apply2, Substitutable, Substituter};
-use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
+use crate::semantic::{
+    sub::{apply2, Substitutable, Substituter},
+    types::{union, PolyType, PolyTypeMap, Tvar},
+};
 
 /// A type environment maps program identifiers to their polymorphic types.
 ///
