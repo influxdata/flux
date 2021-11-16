@@ -271,7 +271,6 @@ const EXCEPTIONS: &[&str] = &[
     "contrib/sranka/teams",
     "contrib/sranka/telegram",
     "contrib/sranka/webexteams",
-    "experimental",
     "experimental/aggregate",
     "experimental/array",
     "experimental/bigtable",
