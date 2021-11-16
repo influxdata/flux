@@ -1,15 +1,24 @@
 package universe
 
 import (
+	"container/heap"
+	"context"
+	"sort"
+
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/mutable"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 )
 
 const SortKind = "sort"
@@ -68,9 +77,6 @@ type SortProcedureSpec struct {
 	plan.DefaultCost
 	Columns []string
 	Desc    bool
-
-	// Temporary internal attribute. Do not use.
-	Optimize bool
 }
 
 func newSortProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -105,91 +111,351 @@ func createSortTransformation(id execute.DatasetID, mode execute.AccumulationMod
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
-
-	if s.Optimize {
-		return newSortTransformation2(id, s, a)
-	}
-
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t := NewSortTransformation(d, cache, s)
-	return t, d, nil
+	return NewSortTransformation(id, s, a.Allocator())
 }
 
 type sortTransformation struct {
 	execute.ExecutionNode
-	d     execute.Dataset
-	cache execute.TableBuilderCache
-
-	cols []string
-	desc bool
+	d       *execute.PassthroughDataset
+	mem     memory.Allocator
+	cols    []string
+	compare arrowutil.CompareFunc
 }
 
-func NewSortTransformation(d execute.Dataset, cache execute.TableBuilderCache, spec *SortProcedureSpec) *sortTransformation {
-	return &sortTransformation{
-		d:     d,
-		cache: cache,
-		cols:  spec.Columns,
-		desc:  spec.Desc,
+func NewSortTransformation(id execute.DatasetID, spec *SortProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	t := &sortTransformation{
+		d:       execute.NewPassthroughDataset(id),
+		mem:     mem,
+		cols:    spec.Columns,
+		compare: arrowutil.Compare,
 	}
+	if spec.Desc {
+		// If descending, use the descending comparison.
+		t.compare = arrowutil.CompareDesc
+	}
+	return t, t.d, nil
 }
 
-func (t *sortTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
-
-func (t *sortTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	key := tbl.Key()
-	for _, label := range t.cols {
-		if key.HasCol(label) {
-			key = t.sortedKey(key)
-			break
+func (s *sortTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+	sortCols := make([]int, 0, len(s.cols))
+	for _, col := range s.cols {
+		if idx := execute.ColIdx(col, tbl.Cols()); idx >= 0 {
+			// If the sort key is part of the group key, skip it anyway.
+			// They are all sorted anyway.
+			if tbl.Key().HasCol(col) {
+				continue
+			}
+			sortCols = append(sortCols, idx)
 		}
 	}
 
-	builder, created := t.cache.TableBuilder(key)
-	if !created {
-		return errors.Newf(codes.FailedPrecondition, "sort found duplicate table with key: %v", tbl.Key())
+	mh := &sortTableMergeHeap{
+		cols:     tbl.Cols(),
+		key:      tbl.Key(),
+		sortCols: sortCols,
+		compare:  s.compare,
 	}
-	if err := execute.AddTableCols(tbl, builder); err != nil {
-		return err
-	}
-	if err := execute.AppendTable(tbl, builder); err != nil {
+	if err := tbl.Do(func(cr flux.ColReader) error {
+		return s.processView(mh, cr)
+	}); err != nil {
 		return err
 	}
 
-	builder.Sort(t.cols, t.desc)
+	out, err := mh.Table(s.mem)
+	if err != nil {
+		return err
+	}
+	return s.d.Process(out)
+}
+
+func (s *sortTransformation) processView(mh *sortTableMergeHeap, cr flux.ColReader) error {
+	if cr.Len() == 0 {
+		return nil
+	}
+
+	cr.Retain()
+	item := &sortTableMergeHeapItem{cr: cr}
+	if !s.isSorted(cr, mh.sortCols) {
+		item.indices = s.sort(cr, mh.sortCols)
+		item.offset = int(item.indices.Value(0))
+	}
+	mh.items = append(mh.items, item)
 	return nil
 }
 
-func (t *sortTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
-}
-func (t *sortTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
-}
-func (t *sortTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
+func (s *sortTransformation) isSorted(cr flux.ColReader, cols []int) bool {
+	// Check if the array is sorted by moving through each element and ensuring
+	// that the previous one is greater than or equal to it.
+	// We do not use the sort package for this because the sort package requires
+	// some form of slice to operate and we want to avoid the allocations if
+	// possible.
+	//
+	// In the future, it might be possible to skip this method and the sort method
+	// if we can learn from the planner that each individual buffer is sorted.
+	for i, n := 1, cr.Len(); i < n; i++ {
+		for _, col := range cols {
+			arr := table.Values(cr, col)
+			if cmp := s.compare(arr, arr, i-1, i); cmp > 0 {
+				// Not sorted return false.
+				return false
+			} else if cmp > 0 {
+				// Sorted so move to the next row.
+				break
+			}
+		}
+
+		// If we get here by exiting the for loop normally, that means
+		// everything was equal so technically sorted. Continue to the next row.
+	}
+
+	// If we get here, then the buffer is sorted.
+	return true
 }
 
-func (t *sortTransformation) sortedKey(key flux.GroupKey) flux.GroupKey {
-	cols := make([]flux.ColMeta, len(key.Cols()))
-	vs := make([]values.Value, len(key.Cols()))
-	j := 0
-	for _, label := range t.cols {
-		idx := execute.ColIdx(label, key.Cols())
-		if idx >= 0 {
-			cols[j] = key.Cols()[idx]
-			vs[j] = key.Value(idx)
-			j++
+func (s *sortTransformation) sort(cr flux.ColReader, cols []int) *array.Int {
+	// Construct the indices.
+	indices := mutable.NewInt64Array(s.mem)
+	indices.Resize(cr.Len())
+
+	// Retrieve the raw slice and initialize the offsets.
+	offsets := indices.Int64Values()
+	for i := range offsets {
+		offsets[i] = int64(i)
+	}
+
+	// Sort the offsets by using the comparison method.
+	sort.SliceStable(offsets, func(i, j int) bool {
+		i, j = int(offsets[i]), int(offsets[j])
+		for _, col := range cols {
+			arr := table.Values(cr, col)
+			if cmp := s.compare(arr, arr, i, j); cmp != 0 {
+				return cmp < 0
+			}
+		}
+		return false
+	})
+
+	// Return the now sorted indices.
+	return indices.NewInt64Array()
+}
+
+func (s *sortTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
+	return s.d.RetractTable(key)
+}
+func (s *sortTransformation) UpdateWatermark(id execute.DatasetID, t execute.Time) error {
+	return s.d.UpdateWatermark(t)
+}
+func (s *sortTransformation) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error {
+	return s.d.UpdateProcessingTime(t)
+}
+func (s *sortTransformation) Finish(id execute.DatasetID, err error) {
+	s.d.Finish(err)
+}
+
+type sortTableMergeHeapItem struct {
+	cr        flux.ColReader
+	indices   *array.Int
+	i, offset int
+}
+
+func (s *sortTableMergeHeapItem) Next() bool {
+	s.i++
+	if s.i >= s.cr.Len() {
+		return false
+	}
+	s.offset = s.i
+	if s.indices != nil {
+		s.offset = int(s.indices.Value(s.i))
+	}
+	return true
+}
+
+func (s *sortTableMergeHeapItem) Release() {
+	if s.indices != nil {
+		s.indices.Release()
+		s.indices = nil
+	}
+	if s.cr != nil {
+		s.cr.Release()
+		s.cr = nil
+	}
+}
+
+type sortTableMergeHeap struct {
+	key      flux.GroupKey
+	cols     []flux.ColMeta
+	items    []*sortTableMergeHeapItem
+	sortCols []int
+	compare  arrowutil.CompareFunc
+}
+
+func (s *sortTableMergeHeap) Len() int {
+	return len(s.items)
+}
+
+func (s *sortTableMergeHeap) Less(i, j int) bool {
+	x, y := s.items[i], s.items[j]
+	for _, i := range s.sortCols {
+		left := table.Values(x.cr, i)
+		right := table.Values(y.cr, i)
+		if cmp := s.compare(left, right, x.offset, y.offset); cmp != 0 {
+			return cmp < 0
 		}
 	}
-	for idx, c := range key.Cols() {
-		if !execute.ContainsStr(t.cols, c.Label) {
-			cols[j] = c
-			vs[j] = key.Value(idx)
-			j++
+	return false
+}
+
+func (s *sortTableMergeHeap) Swap(i, j int) {
+	s.items[i], s.items[j] = s.items[j], s.items[i]
+}
+
+func (s *sortTableMergeHeap) Push(x interface{}) {
+	s.items = append(s.items, x.(*sortTableMergeHeapItem))
+}
+
+func (s *sortTableMergeHeap) Pop() interface{} {
+	item := s.items[len(s.items)-1]
+	s.items = s.items[:len(s.items)-1]
+	return item
+}
+
+func (s *sortTableMergeHeap) ValueLen() int {
+	var n int
+	for _, item := range s.items {
+		n += item.cr.Len() - item.i
+	}
+	return n
+}
+
+func (s *sortTableMergeHeap) Table(mem memory.Allocator) (flux.Table, error) {
+	// Construct the buffered builder that will contain the full table.
+	builder := table.NewBufferedBuilder(s.key, mem)
+
+	// Initialize the heap now that we have all of the data.
+	heap.Init(s)
+
+	// Initialize the builders. Due to the nature of how arrow builders
+	// work, we can reuse these builders for every buffer as they
+	// automatically reset.
+	builders := make([]array.Builder, len(s.cols))
+	for i, col := range s.cols {
+		if s.key.HasCol(col.Label) {
+			continue
+		}
+		builders[i] = arrow.NewBuilder(col.Type, mem)
+	}
+	defer func() {
+		for _, b := range builders {
+			if b != nil {
+				b.Release()
+			}
+		}
+	}()
+
+	// Initialize space for the key values.
+	// We will initialize these on the first buffer and then reuse
+	// them after that to conserve space.
+	keys := make([]array.Interface, len(s.key.Cols()))
+	defer func() {
+		for _, key := range keys {
+			if key != nil {
+				key.Release()
+			}
+		}
+	}()
+
+	// Continue merging the tables until there are none.
+	for len(s.items) > 0 {
+		n := s.ValueLen()
+		if n > table.BufferSize {
+			n = table.BufferSize
+		}
+
+		buffer := s.NextBuffer(builders, keys, n, mem)
+		if err := builder.AppendBuffer(&buffer); err != nil {
+			buffer.Release()
+			return nil, err
+		}
+		buffer.Release()
+	}
+
+	// Determine the next buffer size.
+	return builder.Table()
+}
+
+func (s *sortTableMergeHeap) NextBuffer(builders []array.Builder, keys []array.Interface, n int, mem memory.Allocator) arrow.TableBuffer {
+	// Ensure there is enough space in each builder
+	for _, b := range builders {
+		if b == nil {
+			continue
+		}
+		b.Resize(n)
+	}
+
+	for i := 0; i < n; i++ {
+		// Append the next row to the builders.
+		item := s.items[0]
+		for j, b := range builders {
+			if b == nil {
+				continue
+			}
+			arrowutil.CopyValue(b, table.Values(item.cr, j), item.offset)
+		}
+
+		// Move to the next row.
+		if item.Next() {
+			// Fix the heap to ensure the next value.
+			heap.Fix(s, 0)
+		} else {
+			// Remove this item from the heap since it
+			// no longer has anymore rows.
+			item.Release()
+			heap.Pop(s)
 		}
 	}
-	return execute.NewGroupKey(cols, vs)
+
+	// Initialize the key buffers if they need to be.
+	for i := range keys {
+		if keys[i] == nil {
+			keys[i] = arrow.Repeat(s.key.Cols()[i].Type, s.key.Value(i), n, mem)
+		}
+	}
+
+	// Create the table buffer by merging our builders with the keys.
+	buffer := arrow.TableBuffer{
+		GroupKey: s.key,
+		Columns:  s.cols,
+		Values:   make([]array.Interface, len(s.cols)),
+	}
+	for i, col := range s.cols {
+		if builders[i] == nil {
+			idx := execute.ColIdx(col.Label, s.key.Cols())
+			arr := keys[idx]
+			if arr.Len() > n {
+				arr = arrow.Slice(arr, 0, int64(n))
+			} else {
+				arr.Retain()
+			}
+			buffer.Values[i] = arr
+			continue
+		}
+		buffer.Values[i] = builders[i].NewArray()
+	}
+	return buffer
+}
+
+// TODO(jsternberg): Remove this when all uses of this rule have been removed.
+// This is now the default and so this doesn't do anything.
+type OptimizeSortRule struct{}
+
+func (r OptimizeSortRule) Name() string {
+	return "OptimizeSortRule"
+}
+
+func (r OptimizeSortRule) Pattern() plan.Pattern {
+	return plan.Pat(SortKind, plan.Any())
+}
+
+func (r OptimizeSortRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+	return node, false, nil
 }
