@@ -41,7 +41,7 @@ func (d Dependency) Inject(ctx context.Context) context.Context {
 func GetDialer(ctx context.Context) Dialer {
 	d := ctx.Value(clientKey)
 	if d == nil {
-		return DefaultDialer{}
+		return ErrorDialer{}
 	}
 	return d.(Dialer)
 }
