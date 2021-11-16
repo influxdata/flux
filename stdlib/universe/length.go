@@ -2,6 +2,7 @@ package universe
 
 import (
 	"context"
+	"github.com/influxdata/flux"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -26,8 +27,23 @@ func MakeLengthFunc() values.Function {
 			} else if got := v.Type().Nature(); got != semantic.Array {
 				return nil, errors.Newf(codes.Invalid, "arr must be an array, got %s", got)
 			}
-			l := v.Array().Len()
-			return values.NewInt(int64(l)), nil
+
+			maybeArr := v.Array()
+			switch maybeArr.(type) {
+			// The type system currently conflates TableObject (aka "table stream")
+			// with fully-realized arrays of records requiring it to implement
+			// the Array interface. Since TableObject will currently panic
+			// if the methods provided by this interface are invoked, short-circuit
+			// by returning an error.
+			// XXX: In the future we may delineate the difference between
+			//      fully-realized and streamed collections making this unnecessary.
+			//      <https://github.com/influxdata/flux/issues/4275>
+			case *flux.TableObject:
+				return nil, errors.New(codes.Invalid, "arr must be an array, got table stream")
+			default:
+				l := maybeArr.Len()
+				return values.NewInt(int64(l)), nil
+			}
 		}, false,
 	)
 }
