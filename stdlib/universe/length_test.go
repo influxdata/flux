@@ -2,10 +2,10 @@ package universe_test
 
 import (
 	"context"
-	"github.com/influxdata/flux/runtime"
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"

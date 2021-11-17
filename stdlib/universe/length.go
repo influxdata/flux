@@ -2,8 +2,8 @@ package universe
 
 import (
 	"context"
-	"github.com/influxdata/flux"
 
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
