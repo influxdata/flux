@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -78,5 +79,18 @@ func lengthTestHelper(t *testing.T, tc lengthCase) {
 		t.Error(err.Error())
 	} else if result.Int() != int64(tc.expected) {
 		t.Error("expected %i, got %i", result.Int(), int64(tc.expected))
+	}
+}
+
+func TestLength_ReceiveTableObjectIsError(t *testing.T) {
+	src := `import "array"
+			length(arr: array.from(rows: [{}]))`
+	_, _, err := runtime.Eval(context.Background(), src)
+	if err == nil {
+		t.Fatal("expected error, got none")
+	}
+
+	if want, got := "error calling function \"length\" @2:4-2:39: arr must be an array, got table stream", err.Error(); want != got {
+		t.Errorf("wanted error %q, got %q", want, got)
 	}
 }
