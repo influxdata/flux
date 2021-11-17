@@ -7,6 +7,7 @@ use thiserror::Error;
 
 use crate::{
     ast,
+    errors::{located, Located},
     semantic::{
         nodes::*,
         sub::Substitution,
@@ -16,9 +17,12 @@ use crate::{
 };
 
 /// Error that categorizes errors when converting from AST to semantic graph.
+pub type Error = Located<ErrorKind>;
+
+/// Error that categorizes errors when converting from AST to semantic graph.
 #[derive(Error, Debug, PartialEq)]
 #[allow(missing_docs)]
-pub enum Error {
+pub enum ErrorKind {
     #[error("TestCase is not supported in semantic analysis")]
     TestCase,
     #[error("invalid named type {0}")]
@@ -129,7 +133,7 @@ fn convert_statement(stmt: ast::Statement, sub: &mut Substitution) -> Result<Sta
         )?))),
         ast::Statement::Builtin(s) => Ok(Statement::Builtin(convert_builtin_statement(*s, sub)?)),
         ast::Statement::Test(s) => Ok(Statement::Test(Box::new(convert_test_statement(*s, sub)?))),
-        ast::Statement::TestCase(_) => Err(Error::TestCase),
+        ast::Statement::TestCase(s) => Err(located(s.base.location.clone(), ErrorKind::TestCase)),
         ast::Statement::Expr(s) => Ok(Statement::Expr(convert_expression_statement(*s, sub)?)),
         ast::Statement::Return(s) => Ok(Statement::Return(convert_return_statement(*s, sub)?)),
         // TODO(affo): we should fix this to include MemberAssignement.
@@ -190,7 +194,10 @@ pub(crate) fn convert_monotype(
             "time" => Ok(MonoType::Time),
             "regexp" => Ok(MonoType::Regexp),
             "bytes" => Ok(MonoType::Bytes),
-            _ => Err(Error::InvalidNamedType(basic.name.name.to_string())),
+            _ => Err(located(
+                basic.base.location.clone(),
+                ErrorKind::InvalidNamedType(basic.name.name.to_string()),
+            )),
         },
         ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(convert_monotype(
             arr.element,
@@ -215,7 +222,11 @@ pub(crate) fn convert_monotype(
                     ast::ParameterType::Optional { name, monotype, .. } => {
                         opt.insert(name.name, convert_monotype(monotype, tvars, sub)?);
                     }
-                    ast::ParameterType::Pipe { name, monotype, .. } => {
+                    ast::ParameterType::Pipe {
+                        name,
+                        monotype,
+                        base,
+                    } => {
                         if !dirty {
                             _pipe = Some(types::Property {
                                 k: match name {
@@ -226,7 +237,7 @@ pub(crate) fn convert_monotype(
                             });
                             dirty = true;
                         } else {
-                            return Err(Error::AtMostOnePipe);
+                            return Err(located(base.location, ErrorKind::AtMostOnePipe));
                         }
                     }
                 }
@@ -297,7 +308,10 @@ pub fn convert_polytype(
                         "Basic" => kinds.push(types::Kind::Basic),
                         "Stringable" => kinds.push(types::Kind::Stringable),
                         _ => {
-                            return Err(Error::InvalidConstraint(k.name.clone()));
+                            return Err(located(
+                                k.base.location.clone(),
+                                ErrorKind::InvalidConstraint(k.name.clone()),
+                            ));
                         }
                     }
                 }
@@ -416,7 +430,7 @@ fn convert_expression(expr: ast::Expression, sub: &mut Substitution) -> Result<E
         ast::Expression::DateTime(lit) => {
             Ok(Expression::DateTime(convert_date_time_literal(lit, sub)?))
         }
-        ast::Expression::PipeLit(_) => Err(Error::InvalidPipeLit),
+        ast::Expression::PipeLit(lit) => Err(located(lit.base.location, ErrorKind::InvalidPipeLit)),
         ast::Expression::Bad(bad) => Ok(Expression::Error(bad.base.location.clone())),
     }
 }
@@ -446,16 +460,19 @@ fn convert_function_params(
     for prop in props {
         let id = match prop.key {
             ast::PropertyKey::Identifier(id) => Ok(id),
-            _ => Err(Error::FunctionParameterIdents),
+            _ => Err(located(
+                prop.base.location.clone(),
+                ErrorKind::FunctionParameterIdents,
+            )),
         }?;
         let key = convert_identifier(id, sub)?;
         let mut default: Option<Expression> = None;
         let mut is_pipe = false;
         if let Some(expr) = prop.value {
             match expr {
-                ast::Expression::PipeLit(_) => {
+                ast::Expression::PipeLit(lit) => {
                     if piped {
-                        return Err(Error::AtMostOnePipe);
+                        return Err(located(lit.base.location, ErrorKind::AtMostOnePipe));
                     } else {
                         piped = true;
                         is_pipe = true;
@@ -490,14 +507,20 @@ fn convert_function_body(body: ast::FunctionBody, sub: &mut Substitution) -> Res
 fn convert_block(block: ast::Block, sub: &mut Substitution) -> Result<Block> {
     let mut body = block.body.into_iter().rev();
 
-    let block = if let Some(ast::Statement::Return(stmt)) = body.next() {
-        let argument = convert_expression(stmt.argument, sub)?;
-        Block::Return(ReturnStmt {
-            loc: stmt.base.location.clone(),
-            argument,
-        })
-    } else {
-        return Err(Error::MissingReturn);
+    let block = match body.next() {
+        Some(ast::Statement::Return(stmt)) => {
+            let argument = convert_expression(stmt.argument, sub)?;
+            Block::Return(ReturnStmt {
+                loc: stmt.base.location.clone(),
+                argument,
+            })
+        }
+        Some(s) => {
+            return Err(located(s.base().location.clone(), ErrorKind::MissingReturn));
+        }
+        None => {
+            return Err(located(block.base.location, ErrorKind::MissingReturn));
+        }
     };
 
     body.try_fold(block, |acc, s| match s {
@@ -509,7 +532,10 @@ fn convert_block(block: ast::Block, sub: &mut Substitution) -> Result<Block> {
             convert_expression_statement(*stmt, sub)?,
             Box::new(acc),
         )),
-        _ => Err(Error::InvalidFunctionStatement(s.type_name())),
+        _ => Err(located(
+            s.base().location.clone(),
+            ErrorKind::InvalidFunctionStatement(s.type_name()),
+        )),
     })
 }
 
@@ -517,20 +543,26 @@ fn convert_call_expression(expr: ast::CallExpr, sub: &mut Substitution) -> Resul
     let callee = convert_expression(expr.callee, sub)?;
     // TODO(affo): I'd prefer these checks to be in ast.Check().
     if expr.arguments.len() > 1 {
-        return Err(Error::ExtraParameterRecord);
+        return Err(located(expr.base.location, ErrorKind::ExtraParameterRecord));
     }
     let mut args = expr
         .arguments
         .into_iter()
         .map(|a| match a {
             ast::Expression::Object(obj) => convert_object_expression(*obj, sub),
-            _ => Err(Error::ParametersNotRecord),
+            _ => Err(located(
+                a.base().location.clone(),
+                ErrorKind::ParametersNotRecord,
+            )),
         })
         .collect::<Result<Vec<ObjectExpr>>>()?;
     let arguments = match args.len() {
         0 => Ok(Vec::new()),
         1 => Ok(args.pop().expect("there must be 1 element").properties),
-        _ => Err(Error::ExtraParameterRecord),
+        _ => Err(located(
+            expr.base.location.clone(),
+            ErrorKind::ExtraParameterRecord,
+        )),
     }?;
     Ok(CallExpr {
         loc: expr.base.location,
@@ -785,8 +817,13 @@ fn convert_regexp_literal(lit: ast::RegexpLit, _: &mut Substitution) -> Result<R
 
 fn convert_duration_literal(lit: ast::DurationLit, _: &mut Substitution) -> Result<DurationLit> {
     Ok(DurationLit {
+        value: convert_duration(&lit.values).map_err(|e| {
+            located(
+                lit.base.location.clone(),
+                ErrorKind::InvalidDuration(e.to_string()),
+            )
+        })?,
         loc: lit.base.location,
-        value: convert_duration(&lit.values).map_err(|e| Error::InvalidDuration(e.to_string()))?,
     })
 }
 
@@ -2160,7 +2197,7 @@ mod tests {
         };
         let got = test_convert(pkg).err().unwrap().to_string();
         assert_eq!(
-            "function types can have at most one pipe parameter".to_string(),
+            "error @0:0-0:0: function types can have at most one pipe parameter".to_string(),
             got
         );
     }
@@ -2235,7 +2272,7 @@ mod tests {
         };
         let got = test_convert(pkg).err().unwrap().to_string();
         assert_eq!(
-            "function parameters are more than one record expression".to_string(),
+            "error @0:0-0:0: function parameters are more than one record expression".to_string(),
             got
         );
     }

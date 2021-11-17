@@ -8,6 +8,16 @@ use std::{
     slice, vec,
 };
 
+use derive_more::Display;
+
+use crate::{
+    ast,
+    semantic::{
+        sub::{Substitutable, Substituter},
+        types::Tvar,
+    },
+};
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct Errors<T> {
     errors: Vec<T>,
@@ -154,5 +164,41 @@ impl<T: fmt::Display> fmt::Display for Errors<T> {
 impl<T: fmt::Display + fmt::Debug + Any> StdError for Errors<T> {
     fn description(&self) -> &str {
         "Errors"
+    }
+}
+
+/// An error with an attached location
+#[derive(Debug, Display, PartialEq)]
+#[display(fmt = "error {}: {}", location, error)]
+pub struct Located<E> {
+    /// The location where the error occured
+    pub location: ast::SourceLocation,
+    /// The error itself
+    pub error: E,
+}
+
+impl<T: StdError> StdError for Located<T> {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        self.error.source()
+    }
+}
+
+/// Constructs a located error
+pub fn located<E>(location: ast::SourceLocation, error: E) -> Located<E> {
+    Located { location, error }
+}
+
+impl<E> Substitutable for Located<E>
+where
+    E: Substitutable,
+{
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.error.apply_ref(sub).map(|error| Located {
+            location: self.location.clone(),
+            error,
+        })
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.error.free_vars()
     }
 }

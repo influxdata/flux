@@ -295,6 +295,29 @@ macro_rules! test_infer_err {
 /// ```
 ///
 macro_rules! test_error_msg {
+    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect: $expect:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::default();
+        $(
+            imp = $imp;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::default();
+        $(
+            env = $env;
+        )?
+        match infer_types(
+            $src,
+            env,
+            imp,
+            None,
+            AnalyzerConfig::default(),
+        ) {
+            Err(e) => $expect.assert_eq(&e.to_string()),
+            Ok(_) => panic!("expected error, instead program passed type checking"),
+        }
+    }};
+
     ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
         #[allow(unused_mut, unused_assignments)]
         let mut imp = HashMap::default();
@@ -3648,7 +3671,7 @@ fn parse_and_inference_errors_are_reported_simultaneously() {
             x = / 1
             z = y + 1
         "#,
-        err: "error at @2:17-2:18: invalid expression: invalid token for primary expression: DIV
+        err: "error @2:17-2:18: invalid expression: invalid token for primary expression: DIV
 
 error @3:17-3:18: undefined identifier y",
     }
@@ -3667,5 +3690,25 @@ fn primitive_kind_errors() {
         err: "error @2:13-2:42: {} is not Basic (argument v)
 
 error @3:13-3:41: [A] is not Basic (argument v)",
+    }
+}
+
+#[test]
+fn invalid_mono_type() {
+    test_error_msg! {
+        src: r#"
+            builtin x : abc
+        "#,
+        expect: expect_test::expect![[r#"error @2:25-2:28: invalid named type abc"#]]
+    }
+}
+
+#[test]
+fn missing_return() {
+    test_error_msg! {
+        src: r#"
+            () => { }
+        "#,
+        expect: expect_test::expect![[r#"error @2:19-2:22: missing return statement in block"#]]
     }
 }

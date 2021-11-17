@@ -19,7 +19,7 @@ use derive_more::Display;
 
 use crate::{
     ast,
-    errors::Errors,
+    errors::{located, Errors, Located},
     semantic::{
         env::Environment,
         import::Importer,
@@ -40,35 +40,6 @@ pub type Result<T = Constraints> = std::result::Result<T, Error>;
 /// Error returned from the various 'infer' methods defined in this
 /// module.
 pub type Error = Located<ErrorKind>;
-
-/// An error with an attached location
-#[derive(Debug, Display, PartialEq)]
-#[display(fmt = "error {}: {}", location, error)]
-pub struct Located<E> {
-    /// The location where the error occured
-    pub location: ast::SourceLocation,
-    /// The error itself
-    pub error: E,
-}
-
-fn located<E>(location: ast::SourceLocation, error: E) -> Located<E> {
-    Located { location, error }
-}
-
-impl<E> Substitutable for Located<E>
-where
-    E: Substitutable,
-{
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.error.apply_ref(sub).map(|error| Located {
-            location: self.location.clone(),
-            error,
-        })
-    }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.error.free_vars()
-    }
-}
 
 #[derive(Debug, Display, PartialEq)]
 #[allow(missing_docs)]

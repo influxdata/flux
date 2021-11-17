@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    ast,
+    errors::{located, Located},
     semantic::{
         nodes,
         nodes::{Assignment, Expression, Statement},
@@ -21,40 +21,43 @@ type VariableAssignMap<'a> = HashMap<&'a str, Option<&'a nodes::VariableAssgn>>;
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// This is the error type for errors returned by the `check()` function.
+pub type Error = Located<ErrorKind>;
+
+/// This is the error type for errors returned by the `check()` function.
 #[derive(Debug, PartialEq)]
-pub enum Error {
+pub enum ErrorKind {
     /// An assignment after the `option` keyword is not correctly formed.
-    InvalidOption(ast::SourceLocation),
+    InvalidOption,
     /// An option has been assigned at least two places in the package source.
-    OptionReassign(ast::SourceLocation, String),
+    OptionReassign(String),
     /// A variable has been assigned more than once in the same scope.
-    VarReassign(ast::SourceLocation, String),
+    VarReassign(String),
     /// A variable name conflicts with an option name.
-    VarReassignOption(ast::SourceLocation, String),
+    VarReassignOption(String),
     /// An option depends on another option declared in the same package.
-    DependentOptions(ast::SourceLocation, String, String),
+    DependentOptions(String, String),
 }
 
-impl std::fmt::Display for Error {
+impl std::fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::InvalidOption(sl) => {
+            Self::InvalidOption => {
                 // This seems to be impossible to hit due structure of semantic graphs.
-                f.write_fmt(format_args!("{}: invalid option", sl))
+                f.write_fmt(format_args!("invalid option"))
             }
-            Error::OptionReassign(sl, name) => {
-                f.write_fmt(format_args!(r#"{}: option "{}" reassigned"#, sl, name))
+            Self::OptionReassign(name) => {
+                f.write_fmt(format_args!(r#"option "{}" reassigned"#, name))
             }
-            Error::VarReassign(sl, name) => {
-                f.write_fmt(format_args!(r#"{}: variable "{}" reassigned"#, sl, name))
+            Self::VarReassign(name) => {
+                f.write_fmt(format_args!(r#"variable "{}" reassigned"#, name))
             }
-            Error::VarReassignOption(sl, name) => f.write_fmt(format_args!(
-                r#"{}: variable "{}" conflicts with option of same name"#,
-                sl, name
+            Self::VarReassignOption(name) => f.write_fmt(format_args!(
+                r#"variable "{}" conflicts with option of same name"#,
+                name
             )),
-            Error::DependentOptions(sl, depender, dependee) => f.write_fmt(format_args!(
-                r#"{}: option "{}" depends on option "{}", which is defined in the same package"#,
-                sl, depender, dependee
+            Self::DependentOptions(depender, dependee) => f.write_fmt(format_args!(
+                r#"option "{}" depends on option "{}", which is defined in the same package"#,
+                depender, dependee
             )),
         }
     }
@@ -99,7 +102,10 @@ fn check_option_stmts(pkg: &nodes::Package) -> Result<OptionMap> {
     for o in opt_stmts {
         let name = get_option_name(o)?;
         if opts.contains_key(&name) {
-            return Err(Error::OptionReassign(o.loc.clone(), format_option(name)));
+            return Err(located(
+                o.loc.clone(),
+                ErrorKind::OptionReassign(format_option(name)),
+            ));
         }
         opts.insert(name, o);
     }
@@ -125,7 +131,7 @@ fn get_option_name(o: &nodes::OptionStmt) -> Result<(Option<&str>, &str)> {
                 },
             ..
         }) => Ok((Some(id), property)),
-        _ => Err(Error::InvalidOption(o.loc.clone())),
+        _ => Err(located(o.loc.clone(), ErrorKind::InvalidOption)),
     }
 }
 
@@ -182,11 +188,17 @@ impl<'a> walk::Visitor<'a> for VarVisitor<'a> {
                 let name = va.id.name.as_str();
                 // if we are at file scope (only one map in vars_stack), a variable assignment could collide with an option.
                 if self.vars_stack.len() == 1 && self.opts.contains_key(&(None, name)) {
-                    self.err = Some(Error::VarReassignOption(va.loc.clone(), String::from(name)))
+                    self.err = Some(located(
+                        va.loc.clone(),
+                        ErrorKind::VarReassignOption(String::from(name)),
+                    ))
                 }
                 // if most nested (current) scope, already has a variable of this name, return error.
                 if self.vars_stack.last().unwrap().contains_key(name) {
-                    self.err = Some(Error::VarReassign(va.loc.clone(), String::from(name)));
+                    self.err = Some(located(
+                        va.loc.clone(),
+                        ErrorKind::VarReassign(String::from(name)),
+                    ));
                     return false;
                 }
                 self.vars_stack.last_mut().unwrap().insert(name, Some(va));
@@ -223,10 +235,9 @@ fn check_option_dependencies(opts: &OptionMap) -> Result<()> {
         walk::walk(&mut v, walk::Node::OptionStmt(o));
         if let Some(id) = v.bad_id {
             let opt_name = get_option_name(o)?;
-            return Err(Error::DependentOptions(
+            return Err(located(
                 id.loc.clone(),
-                format_option(opt_name),
-                id.name.clone(),
+                ErrorKind::DependentOptions(format_option(opt_name), id.name.clone()),
             ));
         }
     }
