@@ -3,18 +3,20 @@
 use std::{
     cmp,
     collections::{BTreeMap, BTreeSet, HashMap},
-    fmt,
-    fmt::Write,
+    fmt::{self, Write},
 };
 
 use codespan_reporting::diagnostic;
 use derive_more::Display;
 use serde::ser::{Serialize, Serializer};
 
-use crate::semantic::{
-    fresh::{Fresh, Fresher},
-    nodes::Symbol,
-    sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
+use crate::{
+    errors::Located,
+    semantic::{
+        fresh::{Fresh, Fresher},
+        nodes::Symbol,
+        sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
+    },
 };
 
 /// For use in generics where the specific type of map is not mentioned.
@@ -445,7 +447,7 @@ impl Serialize for MonoType {
 }
 
 /// An ordered map of string identifiers to monotypes.
-pub type MonoTypeMap<T = String> = SemanticMap<T, MonoType>;
+pub type MonoTypeMap<K = String, V = MonoType> = SemanticMap<K, V>;
 #[allow(missing_docs)]
 pub type MonoTypeVecMap<T = String> = SemanticMap<T, Vec<MonoType>>;
 #[allow(missing_docs)]
@@ -1450,14 +1452,15 @@ impl Label {
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "{}:{}", k, v)]
 #[allow(missing_docs)]
-pub struct Property<T = Label> {
-    pub k: T,
-    pub v: MonoType,
+pub struct Property<K = Label, V = MonoType> {
+    pub k: K,
+    pub v: V,
 }
 
-impl<T> Substitutable for Property<T>
+impl<K, V> Substitutable for Property<K, V>
 where
-    T: Clone,
+    K: Clone,
+    V: Substitutable,
 {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         self.v.apply_ref(sub).map(|v| Property {
@@ -1482,15 +1485,15 @@ impl<T> MaxTvar for Property<T> {
 /// a set of optional arguments, an optional pipe argument, and
 /// a required return type.
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct Function {
+pub struct Function<T = MonoType> {
     /// Required arguments to a function.
-    pub req: MonoTypeMap,
+    pub req: MonoTypeMap<String, T>,
     /// Optional arguments to a function.
-    pub opt: MonoTypeMap,
+    pub opt: MonoTypeMap<String, T>,
     /// An optional pipe argument.
-    pub pipe: Option<Property<String>>,
+    pub pipe: Option<Property<String, T>>,
     /// Required return type.
-    pub retn: MonoType,
+    pub retn: T,
 }
 
 impl fmt::Display for Function {
@@ -1668,7 +1671,14 @@ impl Function {
     /// Unify 3 and 4: should fail because `a` is not in the arguments of 4.
     ///
     /// self represents the expected type.
-    fn unify(&self, actual: &Self, sub: &mut Substitution) -> Result<(), Error> {
+    pub(crate) fn unify<T>(
+        &self,
+        actual: &Function<T>,
+        sub: &mut Substitution,
+    ) -> Result<(), T::Error>
+    where
+        T: TypeLike + Clone,
+    {
         // Some aliasing for coherence with the doc.
         let mut f = self.clone();
         let mut g = actual.clone();
@@ -1679,10 +1689,10 @@ impl Function {
             (Some(fp), Some(gp)) => {
                 if fp.k != "<-" && gp.k != "<-" && fp.k != gp.k {
                     // Both are named and the name differs, fail unification.
-                    return Err(Error::MultiplePipeArguments {
+                    return Err(gp.v.error(Error::MultiplePipeArguments {
                         exp: fp.k,
                         act: gp.k,
-                    });
+                    }));
                 } else {
                     // At least one is unnamed or they are both named with the same name.
                     // This means they should match. Enforce this condition by inserting
@@ -1696,7 +1706,7 @@ impl Function {
                 if fp.k == "<-" {
                     // The pipe argument is unnamed and g does not have one.
                     // Fail unification.
-                    return Err(Error::MissingPipeArgument);
+                    return Err(g.retn.error(Error::MissingPipeArgument));
                 } else {
                     // This is a named argument, simply put it into the required ones.
                     f.req.insert(fp.k, fp.v);
@@ -1707,7 +1717,7 @@ impl Function {
                 if gp.k == "<-" {
                     // The pipe argument is unnamed and f does not have one.
                     // Fail unification.
-                    return Err(Error::MissingPipeArgument);
+                    return Err(gp.v.error(Error::MissingPipeArgument));
                 } else {
                     // This is a named argument, simply put it into the required ones.
                     g.req.insert(gp.k, gp.v);
@@ -1717,9 +1727,9 @@ impl Function {
             (None, None) => (),
         }
         // Now that f has not been consumed yet, check that every required argument in g is in f too.
-        for (name, _) in g.req.iter() {
+        for (name, typ) in g.req.iter() {
             if !f.req.contains_key(name) && !f.opt.contains_key(name) {
-                return Err(Error::ExtraArgument(String::from(name)));
+                return Err(typ.error(Error::ExtraArgument(String::from(name))));
             }
         }
         // Unify f's required arguments.
@@ -1728,26 +1738,26 @@ impl Function {
         for (name, exp) in f.req.into_iter() {
             if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
                 // The required argument is in g's required arguments.
-                apply_then_unify(&exp, &act, sub)
-                    .map_err(|e| Error::CannotUnifyArgument(name, Box::new(e)))?;
+                apply_then_unify(&exp, act.typ(), sub)
+                    .map_err(|e| act.error(Error::CannotUnifyArgument(name, Box::new(e))))?;
             } else {
-                return Err(Error::MissingArgument(name));
+                return Err(g.retn.error(Error::MissingArgument(name)));
             }
         }
         // Unify f's optional arguments.
         for (name, exp) in f.opt.into_iter() {
             if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
-                apply_then_unify(&exp, &act, sub)
-                    .map_err(|e| Error::CannotUnifyArgument(name, Box::new(e)))?;
+                apply_then_unify(&exp, act.typ(), sub)
+                    .map_err(|e| act.error(Error::CannotUnifyArgument(name, Box::new(e))))?;
             }
         }
         // Unify return types.
-        match apply_then_unify(&f.retn, &g.retn, sub) {
-            Err(cause) => Err(Error::CannotUnifyReturn {
-                exp: f.retn.apply(sub),
-                act: g.retn.apply(sub),
+        match apply_then_unify(&f.retn, g.retn.typ(), sub) {
+            Err(cause) => Err(g.retn.error(Error::CannotUnifyReturn {
+                exp: f.retn.typ().clone().apply(sub),
+                act: g.retn.typ().clone().apply(sub),
                 cause: Box::new(cause),
-            }),
+            })),
             Ok(sub) => Ok(sub),
         }
     }
@@ -1769,6 +1779,42 @@ impl Function {
             self.req.values().any(|t| t.contains(tv))
                 || self.opt.values().any(|t| t.contains(tv))
                 || self.retn.contains(tv)
+        }
+    }
+}
+
+pub(crate) trait TypeLike {
+    type Error;
+    fn typ(&self) -> &MonoType;
+    fn into_type(self) -> MonoType;
+    fn error(&self, error: Error) -> Self::Error;
+}
+
+impl TypeLike for MonoType {
+    type Error = Error;
+    fn typ(&self) -> &MonoType {
+        self
+    }
+    fn into_type(self) -> MonoType {
+        self
+    }
+    fn error(&self, error: Error) -> Error {
+        error
+    }
+}
+
+impl TypeLike for (MonoType, &'_ crate::ast::SourceLocation) {
+    type Error = Located<Error>;
+    fn typ(&self) -> &MonoType {
+        &self.0
+    }
+    fn into_type(self) -> MonoType {
+        self.0
+    }
+    fn error(&self, error: Error) -> Self::Error {
+        Located {
+            location: self.1.clone(),
+            error,
         }
     }
 }

@@ -2908,7 +2908,14 @@ fn infer_pipe() {
             f = (arg=(x=<-) => x) => 0 |> arg()
             g = () => f(arg: (x) => 5 + x)
         "#,
-        err: "error @3:23-3:43: missing pipe argument (argument arg)",
+        expect: expect_test::expect![[r#"
+            error: missing pipe argument (argument arg)
+              ┌─ main:3:30
+              │
+            3 │             g = () => f(arg: (x) => 5 + x)
+              │                              ^^^^^^^^^^^^
+
+        "#]],
     }
 }
 
@@ -3614,7 +3621,7 @@ fn test_error_messages() {
             f(x: "x", y: "y")
         "#,
         // Location points to entire call expression
-        err: "error @3:13-3:30: string is not Subtractable (argument x)",
+        err: "error @3:18-3:21: string is not Subtractable (argument x)",
     }
     test_error_msg! {
         src: r#"
@@ -3622,7 +3629,7 @@ fn test_error_messages() {
             f(r: {b: 1})
         "#,
         // Location points to entire call expression
-        err: "error @3:13-3:25: record is missing label a (argument r)",
+        err: "error @3:18-3:24: record is missing label a (argument r)",
     }
     test_error_msg! {
         src: r#"
@@ -3638,7 +3645,7 @@ fn test_error_messages() {
             fn = (r) => match(r)
         "#,
         // Location points to call expression `match(r)`
-        err: "error @3:25-3:33: found unexpected argument r",
+        err: "error @3:31-3:32: found unexpected argument r",
     }
     test_error_msg! {
         src: r#"
@@ -3646,7 +3653,7 @@ fn test_error_messages() {
             f(a: 0, c: 1)
         "#,
         // Location points to call expression `f(a: 0, c: 1)`
-        err: "error @3:13-3:26: found unexpected argument c",
+        err: "error @3:24-3:25: found unexpected argument c",
     }
     test_error_msg! {
         src: r#"
@@ -3732,16 +3739,16 @@ fn primitive_kind_errors() {
         "#,
         expect: expect_test::expect![[r#"
             error: {} is not Basic (argument v)
-              ┌─ main:2:13
+              ┌─ main:2:23
               │
             2 │             isType(v: {}, type: "record")
-              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              │                       ^^
 
             error: [A] is not Basic (argument v)
-              ┌─ main:3:13
+              ┌─ main:3:23
               │
             3 │             isType(v: [], type: "array")
-              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              │                       ^^
 
         "#]]
     }
@@ -3758,8 +3765,8 @@ fn primitive_kind_short_errors() {
             isType(v: [], type: "array")
         "#,
         expect_short: expect_test::expect![[r#"
-            main:2:13: error: {} is not Basic (argument v)
-            main:3:13: error: [A] is not Basic (argument v)
+            main:2:23: error: {} is not Basic (argument v)
+            main:3:23: error: [A] is not Basic (argument v)
         "#]]
     }
 }
