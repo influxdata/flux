@@ -58,6 +58,8 @@ enum FluxDoc {
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
+
     let app = FluxDoc::from_args();
     match app {
         FluxDoc::Dump {
@@ -222,11 +224,13 @@ impl<'a> example::Executor for CLIExecutor<'a> {
     fn execute(&mut self, code: &str) -> Result<String> {
         let tmpfile = tempfile::NamedTempFile::new()?;
         write!(tmpfile.reopen()?, "{}", code)?;
-        let output = Command::new(self.path)
-            .arg("--format")
-            .arg("csv")
-            .arg(tmpfile.path())
-            .output()?;
+
+        let mut cmd = Command::new(self.path);
+        cmd.arg("--format").arg("csv").arg(tmpfile.path());
+        log::debug!("Executing {:?}", cmd);
+        let output = cmd
+            .output()
+            .with_context(|| format!("Unable to execute `{}`", self.path.display()))?;
 
         if output.status.success() {
             Ok(String::from_utf8(output.stdout)?)

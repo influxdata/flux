@@ -25,13 +25,14 @@ pub fn evaluate_package_examples(
     docs: &mut PackageDoc,
     executor: &mut impl Executor,
 ) -> Result<()> {
+    let path = &docs.path;
     for example in docs.examples.iter_mut() {
         evaluate_example(example, executor)
-            .context(format!("executing example for package {}", &docs.path))?;
+            .with_context(|| format!("executing example for package {}", path))?;
     }
     for (name, doc) in docs.members.iter_mut() {
         evaluate_doc_examples(doc, executor)
-            .context(format!("executing example for {}.{}", &docs.path, name))?;
+            .with_context(|| format!("executing example for {}.{}", path, name))?;
     }
     Ok(())
 }
