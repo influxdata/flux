@@ -54,9 +54,7 @@ impl Error {
         &self,
         _source: &dyn crate::semantic::Source,
     ) -> diagnostic::Diagnostic<()> {
-        diagnostic::Diagnostic::error().with_labels(vec![
-            diagnostic::Label::primary((), 0..0).with_message(self.to_string())
-        ])
+        diagnostic::Diagnostic::error().with_message(self.to_string())
     }
 }
 

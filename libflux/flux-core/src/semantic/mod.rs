@@ -262,23 +262,55 @@ impl Source for codespan_reporting::files::SimpleFile<&str, &str> {
 
 impl Error {
     /// Prints the errors
-    pub fn pretty(errors: &Errors<Self>, source: &str) -> String {
+    pub fn pretty<'a>(
+        errors: impl IntoIterator<Item = &'a Self>,
+        name: &str,
+        source: &str,
+    ) -> String {
+        Self::pretty_config(&term::Config::default(), errors, name, source)
+    }
+
+    /// Prints the errors in their short form
+    pub fn pretty_short<'a>(
+        errors: impl IntoIterator<Item = &'a Self>,
+        name: &str,
+        source: &str,
+    ) -> String {
+        Self::pretty_config(
+            &term::Config {
+                display_style: term::DisplayStyle::Short,
+                ..term::Config::default()
+            },
+            errors,
+            name,
+            source,
+        )
+    }
+
+    /// Prints the errors
+    pub fn pretty_config<'a>(
+        config: &term::Config,
+        errors: impl IntoIterator<Item = &'a Self>,
+        name: &str,
+        source: &str,
+    ) -> String {
         let mut buffer = term::termcolor::Buffer::no_color();
-        let files = codespan_reporting::files::SimpleFile::new("", source);
+        let files = codespan_reporting::files::SimpleFile::new(name, source);
         for err in errors {
-            err.pretty_fmt(&files, &mut buffer).unwrap();
+            err.pretty_fmt(config, &files, &mut buffer).unwrap();
         }
         String::from_utf8(buffer.into_inner()).unwrap()
     }
 
     fn pretty_fmt(
         &self,
+        config: &term::Config,
         files: &codespan_reporting::files::SimpleFile<&str, &str>,
         writer: &mut dyn WriteColor,
     ) -> Result<(), codespan_reporting::files::Error> {
         let diagnostic = self.as_diagnostic(files);
 
-        term::emit(writer, &term::Config::default(), files, &diagnostic)?;
+        term::emit(writer, config, files, &diagnostic)?;
         Ok(())
     }
 

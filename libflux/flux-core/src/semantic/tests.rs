@@ -90,9 +90,9 @@ enum Error {
 }
 
 impl Error {
-    fn pretty(&self, source: &str) -> String {
+    fn pretty(&self, name: &str, source: &str) -> String {
         match self {
-            Self::Semantic(err) => semantic::Error::pretty(err, source),
+            Self::Semantic(err) => semantic::Error::pretty(err, name, source),
             _ => self.to_string(),
         }
     }
@@ -356,7 +356,7 @@ macro_rules! test_pretty_error_msg {
             AnalyzerConfig::default(),
         ) {
             Err(e) => {
-                let got = e.pretty($src);
+                let got = e.pretty(file!(), $src);
                 $err.assert_eq(&got);
             }
             Ok(_) => panic!("expected error, instead program passed type checking"),
@@ -3726,17 +3726,17 @@ fn primitive_kind_errors() {
             isType(v: [], type: "array")
         "#,
         err: expect_test::expect![[r#"
-            error: 
-              ┌─ :2:13
+            error: {} is not Basic (argument v)
+              ┌─ flux-core/src/semantic/tests.rs:2:13
               │
             2 │             isType(v: {}, type: "record")
-              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ {} is not Basic (argument v)
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-            error: 
-              ┌─ :3:13
+            error: [A] is not Basic (argument v)
+              ┌─ flux-core/src/semantic/tests.rs:3:13
               │
             3 │             isType(v: [], type: "array")
-              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ [A] is not Basic (argument v)
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
         "#]]
     }

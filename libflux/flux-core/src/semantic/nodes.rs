@@ -74,11 +74,12 @@ impl Error {
         &self,
         source: &dyn crate::semantic::Source,
     ) -> diagnostic::Diagnostic<()> {
-        diagnostic::Diagnostic::error().with_labels(vec![diagnostic::Label::primary(
-            (),
-            source.codespan_range(&self.location),
-        )
-        .with_message(self.error.to_string())])
+        diagnostic::Diagnostic::error()
+            .with_message(self.error.to_string())
+            .with_labels(vec![diagnostic::Label::primary(
+                (),
+                source.codespan_range(&self.location),
+            )])
     }
 }
 
