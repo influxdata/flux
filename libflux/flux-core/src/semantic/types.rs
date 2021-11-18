@@ -7,6 +7,7 @@ use std::{
     fmt::Write,
 };
 
+use codespan_reporting::diagnostic;
 use derive_more::Display;
 use serde::ser::{Serialize, Serializer};
 
@@ -304,6 +305,12 @@ impl Substitutable for Error {
             | Error::MissingPipeArgument
             | Error::MultiplePipeArguments { .. } => Vec::new(),
         }
+    }
+}
+
+impl Error {
+    pub(crate) fn as_diagnostic(&self) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
     }
 }
 
