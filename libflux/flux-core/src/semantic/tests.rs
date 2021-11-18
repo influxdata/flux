@@ -96,6 +96,12 @@ impl Error {
             _ => self.to_string(),
         }
     }
+    fn pretty_short(&self, name: &str, source: &str) -> String {
+        match self {
+            Self::Semantic(err) => semantic::Error::pretty_short(err, name, source),
+            _ => self.to_string(),
+        }
+    }
 }
 
 impl std::error::Error for Error {}
@@ -305,6 +311,32 @@ macro_rules! test_error_msg {
         ) {
             Err(e) => {
                 let got = e.pretty(file!(), $src);
+                $expect.assert_eq(&got);
+            }
+            Ok(_) => panic!("expected error, instead program passed type checking"),
+        }
+    }};
+
+    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect_short: $expect:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::default();
+        $(
+            imp = $imp;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::default();
+        $(
+            env = $env;
+        )?
+        match infer_types(
+            $src,
+            env,
+            imp,
+            None,
+            AnalyzerConfig::default(),
+        ) {
+            Err(e) => {
+                let got = e.pretty_short(file!(), $src);
                 $expect.assert_eq(&got);
             }
             Ok(_) => panic!("expected error, instead program passed type checking"),
@@ -3713,6 +3745,23 @@ fn primitive_kind_errors() {
             3 │             isType(v: [], type: "array")
               │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+        "#]]
+    }
+}
+
+#[test]
+fn primitive_kind_short_errors() {
+    test_error_msg! {
+        env: map![
+            "isType" => "(v: A, type: string) => bool where A: Basic",
+        ],
+        src: r#"
+            isType(v: {}, type: "record")
+            isType(v: [], type: "array")
+        "#,
+        expect_short: expect_test::expect![[r#"
+            flux-core/src/semantic/tests.rs:2:13: error: {} is not Basic (argument v)
+            flux-core/src/semantic/tests.rs:3:13: error: [A] is not Basic (argument v)
         "#]]
     }
 }
