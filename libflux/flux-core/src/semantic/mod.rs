@@ -248,15 +248,18 @@ pub(crate) trait Source {
 
 impl Source for codespan_reporting::files::SimpleFile<&str, &str> {
     fn codespan_range(&self, location: &ast::SourceLocation) -> Range<usize> {
-        let start = self
-            .line_range((), location.start.line as usize - 1)
-            .unwrap()
-            .start;
-        let end = self
-            .line_range((), location.end.line as usize - 1)
-            .unwrap()
-            .start;
-        start + location.start.column as usize - 1..end + location.end.column as usize - 1
+        (|| {
+            let start = self
+                .line_range((), location.start.line as usize - 1)
+                .ok()?
+                .start;
+            let end = self
+                .line_range((), location.end.line as usize - 1)
+                .ok()?
+                .start;
+            Some(start + location.start.column as usize - 1..end + location.end.column as usize - 1)
+        })()
+        .unwrap_or_default()
     }
 }
 
