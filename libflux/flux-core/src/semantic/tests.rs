@@ -1,4 +1,4 @@
-//! This is the main test module for type inference.
+//! This is th main test module for type inference.
 //!
 //! This module defines two macros:
 //!
@@ -2860,12 +2860,16 @@ fn call_expr() {
             "f" => "(x:(<-:int) => C) => C",
         ]
     }
-    // pipe args have different names
-    test_infer_err! {
+    // pipe args have different names however we infer `f` to have an anonymous pipe argument so
+    // this passes
+    test_infer! {
         src: r#"
             f = (arg=(x=<-) => x, w) => w |> arg()
             f(arg: (v=<-) => v, w: 0)
         "#,
+        exp: map![
+            "f" => "(w:A, ?arg:(<-:A) => B) => B",
+        ]
     }
     // Seems like it might fail because of pipe arg mismatch,
     // but it's okay.
@@ -2882,15 +2886,12 @@ fn call_expr() {
 
 #[test]
 fn infer_pipe() {
-    test_infer! {
+    test_error_msg! {
         src: r#"
             f = (arg=(x=<-) => x) => 0 |> arg()
             g = () => f(arg: (x) => 5 + x)
         "#,
-        exp: map![
-            "f" => "(?arg:(<-x:int) => int) => int",
-            "g" => "() => int",
-        ]
+        err: "error @3:23-3:43: missing pipe argument (argument arg)",
     }
 }
 

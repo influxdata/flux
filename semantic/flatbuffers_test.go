@@ -919,14 +919,14 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name:    "default args",
 			fluxSrc: `f = (x=1, y) => x + y`,
 			types: map[string]string{
-				"f": "(?x: int, y: int) => int",
+				"f": "(?x: A, y: A) => A where A: Addable",
 			},
 		},
 		{
 			name:    "two default args",
 			fluxSrc: `f = (x=1, y=10, z) => x + y + z`,
 			types: map[string]string{
-				"f": "(?x: int, ?y: int, z: int) => int",
+				"f": "(?x: A, ?y: A, z: A) => A where A: Addable",
 			},
 		},
 		{

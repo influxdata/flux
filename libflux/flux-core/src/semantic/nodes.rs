@@ -29,7 +29,6 @@ use crate::{
             self, Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap,
             Tvar, TvarKinds,
         },
-        walk,
     },
 };
 
@@ -965,19 +964,13 @@ impl FunctionExpr {
         // This params will build the nested env when inferring the function body.
         let mut params = PolyTypeMap::new();
         for param in &mut self.params {
-            match &mut param.default {
-                Some(e) => {
+            match param.default {
+                Some(_) => {
                     let id = param.key.name.clone();
                     // We are here: `infer = (a=1) => {...}`.
                     // So, this PolyType is actually a MonoType, whose type
                     // is the one of the default value ("1" in "a=1").
-                    let param_type = if must_constrain_default_argument(e) {
-                        let ncons = e.infer(infer)?;
-                        cons = cons + ncons;
-                        e.type_of()
-                    } else {
-                        MonoType::Var(infer.sub.fresh())
-                    };
+                    let param_type = MonoType::Var(infer.sub.fresh());
                     let typ = PolyType {
                         vars: Vec::new(),
                         cons: TvarKinds::new(),
@@ -1036,7 +1029,7 @@ impl FunctionExpr {
         });
 
         let ncons = if self.params.iter().any(|param| param.default.is_some()) {
-            let t = func.clone().apply(infer.sub);
+            let t = func.apply(infer.sub);
             let p = infer::generalize(&infer.env, infer.sub.cons(), t);
             self.infer_default_params(infer, p)?
         } else {
@@ -1059,15 +1052,10 @@ impl FunctionExpr {
         for param in &mut self.params {
             match param.default {
                 Some(ref mut e) => {
-                    let param_type = if must_constrain_default_argument(e) {
-                        MonoType::Var(infer.sub.fresh())
-                    } else {
-                        let ncons = e.infer(infer)?;
-                        cons = cons + ncons;
-                        e.type_of()
-                    };
+                    let ncons = e.infer(infer)?;
+                    cons = cons + ncons;
                     let id = param.key.name.clone();
-                    opt.insert(id, param_type);
+                    opt.insert(id.to_string(), e.type_of());
                 }
                 None => {
                     let id = param.key.name.clone();
@@ -1076,11 +1064,11 @@ impl FunctionExpr {
                     // So check if this is a piped argument.
                     if param.is_pipe {
                         pipe = Some(types::Property {
-                            k: id,
+                            k: id.to_string(),
                             v: MonoType::Var(ftvar),
                         });
                     } else {
-                        req.insert(id, MonoType::Var(ftvar));
+                        req.insert(id.to_string(), MonoType::Var(ftvar));
                     }
                 }
             }
@@ -2150,33 +2138,6 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
         nanoseconds,
         negative,
     })
-}
-
-/// Since functions without piped arguments may be used in places where a piped function is
-/// expected as long as the name of the arguments match, a default argument that contains a pipe
-/// argument ends up being a necessary part of inference. So we keep the old behavior for these
-/// default arguments.
-///
-/// ```flux
-/// f = (arg=(x=<-) => x) => 0 |> arg()
-/// g = () => f(arg: (x) => 5 + x)
-/// ```
-fn must_constrain_default_argument(expr: &Expression) -> bool {
-    let mut must_constrain = false;
-
-    walk::walk(
-        &mut |node| {
-            if let walk::Node::FunctionExpr(func) = node {
-                for param in &func.params {
-                    if param.is_pipe {
-                        must_constrain = true;
-                    }
-                }
-            }
-        },
-        walk::Node::from_expr(expr),
-    );
-    must_constrain
 }
 
 #[cfg(test)]
