@@ -9,7 +9,7 @@ use thiserror::Error;
 
 use crate::{
     ast,
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
     semantic::{
         env::Environment,
         nodes::*,
@@ -49,17 +49,9 @@ pub enum ErrorKind {
     InvalidDuration(String),
 }
 
-impl Error {
-    pub(crate) fn as_diagnostic(
-        &self,
-        source: &dyn crate::semantic::Source,
-    ) -> diagnostic::Diagnostic<()> {
-        diagnostic::Diagnostic::error()
-            .with_message(self.error.to_string())
-            .with_labels(vec![diagnostic::Label::primary(
-                (),
-                source.codespan_range(&self.location),
-            )])
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
     }
 }
 

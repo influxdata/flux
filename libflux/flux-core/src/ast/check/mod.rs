@@ -5,7 +5,7 @@ use thiserror::Error;
 
 use crate::{
     ast::{walk, PropertyKey},
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
 };
 
 /// Inspects an AST node and returns a list of found AST errors plus
@@ -97,17 +97,9 @@ pub struct ErrorKind {
     pub message: String,
 }
 
-impl Error {
-    pub(crate) fn as_diagnostic(
-        &self,
-        source: &dyn crate::semantic::Source,
-    ) -> diagnostic::Diagnostic<()> {
-        diagnostic::Diagnostic::error()
-            .with_message(self.error.to_string())
-            .with_labels(vec![diagnostic::Label::primary(
-                (),
-                source.codespan_range(&self.location),
-            )])
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
     }
 }
 

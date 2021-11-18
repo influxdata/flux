@@ -72,7 +72,7 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeMap<Symbo
 #[derive(Debug, Display, PartialEq)]
 enum Error {
     #[display(fmt = "{}", _0)]
-    Semantic(Errors<semantic::Error>),
+    Semantic(semantic::FileErrors),
     #[display(
         fmt = "\n\n{}\n\n{}\n{}\n{}\n{}\n",
         r#""unexpected types:".red().bold()"#,
@@ -90,15 +90,15 @@ enum Error {
 }
 
 impl Error {
-    fn pretty(&self, name: &str, source: &str) -> String {
+    fn pretty(&self, source: &str) -> String {
         match self {
-            Self::Semantic(err) => semantic::Error::pretty(err, name, source),
+            Self::Semantic(err) => err.pretty(source),
             _ => self.to_string(),
         }
     }
-    fn pretty_short(&self, name: &str, source: &str) -> String {
+    fn pretty_short(&self, source: &str) -> String {
         match self {
-            Self::Semantic(err) => semantic::Error::pretty_short(err, name, source),
+            Self::Semantic(err) => err.pretty_short(source),
             _ => self.to_string(),
         }
     }
@@ -264,9 +264,9 @@ macro_rules! test_infer_err {
             Err(err @ Error::TypeMismatch {.. }) => {
                 panic!("{}", err)
             }
-            Err(Error::Semantic(errors)) => {
-                for err in errors {
-                    if let semantic::Error{error: semantic::ErrorKind::InvalidAST(_),..} = err {
+            Err(Error::Semantic(error)) => {
+                for err in error.errors {
+                    if let semantic::ErrorKind::InvalidAST(_) = err.error {
                         panic!("{}", err);
                     }
                 }
@@ -310,7 +310,7 @@ macro_rules! test_error_msg {
             AnalyzerConfig::default(),
         ) {
             Err(e) => {
-                let got = e.pretty(file!(), $src);
+                let got = e.pretty($src);
                 $expect.assert_eq(&got);
             }
             Ok(_) => panic!("expected error, instead program passed type checking"),
@@ -336,7 +336,7 @@ macro_rules! test_error_msg {
             AnalyzerConfig::default(),
         ) {
             Err(e) => {
-                let got = e.pretty_short(file!(), $src);
+                let got = e.pretty_short($src);
                 $expect.assert_eq(&got);
             }
             Ok(_) => panic!("expected error, instead program passed type checking"),
@@ -3734,13 +3734,13 @@ fn primitive_kind_errors() {
         "#,
         expect: expect_test::expect![[r#"
             error: {} is not Basic (argument v)
-              ┌─ flux-core/src/semantic/tests.rs:2:13
+              ┌─ main:2:13
               │
             2 │             isType(v: {}, type: "record")
               │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
             error: [A] is not Basic (argument v)
-              ┌─ flux-core/src/semantic/tests.rs:3:13
+              ┌─ main:3:13
               │
             3 │             isType(v: [], type: "array")
               │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -3760,8 +3760,8 @@ fn primitive_kind_short_errors() {
             isType(v: [], type: "array")
         "#,
         expect_short: expect_test::expect![[r#"
-            flux-core/src/semantic/tests.rs:2:13: error: {} is not Basic (argument v)
-            flux-core/src/semantic/tests.rs:3:13: error: [A] is not Basic (argument v)
+            main:2:13: error: {} is not Basic (argument v)
+            main:3:13: error: [A] is not Basic (argument v)
         "#]]
     }
 }
@@ -3774,7 +3774,7 @@ fn invalid_mono_type() {
         "#,
         expect: expect_test::expect![[r#"
             error: invalid named type abc
-              ┌─ flux-core/src/semantic/tests.rs:2:25
+              ┌─ main:2:25
               │
             2 │             builtin x : abc
               │                         ^^^
@@ -3791,7 +3791,7 @@ fn missing_return() {
         "#,
         expect: expect_test::expect![[r#"
             error: missing return statement in block
-              ┌─ flux-core/src/semantic/tests.rs:2:19
+              ┌─ main:2:19
               │
             2 │             () => { }
               │                   ^^^

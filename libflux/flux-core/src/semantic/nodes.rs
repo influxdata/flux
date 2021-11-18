@@ -20,7 +20,7 @@ use derive_more::Display;
 
 use crate::{
     ast,
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
     semantic::{
         env::Environment,
         import::Importer,
@@ -69,19 +69,12 @@ pub enum ErrorKind {
 
 impl std::error::Error for Error {}
 
-impl Error {
-    pub(crate) fn as_diagnostic(
-        &self,
-        source: &dyn crate::semantic::Source,
-    ) -> diagnostic::Diagnostic<()> {
-        let diagnostic = match &self.error {
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        match self {
             ErrorKind::Inference(err) => err.as_diagnostic(),
-            _ => diagnostic::Diagnostic::error().with_message(self.error.to_string()),
-        };
-        diagnostic.with_labels(vec![diagnostic::Label::primary(
-            (),
-            source.codespan_range(&self.location),
-        )])
+            _ => diagnostic::Diagnostic::error().with_message(self.to_string()),
+        }
     }
 }
 

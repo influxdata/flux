@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    errors::{located, Located},
+    errors::{located, AsDiagnostic, Located},
     semantic::{
         nodes,
         nodes::{Assignment, Expression, Statement},
@@ -67,17 +67,9 @@ impl std::fmt::Display for ErrorKind {
 
 impl std::error::Error for Error {}
 
-impl Error {
-    pub(crate) fn as_diagnostic(
-        &self,
-        source: &dyn crate::semantic::Source,
-    ) -> diagnostic::Diagnostic<()> {
-        diagnostic::Diagnostic::error()
-            .with_message(self.error.to_string())
-            .with_labels(vec![diagnostic::Label::primary(
-                (),
-                source.codespan_range(&self.location),
-            )])
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
     }
 }
 

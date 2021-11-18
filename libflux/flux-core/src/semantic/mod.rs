@@ -35,7 +35,7 @@ use thiserror::Error;
 
 use crate::{
     ast,
-    errors::{Errors, Located},
+    errors::{AsDiagnostic, Errors, Located},
     parser,
     semantic::{
         infer::Constraints,
@@ -242,6 +242,16 @@ fn build_record(
     (r, cons)
 }
 
+/// Error represents any any error that can occur during any step of the type analysis process.
+#[derive(Error, Debug, PartialEq)]
+#[error("{errors}")]
+pub struct FileErrors {
+    /// The file that the errors occured in
+    pub file: String,
+    /// The errors the occurred in that file
+    pub errors: Errors<Located<ErrorKind>>,
+}
+
 pub(crate) trait Source {
     fn codespan_range(&self, location: &ast::SourceLocation) -> Range<usize>;
 }
@@ -263,48 +273,35 @@ impl Source for codespan_reporting::files::SimpleFile<&str, &str> {
     }
 }
 
-impl Error {
+impl FileErrors {
     /// Prints the errors
-    pub fn pretty<'a>(
-        errors: impl IntoIterator<Item = &'a Self>,
-        name: &str,
-        source: &str,
-    ) -> String {
-        Self::pretty_config(&term::Config::default(), errors, name, source)
+    pub fn pretty(&self, source: &str) -> String {
+        self.pretty_config(&term::Config::default(), source)
     }
 
     /// Prints the errors in their short form
-    pub fn pretty_short<'a>(
-        errors: impl IntoIterator<Item = &'a Self>,
-        name: &str,
-        source: &str,
-    ) -> String {
-        Self::pretty_config(
+    pub fn pretty_short(&self, source: &str) -> String {
+        self.pretty_config(
             &term::Config {
                 display_style: term::DisplayStyle::Short,
                 ..term::Config::default()
             },
-            errors,
-            name,
             source,
         )
     }
 
     /// Prints the errors
-    pub fn pretty_config<'a>(
-        config: &term::Config,
-        errors: impl IntoIterator<Item = &'a Self>,
-        name: &str,
-        source: &str,
-    ) -> String {
+    pub fn pretty_config(&self, config: &term::Config, source: &str) -> String {
         let mut buffer = term::termcolor::Buffer::no_color();
-        let files = codespan_reporting::files::SimpleFile::new(name, source);
-        for err in errors {
+        let files = codespan_reporting::files::SimpleFile::new(&self.file[..], source);
+        for err in &self.errors {
             err.pretty_fmt(config, &files, &mut buffer).unwrap();
         }
         String::from_utf8(buffer.into_inner()).unwrap()
     }
+}
 
+impl Error {
     fn pretty_fmt(
         &self,
         config: &term::Config,
@@ -316,7 +313,9 @@ impl Error {
         term::emit(writer, config, files, &diagnostic)?;
         Ok(())
     }
+}
 
+impl AsDiagnostic for ErrorKind {
     fn as_diagnostic(&self, source: &dyn Source) -> diagnostic::Diagnostic<()> {
         match self {
             Self::InvalidAST(err) => err.as_diagnostic(source),
@@ -358,13 +357,14 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     pub fn new_with_defaults(env: env::Environment<'env>, importer: I) -> Self {
         Analyzer::new(env, importer, AnalyzerConfig::default())
     }
+
     /// Analyze Flux source code returning the semantic package and the package environment.
     pub fn analyze_source(
         &mut self,
         pkgpath: String,
         file_name: String,
         src: &str,
-    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
         let ast_file = parser::parse_string(file_name, src);
         let ast_pkg = ast::Package {
             base: ast_file.base.clone(),
@@ -374,13 +374,15 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         };
         self.analyze_ast(ast_pkg)
     }
+
     /// Analyze Flux AST returning the semantic package and the package environment.
     pub fn analyze_ast(
         &mut self,
         ast_pkg: ast::Package,
-    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
+
     /// Analyze Flux AST returning the semantic package and the package environment.
     /// A custom fresher may be provided.
     pub fn analyze_ast_with_substitution(
@@ -389,7 +391,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         // operation.
         ast_pkg: ast::Package,
         sub: &mut sub::Substitution,
-    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
         let mut errors = Errors::new();
         if !self.config.skip_checks {
             if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
@@ -397,11 +399,12 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             }
         }
 
+        let file = ast_pkg.package.clone();
         let mut sem_pkg = match convert::convert_package(ast_pkg, &self.env, sub) {
             Ok(sem_pkg) => sem_pkg,
             Err(err) => {
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(errors);
+                return Err(FileErrors { file, errors });
             }
         };
         if !self.config.skip_checks {
@@ -419,11 +422,17 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             Err(err) => {
                 self.env.exit_scope();
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(errors);
+                return Err(FileErrors {
+                    file: sem_pkg.package,
+                    errors,
+                });
             }
         };
         if errors.has_errors() {
-            return Err(errors);
+            return Err(FileErrors {
+                file: sem_pkg.package,
+                errors,
+            });
         }
 
         Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
