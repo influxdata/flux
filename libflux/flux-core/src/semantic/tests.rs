@@ -303,7 +303,10 @@ macro_rules! test_error_msg {
             None,
             AnalyzerConfig::default(),
         ) {
-            Err(e) => $expect.assert_eq(&e.to_string()),
+            Err(e) => {
+                let got = e.pretty(file!(), $src);
+                $expect.assert_eq(&got);
+            }
             Ok(_) => panic!("expected error, instead program passed type checking"),
         }
     }};
@@ -330,34 +333,6 @@ macro_rules! test_error_msg {
                 if e.to_string() != $err {
                     panic!("\n\nexpected error:\n\t{}\n\ngot error:\n\t{}\n\n", $err, e)
                 }
-            }
-            Ok(_) => panic!("expected error, instead program passed type checking"),
-        }
-    }};
-}
-
-macro_rules! test_pretty_error_msg {
-    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
-        #[allow(unused_mut, unused_assignments)]
-        let mut imp = HashMap::default();
-        $(
-            imp = $imp;
-        )?
-        #[allow(unused_mut, unused_assignments)]
-        let mut env = HashMap::default();
-        $(
-            env = $env;
-        )?
-        match infer_types(
-            $src,
-            env,
-            imp,
-            None,
-            AnalyzerConfig::default(),
-        ) {
-            Err(e) => {
-                let got = e.pretty(file!(), $src);
-                $err.assert_eq(&got);
             }
             Ok(_) => panic!("expected error, instead program passed type checking"),
         }
@@ -3717,7 +3692,7 @@ error @3:17-3:18: undefined identifier y",
 
 #[test]
 fn primitive_kind_errors() {
-    test_pretty_error_msg! {
+    test_error_msg! {
         env: map![
             "isType" => "(v: A, type: string) => bool where A: Basic",
         ],
@@ -3725,7 +3700,7 @@ fn primitive_kind_errors() {
             isType(v: {}, type: "record")
             isType(v: [], type: "array")
         "#,
-        err: expect_test::expect![[r#"
+        expect: expect_test::expect![[r#"
             error: {} is not Basic (argument v)
               ┌─ flux-core/src/semantic/tests.rs:2:13
               │
@@ -3748,7 +3723,14 @@ fn invalid_mono_type() {
         src: r#"
             builtin x : abc
         "#,
-        expect: expect_test::expect![[r#"error @2:25-2:28: invalid named type abc"#]]
+        expect: expect_test::expect![[r#"
+            error: invalid named type abc
+              ┌─ flux-core/src/semantic/tests.rs:2:25
+              │
+            2 │             builtin x : abc
+              │                         ^^^
+
+        "#]]
     }
 }
 
@@ -3758,7 +3740,14 @@ fn missing_return() {
         src: r#"
             () => { }
         "#,
-        expect: expect_test::expect![[r#"error @2:19-2:22: missing return statement in block"#]]
+        expect: expect_test::expect![[r#"
+            error: missing return statement in block
+              ┌─ flux-core/src/semantic/tests.rs:2:19
+              │
+            2 │             () => { }
+              │                   ^^^
+
+        "#]]
     }
 }
 
