@@ -1,10 +1,11 @@
-use super::*;
-use crate::ast;
-
-use crate::ast::tests::Locator;
-use crate::ast::Statement::Variable;
 use chrono;
 use pretty_assertions::assert_eq;
+
+use super::*;
+use crate::{
+    ast,
+    ast::{tests::Locator, Statement::Variable},
+};
 
 mod arrow_function;
 mod errors;

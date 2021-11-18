@@ -23,3 +23,12 @@ func TestGetProvider(t *testing.T) {
 		t.Fatalf("unexpected provider -want/+got:\n%s", cmp.Diff(want, got))
 	}
 }
+
+func TestGetNoProvider(t *testing.T) {
+	ctx := context.Background()
+
+	got := influxdb.GetProvider(ctx)
+	if _, ok := got.(influxdb.ErrorProvider); !ok {
+		t.Fatalf("expected error provider, got:\n%T", got)
+	}
+}

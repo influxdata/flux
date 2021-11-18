@@ -1,7 +1,9 @@
-use crate::ast::SourceLocation;
-use crate::semantic::nodes::*;
-use crate::semantic::types::MonoType;
 use std::fmt;
+
+use crate::{
+    ast::SourceLocation,
+    semantic::{nodes::*, types::MonoType},
+};
 
 mk_node!(
     /// Represents any structure that can appear in the semantic graph.
@@ -288,8 +290,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast;
-    use crate::semantic::walk::test_utils::compile;
+    use crate::{ast, semantic::walk::test_utils::compile};
 
     mod node_ids {
         use super::*;
@@ -655,9 +656,10 @@ mod tests {
     }
 
     mod mutate_nodes {
+        use std::collections::HashSet;
+
         use super::*;
         use crate::semantic::types::{MonoType, Tvar};
-        use std::collections::HashSet;
 
         // LocationCollector collects the locations found in the graph while walking.
         struct LocationCollector {

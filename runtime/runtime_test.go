@@ -55,7 +55,7 @@ func TestEval_error(t *testing.T) {
 		t.Fatal("expected error, got none")
 	}
 
-	if want, got := "error at @1:5-1:7: expected ARROW, got EOF\n\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF", err.Error(); want != got {
+	if want, got := "error @1:5-1:7: expected ARROW, got EOF\n\nerror @1:7-1:7: invalid expression: invalid token for primary expression: EOF", err.Error(); want != got {
 		t.Errorf("wanted error %q, got %q", want, got)
 	}
 

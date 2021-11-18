@@ -28,6 +28,7 @@ doc = []
 [dependencies]
 anyhow = "1"
 ena = "0.14"
+env_logger = "0.9"
 thiserror = "1"
 comrak = "0.10.1"
 fnv = "1.0.7"

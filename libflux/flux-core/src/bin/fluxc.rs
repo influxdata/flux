@@ -1,9 +1,8 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::Result;
-use structopt::StructOpt;
-
 use fluxcore::semantic::bootstrap;
+use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "compile the Flux source code")]

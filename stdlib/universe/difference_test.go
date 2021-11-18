@@ -723,3 +723,242 @@ func TestDifference_Process(t *testing.T) {
 		})
 	}
 }
+
+func TestDifference_Process_With_NonNegative_KeepFirst_InitialZero(t *testing.T) {
+	testCases := []struct {
+		name    string
+		spec    *universe.DifferenceProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr error
+	}{
+		// keepFirst: false, initialZero: false
+		{
+			name: "int non negative",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:     []string{execute.DefaultValueColLabel},
+				NonNegative: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), int64(20)},
+					{execute.Time(2), int64(30)},
+					{execute.Time(3), int64(50)},
+					{execute.Time(4), int64(30)},
+					{execute.Time(5), int64(40)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), int64(10)},
+					{execute.Time(3), int64(20)},
+					{execute.Time(4), nil},
+					{execute.Time(5), int64(10)},
+				},
+			}},
+		},
+		// keepFirst: true, initialZero: false
+		{
+			name: "uint with non negative",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:     []string{execute.DefaultValueColLabel},
+				NonNegative: true,
+				KeepFirst:   true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(20)},
+					{execute.Time(2), uint64(30)},
+					{execute.Time(3), uint64(50)},
+					{execute.Time(4), uint64(30)},
+					{execute.Time(5), uint64(40)},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil},
+					{execute.Time(2), int64(10)},
+					{execute.Time(3), int64(20)},
+					{execute.Time(4), nil},
+					{execute.Time(5), int64(10)},
+				},
+			}},
+		},
+		// keepFirst: false, initialZero: true
+		{
+			name: "non negative one table",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:     []string{execute.DefaultValueColLabel},
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 20.0},
+					{execute.Time(2), 30.0},
+					{execute.Time(3), 50.0},
+					{execute.Time(4), 30.0},
+					{execute.Time(5), -40.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(2), 10.0},
+					{execute.Time(3), 20.0},
+					{execute.Time(4), 30.0},
+					{execute.Time(5), nil},
+				},
+			}},
+		},
+		// keepFirst: true, initialZero: true
+		{
+			name: "float with KeepFirst and InitialZero",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:     []string{execute.DefaultValueColLabel},
+				NonNegative: true,
+				KeepFirst:   true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 20.0, "a"},
+					{execute.Time(2), 30.0, "b"},
+					{execute.Time(3), 50.0, "c"},
+					{execute.Time(4), 30.0, "d"},
+					{execute.Time(5), 40.0, "e"},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+					{Label: "t", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), float64(0), "a"},
+					{execute.Time(2), 10.0, "b"},
+					{execute.Time(3), 20.0, "c"},
+					{execute.Time(4), 30.0, "d"},
+					{execute.Time(5), 10.0, "e"},
+				},
+			}},
+		},
+		{
+			name: "with null non negative and InitialZero",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:     []string{"a", "b", "c"},
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), nil, 1.0, 2.0},
+					{execute.Time(1), 6.0, 2.0, nil},
+					{execute.Time(2), 4.0, 2.0, 4.0},
+					{execute.Time(3), 10.0, 10.0, 2.0},
+					{execute.Time(4), nil, nil, 1.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, 1.0, nil},
+					{execute.Time(2), 4.0, 0.0, 2.0},
+					{execute.Time(3), 6.0, 8.0, 2.0},
+					{execute.Time(4), nil, nil, 1.0},
+				},
+			}},
+		},
+		{
+			name: "float with tags and InitialZero",
+			spec: &universe.DifferenceProcedureSpec{
+				Columns:     []string{"a", "b", "c"},
+				NonNegative: true,
+				InitialZero: true,
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), nil, 1.0, 2.0},
+					{execute.Time(1), 6.0, 2.0, nil},
+					{execute.Time(2), 4.0, 2.0, 4.0},
+					{execute.Time(3), 10.0, 10.0, 2.0},
+					{execute.Time(4), nil, nil, 1.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "a", Type: flux.TFloat},
+					{Label: "b", Type: flux.TFloat},
+					{Label: "c", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, 1.0, nil},
+					{execute.Time(2), 4.0, 0.0, 2.0},
+					{execute.Time(3), 6.0, 8.0, 2.0},
+					{execute.Time(4), nil, nil, 1.0},
+				},
+			}},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			executetest.ProcessTestHelper(
+				t,
+				tc.data,
+				tc.want,
+				tc.wantErr,
+				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+					return universe.NewDifferenceTransformation(d, c, tc.spec)
+				},
+			)
+		})
+	}
+}

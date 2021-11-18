@@ -1,5 +1,7 @@
 //! "Fresh" type variable identifiers.
 
+use std::{collections::BTreeMap, hash::Hash};
+
 use crate::semantic::{
     sub::{merge3, merge4, merge_collect},
     types::{
@@ -7,7 +9,6 @@ use crate::semantic::{
         TvarMap,
     },
 };
-use std::{collections::BTreeMap, hash::Hash};
 
 /// A struct used for incrementing type variable identifiers.
 #[derive(Default)]
