@@ -8,7 +8,7 @@ GO_ARGS=-tags '$(GO_TAGS)'
 
 # This invokes a custom package config during Go builds, such that
 # the Rust library libflux is built on the fly.
-export PKG_CONFIG:=$(PWD)/pkg-config.sh
+export PKG_CONFIG:=$(shell pwd)/pkg-config.sh
 
 export GOOS=$(shell go env GOOS)
 export GO_BUILD=env GO111MODULE=on go build $(GO_ARGS)
@@ -83,10 +83,16 @@ clean:
 cleangenerate:
 	rm -rf $(GENERATED_TARGETS)
 
-fmt: $(SOURCES_NO_VENDOR)
+fmt-go:
 	go fmt ./...
+
+fmt-rust:
 	cd libflux; $(CARGO) fmt
+
+fmt-flux:
 	$(GO_RUN) ./cmd/flux/main.go fmt -w ./stdlib
+
+fmt: $(SOURCES_NO_VENDOR) fmt-go fmt-rust fmt-flux
 
 checkfmt:
 	./etc/checkfmt.sh
@@ -178,7 +184,7 @@ test-release: Dockerfile_build
 bin/flux:
 	$(GO_BUILD) -o ./bin/flux ./internal/cmd/flux
 
-	
+
 libflux/target/release/fluxc: libflux
 	cd libflux && $(CARGO) build $(CARGO_ARGS) --release --bin fluxc
 

@@ -38,7 +38,7 @@ func (d Dependency) Inject(ctx context.Context) context.Context {
 func GetProvider(ctx context.Context) Provider {
 	p := ctx.Value(providerKey)
 	if p == nil {
-		return DefaultProvider{}
+		return ErrorProvider{}
 	}
 	return p.(Provider)
 }

@@ -3,6 +3,7 @@ package json
 import (
 	"context"
 	"encoding/json"
+	"github.com/influxdata/flux"
 	"time"
 
 	"github.com/influxdata/flux/codes"
@@ -60,23 +61,39 @@ func convertValue(v values.Value) (interface{}, error) {
 		return v.Regexp().String(), nil
 	case semantic.Array:
 		arr := v.Array()
-		a := make([]interface{}, arr.Len())
-		var rangeErr error
-		arr.Range(func(i int, v values.Value) {
+		switch arr.(type) {
+		// The type system currently conflates TableObject (aka "table stream")
+		// with fully-realized arrays of records requiring it to implement
+		// the Array interface. Since TableObject will currently panic
+		// if the methods provided by this interface are invoked, short-circuit
+		// by returning an error.
+		// XXX: In the future we may delineate the difference between
+		//      fully-realized and streamed collections making this unnecessary.
+		//      <https://github.com/influxdata/flux/issues/4275>
+		case *flux.TableObject:
+			return nil, errors.New(
+				codes.Invalid,
+				"got table stream instead of array. "+
+					"Try using tableFind() or findRecord() to extract data from stream")
+		default:
+			a := make([]interface{}, arr.Len())
+			var rangeErr error
+			arr.Range(func(i int, v values.Value) {
+				if rangeErr != nil {
+					return // short circuit if we already hit an error
+				}
+				val, err := convertValue(v)
+				if err != nil {
+					rangeErr = err
+					return
+				}
+				a[i] = val
+			})
 			if rangeErr != nil {
-				return // short circuit if we already hit an error
+				return nil, rangeErr
 			}
-			val, err := convertValue(v)
-			if err != nil {
-				rangeErr = err
-				return
-			}
-			a[i] = val
-		})
-		if rangeErr != nil {
-			return nil, rangeErr
+			return a, nil
 		}
-		return a, nil
 	case semantic.Object:
 		obj := v.Object()
 		o := make(map[string]interface{}, obj.Len())

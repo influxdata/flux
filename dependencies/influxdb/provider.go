@@ -32,7 +32,7 @@ func (d Dependency) Inject(ctx context.Context) context.Context {
 func GetProvider(ctx context.Context) Provider {
 	p := ctx.Value(readerKey)
 	if p == nil {
-		return HttpProvider{}
+		return ErrorProvider{}
 	}
 	return p.(Provider)
 }

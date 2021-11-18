@@ -8,8 +8,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/dependencies/filesystem"
-	"github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/dependencies"
 	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/opentracing/opentracing-go"
@@ -90,23 +89,8 @@ func configureTracing(ctx context.Context) (context.Context, func(), error) {
 const DefaultInfluxDBHost = "http://localhost:9999"
 
 func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies) {
-	deps := flux.NewDefaultDependencies()
-	deps.Deps.FilesystemService = filesystem.SystemFS
-
-	// inject the dependencies to the context.
-	// one useful example is socket.from, kafka.to, and sql.from/sql.to where we need
-	// to access the url validator in deps to validate the user-specified url.
-	ctx = deps.Inject(ctx)
-
-	ip := influxdb.Dependency{
-		Provider: &influxdb.HttpProvider{
-			DefaultConfig: influxdb.Config{
-				Host: DefaultInfluxDBHost,
-			},
-		},
-	}
-
-	return ip.Inject(ctx), deps
+	deps := dependencies.NewDefaultDependencies(DefaultInfluxDBHost)
+	return deps.Inject(ctx), deps
 }
 
 func main() {

@@ -1,7 +1,7 @@
-use super::*;
-
-use crate::ast::tests::Locator;
 use pretty_assertions::assert_eq;
+
+use super::*;
+use crate::ast::tests::Locator;
 
 #[test]
 fn test_parse_type_expression() {

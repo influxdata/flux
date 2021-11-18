@@ -90,7 +90,7 @@ from(bucket:"mydb")
 func TestToTransformation(t *testing.T) {
 	var written bytes.Buffer
 	deps := dependenciestest.Default()
-	deps.Deps.HTTPClient = &http.Client{
+	deps.Deps.Deps.HTTPClient = &http.Client{
 		Transport: dependenciestest.RoundTripFunc(func(req *http.Request) *http.Response {
 			if _, err := io.Copy(&written, req.Body); err != nil {
 				return &http.Response{
@@ -227,7 +227,7 @@ func TestToTransformation_Errors(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			deps := dependenciestest.Default()
-			deps.Deps.HTTPClient = &http.Client{
+			deps.Deps.Deps.HTTPClient = &http.Client{
 				Transport: dependenciestest.RoundTripFunc(func(req *http.Request) *http.Response {
 					return &http.Response{
 						StatusCode: http.StatusNoContent,

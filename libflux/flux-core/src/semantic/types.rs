@@ -1,17 +1,17 @@
 //! Semantic representations of types.
 
-use crate::semantic::{
-    fresh::{Fresh, Fresher},
-    sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
-};
-
-use derive_more::Display;
-
 use std::{
     cmp,
     collections::{BTreeMap, BTreeSet, HashMap},
     fmt,
     fmt::Write,
+};
+
+use derive_more::Display;
+
+use crate::semantic::{
+    fresh::{Fresh, Fresher},
+    sub::{apply2, apply3, apply4, merge_collect, Substitutable, Substituter, Substitution},
 };
 
 /// For use in generics where the specific type of map is not mentioned.
@@ -311,6 +311,7 @@ impl Substitutable for Error {
 // Kinds are ordered by name so that polytypes are displayed deterministically
 pub enum Kind {
     Addable,
+    Basic,
     Comparable,
     Divisible,
     Equatable,
@@ -579,7 +580,7 @@ impl MonoType {
         match self {
             MonoType::Error => Ok(()),
             MonoType::Bool => match with {
-                Kind::Equatable | Kind::Nullable | Kind::Stringable => Ok(()),
+                Kind::Equatable | Kind::Nullable | Kind::Basic | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
                     act: self.clone(),
                     exp: with,
@@ -593,6 +594,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Basic
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -608,6 +610,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Basic
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -623,6 +626,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Basic
                 | Kind::Stringable
                 | Kind::Negatable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -635,6 +639,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Basic
                 | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
                     act: self.clone(),
@@ -646,6 +651,7 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable
+                | Kind::Basic
                 | Kind::Stringable
                 | Kind::Timeable => Ok(()),
                 _ => Err(Error::CannotConstrain {
@@ -658,18 +664,22 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Timeable
+                | Kind::Basic
                 | Kind::Stringable => Ok(()),
                 _ => Err(Error::CannotConstrain {
                     act: self.clone(),
                     exp: with,
                 }),
             },
-            MonoType::Regexp => Err(Error::CannotConstrain {
-                act: self.clone(),
-                exp: with,
-            }),
+            MonoType::Regexp => match with {
+                Kind::Basic => Ok(()),
+                _ => Err(Error::CannotConstrain {
+                    act: self.clone(),
+                    exp: with,
+                }),
+            },
             MonoType::Bytes => match with {
-                Kind::Equatable => Ok(()),
+                Kind::Equatable | Kind::Basic => Ok(()),
                 _ => Err(Error::CannotConstrain {
                     act: self.clone(),
                     exp: with,
@@ -1610,13 +1620,14 @@ pub trait MaxTvar {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use std::collections::BTreeMap;
 
-    use crate::ast::get_err_type_expression;
-    use crate::parser;
-    use crate::semantic::convert::{convert_monotype, convert_polytype};
+    use super::*;
+    use crate::{
+        ast::get_err_type_expression,
+        parser,
+        semantic::convert::{convert_monotype, convert_polytype},
+    };
 
     /// `polytype` is a utility method that returns a `PolyType` from a string.
     pub fn polytype(typ: &str) -> PolyType {
@@ -2569,6 +2580,7 @@ mod tests {
             Kind::Record,
             Kind::Negatable,
             Kind::Timeable,
+            Kind::Basic,
             Kind::Stringable,
         ];
         let mut str_kinds: Vec<_> = kinds.iter().map(|k| k.to_string()).collect();

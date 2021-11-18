@@ -1,9 +1,11 @@
-use super::*;
-
-use crate::ast::tests::Locator;
-use crate::ast::Expression::{Array, Member};
-use crate::ast::StringExprPart::{Interpolated, Text};
 use pretty_assertions::assert_eq;
+
+use super::*;
+use crate::ast::{
+    tests::Locator,
+    Expression::{Array, Member},
+    StringExprPart::{Interpolated, Text},
+};
 
 #[test]
 fn parse_string_literal() {

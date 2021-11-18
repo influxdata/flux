@@ -10,9 +10,16 @@
 extern crate chrono;
 extern crate derivative;
 
+use std::{collections::HashMap, fmt::Debug, vec::Vec};
+
+use anyhow::{anyhow, bail, Result as AnyhowResult};
+use chrono::{prelude::DateTime, FixedOffset};
+use derivative::Derivative;
+use derive_more::Display;
+
 use crate::{
     ast,
-    errors::Errors,
+    errors::{located, Errors, Located},
     semantic::{
         env::Environment,
         import::Importer,
@@ -25,13 +32,6 @@ use crate::{
     },
 };
 
-use std::{collections::HashMap, fmt::Debug, vec::Vec};
-
-use anyhow::{anyhow, bail, Result as AnyhowResult};
-use chrono::{prelude::DateTime, FixedOffset};
-use derivative::Derivative;
-use derive_more::Display;
-
 /// Result returned from the various 'infer' methods defined in this
 /// module. The result of inferring an expression or statement is a
 /// set of type constraints to be solved.
@@ -40,35 +40,6 @@ pub type Result<T = Constraints> = std::result::Result<T, Error>;
 /// Error returned from the various 'infer' methods defined in this
 /// module.
 pub type Error = Located<ErrorKind>;
-
-/// An error with an attached location
-#[derive(Debug, Display, PartialEq)]
-#[display(fmt = "error {}: {}", location, error)]
-pub struct Located<E> {
-    /// The location where the error occured
-    pub location: ast::SourceLocation,
-    /// The error itself
-    pub error: E,
-}
-
-fn located<E>(location: ast::SourceLocation, error: E) -> Located<E> {
-    Located { location, error }
-}
-
-impl<E> Substitutable for Located<E>
-where
-    E: Substitutable,
-{
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.error.apply_ref(sub).map(|error| Located {
-            location: self.location.clone(),
-            error,
-        })
-    }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.error.free_vars()
-    }
-}
 
 #[derive(Debug, Display, PartialEq)]
 #[allow(missing_docs)]
@@ -2059,9 +2030,13 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast;
-    use crate::semantic::types::{MonoType, Tvar};
-    use crate::semantic::walk::{walk, Node};
+    use crate::{
+        ast,
+        semantic::{
+            types::{MonoType, Tvar},
+            walk::{walk, Node},
+        },
+    };
 
     #[test]
     fn duration_conversion_ok() {

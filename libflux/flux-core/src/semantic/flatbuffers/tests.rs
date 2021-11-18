@@ -1,14 +1,14 @@
 extern crate flatbuffers;
 extern crate walkdir;
 
-use super::semantic_generated::fbsemantic;
-use crate::ast;
-use crate::semantic;
-use crate::semantic::convert;
-use crate::semantic::sub;
+use anyhow::{anyhow, Result};
 use chrono::FixedOffset;
 
-use anyhow::{anyhow, Result};
+use super::semantic_generated::fbsemantic;
+use crate::{
+    ast, semantic,
+    semantic::{convert, sub},
+};
 
 #[test]
 fn test_serialize() {

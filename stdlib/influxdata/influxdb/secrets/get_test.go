@@ -13,7 +13,7 @@ import (
 
 func TestGet(t *testing.T) {
 	deps := dependenciestest.Default()
-	deps.Deps.SecretService = &mock.SecretService{
+	deps.Deps.Deps.SecretService = &mock.SecretService{
 		"mykey": "myvalue",
 	}
 
@@ -60,7 +60,7 @@ func TestGet(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			deps := dependenciestest.Default()
-			deps.Deps.SecretService = tt.secrets
+			deps.Deps.Deps.SecretService = tt.secrets
 			ctx := deps.Inject(context.Background())
 
 			args := values.NewObjectWithValues(tt.args)
