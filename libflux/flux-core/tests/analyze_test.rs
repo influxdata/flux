@@ -1,10 +1,13 @@
-use fluxcore::ast;
-use fluxcore::semantic::env::Environment;
-use fluxcore::semantic::nodes::*;
-use fluxcore::semantic::types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar};
-use fluxcore::semantic::walk::{walk_mut, NodeMut};
-use fluxcore::semantic::Analyzer;
-
+use fluxcore::{
+    ast,
+    semantic::{
+        env::Environment,
+        nodes::*,
+        types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar},
+        walk::{walk_mut, NodeMut},
+        Analyzer,
+    },
+};
 use pretty_assertions::assert_eq;
 
 #[test]

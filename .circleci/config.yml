@@ -111,9 +111,9 @@ jobs:
       - run:
           name: Pin rust version and install mingw rustup target
           command: |
-            RUST_VERSION=$(grep -Eo 'rust:[^ ]+' Dockerfile_build | cut -d: -f2)
+            RUST_VERSION=$(sed -E -ne 's/channel = "(.*)"/\1/p' rust-toolchain.toml)
             if [ -z "$RUST_VERSION" ]; then
-              echo "Error: couldn't parse Rust version from Dockerfile_build!"
+              echo "Error: couldn't parse Rust version from rust-toolchain.toml!"
               exit 1
             fi
             rustup default ${RUST_VERSION}

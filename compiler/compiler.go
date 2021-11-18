@@ -58,7 +58,7 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 		}
 	}
 
-	root, err := compile(f.Block, subst, scope)
+	root, err := compile(f.Block, subst)
 	if err != nil {
 		return nil, errors.Wrapf(err, codes.Inherit, "cannot compile @ %v", f.Location())
 	}
@@ -390,12 +390,12 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 }
 
 // compile recursively compiles semantic nodes into evaluators.
-func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (Evaluator, error) {
+func compile(n semantic.Node, subst map[uint64]semantic.MonoType) (Evaluator, error) {
 	switch n := n.(type) {
 	case *semantic.Block:
 		body := make([]Evaluator, len(n.Body))
 		for i, s := range n.Body {
-			node, err := compile(s, subst, scope)
+			node, err := compile(s, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -408,7 +408,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 	case *semantic.ExpressionStatement:
 		return nil, errors.New(codes.Internal, "statement does nothing, side effects are not supported by the compiler")
 	case *semantic.ReturnStatement:
-		node, err := compile(n.Argument, subst, scope)
+		node, err := compile(n.Argument, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -416,7 +416,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			Evaluator: node,
 		}, nil
 	case *semantic.NativeVariableAssignment:
-		node, err := compile(n.Init, subst, scope)
+		node, err := compile(n.Init, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -429,7 +429,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		properties := make(map[string]Evaluator, len(n.Properties))
 
 		for _, p := range n.Properties {
-			node, err := compile(p.Value, subst, scope)
+			node, err := compile(p.Value, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -438,7 +438,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 
 		var extends *identifierEvaluator
 		if n.With != nil {
-			node, err := compile(n.With, subst, scope)
+			node, err := compile(n.With, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -460,7 +460,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		if len(n.Elements) > 0 {
 			elements = make([]Evaluator, len(n.Elements))
 			for i, e := range n.Elements {
-				node, err := compile(e, subst, scope)
+				node, err := compile(e, subst)
 				if err != nil {
 					return nil, err
 				}
@@ -477,11 +477,11 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			Val Evaluator
 		}, len(n.Elements))
 		for i, item := range n.Elements {
-			key, err := compile(item.Key, subst, scope)
+			key, err := compile(item.Key, subst)
 			if err != nil {
 				return nil, err
 			}
-			val, err := compile(item.Val, subst, scope)
+			val, err := compile(item.Val, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -500,7 +500,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			name: n.Name,
 		}, nil
 	case *semantic.MemberExpression:
-		object, err := compile(n.Object, subst, scope)
+		object, err := compile(n.Object, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -512,11 +512,11 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			nullable: isNullable(t),
 		}, nil
 	case *semantic.IndexExpression:
-		arr, err := compile(n.Array, subst, scope)
+		arr, err := compile(n.Array, subst)
 		if err != nil {
 			return nil, err
 		}
-		idx, err := compile(n.Index, subst, scope)
+		idx, err := compile(n.Index, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -528,7 +528,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 	case *semantic.StringExpression:
 		parts := make([]Evaluator, len(n.Parts))
 		for i, p := range n.Parts {
-			e, err := compile(p, subst, scope)
+			e, err := compile(p, subst)
 			if err != nil {
 				return nil, err
 			}
@@ -542,7 +542,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			value: n.Value,
 		}, nil
 	case *semantic.InterpolatedPart:
-		e, err := compile(n.Expression, subst, scope)
+		e, err := compile(n.Expression, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -586,7 +586,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			duration: v,
 		}, nil
 	case *semantic.UnaryExpression:
-		node, err := compile(n.Argument, subst, scope)
+		node, err := compile(n.Argument, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -596,11 +596,11 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			op:   n.Operator,
 		}, nil
 	case *semantic.LogicalExpression:
-		l, err := compile(n.Left, subst, scope)
+		l, err := compile(n.Left, subst)
 		if err != nil {
 			return nil, err
 		}
-		r, err := compile(n.Right, subst, scope)
+		r, err := compile(n.Right, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -610,15 +610,15 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			right:    r,
 		}, nil
 	case *semantic.ConditionalExpression:
-		test, err := compile(n.Test, subst, scope)
+		test, err := compile(n.Test, subst)
 		if err != nil {
 			return nil, err
 		}
-		c, err := compile(n.Consequent, subst, scope)
+		c, err := compile(n.Consequent, subst)
 		if err != nil {
 			return nil, err
 		}
-		a, err := compile(n.Alternate, subst, scope)
+		a, err := compile(n.Alternate, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -628,12 +628,12 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			alternate:  a,
 		}, nil
 	case *semantic.BinaryExpression:
-		l, err := compile(n.Left, subst, scope)
+		l, err := compile(n.Left, subst)
 		if err != nil {
 			return nil, err
 		}
 		lt := l.Type().Nature()
-		r, err := compile(n.Right, subst, scope)
+		r, err := compile(n.Right, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -658,7 +658,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 			f:     f,
 		}, nil
 	case *semantic.CallExpression:
-		args, err := compile(n.Arguments, subst, scope)
+		args, err := compile(n.Arguments, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -672,13 +672,13 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 				// This should be caught during type inference
 				return nil, errors.Newf(codes.Internal, "callee lacks a pipe argument, but one was provided")
 			}
-			pipe, err := compile(n.Pipe, subst, scope)
+			pipe, err := compile(n.Pipe, subst)
 			if err != nil {
 				return nil, err
 			}
 			args.(*objEvaluator).properties[string(pipeArg.Name())] = pipe
 		}
-		callee, err := compile(n.Callee, subst, scope)
+		callee, err := compile(n.Callee, subst)
 		if err != nil {
 			return nil, err
 		}
@@ -712,7 +712,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 				// Search for default value
 				for _, d := range n.Defaults.Properties {
 					if d.Key.Key() == k {
-						d, err := compile(d.Value, subst, scope)
+						d, err := compile(d.Value, subst)
 						if err != nil {
 							return nil, err
 						}

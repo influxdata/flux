@@ -5,17 +5,13 @@ pub mod semantic_generated;
 #[allow(missing_docs)]
 pub mod types;
 
+use std::{cell::RefCell, rc::Rc};
+
 use anyhow::{anyhow, bail, Error, Result};
-
-use std::cell::RefCell;
-use std::rc::Rc;
-
-use crate::ast;
-
-use crate::semantic;
-use crate::semantic::walk;
 use flatbuffers::{UnionWIPOffset, WIPOffset};
 use semantic_generated::fbsemantic;
+
+use crate::{ast, semantic, semantic::walk};
 
 extern crate chrono;
 use chrono::Duration as ChronoDuration;

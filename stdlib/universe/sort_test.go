@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/universe"
 )
@@ -20,20 +21,6 @@ func TestSortOperation_Marshaling(t *testing.T) {
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
-}
-
-func TestSort_PassThrough(t *testing.T) {
-	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-		s := universe.NewSortTransformation(
-			d,
-			c,
-			&universe.SortProcedureSpec{
-				Columns: []string{"_value"},
-				Desc:    true,
-			},
-		)
-		return s
-	})
 }
 
 func TestSort_Process(t *testing.T) {
@@ -129,7 +116,7 @@ func TestSort_Process(t *testing.T) {
 		{
 			name: "one table multiple columns descending",
 			spec: &universe.SortProcedureSpec{
-				Columns: []string{"_value", "time"},
+				Columns: []string{"_value", "_time"},
 				Desc:    true,
 			},
 			data: []flux.Table{&executetest.Table{
@@ -176,7 +163,7 @@ func TestSort_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				KeyCols: []string{"_stop", "_start"},
+				KeyCols: []string{"_start", "_stop"},
 				ColMeta: []flux.ColMeta{
 					{Label: "_start", Type: flux.TTime},
 					{Label: "_stop", Type: flux.TTime},
@@ -394,13 +381,17 @@ func TestSort_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				nil,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return universe.NewSortTransformation(d, c, tc.spec)
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					tr, d, err := universe.NewSortTransformation(id, tc.spec, alloc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					return tr, d
 				},
 			)
 		})

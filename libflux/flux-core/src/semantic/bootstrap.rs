@@ -6,26 +6,25 @@
 use std::{collections::HashSet, env::consts, fs, io, io::Write, path::Path};
 
 use anyhow::{anyhow, bail, Result};
-
 use libflate::gzip::Encoder;
-
-use crate::ast;
-use crate::parser;
-use crate::semantic::{
-    convert::convert_package,
-    env::Environment,
-    flatbuffers::types::{build_module, finish_serialize},
-    fs::{FileSystemImporter, StdFS},
-    import::Importer,
-    infer,
-    infer::Constraints,
-    nodes,
-    nodes::{infer_package, inject_pkg_types, Package},
-    sub::{Substitutable, Substitution},
-    types::{MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds},
-};
-
 use walkdir::WalkDir;
+
+use crate::{
+    ast, parser,
+    semantic::{
+        convert::convert_package,
+        env::Environment,
+        flatbuffers::types::{build_module, finish_serialize},
+        fs::{FileSystemImporter, StdFS},
+        import::Importer,
+        infer,
+        infer::Constraints,
+        nodes,
+        nodes::{infer_package, inject_pkg_types, Package},
+        sub::{Substitutable, Substitution},
+        types::{MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds},
+    },
+};
 
 // List of packages to include into the Flux prelude
 const PRELUDE: [&str; 3] = ["internal/boolean", "universe", "influxdata/influxdb"];
@@ -402,10 +401,10 @@ pub struct Module {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::get_err_type_expression;
-    use crate::parser;
-    use crate::parser::parse_string;
-    use crate::semantic::convert::convert_polytype;
+    use crate::{
+        ast::get_err_type_expression, parser, parser::parse_string,
+        semantic::convert::convert_polytype,
+    };
 
     #[test]
     fn infer_program() -> Result<()> {

@@ -590,6 +590,14 @@ func (t *TestReporter) Summarize(tests []*Test) {
 			failures = failures + 1
 		}
 	}
+	if failures > 0 {
+		fmt.Printf("\nfailures:\n\n")
+		for _, test := range tests {
+			if err := test.Error(); err != nil {
+				fmt.Printf("\t%s...fail: %s\n", test.Name(), err)
+			}
+		}
+	}
 	fmt.Printf("\n---\nRan %d tests with %d failure(s)\n", len(tests), failures)
 }
 

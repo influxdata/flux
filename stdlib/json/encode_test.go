@@ -33,3 +33,17 @@ json.encode(v: o) == bytes(v:"{\"a\":1,\"b\":{\"x\":[1,2],\"y\":\"string\",\"z\"
 		t.Fatal("evaluation of json.encode failed: ", err)
 	}
 }
+
+func TestJSONEncode_ReceiveTableObjectIsError(t *testing.T) {
+	src := `import "array"
+			import "json"
+			json.encode(v: array.from(rows: [{}]))`
+	_, _, err := runtime.Eval(context.Background(), src)
+	if err == nil {
+		t.Fatal("expected error, got none")
+	}
+
+	if want, got := "error calling function \"encode\" @3:4-3:42: got table stream instead of array. Try using tableFind() or findRecord() to extract data from stream", err.Error(); want != got {
+		t.Errorf("wanted error %q, got %q", want, got)
+	}
+}

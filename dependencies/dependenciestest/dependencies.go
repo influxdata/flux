@@ -1,11 +1,13 @@
 package dependenciestest
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/mock"
 )
@@ -33,7 +35,16 @@ func defaultTestFunction(req *http.Request) *http.Response {
 	}
 }
 
-func Default() flux.Deps {
+type Deps struct {
+	flux.Deps
+	influxdb influxdb.Dependency
+}
+
+func (d Deps) Inject(ctx context.Context) context.Context {
+	return d.influxdb.Inject(d.Deps.Inject(ctx))
+}
+
+func Default() Deps {
 	var deps flux.Deps
 
 	deps.Deps.HTTPClient = &http.Client{
@@ -45,5 +56,10 @@ func Default() flux.Deps {
 	}
 	deps.Deps.FilesystemService = filesystem.SystemFS
 	deps.Deps.URLValidator = url.PassValidator{}
-	return deps
+	return Deps{
+		Deps: deps,
+		influxdb: influxdb.Dependency{
+			Provider: influxdb.HttpProvider{},
+		},
+	}
 }

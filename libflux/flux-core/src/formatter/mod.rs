@@ -1,11 +1,12 @@
 //! Source code formatter.
 
-use crate::ast::{self, walk::Node, File, Statement};
-use crate::parser::parse_string;
-
 use anyhow::{anyhow, Error, Result};
-
 use chrono::SecondsFormat;
+
+use crate::{
+    ast::{self, walk::Node, File, Statement},
+    parser::parse_string,
+};
 
 /// Format a [`File`].
 pub fn convert_to_string(file: &File) -> Result<String> {

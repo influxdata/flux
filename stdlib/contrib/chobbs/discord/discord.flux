@@ -1,16 +1,51 @@
+// Package discord provides functions for sending messages to [Discord](https://discord.com/).
+//
+// introduced: 0.69.0
 package discord
 
 
 import "http"
 import "json"
 
+// discordURL is the Discord webhook URL.
+// Default is `https://discordapp.com/api/webhooks/`.
 option discordURL = "https://discordapp.com/api/webhooks/"
 
-// `webhookToken` - string - the secure token of the webhook.
-// `webhookID` - string - the ID of the webhook.
-// `username` - string - username posting the message.
-// `content` - string - the text to display in discord.
-// `avatar_url` -  override the default avatar of the webhook.
+// send sends a single message to a Discord channel using a Discord webhook.
+//
+// ## Parameters
+//
+// - webhookToken: Discord [webhook token](https://discord.com/developers/docs/resources/webhook).
+// - webhookID: Discord [webhook ID](https://discord.com/developers/docs/resources/webhook).
+// - username: Override the Discord webhook’s default username.
+// - content: Message to send to Discord (2000 character limit).
+// - avatar_url: Override the Discord webhook’s default avatar.
+//
+// ## Examples
+// ### Send the last reported status to Discord
+// ```no_run
+// import "contrib/chobbs/discord"
+// import "influxdata/influxdb/secrets"
+// 
+// token = secrets.get(key: "DISCORD_TOKEN")
+// 
+// lastReported = from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses")
+//     |> last()
+//     |> findRecord(fn: (key) => true, idx: 0)
+// 
+// discord.send(
+//     webhookToken: token,
+//     webhookID: "1234567890",
+//     username: "chobbs",
+//     content: "The current status is \"${lastReported.status}\".",
+//     avatar_url: "https://staff-photos.net/pic.jpg",
+// )
+// ```
+//
+// tags: single notification
+//
 send = (
     webhookToken,
     webhookID,
@@ -25,13 +60,57 @@ send = (
     return http.post(headers: headers, url: discordURL + webhookID + "/" + webhookToken, data: encode)
 }
 
-// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send messages to discord for each table row.
-// `webhookToken` - string - the secure token of the webhook.
-// `webhookID` - string - the ID of the webhook.
-// `username` - string - username posting the message.
-// `avatar_url` -  override the default avatar of the webhook.
-// The returned factory function accepts a `mapFn` parameter.
-// The `mapFn` must return an object with `content`, as defined in the `send` function arguments.
+// endpoint sends a single message to a Discord channel using a
+// [Discord webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks&?page=3)
+// and data from table rows.
+//
+// ## Parameters
+// - webhookToken: Discord [webhook token](https://discord.com/developers/docs/resources/webhook).
+// - webhookID: Discord [webhook ID](https://discord.com/developers/docs/resources/webhook).
+// - username: Override the Discord webhook’s default username.
+// - avatar_url: Override the Discord webhook’s default avatar.
+//
+// ## Usage
+// `discord.endpoint` is a factory function that outputs another function.
+// The output function requires a `mapFn` parameter.
+//
+// ### mapFn
+// A function that builds the record used to generate the Discord webhook request.
+// Requires an `r` parameter.
+//
+// `mapFn` accepts a table row (`r`) and returns a record that must include the following field:
+//
+// - `content`
+//
+// For more information, see the `discord.send()` `content` parameter.
+//
+// ## Examples
+// ### Send critical statuses to a Discord channel
+// ```no_run
+// import "influxdata/influxdb/secrets"
+// import "contrib/chobbs/discord"
+// 
+// discordToken = secrets.get(key: "DISCORD_TOKEN")
+// endpoint = telegram.endpoint(
+//     webhookToken: discordToken,
+//     webhookID: "123456789",
+//     username: "critBot",
+// )
+// 
+// crit_statuses = from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
+// 
+// crit_statuses
+//     |> endpoint(
+//         mapFn: (r) => ({
+//             content: "The status is critical!",
+//         }),
+//     )()
+// ```
+//
+// tags: notifcation endpoints,transformations
+//
 endpoint = (webhookToken, webhookID, username, avatar_url="") => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {

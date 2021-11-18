@@ -1,16 +1,17 @@
-use std::fs::File;
-use std::io::{self, Write};
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::{
+    fs::File,
+    io::{self, Write},
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use anyhow::{bail, Context, Result};
-use structopt::StructOpt;
-
 use fluxcore::{
     doc,
     doc::example,
     semantic::{bootstrap, Analyzer},
 };
+use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "generate and validate Flux source code documentation")]
@@ -57,6 +58,8 @@ enum FluxDoc {
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
+
     let app = FluxDoc::from_args();
     match app {
         FluxDoc::Dump {
@@ -221,11 +224,13 @@ impl<'a> example::Executor for CLIExecutor<'a> {
     fn execute(&mut self, code: &str) -> Result<String> {
         let tmpfile = tempfile::NamedTempFile::new()?;
         write!(tmpfile.reopen()?, "{}", code)?;
-        let output = Command::new(self.path)
-            .arg("--format")
-            .arg("csv")
-            .arg(tmpfile.path())
-            .output()?;
+
+        let mut cmd = Command::new(self.path);
+        cmd.arg("--format").arg("csv").arg(tmpfile.path());
+        log::debug!("Executing {:?}", cmd);
+        let output = cmd
+            .output()
+            .with_context(|| format!("Unable to execute `{}`", self.path.display()))?;
 
         if output.status.success() {
             Ok(String::from_utf8(output.stdout)?)
@@ -254,13 +259,9 @@ const EXCEPTIONS: &[&str] = &[
     "array",
     "contrib",
     "contrib/bonitoo-io",
-    "contrib/bonitoo-io/alerta",
     "contrib/bonitoo-io/servicenow",
-    "contrib/bonitoo-io/tickscript",
     "contrib/bonitoo-io/victorops",
-    "contrib/bonitoo-io/zenoss",
     "contrib/chobbs",
-    "contrib/chobbs/discord",
     "contrib/jsternberg",
     "contrib/jsternberg/aggregate",
     "contrib/jsternberg/influxdb",
@@ -271,9 +272,6 @@ const EXCEPTIONS: &[&str] = &[
     "contrib/sranka/teams",
     "contrib/sranka/telegram",
     "contrib/sranka/webexteams",
-    "contrib/tomhollingworth",
-    "contrib/tomhollingworth/events",
-    "experimental",
     "experimental/aggregate",
     "experimental/array",
     "experimental/bigtable",
@@ -290,15 +288,8 @@ const EXCEPTIONS: &[&str] = &[
     "experimental/table",
     "experimental/usage",
     "influxdata",
-    "influxdata/influxdb",
     "influxdata/influxdb/internal",
     "influxdata/influxdb/internal/testutil",
-    "influxdata/influxdb/monitor",
-    "influxdata/influxdb/sample",
-    "influxdata/influxdb/schema",
-    "influxdata/influxdb/secrets",
-    "influxdata/influxdb/tasks",
-    "influxdata/influxdb/v1",
     "internal",
     "internal/boolean",
     "internal/debug",

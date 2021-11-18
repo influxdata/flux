@@ -1,14 +1,9 @@
 //! The Flux parser.
 
-use std::collections::HashMap;
-use std::mem;
-use std::str;
+use std::{collections::HashMap, mem, str};
 
 use super::DefaultHasher;
-use crate::ast;
-use crate::ast::*;
-use crate::scanner;
-use crate::scanner::*;
+use crate::{ast, ast::*, scanner, scanner::*};
 
 mod strconv;
 
@@ -113,18 +108,13 @@ impl Parser {
         match t.tok {
             tok if tok == exp => (),
             TokenType::Eof => {
-                self.errs
-                    .push(format!("expected {}, got EOF", format!("{}", exp)));
+                self.errs.push(format!("expected {}, got EOF", exp));
             }
             _ => {
                 let pos = ast::Position::from(&t.start_pos);
                 self.errs.push(format!(
                     "expected {}, got {} ({}) at {}:{}",
-                    format!("{}", exp),
-                    format!("{}", t.tok),
-                    t.lit,
-                    pos.line,
-                    pos.column,
+                    exp, t.tok, t.lit, pos.line, pos.column,
                 ));
             }
         }
@@ -138,19 +128,14 @@ impl Parser {
         match t.tok {
             tok if tok == exp => (),
             TokenType::Eof => {
-                self.errs
-                    .push(format!("expected {}, got EOF", format!("{}", exp)));
+                self.errs.push(format!("expected {}, got EOF", exp));
                 self.t = Some(t.clone());
             }
             _ => {
                 let pos = ast::Position::from(&t.start_pos);
                 self.errs.push(format!(
                     "expected {}, got {} ({}) at {}:{}",
-                    format!("{}", exp),
-                    format!("{}", t.tok),
-                    t.lit,
-                    pos.line,
-                    pos.column,
+                    exp, t.tok, t.lit, pos.line, pos.column,
                 ));
                 self.t = Some(t.clone());
             }
@@ -220,11 +205,7 @@ impl Parser {
 
         // Append an error to the current node.
         let tok = tok.clone();
-        self.errs.push(format!(
-            "expected {}, got {}",
-            format!("{}", end),
-            format!("{}", tok.tok)
-        ));
+        self.errs.push(format!("expected {}, got {}", end, tok.tok));
         tok
     }
 
@@ -853,10 +834,12 @@ impl Parser {
         stop_tokens: &[TokenType],
     ) -> Option<Expression> {
         let mut expr = init;
-        while {
-            let t = self.peek();
-            !stop_tokens.contains(&t.tok) && self.more()
-        } {
+
+        let should_continue = |parser: &mut Self| {
+            let t = parser.peek();
+            !stop_tokens.contains(&t.tok) && parser.more()
+        };
+        while should_continue(self) {
             let e = self.parse_expression();
             if let Expression::Bad(_) = e {
                 // We got a BadExpression, push the error and consume the token.
@@ -1350,10 +1333,7 @@ impl Parser {
                 ),
                 ..BaseNode::default()
             },
-            text: format!(
-                "invalid token for primary expression: {}",
-                format!("{}", t.tok)
-            ),
+            text: format!("invalid token for primary expression: {}", t.tok),
             expression: None,
         }))
     }
@@ -1469,7 +1449,7 @@ impl Parser {
                         loc.start.column,
                         loc.end.line,
                         loc.end.column,
-                        format!("{}", t.tok)
+                        t.tok
                     ));
                     return Ok(StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
@@ -1944,10 +1924,7 @@ impl Parser {
         }
         let t = self.peek();
         if t.tok != TokenType::Comma {
-            let err = format!(
-                "expected comma in property list, got {}",
-                format!("{}", t.tok)
-            );
+            let err = format!("expected comma in property list, got {}", t.tok);
             self.errs.push(err);
         } else {
             let last = props.len() - 1;
@@ -1971,10 +1948,7 @@ impl Parser {
             if self.more() {
                 let t = self.peek();
                 if t.tok != TokenType::Comma {
-                    errs.push(format!(
-                        "expected comma in property list, got {}",
-                        format!("{}", t.tok)
-                    ))
+                    errs.push(format!("expected comma in property list, got {}", t.tok))
                 } else {
                     let t = self.consume();
                     p.comma = t.comments;
@@ -2029,8 +2003,7 @@ impl Parser {
             _ => {
                 errs.push(format!(
                     "unexpected token for property key: {} ({})",
-                    format!("{}", t.tok),
-                    t.lit,
+                    t.tok, t.lit,
                 ));
 
                 // We are not really parsing an expression, this is just a way to advance to

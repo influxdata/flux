@@ -140,7 +140,7 @@ disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000004
 					return nil
 				},
 			}
-			deps.Deps.HTTPClient = &http.Client{
+			deps.Deps.Deps.HTTPClient = &http.Client{
 				Transport: roundTripper,
 			}
 			ctx := deps.Inject(context.Background())
@@ -193,7 +193,7 @@ func TestHttpWriter_Write_Error(t *testing.T) {
 			}, nil
 		},
 	}
-	deps.Deps.HTTPClient = &http.Client{
+	deps.Deps.Deps.HTTPClient = &http.Client{
 		Transport: roundTripper,
 	}
 	ctx := deps.Inject(context.Background())

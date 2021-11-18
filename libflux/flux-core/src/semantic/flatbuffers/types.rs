@@ -1,9 +1,8 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
-use crate::semantic::env::Environment;
-use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
-
-use crate::semantic::fresh::Fresher;
+use crate::semantic::{
+    env::Environment, flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher,
+};
 
 #[rustfmt::skip]
 use crate::semantic::{
@@ -95,6 +94,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Negatable => Kind::Negatable,
             fb::Kind::Timeable => Kind::Timeable,
             fb::Kind::Stringable => Kind::Stringable,
+            fb::Kind::Basic => Kind::Basic,
             _ => unreachable!("Unknown fb::Kind"),
         }
     }
@@ -114,6 +114,7 @@ impl From<Kind> for fb::Kind {
             Kind::Negatable => fb::Kind::Negatable,
             Kind::Timeable => fb::Kind::Timeable,
             Kind::Stringable => fb::Kind::Stringable,
+            Kind::Basic => fb::Kind::Basic,
             _ => unreachable!("Unknown Kind"),
         }
     }
@@ -637,11 +638,11 @@ fn build_arg<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::get_err_type_expression;
-    use crate::parser;
-    use crate::semantic::convert::convert_polytype;
-    use crate::semantic::sub::Substitution;
-    use crate::semantic::types::SemanticMap;
+    use crate::{
+        ast::get_err_type_expression,
+        parser,
+        semantic::{convert::convert_polytype, sub::Substitution, types::SemanticMap},
+    };
 
     #[rustfmt::skip]
     use crate::semantic::flatbuffers::semantic_generated::fbsemantic::{

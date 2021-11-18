@@ -1,12 +1,10 @@
 //! Token scanner.
 
-use std::collections::HashMap;
-use std::str;
-use std::vec::Vec;
-
-use crate::ast::Comment;
+use std::{collections::HashMap, str, vec::Vec};
 
 use derive_more::Display;
+
+use crate::ast::Comment;
 
 #[rustfmt::skip]
 #[allow(warnings, missing_docs)]

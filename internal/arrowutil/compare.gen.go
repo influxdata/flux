@@ -93,9 +93,9 @@ func IntCompareDesc(x, y *array.Int, i, j int) int {
 		if y.IsNull(j) {
 			return 0
 		}
-		return 1
-	} else if y.IsNull(j) {
 		return -1
+	} else if y.IsNull(j) {
+		return 1
 	}
 
 	if l, r := x.Value(i), y.Value(j); l > r {
@@ -131,9 +131,9 @@ func UintCompareDesc(x, y *array.Uint, i, j int) int {
 		if y.IsNull(j) {
 			return 0
 		}
-		return 1
-	} else if y.IsNull(j) {
 		return -1
+	} else if y.IsNull(j) {
+		return 1
 	}
 
 	if l, r := x.Value(i), y.Value(j); l > r {
@@ -169,9 +169,9 @@ func FloatCompareDesc(x, y *array.Float, i, j int) int {
 		if y.IsNull(j) {
 			return 0
 		}
-		return 1
-	} else if y.IsNull(j) {
 		return -1
+	} else if y.IsNull(j) {
+		return 1
 	}
 
 	if l, r := x.Value(i), y.Value(j); l > r {
@@ -210,18 +210,18 @@ func BooleanCompareDesc(x, y *array.Boolean, i, j int) int {
 		if y.IsNull(j) {
 			return 0
 		}
-		return 1
-	} else if y.IsNull(j) {
 		return -1
+	} else if y.IsNull(j) {
+		return 1
 	}
 
 	if x.Value(i) {
 		if y.Value(j) {
 			return 0
 		}
-		return 1
-	} else if y.Value(j) {
 		return -1
+	} else if y.Value(j) {
+		return 1
 	}
 	return 0
 
@@ -251,9 +251,9 @@ func StringCompareDesc(x, y *array.String, i, j int) int {
 		if y.IsNull(j) {
 			return 0
 		}
-		return 1
-	} else if y.IsNull(j) {
 		return -1
+	} else if y.IsNull(j) {
+		return 1
 	}
 
 	if l, r := x.Value(i), y.Value(j); l > r {
