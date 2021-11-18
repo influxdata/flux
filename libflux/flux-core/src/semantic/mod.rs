@@ -24,7 +24,7 @@ mod tests;
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
 
-use std::{convert::TryFrom, ops::Range};
+use std::{convert::TryFrom, fmt, ops::Range};
 
 use codespan_reporting::{
     diagnostic,
@@ -244,12 +244,27 @@ fn build_record(
 
 /// Error represents any any error that can occur during any step of the type analysis process.
 #[derive(Error, Debug, PartialEq)]
-#[error("{errors}")]
 pub struct FileErrors {
     /// The file that the errors occured in
     pub file: String,
+    /// The source for this error, if one exists
+    // TODO Change the API such that we must always provide the source?
+    pub source: Option<String>,
+    #[source]
     /// The errors the occurred in that file
     pub errors: Errors<Located<ErrorKind>>,
+}
+
+impl fmt::Display for FileErrors {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &self.source {
+            Some(source) => {
+                let s = self.pretty(source);
+                f.write_str(&s)
+            }
+            None => self.errors.fmt(f),
+        }
+    }
 }
 
 pub(crate) trait Source {
@@ -372,7 +387,10 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             package: ast_file.get_package().to_string(),
             files: vec![ast_file],
         };
-        self.analyze_ast(ast_pkg)
+        self.analyze_ast(ast_pkg).map_err(|mut err| {
+            err.source = Some(src.into());
+            err
+        })
     }
 
     /// Analyze Flux AST returning the semantic package and the package environment.
@@ -404,7 +422,11 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             Ok(sem_pkg) => sem_pkg,
             Err(err) => {
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(FileErrors { file, errors });
+                return Err(FileErrors {
+                    file,
+                    source: None,
+                    errors,
+                });
             }
         };
         if !self.config.skip_checks {
@@ -424,6 +446,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
                 errors.extend(err.into_iter().map(Error::from));
                 return Err(FileErrors {
                     file: sem_pkg.package,
+                    source: None,
                     errors,
                 });
             }
@@ -431,6 +454,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         if errors.has_errors() {
             return Err(FileErrors {
                 file: sem_pkg.package,
+                source: None,
                 errors,
             });
         }
