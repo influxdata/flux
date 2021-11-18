@@ -143,7 +143,7 @@ use crate::scanner::*;
     # This is the scanner used when parsing a string expression.
     string_expr := |*
         "${" => { tok = TokenType::StringExpr; fbreak; };
-		'$"' => { fhold; te -= 1; tok = TokenType::Text; fbreak; };
+        '$"' => { fhold; te -= 1; tok = TokenType::Text; fbreak; };
         '"' => { tok = TokenType::Quote; fbreak; };
         (string_lit_char - "\"")+ => { tok = TokenType::Text; fbreak; };
     *|;
