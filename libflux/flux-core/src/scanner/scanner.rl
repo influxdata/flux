@@ -46,7 +46,7 @@ use crate::scanner::*;
     escaped_char = "\\" ( "n" | "r" | "t" | "\\" | '"' | "${" );
     unicode_value = (any_count_line - [\\$]) | escaped_char;
     byte_value = "\\x" xdigit{2};
-    dollar_value = "$" ( any_count_line - "{" );
+    dollar_value = "$" ( any_count_line - [{"] );
     string_lit_char = ( unicode_value | byte_value | dollar_value );
     string_lit = '"' string_lit_char* "$"? :> '"';
 
@@ -143,6 +143,7 @@ use crate::scanner::*;
     # This is the scanner used when parsing a string expression.
     string_expr := |*
         "${" => { tok = TokenType::StringExpr; fbreak; };
+		'$"' => { fhold; te -= 1; tok = TokenType::Text; fbreak; };
         '"' => { tok = TokenType::Quote; fbreak; };
         (string_lit_char - "\"")+ => { tok = TokenType::Text; fbreak; };
     *|;

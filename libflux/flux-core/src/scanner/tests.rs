@@ -991,6 +991,96 @@ fn test_scan_string_expr_end_with_text() {
 }
 
 #[test]
+fn test_scan_string_expr_with_trailing_dollar() {
+    let text = r#""a + ${a + b} $""#;
+    let mut s = Scanner::new(text);
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: TokenType::Quote,
+            lit: String::from("\""),
+            start_offset: 0,
+            end_offset: 1,
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 2 },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: TokenType::Text,
+            lit: String::from("a + "),
+            start_offset: 1,
+            end_offset: 5,
+            start_pos: Position { line: 1, column: 2 },
+            end_pos: Position { line: 1, column: 6 },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: TokenType::StringExpr,
+            lit: String::from("${"),
+            start_offset: 5,
+            end_offset: 7,
+            start_pos: Position { line: 1, column: 6 },
+            end_pos: Position { line: 1, column: 8 },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: TokenType::Text,
+            lit: String::from("a + b} "),
+            start_offset: 7,
+            end_offset: 14,
+            start_pos: Position { line: 1, column: 8 },
+            end_pos: Position {
+                line: 1,
+                column: 15
+            },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: TokenType::Text,
+            lit: String::from("$"),
+            start_offset: 14,
+            end_offset: 15,
+            start_pos: Position { line: 1, column: 15 },
+            end_pos: Position {
+                line: 1,
+                column: 16
+            },
+            comments: vec![],
+        }
+    );
+    assert_eq!(
+        s.scan_string_expr(),
+        Token {
+            tok: TokenType::Quote,
+            lit: String::from("\""),
+            start_offset: 15,
+            end_offset: 16,
+            start_pos: Position {
+                line: 1,
+                column: 16
+            },
+            end_pos: Position {
+                line: 1,
+                column: 17
+            },
+            comments: vec![],
+        }
+    );
+}
+
+#[test]
 fn test_scan_string_expr_escaped_quotes() {
     let text = r#""these \"\" are escaped quotes""#;
     let mut s = Scanner::new(text);
