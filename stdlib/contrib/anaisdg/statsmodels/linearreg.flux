@@ -30,7 +30,7 @@ import "generate"
 // ## Examples
 //
 // ### Perform a linear regression on a dataset
-// ```
+// ```no_run
 // import "contrib/anaisdg/statsmodels"
 // import "sampledata"
 //
