@@ -37,6 +37,7 @@ use crate::{
         env::Environment,
         fresh::Fresher,
         import::Importer,
+        nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
         Analyzer, AnalyzerConfig,
@@ -138,17 +139,21 @@ fn infer_types(
     let pkg = parse_program(src);
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
     let (env, _) = analyzer.analyze_ast(pkg).map_err(Error::Semantic)?;
-    let got = env.values;
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
-    if let Some(env) = want {
-        let want = parse_map(env);
+    if let Some(want_env) = want {
+        let got = env
+            .values
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.clone()))
+            .collect();
+        let want = parse_map(want_env);
         if want != got {
             return Err(Error::TypeMismatch { want, got });
         }
     }
-    return Ok(got.into());
+    return Ok(env);
 }
 
 /// The test_infer! macro generates test cases for type inference.
@@ -3442,7 +3447,7 @@ fn copy_bindings_from_other_env() {
     let mut env = Environment::empty(true);
     let mut f = Fresher::default();
     env.add(
-        "a".to_string(),
+        Symbol::from("a"),
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
@@ -3451,7 +3456,7 @@ fn copy_bindings_from_other_env() {
     );
     let mut sub_env = Environment::new(env.clone());
     sub_env.add(
-        "b".to_string(),
+        Symbol::from("b"),
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
@@ -3465,12 +3470,12 @@ fn copy_bindings_from_other_env() {
             parent: Some(env.clone().into()),
             readwrite: true,
             values: semantic_map!(
-                "b".to_string() => PolyType {
+                Symbol::from("b") => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
                     expr: MonoType::Var(f.fresh()),
                 },
-                "a".to_string() => PolyType {
+                Symbol::from("a") => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
                     expr: MonoType::Bool,

@@ -479,7 +479,7 @@ fn parse_package_values(
             // package.
             _ => None,
         } {
-            if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
+            if let Some(typ) = &pkgtypes.lookup_str(name.as_str()) {
                 if !name.starts_with("_") {
                     let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
                     members.insert(name.clone(), doc);

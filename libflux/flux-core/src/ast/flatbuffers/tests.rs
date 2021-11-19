@@ -783,9 +783,9 @@ fn unwrap_or_fail<'a, T>(msg: &str, o: &'a Option<T>) -> Result<&'a T> {
     }
 }
 
-fn compare_strings(msg: &str, ast_str: &String, fb_str: &Option<&str>) -> Result<()> {
+fn compare_strings(msg: &str, ast_str: &str, fb_str: &Option<&str>) -> Result<()> {
     let fb_str = unwrap_or_fail("string", fb_str)?;
-    if ast_str.as_str() != *fb_str {
+    if ast_str != *fb_str {
         return Err(anyhow!(
             "{} mismatch: ast: {}, fb: {}",
             msg,

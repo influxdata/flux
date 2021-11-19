@@ -170,7 +170,7 @@ impl Formatter {
         let pkg_name = &n.package;
         self.format_package_clause(&semantic::nodes::PackageClause {
             name: semantic::nodes::Identifier {
-                name: String::from(pkg_name),
+                name: semantic::nodes::Symbol::from(pkg_name.as_str()),
                 loc: ast::SourceLocation::default(),
             },
             loc: ast::SourceLocation::default(),

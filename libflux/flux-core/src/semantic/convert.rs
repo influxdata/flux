@@ -679,7 +679,7 @@ fn convert_property(prop: ast::Property, sub: &mut Substitution) -> Result<Prope
         ast::PropertyKey::Identifier(id) => convert_identifier(id, sub)?,
         ast::PropertyKey::StringLit(lit) => Identifier {
             loc: lit.base.location.clone(),
-            name: convert_string_literal(lit, sub)?.value,
+            name: Symbol::from(convert_string_literal(lit, sub)?.value),
         },
     };
     let value = match prop.value {
@@ -728,7 +728,7 @@ fn convert_dict_expression(expr: ast::DictExpr, sub: &mut Substitution) -> Resul
 fn convert_identifier(id: ast::Identifier, _sub: &mut Substitution) -> Result<Identifier> {
     Ok(Identifier {
         loc: id.base.location,
-        name: id.name,
+        name: Symbol::from(id.name),
     })
 }
 
@@ -739,7 +739,7 @@ fn convert_identifier_expression(
     Ok(IdentifierExpr {
         loc: id.base.location,
         typ: MonoType::Var(sub.fresh()),
-        name: id.name,
+        name: Symbol::from(id.name),
     })
 }
 
@@ -907,7 +907,7 @@ mod tests {
                     loc: b.location.clone(),
                     name: Identifier {
                         loc: b.location.clone(),
-                        name: "foo".to_string(),
+                        name: Symbol::from("foo"),
                     },
                 }),
                 imports: Vec::new(),
@@ -970,7 +970,7 @@ mod tests {
                     loc: b.location.clone(),
                     name: Identifier {
                         loc: b.location.clone(),
-                        name: "foo".to_string(),
+                        name: Symbol::from("foo"),
                     },
                 }),
                 imports: vec![
@@ -990,7 +990,7 @@ mod tests {
                         },
                         alias: Some(Identifier {
                             loc: b.location.clone(),
-                            name: "b".to_string(),
+                            name: Symbol::from("b"),
                         }),
                     },
                 ],
@@ -1048,7 +1048,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: "a".to_string(),
+                            name: Symbol::from("a"),
                         },
                         Expression::Boolean(BooleanLit {
                             loc: b.location.clone(),
@@ -1061,7 +1061,7 @@ mod tests {
                         expression: Expression::Identifier(IdentifierExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
-                            name: "a".to_string(),
+                            name: Symbol::from("a"),
                         }),
                     }),
                 ],
@@ -1126,7 +1126,7 @@ mod tests {
                             loc: b.location.clone(),
                             key: Identifier {
                                 loc: b.location.clone(),
-                                name: "a".to_string(),
+                                name: Symbol::from("a"),
                             },
                             value: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
@@ -1196,7 +1196,7 @@ mod tests {
                             loc: b.location.clone(),
                             key: Identifier {
                                 loc: b.location.clone(),
-                                name: "a".to_string(),
+                                name: Symbol::from("a"),
                             },
                             value: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
@@ -1282,7 +1282,7 @@ mod tests {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: "a".to_string(),
+                                    name: Symbol::from("a"),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
@@ -1293,7 +1293,7 @@ mod tests {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: "b".to_string(),
+                                    name: Symbol::from("b"),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
@@ -1374,24 +1374,24 @@ mod tests {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: "a".to_string(),
+                                    name: Symbol::from("a"),
                                 },
                                 value: Expression::Identifier(IdentifierExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
-                                    name: "a".to_string(),
+                                    name: Symbol::from("a"),
                                 }),
                             },
                             Property {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: "b".to_string(),
+                                    name: Symbol::from("b"),
                                 },
                                 value: Expression::Identifier(IdentifierExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
-                                    name: "b".to_string(),
+                                    name: Symbol::from("b"),
                                 }),
                             },
                         ],
@@ -1520,7 +1520,7 @@ mod tests {
                     assignment: Assignment::Variable(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: "task".to_string(),
+                            name: Symbol::from("task"),
                         },
                         Expression::Object(Box::new(ObjectExpr {
                             loc: b.location.clone(),
@@ -1531,7 +1531,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "name".to_string(),
+                                        name: Symbol::from("name"),
                                     },
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
@@ -1542,7 +1542,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "every".to_string(),
+                                        name: Symbol::from("every"),
                                     },
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
@@ -1557,7 +1557,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "delay".to_string(),
+                                        name: Symbol::from("delay"),
                                     },
                                     value: Expression::Duration(DurationLit {
                                         loc: b.location.clone(),
@@ -1572,7 +1572,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "cron".to_string(),
+                                        name: Symbol::from("cron"),
                                     },
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
@@ -1583,7 +1583,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "retry".to_string(),
+                                        name: Symbol::from("retry"),
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -1657,7 +1657,7 @@ mod tests {
                             object: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: "alert".to_string(),
+                                name: Symbol::from("alert"),
                             }),
                             property: "state".to_string(),
                         },
@@ -1797,7 +1797,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: "f".to_string(),
+                            name: Symbol::from("f"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -1808,7 +1808,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "a".to_string(),
+                                        name: Symbol::from("a"),
                                     },
                                     default: None,
                                 },
@@ -1817,7 +1817,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "b".to_string(),
+                                        name: Symbol::from("b"),
                                     },
                                     default: None,
                                 },
@@ -1831,12 +1831,12 @@ mod tests {
                                     left: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: "a".to_string(),
+                                        name: Symbol::from("a"),
                                     }),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: "b".to_string(),
+                                        name: Symbol::from("b"),
                                     }),
                                 })),
                             }),
@@ -1853,14 +1853,14 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: "f".to_string(),
+                                name: Symbol::from("f"),
                             }),
                             arguments: vec![
                                 Property {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "a".to_string(),
+                                        name: Symbol::from("a"),
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -1871,7 +1871,7 @@ mod tests {
                                     loc: b.location.clone(),
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "b".to_string(),
+                                        name: Symbol::from("b"),
                                     },
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -2021,7 +2021,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: "f".to_string(),
+                            name: Symbol::from("f"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2032,7 +2032,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "a".to_string(),
+                                        name: Symbol::from("a"),
                                     },
                                     default: Some(Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -2044,7 +2044,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "b".to_string(),
+                                        name: Symbol::from("b"),
                                     },
                                     default: Some(Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
@@ -2056,7 +2056,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "c".to_string(),
+                                        name: Symbol::from("c"),
                                     },
                                     default: None,
                                 },
@@ -2074,18 +2074,18 @@ mod tests {
                                         left: Expression::Identifier(IdentifierExpr {
                                             loc: b.location.clone(),
                                             typ: type_info(),
-                                            name: "a".to_string(),
+                                            name: Symbol::from("a"),
                                         }),
                                         right: Expression::Identifier(IdentifierExpr {
                                             loc: b.location.clone(),
                                             typ: type_info(),
-                                            name: "b".to_string(),
+                                            name: Symbol::from("b"),
                                         }),
                                     })),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: "c".to_string(),
+                                        name: Symbol::from("c"),
                                     }),
                                 })),
                             }),
@@ -2102,13 +2102,13 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: "f".to_string(),
+                                name: Symbol::from("f"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: "c".to_string(),
+                                    name: Symbol::from("c"),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
@@ -2399,7 +2399,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: "f".to_string(),
+                            name: Symbol::from("f"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2410,7 +2410,7 @@ mod tests {
                                     is_pipe: true,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "piped".to_string(),
+                                        name: Symbol::from("piped"),
                                     },
                                     default: None,
                                 },
@@ -2419,7 +2419,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "a".to_string(),
+                                        name: Symbol::from("a"),
                                     },
                                     default: None,
                                 },
@@ -2433,12 +2433,12 @@ mod tests {
                                     left: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: "a".to_string(),
+                                        name: Symbol::from("a"),
                                     }),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: type_info(),
-                                        name: "piped".to_string(),
+                                        name: Symbol::from("piped"),
                                     }),
                                 })),
                             }),
@@ -2458,13 +2458,13 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: "f".to_string(),
+                                name: Symbol::from("f"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: "a".to_string(),
+                                    name: Symbol::from("a"),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
@@ -2492,7 +2492,7 @@ mod tests {
                     is_pipe: false,
                     key: Identifier {
                         loc: b.location.clone(),
-                        name: "a".to_string(),
+                        name: Symbol::from("a"),
                     },
                     default: None,
                 },
@@ -2501,7 +2501,7 @@ mod tests {
                     is_pipe: false,
                     key: Identifier {
                         loc: b.location.clone(),
-                        name: "b".to_string(),
+                        name: Symbol::from("b"),
                     },
                     default: None,
                 },
@@ -2515,12 +2515,12 @@ mod tests {
                     left: Expression::Identifier(IdentifierExpr {
                         loc: b.location.clone(),
                         typ: type_info(),
-                        name: "a".to_string(),
+                        name: Symbol::from("a"),
                     }),
                     right: Expression::Identifier(IdentifierExpr {
                         loc: b.location.clone(),
                         typ: type_info(),
-                        name: "b".to_string(),
+                        name: Symbol::from("b"),
                     }),
                 })),
             }),
@@ -2538,7 +2538,7 @@ mod tests {
             is_pipe: true,
             key: Identifier {
                 loc: b.location.clone(),
-                name: "a".to_string(),
+                name: Symbol::from("a"),
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
@@ -2550,7 +2550,7 @@ mod tests {
             is_pipe: false,
             key: Identifier {
                 loc: b.location.clone(),
-                name: "b".to_string(),
+                name: Symbol::from("b"),
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
@@ -2562,7 +2562,7 @@ mod tests {
             is_pipe: false,
             key: Identifier {
                 loc: b.location.clone(),
-                name: "c".to_string(),
+                name: Symbol::from("c"),
             },
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
@@ -2574,7 +2574,7 @@ mod tests {
             is_pipe: false,
             key: Identifier {
                 loc: b.location.clone(),
-                name: "d".to_string(),
+                name: Symbol::from("d"),
             },
             default: None,
         };
@@ -2597,12 +2597,12 @@ mod tests {
                     left: Expression::Identifier(IdentifierExpr {
                         loc: b.location.clone(),
                         typ: type_info(),
-                        name: "a".to_string(),
+                        name: Symbol::from("a"),
                     }),
                     right: Expression::Identifier(IdentifierExpr {
                         loc: b.location.clone(),
                         typ: type_info(),
-                        name: "b".to_string(),
+                        name: Symbol::from("b"),
                     }),
                 })),
             }),
@@ -2659,7 +2659,7 @@ mod tests {
                         array: Expression::Identifier(IdentifierExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
-                            name: "a".to_string(),
+                            name: Symbol::from("a"),
                         }),
                         index: Expression::Integer(IntegerLit {
                             loc: b.location.clone(),
@@ -2732,7 +2732,7 @@ mod tests {
                             array: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: "a".to_string(),
+                                name: Symbol::from("a"),
                             }),
                             index: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
@@ -2808,7 +2808,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: "f".to_string(),
+                                name: Symbol::from("f"),
                             }),
                             arguments: Vec::new(),
                         })),
@@ -2883,7 +2883,7 @@ mod tests {
                             object: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: "a".to_string(),
+                                name: Symbol::from("a"),
                             }),
                             property: "b".to_string(),
                         })),
@@ -2965,7 +2965,7 @@ mod tests {
                                 object: Expression::Identifier(IdentifierExpr {
                                     loc: b.location.clone(),
                                     typ: type_info(),
-                                    name: "a".to_string(),
+                                    name: Symbol::from("a"),
                                 }),
                                 property: "b".to_string(),
                             })),

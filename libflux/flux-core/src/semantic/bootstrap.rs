@@ -264,7 +264,7 @@ fn infer_pkg(
                 &mut imports,
             )?;
 
-            imports.insert(pkg.to_string(), build_polytype(env.values, sub)?);
+            imports.insert(pkg.to_string(), build_polytype(env.string_values(), sub)?);
         }
     }
 
@@ -283,7 +283,7 @@ fn infer_pkg(
     )?;
     sem_pkg = inject_pkg_types(sem_pkg, sub);
 
-    Ok((env.values, imports, sem_pkg))
+    Ok((env.string_values(), imports, sem_pkg))
 }
 
 fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
