@@ -306,7 +306,6 @@ const EXCEPTIONS: &[&str] = &[
     "contrib/rhajek/bigpanda",
     "contrib/sranka",
     "contrib/sranka/teams",
-    "contrib/sranka/telegram",
     "contrib/sranka/webexteams",
     "experimental/aggregate",
     "experimental/array",

@@ -1052,7 +1052,10 @@ fn test_scan_string_expr_with_trailing_dollar() {
             lit: String::from("$"),
             start_offset: 14,
             end_offset: 15,
-            start_pos: Position { line: 1, column: 15 },
+            start_pos: Position {
+                line: 1,
+                column: 15
+            },
             end_pos: Position {
                 line: 1,
                 column: 16
