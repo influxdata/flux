@@ -1,6 +1,7 @@
 // Package bigpanda provides functions for sending alerts to [BigPanda](https://www.bigpanda.io/).
 package bigpanda
 
+
 import "http"
 import "json"
 import "strings"
@@ -202,7 +203,7 @@ endpoint = (url=defaultUrl, token, appKey) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == sendAlert(
