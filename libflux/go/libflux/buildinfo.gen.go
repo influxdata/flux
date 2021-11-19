@@ -12,9 +12,9 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                                          "5b2d7329768097069e6e64bd1f50879a95c08f9671643164a3675dc1ba9defbf",
+	"libflux/Cargo.lock":                                                                          "61e694a4ed12fc717e2e24294f83e97d5d86aae64c544a4fbac816b515c2241d",
 	"libflux/Cargo.toml":                                                                          "91ac4e8b467440c6e8a9438011de0e7b78c2732403bb067d4dd31539ac8a90c1",
-	"libflux/flux-core/Cargo.toml":                                                                "71e9b5e384305ee7f2183726211c287fbe36a610aae70ce877d224ec330cbb98",
+	"libflux/flux-core/Cargo.toml":                                                                "ac83a7a95b3a0a8d3edf0d563df6a4ecc32e8523e50c29ba1f5e9b803738c67e",
 	"libflux/flux-core/src/ast/check/mod.rs":                                                      "047e68cdcbe6a490bab51991e1131b22cbdda880774296d71ac4f7f2cfd146d1",
 	"libflux/flux-core/src/ast/flatbuffers/ast_generated.rs":                                      "895e09284030a8ea05883fbb71d67282a6b567678126f2e2aadfc5bca72ed47d",
 	"libflux/flux-core/src/ast/flatbuffers/mod.rs":                                                "b02d316decf95ec20cd98bf7cb4b015be32b0d087399d9a35d9b9349a2cb4e6c",
@@ -25,7 +25,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/bin/fluxc.rs":                                                          "bf275289e690236988049fc0a07cf832dbac25bb5739c02135b069dcdfab4d0f",
 	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "7d6bd8b027f75de6ed80740c590b8aaf1f0501339cc9a807d261635ede18230b",
 	"libflux/flux-core/src/doc/example.rs":                                                        "13ad7948510ac42fa687b0a278826b1490e30652ab0351ab1f703b282f443f04",
-	"libflux/flux-core/src/doc/mod.rs":                                                            "122fefca2345f5a64efc2046cde267ce699ef8b815c761c9172b5afc35bb927e",
+	"libflux/flux-core/src/doc/mod.rs":                                                            "acdf42a82826fd014a26c4999c2addb15374d4094888449d73860b3d86096524",
 	"libflux/flux-core/src/errors.rs":                                                             "4944f1b71bbc6499b3d11a3b8afdb7c993f14b5be6bf7189ad066ddf5a6c6203",
 	"libflux/flux-core/src/formatter/mod.rs":                                                      "cc66f8a9ce3c467b68e27b278165b7fc0eed53cc682b5305fd2efabf8843ece1",
 	"libflux/flux-core/src/lib.rs":                                                                "86c3461adf221d928d14e50d81a13a91e8ab59ce8772e881659e581e0c18d2dd",
@@ -50,7 +50,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/import.rs":                                                    "d18a5c23509052d973b9e8dae44dfb1f19bd9b46bf205a6ad90a1846ce30e93b",
 	"libflux/flux-core/src/semantic/infer.rs":                                                     "6f1ce5c8af0b0126dcb544acde6b84730977a413909365fd28158c5504894969",
 	"libflux/flux-core/src/semantic/mod.rs":                                                       "294f02aa7ab448b1ec9cbd5fb21e13b32876d0e7f1fd3ed6dcc03e2e511da4dc",
-	"libflux/flux-core/src/semantic/nodes.rs":                                                     "43e610199505dc2ced6087568439cb291895dc37ac95143c491c863a575afeda",
+	"libflux/flux-core/src/semantic/nodes.rs":                                                     "eaa09a013bbf8297f24dc3d346214f49d594173ee0b7a08f8adcce84d0cc1769",
 	"libflux/flux-core/src/semantic/sub.rs":                                                       "41349b1e6185faf6f85ceec11ea6e568788999ab46e6c43d09d11bc07837b616",
 	"libflux/flux-core/src/semantic/types.rs":                                                     "f1d5fafec82ba16aba7f52c7dca51ba0a08cd2d7a5bb669f478a04639fb943aa",
 	"libflux/flux-core/src/semantic/walk/_walk.rs":                                                "d00ebaa70339773b1ce3c3e7ed399244f145d651925a2f5a9831352eb758a1b4",
