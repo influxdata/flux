@@ -479,7 +479,7 @@ fn parse_package_values(
             // package.
             _ => None,
         } {
-            if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
+            if let Some(typ) = &pkgtypes.lookup_str(name.as_str()) {
                 if !name.starts_with("_") {
                     let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
                     members.insert(name.clone(), doc);
@@ -2196,7 +2196,7 @@ foo.a
                             description: None,
                             required: true,
                         }],
-                        flux_type: "(x:int, ?y:int) => int".to_string(),
+                        flux_type: "(x:A, ?y:A) => A where A: Addable".to_string(),
                         is_option: false,
                         source_location: loc.get(9, 9, 9, 31),
                         examples: vec![],

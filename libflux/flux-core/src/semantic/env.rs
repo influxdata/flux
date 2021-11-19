@@ -2,6 +2,7 @@
 use std::{fmt, mem};
 
 use crate::semantic::{
+    nodes::Symbol,
     sub::{apply2, Substitutable, Substituter},
     types::{union, PolyType, PolyTypeMap, Tvar},
 };
@@ -16,7 +17,7 @@ pub struct Environment {
     /// An optional parent environment.
     pub parent: Option<Box<Environment>>,
     /// Values in the environment.
-    pub values: PolyTypeMap,
+    pub values: PolyTypeMap<Symbol>,
     /// Read/write permissions flag.
     pub readwrite: bool,
 }
@@ -63,13 +64,24 @@ impl Substitutable for Environment {
 }
 
 // Derive a type environment from a hash map
-impl From<PolyTypeMap> for Environment {
-    fn from(bindings: PolyTypeMap) -> Environment {
+impl From<PolyTypeMap<Symbol>> for Environment {
+    fn from(bindings: PolyTypeMap<Symbol>) -> Environment {
         Environment {
             parent: None,
             values: bindings,
             readwrite: false,
         }
+    }
+}
+
+impl From<PolyTypeMap> for Environment {
+    fn from(bindings: PolyTypeMap) -> Environment {
+        Environment::from(
+            bindings
+                .into_iter()
+                .map(|(k, v)| (Symbol::from(k), v))
+                .collect::<PolyTypeMap<Symbol>>(),
+        )
     }
 }
 
@@ -112,7 +124,7 @@ impl Environment {
     /// Check whether a `PolyType` `t` given by a
     /// string identifier is in the environment. Also checks parent environments.
     /// If the type is present, returns a pointer to `t`; otherwise, returns `None`.
-    pub fn lookup(&self, v: &str) -> Option<&PolyType> {
+    pub fn lookup(&self, v: &Symbol) -> Option<&PolyType> {
         if let Some(t) = self.values.get(v) {
             Some(t)
         } else if let Some(env) = &self.parent {
@@ -122,13 +134,20 @@ impl Environment {
         }
     }
 
+    /// Check whether a `PolyType` `t` given by a
+    /// string identifier is in the environment. Also checks parent environments.
+    /// If the type is present, returns a pointer to `t`; otherwise, returns `None`.
+    pub fn lookup_str(&self, v: &str) -> Option<&PolyType> {
+        self.lookup(&Symbol::from(v))
+    }
+
     /// Add a new variable binding to the current stack frame.
-    pub fn add(&mut self, name: String, t: PolyType) {
+    pub fn add(&mut self, name: Symbol, t: PolyType) {
         self.values.insert(name, t);
     }
 
     /// Remove a variable binding from the current stack frame.
-    pub fn remove(&mut self, name: &str) {
+    pub fn remove(&mut self, name: &Symbol) {
         self.values.remove(name);
     }
 
@@ -165,6 +184,14 @@ impl Environment {
         for (name, t) in other.values.iter() {
             self.add(name.clone(), t.clone());
         }
+    }
+
+    /// Returns a string keyed `PolyTypeMap`
+    pub fn string_values(self) -> PolyTypeMap {
+        self.values
+            .into_iter()
+            .map(|(k, v)| (k.to_string(), v))
+            .collect()
     }
 
     fn fmt_display(&self, f: &mut fmt::DebugMap<'_, '_>) {

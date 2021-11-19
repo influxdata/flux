@@ -237,7 +237,7 @@ fn check_option_dependencies(opts: &OptionMap) -> Result<()> {
             let opt_name = get_option_name(o)?;
             return Err(located(
                 id.loc.clone(),
-                ErrorKind::DependentOptions(format_option(opt_name), id.name.clone()),
+                ErrorKind::DependentOptions(format_option(opt_name), id.name.to_string()),
             ));
         }
     }

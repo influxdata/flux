@@ -31,9 +31,9 @@ pub struct PolyType {
 }
 
 /// Map of identifier to a polytype that preserves a sorted order when iterating.
-pub type PolyTypeMap = SemanticMap<String, PolyType>;
+pub type PolyTypeMap<T = String> = SemanticMap<T, PolyType>;
 /// Nested map of polytypes that preserves a sorted order when iterating
-pub type PolyTypeMapMap = SemanticMap<String, SemanticMap<String, PolyType>>;
+pub type PolyTypeMapMap = SemanticMap<String, PolyTypeMap>;
 
 /// Alias the maplit literal construction macro so we can specify the type here.
 #[macro_export]
