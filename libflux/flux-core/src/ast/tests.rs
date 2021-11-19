@@ -1,7 +1,8 @@
 // NOTE: These test cases directly match ast/json_test.go.
 // Every test is preceded by the correspondent test case in golang.
-use super::*;
 use chrono::TimeZone;
+
+use super::*;
 
 /// ast_with_every_kind_of_node returns an AST that contains
 /// every kind of node, which can be useful for testing.

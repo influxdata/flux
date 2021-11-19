@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"go.uber.org/zap"
@@ -36,7 +37,8 @@ type ExecutionDependencies struct {
 }
 
 func (d ExecutionDependencies) Inject(ctx context.Context) context.Context {
-	return context.WithValue(ctx, executionDependenciesKey, d)
+	ctx = context.WithValue(ctx, executionDependenciesKey, d)
+	return interpreter.Packages{}.Inject(ctx)
 }
 
 func HaveExecutionDependencies(ctx context.Context) bool {

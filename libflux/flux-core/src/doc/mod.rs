@@ -2,13 +2,18 @@
 
 pub mod example;
 
+use std::{
+    collections::BTreeMap,
+    iter::{Iterator, Peekable},
+    mem,
+    ops::Range,
+};
+
+use anyhow::{bail, Result};
+use derive_more::Display;
 use lazy_static::lazy_static;
 use pulldown_cmark::{Event, OffsetIter, Parser as MarkdownParser, Tag};
 use regex::Regex;
-use std::collections::BTreeMap;
-use std::iter::{Iterator, Peekable};
-use std::mem;
-use std::ops::Range;
 
 use crate::{
     ast,
@@ -17,9 +22,6 @@ use crate::{
         types::{Function, MonoType, PolyType},
     },
 };
-
-use anyhow::{bail, Result};
-use derive_more::Display;
 
 /// Diagnostic represents an issue with the documentation comments.
 /// Something about the formatting or content of the comments does not meet expectations.
@@ -477,9 +479,11 @@ fn parse_package_values(
             // package.
             _ => None,
         } {
-            if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
-                let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
-                members.insert(name.clone(), doc);
+            if let Some(typ) = &pkgtypes.lookup_str(name.as_str()) {
+                if !name.starts_with("_") {
+                    let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
+                    members.insert(name.clone(), doc);
+                }
             } else {
                 bail!("type of value {} not found in environment", &name);
             }
@@ -585,7 +589,11 @@ fn parse_function_doc(
         })
     }
     // Validate all parameters were documented
-    let params_on_type: Vec<&String> = fun_typ.req.keys().chain(fun_typ.opt.keys()).collect();
+    let mut params_on_type: Vec<&String> = fun_typ.req.keys().chain(fun_typ.opt.keys()).collect();
+    if let Some(pipe) = &fun_typ.pipe {
+        // Add pipe parameter to set if it exists
+        params_on_type.push(&pipe.k)
+    }
     for name in &params_on_type {
         if !contains_parameter(&parameters, name.as_str()) {
             diagnostics.push(Diagnostic {
@@ -594,6 +602,7 @@ fn parse_function_doc(
             });
         }
     }
+
     // Validate extra parameters are not documented
     for param in &parameters {
         if !param.name.is_empty() && !params_on_type.iter().any(|&name| name == &param.name) {
@@ -1118,19 +1127,18 @@ impl<'a> Parser<'a> {
 
 #[cfg(test)]
 mod test {
+    use std::collections::BTreeMap;
+
     use super::{
         parse_package_doc_comments, shorten, Diagnostic, Diagnostics, Doc, Example, FunctionDoc,
         PackageDoc, ParameterDoc, Parser, Token, ValueDoc,
     };
-
     use crate::{
         ast,
         ast::tests::Locator,
         parser::parse_string,
         semantic::{env::Environment, types::PolyTypeMap, Analyzer},
     };
-
-    use std::collections::BTreeMap;
 
     macro_rules! map {
         ($( $key: expr => $val: expr ),*$(,)?) => {{
@@ -1190,6 +1198,28 @@ mod test {
         let src = "
         // Package foo does a thing.
         package foo
+        ";
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: None,
+                members: BTreeMap::default(),
+                examples: Vec::new(),
+                metadata: None,
+            },
+            vec![],
+        );
+    }
+    #[test]
+    fn test_package_private_values() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        _thisIsPrivate = 1
         ";
         assert_docs_full(
             src,
@@ -1779,9 +1809,10 @@ foo.a
         //
         // ## Parameters
         // - x: is any value.
+        // - p: is any value piped to the function.
         //
         // More description after the parameter list.
-        f = (x) => x
+        f = (x,p=<-) => p + x
         ";
         let loc = Locator::new(&src[..]);
         assert_docs_full(
@@ -1796,15 +1827,23 @@ foo.a
                         name: "f".to_string(),
                         headline: "f is a function.".to_string(),
                         description: Some("More specifically f is the identity function, it returns any value it is passed as a\nparameter.\n\nMore description after the parameter list.".to_string()),
-                        parameters: vec![ParameterDoc{
-                            name: "x".to_string(),
-                            headline: "x: is any value.".to_string(),
-                            description: None,
-                            required: true,
-                        }],
-                        flux_type: "(x:A) => A".to_string(),
+                        parameters: vec![
+                            ParameterDoc{
+                                name: "x".to_string(),
+                                headline: "x: is any value.".to_string(),
+                                description: None,
+                                required: true,
+                            },
+                            ParameterDoc{
+                                name: "p".to_string(),
+                                headline: "p: is any value piped to the function.".to_string(),
+                                description: None,
+                                required: false,
+                            }
+                        ],
+                        flux_type: "(<-p:A, x:A) => A where A: Addable".to_string(),
                         is_option: false,
-                        source_location: loc.get(14,9,14,21),
+                        source_location: loc.get(15,9,15,30),
                         examples: vec![],
                         metadata: None,
                     })),
@@ -2080,6 +2119,53 @@ foo.a
         );
     }
     #[test]
+    fn test_function_doc_missing_pipe_parameter() {
+        let src = "
+        // Package foo does a thing.
+        package foo
+
+        // add is a function.
+        //
+        // ## Parameters
+        // - x: is any value.
+        add = (x,y=<-) => x + y
+        ";
+        let loc = Locator::new(&src[..]);
+        assert_docs_full(
+            src,
+            PackageDoc {
+                path: "path".to_string(),
+                name: "foo".to_string(),
+                headline: "Package foo does a thing.".to_string(),
+                description: None,
+                members: map![
+                    "add" => Doc::Function(Box::new(FunctionDoc{
+                        name: "add".to_string(),
+                        headline: "add is a function.".to_string(),
+                        description: None,
+                        parameters: vec![ParameterDoc{
+                            name: "x".to_string(),
+                            headline: "x: is any value.".to_string(),
+                            description: None,
+                            required: true,
+                        }],
+                        flux_type: "(<-y:A, x:A) => A where A: Addable".to_string(),
+                        is_option: false,
+                        source_location: loc.get(9, 9, 9, 32),
+                        examples: vec![],
+                        metadata: None,
+                    })),
+                ],
+                examples: Vec::new(),
+                metadata: None,
+            },
+            vec![Diagnostic {
+                msg: "missing documentation for parameter \"y\"".to_string(),
+                loc: loc.get(9, 9, 9, 32),
+            }],
+        );
+    }
+    #[test]
     fn test_function_doc_missing_optional_parameter() {
         let src = "
         // Package foo does a thing.
@@ -2110,7 +2196,7 @@ foo.a
                             description: None,
                             required: true,
                         }],
-                        flux_type: "(x:int, ?y:int) => int".to_string(),
+                        flux_type: "(x:A, ?y:A) => A where A: Addable".to_string(),
                         is_option: false,
                         source_location: loc.get(9, 9, 9, 31),
                         examples: vec![],

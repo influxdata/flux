@@ -24,9 +24,9 @@ mod tests;
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
 
-use crate::{ast, errors::Errors, parser};
-
 use thiserror::Error;
+
+use crate::{ast, errors::Errors, parser};
 
 /// Error represents any any error that can occur during any step of the type analysis process.
 ///
@@ -145,6 +145,7 @@ impl<I: import::Importer> Analyzer<I> {
         if errors.has_errors() {
             return Err(errors);
         }
+
         Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))
     }
 

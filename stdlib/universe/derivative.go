@@ -4,20 +4,24 @@ import (
 	"context"
 	"time"
 
+	"github.com/apache/arrow/go/arrow/bitutil"
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/array"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/execute/table"
-	"github.com/influxdata/flux/internal/feature"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/values"
 )
+
+//go:generate -command tmpl ../../gotool.sh github.com/benbjohnson/tmpl
+//go:generate tmpl -data=@../../internal/types.tmpldata -o derivative.gen.go derivative.gen.go.tmpl
 
 const DerivativeKind = "derivative"
 
@@ -136,497 +140,326 @@ func createDerivativeTransformation(id execute.DatasetID, mode execute.Accumulat
 	return NewDerivativeTransformation(a.Context(), id, s, a.Allocator())
 }
 
-type derivativeTransformation struct {
-	execute.ExecutionNode
-	d     execute.Dataset
-	cache execute.TableBuilderCache
+func NewDerivativeTransformation(ctx context.Context, id execute.DatasetID, spec *DerivativeProcedureSpec, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	tr := &derivativeTransformation{
+		unit:        float64(spec.Unit.Duration()),
+		nonNegative: spec.NonNegative,
+		columns:     spec.Columns,
+		timeCol:     spec.TimeColumn,
+	}
+	return execute.NewNarrowStateTransformation(id, tr, mem)
+}
 
+type derivativeTransformation struct {
 	unit        float64
 	nonNegative bool
 	columns     []string
 	timeCol     string
 }
 
-func NewDerivativeTransformation(ctx context.Context, id execute.DatasetID, spec *DerivativeProcedureSpec, mem *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
-	if feature.OptimizeDerivative().Enabled(ctx) {
-		return newDerivativeTransformation2(id, spec, mem)
+func (t *derivativeTransformation) Process(chunk table.Chunk, state interface{}, d *execute.TransportDataset, mem memory.Allocator) (interface{}, bool, error) {
+	var dstate *derivativeState
+	if state != nil {
+		dstate = state.(*derivativeState)
 	}
 
-	cache := execute.NewTableBuilderCache(mem)
-	d := execute.NewDataset(id, execute.DiscardingMode, cache)
-	tr := &derivativeTransformation{
-		d:           d,
-		cache:       cache,
-		unit:        float64(values.Duration(spec.Unit).Duration()),
-		nonNegative: spec.NonNegative,
-		columns:     spec.Columns,
-		timeCol:     spec.TimeColumn,
+	ns, err := t.processChunk(chunk, dstate, d, mem)
+	if err != nil {
+		return nil, false, err
 	}
-	return tr, tr.d, nil
+	return ns, true, nil
 }
 
-func (t *derivativeTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
-
-func (t *derivativeTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	builder, created := t.cache.TableBuilder(tbl.Key())
-	if !created {
-		return errors.Newf(codes.FailedPrecondition, "derivative found duplicate table with key: %v", tbl.Key())
-	}
-
-	cols := tbl.Cols()
-	doDerivative := make([]*derivative, len(cols))
-	timeIdx := -1
-	for j, c := range cols {
-		d := &derivative{
-			col:         c,
-			unit:        t.unit,
-			nonNegative: t.nonNegative,
-		}
-		if !execute.ContainsStr(t.columns, c.Label) {
-			d.passthrough = true
-		}
-
-		if c.Label == t.timeCol {
-			timeIdx = j
-		}
-		doDerivative[j] = d
-	}
-
+func (t *derivativeTransformation) processChunk(chunk table.Chunk, state *derivativeState, d *execute.TransportDataset, mem memory.Allocator) (*derivativeState, error) {
+	timeIdx := chunk.Index(t.timeCol)
 	if timeIdx < 0 {
-		return errors.Newf(codes.FailedPrecondition, "no column %q exists", t.timeCol)
+		return nil, errors.Newf(codes.FailedPrecondition, "no column %q exists", t.timeCol)
+	} else if want, got := flux.TTime, chunk.Col(timeIdx).Type; want != got {
+		return nil, errors.Newf(codes.FailedPrecondition, "time column %q is type %s and not %s", t.timeCol, got, want)
 	}
 
-	for j, d := range doDerivative {
-		typ, err := d.Type()
+	// Initialize or reconcile the state depending on if we have existing state
+	// for this group key.
+	if state == nil {
+		ns, err := t.initializeState(chunk)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		c := flux.ColMeta{
-			Label: cols[j].Label,
-			Type:  typ,
-		}
-		if _, err := builder.AddCol(c); err != nil {
-			return err
+		state = ns
+	} else {
+		if err := t.reconcileState(chunk, state); err != nil {
+			return nil, err
 		}
 	}
 
-	return tbl.Do(func(cr flux.ColReader) error {
-		if cr.Len() == 0 {
-			return nil
-		}
+	// Count the number of time values that will be considered by
+	// the derivative. This is done once here so we can pre-allocate
+	// arrays before we start to compute derivatives.
+	ts := chunk.Ints(timeIdx)
 
-		ts := cr.Times(timeIdx)
-		if ts.NullN() > 0 {
-			return errors.New(codes.FailedPrecondition, "derivative found null time in time column")
-		}
+	// Due to duplicate time values, we need to pre-process the times to determine
+	// if they are in a valid order and filter out any duplicates.
+	// If they are out of order, this will return an error. If there are duplicates,
+	// a mask will be returned that tells us how to filter each column.
+	var mask []byte
+	bitset, err := t.timeMask(ts, state, mem)
+	if err != nil {
+		return nil, err
+	} else if bitset != nil {
+		mask = bitset.Bytes()
+		defer bitset.Release()
 
-		for j, d := range doDerivative {
-			vs := table.Values(cr, j)
-			if err := d.Do(ts, vs, builder, j); err != nil {
-				return err
+		// If a mask was returned, use it to filter the time values.
+		ts = arrowutil.FilterInts(ts, mask, mem)
+		defer ts.Release()
+	}
+
+	buffer := arrow.TableBuffer{
+		GroupKey: chunk.Key(),
+		Columns:  state.cols,
+		Values:   make([]array.Interface, len(state.cols)),
+	}
+	for i, col := range buffer.Columns {
+		// Retrieve the input column for this column.
+		var vs array.Interface
+		if idx := chunk.Index(col.Label); idx >= 0 {
+			// Retrieve the input column and apply a mask if required.
+			vs = chunk.Values(i)
+			if len(mask) > 0 {
+				vs = arrowutil.Filter(vs, mask, mem)
+			} else {
+				vs.Retain()
 			}
+		} else {
+			// If the input column does not exist, produce
+			// an array of null values for the given input
+			// type as determined by the state.
+			//
+			// This allows us to continue using the same code
+			// below and to process the derivative with an
+			// array of null values.
+			vs = arrow.Nulls(state.data[i].inputType, ts.Len(), mem)
 		}
-		return nil
-	})
+
+		// Process the input array with the derivative state.
+		colState := state.data[i]
+		buffer.Values[i] = colState.state.Do(ts, vs, mem)
+
+		// Release the array. We either retained a copy earlier
+		// or used a version that was created by us so we now
+		// need to release it.
+		vs.Release()
+	}
+
+	// Record if at least one row was processed.
+	// This is used to ensure that reconciled columns are
+	// put into the same initialization state as already existing
+	// columns if they are discovered by future table chunks.
+	//
+	// This condition can end up being false when something like
+	// filter returns an empty table chunk because the rows were all
+	// filtered and then a future chunk returns at least one value.
+	// We want the chunk with at least one value to signify that the
+	// derivative was initialized.
+	if chunk.Len() > 0 {
+		state.initialized = true
+	}
+
+	// Validate the buffer was constructed correctly.
+	if err := buffer.Validate(); err != nil {
+		return nil, err
+	}
+
+	out := table.ChunkFromBuffer(buffer)
+	if err := d.Process(out); err != nil {
+		return nil, err
+	}
+	return state, nil
 }
 
-func (t *derivativeTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
+// timeMask will produce a mask to exclude duplicate time columns and it will validate
+// that the times are strictly ascending.
+//
+// If the time column is strictly ascending and there are no duplicates, this will
+// return nil for the mask which implies that a mask should not be applied.
+func (t *derivativeTransformation) timeMask(ts *array.Int, d *derivativeState, mem memory.Allocator) (*memory.Buffer, error) {
+	if ts.NullN() > 0 {
+		return nil, errors.New(codes.FailedPrecondition, "derivative found null time in time column")
+	} else if ts.Len() == 0 {
+		return nil, nil
+	}
+
+	bitset := memory.NewResizableBuffer(mem)
+	bitset.Resize(ts.Len())
+
+	i := 0
+	if !d.initialized {
+		d.t = ts.Value(0)
+		bitutil.SetBit(bitset.Buf(), 0)
+		i++
+	}
+
+	for ; i < ts.Len(); i++ {
+		t := ts.Value(i)
+		if t < d.t {
+			return nil, errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
+		} else if t == d.t {
+			// If time did not increase with this row, ignore it.
+			bitutil.ClearBit(bitset.Buf(), i)
+			continue
+		}
+		d.t = t
+		bitutil.SetBit(bitset.Buf(), i)
+	}
+
+	// If the bitset indicates that all rows were selected,
+	// do not return a mask.
+	n := bitutil.CountSetBits(bitset.Bytes(), 0, bitset.Len())
+	if n == ts.Len() {
+		bitset.Release()
+		return nil, nil
+	}
+	return bitset, nil
 }
-func (t *derivativeTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
+
+// initializeState will initialize the derivativeState using the first table.Chunk for
+// the given group key.
+func (t *derivativeTransformation) initializeState(chunk table.Chunk) (*derivativeState, error) {
+	state := &derivativeState{
+		cols: make([]flux.ColMeta, 0, chunk.NCols()),
+		data: make([]*derivativeColumn, 0, chunk.NCols()),
+	}
+
+	for _, col := range chunk.Cols() {
+		if err := t.initializeColumnState(col, state); err != nil {
+			return nil, err
+		}
+	}
+	return state, nil
 }
-func (t *derivativeTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
+
+// reconcileState will take the existing state and a table.Chunk and it will ensure
+// that the types still match and add new columns to the derivativeState if they weren't
+// present originally.
+func (t *derivativeTransformation) reconcileState(chunk table.Chunk, state *derivativeState) error {
+	for _, col := range chunk.Cols() {
+		idx := execute.ColIdx(col.Label, state.cols)
+		if idx >= 0 {
+			// The column previously existed so it needs to have the same
+			// input type otherwise it is not valid.
+			if want, got := state.data[idx].inputType, col.Type; want != got {
+				return errors.Newf(codes.FailedPrecondition, "schema collision detected: column %q is both of type %s and %s", col.Label, want, got)
+			}
+			continue
+		}
+
+		// The column has not previously been seen.
+		// Add it and pre-initialize it if the previous columns
+		// were already initialized. The pre-initialization is done
+		// within the method call.
+		if err := t.initializeColumnState(col, state); err != nil {
+			return err
+		}
+	}
+	return nil
 }
+
+// initializeColumnState will initialize a derivative for the given column and add
+// it to the derivativeState.
+func (t *derivativeTransformation) initializeColumnState(col flux.ColMeta, state *derivativeState) error {
+	data, err := t.derivativeStateFor(col, state)
+	if err != nil {
+		return err
+	}
+	state.cols = append(state.cols, flux.ColMeta{
+		Label: col.Label,
+		Type:  data.Type(),
+	})
+	state.data = append(state.data, &derivativeColumn{
+		inputType: col.Type,
+		state:     data,
+	})
+	return nil
+}
+
+// derivativeStateFor will create the derivativeColumnState for the given column.
+func (t *derivativeTransformation) derivativeStateFor(col flux.ColMeta, state *derivativeState) (derivativeColumnState, error) {
+	if execute.ContainsStr(t.columns, col.Label) {
+		switch col.Type {
+		case flux.TInt:
+			return &derivativeInt{
+				unit:        t.unit,
+				nonNegative: t.nonNegative,
+				initialized: state.initialized,
+			}, nil
+		case flux.TUInt:
+			return &derivativeUint{
+				unit:        t.unit,
+				nonNegative: t.nonNegative,
+				initialized: state.initialized,
+			}, nil
+		case flux.TFloat:
+			return &derivativeFloat{
+				unit:        t.unit,
+				nonNegative: t.nonNegative,
+				initialized: state.initialized,
+			}, nil
+		default:
+			return nil, errors.Newf(codes.FailedPrecondition, "unsupported derivative column type %s:%s", col.Label, col.Type)
+		}
+	}
+
+	return &derivativePassthrough{
+		typ:         col.Type,
+		initialized: state.initialized,
+	}, nil
+}
+
+func (t *derivativeTransformation) Dispose() {}
 
 const derivativeUnsortedTimeErr = "derivative found out-of-order times in time column"
 
-// derivative computes the derivative for an array.
-type derivative struct {
+type derivativeState struct {
+	cols        []flux.ColMeta
+	data        []*derivativeColumn
 	t           int64
-	v           interface{}
-	col         flux.ColMeta
-	unit        float64
-	passthrough bool
-	nonNegative bool
 	initialized bool
 }
 
-// Type will return the type for this column given the input type.
-func (d *derivative) Type() (flux.ColType, error) {
-	if d.passthrough {
-		return d.col.Type, nil
-	}
-
-	switch d.col.Type {
-	case flux.TFloat, flux.TInt, flux.TUInt:
-		// The above types are the only ones that support derivative.
-		return flux.TFloat, nil
-	default:
-		// Everything else will fail.
-		return flux.TInvalid, errors.Newf(codes.FailedPrecondition, "unsupported derivative column type %s:%s", d.col.Label, d.col.Type)
-	}
+type derivativeColumn struct {
+	inputType flux.ColType
+	state     derivativeColumnState
 }
 
-// Do will compute the derivative for the given array using the times.
-func (d *derivative) Do(ts *array.Int, vs array.Interface, b execute.TableBuilder, j int) error {
-	switch d.col.Type {
-	case flux.TInt:
-		return d.doInts(ts, vs.(*array.Int), b, j)
-	case flux.TUInt:
-		return d.doUints(ts, vs.(*array.Uint), b, j)
-	case flux.TFloat:
-		return d.doFloats(ts, vs.(*array.Float), b, j)
-	case flux.TString:
-		return d.doStrings(ts, vs.(*array.String), b, j)
-	case flux.TBool:
-		return d.doBools(ts, vs.(*array.Boolean), b, j)
-	case flux.TTime:
-		return d.doTimes(ts, vs.(*array.Int), b, j)
-	}
-	return errors.Newf(codes.Unimplemented, "derivative: column type %s is unimplemented", d.col.Type)
+type derivativeColumnState interface {
+	Type() flux.ColType
+	Do(ts *array.Int, vs array.Interface, mem memory.Allocator) array.Interface
 }
 
-func (d *derivative) doInts(ts, vs *array.Int, b execute.TableBuilder, j int) error {
-	i := 0
+type derivativePassthrough struct {
+	typ         flux.ColType
+	initialized bool
+}
 
-	// Initialize by reading the first value.
+func (d *derivativePassthrough) Type() flux.ColType {
+	return d.typ
+}
+
+func (d *derivativePassthrough) Do(ts *array.Int, vs array.Interface, mem memory.Allocator) array.Interface {
+	// Empty column chunk returns an empty array
+	// and does not initialize the derivative.
+	if vs.Len() == 0 {
+		vs.Retain()
+		return vs
+	}
+
+	// If the derivative has not been initialized, we are going
+	// to slice off the first element.
 	if !d.initialized {
-		d.t = ts.Value(i)
-		if vs.IsValid(i) {
-			d.v = vs.Value(i)
-		}
 		d.initialized = true
-		i++
+		return array.Slice(vs, 1, vs.Len())
+	} else {
+		vs.Retain()
+		return vs
 	}
-
-	// Process the rest of the rows.
-	for l := vs.Len(); i < l; i++ {
-		t := ts.Value(i)
-		if t < d.t {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		} else if t == d.t {
-			// If time did not increase with this row, ignore it.
-			continue
-		}
-
-		// If we have been told to pass through the value, just do that.
-		if d.passthrough {
-			if vs.IsNull(i) {
-				if err := b.AppendNil(j); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendInt(j, vs.Value(i)); err != nil {
-					return err
-				}
-			}
-			d.t = t
-			continue
-		}
-
-		// If the current value is nil, append nil and skip to the
-		// next point. We do not modify the previous value when we
-		// see null and we do not update the timestamp.
-		if vs.IsNull(i) {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-			continue
-		}
-
-		// If we haven't yet seen a valid value, append nil and use
-		// the current value as the previous for the next iteration.
-		// to use the current value.
-		if d.v == nil {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-			d.t, d.v = t, vs.Value(i)
-			continue
-		}
-
-		// We have seen a valid value so retrieve it now.
-		pv, cv := d.v.(int64), vs.Value(i)
-		if d.nonNegative && pv > cv {
-			// The previous value is greater than the current
-			// value and non-negative was set.
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-		} else {
-			// Do the derivative.
-			elapsed := float64(t-d.t) / d.unit
-			diff := float64(cv - pv)
-			if err := b.AppendFloat(j, diff/elapsed); err != nil {
-				return err
-			}
-		}
-		d.t, d.v = t, cv
-	}
-	return nil
-}
-
-func (d *derivative) doUints(ts *array.Int, vs *array.Uint, b execute.TableBuilder, j int) error {
-	i := 0
-
-	// Initialize by reading the first value.
-	if !d.initialized {
-		d.t = ts.Value(i)
-		if vs.IsValid(i) {
-			d.v = vs.Value(i)
-		}
-		d.initialized = true
-		i++
-	}
-
-	// Process the rest of the rows.
-	for l := vs.Len(); i < l; i++ {
-		t := ts.Value(i)
-		if t < d.t {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		} else if t == d.t {
-			// If time did not increase with this row, ignore it.
-			continue
-		}
-
-		// If we have been told to pass through the value, just do that.
-		if d.passthrough {
-			if vs.IsNull(i) {
-				if err := b.AppendNil(j); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendUInt(j, vs.Value(i)); err != nil {
-					return err
-				}
-			}
-			d.t = t
-			continue
-		}
-
-		// If the current value is nil, append nil and skip to the
-		// next point. We do not modify the previous value when we
-		// see null and we do not update the timestamp.
-		if vs.IsNull(i) {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-			continue
-		}
-
-		// If we haven't yet seen a valid value, append nil and use
-		// the current value as the previous for the next iteration.
-		// to use the current value.
-		if d.v == nil {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-			d.t, d.v = t, vs.Value(i)
-			continue
-		}
-
-		// We have seen a valid value so retrieve it now.
-		pv, cv := d.v.(uint64), vs.Value(i)
-		if d.nonNegative && pv > cv {
-			// The previous value is greater than the current
-			// value and non-negative was set.
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-		} else {
-			// Do the derivative.
-			elapsed := float64(t-d.t) / d.unit
-
-			var diff float64
-			if pv > cv {
-				// Avoid wrapping on unsigned subtraction.
-				diff = -float64(pv - cv)
-			} else {
-				diff = float64(cv - pv)
-			}
-
-			if err := b.AppendFloat(j, diff/elapsed); err != nil {
-				return err
-			}
-		}
-		d.t, d.v = t, cv
-	}
-	return nil
-}
-
-func (d *derivative) doFloats(ts *array.Int, vs *array.Float, b execute.TableBuilder, j int) error {
-	i := 0
-
-	// Initialize by reading the first value.
-	if !d.initialized {
-		d.t = ts.Value(i)
-		if vs.IsValid(i) {
-			d.v = vs.Value(i)
-		}
-		d.initialized = true
-		i++
-	}
-
-	// Process the rest of the rows.
-	for l := vs.Len(); i < l; i++ {
-		t := ts.Value(i)
-		if t < d.t {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		} else if t == d.t {
-			// If time did not increase with this row, ignore it.
-			continue
-		}
-
-		// If we have been told to pass through the value, just do that.
-		if d.passthrough {
-			if vs.IsNull(i) {
-				if err := b.AppendNil(j); err != nil {
-					return err
-				}
-			} else {
-				if err := b.AppendFloat(j, vs.Value(i)); err != nil {
-					return err
-				}
-			}
-			d.t = t
-			continue
-		}
-
-		// If the current value is nil, append nil and skip to the
-		// next point. We do not modify the previous value when we
-		// see null and we do not update the timestamp.
-		if vs.IsNull(i) {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-			continue
-		}
-
-		// If we haven't yet seen a valid value, append nil and use
-		// the current value as the previous for the next iteration.
-		// to use the current value.
-		if d.v == nil {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-			d.t, d.v = t, vs.Value(i)
-			continue
-		}
-
-		// We have seen a valid value so retrieve it now.
-		pv, cv := d.v.(float64), vs.Value(i)
-		if d.nonNegative && pv > cv {
-			// The previous value is greater than the current
-			// value and non-negative was set.
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-		} else {
-			// Do the derivative.
-			elapsed := float64(t-d.t) / d.unit
-			diff := cv - pv
-			if err := b.AppendFloat(j, diff/elapsed); err != nil {
-				return err
-			}
-		}
-		d.t, d.v = t, cv
-	}
-	return nil
-}
-
-func (d *derivative) doStrings(ts *array.Int, vs *array.String, b execute.TableBuilder, j int) error {
-	i := 0
-	if !d.initialized {
-		d.t = ts.Value(i)
-		d.initialized = true
-		i++
-	}
-
-	for l := vs.Len(); i < l; i++ {
-		t := ts.Value(i)
-		if t < d.t {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		} else if t == d.t {
-			// If time did not increase with this row, ignore it.
-			continue
-		}
-
-		if vs.IsNull(i) {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendString(j, vs.Value(i)); err != nil {
-				return err
-			}
-		}
-		d.t = t
-	}
-	return nil
-}
-
-func (d *derivative) doBools(ts *array.Int, vs *array.Boolean, b execute.TableBuilder, j int) error {
-	i := 0
-	if !d.initialized {
-		d.t = ts.Value(i)
-		d.initialized = true
-		i++
-	}
-
-	for l := vs.Len(); i < l; i++ {
-		t := ts.Value(i)
-		if t < d.t {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		} else if t == d.t {
-			// If time did not increase with this row, ignore it.
-			continue
-		}
-
-		if vs.IsNull(i) {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendBool(j, vs.Value(i)); err != nil {
-				return err
-			}
-		}
-		d.t = t
-	}
-	return nil
-}
-
-func (d *derivative) doTimes(ts, vs *array.Int, b execute.TableBuilder, j int) error {
-	i := 0
-	if !d.initialized {
-		d.t = ts.Value(i)
-		d.initialized = true
-		i++
-	}
-
-	for l := vs.Len(); i < l; i++ {
-		t := ts.Value(i)
-		if t < d.t {
-			return errors.New(codes.FailedPrecondition, derivativeUnsortedTimeErr)
-		} else if t == d.t {
-			// If time did not increase with this row, ignore it.
-			continue
-		}
-
-		if vs.IsNull(i) {
-			if err := b.AppendNil(j); err != nil {
-				return err
-			}
-		} else {
-			if err := b.AppendTime(j, execute.Time(vs.Value(i))); err != nil {
-				return err
-			}
-		}
-		d.t = t
-	}
-	return nil
 }

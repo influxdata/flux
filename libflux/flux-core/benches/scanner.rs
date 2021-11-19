@@ -3,7 +3,6 @@ extern crate criterion;
 extern crate fluxcore;
 
 use criterion::{black_box, Criterion};
-
 use fluxcore::scanner;
 
 const FLUX: &str = r#"from(bucket: "benchtest")

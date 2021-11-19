@@ -15,7 +15,7 @@ pub trait Importer {
 }
 impl Importer for Environment {
     fn import(&mut self, path: &str) -> Option<PolyType> {
-        self.lookup(path).cloned()
+        self.lookup_str(path).cloned()
     }
 }
 impl Importer for PolyTypeMap {

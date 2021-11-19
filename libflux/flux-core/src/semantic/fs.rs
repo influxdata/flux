@@ -1,15 +1,14 @@
 //! Provides implementations of Importer types backed by the file system or a zip archive.
 
+use std::{fs, io, io::Read, path};
+
+use libflate::gzip::Decoder;
+
 use crate::semantic::{
     flatbuffers::semantic_generated::fbsemantic as fb,
     import::Importer,
     types::{PolyType, PolyTypeMap},
 };
-
-use libflate::gzip::Decoder;
-
-use std::io::Read;
-use std::{fs, io, path};
 
 pub trait FileSystem {
     type File: io::Read;

@@ -7,12 +7,10 @@ use std::{
     path::{self, Path},
 };
 
-use fluxcore::semantic::bootstrap;
-use fluxcore::semantic::env::Environment;
-use fluxcore::semantic::flatbuffers::types as fb;
-use fluxcore::semantic::sub::Substitutable;
-
 use anyhow::{bail, Result};
+use fluxcore::semantic::{
+    bootstrap, env::Environment, flatbuffers::types as fb, sub::Substitutable,
+};
 use walkdir::WalkDir;
 
 fn serialize<'a, T, S, F>(ty: T, f: F, path: &path::Path) -> Result<()>

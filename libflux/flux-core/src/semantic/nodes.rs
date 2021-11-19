@@ -10,9 +10,16 @@
 extern crate chrono;
 extern crate derivative;
 
+use std::{collections::HashMap, fmt, fmt::Debug, vec::Vec};
+
+use anyhow::{anyhow, bail, Result as AnyhowResult};
+use chrono::{prelude::DateTime, FixedOffset};
+use derivative::Derivative;
+use derive_more::Display;
+
 use crate::{
     ast,
-    errors::Errors,
+    errors::{located, Errors, Located},
     semantic::{
         env::Environment,
         import::Importer,
@@ -25,13 +32,6 @@ use crate::{
     },
 };
 
-use std::{collections::HashMap, fmt::Debug, vec::Vec};
-
-use anyhow::{anyhow, bail, Result as AnyhowResult};
-use chrono::{prelude::DateTime, FixedOffset};
-use derivative::Derivative;
-use derive_more::Display;
-
 /// Result returned from the various 'infer' methods defined in this
 /// module. The result of inferring an expression or statement is a
 /// set of type constraints to be solved.
@@ -40,35 +40,6 @@ pub type Result<T = Constraints> = std::result::Result<T, Error>;
 /// Error returned from the various 'infer' methods defined in this
 /// module.
 pub type Error = Located<ErrorKind>;
-
-/// An error with an attached location
-#[derive(Debug, Display, PartialEq)]
-#[display(fmt = "error {}: {}", location, error)]
-pub struct Located<E> {
-    /// The location where the error occured
-    pub location: ast::SourceLocation,
-    /// The error itself
-    pub error: E,
-}
-
-fn located<E>(location: ast::SourceLocation, error: E) -> Located<E> {
-    Located { location, error }
-}
-
-impl<E> Substitutable for Located<E>
-where
-    E: Substitutable,
-{
-    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
-        self.error.apply_ref(sub).map(|error| Located {
-            location: self.location.clone(),
-            error,
-        })
-    }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.error.free_vars()
-    }
-}
 
 #[derive(Debug, Display, PartialEq)]
 #[allow(missing_docs)]
@@ -139,7 +110,7 @@ impl From<infer::Error> for Error {
     }
 }
 
-type VectorizeEnv = HashMap<String, MonoType>;
+type VectorizeEnv = HashMap<Symbol, MonoType>;
 
 struct InferState<'a> {
     sub: &'a mut Substitution,
@@ -485,15 +456,15 @@ impl File {
 
         for dec in &self.imports {
             let path = &dec.path.value;
-            let name = dec.import_name();
+            let name = Symbol::from(dec.import_name());
 
-            imports.push(name);
+            imports.push(name.clone());
 
             let poly = importer.import(path).unwrap_or_else(|| {
                 infer.error(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()));
                 PolyType::error()
             });
-            infer.env.add(name.to_owned(), poly);
+            infer.env.add(name, poly);
         }
 
         let constraints = self
@@ -532,7 +503,7 @@ impl File {
             })?;
 
         for name in imports {
-            infer.env.remove(name);
+            infer.env.remove(&name);
         }
         Ok(constraints)
     }
@@ -764,7 +735,7 @@ impl VariableAssgn {
         self.cons = p.cons.clone();
 
         // Update the type environment
-        infer.env.add(String::from(&self.id.name), p);
+        infer.env.add(self.id.name.clone(), p);
         Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -994,20 +965,19 @@ impl FunctionExpr {
         let mut params = PolyTypeMap::new();
         for param in &mut self.params {
             match param.default {
-                Some(ref mut e) => {
-                    let ncons = e.infer(infer)?;
-                    cons = cons + ncons;
+                Some(_) => {
                     let id = param.key.name.clone();
                     // We are here: `infer = (a=1) => {...}`.
                     // So, this PolyType is actually a MonoType, whose type
                     // is the one of the default value ("1" in "a=1").
+                    let param_type = MonoType::Var(infer.sub.fresh());
                     let typ = PolyType {
                         vars: Vec::new(),
                         cons: TvarKinds::new(),
-                        expr: e.type_of(),
+                        expr: param_type.clone(),
                     };
                     params.insert(id.clone(), typ);
-                    opt.insert(id, e.type_of());
+                    opt.insert(id.to_string(), param_type);
                 }
                 None => {
                     // We are here: `infer = (a) => {...}`.
@@ -1024,14 +994,14 @@ impl FunctionExpr {
                     // So check if this is a piped argument.
                     if param.is_pipe {
                         pipe = Some(types::Property {
-                            k: id,
+                            k: id.to_string(),
                             v: MonoType::Var(ftvar),
                         });
                     } else {
-                        req.insert(id, MonoType::Var(ftvar));
+                        req.insert(id.to_string(), MonoType::Var(ftvar));
                     }
                 }
-            };
+            }
         }
         // Add the parameters to some nested environment.
         infer.env.enter_scope();
@@ -1042,6 +1012,9 @@ impl FunctionExpr {
         let bcons = self.body.infer(infer)?;
         // Now pop the nested environment, we don't need it anymore.
         infer.env.exit_scope();
+
+        cons = cons + bcons;
+
         let retn = self.body.type_of();
         let func = MonoType::from(Function {
             req,
@@ -1049,14 +1022,78 @@ impl FunctionExpr {
             pipe,
             retn,
         });
-        cons = cons + bcons;
         cons.add(Constraint::Equal {
             exp: self.typ.clone(),
-            act: func,
+            act: func.clone(),
             loc: self.loc.clone(),
         });
+
+        let ncons = if self.params.iter().any(|param| param.default.is_some()) {
+            let t = func.apply(infer.sub);
+            let p = infer::generalize(&infer.env, infer.sub.cons(), t);
+            self.infer_default_params(infer, p)?
+        } else {
+            Constraints::empty()
+        };
+
+        Ok(cons + ncons)
+    }
+
+    fn infer_default_params(
+        &mut self,
+        infer: &mut InferState<'_>,
+        function_type: PolyType,
+    ) -> Result {
+        let mut cons = Constraints::empty();
+        let mut pipe = None;
+        let mut req = MonoTypeMap::new();
+        let mut opt = MonoTypeMap::new();
+
+        for param in &mut self.params {
+            match param.default {
+                Some(ref mut e) => {
+                    let ncons = e.infer(infer)?;
+                    cons = cons + ncons;
+                    let id = param.key.name.clone();
+                    opt.insert(id.to_string(), e.type_of());
+                }
+                None => {
+                    let id = param.key.name.clone();
+                    let ftvar = infer.sub.fresh();
+                    // Piped arguments cannot have a default value.
+                    // So check if this is a piped argument.
+                    if param.is_pipe {
+                        pipe = Some(types::Property {
+                            k: id.to_string(),
+                            v: MonoType::Var(ftvar),
+                        });
+                    } else {
+                        req.insert(id.to_string(), MonoType::Var(ftvar));
+                    }
+                }
+            }
+        }
+
+        let retn = MonoType::Var(infer.sub.fresh());
+        let default_func = MonoType::from(Function {
+            req,
+            opt,
+            pipe,
+            retn,
+        });
+
+        let (exp, ncons) = infer::instantiate(function_type, infer.sub, self.loc.clone());
+        cons = cons + ncons;
+
+        cons.add(Constraint::Equal {
+            exp,
+            act: default_func,
+            loc: self.loc.clone(),
+        });
+
         Ok(cons)
     }
+
     #[allow(missing_docs)]
     pub fn pipe(&self) -> Option<&FunctionParameter> {
         for p in &self.params {
@@ -1147,7 +1184,7 @@ impl FunctionExpr {
                                 loc: e.loc.clone(),
                                 typ: MonoType::from(types::Record::new(
                                     properties.iter().map(|p| types::Property {
-                                        k: p.key.name.clone(),
+                                        k: p.key.name.to_string(),
                                         v: p.value.type_of(),
                                     }),
                                     with.as_ref().map(|with| with.typ.clone()),
@@ -1451,7 +1488,7 @@ impl CallExpr {
             let ncons = expr.infer(infer)?;
             cons = cons + ncons;
             // Every argument is required in a function call.
-            req.insert(id.name.clone(), expr.type_of());
+            req.insert(id.name.to_string(), expr.type_of());
         }
         if let Some(ref mut p) = &mut self.pipe {
             let ncons = p.infer(infer)?;
@@ -1692,7 +1729,7 @@ impl ObjectExpr {
             cons = cons + rest;
             r = MonoType::from(types::Record::Extension {
                 head: types::Property {
-                    k: prop.key.name.to_owned(),
+                    k: prop.key.name.to_string(),
                     v: prop.value.type_of(),
                 },
                 tail: r,
@@ -1800,6 +1837,53 @@ impl Property {
     }
 }
 
+// #[allow(missing_docs)]
+// pub type Symbol = String;
+
+#[allow(missing_docs)]
+#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
+pub struct Symbol {
+    name: String,
+}
+
+impl std::ops::Deref for Symbol {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        &self.name
+    }
+}
+
+impl PartialEq<&str> for Symbol {
+    fn eq(&self, other: &&str) -> bool {
+        &self.name[..] == *other
+    }
+}
+
+impl fmt::Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.name)
+    }
+}
+
+impl From<&str> for Symbol {
+    fn from(name: &str) -> Self {
+        Self { name: name.into() }
+    }
+}
+
+impl From<String> for Symbol {
+    fn from(name: String) -> Self {
+        Self { name }
+    }
+}
+
+impl Symbol {
+    /// Casts self into a `&str`
+    pub fn as_str(&self) -> &str {
+        self
+    }
+}
+
 #[derive(Derivative)]
 #[derivative(Debug, PartialEq, Clone)]
 #[allow(missing_docs)]
@@ -1808,7 +1892,7 @@ pub struct IdentifierExpr {
     #[derivative(PartialEq = "ignore")]
     pub typ: MonoType,
 
-    pub name: String,
+    pub name: Symbol,
 }
 
 impl IdentifierExpr {
@@ -1846,7 +1930,7 @@ impl IdentifierExpr {
 pub struct Identifier {
     pub loc: ast::SourceLocation,
 
-    pub name: String,
+    pub name: Symbol,
 }
 
 #[derive(Derivative)]
@@ -2059,9 +2143,13 @@ pub fn convert_duration(ast_dur: &[ast::Duration]) -> AnyhowResult<Duration> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast;
-    use crate::semantic::types::{MonoType, Tvar};
-    use crate::semantic::walk::{walk, Node};
+    use crate::{
+        ast,
+        semantic::{
+            types::{MonoType, Tvar},
+            walk::{walk, Node},
+        },
+    };
 
     #[test]
     fn duration_conversion_ok() {
@@ -2210,7 +2298,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: "f".to_string(),
+                            name: Symbol::from("f"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2221,7 +2309,7 @@ mod tests {
                                     is_pipe: true,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "piped".to_string(),
+                                        name: Symbol::from("piped"),
                                     },
                                     default: None,
                                 },
@@ -2230,7 +2318,7 @@ mod tests {
                                     is_pipe: false,
                                     key: Identifier {
                                         loc: b.location.clone(),
-                                        name: "a".to_string(),
+                                        name: Symbol::from("a"),
                                     },
                                     default: None,
                                 },
@@ -2244,12 +2332,12 @@ mod tests {
                                     left: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: MonoType::Var(Tvar(2)),
-                                        name: "a".to_string(),
+                                        name: Symbol::from("a"),
                                     }),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
                                         typ: MonoType::Var(Tvar(3)),
-                                        name: "piped".to_string(),
+                                        name: Symbol::from("piped"),
                                     }),
                                 })),
                             }),
@@ -2269,13 +2357,13 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: MonoType::Var(Tvar(6)),
-                                name: "f".to_string(),
+                                name: Symbol::from("f"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
                                 key: Identifier {
                                     loc: b.location.clone(),
-                                    name: "a".to_string(),
+                                    name: Symbol::from("a"),
                                 },
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),

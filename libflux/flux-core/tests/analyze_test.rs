@@ -1,10 +1,13 @@
-use fluxcore::ast;
-use fluxcore::semantic::env::Environment;
-use fluxcore::semantic::nodes::*;
-use fluxcore::semantic::types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar};
-use fluxcore::semantic::walk::{walk_mut, NodeMut};
-use fluxcore::semantic::Analyzer;
-
+use fluxcore::{
+    ast,
+    semantic::{
+        env::Environment,
+        nodes::*,
+        types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar},
+        walk::{walk_mut, NodeMut},
+        Analyzer,
+    },
+};
 use pretty_assertions::assert_eq;
 
 #[test]
@@ -58,7 +61,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: "n".to_string(),
+                        name: Symbol::from("n"),
                     },
                     Expression::Integer(IntegerLit {
                         loc: ast::BaseNode::default().location,
@@ -69,7 +72,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: "s".to_string(),
+                        name: Symbol::from("s"),
                     },
                     Expression::StringLit(StringLit {
                         loc: ast::BaseNode::default().location,
@@ -80,7 +83,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: "f".to_string(),
+                        name: Symbol::from("f"),
                     },
                     Expression::Function(Box::new(FunctionExpr {
                         loc: ast::BaseNode::default().location,
@@ -90,7 +93,7 @@ f(a: s)
                             is_pipe: false,
                             key: Identifier {
                                 loc: ast::BaseNode::default().location,
-                                name: "a".to_string(),
+                                name: Symbol::from("a"),
                             },
                             default: None,
                         }],
@@ -103,12 +106,12 @@ f(a: s)
                                 left: Expression::Identifier(IdentifierExpr {
                                     loc: ast::BaseNode::default().location,
                                     typ: MonoType::Var(Tvar(4)),
-                                    name: "a".to_string(),
+                                    name: Symbol::from("a"),
                                 }),
                                 right: Expression::Identifier(IdentifierExpr {
                                     loc: ast::BaseNode::default().location,
                                     typ: MonoType::Var(Tvar(4)),
-                                    name: "a".to_string(),
+                                    name: Symbol::from("a"),
                                 }),
                             })),
                         }),
@@ -125,18 +128,18 @@ f(a: s)
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
                             typ: MonoType::from(f_call_int_type),
-                            name: "f".to_string(),
+                            name: Symbol::from("f"),
                         }),
                         arguments: vec![Property {
                             loc: ast::BaseNode::default().location,
                             key: Identifier {
                                 loc: ast::BaseNode::default().location,
-                                name: "a".to_string(),
+                                name: Symbol::from("a"),
                             },
                             value: Expression::Identifier(IdentifierExpr {
                                 loc: ast::BaseNode::default().location,
                                 typ: MonoType::Int,
-                                name: "n".to_string(),
+                                name: Symbol::from("n"),
                             }),
                         }],
                     })),
@@ -150,18 +153,18 @@ f(a: s)
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
                             typ: MonoType::from(f_call_string_type),
-                            name: "f".to_string(),
+                            name: Symbol::from("f"),
                         }),
                         arguments: vec![Property {
                             loc: ast::BaseNode::default().location,
                             key: Identifier {
                                 loc: ast::BaseNode::default().location,
-                                name: "a".to_string(),
+                                name: Symbol::from("a"),
                             },
                             value: Expression::Identifier(IdentifierExpr {
                                 loc: ast::BaseNode::default().location,
                                 typ: MonoType::String,
-                                name: "s".to_string(),
+                                name: Symbol::from("s"),
                             }),
                         }],
                     })),

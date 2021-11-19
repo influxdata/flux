@@ -27,7 +27,14 @@ builtin derivative : (
 ) => [B] where A: Record, B: Record
 
 builtin die : (msg: string) => A
-builtin difference : (<-tables: [T], ?nonNegative: bool, ?columns: [string], ?keepFirst: bool) => [R] where T: Record, R: Record
+builtin difference : (
+    <-tables: [T],
+    ?nonNegative: bool,
+    ?columns: [string],
+    ?keepFirst: bool,
+    ?initialZero: bool,
+) => [R] where T: Record, R: Record
+
 builtin distinct : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
 builtin drop : (<-tables: [A], ?fn: (column: string) => bool, ?columns: [string]) => [B] where A: Record, B: Record
 builtin duplicate : (<-tables: [A], column: string, as: string) => [B] where A: Record, B: Record
@@ -238,7 +245,7 @@ aggregateWindow = (
 // a threshold or are reset. In the case of a wrap/reset,
 // we can assume that the absolute delta between two points will be at least their non-negative difference.
 increase = (tables=<-, columns=["_value"]) => tables
-    |> difference(nonNegative: true, columns: columns)
+    |> difference(nonNegative: true, columns: columns, keepFirst: true, initialZero: true)
     |> cumulativeSum(columns: columns)
 
 // median returns the 50th percentile.

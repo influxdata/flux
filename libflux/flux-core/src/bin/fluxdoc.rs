@@ -1,16 +1,17 @@
-use std::fs::File;
-use std::io::{self, Write};
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::{
+    fs::File,
+    io::{self, Write},
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 use anyhow::{bail, Context, Result};
-use structopt::StructOpt;
-
 use fluxcore::{
     doc,
     doc::example,
     semantic::{bootstrap, Analyzer},
 };
+use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "generate and validate Flux source code documentation")]
@@ -44,6 +45,9 @@ enum FluxDoc {
         /// Directory containing Flux source code.
         #[structopt(short, long, parse(from_os_str))]
         stdlib_dir: Option<PathBuf>,
+        /// Path to flux command, must be the cmd from internal/cmd/flux
+        #[structopt(long, parse(from_os_str))]
+        flux_cmd_path: Option<PathBuf>,
         /// Directory containing Flux source code.
         #[structopt(short, long, parse(from_os_str))]
         dir: PathBuf,
@@ -57,16 +61,18 @@ enum FluxDoc {
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
+
     let app = FluxDoc::from_args();
     match app {
         FluxDoc::Dump {
             stdlib_dir,
+            flux_cmd_path,
             dir,
             output,
             nested,
             short,
             allow_exceptions,
-            flux_cmd_path,
         } => dump(
             stdlib_dir.as_deref(),
             flux_cmd_path.as_deref(),
@@ -78,16 +84,38 @@ fn main() -> Result<()> {
         )?,
         FluxDoc::Lint {
             stdlib_dir,
+            flux_cmd_path,
             dir,
             limit,
             allow_exceptions,
-        } => lint(stdlib_dir.as_deref(), &dir, limit, allow_exceptions)?,
+        } => lint(
+            stdlib_dir.as_deref(),
+            flux_cmd_path.as_deref(),
+            &dir,
+            limit,
+            allow_exceptions,
+        )?,
     };
     Ok(())
 }
 
 const DEFAULT_STDLIB_PATH: &str = "./stdlib-compiled";
 const DEFAULT_FLUX_CMD_PATH: &str = "flux";
+
+fn resolve_default_paths<'a>(
+    stdlib_dir: Option<&'a Path>,
+    flux_cmd_path: Option<&'a Path>,
+) -> (&'a Path, &'a Path) {
+    let stdlib_dir = match stdlib_dir {
+        Some(stdlib_dir) => stdlib_dir,
+        None => Path::new(DEFAULT_STDLIB_PATH),
+    };
+    let flux_cmd_path = match flux_cmd_path {
+        Some(flux_cmd_path) => flux_cmd_path,
+        None => Path::new(DEFAULT_FLUX_CMD_PATH),
+    };
+    (stdlib_dir, flux_cmd_path)
+}
 
 fn dump(
     stdlib_dir: Option<&Path>,
@@ -98,14 +126,7 @@ fn dump(
     short: bool,
     allow_exceptions: bool,
 ) -> Result<()> {
-    let stdlib_dir = match stdlib_dir {
-        Some(stdlib_dir) => stdlib_dir,
-        None => Path::new(DEFAULT_STDLIB_PATH),
-    };
-    let flux_cmd_path = match flux_cmd_path {
-        Some(flux_cmd_path) => flux_cmd_path,
-        None => Path::new(DEFAULT_FLUX_CMD_PATH),
-    };
+    let (stdlib_dir, flux_cmd_path) = resolve_default_paths(stdlib_dir, flux_cmd_path);
     let f = match output {
         Some(p) => Box::new(File::create(p).context(format!("creating output file {:?}", p))?)
             as Box<dyn io::Write>,
@@ -140,7 +161,9 @@ fn dump(
             path: flux_cmd_path,
         };
         for d in docs.iter_mut() {
-            example::evaluate_package_examples(d, &mut executor)?;
+            if !exceptions.contains(&d.path.as_str()) {
+                example::evaluate_package_examples(d, &mut executor)?;
+            }
         }
     }
     if nested {
@@ -155,14 +178,12 @@ fn dump(
 
 fn lint(
     stdlib_dir: Option<&Path>,
+    flux_cmd_path: Option<&Path>,
     dir: &Path,
     limit: Option<i64>,
     allow_exceptions: bool,
 ) -> Result<()> {
-    let stdlib_dir = match stdlib_dir {
-        Some(stdlib_dir) => stdlib_dir,
-        None => Path::new(DEFAULT_STDLIB_PATH),
-    };
+    let (stdlib_dir, flux_cmd_path) = resolve_default_paths(stdlib_dir, flux_cmd_path);
     let limit = match limit {
         Some(limit) if limit == 0 => i64::MAX,
         Some(limit) => limit,
@@ -173,7 +194,8 @@ fn lint(
     } else {
         &[]
     };
-    let (_, mut diagnostics) = parse_docs(stdlib_dir, dir, exceptions)?;
+    let (mut docs, mut diagnostics) = parse_docs(stdlib_dir, dir, exceptions)?;
+    let mut pass = true;
     if !diagnostics.is_empty() {
         let rest = diagnostics.len() as i64 - limit;
         println!("Found {} diagnostics", diagnostics.len());
@@ -184,6 +206,24 @@ fn lint(
         if rest > 0 {
             println!("Hiding the remaining {} diagnostics", rest);
         }
+        pass = false;
+    }
+    // Evaluate doc examples
+    let mut executor = CLIExecutor {
+        path: flux_cmd_path,
+    };
+    for d in docs.iter_mut() {
+        if !exceptions.contains(&d.path.as_str()) {
+            match example::evaluate_package_examples(d, &mut executor) {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Error {:?}\n", e);
+                    pass = false;
+                }
+            }
+        }
+    }
+    if !pass {
         bail!("docs do not pass lint");
     }
     Ok(())
@@ -221,11 +261,13 @@ impl<'a> example::Executor for CLIExecutor<'a> {
     fn execute(&mut self, code: &str) -> Result<String> {
         let tmpfile = tempfile::NamedTempFile::new()?;
         write!(tmpfile.reopen()?, "{}", code)?;
-        let output = Command::new(self.path)
-            .arg("--format")
-            .arg("csv")
-            .arg(tmpfile.path())
-            .output()?;
+
+        let mut cmd = Command::new(self.path);
+        cmd.arg("--format").arg("csv").arg(tmpfile.path());
+        log::debug!("Executing {:?}", cmd);
+        let output = cmd
+            .output()
+            .with_context(|| format!("Unable to execute `{}`", self.path.display()))?;
 
         if output.status.success() {
             Ok(String::from_utf8(output.stdout)?)
@@ -251,36 +293,19 @@ impl<'a> example::Executor for CLIExecutor<'a> {
 //
 // See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
 const EXCEPTIONS: &[&str] = &[
+    "array",
     "contrib",
-    "contrib/RohanSreerama5",
-    "contrib/RohanSreerama5/images",
-    "contrib/RohanSreerama5/naiveBayesClassifier",
-    "contrib/anaisdg",
-    "contrib/anaisdg/anomalydetection",
-    "contrib/anaisdg/statsmodels",
     "contrib/bonitoo-io",
-    "contrib/bonitoo-io/alerta",
-    "contrib/bonitoo-io/hex",
     "contrib/bonitoo-io/servicenow",
-    "contrib/bonitoo-io/tickscript",
-    "contrib/bonitoo-io/victorops",
-    "contrib/bonitoo-io/zenoss",
     "contrib/chobbs",
-    "contrib/chobbs/discord",
     "contrib/jsternberg",
     "contrib/jsternberg/aggregate",
     "contrib/jsternberg/influxdb",
     "contrib/jsternberg/math",
-    "contrib/jsternberg/rows",
     "contrib/sranka",
-    "contrib/sranka/opsgenie",
-    "contrib/sranka/sensu",
     "contrib/sranka/teams",
     "contrib/sranka/telegram",
     "contrib/sranka/webexteams",
-    "contrib/tomhollingworth",
-    "contrib/tomhollingworth/events",
-    "experimental",
     "experimental/aggregate",
     "experimental/array",
     "experimental/bigtable",
@@ -296,18 +321,9 @@ const EXCEPTIONS: &[&str] = &[
     "experimental/record",
     "experimental/table",
     "experimental/usage",
-    "generate",
-    "http",
     "influxdata",
-    "influxdata/influxdb",
     "influxdata/influxdb/internal",
     "influxdata/influxdb/internal/testutil",
-    "influxdata/influxdb/monitor",
-    "influxdata/influxdb/sample",
-    "influxdata/influxdb/schema",
-    "influxdata/influxdb/secrets",
-    "influxdata/influxdb/tasks",
-    "influxdata/influxdb/v1",
     "internal",
     "internal/boolean",
     "internal/debug",

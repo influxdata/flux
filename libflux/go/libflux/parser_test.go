@@ -72,7 +72,7 @@ func TestASTPkg_GetError(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected parse error, got none")
 	}
-	if want, got := "error at @1:9-1:10: invalid expression: invalid token for primary expression: DIV", err.Error(); want != got {
+	if want, got := "error @1:9-1:10: invalid expression: invalid token for primary expression: DIV", err.Error(); want != got {
 		t.Error("unexpected parse error; -want/+got:\n ", cmp.Diff(want, got))
 	}
 

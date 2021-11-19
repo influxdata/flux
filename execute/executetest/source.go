@@ -175,7 +175,7 @@ func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.Crea
 	for _, tc := range *testCases {
 		deps := dependenciestest.Default()
 		if tc.V != nil {
-			deps.Deps.URLValidator = tc.V
+			deps.Deps.Deps.URLValidator = tc.V
 		}
 		ctx := deps.Inject(context.Background())
 		a := mock.AdministrationWithContext(ctx)

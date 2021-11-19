@@ -109,7 +109,7 @@ func NewDefaultDependencies() Deps {
 
 // NewEmptyDependencies produces an empty set of dependencies.
 // Accessing any dependency will result in an error.
-func NewEmptyDependencies() Dependencies {
+func NewEmptyDependencies() Deps {
 	return Deps{}
 }
 

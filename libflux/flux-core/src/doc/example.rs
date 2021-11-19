@@ -1,12 +1,12 @@
 //! Parse documentation examples for their code and execute them collecting their inputs and
 //! outputs.
 
+use std::{collections::HashMap, ops::Range};
+
 use anyhow::{bail, Context, Result};
 use csv::StringRecord;
 use pad::PadStr;
 use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag};
-use std::collections::HashMap;
-use std::ops::Range;
 
 use crate::{
     doc::{Doc, Example, PackageDoc, Table},
@@ -25,13 +25,14 @@ pub fn evaluate_package_examples(
     docs: &mut PackageDoc,
     executor: &mut impl Executor,
 ) -> Result<()> {
+    let path = &docs.path;
     for example in docs.examples.iter_mut() {
         evaluate_example(example, executor)
-            .context(format!("executing example for package {}", &docs.path))?;
+            .with_context(|| format!("executing example for package {}", path))?;
     }
     for (name, doc) in docs.members.iter_mut() {
         evaluate_doc_examples(doc, executor)
-            .context(format!("executing example for {}.{}", &docs.path, name))?;
+            .with_context(|| format!("executing example for {}.{}", path, name))?;
     }
     Ok(())
 }
@@ -132,7 +133,11 @@ fn preprocess(code: &str) -> Result<(String, String)> {
     let mut display = String::new();
     let mut exec = String::new();
     for line in code.lines().filter(|l| !l.starts_with("```")) {
-        if line.len() > 2 {
+        if line == "#" {
+            // skip lines that do not have any content
+            continue;
+        }
+        if line.len() >= 2 {
             match &line[..2] {
                 "# " => {
                     exec.push_str(&line[2..]);
@@ -283,6 +288,7 @@ fn get_row(record: &StringRecord, defaults: &Vec<String>) -> Result<Vec<String>>
 fn parse_all_results(data: &str) -> Result<HashMap<String, Vec<Table>>> {
     let mut reader = csv::ReaderBuilder::new()
         .has_headers(false)
+        .flexible(true)
         .from_reader(data.as_bytes());
     let records = reader.records();
 
@@ -404,12 +410,13 @@ fn parse_all_results(data: &str) -> Result<HashMap<String, Vec<Table>>> {
 
 #[cfg(test)]
 mod tests {
-    use super::{evaluate_package_examples, parse_results, preprocess, Executor};
+    use std::collections::BTreeMap;
 
-    use crate::doc::{Example, PackageDoc};
     use anyhow::Result;
     use expect_test::{expect, Expect};
-    use std::collections::BTreeMap;
+
+    use super::{evaluate_package_examples, parse_results, preprocess, Executor};
+    use crate::doc::{Example, PackageDoc};
 
     struct MockExecutor<'a> {
         code: Expect,
@@ -507,6 +514,8 @@ array.from(rows: [{_value: "a"}, {_value: "b"}]) |> yield(name: "input")
         let (display, exec) = preprocess(
             r#"
 # import "array"
+# 
+#
 < array.from(rows:[{_value:"a"}])
 >   |> map(fn: (r) => ({r with _value: "b"}))
 "#,
@@ -663,14 +672,14 @@ array.from(
 ,,1,b,3
 ,,1,b,4
 
-#datatype,string,long,string,string
-#group,false,false,true,false
-#default,output,,,
-,result,table,tag,_value
-,,0,a,11
-,,0,a,12
-,,1,b,13
-,,1,b,14
+#datatype,string,long,string,string,string
+#group,false,false,true,true,false
+#default,output,,,,
+,result,table,tag,othertag,_value
+,,0,a,x,11
+,,0,a,x,12
+,,1,b,x,13
+,,1,b,x,14
 "#;
 
         let (input, output) = parse_results(data).unwrap();
@@ -692,15 +701,15 @@ array.from(
         want_input.assert_eq(input.as_str());
 
         let want_output = expect![[r#"
-            | *tag | _value  |
-            | ---- | ------- |
-            | a    | 11      |
-            | a    | 12      |
+            | *tag | *othertag | _value  |
+            | ---- | --------- | ------- |
+            | a    | x         | 11      |
+            | a    | x         | 12      |
 
-            | *tag | _value  |
-            | ---- | ------- |
-            | b    | 13      |
-            | b    | 14      |
+            | *tag | *othertag | _value  |
+            | ---- | --------- | ------- |
+            | b    | x         | 13      |
+            | b    | x         | 14      |
         "#]];
         want_output.assert_eq(output.as_str());
     }

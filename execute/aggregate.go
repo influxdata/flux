@@ -413,22 +413,27 @@ func (t *simpleAggregateTransformation2) initializeState(chunk table.Chunk, curr
 			return nil, errors.New(codes.FailedPrecondition, "cannot aggregate columns that are part of the group key")
 		}
 
+		var vf ValueFunc
 		col := chunk.Col(j)
 		switch col.Type {
 		case flux.TBool:
-			state[i].agg = t.agg.NewBoolAgg()
+			vf = t.agg.NewBoolAgg()
 		case flux.TInt:
-			state[i].agg = t.agg.NewIntAgg()
+			vf = t.agg.NewIntAgg()
 		case flux.TUInt:
-			state[i].agg = t.agg.NewUIntAgg()
+			vf = t.agg.NewUIntAgg()
 		case flux.TFloat:
-			state[i].agg = t.agg.NewFloatAgg()
+			vf = t.agg.NewFloatAgg()
 		case flux.TString:
-			state[i].agg = t.agg.NewStringAgg()
+			vf = t.agg.NewStringAgg()
 		default:
 			return nil, errors.Newf(codes.FailedPrecondition, "unsupported aggregate column type %v", col.Type)
 		}
-		state[i].inType = col.Type
+
+		if vf == nil {
+			return nil, errors.Newf(codes.FailedPrecondition, "unsupported aggregate column type %v", col.Type)
+		}
+		state[i].agg, state[i].inType = vf, col.Type
 	}
 	return state, nil
 }

@@ -9,10 +9,12 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/execute/table/static"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -942,6 +944,40 @@ func TestSimpleAggregate_Process(t *testing.T) {
 				t.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(tc.want, got))
 			}
 		})
+	}
+}
+
+func TestSimpleAggregate_Process_UnsupportedColumnType(t *testing.T) {
+	sumAgg := new(universe.SumAgg)
+
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+	agg, d, err := execute.NewSimpleAggregateTransformation(ctx, executetest.RandomDatasetID(), sumAgg, execute.DefaultSimpleAggregateConfig, memory.DefaultAllocator)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	store := executetest.NewDataStore()
+	d.AddTransformation(store)
+	d.SetTriggerSpec(plan.DefaultTriggerSpec)
+
+	data := &executetest.Table{
+		KeyCols: []string{"_start", "_stop"},
+		ColMeta: []flux.ColMeta{
+			{Label: "_start", Type: flux.TTime},
+			{Label: "_stop", Type: flux.TTime},
+			{Label: "_time", Type: flux.TTime},
+			{Label: "_value", Type: flux.TString},
+		},
+		Data: [][]interface{}{
+			{execute.Time(0), execute.Time(100), execute.Time(0), "foobar"},
+		},
+	}
+
+	parentID := executetest.RandomDatasetID()
+	if err := agg.Process(parentID, data); err == nil {
+		t.Fatal("expected error")
+	} else if want, got := errors.Code(err), codes.FailedPrecondition; want != got {
+		t.Fatalf("unexpected error code -want/+got:\n\t- %s\n\t+ %s", want, got)
 	}
 }
 
