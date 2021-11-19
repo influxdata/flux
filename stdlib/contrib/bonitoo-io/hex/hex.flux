@@ -13,7 +13,7 @@ package hex
 //
 // ## Examples
 // ### Convert hexadecimal string to integer
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 //
 // hex.int(v: "4d2")
@@ -34,7 +34,7 @@ builtin int : (v: string) => int
 //
 // ## Examples
 // ### Convert integer to hexadecimal string
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 //
 // hex.string(v: 1234)
@@ -43,7 +43,7 @@ builtin int : (v: string) => int
 // ```
 // 
 // ### Convert a boolean to a hexadecimal string value
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 // 
 // hex.string(v: true)
@@ -52,7 +52,7 @@ builtin int : (v: string) => int
 // ```
 //
 // ### Convert a duration to a hexadecimal string value
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 // 
 // hex.string(v: 1m)
@@ -61,7 +61,7 @@ builtin int : (v: string) => int
 // ```
 // 
 // ### Convert a time to a hexadecimal string value
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 // 
 // hex.string(v: 2021-01-01T00:00:00Z)
@@ -70,7 +70,7 @@ builtin int : (v: string) => int
 // ```
 // 
 // ### Convert an integer to a hexadecimal string value
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 // 
 // hex.string(v: 1234)
@@ -79,7 +79,7 @@ builtin int : (v: string) => int
 // ```
 // 
 // ### Convert a uinteger to a hexadecimal string value
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 // 
 // hex.string(v: uint(v: 5678))
@@ -88,7 +88,7 @@ builtin int : (v: string) => int
 // ```
 //
 // ### Convert a float to a hexadecimal string value
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 // 
 // hex.string(v: 10.12)
@@ -97,11 +97,10 @@ builtin int : (v: string) => int
 // ```
 //
 // ### Convert bytes to a hexadecimal string value
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 // 
 // hex.string(v: bytes(v: "Hello world!"))
-// ```
 // 
 // // Returns "48656c6c6f20776f726c6421"
 // ```
@@ -132,7 +131,7 @@ builtin string : (v: A) => string
 //
 // ## Examples
 // ### Convert a hexadecimal string to an unsigned integer
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 //
 // hex.uint(v: "4d2")
@@ -150,7 +149,7 @@ builtin uint : (v: string) => uint
 //
 // ## Examples
 // ### Convert a hexadecimal string into bytes
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/hex"
 //
 // hex.bytes(v: "FF5733")

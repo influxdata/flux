@@ -22,7 +22,7 @@ import "json"
 // ## Examples
 //
 // ### Convert a string into a Sensu name
-// ```
+// ```no_run
 // import "contrib/sranka/sensu"
 //
 // sensu.toSensuName(v: "Example name conversion")

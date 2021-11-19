@@ -1,6 +1,6 @@
 // Package tickscript provides functions to help migrate
 // Kapacitor [TICKscripts](https://docs.influxdata.com/kapacitor/latest/tick/) to Flux tasks.
-// 
+//
 // introduced: 0.111.0
 package tickscript
 
@@ -23,18 +23,18 @@ import "universe"
 //   **Valid values**:
 //   - `threshold`
 //   -`deadman`
-//   -`custom`   
+//   -`custom`
 //
 // ## Examples
 // ### Generate InfluxDB check data
-// ```
+// ```no_run
 // import "contrib/bonitoo-io/tickscript"
-// 
+//
 // tickscript.defineCheck(
 //     id: "000000000000",
 //     name: "Example check name",
 // )
-// 
+//
 // // Returns:
 // // {
 // //     _check_id: 000000000000,
@@ -75,15 +75,15 @@ defineCheck = (id, name, type="custom") => {
 // ### Store alert statuses for error counts
 // ```no_run
 // import "contrib/bonitoo-io/tickscript"
-// 
+//
 // option task = {name: "Example task", every: 1m}
-// 
+//
 // check = tickscript.defineCheck(
 //     id: "000000000000",
 //     name: "Errors",
 //     type: "threshold",
 // )
-// 
+//
 // from(bucket: "example-bucket")
 //     |> range(start: -task.every)
 //     |> filter(fn: (r) => r._measurement == "errors" and r._field == "value")
@@ -96,7 +96,7 @@ defineCheck = (id, name, type="custom") => {
 //         info: (r) => r._value > 10,
 //     )
 // ```
-// 
+//
 // tags: transformations,outputs
 alert = (
     check,
@@ -161,9 +161,9 @@ alert = (
 // ### Detect when a series stops reporting
 // ```no_run
 // import "contrib/bonitoo-io/tickscript"
-// 
+//
 // option task = {name: "Example task", every: 1m}
-// 
+//
 // from(bucket: "example-bucket")
 //     |> range(start: -task.every)
 //     |> filter(fn: (r) => r._measurement == "pulse" and r._field == "value")
@@ -266,7 +266,7 @@ deadman = (
 // ```
 // import "contrib/bonitoo-io/tickscript"
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 //     |> tickscript.select(
 //         as: "sum",
@@ -278,7 +278,7 @@ deadman = (
 // ```
 // import "contrib/bonitoo-io/tickscript"
 // import "sampledata"
-// 
+//
 // < sampledata.int()
 //     |> tickscript.select(
 //         as: "max",
@@ -324,10 +324,10 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
 // ```
 // import "contrib/bonitoo-io/tickscript"
 // # import "sampledata"
-// # 
+//
 // # data = sampledata.int()
 // #    |> range(start: sampledata.start, stop: sampledata.stop)
-// 
+//
 // < data
 //     |> tickscript.selectWindow(
 //         fn: sum,
@@ -376,7 +376,7 @@ compute = select
 //
 // ## Parameters
 // - columns: List of columns to group by.
-// 
+//
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
@@ -384,7 +384,7 @@ compute = select
 // ```
 // # import "array"
 // import "contrib/bonitoo-io/tickscript"
-// 
+//
 // # data = array.from(
 // #     rows: [
 // #         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h1", region: "east", _field: "foo", _value: 1.2},
@@ -397,7 +397,7 @@ compute = select
 // #         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h4", region: "west", _field: "foo", _value: 5.6},
 // #     ],
 // # )
-// # 
+//
 // < data
 // >     |> tickscript.groupBy(columns: ["host", "region"])
 // ```
@@ -425,7 +425,7 @@ groupBy = (columns, tables=<-) => tables
 // ```
 // import "array"
 // import "contrib/bonitoo-io/tickscript"
-// 
+//
 // metrics = array.from(
 //     rows: [
 //         {_time: 2021-01-01T00:00:00Z, host: "host1", _value: 1.2},
@@ -437,7 +437,7 @@ groupBy = (columns, tables=<-) => tables
 //     ],
 // )
 //     |> group(columns: ["host"])
-// 
+//
 // states = array.from(
 //     rows: [
 //         {_time: 2021-01-01T00:00:00Z, host: "host1", _value: "dead"},
@@ -449,7 +449,7 @@ groupBy = (columns, tables=<-) => tables
 //     ],
 // )
 //     |> group(columns: ["host"])
-// 
+//
 // tickscript.join(
 //     tables: {metric: metrics, state: states},
 //     on: ["_time", "host"],

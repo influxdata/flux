@@ -194,7 +194,7 @@ libflux/target/release/fluxdoc: libflux
 fluxdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc bin/flux
 	FLUXC=./libflux/target/release/fluxc FLUXDOC=./libflux/target/release/fluxdoc ./etc/gen_docs.sh
 
-checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc
+checkdocs: $(STDLIB_SOURCES) libflux/target/release/fluxc libflux/target/release/fluxdoc bin/flux
 	FLUXC=./libflux/target/release/fluxc FLUXDOC=./libflux/target/release/fluxdoc ./etc/checkdocs.sh
 
 # This list is sorted for easy inspection
