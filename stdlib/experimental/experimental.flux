@@ -21,7 +21,7 @@ package experimental
 // ## Examples
 //
 // ### Add six hours to a timestamp
-// ```
+// ```no_run
 // import "experimental"
 // 
 // experimental.addDuration(
@@ -45,7 +45,7 @@ builtin addDuration : (d: duration, to: time) => time
 // ## Examples
 //
 // ### Subtract six hours from a timestamp
-// ```
+// ```no_run
 // import "experimental"
 // 
 // experimental.subDuration(
@@ -107,7 +107,7 @@ builtin group : (<-tables: [A], mode: string, columns: [string]) => [A] where A:
 //
 // ## Examples
 // ### Return all property keys in a record
-// ```
+// ```no_run
 // import "experimental"
 // 
 // user = {
@@ -159,7 +159,7 @@ builtin objectKeys : (o: A) => [string] where A: Record
 //             unit: "°F",
 //             location: "San Francisco",
 //         },
-// <     )
+// >     )
 // ```
 //
 // introduced: 0.40.0
@@ -258,7 +258,7 @@ builtin to : (
 // ## Examples
 // ### Join two streams of tables
 // ```
-// // import "array"
+// import "array"
 // import "experimental"
 // 
 // left = array.from(
@@ -573,7 +573,7 @@ builtin integral : (<-tables: [{T with _time: time, _value: B}], ?unit: duration
 // ## Examples
 // ### Count the number of rows in a table
 // ```
-// import "expermimental"
+// import "experimental"
 // import "sampledata"
 // 
 // < sampledata.int()
@@ -662,7 +662,7 @@ builtin histogramQuantile : (<-tables: [{T with _value: float, le: float}], ?qua
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int()
+// < sampledata.float()
 // >     |> experimental.mean()
 // ```
 // 
