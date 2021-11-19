@@ -90,7 +90,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                                          "f84201ed6db96baa965da048c9b2ea50a2bc0b27b7ee98e7668aa693108f4674",
 	"stdlib/contrib/jsternberg/aggregate/table_test.flux":                                         "a9db9dbb205f801f5b39372abe68056187937ea6aabef0e5c3049c278e7359a7",
 	"stdlib/contrib/jsternberg/aggregate/window_test.flux":                                        "4e6354fe16a8f2db2e020e0021226aac9059cc26b720d2ab4204180a4aad1e4d",
-	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                                            "ad6108cc276124f05eac6845f2e09b06bd1874bef9e89c60703a1162dbf83335",
+	"stdlib/contrib/jsternberg/influxdb/influxdb.flux":                                            "77ec82b59217779990dada156776816f5964dec38ff217ce2d47ef5c38e64ab2",
 	"stdlib/contrib/jsternberg/math/math.flux":                                                    "560cb4a26ce31fa1a279f1863d28ba932fd9ccac310eb028a70bd2dcfa047d6e",
 	"stdlib/contrib/jsternberg/rows/map_drop_value_test.flux":                                     "378a8931568fd9217a77ac3b93f2d770f9e6cd25e326fee635d3a21bebc0122e",
 	"stdlib/contrib/jsternberg/rows/map_override_type_test.flux":                                  "843d5c3123c4994abfcf83335abd40b8ad38ea470e390eca53dd631f4c2724b2",
