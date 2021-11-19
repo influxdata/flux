@@ -7,6 +7,7 @@ use crate::semantic::{
 #[rustfmt::skip]
 use crate::semantic::{
     bootstrap::Module,
+    nodes::Symbol,
     types::{
         Array,
         Dictionary,
@@ -38,7 +39,7 @@ impl From<fb::TypeEnvironment<'_>> for Option<Environment> {
         for value in env.iter() {
             let assignment: Option<(String, PolyType)> = value.into();
             let (id, ty) = assignment?;
-            types.insert(id, ty);
+            types.insert(Symbol::from(id), ty);
         }
         Some(Environment::from(types))
     }
@@ -336,7 +337,7 @@ pub fn build_module<'a>(
 
 fn build_type_assignment<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    assignment: (String, PolyType),
+    assignment: (Symbol, PolyType),
 ) -> flatbuffers::WIPOffset<fb::TypeAssignment<'a>> {
     let id = builder.create_string(&assignment.0);
     let ty = build_polytype(builder, assignment.1);
@@ -700,8 +701,8 @@ mod tests {
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let want: Environment = semantic_map! {
-            String::from("a") => a,
-            String::from("b") => b,
+            Symbol::from("a") => a,
+            Symbol::from("b") => b,
         }
         .into();
 

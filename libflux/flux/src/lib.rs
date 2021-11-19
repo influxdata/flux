@@ -24,7 +24,7 @@ use fluxcore::{
             semantic_generated::fbsemantic as fb,
             types::{build_env, build_type},
         },
-        nodes::Package,
+        nodes::{Package, Symbol},
         sub::Substitution,
         types::{MonoType, PolyType, TvarKinds},
         Analyzer, AnalyzerConfig,
@@ -443,8 +443,8 @@ impl StatefulAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                if let Some(poly) = self.imports.lookup(path) {
-                    env.add(name.to_owned(), poly.to_owned());
+                if let Some(poly) = self.imports.lookup_str(path) {
+                    env.add(Symbol::from(name.to_owned()), poly.to_owned());
                 }
             }
         }
@@ -540,6 +540,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
     let sub = Substitution::default();
     let tvar = sub.fresh();
     let mut env = Environment::empty(true);
+    let var_name = Symbol::from(var_name);
     env.add(
         var_name.clone(),
         PolyType {
@@ -549,7 +550,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
         },
     );
     infer_with_env(ast_pkg, sub, Some(env))
-        .map(|(env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
+        .map(|(env, _)| env.lookup(&var_name).unwrap().expr.clone())
 }
 
 /// # Safety
@@ -580,6 +581,7 @@ mod tests {
         semantic::{
             convert::convert_polytype,
             fresh::Fresher,
+            nodes::Symbol,
             sub::Substitution,
             types::{MonoType, Property, Ptr, Record, Tvar, TvarMap},
         },
@@ -812,7 +814,8 @@ from(bucket: v.bucket)
         expect_test::expect![[r#"
             error test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
 
-            error test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF"#]].assert_eq(&errh.unwrap().err.into_string().unwrap());
+            error test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF"#]]
+        .assert_eq(&errh.unwrap().err.into_string().unwrap());
     }
 
     #[test]
@@ -849,7 +852,12 @@ from(bucket: v.bucket)
         }
         let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
+        assert_eq!(
+            want,
+            got.lookup(&Symbol::from("x"))
+                .expect("'x' not found")
+                .clone()
+        );
     }
 
     #[test]
@@ -923,9 +931,24 @@ from(bucket: v.bucket)
         }
         let want_c = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
-        assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
-        assert_eq!(want_c, got.lookup("c").expect("'c' not found").clone());
+        assert_eq!(
+            want_a,
+            got.lookup(&Symbol::from("a"))
+                .expect("'a' not found")
+                .clone()
+        );
+        assert_eq!(
+            want_b,
+            got.lookup(&Symbol::from("b"))
+                .expect("'b' not found")
+                .clone()
+        );
+        assert_eq!(
+            want_c,
+            got.lookup(&Symbol::from("c"))
+                .expect("'c' not found")
+                .clone()
+        );
     }
 
     #[test]
