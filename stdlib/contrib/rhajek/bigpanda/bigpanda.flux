@@ -36,7 +36,7 @@ option defaultTokenPrefix = "Bearer"
 //
 // ## Examples
 // ### Convert an alert level to a BigPanda status
-// ```
+// ```no_run
 // import "contrib/rhajek/bigpanda"
 //
 // bigpanda.statusFromLevel(level: "crit")
