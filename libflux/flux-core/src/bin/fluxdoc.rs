@@ -260,6 +260,11 @@ const EXCEPTIONS: &[&str] = &[
     "contrib",
     "contrib/bonitoo-io",
     "contrib/bonitoo-io/servicenow",
+<<<<<<< HEAD
+=======
+    "contrib/bonitoo-io/tickscript",
+    "contrib/bonitoo-io/zenoss",
+>>>>>>> 9e22d2d47d25053127f113e98f0217f4d3f5ecbe
     "contrib/chobbs",
     "contrib/jsternberg",
     "contrib/jsternberg/aggregate",
