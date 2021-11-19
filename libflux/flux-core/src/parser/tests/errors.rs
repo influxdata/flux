@@ -1,7 +1,7 @@
-use super::*;
-
-use crate::ast::tests::Locator;
 use pretty_assertions::assert_eq;
+
+use super::*;
+use crate::ast::tests::Locator;
 
 #[test]
 fn function_call_with_unbalanced_braces() {
@@ -891,7 +891,7 @@ map(fn: (r) => ({ r with _value: if true and false then 1}) )
 "#,
     );
     let parsed = p.parse_file("".to_string());
-    expect_test::expect![[r#"error at @2:34-2:59: expected ELSE, got RBRACE (}) at 2:58"#]]
+    expect_test::expect![[r#"error @2:34-2:59: expected ELSE, got RBRACE (}) at 2:58"#]]
         .assert_eq(
             &ast::check::check(ast::walk::Node::File(&parsed))
                 .unwrap_err()

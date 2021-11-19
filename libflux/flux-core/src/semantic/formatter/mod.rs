@@ -1,12 +1,16 @@
 //! Semantic graph formatter.
 #![cfg_attr(feature = "strict", allow(warnings))]
 
-use crate::ast;
-use crate::semantic;
-use crate::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
-use crate::semantic::walk;
 use anyhow::{anyhow, Error, Result};
 use chrono::SecondsFormat;
+
+use crate::{
+    ast, semantic,
+    semantic::{
+        types::{MonoType, PolyType, Tvar, TvarKinds},
+        walk,
+    },
+};
 
 #[cfg(test)]
 mod tests;
@@ -166,7 +170,7 @@ impl Formatter {
         let pkg_name = &n.package;
         self.format_package_clause(&semantic::nodes::PackageClause {
             name: semantic::nodes::Identifier {
-                name: String::from(pkg_name),
+                name: semantic::nodes::Symbol::from(pkg_name.as_str()),
                 loc: ast::SourceLocation::default(),
             },
             loc: ast::SourceLocation::default(),
@@ -548,12 +552,10 @@ impl Formatter {
     }
 
     fn format_function_argument(&mut self, n: &semantic::nodes::FunctionParameter) {
+        self.format_identifier(&n.key);
         if let Some(v) = &n.default {
-            self.format_identifier(&n.key);
             self.write_rune('=');
             self.format_node(&walk::Node::from_expr(v));
-        } else {
-            self.format_identifier(&n.key);
         }
     }
 

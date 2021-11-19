@@ -4,19 +4,18 @@ pub mod check;
 pub mod flatbuffers;
 pub mod walk;
 
-use super::DefaultHasher;
-use crate::scanner;
-use std::collections::HashMap;
-use std::fmt;
-use std::str::FromStr;
-use std::vec::Vec;
+use std::{collections::HashMap, fmt, str::FromStr, vec::Vec};
 
 use chrono::FixedOffset;
 use derive_more::Display;
-
-use serde::de::{Deserialize, Deserializer, Error, Visitor};
-use serde::ser::{Serialize, SerializeSeq, Serializer};
+use serde::{
+    de::{Deserialize, Deserializer, Error, Visitor},
+    ser::{Serialize, SerializeSeq, Serializer},
+};
 use serde_aux::prelude::*;
+
+use super::DefaultHasher;
+use crate::scanner;
 
 /// The default package name.
 pub const DEFAULT_PACKAGE_NAME: &str = "main";

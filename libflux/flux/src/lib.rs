@@ -12,31 +12,26 @@ extern crate serde_derive;
 #[macro_use]
 extern crate pretty_assertions;
 
-use anyhow::{self, bail, Result};
+use std::{ffi::*, mem, os::raw::c_char};
 
+use anyhow::{self, bail, Result};
+pub use fluxcore::{ast, formatter, scanner, semantic, *};
 use fluxcore::{
     parser::Parser,
     semantic::{
         env::Environment,
-        flatbuffers::semantic_generated::fbsemantic as fb,
-        flatbuffers::types::{build_env, build_type},
-        nodes::Package,
+        flatbuffers::{
+            semantic_generated::fbsemantic as fb,
+            types::{build_env, build_type},
+        },
+        nodes::{Package, Symbol},
         sub::Substitution,
         types::{MonoType, PolyType, TvarKinds},
         Analyzer, AnalyzerConfig,
     },
 };
 
-pub use fluxcore::ast;
-pub use fluxcore::formatter;
-pub use fluxcore::scanner;
-pub use fluxcore::semantic;
-pub use fluxcore::*;
-
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use std::ffi::*;
-use std::mem;
-use std::os::raw::c_char;
 
 /// Prelude are the names and types of values that are inscope in all Flux scripts.
 pub fn prelude() -> Option<Environment> {
@@ -448,8 +443,8 @@ impl StatefulAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                if let Some(poly) = self.imports.lookup(path) {
-                    env.add(name.to_owned(), poly.to_owned());
+                if let Some(poly) = self.imports.lookup_str(path) {
+                    env.add(Symbol::from(name.to_owned()), poly.to_owned());
                 }
             }
         }
@@ -545,6 +540,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
     let sub = Substitution::default();
     let tvar = sub.fresh();
     let mut env = Environment::empty(true);
+    let var_name = Symbol::from(var_name);
     env.add(
         var_name.clone(),
         PolyType {
@@ -554,7 +550,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
         },
     );
     infer_with_env(ast_pkg, sub, Some(env))
-        .map(|(env, _)| env.lookup(var_name.as_str()).unwrap().expr.clone())
+        .map(|(env, _)| env.lookup(&var_name).unwrap().expr.clone())
 }
 
 /// # Safety
@@ -578,16 +574,21 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 
 #[cfg(test)]
 mod tests {
+    use fluxcore::{
+        ast,
+        ast::get_err_type_expression,
+        parser::Parser,
+        semantic::{
+            convert::convert_polytype,
+            fresh::Fresher,
+            nodes::Symbol,
+            sub::Substitution,
+            types::{MonoType, Property, Ptr, Record, Tvar, TvarMap},
+        },
+    };
+
     use super::{new_semantic_analyzer, AnalyzerConfig};
-    use crate::parser;
-    use crate::{analyze, find_var_type, flux_ast_get_error};
-    use fluxcore::ast;
-    use fluxcore::ast::get_err_type_expression;
-    use fluxcore::parser::Parser;
-    use fluxcore::semantic::convert::convert_polytype;
-    use fluxcore::semantic::fresh::Fresher;
-    use fluxcore::semantic::sub::Substitution;
-    use fluxcore::semantic::types::{MonoType, Property, Ptr, Record, Tvar, TvarMap};
+    use crate::{analyze, find_var_type, flux_ast_get_error, parser};
 
     pub struct MonoTypeNormalizer {
         tv_map: TvarMap,
@@ -809,12 +810,12 @@ from(bucket: v.bucket)
         let ast = crate::parser::parse_string("test".to_string(), "x = 3 + / 10 - \"");
         let ast = Box::into_raw(Box::new(ast.into()));
         let errh = unsafe { flux_ast_get_error(ast) };
-        assert_eq!(
-            "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
 
-error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF",
-            errh.unwrap().err.into_string().unwrap()
-        );
+        expect_test::expect![[r#"
+            error test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
+
+            error test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF"#]]
+        .assert_eq(&errh.unwrap().err.into_string().unwrap());
     }
 
     #[test]
@@ -851,7 +852,12 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         }
         let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
+        assert_eq!(
+            want,
+            got.lookup(&Symbol::from("x"))
+                .expect("'x' not found")
+                .clone()
+        );
     }
 
     #[test]
@@ -925,9 +931,24 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         }
         let want_c = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
-        assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
-        assert_eq!(want_c, got.lookup("c").expect("'c' not found").clone());
+        assert_eq!(
+            want_a,
+            got.lookup(&Symbol::from("a"))
+                .expect("'a' not found")
+                .clone()
+        );
+        assert_eq!(
+            want_b,
+            got.lookup(&Symbol::from("b"))
+                .expect("'b' not found")
+                .clone()
+        );
+        assert_eq!(
+            want_c,
+            got.lookup(&Symbol::from("c"))
+                .expect("'c' not found")
+                .clone()
+        );
     }
 
     #[test]
@@ -936,9 +957,10 @@ error at test@1:16-1:17: got unexpected token in string expression test@1:17-1:1
         match analyze(ast) {
             Ok(_) => panic!("expected an error, got none"),
             Err(e) => {
-                let want = "error at @1:5-1:7: expected ARROW, got EOF\n\nerror at @1:7-1:7: invalid expression: invalid token for primary expression: EOF";
-                let got = format!("{}", e);
-                assert_eq!(want, got);
+                expect_test::expect![[r#"
+                    error @1:5-1:7: expected ARROW, got EOF
+
+                    error @1:7-1:7: invalid expression: invalid token for primary expression: EOF"#]].assert_eq(&e.to_string());
             }
         }
     }

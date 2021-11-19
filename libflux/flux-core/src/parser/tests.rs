@@ -1,10 +1,11 @@
-use super::*;
-use crate::ast;
-
-use crate::ast::tests::Locator;
-use crate::ast::Statement::Variable;
 use chrono;
 use pretty_assertions::assert_eq;
+
+use super::*;
+use crate::{
+    ast,
+    ast::{tests::Locator, Statement::Variable},
+};
 
 mod arrow_function;
 mod errors;
@@ -604,6 +605,82 @@ fn package_clause() {
             }),
             imports: vec![],
             body: vec![],
+            eof: vec![],
+        },
+    )
+}
+
+#[test]
+fn string_interpolation_trailing_dollar() {
+    let mut p = Parser::new(r#""a + b = ${a + b}$""#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 20),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 20),
+                    ..BaseNode::default()
+                },
+                expression: Expression::StringExpr(Box::new(StringExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 20),
+                        ..BaseNode::default()
+                    },
+                    parts: vec![
+                        StringExprPart::Text(TextPart {
+                            base: BaseNode {
+                                location: loc.get(1, 2, 1, 10),
+                                ..BaseNode::default()
+                            },
+                            value: "a + b = ".to_string(),
+                        }),
+                        StringExprPart::Interpolated(InterpolatedPart {
+                            base: BaseNode {
+                                location: loc.get(1, 10, 1, 18),
+                                ..BaseNode::default()
+                            },
+                            expression: Expression::Binary(Box::new(BinaryExpr {
+                                base: BaseNode {
+                                    location: loc.get(1, 12, 1, 17),
+                                    ..BaseNode::default()
+                                },
+                                left: Expression::Identifier(Identifier {
+                                    base: BaseNode {
+                                        location: loc.get(1, 12, 1, 13),
+                                        ..BaseNode::default()
+                                    },
+                                    name: "a".to_string(),
+                                }),
+                                right: Expression::Identifier(Identifier {
+                                    base: BaseNode {
+                                        location: loc.get(1, 16, 1, 17),
+                                        ..BaseNode::default()
+                                    },
+                                    name: "b".to_string(),
+                                }),
+                                operator: Operator::AdditionOperator,
+                            })),
+                        }),
+                        StringExprPart::Text(TextPart {
+                            base: BaseNode {
+                                location: loc.get(1, 18, 1, 19),
+                                ..BaseNode::default()
+                            },
+                            value: "$".to_string(),
+                        }),
+                    ],
+                })),
+            })),],
             eof: vec![],
         },
     )

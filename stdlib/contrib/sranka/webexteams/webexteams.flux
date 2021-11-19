@@ -1,15 +1,49 @@
+// Package webexteams provides functions that send messages
+// to [Webex Teams](https://www.webex.com/team-collaboration.html).
+//
+// introduced: 0.125.0
 package webexteams
 
 
 import "http"
 import "json"
 
-// `message` sends a single message to Webex Teams as described in [Webex Message API](https://developer.webex.com/docs/api/v1/messages/create-a-message). 
-// `url` - string - base URL of Webex API endpoint without a trailing slash, "https://webexapis.com" by default.
-// `token` - string - [Webex API access token](https://developer.webex.com/docs/api/getting-started).
-// `roomId` - string - The room ID of the message, required.
-// `text` - string - the message, in plain text.
-// `markdown` - string - the message, in markdown format as explained in https://developer.webex.com/docs/api/basics
+// message sends a single message to Webex
+// using the [Webex messages API](https://developer.webex.com/docs/api/v1/messages/create-a-message).
+//
+// ## Parameters
+//
+// - url: Base URL of Webex API endpoint (without a trailing slash).
+//   Default is `https://webexapis.com`.
+// - token: [Webex API access token](https://developer.webex.com/docs/api/getting-started).
+// - roomId: Room ID to send the message to.
+// - text: Plain text message.
+// - markdown: [Markdown formatted message](https://developer.webex.com/docs/api/basics#formatting-messages).
+//
+// ## Examples
+// ### Send the last reported status to Webex Teams
+// ```
+// import "contrib/sranka/webexteams"
+// import "influxdata/influxdb/secrets"
+//
+// apiToken = secrets.get(key: "WEBEX_API_TOKEN")
+//
+// lastReported = from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses")
+//     |> last()
+//     |> findRecord(fn: (key) => true, idx: 0)
+//
+// webexteams.message(
+//     token: apiToken,
+//     roomId: "Y2lzY29zcGFyazovL3VzL1JPT00vYmJjZWIxYWQtNDNmMS0zYjU4LTkxNDctZjE0YmIwYzRkMTU0",
+//     text: "Disk usage is ${lastReported.status}.",
+//     markdown: "Disk usage is **${lastReported.status}**.",
+// )
+// ```
+//
+// tags: single notification
+//
 message = (
     url="https://webexapis.com",
     token,
@@ -25,11 +59,52 @@ message = (
     return http.post(headers: headers, url: url + "/v1/messages", data: content)
 }
 
-// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send message to Webex teams for each table row.
-// `url` - string - base URL of Webex API endpoint without a trailing slash, "https://webexapis.com" by default.
-// `token` - string - [Webex API access token](https://developer.webex.com/docs/api/getting-started).
-// The returned factory function accepts a `mapFn` parameter.
-// The `mapFn` must return an object with `roomId`, `text` and `markdown` properties  as defined in the `message` function arguments.
+// endpoint returns a function that sends a message that includes data from input rows to a Webex room.
+//
+// ## Parameters
+//
+// - url: Base URL of Webex API endpoint (without a trailing slash).
+//   Default is `https://webexapis.com`.
+// - token: [Webex API access token](https://developer.webex.com/docs/api/getting-started).
+//
+// ## Usage
+// `webexteams.endpoint` is a factory function that outputs another function.
+// The output function requires a `mapFn` parameter.
+//
+// ### mapFn
+// A function that builds the object used to generate the POST request. Requires an `r` parameter.
+//
+// `mapFn` accepts a table row (`r`) and returns an object that must include the following fields:
+//
+// - `roomId`
+// - `text`
+// - `markdown`
+//
+// For more information, see `webexteams.message` parameters.
+//
+// ## Examples
+// ### Send the last reported status to Webex Teams
+// ```no_run
+// import "contrib/sranka/webexteams"
+// import "influxdata/influxdb/secrets"
+//
+// token = secrets.get(key: "WEBEX_API_KEY")
+//
+// from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses")
+//     |> last()
+//     |> tableFind(fn: (key) => true)
+//     |> webexteams.endpoint(token: token)(
+//         mapFn: (r) => ({
+//             roomId: "Y2lzY29zcGFyazovL3VzL1JPT00vYmJjZWIxYWQtNDNmMS0zYjU4LTkxNDctZjE0YmIwYzRkMTU0",
+//             text: "",
+//             markdown: "Disk usage is **${r.status}**.",
+//         }),
+//     )()
+// ```
+//
+// tags: notification endpoints,transformations
 endpoint = (url="https://webexapis.com", token) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {

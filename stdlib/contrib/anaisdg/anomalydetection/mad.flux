@@ -1,9 +1,35 @@
+// Package anomalydetection detects anomalies in time series data.
 package anomalydetection
 
 
 import "math"
 import "experimental"
 
+// mad uses the median absolute deviation (MAD) algorithm to detect anomalies in a data set.
+//
+// Input data requires `_time` and `_value` columns.
+// Output data is grouped by `_time` and includes the following columns of interest:
+//
+// - **\_value**: difference between of the original `_value` from the computed MAD
+//   divided by the median difference.
+// - **MAD**: median absolute deviation of the group.
+// - **level**: anomaly indicator set to either `anomaly` or `normal`.
+//
+// ## Parameters
+// - threshold: Deviation threshold for anomalies.
+// 
+// - table: Input data. Default is piped-forward data (`<-`).
+// 
+//
+// ## Examples
+// 
+// ### Use the MAD algorithm to detect anomalies
+// ```
+// import "contrib/anaisdg/anomalydetection"
+// import "sampledata"
+// 
+// < sampledata.float()
+// >     |> anomalydetection.mad(threshold: 1.0)
 mad = (table=<-, threshold=3.0) => {
     // MEDiXi = med(x)
     data = table |> group(columns: ["_time"], mode: "by")

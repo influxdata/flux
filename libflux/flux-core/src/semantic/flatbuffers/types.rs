@@ -1,13 +1,13 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
-use crate::semantic::env::Environment;
-use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
-
-use crate::semantic::fresh::Fresher;
+use crate::semantic::{
+    env::Environment, flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher,
+};
 
 #[rustfmt::skip]
 use crate::semantic::{
     bootstrap::Module,
+    nodes::Symbol,
     types::{
         Array,
         Dictionary,
@@ -39,7 +39,7 @@ impl From<fb::TypeEnvironment<'_>> for Option<Environment> {
         for value in env.iter() {
             let assignment: Option<(String, PolyType)> = value.into();
             let (id, ty) = assignment?;
-            types.insert(id, ty);
+            types.insert(Symbol::from(id), ty);
         }
         Some(Environment::from(types))
     }
@@ -95,6 +95,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Negatable => Kind::Negatable,
             fb::Kind::Timeable => Kind::Timeable,
             fb::Kind::Stringable => Kind::Stringable,
+            fb::Kind::Basic => Kind::Basic,
             _ => unreachable!("Unknown fb::Kind"),
         }
     }
@@ -114,6 +115,7 @@ impl From<Kind> for fb::Kind {
             Kind::Negatable => fb::Kind::Negatable,
             Kind::Timeable => fb::Kind::Timeable,
             Kind::Stringable => fb::Kind::Stringable,
+            Kind::Basic => fb::Kind::Basic,
             _ => unreachable!("Unknown Kind"),
         }
     }
@@ -335,7 +337,7 @@ pub fn build_module<'a>(
 
 fn build_type_assignment<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    assignment: (String, PolyType),
+    assignment: (Symbol, PolyType),
 ) -> flatbuffers::WIPOffset<fb::TypeAssignment<'a>> {
     let id = builder.create_string(&assignment.0);
     let ty = build_polytype(builder, assignment.1);
@@ -637,11 +639,11 @@ fn build_arg<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::get_err_type_expression;
-    use crate::parser;
-    use crate::semantic::convert::convert_polytype;
-    use crate::semantic::sub::Substitution;
-    use crate::semantic::types::SemanticMap;
+    use crate::{
+        ast::get_err_type_expression,
+        parser,
+        semantic::{convert::convert_polytype, sub::Substitution, types::SemanticMap},
+    };
 
     #[rustfmt::skip]
     use crate::semantic::flatbuffers::semantic_generated::fbsemantic::{
@@ -699,8 +701,8 @@ mod tests {
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let want: Environment = semantic_map! {
-            String::from("a") => a,
-            String::from("b") => b,
+            Symbol::from("a") => a,
+            Symbol::from("b") => b,
         }
         .into();
 

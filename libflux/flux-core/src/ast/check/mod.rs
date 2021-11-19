@@ -3,8 +3,8 @@
 use thiserror::Error;
 
 use crate::{
-    ast::{walk, PropertyKey, SourceLocation},
-    errors::Errors,
+    ast::{walk, PropertyKey},
+    errors::{located, Errors, Located},
 };
 
 /// Inspects an AST node and returns a list of found AST errors plus
@@ -15,21 +15,27 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
         &walk::create_visitor(&mut |n| {
             // collect any errors we found prior to ast.check().
             for err in n.base().errors.iter() {
-                errors.push(Error {
-                    location: n.base().location.clone(),
-                    message: err.clone(),
-                });
+                errors.push(located(
+                    n.base().location.clone(),
+                    ErrorKind {
+                        message: err.clone(),
+                    },
+                ));
             }
 
             match *n {
-                walk::Node::BadStmt(n) => errors.push(Error {
-                    location: n.base.location.clone(),
-                    message: format!("invalid statement: {}", n.text),
-                }),
-                walk::Node::BadExpr(n) if !n.text.is_empty() => errors.push(Error {
-                    location: n.base.location.clone(),
-                    message: format!("invalid expression: {}", n.text),
-                }),
+                walk::Node::BadStmt(n) => errors.push(located(
+                    n.base.location.clone(),
+                    ErrorKind {
+                        message: format!("invalid statement: {}", n.text),
+                    },
+                )),
+                walk::Node::BadExpr(n) if !n.text.is_empty() => errors.push(located(
+                    n.base.location.clone(),
+                    ErrorKind {
+                        message: format!("invalid expression: {}", n.text),
+                    },
+                )),
                 walk::Node::ObjectExpr(n) => {
                     let mut has_implicit = false;
                     let mut has_explicit = false;
@@ -39,13 +45,15 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                                 None => {
                                     has_implicit = true;
                                     if let PropertyKey::StringLit(s) = &p.key {
-                                        errors.push(Error {
-                                            location: n.base.location.clone(),
-                                            message: format!(
-                                                "string literal key {} must have a value",
-                                                s.value
-                                            ),
-                                        })
+                                        errors.push(located(
+                                            n.base.location.clone(),
+                                            ErrorKind {
+                                                message: format!(
+                                                    "string literal key {} must have a value",
+                                                    s.value
+                                                ),
+                                            },
+                                        ))
                                     }
                                 }
                                 Some(_) => {
@@ -55,10 +63,14 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                         }
                     }
                     if has_implicit && has_explicit {
-                        errors.push(Error {
-                            location: n.base.location.clone(),
-                            message: String::from("cannot mix implicit and explicit properties"),
-                        })
+                        errors.push(located(
+                            n.base.location.clone(),
+                            ErrorKind {
+                                message: String::from(
+                                    "cannot mix implicit and explicit properties",
+                                ),
+                            },
+                        ))
                     }
                 }
                 _ => {}
@@ -74,11 +86,12 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
 }
 
 /// An error that can be returned while checking the AST.
+pub type Error = Located<ErrorKind>;
+
+/// An error that can be returned while checking the AST.
 #[derive(Error, Debug, PartialEq)]
-#[error("error at {}: {}", location, message)]
-pub struct Error {
-    /// Location of the error in source code.
-    pub location: SourceLocation,
+#[error("{}", message)]
+pub struct ErrorKind {
     /// Error message.
     pub message: String,
 }

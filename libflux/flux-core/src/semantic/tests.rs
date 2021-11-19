@@ -1,4 +1,4 @@
-//! This is the main test module for type inference.
+//! This is th main test module for type inference.
 //!
 //! This module defines two macros:
 //!
@@ -23,6 +23,9 @@
 //!
 use std::collections::HashMap;
 
+use colored::*;
+use derive_more::Display;
+
 use crate::{
     ast::{self, get_err_type_expression},
     errors::Errors,
@@ -34,13 +37,12 @@ use crate::{
         env::Environment,
         fresh::Fresher,
         import::Importer,
+        nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
         Analyzer, AnalyzerConfig,
     },
 };
-
-use {colored::*, derive_more::Display};
 
 mod vectorize;
 
@@ -112,6 +114,7 @@ fn infer_types(
     want: Option<HashMap<&str, &str>>,
     config: AnalyzerConfig,
 ) -> Result<Environment, Error> {
+    let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp
         .into_iter()
@@ -137,17 +140,21 @@ fn infer_types(
     let pkg = parse_program(src);
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
     let (env, _) = analyzer.analyze_ast(pkg).map_err(Error::Semantic)?;
-    let got = env.values;
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
-    if let Some(env) = want {
-        let want = parse_map(env);
+    if let Some(want_env) = want {
+        let got = env
+            .values
+            .iter()
+            .map(|(k, v)| (k.to_string(), v.clone()))
+            .collect();
+        let want = parse_map(want_env);
         if want != got {
             return Err(Error::TypeMismatch { want, got });
         }
     }
-    return Ok(got.into());
+    return Ok(env);
 }
 
 /// The test_infer! macro generates test cases for type inference.
@@ -294,11 +301,44 @@ macro_rules! test_infer_err {
 /// ```
 ///
 macro_rules! test_error_msg {
-    ( src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
+    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect: $expect:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::default();
+        $(
+            imp = $imp;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::default();
+        $(
+            env = $env;
+        )?
         match infer_types(
             $src,
-            HashMap::default(),
-            HashMap::default(),
+            env,
+            imp,
+            None,
+            AnalyzerConfig::default(),
+        ) {
+            Err(e) => $expect.assert_eq(&e.to_string()),
+            Ok(_) => panic!("expected error, instead program passed type checking"),
+        }
+    }};
+
+    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::default();
+        $(
+            imp = $imp;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::default();
+        $(
+            env = $env;
+        )?
+        match infer_types(
+            $src,
+            env,
+            imp,
             None,
             AnalyzerConfig::default(),
         ) {
@@ -2820,12 +2860,16 @@ fn call_expr() {
             "f" => "(x:(<-:int) => C) => C",
         ]
     }
-    // pipe args have different names
-    test_infer_err! {
+    // pipe args have different names however we infer `f` to have an anonymous pipe argument so
+    // this passes
+    test_infer! {
         src: r#"
             f = (arg=(x=<-) => x, w) => w |> arg()
             f(arg: (v=<-) => v, w: 0)
         "#,
+        exp: map![
+            "f" => "(w:A, ?arg:(<-:A) => B) => B",
+        ]
     }
     // Seems like it might fail because of pipe arg mismatch,
     // but it's okay.
@@ -2838,15 +2882,16 @@ fn call_expr() {
             "f" => "(x:(arg:C) => E, y:C) => E",
         ]
     }
-    test_infer! {
+}
+
+#[test]
+fn infer_pipe() {
+    test_error_msg! {
         src: r#"
             f = (arg=(x=<-) => x) => 0 |> arg()
             g = () => f(arg: (x) => 5 + x)
         "#,
-        exp: map![
-            "f" => "(?arg:(<-x:int) => int) => int",
-            "g" => "() => int",
-        ]
+        err: "error @3:23-3:43: missing pipe argument (argument arg)",
     }
 }
 
@@ -3321,7 +3366,7 @@ fn function_default_arguments_1() {
             y = f(a: x, b: f(a:x))
         "#,
         exp: map![
-            "f" => "(a: int, ?b: int) => int",
+            "f" => "(a: A, ?b: A) => A where A: Addable",
             "x" => "int",
             "y" => "int",
         ],
@@ -3338,7 +3383,7 @@ fn function_default_arguments_2() {
             z = f(a: 3.3, b: 3)
         "#,
         exp: map![
-            "f" => "(a: float, b: int, ?c: float, ?d: int) => {r: float , s: int}",
+            "f" => "(a: A, b: B, ?c: A, ?d: B) => {r: A, s: B} where A: Addable, B: Addable",
             "w" => "{r: float , s: int}",
             "x" => "{r: float , s: int}",
             "y" => "{r: float , s: int}",
@@ -3373,10 +3418,24 @@ fn function_default_arguments_and_pipes() {
         "#,
         exp: map![
             "f" => "(<-t: B, f: (<-: B, a: A) => C, g: A) => C",
-            "x" => "(a: int, ?b: int, <-m: int) => int",
-            "z" => "(a: {B with m: A}, ?b: float, ?c: float, <-m: float) => {r: A , s: float}",
+            "x" => "(a: D, ?b: D, <-m: D) => D where D: Addable",
+            "z" => "(a: {B with m: A}, ?b: E, ?c: E, <-m: E) => {r: A , s: E} where E: Addable",
             "y" => "int",
             "v" => "{s: float, r: string}",
+        ],
+    }
+}
+
+#[test]
+fn function_default_arguments_polymorphic() {
+    test_infer! {
+        src: r#"
+            f = (x = "default") => x
+            g = (x = 0) => x + x
+        "#,
+        exp: map![
+            "f" => "(?x: A) => A",
+            "g" => "(?x: B) => B where B: Addable",
         ],
     }
 }
@@ -3408,7 +3467,7 @@ fn copy_bindings_from_other_env() {
     let mut env = Environment::empty(true);
     let mut f = Fresher::default();
     env.add(
-        "a".to_string(),
+        Symbol::from("a"),
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
@@ -3417,7 +3476,7 @@ fn copy_bindings_from_other_env() {
     );
     let mut sub_env = Environment::new(env.clone());
     sub_env.add(
-        "b".to_string(),
+        Symbol::from("b"),
         PolyType {
             vars: Vec::new(),
             cons: TvarKinds::new(),
@@ -3431,12 +3490,12 @@ fn copy_bindings_from_other_env() {
             parent: Some(env.clone().into()),
             readwrite: true,
             values: semantic_map!(
-                "b".to_string() => PolyType {
+                Symbol::from("b") => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
                     expr: MonoType::Var(f.fresh()),
                 },
-                "a".to_string() => PolyType {
+                Symbol::from("a") => PolyType {
                     vars: Vec::new(),
                     cons: TvarKinds::new(),
                     expr: MonoType::Bool,
@@ -3637,8 +3696,44 @@ fn parse_and_inference_errors_are_reported_simultaneously() {
             x = / 1
             z = y + 1
         "#,
-        err: "error at @2:17-2:18: invalid expression: invalid token for primary expression: DIV
+        err: "error @2:17-2:18: invalid expression: invalid token for primary expression: DIV
 
 error @3:17-3:18: undefined identifier y",
+    }
+}
+
+#[test]
+fn primitive_kind_errors() {
+    test_error_msg! {
+        env: map![
+            "isType" => "(v: A, type: string) => bool where A: Basic",
+        ],
+        src: r#"
+            isType(v: {}, type: "record")
+            isType(v: [], type: "array")
+        "#,
+        err: "error @2:13-2:42: {} is not Basic (argument v)
+
+error @3:13-3:41: [A] is not Basic (argument v)",
+    }
+}
+
+#[test]
+fn invalid_mono_type() {
+    test_error_msg! {
+        src: r#"
+            builtin x : abc
+        "#,
+        expect: expect_test::expect![[r#"error @2:25-2:28: invalid named type abc"#]]
+    }
+}
+
+#[test]
+fn missing_return() {
+    test_error_msg! {
+        src: r#"
+            () => { }
+        "#,
+        expect: expect_test::expect![[r#"error @2:19-2:22: missing return statement in block"#]]
     }
 }

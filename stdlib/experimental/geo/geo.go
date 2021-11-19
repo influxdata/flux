@@ -220,6 +220,8 @@ func generateS2CellIDTokenFunc() values.Function {
 				lon, lonOk := point.Get("lon")
 				if !latOk || !lonOk {
 					return nil, errors.Newf(codes.Invalid, "invalid point specification - must have lat, lon fields")
+				} else if lat.IsNull() || lon.IsNull() {
+					return nil, errors.Newf(codes.Invalid, "invalid point specification - lat, lon must not be null")
 				}
 				parentToken, err = getParentFromLatLon(lat.Float(), lon.Float(), int(level))
 			}
@@ -277,6 +279,8 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 
 		if !latOk || !lonOk {
 			return nil, errors.Newf(codes.Invalid, "invalid point specification - must have lat, lon fields")
+		} else if lat.IsNull() || lon.IsNull() {
+			return nil, errors.Newf(codes.Invalid, "invalid point specification - lat, lon must not be null")
 		}
 
 		geom = point{
@@ -294,6 +298,8 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 
 		if !minLatOk || !minLonOk || !maxLatOk || !maxLonOk {
 			return nil, errors.Newf(codes.Invalid, "invalid box specification - must have minLat, minLon, maxLat, maxLon fields")
+		} else if minLat.IsNull() || minLon.IsNull() || maxLat.IsNull() || maxLon.IsNull() {
+			return nil, errors.Newf(codes.Invalid, "invalid box specification - minLat, minLon, maxLat, maxLon must not be null")
 		}
 
 		// fix user mistakes
@@ -320,6 +326,8 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 
 		if !centerLatOk || !centerLonOk || !radiusOk {
 			return nil, errors.Newf(codes.Invalid, "invalid circle specification - must have lat, lon, radius fields")
+		} else if centerLat.IsNull() || centerLon.IsNull() || radius.IsNull() {
+			return nil, errors.Newf(codes.Invalid, "invalid circle specification - lat, lon, radius must not be null")
 		}
 
 		geom = circle{
@@ -346,6 +354,8 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 
 			if !latOk || !lonOk {
 				return nil, errors.Newf(codes.Invalid, "invalid polygon point specification - must have lat, lon fields")
+			} else if lat.IsNull() || lon.IsNull() {
+				return nil, errors.Newf(codes.Invalid, "invalid polygon point specification - lat, lon must not be null")
 			}
 
 			s2points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(lat.Float(), lon.Float()))

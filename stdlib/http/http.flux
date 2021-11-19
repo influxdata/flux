@@ -1,45 +1,49 @@
 // Package http provides functions for transferring data using the HTTP protocol.
+//
+// introduced: 0.39.0
 package http
 
 
 import "experimental"
 
-// post submits an HTTP POST request to the specified URL with headers and data
-// and returns the HTTP Status Code
+// post sends an HTTP POST request to the specified URL with headers and data
+// and returns the HTTP status code.
 //
 // ## Parameters
 //
-// - `url` is the URL to POST to
-// - `headers` are the headers to include with the POST request
+// - url: URL to send the POST request to.
+// - headers: Headers to include with the POST request.
 //
-//      Header keys with special characters:
-//          Wrap header keys that contain special characters in double quotes ("").
+//    **Header keys with special characters:**
+//    Wrap header keys that contain special characters in double quotes (`""`).
 //
-// - `data` is the data body to include with the POST request
+// - data: Data body to include with the POST request.
 //
-// ## Send the last reported status to a URL
-//
-// ```
+// ## Examples
+// 
+// ### Send the last reported status to a URL
+// ```no_run
 // import "json"
 // import "http"
-//
-// lastReported =
-//  from(bucket: "example-bucket")
-//    |> range(start: -1m)
-//    |> filter(fn: (r) => r._measurement == "statuses")
-//    |> last()
-//    |> findColumn(fn: (key) => true, column: "_level")
-//
-//  http.post(
-//  url: "http://myawsomeurl.com/api/notify",
-//  headers: {
-//    Authorization: "Bearer mySuPerSecRetTokEn",
-//    "Content-type": "application/json"
-//  },
-//  data: json.encode(v: lastReported[0])
+// 
+// lastReported = from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses")
+//     |> last()
+//     |> findColumn(fn: (key) => true, column: "_level")
+// 
+// http.post(
+//     url: "http://myawsomeurl.com/api/notify",
+//     headers: {
+//         Authorization: "Bearer mySuPerSecRetTokEn",
+//         "Content-type": "application/json",
+//     },
+//     data: json.encode(v: lastReported[0]),
 // )
 // ```
 //
+// introduced: 0.40.0
+// 
 builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
 
 // basicAuth returns a Base64-encoded basic authentication header
@@ -47,55 +51,102 @@ builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
 //
 // ## Parameters
 //
-// - `u` is the username to use in the basic authentication header.
-// - `p` is the password to use in the basic authentication header.
+// - u: Username to use in the basic authentication header.
+// - p: Password to use in the basic authentication header.
 //
-// ## Set a basic authentication header in an HTTP POST request
+// ## Examples
+// 
+// ### Set a basic authentication header in an HTTP POST request
+// ```no_run
+// import "http"
+// 
+// username = "myawesomeuser"
+// password = "mySupErSecRetPasSW0rD"
 //
+// http.post(
+//     url: "http://myawesomesite.com/api/",
+//     headers: {Authorization: http.basicAuth(u: username, p: password)},
+//     data: bytes(v: "Something I want to send."),
+// )
 // ```
-// import "json"
 //
-// from(bucket: "example-bucket")
-//   |> range(start: -1h)
-//   |> map(fn: (r) => ({
-//       r with _value: json.encode(v: r._value)
-//   }))
-// ```
+// introduced: 0.44.0
+// tags: single notification
 //
 builtin basicAuth : (u: string, p: string) => string
 
-// pathEscape() escapes special characters in a string (including /)
-// and replaces non-ASCII characters with hexadecimal representations (%XX).
+// pathEscape escapes special characters in a string (including `/`)
+// and replaces non-ASCII characters with hexadecimal representations (`%XX`).
 //
 // ## Parameters
+// - inputString: String to escape.
 //
-// - `inputString` is the string to escape.
+// ## Examples
 //
-// ## Set a basic authentication header in an HTTP POST request
-//
-// ```
+// ### URL-encode a string
+// ```no_run
 // import "http"
 //
-// data
-//   |> map(fn: (r) => ({ r with
-//     path: http.pathEscape(inputString: r.path)
-//   }))
+// http.pathEscape(inputString: "Hello world!")
+//
+// // Returns "Hello%20world%21"
 // ```
+// 
+// ### URL-encode strings in a stream of tables
+// ```
+// import "http"
+// import "sampledata"
+// 
+// < sampledata.string()
+//     |> map(
+//         fn: (r) => ({r with
+//             _value: http.pathEscape(inputString: r._value),
+//         }),
+// >     )
+// ```
+//
+// introduced: 0.71.0
 //
 builtin pathEscape : (inputString: string) => string
 
-// endpoint sends output data
-// to an HTTP URL using the POST request method.
+// endpoint iterates over input data and sends a single POST request per input row to
+// a specficied URL.
+// 
+// This function is designed to be used with `monitor.notify()`.
+//
+// `http.endpoint()` outputs a function that requires a `mapFn` parameter.
+// `mapFn` is the function that builds the record used to generate the POST request.
+// It accepts a table row (`r`) and returns a record that must include the
+// following properties:
+// 
+// - `headers`
+// - `data`
+// 
+// _For information about properties, see `http.post`._
 //
 // ## Parameters
+// - url: URL to send the POST reqeust to.
 //
-// - `url` is the URL to POST to.
-// - `mapFn` is a function that builds the record used to generate the POST request.
-//     - mapFn accepts a table row (r) and returns a record that must include the following fields:
-//          - `headers`
-//          - `data`
+// ## Examples
 //
-// See influxdata/influxdb/monitor.notify
+// ### Send an HTTP POST request for each row
+// ```no_run
+// import "http"
+// import "sampledata"
+//
+// endpoint = http.endpoint(url: "http://example.com/")(
+//     mapfn: (r) => ({
+//         headers: {header1: "example1", header2: "example2"},
+//         data: bytes(v: "The value is ${r._value}"),
+//     }),
+// )
+//
+// sampledata.int()
+//     |> endpoint()
+// ```
+//
+// tags: notification endpoints
+//
 endpoint = (url) => (mapFn) => (tables=<-) => tables
     |> map(
         fn: (r) => {

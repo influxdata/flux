@@ -3,8 +3,10 @@
 #[cfg(test)]
 mod tests;
 
-use std::cell::{RefCell, RefMut};
-use std::rc::Rc;
+use std::{
+    cell::{RefCell, RefMut},
+    rc::Rc,
+};
 
 use derive_more::Display;
 

@@ -36,12 +36,11 @@ pub mod semantic;
 
 mod errors;
 
-use anyhow::{bail, Result};
-
-use fnv::FnvHasher;
 use std::hash::BuildHasherDefault;
 
+use anyhow::{bail, Result};
 pub use ast::DEFAULT_PACKAGE_NAME;
+use fnv::FnvHasher;
 
 type DefaultHasher = BuildHasherDefault<FnvHasher>;
 
