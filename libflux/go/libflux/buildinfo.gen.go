@@ -84,7 +84,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/bonitoo-io/tickscript/deadman_empty_test.flux":                                "3aa3c114ea061b5f3d72eeaf0b4c703a55d17fe70cece849c5ac3baec56c93c2",
 	"stdlib/contrib/bonitoo-io/tickscript/deadman_threshold_test.flux":                            "77a78e3a28a281cf5abed324c2d6d6681ad84d415dbd0021ce7f5a0256e42a9d",
 	"stdlib/contrib/bonitoo-io/tickscript/tickscript.flux":                                        "d4d6dc4b48d8c97a29dcd707519849bc1570d81d965af144e3f0206206c9abda",
-	"stdlib/contrib/bonitoo-io/victorops/victorops.flux":                                          "3728344eceee731a3e5e3b83622a2c791611b625db25d4c0cba4a98c72c6c9ad",
+	"stdlib/contrib/bonitoo-io/victorops/victorops.flux":                                          "e5a0a307c5afb5b89faa97afd4c45b801eb09ee67a016ee57012584afdb07efe",
 	"stdlib/contrib/bonitoo-io/zenoss/zenoss.flux":                                                "c4bf4a7418d30f03f9d3fcfc9d74a646f6e66d407ebf8462f435eee9148d9c00",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                                  "4821475f5b0728b4723c812d4d02f1cdc3d9d8219834b79b3e0a42a0a0c1b9fb",
 	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                                          "f84201ed6db96baa965da048c9b2ea50a2bc0b27b7ee98e7668aa693108f4674",

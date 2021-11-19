@@ -104,7 +104,6 @@ alert = (
 //
 // - monitoringTool: Tool to use for monitoring.
 //   Default is `InfluxDB`.
-// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
 // `victorops.endpoint` is a factory function that outputs another function.
