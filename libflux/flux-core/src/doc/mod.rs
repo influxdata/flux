@@ -2196,7 +2196,7 @@ foo.a
                             description: None,
                             required: true,
                         }],
-                        flux_type: "(x:int, ?y:int) => int".to_string(),
+                        flux_type: "(x:A, ?y:A) => A where A: Addable".to_string(),
                         is_option: false,
                         source_location: loc.get(9, 9, 9, 31),
                         examples: vec![],

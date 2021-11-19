@@ -965,20 +965,19 @@ impl FunctionExpr {
         let mut params = PolyTypeMap::new();
         for param in &mut self.params {
             match param.default {
-                Some(ref mut e) => {
-                    let ncons = e.infer(infer)?;
-                    cons = cons + ncons;
+                Some(_) => {
                     let id = param.key.name.clone();
                     // We are here: `infer = (a=1) => {...}`.
                     // So, this PolyType is actually a MonoType, whose type
                     // is the one of the default value ("1" in "a=1").
+                    let param_type = MonoType::Var(infer.sub.fresh());
                     let typ = PolyType {
                         vars: Vec::new(),
                         cons: TvarKinds::new(),
-                        expr: e.type_of(),
+                        expr: param_type.clone(),
                     };
                     params.insert(id.clone(), typ);
-                    opt.insert(id.to_string(), e.type_of());
+                    opt.insert(id.to_string(), param_type);
                 }
                 None => {
                     // We are here: `infer = (a) => {...}`.
@@ -1002,7 +1001,7 @@ impl FunctionExpr {
                         req.insert(id.to_string(), MonoType::Var(ftvar));
                     }
                 }
-            };
+            }
         }
         // Add the parameters to some nested environment.
         infer.env.enter_scope();
@@ -1013,6 +1012,9 @@ impl FunctionExpr {
         let bcons = self.body.infer(infer)?;
         // Now pop the nested environment, we don't need it anymore.
         infer.env.exit_scope();
+
+        cons = cons + bcons;
+
         let retn = self.body.type_of();
         let func = MonoType::from(Function {
             req,
@@ -1020,14 +1022,78 @@ impl FunctionExpr {
             pipe,
             retn,
         });
-        cons = cons + bcons;
         cons.add(Constraint::Equal {
             exp: self.typ.clone(),
-            act: func,
+            act: func.clone(),
             loc: self.loc.clone(),
         });
+
+        let ncons = if self.params.iter().any(|param| param.default.is_some()) {
+            let t = func.apply(infer.sub);
+            let p = infer::generalize(&infer.env, infer.sub.cons(), t);
+            self.infer_default_params(infer, p)?
+        } else {
+            Constraints::empty()
+        };
+
+        Ok(cons + ncons)
+    }
+
+    fn infer_default_params(
+        &mut self,
+        infer: &mut InferState<'_>,
+        function_type: PolyType,
+    ) -> Result {
+        let mut cons = Constraints::empty();
+        let mut pipe = None;
+        let mut req = MonoTypeMap::new();
+        let mut opt = MonoTypeMap::new();
+
+        for param in &mut self.params {
+            match param.default {
+                Some(ref mut e) => {
+                    let ncons = e.infer(infer)?;
+                    cons = cons + ncons;
+                    let id = param.key.name.clone();
+                    opt.insert(id.to_string(), e.type_of());
+                }
+                None => {
+                    let id = param.key.name.clone();
+                    let ftvar = infer.sub.fresh();
+                    // Piped arguments cannot have a default value.
+                    // So check if this is a piped argument.
+                    if param.is_pipe {
+                        pipe = Some(types::Property {
+                            k: id.to_string(),
+                            v: MonoType::Var(ftvar),
+                        });
+                    } else {
+                        req.insert(id.to_string(), MonoType::Var(ftvar));
+                    }
+                }
+            }
+        }
+
+        let retn = MonoType::Var(infer.sub.fresh());
+        let default_func = MonoType::from(Function {
+            req,
+            opt,
+            pipe,
+            retn,
+        });
+
+        let (exp, ncons) = infer::instantiate(function_type, infer.sub, self.loc.clone());
+        cons = cons + ncons;
+
+        cons.add(Constraint::Equal {
+            exp,
+            act: default_func,
+            loc: self.loc.clone(),
+        });
+
         Ok(cons)
     }
+
     #[allow(missing_docs)]
     pub fn pipe(&self) -> Option<&FunctionParameter> {
         for p in &self.params {
