@@ -24,6 +24,7 @@
 // introduced: 0.70.0
 package telegram
 
+
 import "http"
 import "json"
 
@@ -170,7 +171,7 @@ endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePre
     |> map(
         fn: (r) => {
             obj = mapFn(r: r)
-
+    
             return {r with
                 _sent: string(
                     v: 2 == message(
