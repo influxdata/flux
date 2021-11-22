@@ -1,7 +1,7 @@
 //! Various conversions from AST nodes to their associated
 //! types in the semantic graph.
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fmt};
 
 use thiserror::Error;
 
@@ -9,10 +9,10 @@ use crate::{
     ast,
     errors::{located, Located},
     semantic::{
+        env::Environment,
         nodes::*,
         sub::Substitution,
-        types,
-        types::{MonoType, MonoTypeMap, SemanticMap},
+        types::{self, MonoType, MonoTypeMap, SemanticMap},
     },
 };
 
@@ -62,18 +62,12 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// overhead involved.
 ///
 /// [AST package]: ast::Package
-pub fn convert_package(pkg: ast::Package, sub: &mut Substitution) -> Result<Package> {
-    let mut converter = Converter::new(sub);
-    let files = pkg
-        .files
-        .into_iter()
-        .map(|file| converter.convert_file(file))
-        .collect::<Result<Vec<File>>>()?;
-    Ok(Package {
-        loc: pkg.base.location,
-        package: pkg.package,
-        files,
-    })
+pub fn convert_package(
+    pkg: ast::Package,
+    env: &Environment,
+    sub: &mut Substitution,
+) -> Result<Package> {
+    Converter::with_env(sub, env).convert_package(pkg)
 }
 
 /// Converts a [type expression] in the AST into a [`PolyType`].
@@ -96,33 +90,131 @@ pub(crate) fn convert_monotype(
     Converter::new(sub).convert_monotype(ty, tvars)
 }
 
-#[derive(Default)]
-struct Symbols {
-    parent: Option<Box<Symbols>>,
-    symbols: BTreeMap<String, Symbol>,
+#[allow(missing_docs)]
+#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
+pub struct Symbol {
+    name: String,
+    id: u32,
 }
 
-impl Symbols {
+impl std::ops::Deref for Symbol {
+    type Target = str;
+    fn deref(&self) -> &Self::Target {
+        &self.name
+    }
+}
+
+impl PartialEq<str> for Symbol {
+    fn eq(&self, other: &str) -> bool {
+        &self.name[..] == other
+    }
+}
+
+impl PartialEq<&str> for Symbol {
+    fn eq(&self, other: &&str) -> bool {
+        &self.name[..] == *other
+    }
+}
+
+impl fmt::Display for Symbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.name)
+    }
+}
+
+impl From<&str> for Symbol {
+    fn from(name: &str) -> Self {
+        Self::from(name.to_owned())
+    }
+}
+
+impl From<String> for Symbol {
+    fn from(name: String) -> Self {
+        Self { name, id: 0 }
+    }
+}
+
+impl Symbol {
+    /// Casts self into a `&str`
+    pub fn as_str(&self) -> &str {
+        self
+    }
+}
+
+#[derive(Debug, Default)]
+struct Symbols<'a> {
+    parent: Option<Box<Symbols<'a>>>,
+    env: Option<&'a Environment>,
+    symbols: BTreeMap<String, Symbol>,
+    id: u32,
+
+    #[cfg(test)]
+    // Used to simplify testing by allowing `Symbol::from` to be used to define the wanted symbols
+    assume_unique_names: bool,
+}
+
+impl<'a> Symbols<'a> {
+    fn with_env(env: &'a Environment) -> Self {
+        Symbols {
+            parent: None,
+            env: Some(env),
+            symbols: BTreeMap::default(),
+            id: 0,
+            #[cfg(test)]
+            assume_unique_names: false,
+        }
+    }
+
+    fn new_symbol(&mut self, name: String) -> Symbol {
+        #[cfg(test)]
+        let id = if self.assume_unique_names {
+            0
+        } else {
+            self.id += 1;
+            self.id
+        };
+        #[cfg(not(test))]
+        let id = {
+            self.id += 1;
+            self.id
+        };
+        Symbol {
+            name: name.clone(),
+            id,
+        }
+    }
+
     fn insert(&mut self, name: String) -> Symbol {
-        let symbol = Symbol::from(name.clone());
+        let symbol = self.new_symbol(name.clone());
         self.symbols.insert(name, symbol.clone());
         symbol
     }
 
-    fn get(&mut self, name: &str) -> Symbol {
-        self.symbols.get(name).cloned().unwrap_or_else(|| {
-            if let Some(parent) = &mut self.parent {
-                parent.get(name)
-            } else {
-                // If we do not have this name in scope we invent a new symbol, the undefined
-                // symbol error is handled in a later step
-                Symbol::from(name)
-            }
-        })
+    fn lookup(&mut self, name: &str) -> Symbol {
+        self.lookup_option(name)
+            .unwrap_or_else(|| self.new_symbol(name.to_owned()))
+    }
+
+    fn lookup_option(&mut self, name: &str) -> Option<Symbol> {
+        self.symbols
+            .get(name)
+            .or_else(|| self.env.and_then(|env| env.lookup_symbol(name)))
+            .cloned()
+            .or_else(|| {
+                if let Some(parent) = &mut self.parent {
+                    parent.lookup_option(name)
+                } else {
+                    None
+                }
+            })
     }
 
     fn enter_scope(&mut self) {
         let parent = std::mem::replace(self, Symbols::default());
+        #[cfg(test)]
+        {
+            self.assume_unique_names = parent.assume_unique_names;
+        }
         self.parent = Some(Box::new(parent));
     }
 
@@ -136,7 +228,7 @@ impl Symbols {
 
 struct Converter<'a> {
     sub: &'a mut Substitution,
-    symbols: Symbols,
+    symbols: Symbols<'a>,
 }
 
 impl<'a> Converter<'a> {
@@ -145,6 +237,26 @@ impl<'a> Converter<'a> {
             sub,
             symbols: Symbols::default(),
         }
+    }
+
+    fn with_env(sub: &'a mut Substitution, env: &'a Environment) -> Self {
+        Converter {
+            sub,
+            symbols: Symbols::with_env(env),
+        }
+    }
+
+    fn convert_package(&mut self, pkg: ast::Package) -> Result<Package> {
+        let files = pkg
+            .files
+            .into_iter()
+            .map(|file| self.convert_file(file))
+            .collect::<Result<Vec<File>>>()?;
+        Ok(Package {
+            loc: pkg.base.location,
+            package: pkg.package,
+            files,
+        })
     }
 
     fn convert_file(&mut self, file: ast::File) -> Result<File> {
@@ -190,15 +302,25 @@ impl<'a> Converter<'a> {
         &mut self,
         imp: ast::ImportDeclaration,
     ) -> Result<ImportDeclaration> {
+        let import_symbol = {
+            let path = &imp.path.value;
+            let name = match &imp.alias {
+                None => path.rsplitn(2, '/').next().unwrap().to_owned(),
+                Some(id) => id.name.clone(),
+            };
+            self.symbols.insert(name)
+        };
         let alias = match imp.alias {
             None => None,
             Some(id) => Some(self.convert_identifier(id)?),
         };
         let path = self.convert_string_literal(imp.path)?;
+
         Ok(ImportDeclaration {
             loc: imp.base.location,
             alias,
             path,
+            import_symbol,
         })
     }
 
@@ -431,10 +553,11 @@ impl<'a> Converter<'a> {
     }
 
     fn convert_member_assignment(&mut self, stmt: ast::MemberAssgn) -> Result<MemberAssgn> {
+        let init = self.convert_expression(stmt.init)?;
         Ok(MemberAssgn {
             loc: stmt.base.location,
             member: self.convert_member_expression(stmt.member)?,
-            init: self.convert_expression(stmt.init)?,
+            init,
         })
     }
 
@@ -584,18 +707,51 @@ impl<'a> Converter<'a> {
     }
 
     fn convert_block(&mut self, block: ast::Block) -> Result<Block> {
-        let mut body = block.body.into_iter().rev();
+        enum TempBlock {
+            Variable(Box<VariableAssgn>),
+            Expr(ExprStmt),
+            Return(ReturnStmt),
+        }
 
-        let block = match body.next() {
-            Some(ast::Statement::Return(stmt)) => {
-                let argument = self.convert_expression(stmt.argument)?;
-                Block::Return(ReturnStmt {
-                    loc: stmt.base.location.clone(),
-                    argument,
-                })
+        impl TempBlock {
+            fn loc(&self) -> &ast::SourceLocation {
+                match self {
+                    TempBlock::Variable(dec) => &dec.loc,
+                    TempBlock::Expr(stmt) => &stmt.loc,
+                    TempBlock::Return(s) => &s.loc,
+                }
             }
+        }
+
+        let body = block
+            .body
+            .into_iter()
+            .map(|s| match s {
+                ast::Statement::Variable(dec) => Ok(TempBlock::Variable(Box::new(
+                    self.convert_variable_assignment(*dec)?,
+                ))),
+                ast::Statement::Expr(stmt) => {
+                    Ok(TempBlock::Expr(self.convert_expression_statement(*stmt)?))
+                }
+                ast::Statement::Return(stmt) => {
+                    let argument = self.convert_expression(stmt.argument)?;
+                    Ok(TempBlock::Return(ReturnStmt {
+                        loc: stmt.base.location.clone(),
+                        argument,
+                    }))
+                }
+                _ => Err(located(
+                    s.base().location.clone(),
+                    ErrorKind::InvalidFunctionStatement(s.type_name()),
+                )),
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        let mut body = body.into_iter().rev();
+        let block = match body.next() {
+            Some(TempBlock::Return(stmt)) => Block::Return(stmt),
             Some(s) => {
-                return Err(located(s.base().location.clone(), ErrorKind::MissingReturn));
+                return Err(located(s.loc().clone(), ErrorKind::MissingReturn));
             }
             None => {
                 return Err(located(block.base.location, ErrorKind::MissingReturn));
@@ -603,17 +759,11 @@ impl<'a> Converter<'a> {
         };
 
         body.try_fold(block, |acc, s| match s {
-            ast::Statement::Variable(dec) => Ok(Block::Variable(
-                Box::new(self.convert_variable_assignment(*dec)?),
-                Box::new(acc),
-            )),
-            ast::Statement::Expr(stmt) => Ok(Block::Expr(
-                self.convert_expression_statement(*stmt)?,
-                Box::new(acc),
-            )),
-            _ => Err(located(
-                s.base().location.clone(),
-                ErrorKind::InvalidFunctionStatement(s.type_name()),
+            TempBlock::Variable(dec) => Ok(Block::Variable(dec, Box::new(acc))),
+            TempBlock::Expr(stmt) => Ok(Block::Expr(stmt, Box::new(acc))),
+            TempBlock::Return(s) => Err(located(
+                s.loc.clone(),
+                ErrorKind::InvalidFunctionStatement("return"),
             )),
         })
     }
@@ -757,8 +907,8 @@ impl<'a> Converter<'a> {
                 let loc = lit.base.location.clone();
                 let name = self.convert_string_literal(lit)?.value;
                 Identifier {
+                    name: self.symbols.lookup(&name),
                     loc,
-                    name: self.symbols.get(&name),
                 }
             }
         };
@@ -815,16 +965,16 @@ impl<'a> Converter<'a> {
 
     fn convert_identifier(&mut self, id: ast::Identifier) -> Result<Identifier> {
         Ok(Identifier {
+            name: self.symbols.lookup(&id.name),
             loc: id.base.location,
-            name: self.symbols.get(&id.name),
         })
     }
 
     fn convert_identifier_expression(&mut self, id: ast::Identifier) -> Result<IdentifierExpr> {
         Ok(IdentifierExpr {
-            loc: id.base.location,
             typ: MonoType::Var(self.sub.fresh()),
-            name: self.symbols.get(&id.name),
+            name: self.symbols.lookup(&id.name),
+            loc: id.base.location,
         })
     }
 
@@ -940,7 +1090,10 @@ mod tests {
     }
 
     fn test_convert(pkg: ast::Package) -> Result<Package> {
-        convert_package(pkg, &mut sub::Substitution::default())
+        let mut sub = sub::Substitution::default();
+        let mut converter = Converter::new(&mut sub);
+        converter.symbols.assume_unique_names = true;
+        converter.convert_package(pkg)
     }
 
     #[test]
@@ -1067,6 +1220,7 @@ mod tests {
                             value: "path/foo".to_string(),
                         },
                         alias: None,
+                        import_symbol: Symbol::from("foo"),
                     },
                     ImportDeclaration {
                         loc: b.location.clone(),
@@ -1078,6 +1232,7 @@ mod tests {
                             loc: b.location.clone(),
                             name: Symbol::from("b"),
                         }),
+                        import_symbol: Symbol::from("b"),
                     },
                 ],
                 body: Vec::new(),

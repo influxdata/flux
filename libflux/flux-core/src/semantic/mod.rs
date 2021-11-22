@@ -120,7 +120,7 @@ impl<I: import::Importer> Analyzer<I> {
             }
         }
 
-        let mut sem_pkg = match convert::convert_package(ast_pkg, sub) {
+        let mut sem_pkg = match convert::convert_package(ast_pkg, &self.env, sub) {
             Ok(sem_pkg) => sem_pkg,
             Err(err) => {
                 errors.push(err.into());

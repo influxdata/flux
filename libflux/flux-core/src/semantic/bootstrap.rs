@@ -257,9 +257,10 @@ fn infer_pkg(
             }
             let file = file.unwrap().to_owned();
 
+            let env = Environment::new(prelude.clone().into());
             let env = infer_package(
-                &mut convert_package(file, sub)?,
-                Environment::new(prelude.clone().into()),
+                &mut convert_package(file, &env, sub)?,
+                env,
                 sub,
                 &mut imports,
             )?;
@@ -274,13 +275,9 @@ fn infer_pkg(
     }
     let file = file.unwrap().to_owned();
 
-    let mut sem_pkg = convert_package(file, sub)?;
-    let env = infer_package(
-        &mut sem_pkg,
-        Environment::new(prelude.into()),
-        sub,
-        &mut imports,
-    )?;
+    let env = Environment::new(prelude.into());
+    let mut sem_pkg = convert_package(file, &env, sub)?;
+    let env = infer_package(&mut sem_pkg, env, sub, &mut imports)?;
     sem_pkg = inject_pkg_types(sem_pkg, sub);
 
     Ok((env.string_values(), imports, sem_pkg))
