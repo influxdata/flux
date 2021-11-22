@@ -1,5 +1,5 @@
 # Automatically request review from a Flux team member for all changes
-/ @influxdata/flux-team
+* @influxdata/flux-team
 
 # Automatically request review from Flux and Docs teams for stdlib source changes
 *.flux @influxdata/flux-team @influxdata/docs-team
