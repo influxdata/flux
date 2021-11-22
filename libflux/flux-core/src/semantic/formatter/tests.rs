@@ -122,8 +122,8 @@ fn format_function_expression() {
             x = f:(a:int, ?b:int) => int(a: 2):int
             y = f:(a:int, ?b:int) => int(a: x:int, b: f:(a:int, ?b:int) => int(a: x:int):int):int
             g = (t) => {
-                return t:t30
-            }:(<-t:t30) => t30"#]],
+                return t:t29
+            }:(<-t:t29) => t29"#]],
     )
 }
 

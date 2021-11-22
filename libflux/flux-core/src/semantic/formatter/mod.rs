@@ -37,6 +37,7 @@ pub fn format_node(node: walk::Node) -> Result<String, Error> {
 /// Struct to hold data related to formatting such as formatted code,
 /// options, and errors.
 /// Provides methods for formatting files and strings of source code.
+#[derive(Default)]
 pub struct Formatter {
     builder: String,
     indentation: u32,
@@ -45,16 +46,6 @@ pub struct Formatter {
 
 // INDENT_BYTES is 4 spaces as a constant byte slice
 const INDENT_BYTES: &str = "    ";
-
-impl Default for Formatter {
-    fn default() -> Self {
-        Formatter {
-            builder: String::new(),
-            indentation: 0,
-            err: None,
-        }
-    }
-}
 
 impl Formatter {
     /// Returns the final formatted string and error message.

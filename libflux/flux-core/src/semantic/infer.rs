@@ -54,9 +54,15 @@ impl Constraints {
 impl ops::Add for Constraints {
     type Output = Constraints;
 
-    fn add(mut self, mut cons: Constraints) -> Self::Output {
-        self.0.append(&mut cons.0);
+    fn add(mut self, cons: Constraints) -> Self::Output {
+        self += cons;
         self
+    }
+}
+
+impl ops::AddAssign for Constraints {
+    fn add_assign(&mut self, mut cons: Constraints) {
+        self.0.append(&mut cons.0);
     }
 }
 
