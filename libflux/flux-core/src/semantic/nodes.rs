@@ -1803,9 +1803,6 @@ impl Property {
     }
 }
 
-// #[allow(missing_docs)]
-// pub type Symbol = String;
-
 #[allow(missing_docs)]
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
 pub struct Symbol {

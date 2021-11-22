@@ -63,7 +63,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 ///
 /// [AST package]: ast::Package
 pub fn convert_package(pkg: ast::Package, sub: &mut Substitution) -> Result<Package> {
-    let mut converter = Converter { sub };
+    let mut converter = Converter::new(sub);
     let files = pkg
         .files
         .into_iter()
@@ -84,7 +84,7 @@ pub fn convert_polytype(
     type_expression: ast::TypeExpression,
     sub: &mut Substitution,
 ) -> Result<types::PolyType> {
-    Converter { sub }.convert_polytype(type_expression)
+    Converter::new(sub).convert_polytype(type_expression)
 }
 
 #[cfg(test)]
@@ -93,15 +93,63 @@ pub(crate) fn convert_monotype(
     tvars: &mut BTreeMap<String, types::Tvar>,
     sub: &mut Substitution,
 ) -> Result<MonoType> {
-    Converter { sub }.convert_monotype(ty, tvars)
+    Converter::new(sub).convert_monotype(ty, tvars)
+}
+
+#[derive(Default)]
+struct Symbols {
+    parent: Option<Box<Symbols>>,
+    symbols: BTreeMap<String, Symbol>,
+}
+
+impl Symbols {
+    fn insert(&mut self, name: String) -> Symbol {
+        let symbol = Symbol::from(name.clone());
+        self.symbols.insert(name, symbol.clone());
+        symbol
+    }
+
+    fn get(&mut self, name: &str) -> Symbol {
+        self.symbols.get(name).cloned().unwrap_or_else(|| {
+            if let Some(parent) = &mut self.parent {
+                parent.get(name)
+            } else {
+                // If we do not have this name in scope we invent a new symbol, the undefined
+                // symbol error is handled in a later step
+                Symbol::from(name)
+            }
+        })
+    }
+
+    fn enter_scope(&mut self) {
+        let parent = std::mem::replace(self, Symbols::default());
+        self.parent = Some(Box::new(parent));
+    }
+
+    fn exit_scope(&mut self) {
+        match self.parent.take() {
+            Some(env) => *self = *env,
+            None => panic!("cannot pop final stack frame from symbols"),
+        }
+    }
 }
 
 struct Converter<'a> {
     sub: &'a mut Substitution,
+    symbols: Symbols,
 }
 
-impl Converter<'_> {
+impl<'a> Converter<'a> {
+    fn new(sub: &'a mut Substitution) -> Self {
+        Converter {
+            sub,
+            symbols: Symbols::default(),
+        }
+    }
+
     fn convert_file(&mut self, file: ast::File) -> Result<File> {
+        self.symbols.enter_scope();
+
         let package = self.convert_package_clause(file.package)?;
         let imports = file
             .imports
@@ -113,6 +161,8 @@ impl Converter<'_> {
             .into_iter()
             .map(|s| self.convert_statement(s))
             .collect::<Result<Vec<Statement>>>()?;
+
+        self.symbols.exit_scope();
         Ok(File {
             loc: file.base.location,
             package,
@@ -200,7 +250,7 @@ impl Converter<'_> {
     fn convert_builtin_statement(&mut self, stmt: ast::BuiltinStmt) -> Result<BuiltinStmt> {
         Ok(BuiltinStmt {
             loc: stmt.base.location,
-            id: self.convert_identifier(stmt.id)?,
+            id: self.define_identifier(stmt.id)?,
             typ_expr: self.convert_polytype(stmt.ty)?,
         })
     }
@@ -372,9 +422,10 @@ impl Converter<'_> {
     }
 
     fn convert_variable_assignment(&mut self, stmt: ast::VariableAssgn) -> Result<VariableAssgn> {
+        let expr = self.convert_expression(stmt.init)?;
         Ok(VariableAssgn::new(
-            self.convert_identifier(stmt.id)?,
-            self.convert_expression(stmt.init)?,
+            self.define_identifier(stmt.id)?,
+            expr,
             stmt.base.location,
         ))
     }
@@ -462,8 +513,13 @@ impl Converter<'_> {
     }
 
     fn convert_function_expression(&mut self, expr: ast::FunctionExpr) -> Result<FunctionExpr> {
+        self.symbols.enter_scope();
+
         let params = self.convert_function_params(expr.params)?;
         let body = self.convert_function_body(expr.body)?;
+
+        self.symbols.exit_scope();
+
         Ok(FunctionExpr {
             loc: expr.base.location,
             typ: MonoType::Var(self.sub.fresh()),
@@ -488,7 +544,7 @@ impl Converter<'_> {
                     ErrorKind::FunctionParameterIdents,
                 )),
             }?;
-            let key = self.convert_identifier(id)?;
+            let key = self.define_identifier(id)?;
             let mut default: Option<Expression> = None;
             let mut is_pipe = false;
             if let Some(expr) = prop.value {
@@ -697,10 +753,14 @@ impl Converter<'_> {
     fn convert_property(&mut self, prop: ast::Property) -> Result<Property> {
         let key = match prop.key {
             ast::PropertyKey::Identifier(id) => self.convert_identifier(id)?,
-            ast::PropertyKey::StringLit(lit) => Identifier {
-                loc: lit.base.location.clone(),
-                name: Symbol::from(self.convert_string_literal(lit)?.value),
-            },
+            ast::PropertyKey::StringLit(lit) => {
+                let loc = lit.base.location.clone();
+                let name = self.convert_string_literal(lit)?.value;
+                Identifier {
+                    loc,
+                    name: self.symbols.get(&name),
+                }
+            }
         };
         let value = match prop.value {
             Some(expr) => self.convert_expression(expr)?,
@@ -745,10 +805,18 @@ impl Converter<'_> {
         })
     }
 
+    fn define_identifier(&mut self, id: ast::Identifier) -> Result<Identifier> {
+        let name = self.symbols.insert(id.name);
+        Ok(Identifier {
+            loc: id.base.location,
+            name,
+        })
+    }
+
     fn convert_identifier(&mut self, id: ast::Identifier) -> Result<Identifier> {
         Ok(Identifier {
             loc: id.base.location,
-            name: Symbol::from(id.name),
+            name: self.symbols.get(&id.name),
         })
     }
 
@@ -756,7 +824,7 @@ impl Converter<'_> {
         Ok(IdentifierExpr {
             loc: id.base.location,
             typ: MonoType::Var(self.sub.fresh()),
-            name: Symbol::from(id.name),
+            name: self.symbols.get(&id.name),
         })
     }
 
