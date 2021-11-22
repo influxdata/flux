@@ -512,11 +512,10 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
 
                 let func_typ = func.typ.clone();
                 let (typ, typ_type) = types::build_type(v.builder, &func_typ);
-                let (vectorized, vectorized_type) = {
-                    match &func.vectorized {
-                        Some(_) => v.pop_expr(),
-                        _ => (None, fbsemantic::Expression::NONE),
-                    }
+                let vectorized = if func.vectorized.is_some() {
+                    v.pop_expr_with_kind(fbsemantic::Expression::FunctionExpression)
+                } else {
+                    None
                 };
 
                 let func = fbsemantic::FunctionExpression::create(
@@ -528,7 +527,6 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                         typ: Some(typ),
                         typ_type,
                         vectorized,
-                        vectorized_type,
                     },
                 );
                 v.expr_stack.push((

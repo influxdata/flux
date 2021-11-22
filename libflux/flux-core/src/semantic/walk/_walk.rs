@@ -149,7 +149,7 @@ where
                 }
                 walk(v, Node::Block(&n.body));
                 if let Some(ref vectorized) = n.vectorized {
-                    walk(v, Node::from_expr(vectorized));
+                    walk(v, Node::FunctionExpr(vectorized));
                 }
             }
             Node::FunctionParameter(n) => {

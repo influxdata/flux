@@ -12013,7 +12013,6 @@ pub mod fbsemantic {
             if let Some(x) = args.loc {
                 builder.add_loc(x);
             }
-            builder.add_vectorized_type(args.vectorized_type);
             builder.add_typ_type(args.typ_type);
             builder.finish()
         }
@@ -12023,8 +12022,7 @@ pub mod fbsemantic {
         pub const VT_BODY: flatbuffers::VOffsetT = 8;
         pub const VT_TYP_TYPE: flatbuffers::VOffsetT = 10;
         pub const VT_TYP: flatbuffers::VOffsetT = 12;
-        pub const VT_VECTORIZED_TYPE: flatbuffers::VOffsetT = 14;
-        pub const VT_VECTORIZED: flatbuffers::VOffsetT = 16;
+        pub const VT_VECTORIZED: flatbuffers::VOffsetT = 14;
 
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
@@ -12063,18 +12061,9 @@ pub mod fbsemantic {
                 )
         }
         #[inline]
-        pub fn vectorized_type(&self) -> Expression {
+        pub fn vectorized(&self) -> Option<FunctionExpression<'a>> {
             self._tab
-                .get::<Expression>(
-                    FunctionExpression::VT_VECTORIZED_TYPE,
-                    Some(Expression::NONE),
-                )
-                .unwrap()
-        }
-        #[inline]
-        pub fn vectorized(&self) -> Option<flatbuffers::Table<'a>> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
+                .get::<flatbuffers::ForwardsUOffset<FunctionExpression>>(
                     FunctionExpression::VT_VECTORIZED,
                     None,
                 )
@@ -12148,218 +12137,6 @@ pub mod fbsemantic {
                 None
             }
         }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_string_expression(&self) -> Option<StringExpression<'a>> {
-            if self.vectorized_type() == Expression::StringExpression {
-                self.vectorized().map(StringExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
-            if self.vectorized_type() == Expression::ArrayExpression {
-                self.vectorized().map(ArrayExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_dict_expression(&self) -> Option<DictExpression<'a>> {
-            if self.vectorized_type() == Expression::DictExpression {
-                self.vectorized().map(DictExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
-            if self.vectorized_type() == Expression::FunctionExpression {
-                self.vectorized().map(FunctionExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
-            if self.vectorized_type() == Expression::BinaryExpression {
-                self.vectorized().map(BinaryExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_call_expression(&self) -> Option<CallExpression<'a>> {
-            if self.vectorized_type() == Expression::CallExpression {
-                self.vectorized().map(CallExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
-            if self.vectorized_type() == Expression::ConditionalExpression {
-                self.vectorized()
-                    .map(ConditionalExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
-            if self.vectorized_type() == Expression::IdentifierExpression {
-                self.vectorized().map(IdentifierExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
-            if self.vectorized_type() == Expression::LogicalExpression {
-                self.vectorized().map(LogicalExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_member_expression(&self) -> Option<MemberExpression<'a>> {
-            if self.vectorized_type() == Expression::MemberExpression {
-                self.vectorized().map(MemberExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_index_expression(&self) -> Option<IndexExpression<'a>> {
-            if self.vectorized_type() == Expression::IndexExpression {
-                self.vectorized().map(IndexExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
-            if self.vectorized_type() == Expression::ObjectExpression {
-                self.vectorized().map(ObjectExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
-            if self.vectorized_type() == Expression::UnaryExpression {
-                self.vectorized().map(UnaryExpression::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
-            if self.vectorized_type() == Expression::BooleanLiteral {
-                self.vectorized().map(BooleanLiteral::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
-            if self.vectorized_type() == Expression::DateTimeLiteral {
-                self.vectorized().map(DateTimeLiteral::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
-            if self.vectorized_type() == Expression::DurationLiteral {
-                self.vectorized().map(DurationLiteral::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
-            if self.vectorized_type() == Expression::FloatLiteral {
-                self.vectorized().map(FloatLiteral::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
-            if self.vectorized_type() == Expression::IntegerLiteral {
-                self.vectorized().map(IntegerLiteral::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_string_literal(&self) -> Option<StringLiteral<'a>> {
-            if self.vectorized_type() == Expression::StringLiteral {
-                self.vectorized().map(StringLiteral::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
-            if self.vectorized_type() == Expression::RegexpLiteral {
-                self.vectorized().map(RegexpLiteral::init_from_table)
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn vectorized_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
-            if self.vectorized_type() == Expression::UnsignedIntegerLiteral {
-                self.vectorized()
-                    .map(UnsignedIntegerLiteral::init_from_table)
-            } else {
-                None
-            }
-        }
     }
 
     impl flatbuffers::Verifiable for FunctionExpression<'_> {
@@ -12370,48 +12147,66 @@ pub mod fbsemantic {
         ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
             use self::flatbuffers::Verifiable;
             v.visit_table(pos)?
-     .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(&"loc", Self::VT_LOC, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<FunctionParameter>>>>(&"params", Self::VT_PARAMS, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<Block>>(&"body", Self::VT_BODY, false)?
-     .visit_union::<MonoType, _>(&"typ_type", Self::VT_TYP_TYPE, &"typ", Self::VT_TYP, false, |key, v, pos| {
-        match key {
-          MonoType::Basic => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>("MonoType::Basic", pos),
-          MonoType::Var => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>("MonoType::Var", pos),
-          MonoType::Arr => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>("MonoType::Arr", pos),
-          MonoType::Record => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>("MonoType::Record", pos),
-          MonoType::Fun => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>("MonoType::Fun", pos),
-          MonoType::Dict => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>("MonoType::Dict", pos),
-          MonoType::Vector => v.verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>("MonoType::Vector", pos),
-          _ => Ok(()),
-        }
-     })?
-     .visit_union::<Expression, _>(&"vectorized_type", Self::VT_VECTORIZED_TYPE, &"vectorized", Self::VT_VECTORIZED, false, |key, v, pos| {
-        match key {
-          Expression::StringExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringExpression>>("Expression::StringExpression", pos),
-          Expression::ArrayExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ArrayExpression>>("Expression::ArrayExpression", pos),
-          Expression::DictExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DictExpression>>("Expression::DictExpression", pos),
-          Expression::FunctionExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FunctionExpression>>("Expression::FunctionExpression", pos),
-          Expression::BinaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BinaryExpression>>("Expression::BinaryExpression", pos),
-          Expression::CallExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<CallExpression>>("Expression::CallExpression", pos),
-          Expression::ConditionalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ConditionalExpression>>("Expression::ConditionalExpression", pos),
-          Expression::IdentifierExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IdentifierExpression>>("Expression::IdentifierExpression", pos),
-          Expression::LogicalExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LogicalExpression>>("Expression::LogicalExpression", pos),
-          Expression::MemberExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<MemberExpression>>("Expression::MemberExpression", pos),
-          Expression::IndexExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IndexExpression>>("Expression::IndexExpression", pos),
-          Expression::ObjectExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<ObjectExpression>>("Expression::ObjectExpression", pos),
-          Expression::UnaryExpression => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnaryExpression>>("Expression::UnaryExpression", pos),
-          Expression::BooleanLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<BooleanLiteral>>("Expression::BooleanLiteral", pos),
-          Expression::DateTimeLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DateTimeLiteral>>("Expression::DateTimeLiteral", pos),
-          Expression::DurationLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<DurationLiteral>>("Expression::DurationLiteral", pos),
-          Expression::FloatLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<FloatLiteral>>("Expression::FloatLiteral", pos),
-          Expression::IntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<IntegerLiteral>>("Expression::IntegerLiteral", pos),
-          Expression::StringLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StringLiteral>>("Expression::StringLiteral", pos),
-          Expression::RegexpLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<RegexpLiteral>>("Expression::RegexpLiteral", pos),
-          Expression::UnsignedIntegerLiteral => v.verify_union_variant::<flatbuffers::ForwardsUOffset<UnsignedIntegerLiteral>>("Expression::UnsignedIntegerLiteral", pos),
-          _ => Ok(()),
-        }
-     })?
-     .finish();
+                .visit_field::<flatbuffers::ForwardsUOffset<SourceLocation>>(
+                    &"loc",
+                    Self::VT_LOC,
+                    false,
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<FunctionParameter>>,
+                >>(&"params", Self::VT_PARAMS, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<Block>>(&"body", Self::VT_BODY, false)?
+                .visit_union::<MonoType, _>(
+                    &"typ_type",
+                    Self::VT_TYP_TYPE,
+                    &"typ",
+                    Self::VT_TYP,
+                    false,
+                    |key, v, pos| match key {
+                        MonoType::Basic => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Basic>>(
+                                "MonoType::Basic",
+                                pos,
+                            ),
+                        MonoType::Var => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Var>>(
+                                "MonoType::Var",
+                                pos,
+                            ),
+                        MonoType::Arr => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Arr>>(
+                                "MonoType::Arr",
+                                pos,
+                            ),
+                        MonoType::Record => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Record>>(
+                                "MonoType::Record",
+                                pos,
+                            ),
+                        MonoType::Fun => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Fun>>(
+                                "MonoType::Fun",
+                                pos,
+                            ),
+                        MonoType::Dict => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Dict>>(
+                                "MonoType::Dict",
+                                pos,
+                            ),
+                        MonoType::Vector => v
+                            .verify_union_variant::<flatbuffers::ForwardsUOffset<Vector>>(
+                                "MonoType::Vector",
+                                pos,
+                            ),
+                        _ => Ok(()),
+                    },
+                )?
+                .visit_field::<flatbuffers::ForwardsUOffset<FunctionExpression>>(
+                    &"vectorized",
+                    Self::VT_VECTORIZED,
+                    false,
+                )?
+                .finish();
             Ok(())
         }
     }
@@ -12425,8 +12220,7 @@ pub mod fbsemantic {
         pub body: Option<flatbuffers::WIPOffset<Block<'a>>>,
         pub typ_type: MonoType,
         pub typ: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
-        pub vectorized_type: Expression,
-        pub vectorized: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub vectorized: Option<flatbuffers::WIPOffset<FunctionExpression<'a>>>,
     }
     impl<'a> Default for FunctionExpressionArgs<'a> {
         #[inline]
@@ -12437,7 +12231,6 @@ pub mod fbsemantic {
                 body: None,
                 typ_type: MonoType::NONE,
                 typ: None,
-                vectorized_type: Expression::NONE,
                 vectorized: None,
             }
         }
@@ -12488,22 +12281,15 @@ pub mod fbsemantic {
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(FunctionExpression::VT_TYP, typ);
         }
         #[inline]
-        pub fn add_vectorized_type(&mut self, vectorized_type: Expression) {
-            self.fbb_.push_slot::<Expression>(
-                FunctionExpression::VT_VECTORIZED_TYPE,
-                vectorized_type,
-                Expression::NONE,
-            );
-        }
-        #[inline]
         pub fn add_vectorized(
             &mut self,
-            vectorized: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+            vectorized: flatbuffers::WIPOffset<FunctionExpression<'b>>,
         ) {
-            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
-                FunctionExpression::VT_VECTORIZED,
-                vectorized,
-            );
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<FunctionExpression>>(
+                    FunctionExpression::VT_VECTORIZED,
+                    vectorized,
+                );
         }
         #[inline]
         pub fn new(
@@ -12605,223 +12391,7 @@ pub mod fbsemantic {
                     ds.field("typ", &x)
                 }
             };
-            ds.field("vectorized_type", &self.vectorized_type());
-            match self.vectorized_type() {
-                Expression::StringExpression => {
-                    if let Some(x) = self.vectorized_as_string_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::ArrayExpression => {
-                    if let Some(x) = self.vectorized_as_array_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::DictExpression => {
-                    if let Some(x) = self.vectorized_as_dict_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::FunctionExpression => {
-                    if let Some(x) = self.vectorized_as_function_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::BinaryExpression => {
-                    if let Some(x) = self.vectorized_as_binary_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::CallExpression => {
-                    if let Some(x) = self.vectorized_as_call_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::ConditionalExpression => {
-                    if let Some(x) = self.vectorized_as_conditional_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::IdentifierExpression => {
-                    if let Some(x) = self.vectorized_as_identifier_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::LogicalExpression => {
-                    if let Some(x) = self.vectorized_as_logical_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::MemberExpression => {
-                    if let Some(x) = self.vectorized_as_member_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::IndexExpression => {
-                    if let Some(x) = self.vectorized_as_index_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::ObjectExpression => {
-                    if let Some(x) = self.vectorized_as_object_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::UnaryExpression => {
-                    if let Some(x) = self.vectorized_as_unary_expression() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::BooleanLiteral => {
-                    if let Some(x) = self.vectorized_as_boolean_literal() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::DateTimeLiteral => {
-                    if let Some(x) = self.vectorized_as_date_time_literal() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::DurationLiteral => {
-                    if let Some(x) = self.vectorized_as_duration_literal() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::FloatLiteral => {
-                    if let Some(x) = self.vectorized_as_float_literal() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::IntegerLiteral => {
-                    if let Some(x) = self.vectorized_as_integer_literal() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::StringLiteral => {
-                    if let Some(x) = self.vectorized_as_string_literal() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::RegexpLiteral => {
-                    if let Some(x) = self.vectorized_as_regexp_literal() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                Expression::UnsignedIntegerLiteral => {
-                    if let Some(x) = self.vectorized_as_unsigned_integer_literal() {
-                        ds.field("vectorized", &x)
-                    } else {
-                        ds.field(
-                            "vectorized",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                _ => {
-                    let x: Option<()> = None;
-                    ds.field("vectorized", &x)
-                }
-            };
+            ds.field("vectorized", &self.vectorized());
             ds.finish()
         }
     }

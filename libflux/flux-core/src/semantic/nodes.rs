@@ -397,9 +397,7 @@ pub fn vectorize(pkg: &mut Package) -> Result<()> {
             }
             if let NodeMut::FunctionExpr(function) = node {
                 match function.vectorize() {
-                    Ok(vectorized) => {
-                        function.vectorized = Some(Expression::Function(Box::new(vectorized)))
-                    }
+                    Ok(vectorized) => function.vectorized = Some(Box::new(vectorized)),
                     Err(err) => self.result = Err(err),
                 }
             }
@@ -951,7 +949,7 @@ pub struct FunctionExpr {
     pub params: Vec<FunctionParameter>,
     pub body: Block,
 
-    pub vectorized: Option<Expression>,
+    pub vectorized: Option<Box<FunctionExpr>>,
 }
 
 impl FunctionExpr {

@@ -570,12 +570,12 @@ func (e *FunctionExpression) FromBuf(fb *fbsemantic.FunctionExpression) error {
 		return err
 	}
 
-	if fb.Vectorized(nil) {
-		vectorized := new(FunctionExpression)
-		if err := vectorized.FromBuf(fb); err != nil {
+	if fbVectorized := fb.Vectorized(nil); fbVectorized != nil {
+		vectorize := new(FunctionExpression)
+		if err := vectorize.FromBuf(fbVectorized); err != nil {
 			return err
 		}
-		e.Vectorized = vectorized
+		e.Vectorized = vectorize
 	}
 
 	return nil

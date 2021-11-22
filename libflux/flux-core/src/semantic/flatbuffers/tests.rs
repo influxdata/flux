@@ -469,36 +469,7 @@ fn compare_exprs(
             fbsemantic::Expression::FunctionExpression,
         ) => {
             let fb_fe = fbsemantic::FunctionExpression::init_from_table(*fb_tbl);
-            compare_loc(&semantic_fe.loc, &fb_fe.loc())?;
-            compare_params(&semantic_fe.params, &fb_fe.params())?;
-
-            // compare function bodies
-            compare_loc(&semantic_fe.body.loc(), &fb_fe.body().unwrap().loc());
-            let mut block_len: usize = 0;
-            let mut current_sem = &semantic_fe.body;
-            let fb_list = fb_fe.body().unwrap().body().unwrap();
-            loop {
-                compare_stmts(
-                    &translate_block_to_stmt(current_sem),
-                    fb_list.get(block_len).statement_type(),
-                    &fb_list.get(block_len).statement(),
-                )?;
-
-                match current_sem {
-                    semantic::nodes::Block::Expr(_, next)
-                    | semantic::nodes::Block::Variable(_, next) => {
-                        current_sem = next.as_ref();
-                    }
-                    semantic::nodes::Block::Return(_) => {
-                        break;
-                    }
-                }
-                block_len += 1;
-            }
-            if let Some(vectorized) = &semantic_fe.vectorized {
-                compare_exprs(&vectorized, fb_fe.vectorized_type(), &fb_fe.vectorized())?;
-            }
-            Ok(())
+            compare_function_expr(semantic_fe, &Some(fb_fe))
         }
         (
             semantic::nodes::Expression::Logical(semantic_le),
@@ -927,6 +898,42 @@ fn compare_string_expr_part(
         }
         _ => Err(anyhow!("mismatch in string expr part text/interpolated",)),
     }
+}
+
+fn compare_function_expr(
+    semantic_fe: &semantic::nodes::FunctionExpr,
+    fb_fe: &Option<fbsemantic::FunctionExpression>,
+) -> Result<()> {
+    let fb_fe = unwrap_or_fail("function expr", fb_fe)?;
+    compare_loc(&semantic_fe.loc, &fb_fe.loc())?;
+    compare_params(&semantic_fe.params, &fb_fe.params())?;
+
+    // compare function bodies
+    compare_loc(&semantic_fe.body.loc(), &fb_fe.body().unwrap().loc());
+    let mut block_len: usize = 0;
+    let mut current_sem = &semantic_fe.body;
+    let fb_list = fb_fe.body().unwrap().body().unwrap();
+    loop {
+        compare_stmts(
+            &translate_block_to_stmt(current_sem),
+            fb_list.get(block_len).statement_type(),
+            &fb_list.get(block_len).statement(),
+        )?;
+
+        match current_sem {
+            semantic::nodes::Block::Expr(_, next) | semantic::nodes::Block::Variable(_, next) => {
+                current_sem = next.as_ref();
+            }
+            semantic::nodes::Block::Return(_) => {
+                break;
+            }
+        }
+        block_len += 1;
+    }
+    if let Some(vectorized) = &semantic_fe.vectorized {
+        compare_function_expr(vectorized, &fb_fe.vectorized())?;
+    }
+    Ok(())
 }
 
 fn semantic_operator(fb_op: fbsemantic::Operator) -> ast::Operator {
