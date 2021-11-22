@@ -27,7 +27,7 @@ import "universe"
 //
 // ## Examples
 // ### Generate InfluxDB check data
-// ```
+// ````norun
 // import "contrib/bonitoo-io/tickscript"
 // 
 // tickscript.defineCheck(
@@ -267,11 +267,11 @@ deadman = (
 // import "contrib/bonitoo-io/tickscript"
 // import "sampledata"
 // 
-// < sampledata.int()
+// sampledata.int()
 //     |> tickscript.select(
 //         as: "sum",
 //         fn: sum,
-// >     )
+//     )
 // ```
 //
 // ### Change the name of the value column and apply a selector function
@@ -323,18 +323,18 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
 // ### Change the name of, window, and then aggregate the value column
 // ```
 // import "contrib/bonitoo-io/tickscript"
-// # import "sampledata"
-// # 
-// # data = sampledata.int()
-// #    |> range(start: sampledata.start, stop: sampledata.stop)
+// import "sampledata"
 // 
-// < data
+// data = sampledata.int()
+//    |> range(start: sampledata.start, stop: sampledata.stop)
+// 
+// data
 //     |> tickscript.selectWindow(
 //         fn: sum,
 //         as: "example-name",
 //         every: 1h,
 //         defaultValue: 0,
-// >     )
+//     )
 // ```
 //
 // tags: transformations
@@ -382,24 +382,24 @@ compute = select
 // ## Examples
 // ### Group by host and region
 // ```
-// # import "array"
+// import "array"
 // import "contrib/bonitoo-io/tickscript"
 // 
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h1", region: "east", _field: "foo", _value: 1.2},
-// #         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h1", region: "east", _field: "foo", _value: 3.4},
-// #         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h2", region: "east", _field: "foo", _value: 2.3},
-// #         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h2", region: "east", _field: "foo", _value: 5.6},
-// #         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h3", region: "west", _field: "foo", _value: 1.2},
-// #         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h3", region: "west", _field: "foo", _value: 3.4},
-// #         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h4", region: "west", _field: "foo", _value: 2.3},
-// #         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h4", region: "west", _field: "foo", _value: 5.6},
-// #     ],
-// # )
-// # 
-// < data
-// >     |> tickscript.groupBy(columns: ["host", "region"])
+// data = array.from(
+//     rows: [
+//         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h1", region: "east", _field: "foo", _value: 1.2},
+//         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h1", region: "east", _field: "foo", _value: 3.4},
+//         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h2", region: "east", _field: "foo", _value: 2.3},
+//         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h2", region: "east", _field: "foo", _value: 5.6},
+//         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h3", region: "west", _field: "foo", _value: 1.2},
+//         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h3", region: "west", _field: "foo", _value: 3.4},
+//         {_time: 2021-01-01T00:00:00Z, _measurement: "m", host: "h4", region: "west", _field: "foo", _value: 2.3},
+//         {_time: 2021-01-01T00:01:00Z, _measurement: "m", host: "h4", region: "west", _field: "foo", _value: 5.6},
+//     ],
+// )
+// 
+// data
+//     |> tickscript.groupBy(columns: ["host", "region"])
 // ```
 //
 // tags: transformations

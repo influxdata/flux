@@ -36,19 +36,19 @@ builtin maxuint : uint
 // ## Examples
 //
 // ### Absolute Value
-// ```
-// # import "math"
+// ````norun
+// import "math"
 //
 // math.abs(x: -1.22) // 1.22
 // ```
 //
 // ### Using math.abs inside map
 // ```
-// # import "math"
-// # import "sampledata"
+// import "math"
+// import "sampledata"
 //
-// < sampledata.float()
-// >     |> map(fn: (r) => ({r with _value: math.abs(x: r._value)}))
+// sampledata.float()
+//     |> map(fn: (r) => ({r with _value: math.abs(x: r._value)}))
 // ```
 //
 builtin abs : (x: float) => float

@@ -28,8 +28,8 @@ import "experimental"
 // import "contrib/anaisdg/anomalydetection"
 // import "sampledata"
 // 
-// < sampledata.float()
-// >     |> anomalydetection.mad(threshold: 1.0)
+// sampledata.float()
+//      |> anomalydetection.mad(threshold: 1.0)
 mad = (table=<-, threshold=3.0) => {
     // MEDiXi = med(x)
     data = table |> group(columns: ["_time"], mode: "by")

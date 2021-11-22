@@ -22,7 +22,7 @@ import "json"
 //
 // ## Examples
 // ### Send the last reported status to Webex Teams
-// ```
+// ````norun
 // import "contrib/sranka/webexteams"
 // import "influxdata/influxdb/secrets"
 //

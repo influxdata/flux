@@ -30,7 +30,7 @@ import "strings"
 // 
 // ## Examples
 // ### Send the last reported value and status to Alerta
-// ````no_run
+// ````norun
 // import "contrib/bonitoo-io/alerta"
 // import "influxdata/influxdb/secrets"
 // 

@@ -243,8 +243,8 @@ notify = (tables=<-, endpoint, data) => tables
 //     ],
 // )
 // 
-// < data
-// >     |> monitor.stateChangesOnly()
+// data
+//     |> monitor.stateChangesOnly()
 // ```
 //
 // tags: transformations
@@ -342,8 +342,8 @@ stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
 // )
 //     |> group(columns: ["host"])
 //
-// < data
-// >     |> monitor.deadman(t: 2021-01-01T00:05:00Z)
+// data
+//     |> monitor.deadman(t: 2021-01-01T00:05:00Z)
 // ```
 //
 // ### Detect if a host hasn't reported since a relative time

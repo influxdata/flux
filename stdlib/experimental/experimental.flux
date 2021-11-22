@@ -21,7 +21,7 @@ package experimental
 // ## Examples
 //
 // ### Add six hours to a timestamp
-// ```
+// ````norun
 // import "experimental"
 // 
 // experimental.addDuration(
@@ -45,7 +45,7 @@ builtin addDuration : (d: duration, to: time) => time
 // ## Examples
 //
 // ### Subtract six hours from a timestamp
-// ```
+// ````norun
 // import "experimental"
 // 
 // experimental.subDuration(
@@ -75,25 +75,25 @@ builtin subDuration : (d: duration, from: time) => time
 //
 // ### Add a column to the group key
 // ```
-// # import "array"
+// import "array"
 // import "experimental"
-// # 
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2021-01-01T00:00:00Z, host: "host1", region: "east", _value: "41"},
-// #         {_time: 2021-01-01T00:01:00Z, host: "host1", region: "east", _value: "48"},
-// #         {_time: 2021-01-01T00:00:00Z, host: "host1", region: "west", _value: "34"},
-// #         {_time: 2021-01-01T00:01:00Z, host: "host1", region: "west", _value: "12"},
-// #         {_time: 2021-01-01T00:00:00Z, host: "host2", region: "east", _value: "56"},
-// #         {_time: 2021-01-01T00:01:00Z, host: "host2", region: "east", _value: "72"},
-// #         {_time: 2021-01-01T00:00:00Z, host: "host2", region: "west", _value: "43"},
-// #         {_time: 2021-01-01T00:01:00Z, host: "host2", region: "west", _value: "22"},
-// #     ],
-// # )
-// #     |> group(columns: ["host"])
 // 
-// < data
-// >     |> experimental.group(columns: ["region"], mode: "extend")
+// data = array.from(
+//     rows: [
+//         {_time: 2021-01-01T00:00:00Z, host: "host1", region: "east", _value: "41"},
+//         {_time: 2021-01-01T00:01:00Z, host: "host1", region: "east", _value: "48"},
+//         {_time: 2021-01-01T00:00:00Z, host: "host1", region: "west", _value: "34"},
+//         {_time: 2021-01-01T00:01:00Z, host: "host1", region: "west", _value: "12"},
+//         {_time: 2021-01-01T00:00:00Z, host: "host2", region: "east", _value: "56"},
+//         {_time: 2021-01-01T00:01:00Z, host: "host2", region: "east", _value: "72"},
+//         {_time: 2021-01-01T00:00:00Z, host: "host2", region: "west", _value: "43"},
+//         {_time: 2021-01-01T00:01:00Z, host: "host2", region: "west", _value: "22"},
+//     ],
+// )
+//     |> group(columns: ["host"])
+// 
+// data
+//     |> experimental.group(columns: ["region"], mode: "extend")
 // ```
 //
 // tags: transformations
@@ -107,7 +107,7 @@ builtin group : (<-tables: [A], mode: string, columns: [string]) => [A] where A:
 //
 // ## Examples
 // ### Return all property keys in a record
-// ```
+// ````norun
 // import "experimental"
 // 
 // user = {
@@ -141,25 +141,25 @@ builtin objectKeys : (o: A) => [string] where A: Record
 //
 // ### Set values for multiple columns
 // ```
-// # import "array"
+// import "array"
 // import "experimental"
-// # 
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2019-09-16T12:00:00Z, _field: "temp", _value: 71.2},
-// #         {_time: 2019-09-17T12:00:00Z, _field: "temp", _value: 68.4},
-// #         {_time: 2019-09-18T12:00:00Z, _field: "temp", _value: 70.8},
-// #     ],
-// # )
 // 
-// < data
+// data = array.from(
+//     rows: [
+//         {_time: 2019-09-16T12:00:00Z, _field: "temp", _value: 71.2},
+//         {_time: 2019-09-17T12:00:00Z, _field: "temp", _value: 68.4},
+//         {_time: 2019-09-18T12:00:00Z, _field: "temp", _value: 70.8},
+//     ],
+// )
+// 
+// data
 //     |> experimental.set(
 //         o: {
 //             _field: "temperature",
 //             unit: "°F",
 //             location: "San Francisco",
 //         },
-// <     )
+//     )
 // ```
 //
 // introduced: 0.40.0
@@ -258,7 +258,7 @@ builtin to : (
 // ## Examples
 // ### Join two streams of tables
 // ```
-// // import "array"
+// import "array"
 // import "experimental"
 // 
 // left = array.from(
@@ -286,7 +286,7 @@ builtin to : (
 //         rv: right._value,
 //         diff: left._value - right._value,
 //     }),
-// > )
+// )
 // ```
 // 
 // ### Join two streams of tables with different fields and measurements
@@ -376,26 +376,26 @@ builtin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record
 // to a common start time and values can be compared by time.
 // 
 // ```
-// # import "array"
+// import "array"
 // import "experimental"
-// # 
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2021-01-01T00:00:00Z, _value: 32.1},
-// #         {_time: 2021-01-02T00:00:00Z, _value: 32.9},
-// #         {_time: 2021-01-03T00:00:00Z, _value: 33.2},
-// #         {_time: 2021-01-04T00:00:00Z, _value: 34.0},
-// #         {_time: 2021-02-01T00:00:00Z, _value: 38.3},
-// #         {_time: 2021-02-02T00:00:00Z, _value: 38.4},
-// #         {_time: 2021-02-03T00:00:00Z, _value: 37.8},
-// #         {_time: 2021-02-04T00:00:00Z, _value: 37.5},
-// #     ],
-// # )
-// #     |> range(start: 2021-01-01T00:00:00Z, stop: 2021-03-01T00:00:00Z)
 // 
-// < data
+// data = array.from(
+//     rows: [
+//         {_time: 2021-01-01T00:00:00Z, _value: 32.1},
+//         {_time: 2021-01-02T00:00:00Z, _value: 32.9},
+//         {_time: 2021-01-03T00:00:00Z, _value: 33.2},
+//         {_time: 2021-01-04T00:00:00Z, _value: 34.0},
+//         {_time: 2021-02-01T00:00:00Z, _value: 38.3},
+//         {_time: 2021-02-02T00:00:00Z, _value: 38.4},
+//         {_time: 2021-02-03T00:00:00Z, _value: 37.8},
+//         {_time: 2021-02-04T00:00:00Z, _value: 37.5},
+//     ],
+// )
+//     |> range(start: 2021-01-01T00:00:00Z, stop: 2021-03-01T00:00:00Z)
+// 
+// data
 //     |> window(every: 1mo)
-// >     |> experimental.alignTime(alignTo: 2021-01-01T00:00:00Z)
+//     |> experimental.alignTime(alignTo: 2021-01-01T00:00:00Z)
 // ```
 //
 // introduced: 0.66.0
@@ -451,34 +451,34 @@ builtin _window : (
 // ### Window data into thirty second intervals
 // ```
 // import "experimental"
-// # import "sampledata"
-// # 
-// # data = sampledata.int()
-// #     |> range(start: sampledata.start, stop: sampledata.stop)
+// import "sampledata"
 // 
-// < data
-// >     |> experimental.window(every: 30s)
+// data = sampledata.int()
+//     |> range(start: sampledata.start, stop: sampledata.stop)
+// 
+// data
+//     |> experimental.window(every: 30s)
 // ```
 // 
 // ### Window by calendar month
 // ```
-// # import "array"
+// import "array"
 // import "experimental"
-// # 
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2021-01-01T00:00:00Z, _value: 32.1},
-// #         {_time: 2021-01-02T00:00:00Z, _value: 32.9},
-// #         {_time: 2021-01-03T00:00:00Z, _value: 33.2},
-// #         {_time: 2021-02-01T00:00:00Z, _value: 38.3},
-// #         {_time: 2021-02-02T00:00:00Z, _value: 38.4},
-// #         {_time: 2021-02-03T00:00:00Z, _value: 37.8},
-// #     ],
-// # )
-// #     |> range(start: 2021-01-01T00:00:00Z, stop: 2021-03-01T00:00:00Z)
 // 
-// < data
-// >     |> experimental.window(every: 1mo)
+// data = array.from(
+//     rows: [
+//         {_time: 2021-01-01T00:00:00Z, _value: 32.1},
+//         {_time: 2021-01-02T00:00:00Z, _value: 32.9},
+//         {_time: 2021-01-03T00:00:00Z, _value: 33.2},
+//         {_time: 2021-02-01T00:00:00Z, _value: 38.3},
+//         {_time: 2021-02-02T00:00:00Z, _value: 38.4},
+//         {_time: 2021-02-03T00:00:00Z, _value: 37.8},
+//     ],
+// )
+//     |> range(start: 2021-01-01T00:00:00Z, stop: 2021-03-01T00:00:00Z)
+// 
+// data
+//     |> experimental.window(every: 1mo)
 // ```
 //
 // introduced: 0.106.0
@@ -528,8 +528,8 @@ window = (
 // data = sampledata.int()
 //     |> range(start: sampledata.start, stop: sampledata.stop)
 // 
-// < data
-// >     |> experimental.integral(unit: 20s)
+// data
+//     |> experimental.integral(unit: 20s)
 // ```
 //
 // ### Calculate the integral with linear interpolation
@@ -540,11 +540,11 @@ window = (
 // data = sampledata.int()
 //     |> range(start: sampledata.start, stop: sampledata.stop)
 // 
-// < data
+// data
 //     |> experimental.integral(
 //         unit: 20s,
 //         interpolate: "linear",
-// >     )
+//     )
 // ```
 // 
 // introduced: 0.106.0
@@ -573,11 +573,11 @@ builtin integral : (<-tables: [{T with _time: time, _value: B}], ?unit: duration
 // ## Examples
 // ### Count the number of rows in a table
 // ```
-// import "expermimental"
+// import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int()
-// >     |> experimental.count()
+// sampledata.int()
+//     |> experimental.count()
 // ```
 // 
 // introduced: 0.107.0
@@ -618,29 +618,29 @@ builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
 // ## Examples
 // ### Compute the 90th percentile of a histogram
 // ```
-// # import "array"
+// import "array"
 // import "experimental"
 // 
-// # histogramData = array.from(
-// #     rows: [
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 6873.0, le: 0.005},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9445.0, le: 0.01},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.025},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.05},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.1},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.25},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.5},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 1.0},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 2.5},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 5.0},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 10.0},
-// #         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: float(v: "+Inf")},
-// #     ],
-// # )
-// #     |> group(columns: ["_field"])
-// # 
-// < histogramData
-// >    |> experimental.histogramQuantile(quantile: 0.9)
+// histogramData = array.from(
+//     rows: [
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 6873.0, le: 0.005},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9445.0, le: 0.01},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.025},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.05},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.1},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.25},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 0.5},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 1.0},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 2.5},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 5.0},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: 10.0},
+//         {_field: "example_histogram", _time: 2021-01-01T00:00:00Z, _value: 9487.0, le: float(v: "+Inf")},
+//     ],
+// )
+//     |> group(columns: ["_field"])
+// 
+// histogramData
+//    |> experimental.histogramQuantile(quantile: 0.9)
 // ```
 //
 // introduced: 0.107.0
@@ -662,8 +662,8 @@ builtin histogramQuantile : (<-tables: [{T with _value: float, le: float}], ?qua
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int()
-// >     |> experimental.mean()
+// sampledata.float()
+//     |> experimental.mean()
 // ```
 // 
 // introduced: 0.107.0
@@ -695,8 +695,8 @@ builtin mean : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int()
-// >     |> experimental.mode()
+// sampledata.int()
+//     |> experimental.mode()
 // ```
 // 
 // introduces: 0.107.0
@@ -754,8 +754,8 @@ builtin mode : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.float()
-// >     |> experimental.quantile(q: 0.5)
+// sampledata.float()
+//     |> experimental.quantile(q: 0.5)
 // ```
 // 
 // ### Return a value representing the 50th percentile of each input table
@@ -763,11 +763,11 @@ builtin mode : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.float()
+// sampledata.float()
 //     |> experimental.quantile(
 //           q: 0.5,
 //           method: "exact_selector",
-// >     )
+//     )
 // ```
 // 
 // introduced: 0.107.0
@@ -787,8 +787,8 @@ builtin quantile : (<-tables: [{T with _value: float}], q: float, ?compression: 
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.float()
-// >     |> experimental.skew()
+// sampledata.float()
+//     |> experimental.skew()
 // ```
 // 
 // introduced: 0.107.0
@@ -808,8 +808,8 @@ builtin skew : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.float()
-// >     |> experimental.spread()
+// sampledata.float()
+//     |> experimental.spread()
 // ```
 // 
 // introduced: 0.107.0
@@ -847,8 +847,8 @@ builtin spread : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where 
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.float()
-// >     |> experimental.stddev()
+// sampledata.float()
+//     |> experimental.stddev()
 // ```
 // 
 // introduced: 0.107.0
@@ -867,8 +867,8 @@ builtin stddev : (<-tables: [{T with _value: float}], ?mode: string) => [{T with
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int()
-// >     |> experimental.sum()
+// sampledata.int()
+//     |> experimental.sum()
 // ```
 // 
 // introduced: 0.107.0
@@ -892,8 +892,8 @@ builtin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: 
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int()
-// >     |> experimental.kaufmansAMA(n: 3)
+// sampledata.int()
+//     |> experimental.kaufmansAMA(n: 3)
 // ```
 // 
 // introduced: 0.107.0
@@ -918,8 +918,8 @@ builtin kaufmansAMA : (<-tables: [{T with _value: A}], n: int) => [{T with _valu
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int(includeNull: true)
-// >     |> experimental.distinct()
+// sampledata.int(includeNull: true)
+//     |> experimental.distinct()
 // ```
 // 
 // introduced: 0.112.0
@@ -942,8 +942,8 @@ builtin distinct : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int(includeNull: true)
-// >     |> experimental.fill(value: 0)
+// sampledata.int(includeNull: true)
+//     |> experimental.fill(value: 0)
 // ```
 // 
 // ### Fill null values with the previous non-null value
@@ -951,8 +951,8 @@ builtin distinct : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int(includeNull: true)
-// >     |> experimental.fill(usePrevious: true)
+// sampledata.int(includeNull: true)
+//     |> experimental.fill(usePrevious: true)
 // ```
 // 
 // introduced: 0.112.0
@@ -974,8 +974,8 @@ builtin fill : (<-tables: [{T with _value: A}], ?value: A, ?usePrevious: bool) =
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int(includeNull: true)
-// >     |> experimental.first()
+// sampledata.int(includeNull: true)
+//     |> experimental.first()
 // ```
 // 
 // introduced: 0.112.0
@@ -997,8 +997,8 @@ builtin first : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int(includeNull: true)
-// >     |> experimental.last()
+// sampledata.int(includeNull: true)
+//     |> experimental.last()
 // ```
 // 
 // introduced: 0.112.0
@@ -1020,8 +1020,8 @@ builtin last : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int()
-// >     |> experimental.max()
+// sampledata.int()
+//     |> experimental.max()
 // ```
 // 
 // introduced: 0.112.0
@@ -1043,8 +1043,8 @@ builtin max : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int()
-// >     |> experimental.min()
+// sampledata.int()
+//     |> experimental.min()
 // ```
 // 
 // introduced: 0.112.0
@@ -1071,8 +1071,8 @@ builtin min : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.int(includeNull: true)
-// >     |> experimental.unique()
+// sampledata.int(includeNull: true)
+//     |> experimental.unique()
 // ```
 // 
 // introduced: 0.112.0
@@ -1120,14 +1120,14 @@ builtin unique : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 // import "experimental"
 // import "sampledata"
 // 
-// < sampledata.float()
+// sampledata.float()
 //     |> experimental.histogram(bins: [
 //         0.0,
 //         5.0,
 //         10.0,
 //         15.0,
 //         20.0,
-// >     ])
+//     ])
 // ```
 // 
 // introduced: 0.112.0

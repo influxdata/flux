@@ -84,25 +84,25 @@ builtin basicAuth : (u: string, p: string) => string
 // ## Examples
 //
 // ### URL-encode a string
-// ```
+// ````norun
 // import "http"
 //
-// http.pathEscape(intputString: "Hello world!")
+// http.pathEscape(inputString: "Hello world!")
 //
 // // Returns "Hello%20world%21"
-// ``
+// ```
 // 
 // ### URL-encode strings in a stream of tables
 // ```
 // import "http"
 // import "sampledata"
 // 
-// < sampledata.string()
+// sampledata.string()
 //     |> map(
 //         fn: (r) => ({r with
 //             _value: http.pathEscape(inputString: r._value),
 //         }),
-// >     )
+//     )
 // ```
 //
 // introduced: 0.71.0

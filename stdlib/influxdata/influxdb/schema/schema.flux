@@ -15,23 +15,23 @@ package schema
 // 
 // ### Pivot InfluxDB fields into columns
 // ```
-// # import "array"
+// import "array"
 // import "influxdata/influxdb/schema"
 // 
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2021-01-01T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "temp", _value: "73.1"},
-// #         {_time: 2021-01-02T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "temp", _value: "68.2"},
-// #         {_time: 2021-01-03T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "temp", _value: "61.4"},
-// #         {_time: 2021-01-01T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "hum", _value: "89.2"},
-// #         {_time: 2021-01-02T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "hum", _value: "90.5"},
-// #         {_time: 2021-01-03T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "hum", _value: "81.0"},
-// #     ],
-// # )
-// #     |> group(columns: ["_time", "_value"], mode: "except")
-// #
-// < data
-// >     |> schema.fieldsAsCols()
+// data = array.from(
+//     rows: [
+//         {_time: 2021-01-01T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "temp", _value: "73.1"},
+//         {_time: 2021-01-02T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "temp", _value: "68.2"},
+//         {_time: 2021-01-03T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "temp", _value: "61.4"},
+//         {_time: 2021-01-01T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "hum", _value: "89.2"},
+//         {_time: 2021-01-02T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "hum", _value: "90.5"},
+//         {_time: 2021-01-03T12:00:00Z, _measurement: "m", loc: "Seattle", _field: "hum", _value: "81.0"},
+//     ],
+// )
+//     |> group(columns: ["_time", "_value"], mode: "except")
+//
+// data
+//     |> schema.fieldsAsCols()
 // ```
 //
 // tags: transformations

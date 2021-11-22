@@ -17,7 +17,7 @@ package date
 // 
 // ### Return the second of a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.second(t: 2020-02-11T12:21:03.293534940Z)
@@ -27,7 +27,7 @@ package date
 //
 // ## Return the second of a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -50,7 +50,7 @@ builtin second : (t: T) => int where T: Timeable
 // 
 // ### Return the minute of a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.minute(t: 2020-02-11T12:21:03.293534940Z)
@@ -59,7 +59,7 @@ builtin second : (t: T) => int where T: Timeable
 //
 // ### Return the minute of a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -82,7 +82,7 @@ builtin minute : (t: T) => int where T: Timeable
 // 
 // ### Return the hour of a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.hour(t: 2020-02-11T12:21:03.293534940Z)
@@ -92,7 +92,7 @@ builtin minute : (t: T) => int where T: Timeable
 //
 // ### Return the hour of a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -116,7 +116,7 @@ builtin hour : (t: T) => int where T: Timeable
 // 
 // ### Return the day of the week for a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.weekDay(t: 2020-02-11T12:21:03.293534940Z)
@@ -126,7 +126,7 @@ builtin hour : (t: T) => int where T: Timeable
 //
 // ### Return the day of the week for a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -150,7 +150,7 @@ builtin weekDay : (t: T) => int where T: Timeable
 // 
 // ### Return the day of the month for a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.monthDay(t: 2020-02-11T12:21:03.293534940Z)
@@ -160,7 +160,7 @@ builtin weekDay : (t: T) => int where T: Timeable
 //
 // ### Return the day of the month for a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -184,7 +184,7 @@ builtin monthDay : (t: T) => int where T: Timeable
 //
 // ### Return the day of the year for a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.yearDay(t: 2020-02-11T12:21:03.293534940Z)
@@ -194,7 +194,7 @@ builtin monthDay : (t: T) => int where T: Timeable
 //
 // ### Return the day of the year for a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -217,7 +217,7 @@ builtin yearDay : (t: T) => int where T: Timeable
 // 
 // ### Return the month of a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.month(t: 2020-02-11T12:21:03.293534940Z)
@@ -227,7 +227,7 @@ builtin yearDay : (t: T) => int where T: Timeable
 //
 // ### Return the month of a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -250,7 +250,7 @@ builtin month : (t: T) => int where T: Timeable
 // 
 // ### Return the year for a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.year(t: 2020-02-11T12:21:03.293534940Z)
@@ -260,7 +260,7 @@ builtin month : (t: T) => int where T: Timeable
 //
 // ### Return the year for a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -284,7 +284,7 @@ builtin year : (t: T) => int where T: Timeable
 // 
 // ### Return the week of the year
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.week(t: 2020-02-11T12:21:03.293534940Z)
@@ -294,7 +294,7 @@ builtin year : (t: T) => int where T: Timeable
 //
 // ### Return the week of the year using a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -317,7 +317,7 @@ builtin week : (t: T) => int where T: Timeable
 // 
 // ### Return the quarter for a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.quarter(t: 2020-02-11T12:21:03.293534940Z)
@@ -327,7 +327,7 @@ builtin week : (t: T) => int where T: Timeable
 //
 // ### Return the quarter for a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -351,7 +351,7 @@ builtin quarter : (t: T) => int where T: Timeable
 // 
 // ### Return the millisecond of the time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.millisecond(t: 2020-02-11T12:21:03.293534940Z)
@@ -361,7 +361,7 @@ builtin quarter : (t: T) => int where T: Timeable
 //
 // ### Return the millisecond of a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -385,7 +385,7 @@ builtin millisecond : (t: T) => int where T: Timeable
 // 
 // ### Return the microsecond of a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.microsecond(t: 2020-02-11T12:21:03.293534940Z)
@@ -395,7 +395,7 @@ builtin millisecond : (t: T) => int where T: Timeable
 //
 // ### Return the microsecond of a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -419,7 +419,7 @@ builtin microsecond : (t: T) => int where T: Timeable
 // 
 // ### Return the nanosecond for a time value
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.nanosecond(t: 2020-02-11T12:21:03.293534940Z)
@@ -429,7 +429,7 @@ builtin microsecond : (t: T) => int where T: Timeable
 //
 // ### Return the nanosecond for a relative duration
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-02-11T12:21:03.293534940Z
@@ -457,7 +457,7 @@ builtin nanosecond : (t: T) => int where T: Timeable
 //
 // ### Truncate time values
 //
-// ```
+// ````norun
 // import "date"
 //
 // date.truncate(t: 2019-06-03T13:59:01.000000000Z, unit: 1s)
@@ -472,7 +472,7 @@ builtin nanosecond : (t: T) => int where T: Timeable
 //
 // ### Truncate time values using relative durations
 //
-// ```
+// ````norun
 // import "date"
 //
 // option now = () => 2020-01-01T00:00:30.500000000Z

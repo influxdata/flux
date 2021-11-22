@@ -34,8 +34,8 @@ import "generate"
 // import "contrib/anaisdg/statsmodels"
 // import "sampledata"
 //
-// < sampledata.float()
-// >     |> statsmodels.linearRegression()
+// sampledata.float()
+//     |> statsmodels.linearRegression()
 // ```
 linearRegression = (tables=<-) => {
     renameAndSum = tables

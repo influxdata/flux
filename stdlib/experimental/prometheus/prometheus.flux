@@ -15,7 +15,7 @@ import "experimental"
 //
 // ### Scrape InfluxDB OSS internal metrics
 //
-// ```
+// ````norun
 //  import "experimental/prometheus"
 //
 //  prometheus.scrape(url: "http://localhost:8086/metrics")
@@ -41,7 +41,7 @@ builtin scrape : (url: string) => [A] where A: Record
 // ## Examples
 //
 // ### Compute the 0.99 quantile of a Prometheus histogram
-// ```
+// ````norun
 // import "experimental/prometheus"
 //
 // prometheus.scrape(url: "http://localhost:8086/metrics")

@@ -28,8 +28,8 @@ package rows
 // import "contrib/jsternberg/rows"
 // import "sampledata"
 //
-// < sampledata.int()
-// >     |> rows.map(fn: (r) => ({ _value: r._value * r._value }))
+// sampledata.int()
+//     |> rows.map(fn: (r) => ({ _value: r._value * r._value }))
 // ```
 //
 // **Important**: The `_time` column is dropped because:
@@ -47,8 +47,8 @@ package rows
 // import "contrib/jsternberg/rows"
 // import "sampledata"
 //
-// < sampledata.int()
-// >     |> rows.map(fn: (r) => ({ r with _value: r._value * r._value }))
+// sampledata.int()
+//     |> rows.map(fn: (r) => ({ r with _value: r._value * r._value }))
 // ```
 //
 // **Important**: The mapping operation remaps the `_value` column.
@@ -59,8 +59,8 @@ package rows
 // import "contrib/jsternberg/rows"
 // import "sampledata"
 //
-// < sampledata.int()
-// >     |> rows.map(fn: (r) => ({ r with tag: "3" }))
+// sampledata.int()
+//     |> rows.map(fn: (r) => ({ r with tag: "3" }))
 // ```
 //
 // **Important**: Remapping the `tag` column to `"t3"` is ignored because `tag` is part of the group key.

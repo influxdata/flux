@@ -37,28 +37,28 @@ package events
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
-// ### Calculate the duration of states
+// Calculate the duration of states
 //
 // ```
 // import "array"
 // import "contrib/tomhollingworth/events"
 // 
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2020-01-01T00:00:00Z, state: "ok"},
-// #         {_time: 2020-01-01T00:12:34Z, state: "warn"},
-// #         {_time: 2020-01-01T00:25:01Z, state: "ok"},
-// #         {_time: 2020-01-01T16:07:55Z, state: "crit"},
-// #         {_time: 2020-01-01T16:54:21Z, state: "warn"},
-// #         {_time: 2020-01-01T18:20:45Z, state: "ok"},
-// #     ],
-// # )
-// #
-// < data
+// data = array.from(
+//     rows: [
+//         {_time: 2020-01-01T00:00:00Z, state: "ok"},
+//         {_time: 2020-01-01T00:12:34Z, state: "warn"},
+//         {_time: 2020-01-01T00:25:01Z, state: "ok"},
+//         {_time: 2020-01-01T16:07:55Z, state: "crit"},
+//         {_time: 2020-01-01T16:54:21Z, state: "warn"},
+//         {_time: 2020-01-01T18:20:45Z, state: "ok"},
+//     ],
+// )
+//
+// data
 //     |> events.duration(
 //         unit: 1m,
 //         stop: 2020-01-02T00:00:00Z,
-// >     )
+//     )
 // ```
 //
 // ### Compared to similar functions
@@ -71,17 +71,17 @@ package events
 // import "array"
 // import "contrib/tomhollingworth/events"
 //
-// # data = array.from(
-// #     rows: [
-// #         {_time: 2020-01-01T00:00:00Z, state: "ok"},
-// #         {_time: 2020-01-01T00:12:34Z, state: "warn"},
-// #         {_time: 2020-01-01T00:25:01Z, state: "ok"},
-// #         {_time: 2020-01-01T16:07:55Z, state: "crit"},
-// #         {_time: 2020-01-01T16:54:21Z, state: "warn"},
-// #         {_time: 2020-01-01T18:20:45Z, state: "ok"},
-// #     ],
-// # )
-// #
+// data = array.from(
+//     rows: [
+//         {_time: 2020-01-01T00:00:00Z, state: "ok"},
+//         {_time: 2020-01-01T00:12:34Z, state: "warn"},
+//         {_time: 2020-01-01T00:25:01Z, state: "ok"},
+//         {_time: 2020-01-01T16:07:55Z, state: "crit"},
+//         {_time: 2020-01-01T16:54:21Z, state: "warn"},
+//         {_time: 2020-01-01T18:20:45Z, state: "ok"},
+//     ],
+// )
+// 
 // union(
 //     tables: [
 //         data |> events.duration(unit: 1m, stop: 2020-01-02T00:00:00Z) |> map(fn: (r) => ({_time: r._time, state: r.state, function: "events.Duration()", value: r.duration})),
@@ -89,7 +89,7 @@ package events
 //         data |> stateDuration(unit: 1m, fn: (r) => true) |> map(fn: (r) => ({_time: r._time, state: r.state, function: "stateDuration()", value: r.stateDuration})),
 //     ],
 // )
-// >     |> pivot(rowKey: ["_time", "state"], columnKey: ["function"], valueColumn: "value")
+//     |> pivot(rowKey: ["_time", "state"], columnKey: ["function"], valueColumn: "value")
 // ```
 //
 // tags: transformations,events
