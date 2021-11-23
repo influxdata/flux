@@ -1357,7 +1357,7 @@ impl PartialOrd for Label {
 
 impl Ord for Label {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.0.name().cmp(&other.0.name())
+        self.0.name().cmp(other.0.name())
     }
 }
 
