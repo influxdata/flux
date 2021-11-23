@@ -1,7 +1,7 @@
 //! Various conversions from AST nodes to their associated
 //! types in the semantic graph.
 
-use std::{collections::BTreeMap, fmt};
+use std::{collections::BTreeMap, fmt, rc::Rc};
 
 use thiserror::Error;
 
@@ -93,7 +93,7 @@ pub(crate) fn convert_monotype(
 #[allow(missing_docs)]
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
 pub struct Symbol {
-    name: String,
+    name: Rc<str>,
 }
 
 impl std::ops::Deref for Symbol {
@@ -129,7 +129,9 @@ impl From<&str> for Symbol {
 
 impl From<String> for Symbol {
     fn from(name: String) -> Self {
-        Self { name }
+        Self {
+            name: Rc::from(name),
+        }
     }
 }
 
@@ -156,19 +158,21 @@ impl<'a> Symbols<'a> {
         }
     }
 
-    fn new_symbol(&mut self, name: String) -> Symbol {
-        Symbol { name: name.clone() }
+    fn new_symbol(&mut self, name: &str) -> Symbol {
+        Symbol {
+            name: Rc::from(name),
+        }
     }
 
     fn insert(&mut self, name: String) -> Symbol {
-        let symbol = self.new_symbol(name.clone());
+        let symbol = self.new_symbol(&name);
         self.symbols.insert(name, symbol.clone());
         symbol
     }
 
     fn lookup(&mut self, name: &str) -> Symbol {
         self.lookup_option(name)
-            .unwrap_or_else(|| self.new_symbol(name.to_owned()))
+            .unwrap_or_else(|| self.new_symbol(name))
     }
 
     fn lookup_option(&mut self, name: &str) -> Option<Symbol> {
