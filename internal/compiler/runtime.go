@@ -210,29 +210,6 @@ func (e *dictEvaluator) Eval(ctx context.Context, scope Scope) (Value, error) {
 	return Value{}, errors.New(codes.Unimplemented)
 }
 
-type binaryEvaluator struct {
-	t           semantic.MonoType
-	left, right Evaluator
-	f           BinaryFunction
-}
-
-func (e *binaryEvaluator) Type() semantic.MonoType {
-	return e.t
-}
-
-func (e *binaryEvaluator) Eval(ctx context.Context, scope Scope) (Value, error) {
-	// l, err := eval(ctx, e.left, scope)
-	// if err != nil {
-	// 	return Value{}, err
-	// }
-	// r, err := eval(ctx, e.right, scope)
-	// if err != nil {
-	// 	return Value{}, err
-	// }
-	// return e.f(l, r)
-	return Value{}, errors.New(codes.Unimplemented)
-}
-
 type unaryNotEvaluator struct {
 	evaluator
 	index int
