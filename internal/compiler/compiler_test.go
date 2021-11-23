@@ -520,41 +520,41 @@ var testCases = []struct {
 		},
 		want: compiler.NewBool(true),
 	},
-	// {
-	// 	name: "call with nonexistant value",
-	// 	fn:   `(r) => r.a + r.b`,
-	// 	inType: semantic.NewObjectType([]semantic.PropertyType{
-	// 		{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
-	// 			{Key: []byte("a"), Value: semantic.BasicInt},
-	// 		})},
-	// 	}),
-	// 	input: values.NewObjectWithValues(map[string]values.Value{
-	// 		"r": values.NewObjectWithValues(map[string]values.Value{
-	// 			"a": values.NewInt(4),
-	// 		}),
-	// 	}),
-	// 	want: values.Null,
-	// },
-	// {
-	// 	name: "call with null value",
-	// 	fn:   `(r) => r.a + r.b`,
-	// 	inType: semantic.NewObjectType([]semantic.PropertyType{
-	// 		{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
-	// 			{Key: []byte("a"), Value: semantic.BasicInt},
-	// 			{Key: []byte("b"), Value: semantic.BasicInt},
-	// 		})},
-	// 	}),
-	// 	input: values.NewObjectWithValues(map[string]values.Value{
-	// 		"r": values.NewObjectWithValues(map[string]values.Value{
-	// 			"a": values.NewInt(4),
-	// 			// The object is typed as an integer,
-	// 			// but it doesn't have an actual value
-	// 			// because it is null.
-	// 			"b": values.Null,
-	// 		}),
-	// 	}),
-	// 	want: values.Null,
-	// },
+	{
+		name: "call with nonexistant value",
+		fn:   `(r) => r.a + r.b`,
+		params: []semantic.PropertyType{
+			{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("a"), Value: semantic.BasicInt},
+			})},
+		},
+		input: func(params []semantic.PropertyType) []compiler.Value {
+			r := compiler.NewRecord(params[0].Value)
+			r.Set(0, compiler.NewInt(4))
+			return []compiler.Value{r}
+		},
+		want: compiler.Value{},
+	},
+	{
+		name: "call with null value",
+		fn:   `(r) => r.a + r.b`,
+		params: []semantic.PropertyType{
+			{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("a"), Value: semantic.BasicInt},
+				{Key: []byte("b"), Value: semantic.BasicInt},
+			})},
+		},
+		input: func(params []semantic.PropertyType) []compiler.Value {
+			r := compiler.NewRecord(params[0].Value)
+			r.Set(0, compiler.NewInt(4))
+			// The object is typed as an integer,
+			// but it doesn't have an actual value
+			// because it is null.
+			r.Set(1, compiler.Value{})
+			return []compiler.Value{r}
+		},
+		want: compiler.Value{},
+	},
 	// {
 	// 	name: "call with null parameter",
 	// 	fn: `(r) => {
@@ -575,21 +575,21 @@ var testCases = []struct {
 	// 	}),
 	// 	want: values.Null,
 	// },
-	// {
-	// 	name: "return nonexistant value",
-	// 	fn:   `(r) => r.b`,
-	// 	inType: semantic.NewObjectType([]semantic.PropertyType{
-	// 		{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
-	// 			{Key: []byte("a"), Value: semantic.BasicInt},
-	// 		})},
-	// 	}),
-	// 	input: values.NewObjectWithValues(map[string]values.Value{
-	// 		"r": values.NewObjectWithValues(map[string]values.Value{
-	// 			"a": values.NewInt(4),
-	// 		}),
-	// 	}),
-	// 	want: values.Null,
-	// },
+	{
+		name: "return nonexistant value",
+		fn:   `(r) => r.b`,
+		params: []semantic.PropertyType{
+			{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("a"), Value: semantic.BasicInt},
+			})},
+		},
+		input: func(params []semantic.PropertyType) []compiler.Value {
+			r := compiler.NewRecord(params[0].Value)
+			r.Set(0, compiler.NewInt(4))
+			return []compiler.Value{r}
+		},
+		want: compiler.Value{},
+	},
 	// {
 	// 	name: "return nonexistant and used parameter",
 	// 	fn: `(r) => {

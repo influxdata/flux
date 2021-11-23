@@ -30,7 +30,8 @@ func Compile(_ values.Scope, f *semantic.FunctionExpression, in semantic.MonoTyp
 	if err != nil {
 		return nil, err
 	}
-	scope := NewScope()
+
+	fn := compiledFn{scope: NewScope(), params: params}
 
 	// Iterate over every argument and find the equivalent
 	// property inside of the input.
@@ -67,15 +68,22 @@ func Compile(_ values.Scope, f *semantic.FunctionExpression, in semantic.MonoTyp
 			if err := substituteTypes(subst, argT, mtyp); err != nil {
 				return nil, err
 			}
-			register := scope.Declare()
-			scope.Define(prop.Name(), register)
+			register := fn.scope.Declare()
 			params[propIndex] = basicValueMapper(register)
+
+			fn.scope.Define(
+				prop.Name(),
+				fn.staticCast(
+					apply(subst, nil, argT),
+					mtyp,
+					register,
+				),
+			)
 		} else if !arg.Optional() {
 			return nil, errors.Newf(codes.Invalid, "missing required argument %q", string(name))
 		}
 	}
 
-	fn := compiledFn{scope: scope, params: params}
 	ret, t, err := fn.compile(f.Block, subst)
 	if err != nil {
 		return nil, errors.Wrapf(err, codes.Inherit, "cannot compile @ %v", f.Location())
