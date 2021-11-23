@@ -302,17 +302,16 @@ impl<'a> Converter<'a> {
         &mut self,
         imp: ast::ImportDeclaration,
     ) -> Result<ImportDeclaration> {
-        let import_symbol = {
-            let path = &imp.path.value;
-            let name = match &imp.alias {
-                None => path.rsplit_once('/').map_or(&path[..], |t| t.1).to_owned(),
-                Some(id) => id.name.clone(),
-            };
-            self.symbols.insert(name)
-        };
-        let alias = match imp.alias {
-            None => None,
-            Some(id) => Some(self.convert_identifier(id)?),
+        let path = &imp.path.value;
+        let (import_symbol, alias) = match imp.alias {
+            None => {
+                let name = path.rsplit_once('/').map_or(&path[..], |t| t.1).to_owned();
+                (self.symbols.insert(name), None)
+            }
+            Some(id) => {
+                let id = self.define_identifier(id)?;
+                (id.name.clone(), Some(id))
+            }
         };
         let path = self.convert_string_literal(imp.path)?;
 
