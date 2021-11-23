@@ -94,7 +94,6 @@ pub(crate) fn convert_monotype(
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
 pub struct Symbol {
     name: String,
-    id: u32,
 }
 
 impl std::ops::Deref for Symbol {
@@ -130,7 +129,7 @@ impl From<&str> for Symbol {
 
 impl From<String> for Symbol {
     fn from(name: String) -> Self {
-        Self { name, id: 0 }
+        Self { name }
     }
 }
 
@@ -146,11 +145,6 @@ struct Symbols<'a> {
     parent: Option<Box<Symbols<'a>>>,
     env: Option<&'a Environment>,
     symbols: BTreeMap<String, Symbol>,
-    id: u32,
-
-    #[cfg(test)]
-    // Used to simplify testing by allowing `Symbol::from` to be used to define the wanted symbols
-    assume_unique_names: bool,
 }
 
 impl<'a> Symbols<'a> {
@@ -159,29 +153,11 @@ impl<'a> Symbols<'a> {
             parent: None,
             env: Some(env),
             symbols: BTreeMap::default(),
-            id: 0,
-            #[cfg(test)]
-            assume_unique_names: false,
         }
     }
 
     fn new_symbol(&mut self, name: String) -> Symbol {
-        #[cfg(test)]
-        let id = if self.assume_unique_names {
-            0
-        } else {
-            self.id += 1;
-            self.id
-        };
-        #[cfg(not(test))]
-        let id = {
-            self.id += 1;
-            self.id
-        };
-        Symbol {
-            name: name.clone(),
-            id,
-        }
+        Symbol { name: name.clone() }
     }
 
     fn insert(&mut self, name: String) -> Symbol {
@@ -211,10 +187,6 @@ impl<'a> Symbols<'a> {
 
     fn enter_scope(&mut self) {
         let parent = std::mem::replace(self, Symbols::default());
-        #[cfg(test)]
-        {
-            self.assume_unique_names = parent.assume_unique_names;
-        }
         self.parent = Some(Box::new(parent));
     }
 
@@ -1092,7 +1064,6 @@ mod tests {
     fn test_convert(pkg: ast::Package) -> Result<Package> {
         let mut sub = sub::Substitution::default();
         let mut converter = Converter::new(&mut sub);
-        converter.symbols.assume_unique_names = true;
         converter.convert_package(pkg)
     }
 

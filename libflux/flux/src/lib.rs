@@ -439,12 +439,11 @@ impl StatefulAnalyzer {
         for file in &sem_pkg.files {
             for dec in &file.imports {
                 let path = &dec.path.value;
-                let name = dec.import_name();
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
                 if let Some(poly) = self.imports.lookup_str(path) {
-                    env.add(Symbol::from(name.to_owned()), poly.to_owned());
+                    env.add(dec.import_symbol.clone(), poly.to_owned());
                 }
             }
         }
