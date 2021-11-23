@@ -218,7 +218,7 @@ fn build_record(from: PolyTypeMap, sub: &mut Substitution) -> (Record, Constrain
             head: Property { k: name, v: ty },
             tail: MonoType::record(r),
         };
-        cons = cons + constraints;
+        cons += constraints;
     }
     (r, cons)
 }

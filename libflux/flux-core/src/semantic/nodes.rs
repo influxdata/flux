@@ -843,24 +843,26 @@ pub struct ArrayExpr {
 
 impl ArrayExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let mut cons = Vec::new();
-        let elt = MonoType::Var(infer.sub.fresh());
+        let mut cons = Constraints::empty();
+        let mut elt = None;
         for el in &mut self.elements {
             let c = el.infer(infer)?;
-            cons.append(&mut c.into());
-            cons.push(Constraint::Equal {
-                exp: elt.clone(),
-                act: el.type_of(),
-                loc: el.loc().clone(),
-            });
+            cons += c;
+
+            match &elt {
+                None => {
+                    elt = Some(el.type_of());
+                }
+                Some(elt) => cons.add(Constraint::Equal {
+                    exp: elt.clone(),
+                    act: el.type_of(),
+                    loc: el.loc().clone(),
+                }),
+            }
         }
-        let at = MonoType::from(Array(elt));
-        cons.push(Constraint::Equal {
-            exp: at,
-            act: self.typ.clone(),
-            loc: self.loc.clone(),
-        });
-        Ok(cons.into())
+        let elt = elt.unwrap_or_else(|| MonoType::Var(infer.sub.fresh()));
+        self.typ = MonoType::from(Array(elt));
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -908,26 +910,21 @@ impl DictExpr {
                 loc: v.loc().clone(),
             };
 
-            cons = cons + c0 + c1 + vec![kc, vc].into();
+            cons += c0 + c1 + vec![kc, vc].into();
         }
 
-        let ty = MonoType::from(Dictionary {
+        self.typ = MonoType::from(Dictionary {
             key: key.clone(),
             val,
         });
 
-        let eq = Constraint::Equal {
-            exp: ty,
-            act: self.typ.clone(),
-            loc: self.loc.clone(),
-        };
-        let tc = Constraint::Kind {
-            exp: Kind::Comparable,
-            act: key,
-            loc: self.loc.clone(),
-        };
-
-        Ok(cons + vec![eq, tc].into())
+        Ok(cons
+            + vec![Constraint::Kind {
+                exp: Kind::Comparable,
+                act: key,
+                loc: self.loc.clone(),
+            }]
+            .into())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1013,7 +1010,7 @@ impl FunctionExpr {
         // Now pop the nested environment, we don't need it anymore.
         infer.env.exit_scope();
 
-        cons = cons + bcons;
+        cons += bcons;
 
         let retn = self.body.type_of();
         let func = MonoType::from(Function {
@@ -1022,11 +1019,8 @@ impl FunctionExpr {
             pipe,
             retn,
         });
-        cons.add(Constraint::Equal {
-            exp: self.typ.clone(),
-            act: func.clone(),
-            loc: self.loc.clone(),
-        });
+
+        self.typ = func.clone();
 
         let ncons = if self.params.iter().any(|param| param.default.is_some()) {
             let t = func.apply(infer.sub);
@@ -1053,7 +1047,7 @@ impl FunctionExpr {
             match param.default {
                 Some(ref mut e) => {
                     let ncons = e.infer(infer)?;
-                    cons = cons + ncons;
+                    cons += ncons;
                     let id = param.key.name.clone();
                     opt.insert(id.to_string(), e.type_of());
                 }
@@ -1083,7 +1077,7 @@ impl FunctionExpr {
         });
 
         let (exp, ncons) = infer::instantiate(function_type, infer.sub, self.loc.clone());
-        cons = cons + ncons;
+        cons += ncons;
 
         cons.add(Constraint::Equal {
             exp,
@@ -1333,69 +1327,60 @@ impl BinaryExpr {
         let lcons = self.left.infer(infer)?;
         let rcons = self.right.infer(infer)?;
 
-        let binop_arithmetic_constraints = |kind| {
+        let binop_arithmetic_constraints = |this: &mut BinaryExpr, kind| {
+            let left = this.left.type_of();
+            this.typ = left.clone();
             Constraints::from(vec![
                 Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: self.typ.clone(),
-                    loc: self.loc.clone(),
+                    exp: left.clone(),
+                    act: this.right.type_of(),
+                    loc: this.right.loc().clone(),
                 },
                 Constraint::Kind {
-                    act: self.typ.clone(),
+                    act: left,
                     exp: kind,
-                    loc: self.loc.clone(),
+                    loc: this.loc.clone(),
                 },
             ])
         };
-        let binop_compare_constraints = |kind| {
+        let binop_compare_constraints = |this: &mut BinaryExpr, kind| {
+            this.typ = MonoType::Bool;
             Constraints::from(vec![
                 // https://github.com/influxdata/flux/issues/2393
                 // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
+                Constraint::Kind {
+                    act: this.left.type_of(),
+                    exp: kind,
+                    loc: this.left.loc().clone(),
                 },
                 Constraint::Kind {
-                    act: self.left.type_of(),
+                    act: this.right.type_of(),
                     exp: kind,
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: self.right.type_of(),
-                    exp: kind,
-                    loc: self.right.loc().clone(),
+                    loc: this.right.loc().clone(),
                 },
             ])
         };
         let cons = match self.operator {
             // The following operators require both sides to be equal.
-            ast::Operator::AdditionOperator => binop_arithmetic_constraints(Kind::Addable),
-            ast::Operator::SubtractionOperator => binop_arithmetic_constraints(Kind::Subtractable),
+            ast::Operator::AdditionOperator => binop_arithmetic_constraints(self, Kind::Addable),
+            ast::Operator::SubtractionOperator => {
+                binop_arithmetic_constraints(self, Kind::Subtractable)
+            }
             ast::Operator::MultiplicationOperator
             | ast::Operator::DivisionOperator
             | ast::Operator::PowerOperator
-            | ast::Operator::ModuloOperator => binop_arithmetic_constraints(Kind::Divisible),
+            | ast::Operator::ModuloOperator => binop_arithmetic_constraints(self, Kind::Divisible),
             ast::Operator::GreaterThanOperator | ast::Operator::LessThanOperator => {
-                binop_compare_constraints(Kind::Comparable)
+                binop_compare_constraints(self, Kind::Comparable)
             }
             ast::Operator::EqualOperator | ast::Operator::NotEqualOperator => {
-                binop_compare_constraints(Kind::Equatable)
+                binop_compare_constraints(self, Kind::Equatable)
             }
             ast::Operator::GreaterThanEqualOperator | ast::Operator::LessThanEqualOperator => {
+                self.typ = MonoType::Bool;
                 Constraints::from(vec![
                     // https://github.com/influxdata/flux/issues/2393
                     // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                    Constraint::Equal {
-                        act: self.typ.clone(),
-                        exp: MonoType::Bool,
-                        loc: self.loc.clone(),
-                    },
                     Constraint::Kind {
                         act: self.left.type_of(),
                         exp: Kind::Equatable,
@@ -1420,12 +1405,8 @@ impl BinaryExpr {
             }
             // Regular expression operators.
             ast::Operator::RegexpMatchOperator | ast::Operator::NotRegexpMatchOperator => {
+                self.typ = MonoType::Bool;
                 Constraints::from(vec![
-                    Constraint::Equal {
-                        act: self.typ.clone(),
-                        exp: MonoType::Bool,
-                        loc: self.loc.clone(),
-                    },
                     Constraint::Equal {
                         act: self.left.type_of(),
                         exp: MonoType::String,
@@ -1486,13 +1467,13 @@ impl CallExpr {
         } in &mut self.arguments
         {
             let ncons = expr.infer(infer)?;
-            cons = cons + ncons;
+            cons += ncons;
             // Every argument is required in a function call.
             req.insert(id.name.to_string(), expr.type_of());
         }
         if let Some(ref mut p) = &mut self.pipe {
             let ncons = p.infer(infer)?;
-            cons = cons + ncons;
+            cons += ncons;
             pipe = Some(types::Property {
                 k: "<-".to_string(),
                 v: p.type_of(),
@@ -1635,16 +1616,17 @@ impl MemberExpr {
     // where 'r is a fresh type variable.
     //
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let head = types::Property {
-            k: self.property.to_owned(),
-            v: self.typ.to_owned(),
-        };
-        let tail = MonoType::Var(infer.sub.fresh());
-
-        let r = MonoType::from(types::Record::Extension { head, tail });
-
         let cons = self.object.infer(infer)?;
         let t = self.object.type_of();
+
+        let r = {
+            let head = types::Property {
+                k: self.property.to_owned(),
+                v: self.typ.to_owned(),
+            };
+            let tail = MonoType::Var(infer.sub.fresh());
+            MonoType::from(types::Record::Extension { head, tail })
+        };
 
         Ok(cons
             + vec![Constraint::Equal {
@@ -1726,7 +1708,7 @@ impl ObjectExpr {
         // Infer constraints for properties
         for prop in self.properties.iter_mut().rev() {
             let rest = prop.value.infer(infer)?;
-            cons = cons + rest;
+            cons += rest;
             r = MonoType::from(types::Record::Extension {
                 head: types::Property {
                     k: prop.key.name.to_string(),
@@ -1735,13 +1717,8 @@ impl ObjectExpr {
                 tail: r,
             });
         }
-        Ok(cons
-            + vec![Constraint::Equal {
-                exp: self.typ.to_owned(),
-                act: r,
-                loc: self.loc.clone(),
-            }]
-            .into())
+        self.typ = r;
+        Ok(cons)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1773,36 +1750,25 @@ impl UnaryExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         let acons = self.argument.infer(infer)?;
         let cons = match self.operator {
-            ast::Operator::NotOperator => Constraints::from(vec![
-                Constraint::Equal {
+            ast::Operator::NotOperator => {
+                self.typ = MonoType::Bool;
+                Constraints::from(vec![Constraint::Equal {
                     act: self.argument.type_of(),
                     exp: MonoType::Bool,
                     loc: self.argument.loc().clone(),
-                },
-                Constraint::Equal {
-                    act: self.typ.clone(),
-                    exp: MonoType::Bool,
-                    loc: self.loc.clone(),
-                },
-            ]),
-            ast::Operator::ExistsOperator => Constraints::from(Constraint::Equal {
-                act: self.typ.clone(),
-                exp: MonoType::Bool,
-                loc: self.loc.clone(),
-            }),
+                }])
+            }
+            ast::Operator::ExistsOperator => {
+                self.typ = MonoType::Bool;
+                Constraints::empty()
+            }
             ast::Operator::AdditionOperator | ast::Operator::SubtractionOperator => {
-                Constraints::from(vec![
-                    Constraint::Equal {
-                        act: self.argument.type_of(),
-                        exp: self.typ.clone(),
-                        loc: self.loc.clone(),
-                    },
-                    Constraint::Kind {
-                        act: self.argument.type_of(),
-                        exp: Kind::Negatable,
-                        loc: self.argument.loc().clone(),
-                    },
-                ])
+                self.typ = self.argument.type_of();
+                Constraints::from(vec![Constraint::Kind {
+                    act: self.argument.type_of(),
+                    exp: Kind::Negatable,
+                    loc: self.argument.loc().clone(),
+                }])
             }
             _ => {
                 infer.error(
