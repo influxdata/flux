@@ -17,12 +17,12 @@ use crate::{
         flatbuffers::types::{build_module, finish_serialize},
         fs::{FileSystemImporter, StdFS},
         import::Importer,
-        infer,
-        infer::Constraints,
-        nodes,
-        nodes::{infer_package, inject_pkg_types, Package},
+        infer::{self, Constraints},
+        nodes::{self, infer_package, inject_pkg_types, Package, Symbol},
         sub::{Substitutable, Substitution},
-        types::{MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds},
+        types::{
+            Label, MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds,
+        },
         ExportEnvironment,
     },
 };
@@ -147,7 +147,7 @@ fn dependencies<'a>(
 }
 
 /// Constructs a polytype, or more specifically a generic record type, from a hash map.
-pub fn build_polytype(from: PolyTypeMap) -> Result<PolyType> {
+pub fn build_polytype(from: PolyTypeMap<String>) -> Result<PolyType> {
     let mut sub = Substitution::default();
     let (r, cons) = build_record(from, &mut sub);
     infer::solve(&cons, &mut sub)?;
@@ -159,7 +159,7 @@ pub fn build_polytype(from: PolyTypeMap) -> Result<PolyType> {
     ))
 }
 
-fn build_record(from: PolyTypeMap, sub: &mut Substitution) -> (Record, Constraints) {
+fn build_record(from: PolyTypeMap<String>, sub: &mut Substitution) -> (Record, Constraints) {
     let mut r = Record::Empty;
     let mut cons = Constraints::empty();
 
@@ -175,7 +175,10 @@ fn build_record(from: PolyTypeMap, sub: &mut Substitution) -> (Record, Constrain
             },
         );
         r = Record::Extension {
-            head: Property { k: name, v: ty },
+            head: Property {
+                k: Label::from(name),
+                v: ty,
+            },
             tail: MonoType::record(r),
         };
         cons += constraints;
@@ -308,7 +311,7 @@ where
 }
 
 fn add_record_to_map(
-    env: &mut PolyTypeMap,
+    env: &mut PolyTypeMap<Symbol>,
     r: &Record,
     free_vars: &[Tvar],
     cons: &TvarKinds,
@@ -327,7 +330,7 @@ fn add_record_to_map(
                 }
             }
             env.insert(
-                head.k.clone(),
+                head.k.clone().into(),
                 PolyType {
                     vars: new_vars,
                     cons: new_cons,
@@ -429,16 +432,16 @@ mod tests {
         let (types, _) = infer_state.infer_pkg("c", &ast_packages, &ExportEnvironment::new())?;
 
         let want = semantic_map! {
-            String::from("z") => {
-                    let mut p = parser::Parser::new("int");
-                    let typ_expr = p.parse_type_expression();
-                    let err = get_err_type_expression(typ_expr.clone());
-                    if err != "" {
-                        panic!(
-                            "TypeExpression parsing failed for int. {:?}", err
-                        );
-                    }
-                    convert_polytype(typ_expr, &mut Substitution::default())?
+            String::from("c@z") => {
+                let mut p = parser::Parser::new("int");
+                let typ_expr = p.parse_type_expression();
+                let err = get_err_type_expression(typ_expr.clone());
+                if err != "" {
+                    panic!(
+                        "TypeExpression parsing failed for int. {:?}", err
+                    );
+                }
+                convert_polytype(typ_expr, &mut Substitution::default())?
             },
         };
         if want != types {
@@ -451,26 +454,26 @@ mod tests {
 
         let want = semantic_map! {
             String::from("a") => {
-            let mut p = parser::Parser::new("{f: (x: A) => A}");
-                    let typ_expr = p.parse_type_expression();
-                    let err = get_err_type_expression(typ_expr.clone());
-                    if err != "" {
-                        panic!(
-                            "TypeExpression parsing failed for int. {:?}", err
-                        );
-                    }
-                    convert_polytype(typ_expr, &mut Substitution::default())?
+                let mut p = parser::Parser::new("{f: (x: A) => A}");
+                let typ_expr = p.parse_type_expression();
+                let err = get_err_type_expression(typ_expr.clone());
+                if err != "" {
+                    panic!(
+                        "TypeExpression parsing failed for int. {:?}", err
+                    );
+                }
+                convert_polytype(typ_expr, &mut Substitution::default())?
             },
             String::from("b") => {
-            let mut p = parser::Parser::new("{x: int , y: int}");
-                    let typ_expr = p.parse_type_expression();
-                    let err = get_err_type_expression(typ_expr.clone());
-                    if err != "" {
-                        panic!(
-                            "TypeExpression parsing failed for int. {:?}", err
-                        );
-                    }
-                    convert_polytype(typ_expr, &mut Substitution::default())?
+                let mut p = parser::Parser::new("{x: int , y: int}");
+                let typ_expr = p.parse_type_expression();
+                let err = get_err_type_expression(typ_expr.clone());
+                if err != "" {
+                    panic!(
+                        "TypeExpression parsing failed for int. {:?}", err
+                    );
+                }
+                convert_polytype(typ_expr, &mut Substitution::default())?
             },
         };
         if want != infer_state.imports {

@@ -57,7 +57,7 @@ fn parse_program(src: &str) -> ast::Package {
     }
 }
 
-fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap {
+fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap<String> {
     m.into_iter()
         .map(|(name, expr)| {
             let mut p = parser::Parser::new(expr);
@@ -116,7 +116,7 @@ fn infer_types(
 ) -> Result<ExportEnvironment, Error> {
     let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
-    let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp
+    let imports: SemanticMap<&str, SemanticMap<Symbol, PolyType>> = imp
         .into_iter()
         .map(|(path, pkg)| (path, parse_map(pkg)))
         .collect();
@@ -139,11 +139,7 @@ fn infer_types(
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
     if let Some(want_env) = want {
-        let got = env
-            .values
-            .iter()
-            .map(|(k, v)| (k.to_string(), v.clone()))
-            .collect();
+        let got = env.values.clone();
         let want = parse_map(want_env);
         if want != got {
             return Err(Error::TypeMismatch { want, got });

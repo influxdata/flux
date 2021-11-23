@@ -9,6 +9,7 @@ use crate::semantic::{
     bootstrap::Module,
     nodes::Symbol,
     types::{
+        Label,
         Array,
         Dictionary,
         Function,
@@ -218,7 +219,7 @@ impl From<fb::Record<'_>> for Option<MonoType> {
 impl From<fb::Prop<'_>> for Option<Property> {
     fn from(t: fb::Prop) -> Option<Property> {
         Some(Property {
-            k: t.k()?.to_owned(),
+            k: Label::from(t.k()?),
             v: from_table(t.v()?, t.v_type())?,
         })
     }
@@ -594,7 +595,7 @@ fn build_fun<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     mut fun: &Function,
 ) -> flatbuffers::WIPOffset<fb::Fun<'a>> {
-    let mut args = Vec::new();
+    let mut args: Vec<(&str, _, _, _)> = Vec::new();
     if let Some(pipe) = &fun.pipe {
         args.push((&pipe.k, &pipe.v, true, false))
     };
@@ -620,7 +621,7 @@ fn build_fun<'a>(
 
 fn build_arg<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    arg: (&String, &MonoType, bool, bool),
+    arg: (&str, &MonoType, bool, bool),
 ) -> flatbuffers::WIPOffset<fb::Argument<'a>> {
     let name = builder.create_string(arg.0);
     let (buf_offset, typ) = build_type(builder, arg.1);

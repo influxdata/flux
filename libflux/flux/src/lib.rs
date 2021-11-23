@@ -590,7 +590,7 @@ mod tests {
             fresh::Fresher,
             nodes::Symbol,
             sub::Substitution,
-            types::{MonoType, Property, Ptr, Record, Tvar, TvarMap},
+            types::{Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
         },
     };
 
@@ -652,23 +652,23 @@ mod tests {
         let mut ty = MonoType::from(Record::new(
             [
                 Property {
-                    k: "a".to_string(),
+                    k: Label::from("a"),
                     v: MonoType::Var(Tvar(4949)),
                 },
                 Property {
-                    k: "b".to_string(),
+                    k: Label::from("b"),
                     v: MonoType::Var(Tvar(4949)),
                 },
                 Property {
-                    k: "e".to_string(),
+                    k: Label::from("e"),
                     v: MonoType::Var(Tvar(4957)),
                 },
                 Property {
-                    k: "f".to_string(),
+                    k: Label::from("f"),
                     v: MonoType::Var(Tvar(4957)),
                 },
                 Property {
-                    k: "g".to_string(),
+                    k: Label::from("g"),
                     v: MonoType::Var(Tvar(4957)),
                 },
             ],

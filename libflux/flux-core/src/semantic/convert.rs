@@ -3,6 +3,7 @@
 
 use std::{collections::BTreeMap, fmt, sync::Arc};
 
+use serde::{Serialize, Serializer};
 use thiserror::Error;
 
 use crate::{
@@ -102,28 +103,37 @@ pub struct Symbol {
     name: Arc<str>,
 }
 
+impl Serialize for Symbol {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.name.serialize(serializer)
+    }
+}
+
 impl std::ops::Deref for Symbol {
     type Target = str;
     fn deref(&self) -> &Self::Target {
-        &self.name
+        self.as_str()
     }
 }
 
 impl PartialEq<str> for Symbol {
     fn eq(&self, other: &str) -> bool {
-        &self.name[..] == other
+        &self[..] == other
     }
 }
 
 impl PartialEq<&str> for Symbol {
     fn eq(&self, other: &&str) -> bool {
-        &self.name[..] == *other
+        &self[..] == *other
     }
 }
 
 impl fmt::Display for Symbol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.name)
+        f.write_str(&self[..])
     }
 }
 
@@ -146,7 +156,22 @@ impl From<String> for Symbol {
 impl Symbol {
     /// Casts self into a `&str`
     pub fn as_str(&self) -> &str {
-        self
+        self.name.rsplit('@').next().unwrap()
+    }
+
+    /// Returns just the name of the symbol
+    pub fn name(&self) -> &str {
+        self.as_str()
+    }
+
+    /// Returns the full name, package qualified name of `Symbol`
+    pub fn full_name(&self) -> &str {
+        &self.name
+    }
+
+    /// Attaches a package identifier to `self`
+    pub fn with_package(self, package: &str) -> Self {
+        Symbol::from(format!("{}@{}", package, self.as_str()))
     }
 }
 
@@ -470,7 +495,7 @@ impl<'a> Converter<'a> {
                 };
                 for prop in rec.properties {
                     let property = types::Property {
-                        k: prop.name.name,
+                        k: types::Label::from(self.symbols.lookup(&prop.name.name)),
                         v: self.convert_monotype(prop.monotype, tvars)?,
                     };
                     r = MonoType::from(types::Record::Extension {
@@ -664,12 +689,39 @@ impl<'a> Converter<'a> {
 
     fn convert_function_params(
         &mut self,
-        props: Vec<ast::Property>,
+        mut props: Vec<ast::Property>,
     ) -> Result<Vec<FunctionParameter>> {
+        // The defaults must be converted first so that the parameters are not in scope
+        let mut piped = false;
+        enum Default {
+            Expr(Expression),
+            Piped,
+            None,
+        }
+        let defaults: Vec<_> = props
+            .iter_mut()
+            .map(|prop| {
+                if let Some(expr) = prop.value.take() {
+                    match expr {
+                        ast::Expression::PipeLit(lit) => {
+                            if piped {
+                                return Err(located(lit.base.location, ErrorKind::AtMostOnePipe));
+                            } else {
+                                piped = true;
+                            }
+                            Ok(Default::Piped)
+                        }
+                        e => Ok(Default::Expr(self.convert_expression(e)?)),
+                    }
+                } else {
+                    Ok(Default::None)
+                }
+            })
+            .collect::<Result<_>>()?;
+
         // The iteration here is complex, cannot use iter().map()..., better to write it explicitly.
         let mut params: Vec<FunctionParameter> = Vec::new();
-        let mut piped = false;
-        for prop in props {
+        for (prop, default) in props.into_iter().zip(defaults) {
             let id = match prop.key {
                 ast::PropertyKey::Identifier(id) => id,
                 _ => {
@@ -681,22 +733,13 @@ impl<'a> Converter<'a> {
                 }
             };
             let key = self.define_identifier(id)?;
-            let mut default: Option<Expression> = None;
-            let mut is_pipe = false;
-            if let Some(expr) = prop.value {
-                match expr {
-                    ast::Expression::PipeLit(lit) => {
-                        if piped {
-                            self.errors
-                                .push(located(lit.base.location, ErrorKind::AtMostOnePipe));
-                        } else {
-                            piped = true;
-                            is_pipe = true;
-                        };
-                    }
-                    e => default = Some(self.convert_expression(e)?),
-                }
+
+            let (is_pipe, default) = match default {
+                Default::Expr(expr) => (false, Some(expr)),
+                Default::Piped => (true, None),
+                Default::None => (false, None),
             };
+
             params.push(FunctionParameter {
                 loc: prop.base.location,
                 is_pipe,
@@ -838,6 +881,7 @@ impl<'a> Converter<'a> {
             ast::PropertyKey::Identifier(id) => id.name,
             ast::PropertyKey::StringLit(lit) => lit.value,
         };
+        let property = self.symbols.lookup(&property);
         Ok(MemberExpr {
             loc: expr.base.location,
             typ: MonoType::Var(self.sub.fresh()),
@@ -1930,7 +1974,7 @@ mod tests {
                                 typ: type_info(),
                                 name: Symbol::from("alert"),
                             }),
-                            property: "state".to_string(),
+                            property: Symbol::from("state"),
                         },
                         init: Expression::StringLit(StringLit {
                             loc: b.location.clone(),
@@ -3156,9 +3200,9 @@ mod tests {
                                 typ: type_info(),
                                 name: Symbol::from("a"),
                             }),
-                            property: "b".to_string(),
+                            property: Symbol::from("b"),
                         })),
-                        property: "c".to_string(),
+                        property: Symbol::from("c"),
                     })),
                 })],
             }],
@@ -3238,11 +3282,11 @@ mod tests {
                                     typ: type_info(),
                                     name: Symbol::from("a"),
                                 }),
-                                property: "b".to_string(),
+                                property: Symbol::from("b"),
                             })),
                             arguments: Vec::new(),
                         })),
-                        property: "c".to_string(),
+                        property: Symbol::from("c"),
                     })),
                 })],
             }],
@@ -3343,7 +3387,7 @@ mod tests {
         let got = convert_monotype(monotype, &mut m, &mut sub::Substitution::default()).unwrap();
         let want = MonoType::from(types::Record::Extension {
             head: types::Property {
-                k: "B".to_string(),
+                k: types::Label::from("B"),
                 v: MonoType::Int,
             },
             tail: MonoType::Var(Tvar(0)),

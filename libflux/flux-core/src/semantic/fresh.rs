@@ -3,10 +3,11 @@
 use std::{collections::BTreeMap, hash::Hash};
 
 use crate::semantic::{
+    nodes::Symbol,
     sub::{merge3, merge4, merge_collect},
     types::{
-        Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
-        TvarMap,
+        Array, Function, Label, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap,
+        Tvar, TvarMap,
     },
 };
 
@@ -63,6 +64,44 @@ impl<T: Fresh> Fresh for Option<T> {
             None => None,
             Some(t) => t.fresh_ref(f, sub).map(Some),
         }
+    }
+}
+
+#[allow(clippy::implicit_hasher)]
+impl<T: Fresh + Clone> Fresh for SemanticMap<Label, T> {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        self.into_iter()
+            .collect::<BTreeMap<_, _>>()
+            .into_iter()
+            .map(|(s, t)| (s, t.fresh(f, sub)))
+            .collect::<Self>()
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self,
+            |_, (k, v)| v.fresh_ref(f, sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
+    }
+}
+
+#[allow(clippy::implicit_hasher)]
+impl<T: Fresh + Clone> Fresh for SemanticMap<Symbol, T> {
+    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
+        self.into_iter()
+            .collect::<BTreeMap<Symbol, T>>()
+            .into_iter()
+            .map(|(s, t)| (s, t.fresh(f, sub)))
+            .collect::<Self>()
+    }
+    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self,
+            |_, (k, v)| v.fresh_ref(f, sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
     }
 }
 
@@ -235,7 +274,10 @@ impl Fresh for Record {
     }
 }
 
-impl Fresh for Property {
+impl<T> Fresh for Property<T>
+where
+    T: Clone,
+{
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Property {
             k: self.k,
