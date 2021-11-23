@@ -129,7 +129,10 @@ test-rust:
 	$(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
 
 test-flux:
-	$(GO_RUN) ./cmd/flux test -v
+	$(GO_RUN) ./cmd/flux test -v --skip integration_pg_read_from,integration_pg_write_to
+
+test-flux-integration:
+	./etc/spawn-dbs.sh && $(GO_RUN) ./cmd/flux test -v --test integration_pg_read_from,integration_pg_write_to
 
 test-race: libflux-go
 	$(GO_TEST) -race -count=1 ./...
