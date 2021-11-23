@@ -481,21 +481,27 @@ func (c *compiledFn) compile(n semantic.Node, subst map[uint64]semantic.MonoType
 		c.body = append(c.body, e)
 		return e.ret, e.t, nil
 	case *semantic.ArrayExpression:
+		t := apply(subst, nil, n.TypeOf())
+		elemT, err := t.ElemType()
+		if err != nil {
+			return -1, semantic.MonoType{}, err
+		}
+
 		var elements []int
 		if len(n.Elements) > 0 {
 			elements = make([]int, len(n.Elements))
 			for i, e := range n.Elements {
-				index, _, err := c.compile(e, subst)
+				index, mt, err := c.compile(e, subst)
 				if err != nil {
 					return -1, semantic.MonoType{}, err
 				}
-				elements[i] = index
+				elements[i] = c.staticCast(elemT, mt, index)
 			}
 		}
 
 		e := &arrayEvaluator{
 			evaluator: evaluator{
-				t:   apply(subst, nil, n.TypeOf()),
+				t:   t,
 				ret: c.scope.Declare(),
 			},
 			array: elements,

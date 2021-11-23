@@ -674,21 +674,19 @@ func (v Value) Equal(other Value) bool {
 			return false
 		}
 
-	OUTER:
 		for i, label1 := range left.labels {
-			lv := left.values[i]
-			for j, label2 := range right.labels {
-				if label1 == label2 {
-					rv := right.values[j]
-					if !lv.Equal(rv) {
-						return false
-					}
-					continue OUTER
-				}
+			// Labels need to be in the same position.
+			// This is not strictly a requirement for
+			// records to be equivalent, but it is a requirement
+			// within the compiler.
+			if right.labels[i] != label1 {
+				return false
 			}
 
-			// Label not found on the right side.
-			return false
+			lv, rv := left.values[i], right.values[i]
+			if !lv.Equal(rv) {
+				return false
+			}
 		}
 		return true
 	default:

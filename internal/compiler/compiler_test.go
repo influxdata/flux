@@ -344,6 +344,46 @@ var testCases = []struct {
 		),
 	},
 	{
+		name:   "array literal with records",
+		fn:     `() => [{a: 1, b: "foo"}, {b: "bar", a: 2}]`,
+		params: []semantic.PropertyType{},
+		input: func(params []semantic.PropertyType) []compiler.Value {
+			return nil
+		},
+		want: compiler.NewArray(
+			semantic.NewArrayType(
+				semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.BasicInt},
+					{Key: []byte("b"), Value: semantic.BasicString},
+				}),
+			),
+			[]compiler.Value{
+				func() compiler.Value {
+					r := compiler.NewRecord(
+						semantic.NewObjectType([]semantic.PropertyType{
+							{Key: []byte("a"), Value: semantic.BasicInt},
+							{Key: []byte("b"), Value: semantic.BasicString},
+						}),
+					)
+					r.Set(0, compiler.NewInt(1))
+					r.Set(1, compiler.NewString("foo"))
+					return r
+				}(),
+				func() compiler.Value {
+					r := compiler.NewRecord(
+						semantic.NewObjectType([]semantic.PropertyType{
+							{Key: []byte("a"), Value: semantic.BasicInt},
+							{Key: []byte("b"), Value: semantic.BasicString},
+						}),
+					)
+					r.Set(0, compiler.NewInt(2))
+					r.Set(1, compiler.NewString("bar"))
+					return r
+				}(),
+			},
+		),
+	},
+	{
 		name:   "record literal",
 		fn:     `() => ({b: "foo", a: 1})`,
 		params: []semantic.PropertyType{},
