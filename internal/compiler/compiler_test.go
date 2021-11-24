@@ -2,6 +2,7 @@ package compiler_test
 
 import (
 	"context"
+	"math"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/semantic/semantictest"
+	"github.com/influxdata/flux/values"
 )
 
 var CmpOptions = semantictest.CmpOptions
@@ -622,6 +624,15 @@ var testCases = []struct {
 		},
 		want: compiler.Value{},
 	},
+	{
+		name:   "use package value",
+		fn:     `import "math" () => math.pi`,
+		params: []semantic.PropertyType{},
+		input: func(params []semantic.PropertyType) []compiler.Value {
+			return nil
+		},
+		want: compiler.NewFloat(math.Pi),
+	},
 	// {
 	// 	name: "superseding record field type",
 	// 	fn: `
@@ -695,10 +706,35 @@ func TestCompileAndEval(t *testing.T) {
 				t.Fatalf("unexpected error: %s", err)
 			}
 
+			stdlib := runtime.StdLib()
+			prelude := values.NewScope()
+			for _, path := range runtime.PreludeList {
+				p, err := stdlib.ImportPackageObject(path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				p.Range(prelude.Set)
+			}
+
+			for _, file := range pkg.Files {
+				for _, imp := range file.Imports {
+					p, err := stdlib.ImportPackageObject(imp.Path.Value)
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					name := p.Name()
+					if imp.As != nil {
+						name = imp.As.Name
+					}
+					prelude.Set(name, p)
+				}
+			}
+
 			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 			fn := stmt.Expression.(*semantic.FunctionExpression)
 			inType := semantic.NewObjectType(tc.params)
-			f, err := compiler.Compile(nil, fn, inType)
+			f, err := compiler.Compile(prelude, fn, inType)
 			if err != nil {
 				if !tc.wantCompileErr {
 					t.Fatalf("unexpected error: %s", err)
@@ -739,10 +775,35 @@ func BenchmarkEval(b *testing.B) {
 				b.Fatalf("unexpected error: %s", err)
 			}
 
+			stdlib := runtime.StdLib()
+			prelude := values.NewScope()
+			for _, path := range runtime.PreludeList {
+				p, err := stdlib.ImportPackageObject(path)
+				if err != nil {
+					b.Fatal(err)
+				}
+				p.Range(prelude.Set)
+			}
+
+			for _, file := range pkg.Files {
+				for _, imp := range file.Imports {
+					p, err := stdlib.ImportPackageObject(imp.Path.Value)
+					if err != nil {
+						b.Fatal(err)
+					}
+
+					name := p.Name()
+					if imp.As != nil {
+						name = imp.As.Name
+					}
+					prelude.Set(name, p)
+				}
+			}
+
 			stmt := pkg.Files[0].Body[0].(*semantic.ExpressionStatement)
 			fn := stmt.Expression.(*semantic.FunctionExpression)
 			inType := semantic.NewObjectType(tc.params)
-			f, err := compiler.Compile(nil, fn, inType)
+			f, err := compiler.Compile(prelude, fn, inType)
 			if err != nil {
 				b.Fatalf("unexpected error: %s", err)
 			}

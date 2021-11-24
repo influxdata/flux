@@ -8,10 +8,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func Compile(_ values.Scope, f *semantic.FunctionExpression, in semantic.MonoType) (Func, error) {
-	// if scope == nil {
-	// 	scope = NewScope()
-	// }
+func Compile(globalScope values.Scope, f *semantic.FunctionExpression, in semantic.MonoType) (Func, error) {
 	if in.Nature() != semantic.Object {
 		return nil, errors.Newf(codes.Invalid, "function input must be an object @ %v", f.Location())
 	}
@@ -31,7 +28,11 @@ func Compile(_ values.Scope, f *semantic.FunctionExpression, in semantic.MonoTyp
 		return nil, err
 	}
 
-	fn := compiledFn{scope: NewScope(), params: params}
+	fn := compiledFn{
+		scope:  NewScope(),
+		params: params,
+		global: globalScope,
+	}
 
 	// Iterate over every argument and find the equivalent
 	// property inside of the input.
@@ -540,8 +541,19 @@ func (c *compiledFn) compile(n semantic.Node, subst map[uint64]semantic.MonoType
 	// 		elements: elements,
 	// 	}, nil
 	case *semantic.IdentifierExpression:
+		t := apply(subst, nil, n.TypeOf())
 		reg := c.scope.Get(n.Name)
-		return reg, apply(subst, nil, n.TypeOf()), nil
+		if reg < 0 {
+			// Look through the global scope for a
+			// suitable identifier to include.
+			v, ok := c.global.Lookup(n.Name)
+			if !ok {
+				return -1, semantic.MonoType{}, errors.Newf(codes.Invalid, "identifier not found: %s", n.Name)
+			}
+			reg = c.scope.Push(convertFromValue(v))
+			reg = c.staticCast(t, v.Type(), reg)
+		}
+		return reg, t, nil
 	case *semantic.MemberExpression:
 		object, mt, err := c.compile(n.Object, subst)
 		if err != nil {
@@ -770,6 +782,16 @@ func (c *compiledFn) compile(n semantic.Node, subst map[uint64]semantic.MonoType
 			return -1, semantic.MonoType{}, err
 		}
 
+		// Handle null values. For some logical operators,
+		// the null values don't get typed. Just assume that
+		// our type is the same as the other side in these
+		// situations.
+		if ltyp.Nature() == semantic.Invalid {
+			ltyp = rtyp
+		} else if rtyp.Nature() == semantic.Invalid {
+			rtyp = ltyp
+		}
+
 		ret := c.scope.Declare()
 		switch n.Operator {
 		case ast.EqualOperator:
@@ -874,31 +896,6 @@ func (c *compiledFn) compile(n semantic.Node, subst map[uint64]semantic.MonoType
 		default:
 			return -1, semantic.MonoType{}, errors.New(codes.Unimplemented)
 		}
-	// 	lt := l.Type().Nature()
-	// 	r, err := compile(n.Right, subst)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	rt := r.Type().Nature()
-	// 	if lt == semantic.Invalid {
-	// 		lt = rt
-	// 	} else if rt == semantic.Invalid {
-	// 		rt = lt
-	// 	}
-	// 	f, err := LookupBinaryFunction(BinaryFuncSignature{
-	// 		Operator: n.Operator,
-	// 		Left:     lt,
-	// 		Right:    rt,
-	// 	})
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	return &binaryEvaluator{
-	// 		t:     apply(subst, nil, n.TypeOf()),
-	// 		left:  l,
-	// 		right: r,
-	// 		f:     f,
-	// 	}, nil
 	// case *semantic.CallExpression:
 	// 	callee, err := compile(n.Callee, subst)
 	// 	if err != nil {

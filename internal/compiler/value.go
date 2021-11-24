@@ -130,7 +130,8 @@ func (v Value) DictRemove(key Value) Value {
 
 func (v Value) Call(ctx context.Context, args []MaybeValue) (Value, error) {
 	CheckKind(v.t, semantic.Function)
-	return v.data.(Function).Call(ctx, args)
+	// return v.data.(Function).Call(ctx, args)
+	return Value{}, errors.New(codes.Unimplemented)
 }
 
 func UnexpectedKind(got, exp semantic.Nature) error {
@@ -597,6 +598,8 @@ func convertFromValue(v values.Value) Value {
 			_ = dict.Insert(k, v)
 		})
 		return dict.Dict()
+	case semantic.Function:
+		return NewFunction(nil)
 	default:
 		panic("unreachable")
 	}

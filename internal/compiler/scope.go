@@ -56,7 +56,7 @@ func (s Scope) Set(reg int, value Value) {
 func (s Scope) Get(name string) int {
 	reg, ok := s.data.names[name]
 	if !ok {
-		panic("variable not found")
+		return -1
 	}
 	return reg
 }

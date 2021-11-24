@@ -28,6 +28,7 @@ type compiledFn struct {
 	params []valueMapper
 	body   []Evaluator
 	scope  Scope
+	global values.Scope
 	ret    int
 }
 
