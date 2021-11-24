@@ -5,7 +5,9 @@ jobs:
       - image: quay.io/influxdb/flux-build:latest
     resource_class: large
     environment:
+      GOCACHE: /tmp/go-cache
       GOFLAGS: -p=8
+      GOPATH: /tmp/go
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
       SCCACHE_CACHE_SIZE: 1G
     steps:
