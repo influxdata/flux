@@ -314,7 +314,7 @@ func (rcv *Identifier) FromBuf(fb *fbsemantic.Identifier) error {
 			return errors.Wrap(err, codes.Inherit, "Identifier.Loc")
 		}
 	}
-	rcv.Name = string(fb.Name())
+	rcv.Name = NewSymbol(string(fb.Name()))
 	return nil
 }
 
@@ -328,7 +328,7 @@ func (rcv *IdentifierExpression) FromBuf(fb *fbsemantic.IdentifierExpression) er
 			return errors.Wrap(err, codes.Inherit, "IdentifierExpression.Loc")
 		}
 	}
-	rcv.Name = string(fb.Name())
+	rcv.Name = NewSymbol(string(fb.Name()))
 	if rcv.typ, err = getMonoType(fb); err != nil {
 		return errors.Wrap(err, codes.Inherit, "IdentifierExpression.typ")
 	}
@@ -453,7 +453,9 @@ func (rcv *MemberExpression) FromBuf(fb *fbsemantic.MemberExpression) error {
 	if rcv.Object, err = fromExpressionTable(fb.Object, fb.ObjectType()); err != nil {
 		return errors.Wrap(err, codes.Inherit, "MemberExpression.Object")
 	}
-	rcv.Property = string(fb.Property())
+
+	rcv.Property = NewSymbol(string(fb.Property()))
+
 	if rcv.typ, err = getMonoType(fb); err != nil {
 		return errors.Wrap(err, codes.Inherit, "MemberExpression.typ")
 	}

@@ -136,7 +136,7 @@ type PropertyKey interface {
 }
 
 func (n *Identifier) Key() string {
-	return n.Name
+	return n.Name.Name()
 }
 func (n *StringLiteral) Key() string {
 	return n.Value
@@ -785,7 +785,7 @@ type MemberExpression struct {
 	Loc
 
 	Object   Expression
-	Property string
+	Property Symbol
 
 	typ MonoType
 }
@@ -915,7 +915,7 @@ func (p *Property) Copy() Node {
 type IdentifierExpression struct {
 	Loc
 
-	Name string
+	Name Symbol
 
 	typ MonoType
 }
@@ -938,7 +938,7 @@ func (e *IdentifierExpression) TypeOf() MonoType {
 type Identifier struct {
 	Loc
 
-	Name string
+	Name Symbol
 }
 
 func (*Identifier) NodeType() string { return "Identifier" }
@@ -1113,4 +1113,16 @@ func (l *UnsignedIntegerLiteral) Copy() Node {
 }
 func (e *UnsignedIntegerLiteral) TypeOf() MonoType {
 	return BasicUint
+}
+
+type Symbol struct {
+	FullName string
+}
+
+func NewSymbol(name string) Symbol {
+	return Symbol{FullName: name}
+}
+
+func (s *Symbol) Name() string {
+	return s.FullName
 }

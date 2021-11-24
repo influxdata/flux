@@ -93,7 +93,7 @@ func (v *formattingVisitor) Done(node Node) {
 		v.push(lhs + " " + n.Operator.String() + " " + rhs)
 	case *MemberExpression:
 		o := v.pop()
-		v.push(o + "." + n.Property)
+		v.push(o + "." + n.Property.Name())
 	case *StringLiteral:
 		v.push("\"" + n.Value + "\"")
 	case *FloatLiteral:
@@ -103,6 +103,6 @@ func (v *formattingVisitor) Done(node Node) {
 	case *IntegerLiteral:
 		v.push(fmt.Sprintf("%v", n.Value))
 	case *IdentifierExpression:
-		v.push(n.Name)
+		v.push(n.Name.Name())
 	}
 }

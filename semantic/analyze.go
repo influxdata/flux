@@ -508,7 +508,7 @@ func analyzeMemberExpression(member *ast.MemberExpression) (*MemberExpression, e
 	return &MemberExpression{
 		Loc:      Loc(member.Location()),
 		Object:   obj,
-		Property: prop,
+		Property: NewSymbol(prop),
 	}, nil
 }
 
@@ -646,14 +646,14 @@ func analyzeArrayExpression(array *ast.ArrayExpression) (*ArrayExpression, error
 func analyzeIdentifier(ident *ast.Identifier) (*Identifier, error) {
 	return &Identifier{
 		Loc:  Loc(ident.Location()),
-		Name: ident.Name,
+		Name: NewSymbol(ident.Name),
 	}, nil
 }
 
 func analyzeIdentifierExpression(ident *ast.Identifier) (*IdentifierExpression, error) {
 	return &IdentifierExpression{
 		Loc:  Loc(ident.Location()),
-		Name: ident.Name,
+		Name: NewSymbol(ident.Name),
 	}, nil
 }
 
@@ -668,7 +668,7 @@ func analyzeProperty(property *ast.Property) (*Property, error) {
 			Key: key,
 			Value: &IdentifierExpression{
 				Loc:  Loc(key.Location()),
-				Name: key.Key(),
+				Name: NewSymbol(key.Key()),
 			},
 		}, nil
 	}

@@ -27,9 +27,9 @@ use colored::*;
 use derive_more::Display;
 
 use crate::{
-    ast::{self, get_err_type_expression},
+    ast::get_err_type_expression,
     errors::Errors,
-    parser::{self, parse_string},
+    parser,
     semantic::{
         self,
         bootstrap::build_polytype,
@@ -45,17 +45,6 @@ use crate::{
 };
 
 mod vectorize;
-
-fn parse_program(src: &str) -> ast::Package {
-    let file = parse_string("".to_string(), src);
-
-    ast::Package {
-        base: file.base.clone(),
-        path: "path".to_string(),
-        package: "main".to_string(),
-        files: vec![file],
-    }
-}
 
 fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap<String> {
     m.into_iter()
@@ -132,9 +121,10 @@ fn infer_types(
 
     let env = Environment::from(env);
 
-    let pkg = parse_program(src);
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
-    let (env, _) = analyzer.analyze_ast(pkg).map_err(Error::Semantic)?;
+    let (env, _) = analyzer
+        .analyze_source("main".into(), "".into(), src)
+        .map_err(Error::Semantic)?;
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.

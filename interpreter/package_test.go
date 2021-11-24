@@ -58,7 +58,7 @@ func TestAccessNestedImport(t *testing.T) {
 		Files: []*semantic.File{
 			{
 				Package: &semantic.PackageClause{
-					Name: &semantic.Identifier{Name: "c"},
+					Name: &semantic.Identifier{Name: semantic.NewSymbol("c")},
 				},
 				Imports: []*semantic.ImportDeclaration{
 					{
@@ -67,13 +67,13 @@ func TestAccessNestedImport(t *testing.T) {
 				},
 				Body: []semantic.Statement{
 					&semantic.NativeVariableAssignment{
-						Identifier: &semantic.Identifier{Name: "e"},
+						Identifier: &semantic.Identifier{Name: semantic.NewSymbol("e")},
 						Init: &semantic.MemberExpression{
 							Object: &semantic.MemberExpression{
-								Object:   &semantic.IdentifierExpression{Name: "b"},
-								Property: "a",
+								Object:   &semantic.IdentifierExpression{Name: semantic.NewSymbol("b")},
+								Property: semantic.NewSymbol("a"),
 							},
-							Property: "x",
+							Property: semantic.NewSymbol("x"),
 						},
 					},
 				},

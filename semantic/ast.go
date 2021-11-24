@@ -46,14 +46,14 @@ func ToAST(n Node) ast.Node {
 		return b
 	case *PackageClause:
 		return &ast.PackageClause{
-			Name: &ast.Identifier{Name: n.Name.Name},
+			Name: &ast.Identifier{Name: n.Name.Name.Name()},
 		}
 	case *ImportDeclaration:
 		decl := &ast.ImportDeclaration{
 			Path: &ast.StringLiteral{Value: n.Path.Value},
 		}
 		if n.As != nil {
-			decl.As = &ast.Identifier{Name: n.As.Name}
+			decl.As = &ast.Identifier{Name: n.As.Name.Name()}
 		}
 		return decl
 	case *OptionStatement:
@@ -71,7 +71,7 @@ func ToAST(n Node) ast.Node {
 		}
 	case *BuiltinStatement:
 		return &ast.BuiltinStatement{
-			ID: &ast.Identifier{Name: n.ID.Name},
+			ID: &ast.Identifier{Name: n.ID.Name.Name()},
 		}
 	case *TestStatement:
 		return &ast.TestStatement{
@@ -90,12 +90,12 @@ func ToAST(n Node) ast.Node {
 			Init: ToAST(n.Init).(ast.Expression),
 			Member: &ast.MemberExpression{
 				Object:   ToAST(n.Member.Object).(ast.Expression),
-				Property: &ast.StringLiteral{Value: n.Member.Property},
+				Property: &ast.StringLiteral{Value: n.Member.Property.Name()},
 			},
 		}
 	case *NativeVariableAssignment:
 		return &ast.VariableAssignment{
-			ID:   &ast.Identifier{Name: n.Identifier.Name},
+			ID:   &ast.Identifier{Name: n.Identifier.Name.Name()},
 			Init: ToAST(n.Init).(ast.Expression),
 		}
 	case *StringExpression:
@@ -122,11 +122,11 @@ func ToAST(n Node) ast.Node {
 			fn.Params = make([]*ast.Property, len(n.Parameters.List))
 			for i, p := range n.Parameters.List {
 				fn.Params[i] = &ast.Property{
-					Key: &ast.Identifier{Name: p.Key.Name},
+					Key: &ast.Identifier{Name: p.Key.Name.Name()},
 				}
 				if n.Defaults != nil {
 					for _, pn := range n.Defaults.Properties {
-						if pn.Key.Key() == p.Key.Name {
+						if pn.Key.Key() == p.Key.Name.Name() {
 							fn.Params[i].Value = ToAST(pn.Value).(ast.Expression)
 							break
 						}
@@ -158,7 +158,7 @@ func ToAST(n Node) ast.Node {
 			Alternate:  ToAST(n.Alternate).(ast.Expression),
 		}
 	case *IdentifierExpression:
-		return &ast.Identifier{Name: n.Name}
+		return &ast.Identifier{Name: n.Name.Name()}
 	case *LogicalExpression:
 		return &ast.LogicalExpression{
 			Operator: n.Operator,
@@ -168,7 +168,7 @@ func ToAST(n Node) ast.Node {
 	case *MemberExpression:
 		return &ast.MemberExpression{
 			Object:   ToAST(n.Object).(ast.Expression),
-			Property: &ast.StringLiteral{Value: n.Property},
+			Property: &ast.StringLiteral{Value: n.Property.Name()},
 		}
 	case *IndexExpression:
 		return &ast.IndexExpression{
@@ -178,7 +178,7 @@ func ToAST(n Node) ast.Node {
 	case *ObjectExpression:
 		obj := &ast.ObjectExpression{}
 		if n.With != nil {
-			obj.With = &ast.Identifier{Name: n.With.Name}
+			obj.With = &ast.Identifier{Name: n.With.Name.Name()}
 		}
 		if len(n.Properties) > 0 {
 			obj.Properties = make([]*ast.Property, len(n.Properties))
@@ -193,12 +193,12 @@ func ToAST(n Node) ast.Node {
 			Argument: ToAST(n.Argument).(ast.Expression),
 		}
 	case *Identifier:
-		return &ast.Identifier{Name: n.Name}
+		return &ast.Identifier{Name: n.Name.Name()}
 	case *Property:
 		p := &ast.Property{}
 		switch key := n.Key.(type) {
 		case *Identifier:
-			p.Key = &ast.Identifier{Name: key.Name}
+			p.Key = &ast.Identifier{Name: key.Name.Name()}
 		default:
 			p.Key = &ast.StringLiteral{Value: key.Key()}
 		}

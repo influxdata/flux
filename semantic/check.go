@@ -54,14 +54,14 @@ func optionStatements(n Node) ([]*OptionStatement, error) {
 func optionName(opt *OptionStatement) (string, error) {
 	switch n := opt.Assignment.(type) {
 	case *NativeVariableAssignment:
-		return n.Identifier.Name, nil
+		return n.Identifier.Name.Name(), nil
 	case *MemberAssignment:
 		obj := n.Member.Object
 		id, ok := obj.(*IdentifierExpression)
 		if !ok {
 			return "", errors.Newf(codes.Invalid, "unsupported option qualifier %T", obj)
 		}
-		return id.Name + "." + n.Member.Property, nil
+		return id.Name.Name() + "." + n.Member.Property.Name(), nil
 	default:
 		return "", errors.Newf(codes.Internal, "unsupported assignment %T", n)
 	}
@@ -150,7 +150,7 @@ func (v varStmtVisitor) Visit(node Node) Visitor {
 	case *OptionStatement:
 		v.option = true
 	case *NativeVariableAssignment:
-		name := n.Identifier.Name
+		name := n.Identifier.Name.Name()
 		if v.option {
 			v.option = false
 			return v
@@ -163,7 +163,7 @@ func (v varStmtVisitor) Visit(node Node) Visitor {
 		}
 		v.vars[name] = true
 	case *FunctionParameter:
-		v.vars[n.Key.Name] = true
+		v.vars[n.Key.Name.Name()] = true
 	}
 	return v
 }
@@ -214,12 +214,12 @@ func (v optionExprVisitor) Visit(node Node) Visitor {
 	switch n := node.(type) {
 	case *NativeVariableAssignment:
 		// var declarations shadow options
-		v.shadow[n.Identifier.Name] = true
+		v.shadow[n.Identifier.Name.Name()] = true
 	case *FunctionParameter:
 		// function params shadow options
-		v.shadow[n.Key.Name] = true
+		v.shadow[n.Key.Name.Name()] = true
 	case *IdentifierExpression:
-		if v.option[n.Name] && !v.shadow[n.Name] {
+		if v.option[n.Name.Name()] && !v.shadow[n.Name.Name()] {
 			v.errFn(n)
 			return nil
 		}

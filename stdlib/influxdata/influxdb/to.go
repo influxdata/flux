@@ -136,7 +136,7 @@ func (t *ToTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 		// If a field function is specified then we exclude any column that
 		// is referenced in the function expression from being a tag column.
 		if t.spec.FieldFn.Fn != nil {
-			recordParam := t.spec.FieldFn.Fn.Parameters.List[0].Key.Name
+			recordParam := t.spec.FieldFn.Fn.Parameters.List[0].Key.Name.Name()
 			exprNode := t.spec.FieldFn.Fn.Block
 			colVisitor := newFieldFunctionVisitor(recordParam, tbl.Cols())
 
@@ -362,8 +362,8 @@ func (v *fieldFunctionVisitor) Visit(node semantic.Node) semantic.Visitor {
 	}
 	if member, ok := node.(*semantic.MemberExpression); ok {
 		if obj, ok := member.Object.(*semantic.IdentifierExpression); ok {
-			if obj.Name == v.rowParam && v.columns[member.Property] {
-				v.captured[member.Property] = true
+			if obj.Name.Name() == v.rowParam && v.columns[member.Property.Name()] {
+				v.captured[member.Property.Name()] = true
 			}
 		}
 	}

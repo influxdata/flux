@@ -126,7 +126,7 @@ func (itrp *Interpreter) doFile(ctx context.Context, file *semantic.File, scope 
 func (itrp *Interpreter) doPackageClause(pkg *semantic.PackageClause) error {
 	name := PackageMain
 	if pkg != nil {
-		name = pkg.Name.Name
+		name = pkg.Name.Name.Name()
 	}
 	if itrp.pkgName == "" {
 		itrp.pkgName = name
@@ -173,7 +173,7 @@ func (itrp *Interpreter) doImport(ctx context.Context, dec *semantic.ImportDecla
 	}
 	name := pkg.Name()
 	if dec.As != nil {
-		name = dec.As.Name
+		name = dec.As.Name.Name()
 	}
 	if packages := getPackages(ctx); packages != nil {
 		packages[path] = pkg
@@ -273,12 +273,12 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 		// Some functions require access to now from the execution dependencies
 		// (eg tableFind). For those cases we immediately evaluate and store it
 		// in the execution deps.
-		itrp.evaluateNowOption(ctx, a.Identifier.Name, init)
+		itrp.evaluateNowOption(ctx, a.Identifier.Name.Name(), init)
 
 		// Retrieve an option with the name from the scope.
 		// If it exists and is an option, then set the option
 		// as it is from the prelude.
-		if opt, ok := scope.Lookup(a.Identifier.Name); ok {
+		if opt, ok := scope.Lookup(a.Identifier.Name.Name()); ok {
 			if opt, ok := opt.(*values.Option); ok {
 				opt.Value = init
 				return opt, nil
@@ -287,7 +287,7 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 
 		// Create a new option and set it within the current scope.
 		v := &values.Option{Value: init}
-		scope.Set(a.Identifier.Name, v)
+		scope.Set(a.Identifier.Name.Name(), v)
 		return v, nil
 	case *semantic.MemberAssignment:
 		init, err := itrp.doExpression(ctx, a.Init, scope)
@@ -305,9 +305,9 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 			return nil, errors.Newf(codes.Invalid, "%s: cannot set option %q on non-package value", a.Location(), a.Member.Property)
 		}
 
-		v, _ := values.SetOption(pkg, a.Member.Property, init)
+		v, _ := values.SetOption(pkg, a.Member.Property.Name(), init)
 
-		itrp.evaluateProfilerOption(ctx, pkg, a.Member.Property, init)
+		itrp.evaluateProfilerOption(ctx, pkg, a.Member.Property.Name(), init)
 
 		return v, nil
 	default:
@@ -324,7 +324,7 @@ func (itrp *Interpreter) doVariableAssignment(ctx context.Context, dec *semantic
 	if err != nil {
 		return nil, err
 	}
-	scope.Set(dec.Identifier.Name, value)
+	scope.Set(dec.Identifier.Name.Name(), value)
 	return value, nil
 }
 
@@ -337,7 +337,7 @@ func (itrp *Interpreter) doMemberAssignment(ctx context.Context, a *semantic.Mem
 	if err != nil {
 		return nil, err
 	}
-	object.Object().Set(a.Member.Property, init)
+	object.Object().Set(a.Member.Property.Name(), init)
 	return object, nil
 }
 
@@ -363,7 +363,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 	case *semantic.DictExpression:
 		return itrp.doDict(ctx, e, scope)
 	case *semantic.IdentifierExpression:
-		value, ok := scope.Lookup(e.Name)
+		value, ok := scope.Lookup(e.Name.Name())
 		if !ok {
 			return nil, errors.Newf(codes.Invalid, "undefined identifier %q", e.Name)
 		}
@@ -378,7 +378,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		if typ := obj.Type().Nature(); typ != semantic.Object {
 			return nil, errors.Newf(codes.Invalid, "cannot access property %q on value of type %s", e.Property, typ)
 		}
-		v, _ := obj.Object().Get(e.Property)
+		v, _ := obj.Object().Get(e.Property.Name())
 		if pkg, ok := v.(*Package); ok {
 			// If the property of a member expression represents a package, then the object itself must be a package.
 			return nil, errors.Newf(codes.Invalid, "cannot access imported package %q of imported package %q", pkg.Name(), obj.(*Package).Name())
@@ -665,9 +665,9 @@ func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 func functionName(call *semantic.CallExpression) string {
 	switch callee := call.Callee.(type) {
 	case *semantic.IdentifierExpression:
-		return callee.Name
+		return callee.Name.Name()
 	case *semantic.MemberExpression:
-		return callee.Property
+		return callee.Property.Name()
 	default:
 		return "<anonymous function>"
 	}
@@ -905,8 +905,8 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 		for _, p := range f.e.Parameters.List {
 			if f.e.Defaults != nil {
 				for _, d := range f.e.Defaults.Properties {
-					if d.Key.Key() == p.Key.Name {
-						v, ok := args.Get(p.Key.Name)
+					if d.Key.Key() == p.Key.Name.Name() {
+						v, ok := args.Get(p.Key.Name.Name())
 						if !ok {
 							// Use default value
 							var err error
@@ -916,16 +916,16 @@ func (f function) doCall(ctx context.Context, args Arguments) (values.Value, err
 								return nil, err
 							}
 						}
-						blockScope.Set(p.Key.Name, v)
+						blockScope.Set(p.Key.Name.Name(), v)
 						continue PARAMETERS
 					}
 				}
 			}
-			v, err := args.GetRequired(p.Key.Name)
+			v, err := args.GetRequired(p.Key.Name.Name())
 			if err != nil {
 				return nil, err
 			}
-			blockScope.Set(p.Key.Name, v)
+			blockScope.Set(p.Key.Name.Name(), v)
 		}
 	}
 
@@ -1048,7 +1048,7 @@ func ResolveIdsInFunction(scope values.Scope, origFn *semantic.FunctionExpressio
 		//
 		if obj, ok := node.(*semantic.ObjectExpression); ok {
 			for _, prop := range obj.Properties {
-				if prop.Key.Key() == n.Property {
+				if prop.Key.Key() == n.Property.Name() {
 					return ResolveIdsInFunction(scope, origFn, prop.Value, localIdentifiers)
 				}
 			}
@@ -1067,12 +1067,12 @@ func ResolveIdsInFunction(scope values.Scope, origFn *semantic.FunctionExpressio
 		// if we are looking at a reference to a locally defined variable,
 		// then we can't resolve it because it hasn't been evaluated yet.
 		for _, id := range *localIdentifiers {
-			if id == n.Name {
+			if id == n.Name.Name() {
 				return n, nil
 			}
 		}
 
-		v, ok := scope.Lookup(n.Name)
+		v, ok := scope.Lookup(n.Name.Name())
 		if ok {
 			// Attempt to resolve the value if it is possible to inline.
 			node, ok, err := resolveValue(v)
@@ -1113,7 +1113,7 @@ func ResolveIdsInFunction(scope values.Scope, origFn *semantic.FunctionExpressio
 		if err != nil {
 			return nil, err
 		}
-		*localIdentifiers = append(*localIdentifiers, n.Identifier.Name)
+		*localIdentifiers = append(*localIdentifiers, n.Identifier.Name.Name())
 		n.Init = node.(semantic.Expression)
 	case *semantic.CallExpression:
 		node, err := ResolveIdsInFunction(scope, origFn, n.Arguments, localIdentifiers)
@@ -1351,7 +1351,7 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 				return
 			} else if ok {
 				node.Properties = append(node.Properties, &semantic.Property{
-					Key:   &semantic.Identifier{Name: k},
+					Key:   &semantic.Identifier{Name: semantic.NewSymbol(k)},
 					Value: n.(semantic.Expression),
 				})
 			}

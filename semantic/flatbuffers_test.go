@@ -173,7 +173,7 @@ func getUnaryOpFlatBuffer() (*semantic.Package, []byte) {
 							End:    ast.Position{Line: 1, Column: 2},
 							Source: `x`,
 						},
-						Name: "x",
+						Name: semantic.NewSymbol("x"),
 					},
 					Init: &semantic.UnaryExpression{
 						Loc: semantic.Loc{
@@ -501,7 +501,7 @@ func getSemanticPkg(feSemanticPkg *semantic.FunctionExpression) *semantic.Packag
 							End:    ast.Position{Line: 1, Column: 2},
 							Source: `f`,
 						},
-						Name: "f",
+						Name: semantic.NewSymbol("f"),
 					},
 					Init: feSemanticPkg,
 				},
@@ -1228,7 +1228,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 				if nva.Typ.IsNil() == true {
 					// This is the assignment from Go.
 					var ok bool
-					typStr, ok = tc.types[nva.Identifier.Name]
+					typStr, ok = tc.types[nva.Identifier.Name.Name()]
 					if !ok {
 						typStr = "*** missing type ***"
 					}

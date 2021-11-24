@@ -216,7 +216,7 @@ func validatePackageBuiltins(pkg map[string]values.Value, semPkg *semantic.Packa
 	builtinStmts := make(map[string]*semantic.BuiltinStatement)
 	semantic.Walk(semantic.CreateVisitor(func(n semantic.Node) {
 		if bs, ok := n.(*semantic.BuiltinStatement); ok {
-			builtinStmts[bs.ID.Name] = bs
+			builtinStmts[bs.ID.Name.Name()] = bs
 		}
 	}), semPkg)
 

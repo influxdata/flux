@@ -437,7 +437,7 @@ func TestLogicalPlanner(t *testing.T) {
 						Scope: valuestest.Scope(),
 						Fn: &semantic.FunctionExpression{
 							Parameters: &semantic.FunctionParameters{
-								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+								List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}},
 							},
 							Block: &semantic.Block{
 								Body: []semantic.Statement{
@@ -445,13 +445,13 @@ func TestLogicalPlanner(t *testing.T) {
 										Argument: &semantic.LogicalExpression{Operator: ast.AndOperator,
 											Left: &semantic.LogicalExpression{Operator: ast.AndOperator,
 												Left: &semantic.BinaryExpression{Operator: ast.LessThanOperator,
-													Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+													Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
 													Right: &semantic.FloatLiteral{Value: 0.9}},
 												Right: &semantic.BinaryExpression{Operator: ast.GreaterThanOperator,
-													Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+													Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
 													Right: &semantic.FloatLiteral{Value: 0.5}}},
 											Right: &semantic.BinaryExpression{Operator: ast.EqualOperator,
-												Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_measurement"},
+												Left:  &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_measurement")},
 												Right: &semantic.StringLiteral{Value: "cpu"},
 											},
 										},
@@ -485,14 +485,14 @@ func TestLogicalPlanner(t *testing.T) {
 							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
 								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}},
+									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}},
 								},
 								Block: &semantic.Block{
 									Body: []semantic.Statement{
 										&semantic.ReturnStatement{
 											Argument: &semantic.BinaryExpression{
 												Operator: ast.LessThanOperator,
-												Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+												Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
 												Right:    &semantic.FloatLiteral{Value: 10},
 											},
 										},
@@ -502,17 +502,17 @@ func TestLogicalPlanner(t *testing.T) {
 							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
 								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
+									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}}},
 								Block: &semantic.Block{
 									Body: []semantic.Statement{
 										&semantic.ReturnStatement{
 											Argument: &semantic.ObjectExpression{
-												With: &semantic.IdentifierExpression{Name: "r"},
+												With: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")},
 												Properties: []*semantic.Property{{
-													Key: &semantic.Identifier{Name: "_value"},
+													Key: &semantic.Identifier{Name: semantic.NewSymbol("_value")},
 													Value: &semantic.BinaryExpression{
 														Operator: ast.MultiplicationOperator,
-														Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+														Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
 														Right:    &semantic.FloatLiteral{Value: 2}}}}},
 										}}}}}}),
 					plan.CreateLogicalNode("yield3", &universe.YieldProcedureSpec{Name: "result"}),
@@ -543,7 +543,7 @@ func TestLogicalPlanner(t *testing.T) {
 							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
 								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
+									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}}},
 								Block: &semantic.Block{
 									Body: []semantic.Statement{
 										&semantic.ReturnStatement{
@@ -551,11 +551,11 @@ func TestLogicalPlanner(t *testing.T) {
 												Operator: ast.AndOperator,
 												Left: &semantic.BinaryExpression{
 													Operator: ast.LessThanOperator,
-													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
 													Right:    &semantic.IntegerLiteral{Value: 100}},
 												Right: &semantic.BinaryExpression{
 													Operator: ast.NotEqualOperator,
-													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
 													Right:    &semantic.IntegerLiteral{}}},
 										},
 									},
@@ -566,15 +566,15 @@ func TestLogicalPlanner(t *testing.T) {
 							Scope: valuestest.Scope(),
 							Fn: &semantic.FunctionExpression{
 								Parameters: &semantic.FunctionParameters{
-									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "r"}}}},
+									List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: semantic.NewSymbol("r")}}}},
 								Block: &semantic.Block{Body: []semantic.Statement{
 									&semantic.ReturnStatement{Argument: &semantic.ObjectExpression{
-										With: &semantic.IdentifierExpression{Name: "r"},
+										With: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")},
 										Properties: []*semantic.Property{{
-											Key: &semantic.Identifier{Name: "_value"},
+											Key: &semantic.Identifier{Name: semantic.NewSymbol("_value")},
 											Value: &semantic.BinaryExpression{
 												Operator: ast.MultiplicationOperator,
-												Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
+												Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: semantic.NewSymbol("r")}, Property: semantic.NewSymbol("_value")},
 												Right:    &semantic.IntegerLiteral{Value: 10}}}}},
 									},
 								}}}}}),
