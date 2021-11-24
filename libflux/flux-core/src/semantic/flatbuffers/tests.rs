@@ -7,8 +7,16 @@ use chrono::FixedOffset;
 use super::semantic_generated::fbsemantic;
 use crate::{
     ast, semantic,
-    semantic::{convert, sub},
+    semantic::{
+        convert,
+        env::Environment,
+        nodes::{FunctionExpr, Package},
+        sub,
+        walk::{walk, Node},
+        Analyzer,
+    },
 };
+use std::collections::HashMap;
 
 #[test]
 fn test_serialize() {
@@ -101,6 +109,79 @@ re !~ /foo/
             return;
         }
     };
+    let fb = &vec.as_slice()[offset..];
+    match compare_semantic_fb(&pkg, fb) {
+        Err(e) => assert!(false, "{}", e),
+        _ => (),
+    }
+}
+
+#[test]
+fn test_serialize_vectorization() {
+    let f = vec![
+        crate::parser::parse_string(
+            "vectorize_field_access".to_string(),
+            r#"
+(r) => ({ a: r.a, b: r.b })
+"#,
+        ),
+        crate::parser::parse_string(
+            "vectorize_with_construction".to_string(),
+            r#"
+(r) => ({ r with b: r.a })
+"#,
+        ),
+    ];
+    let pkg = ast::Package {
+        base: ast::BaseNode {
+            ..ast::BaseNode::default()
+        },
+        path: String::from("./"),
+        package: String::from("test"),
+        files: f,
+    };
+    let mut analyzer = Analyzer::new(
+        Environment::default(),
+        HashMap::default(),
+        Default::default(),
+    );
+    let (_, mut pkg) = match analyzer.analyze_ast(pkg) {
+        Ok(pkg) => pkg,
+        Err(e) => {
+            assert!(false, "{}", e);
+            return;
+        }
+    };
+    // call vectorize function explicitly
+    match semantic::nodes::vectorize(&mut pkg) {
+        Err(e) => assert!(false, "{}", e),
+        _ => (),
+    }
+
+    // check there's something inside vectorized field
+    let mut vectorizedFuncExpr = None;
+    walk(
+        &mut |node| {
+            if let Node::FunctionExpr(func) = node {
+                if func.vectorized.is_some() {
+                    vectorizedFuncExpr = func.vectorized.as_ref();
+                }
+            }
+        },
+        Node::Package(&pkg),
+    );
+    vectorizedFuncExpr.expect("function");
+
+    // serialize semantic package
+    let (vec, offset) = match super::serialize_pkg(&mut pkg) {
+        Ok((v, o)) => (v, o),
+        Err(e) => {
+            assert!(false, "{}", e);
+            return;
+        }
+    };
+
+    // compare semantic package with flatbuffers
     let fb = &vec.as_slice()[offset..];
     match compare_semantic_fb(&pkg, fb) {
         Err(e) => assert!(false, "{}", e),
