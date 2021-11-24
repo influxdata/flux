@@ -38,10 +38,9 @@ func (c compiledFn) Type() semantic.MonoType {
 }
 
 func (c compiledFn) Eval(ctx context.Context, input []Value) (Value, error) {
-	// TODO(jsternberg): I can probably remove this allocation?
-	// Revisit after I get to implementing closures and function calls.
-	scope := make([]Value, len(c.scope.Values()))
-	copy(scope, c.scope.Values())
+	// Map the input parameters to their appropriate
+	// location within the scope.
+	scope := c.scope.Values()
 	for i := 0; i < len(input); i++ {
 		if c.params[i] != nil {
 			c.params[i].Map(input[i], scope)
