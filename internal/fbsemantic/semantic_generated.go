@@ -3175,8 +3175,21 @@ func (rcv *FunctionExpression) Typ(obj *flatbuffers.Table) bool {
 	return false
 }
 
+func (rcv *FunctionExpression) Vectorized(obj *FunctionExpression) *FunctionExpression {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(FunctionExpression)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
 func FunctionExpressionStart(builder *flatbuffers.Builder) {
-	builder.StartObject(5)
+	builder.StartObject(6)
 }
 func FunctionExpressionAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -3195,6 +3208,9 @@ func FunctionExpressionAddTypType(builder *flatbuffers.Builder, typType MonoType
 }
 func FunctionExpressionAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(typ), 0)
+}
+func FunctionExpressionAddVectorized(builder *flatbuffers.Builder, vectorized flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(vectorized), 0)
 }
 func FunctionExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

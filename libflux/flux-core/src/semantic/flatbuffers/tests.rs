@@ -7,8 +7,16 @@ use chrono::FixedOffset;
 use super::semantic_generated::fbsemantic;
 use crate::{
     ast, semantic,
-    semantic::{convert, sub},
+    semantic::{
+        convert,
+        env::Environment,
+        nodes::{FunctionExpr, Package},
+        sub,
+        walk::{walk, Node},
+        Analyzer,
+    },
 };
+use std::collections::HashMap;
 
 #[test]
 fn test_serialize() {
@@ -101,6 +109,81 @@ re !~ /foo/
             return;
         }
     };
+    let fb = &vec.as_slice()[offset..];
+    match compare_semantic_fb(&pkg, fb) {
+        Err(e) => assert!(false, "{}", e),
+        _ => (),
+    }
+}
+
+// Adding extra testcase for vectorization as the existing parse/analyze sequence won't populate the vectorized field.
+// vectorize function needs to be called explicitly
+#[test]
+fn test_serialize_vectorization() {
+    let f = vec![
+        crate::parser::parse_string(
+            "vectorize_field_access".to_string(),
+            r#"
+(r) => ({ a: r.a, b: r.b })
+"#,
+        ),
+        crate::parser::parse_string(
+            "vectorize_with_construction".to_string(),
+            r#"
+(r) => ({ r with b: r.a })
+"#,
+        ),
+    ];
+    let pkg = ast::Package {
+        base: ast::BaseNode {
+            ..ast::BaseNode::default()
+        },
+        path: String::from("./"),
+        package: String::from("test"),
+        files: f,
+    };
+    let mut analyzer = Analyzer::new(
+        Environment::default(),
+        HashMap::default(),
+        Default::default(),
+    );
+    let (_, mut pkg) = match analyzer.analyze_ast(pkg) {
+        Ok(pkg) => pkg,
+        Err(e) => {
+            assert!(false, "{}", e);
+            return;
+        }
+    };
+    // call vectorize function explicitly
+    match semantic::nodes::vectorize(&mut pkg) {
+        Err(e) => assert!(false, "{}", e),
+        _ => (),
+    }
+
+    // check there's something inside vectorized field
+    let mut vectorizedFuncExpr = None;
+    walk(
+        &mut |node| {
+            if let Node::FunctionExpr(func) = node {
+                if func.vectorized.is_some() {
+                    vectorizedFuncExpr = func.vectorized.as_ref();
+                }
+            }
+        },
+        Node::Package(&pkg),
+    );
+    vectorizedFuncExpr.expect("function");
+
+    // serialize semantic package
+    let (vec, offset) = match super::serialize_pkg(&mut pkg) {
+        Ok((v, o)) => (v, o),
+        Err(e) => {
+            assert!(false, "{}", e);
+            return;
+        }
+    };
+
+    // compare semantic package with flatbuffers
     let fb = &vec.as_slice()[offset..];
     match compare_semantic_fb(&pkg, fb) {
         Err(e) => assert!(false, "{}", e),
@@ -469,33 +552,7 @@ fn compare_exprs(
             fbsemantic::Expression::FunctionExpression,
         ) => {
             let fb_fe = fbsemantic::FunctionExpression::init_from_table(*fb_tbl);
-            compare_loc(&semantic_fe.loc, &fb_fe.loc())?;
-            compare_params(&semantic_fe.params, &fb_fe.params())?;
-
-            // compare function bodies
-            compare_loc(&semantic_fe.body.loc(), &fb_fe.body().unwrap().loc());
-            let mut block_len: usize = 0;
-            let mut current_sem = &semantic_fe.body;
-            let fb_list = fb_fe.body().unwrap().body().unwrap();
-            loop {
-                compare_stmts(
-                    &translate_block_to_stmt(current_sem),
-                    fb_list.get(block_len).statement_type(),
-                    &fb_list.get(block_len).statement(),
-                )?;
-
-                match current_sem {
-                    semantic::nodes::Block::Expr(_, next)
-                    | semantic::nodes::Block::Variable(_, next) => {
-                        current_sem = next.as_ref();
-                    }
-                    semantic::nodes::Block::Return(_) => {
-                        break;
-                    }
-                }
-                block_len += 1;
-            }
-            Ok(())
+            compare_function_expr(semantic_fe, &Some(fb_fe))
         }
         (
             semantic::nodes::Expression::Logical(semantic_le),
@@ -924,6 +981,42 @@ fn compare_string_expr_part(
         }
         _ => Err(anyhow!("mismatch in string expr part text/interpolated",)),
     }
+}
+
+fn compare_function_expr(
+    semantic_fe: &semantic::nodes::FunctionExpr,
+    fb_fe: &Option<fbsemantic::FunctionExpression>,
+) -> Result<()> {
+    let fb_fe = unwrap_or_fail("function expr", fb_fe)?;
+    compare_loc(&semantic_fe.loc, &fb_fe.loc())?;
+    compare_params(&semantic_fe.params, &fb_fe.params())?;
+
+    // compare function bodies
+    compare_loc(&semantic_fe.body.loc(), &fb_fe.body().unwrap().loc());
+    let mut block_len: usize = 0;
+    let mut current_sem = &semantic_fe.body;
+    let fb_list = fb_fe.body().unwrap().body().unwrap();
+    loop {
+        compare_stmts(
+            &translate_block_to_stmt(current_sem),
+            fb_list.get(block_len).statement_type(),
+            &fb_list.get(block_len).statement(),
+        )?;
+
+        match current_sem {
+            semantic::nodes::Block::Expr(_, next) | semantic::nodes::Block::Variable(_, next) => {
+                current_sem = next.as_ref();
+            }
+            semantic::nodes::Block::Return(_) => {
+                break;
+            }
+        }
+        block_len += 1;
+    }
+    if let Some(vectorized) = &semantic_fe.vectorized {
+        compare_function_expr(vectorized, &fb_fe.vectorized())?;
+    }
+    Ok(())
 }
 
 fn semantic_operator(fb_op: fbsemantic::Operator) -> ast::Operator {

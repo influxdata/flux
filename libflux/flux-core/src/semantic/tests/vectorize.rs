@@ -22,7 +22,9 @@ fn get_vectorized_function(pkg: &Package) -> &FunctionExpr {
     walk(
         &mut |node| {
             if let Node::FunctionExpr(func) = node {
-                function = func.vectorized.as_ref();
+                if func.vectorized.is_some() {
+                    function = func.vectorized.as_ref();
+                }
             }
         },
         Node::Package(&pkg),
@@ -40,7 +42,7 @@ fn vectorize_field_access() -> anyhow::Result<()> {
         (r) => {
             return {a: r:{J with b:v[D], a:v[B]}.a:v[B], b: r:{J with b:v[D], a:v[B]}.b:v[D]}:{a:v[B], b:v[D]}
         }:(r:{J with b:D, a:B}) => {a:B, b:D}"#]].assert_eq(&crate::semantic::formatter::format_node(
-        Node::FunctionExpr(function),
+            Node::FunctionExpr(function),
     )?);
 
     Ok(())

@@ -84,6 +84,11 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 			fbFn:     getFnExprFlatBuffer,
 			polyType: `(a: A, <-b: B, ?c: int) => int`,
 		},
+		{
+			name:     "function expression with vectorization",
+			fbFn:     getFnExprVectorizedFlatBuffer,
+			polyType: `(a: A, <-b: B, ?c: int) => int`,
+		},
 	}
 
 	for _, tc := range tcs {
@@ -196,7 +201,30 @@ func getUnaryOpFlatBuffer() (*semantic.Package, []byte) {
 func getFnExprFlatBuffer() (*semantic.Package, []byte) {
 	src := `f = (a, b=<-, c=72) => { return c }`
 	b := flatbuffers.NewBuilder(256)
+	feOffset := getFnExprFlatBufOffset(b, src, 0)
 
+	nva, asnLoc := getStmtAndLocOffset(b, src, feOffset)
+
+	semanticFnExpr := getSemanticFnExpr(nil)
+	want := getSemanticPkg(semanticFnExpr)
+	return want, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
+}
+
+func getFnExprVectorizedFlatBuffer() (*semantic.Package, []byte) {
+	src := `f = (a, b=<-, c=72) => { return c }`
+	b := flatbuffers.NewBuilder(256)
+	feOffset := getFnExprFlatBufOffset(b, src, 0)
+	feOffset = getFnExprFlatBufOffset(b, src, feOffset)
+
+	nva, asnLoc := getStmtAndLocOffset(b, src, feOffset)
+
+	semanticFnExpr := getSemanticFnExpr(nil)
+	semanticFnExpr = getSemanticFnExpr(semanticFnExpr)
+	want := getSemanticPkg(semanticFnExpr)
+	return want, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
+}
+
+func getFnExprFlatBufOffset(b *flatbuffers.Builder, src string, funcExpOffset flatbuffers.UOffsetT) (feOffset flatbuffers.UOffsetT) {
 	p0loc := getFBLoc(b, "1:6", "1:7", src)
 	p0n := b.CreateString("a")
 	fbsemantic.IdentifierStart(b)
@@ -292,10 +320,17 @@ func getFnExprFlatBuffer() (*semantic.Package, []byte) {
 	fbsemantic.FunctionExpressionAddLoc(b, exprLoc)
 	fbsemantic.FunctionExpressionAddTyp(b, funTy)
 	fbsemantic.FunctionExpressionAddTypType(b, fbsemantic.MonoTypeFun)
-	fe := fbsemantic.FunctionExpressionEnd(b)
+	if funcExpOffset != 0 {
+		fbsemantic.FunctionExpressionAddVectorized(b, funcExpOffset)
+	}
+	fnExprOffset := fbsemantic.FunctionExpressionEnd(b)
 
+	return fnExprOffset
+}
+
+func getStmtAndLocOffset(b *flatbuffers.Builder, src string, feOffset flatbuffers.UOffsetT) (stmtOffset, locOffset flatbuffers.UOffsetT) {
 	str := b.CreateString("f")
-	idLoc = getFBLoc(b, "1:1", "1:2", src)
+	idLoc := getFBLoc(b, "1:1", "1:2", src)
 	fbsemantic.IdentifierStart(b)
 	fbsemantic.IdentifierAddLoc(b, idLoc)
 	fbsemantic.IdentifierAddName(b, str)
@@ -307,11 +342,145 @@ func getFnExprFlatBuffer() (*semantic.Package, []byte) {
 	fbsemantic.NativeVariableAssignmentAddLoc(b, asnLoc)
 	fbsemantic.NativeVariableAssignmentAddTyp(b, pt)
 	fbsemantic.NativeVariableAssignmentAddIdentifier(b, id)
-	fbsemantic.NativeVariableAssignmentAddInit_(b, fe)
+	fbsemantic.NativeVariableAssignmentAddInit_(b, feOffset)
 	fbsemantic.NativeVariableAssignmentAddInit_type(b, fbsemantic.ExpressionFunctionExpression)
 	nva := fbsemantic.NativeVariableAssignmentEnd(b)
+	return nva, asnLoc
+}
 
-	want := &semantic.Package{
+// getSematicFnExpr takes pointer to a funtion expression and use it to populate Vectorized field of the function expression
+func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionExpression {
+
+	return &semantic.FunctionExpression{
+		Loc: semantic.Loc{
+			Start:  ast.Position{Line: 1, Column: 5},
+			End:    ast.Position{Line: 1, Column: 36},
+			Source: `(a, b=<-, c=72) => { return c }`,
+		},
+		Parameters: &semantic.FunctionParameters{
+			Loc: semantic.Loc{
+				Start:  ast.Position{Line: 1, Column: 5},
+				End:    ast.Position{Line: 1, Column: 36},
+				Source: `(a, b=<-, c=72) => { return c }`,
+			},
+			List: []*semantic.FunctionParameter{
+				{
+					Loc: semantic.Loc{
+						Start:  ast.Position{Line: 1, Column: 6},
+						End:    ast.Position{Line: 1, Column: 7},
+						Source: `a`,
+					},
+					Key: &semantic.Identifier{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 6},
+							End:    ast.Position{Line: 1, Column: 7},
+							Source: `a`,
+						},
+						Name: "a",
+					},
+				},
+				{
+					Loc: semantic.Loc{
+						Start:  ast.Position{Line: 1, Column: 9},
+						End:    ast.Position{Line: 1, Column: 13},
+						Source: `b=<-`,
+					},
+					Key: &semantic.Identifier{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 9},
+							End:    ast.Position{Line: 1, Column: 10},
+							Source: `b`,
+						},
+						Name: "b",
+					},
+				},
+				{
+					Loc: semantic.Loc{
+						Start:  ast.Position{Line: 1, Column: 15},
+						End:    ast.Position{Line: 1, Column: 19},
+						Source: `c=72`,
+					},
+					Key: &semantic.Identifier{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 15},
+							End:    ast.Position{Line: 1, Column: 16},
+							Source: `c`,
+						},
+						Name: "c",
+					},
+				},
+			},
+			Pipe: &semantic.Identifier{
+				Loc: semantic.Loc{
+					Start:  ast.Position{Line: 1, Column: 9},
+					End:    ast.Position{Line: 1, Column: 10},
+					Source: `b`,
+				},
+				Name: "b",
+			},
+		},
+		Defaults: &semantic.ObjectExpression{
+			Loc: semantic.Loc{
+				Start:  ast.Position{Line: 1, Column: 5},
+				End:    ast.Position{Line: 1, Column: 36},
+				Source: `(a, b=<-, c=72) => { return c }`,
+			},
+			Properties: []*semantic.Property{
+				{
+					Loc: semantic.Loc{
+						Start:  ast.Position{Line: 1, Column: 15},
+						End:    ast.Position{Line: 1, Column: 19},
+						Source: `c=72`,
+					},
+					Key: &semantic.Identifier{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 15},
+							End:    ast.Position{Line: 1, Column: 16},
+							Source: `c`,
+						},
+						Name: "c",
+					},
+					Value: &semantic.IntegerLiteral{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 17},
+							End:    ast.Position{Line: 1, Column: 19},
+							Source: `72`,
+						},
+						Value: 72,
+					},
+				},
+			},
+		},
+		Block: &semantic.Block{
+			Loc: semantic.Loc{
+				Start:  ast.Position{Line: 1, Column: 24},
+				End:    ast.Position{Line: 1, Column: 36},
+				Source: `{ return c }`,
+			},
+			Body: []semantic.Statement{
+				&semantic.ReturnStatement{
+					Loc: semantic.Loc{
+						Start:  ast.Position{Line: 1, Column: 26},
+						End:    ast.Position{Line: 1, Column: 34},
+						Source: `return c`,
+					},
+					Argument: &semantic.IdentifierExpression{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 33},
+							End:    ast.Position{Line: 1, Column: 34},
+							Source: `c`,
+						},
+						Name: "c",
+					},
+				},
+			},
+		},
+		Vectorized: fnExpr,
+	}
+}
+
+func getSemanticPkg(feSemanticPkg *semantic.FunctionExpression) *semantic.Package {
+	return &semantic.Package{
 		Package: "main",
 		Files: []*semantic.File{{
 			Loc: semantic.Loc{
@@ -334,136 +503,11 @@ func getFnExprFlatBuffer() (*semantic.Package, []byte) {
 						},
 						Name: "f",
 					},
-					Init: &semantic.FunctionExpression{
-						Loc: semantic.Loc{
-							Start:  ast.Position{Line: 1, Column: 5},
-							End:    ast.Position{Line: 1, Column: 36},
-							Source: `(a, b=<-, c=72) => { return c }`,
-						},
-						Parameters: &semantic.FunctionParameters{
-							Loc: semantic.Loc{
-								Start:  ast.Position{Line: 1, Column: 5},
-								End:    ast.Position{Line: 1, Column: 36},
-								Source: `(a, b=<-, c=72) => { return c }`,
-							},
-							List: []*semantic.FunctionParameter{
-								{
-									Loc: semantic.Loc{
-										Start:  ast.Position{Line: 1, Column: 6},
-										End:    ast.Position{Line: 1, Column: 7},
-										Source: `a`,
-									},
-									Key: &semantic.Identifier{
-										Loc: semantic.Loc{
-											Start:  ast.Position{Line: 1, Column: 6},
-											End:    ast.Position{Line: 1, Column: 7},
-											Source: `a`,
-										},
-										Name: "a",
-									},
-								},
-								{
-									Loc: semantic.Loc{
-										Start:  ast.Position{Line: 1, Column: 9},
-										End:    ast.Position{Line: 1, Column: 13},
-										Source: `b=<-`,
-									},
-									Key: &semantic.Identifier{
-										Loc: semantic.Loc{
-											Start:  ast.Position{Line: 1, Column: 9},
-											End:    ast.Position{Line: 1, Column: 10},
-											Source: `b`,
-										},
-										Name: "b",
-									},
-								},
-								{
-									Loc: semantic.Loc{
-										Start:  ast.Position{Line: 1, Column: 15},
-										End:    ast.Position{Line: 1, Column: 19},
-										Source: `c=72`,
-									},
-									Key: &semantic.Identifier{
-										Loc: semantic.Loc{
-											Start:  ast.Position{Line: 1, Column: 15},
-											End:    ast.Position{Line: 1, Column: 16},
-											Source: `c`,
-										},
-										Name: "c",
-									},
-								},
-							},
-							Pipe: &semantic.Identifier{
-								Loc: semantic.Loc{
-									Start:  ast.Position{Line: 1, Column: 9},
-									End:    ast.Position{Line: 1, Column: 10},
-									Source: `b`,
-								},
-								Name: "b",
-							},
-						},
-						Defaults: &semantic.ObjectExpression{
-							Loc: semantic.Loc{
-								Start:  ast.Position{Line: 1, Column: 5},
-								End:    ast.Position{Line: 1, Column: 36},
-								Source: `(a, b=<-, c=72) => { return c }`,
-							},
-							Properties: []*semantic.Property{
-								{
-									Loc: semantic.Loc{
-										Start:  ast.Position{Line: 1, Column: 15},
-										End:    ast.Position{Line: 1, Column: 19},
-										Source: `c=72`,
-									},
-									Key: &semantic.Identifier{
-										Loc: semantic.Loc{
-											Start:  ast.Position{Line: 1, Column: 15},
-											End:    ast.Position{Line: 1, Column: 16},
-											Source: `c`,
-										},
-										Name: "c",
-									},
-									Value: &semantic.IntegerLiteral{
-										Loc: semantic.Loc{
-											Start:  ast.Position{Line: 1, Column: 17},
-											End:    ast.Position{Line: 1, Column: 19},
-											Source: `72`,
-										},
-										Value: 72,
-									},
-								},
-							},
-						},
-						Block: &semantic.Block{
-							Loc: semantic.Loc{
-								Start:  ast.Position{Line: 1, Column: 24},
-								End:    ast.Position{Line: 1, Column: 36},
-								Source: `{ return c }`,
-							},
-							Body: []semantic.Statement{
-								&semantic.ReturnStatement{
-									Loc: semantic.Loc{
-										Start:  ast.Position{Line: 1, Column: 26},
-										End:    ast.Position{Line: 1, Column: 34},
-										Source: `return c`,
-									},
-									Argument: &semantic.IdentifierExpression{
-										Loc: semantic.Loc{
-											Start:  ast.Position{Line: 1, Column: 33},
-											End:    ast.Position{Line: 1, Column: 34},
-											Source: `c`,
-										},
-										Name: "c",
-									},
-								},
-							},
-						},
-					},
+					Init: feSemanticPkg,
 				},
 			},
 		}},
 	}
-	return want, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
 }
 
 func getFBBasicType(b *flatbuffers.Builder, t fbsemantic.Type) flatbuffers.UOffsetT {

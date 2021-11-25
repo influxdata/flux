@@ -11998,6 +11998,9 @@ pub mod fbsemantic {
             args: &'args FunctionExpressionArgs<'args>,
         ) -> flatbuffers::WIPOffset<FunctionExpression<'bldr>> {
             let mut builder = FunctionExpressionBuilder::new(_fbb);
+            if let Some(x) = args.vectorized {
+                builder.add_vectorized(x);
+            }
             if let Some(x) = args.typ {
                 builder.add_typ(x);
             }
@@ -12019,6 +12022,7 @@ pub mod fbsemantic {
         pub const VT_BODY: flatbuffers::VOffsetT = 8;
         pub const VT_TYP_TYPE: flatbuffers::VOffsetT = 10;
         pub const VT_TYP: flatbuffers::VOffsetT = 12;
+        pub const VT_VECTORIZED: flatbuffers::VOffsetT = 14;
 
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
@@ -12053,6 +12057,14 @@ pub mod fbsemantic {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
                     FunctionExpression::VT_TYP,
+                    None,
+                )
+        }
+        #[inline]
+        pub fn vectorized(&self) -> Option<FunctionExpression<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<FunctionExpression>>(
+                    FunctionExpression::VT_VECTORIZED,
                     None,
                 )
         }
@@ -12189,6 +12201,11 @@ pub mod fbsemantic {
                         _ => Ok(()),
                     },
                 )?
+                .visit_field::<flatbuffers::ForwardsUOffset<FunctionExpression>>(
+                    &"vectorized",
+                    Self::VT_VECTORIZED,
+                    false,
+                )?
                 .finish();
             Ok(())
         }
@@ -12203,6 +12220,7 @@ pub mod fbsemantic {
         pub body: Option<flatbuffers::WIPOffset<Block<'a>>>,
         pub typ_type: MonoType,
         pub typ: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub vectorized: Option<flatbuffers::WIPOffset<FunctionExpression<'a>>>,
     }
     impl<'a> Default for FunctionExpressionArgs<'a> {
         #[inline]
@@ -12213,6 +12231,7 @@ pub mod fbsemantic {
                 body: None,
                 typ_type: MonoType::NONE,
                 typ: None,
+                vectorized: None,
             }
         }
     }
@@ -12260,6 +12279,17 @@ pub mod fbsemantic {
         pub fn add_typ(&mut self, typ: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
             self.fbb_
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(FunctionExpression::VT_TYP, typ);
+        }
+        #[inline]
+        pub fn add_vectorized(
+            &mut self,
+            vectorized: flatbuffers::WIPOffset<FunctionExpression<'b>>,
+        ) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<FunctionExpression>>(
+                    FunctionExpression::VT_VECTORIZED,
+                    vectorized,
+                );
         }
         #[inline]
         pub fn new(
@@ -12361,6 +12391,7 @@ pub mod fbsemantic {
                     ds.field("typ", &x)
                 }
             };
+            ds.field("vectorized", &self.vectorized());
             ds.finish()
         }
     }

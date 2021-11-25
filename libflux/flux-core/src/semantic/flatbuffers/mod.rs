@@ -512,6 +512,11 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
 
                 let func_typ = func.typ.clone();
                 let (typ, typ_type) = types::build_type(v.builder, &func_typ);
+                let vectorized = if func.vectorized.is_some() {
+                    v.pop_expr_with_kind(fbsemantic::Expression::FunctionExpression)
+                } else {
+                    None
+                };
 
                 let func = fbsemantic::FunctionExpression::create(
                     v.builder,
@@ -521,6 +526,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                         body,
                         typ: Some(typ),
                         typ_type,
+                        vectorized,
                     },
                 );
                 v.expr_stack.push((
