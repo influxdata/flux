@@ -201,114 +201,30 @@ func getUnaryOpFlatBuffer() (*semantic.Package, []byte) {
 func getFnExprFlatBuffer() (*semantic.Package, []byte) {
 	src := `f = (a, b=<-, c=72) => { return c }`
 	b := flatbuffers.NewBuilder(256)
-	fe := getFnExprFlatBuf(b, src, 0)
+	feOffset := getFnExprFlatBufOffset(b, src, 0)
 
-	str := b.CreateString("f")
-	idLoc := getFBLoc(b, "1:1", "1:2", src)
-	fbsemantic.IdentifierStart(b)
-	fbsemantic.IdentifierAddLoc(b, idLoc)
-	fbsemantic.IdentifierAddName(b, str)
-	id := fbsemantic.IdentifierEnd(b)
+	nva, asnLoc := getStmtAndLocOffset(b, src, feOffset)
 
-	pt := getFnPolyType(b)
-	asnLoc := getFBLoc(b, "1:1", "1:36", src)
-	fbsemantic.NativeVariableAssignmentStart(b)
-	fbsemantic.NativeVariableAssignmentAddLoc(b, asnLoc)
-	fbsemantic.NativeVariableAssignmentAddTyp(b, pt)
-	fbsemantic.NativeVariableAssignmentAddIdentifier(b, id)
-	fbsemantic.NativeVariableAssignmentAddInit_(b, fe)
-	fbsemantic.NativeVariableAssignmentAddInit_type(b, fbsemantic.ExpressionFunctionExpression)
-	nva := fbsemantic.NativeVariableAssignmentEnd(b)
-
-	feSemanticPkg := funcExpression(nil)
-	want := &semantic.Package{
-		Package: "main",
-		Files: []*semantic.File{{
-			Loc: semantic.Loc{
-				Start:  ast.Position{Line: 1, Column: 1},
-				End:    ast.Position{Line: 1, Column: 36},
-				Source: `f = (a, b=<-, c=72) => { return c }`,
-			},
-			Body: []semantic.Statement{
-				&semantic.NativeVariableAssignment{
-					Loc: semantic.Loc{
-						Start:  ast.Position{Line: 1, Column: 1},
-						End:    ast.Position{Line: 1, Column: 36},
-						Source: `f = (a, b=<-, c=72) => { return c }`,
-					},
-					Identifier: &semantic.Identifier{
-						Loc: semantic.Loc{
-							Start:  ast.Position{Line: 1, Column: 1},
-							End:    ast.Position{Line: 1, Column: 2},
-							Source: `f`,
-						},
-						Name: "f",
-					},
-					Init: feSemanticPkg,
-				},
-			},
-		}},
-	}
+	semanticFnExpr := getSemanticFnExpr(nil)
+	want := getSemanticPkg(semanticFnExpr)
 	return want, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
 }
 
 func getFnExprVectorizedFlatBuffer() (*semantic.Package, []byte) {
 	src := `f = (a, b=<-, c=72) => { return c }`
 	b := flatbuffers.NewBuilder(256)
-	fe := getFnExprFlatBuf(b, src, 0)
-	fe = getFnExprFlatBuf(b, src, fe)
+	feOffset := getFnExprFlatBufOffset(b, src, 0)
+	feOffset = getFnExprFlatBufOffset(b, src, feOffset)
 
-	str := b.CreateString("f")
-	idLoc := getFBLoc(b, "1:1", "1:2", src)
-	fbsemantic.IdentifierStart(b)
-	fbsemantic.IdentifierAddLoc(b, idLoc)
-	fbsemantic.IdentifierAddName(b, str)
-	id := fbsemantic.IdentifierEnd(b)
+	nva, asnLoc := getStmtAndLocOffset(b, src, feOffset)
 
-	pt := getFnPolyType(b)
-	asnLoc := getFBLoc(b, "1:1", "1:36", src)
-	fbsemantic.NativeVariableAssignmentStart(b)
-	fbsemantic.NativeVariableAssignmentAddLoc(b, asnLoc)
-	fbsemantic.NativeVariableAssignmentAddTyp(b, pt)
-	fbsemantic.NativeVariableAssignmentAddIdentifier(b, id)
-	fbsemantic.NativeVariableAssignmentAddInit_(b, fe)
-	fbsemantic.NativeVariableAssignmentAddInit_type(b, fbsemantic.ExpressionFunctionExpression)
-	nva := fbsemantic.NativeVariableAssignmentEnd(b)
-
-	feSemanticPkg := funcExpression(nil)
-	feSemanticPkg = funcExpression(feSemanticPkg)
-	want := &semantic.Package{
-		Package: "main",
-		Files: []*semantic.File{{
-			Loc: semantic.Loc{
-				Start:  ast.Position{Line: 1, Column: 1},
-				End:    ast.Position{Line: 1, Column: 36},
-				Source: `f = (a, b=<-, c=72) => { return c }`,
-			},
-			Body: []semantic.Statement{
-				&semantic.NativeVariableAssignment{
-					Loc: semantic.Loc{
-						Start:  ast.Position{Line: 1, Column: 1},
-						End:    ast.Position{Line: 1, Column: 36},
-						Source: `f = (a, b=<-, c=72) => { return c }`,
-					},
-					Identifier: &semantic.Identifier{
-						Loc: semantic.Loc{
-							Start:  ast.Position{Line: 1, Column: 1},
-							End:    ast.Position{Line: 1, Column: 2},
-							Source: `f`,
-						},
-						Name: "f",
-					},
-					Init: feSemanticPkg,
-				},
-			},
-		}},
-	}
+	semanticFnExpr := getSemanticFnExpr(nil)
+	semanticFnExpr = getSemanticFnExpr(semanticFnExpr)
+	want := getSemanticPkg(semanticFnExpr)
 	return want, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
 }
 
-func getFnExprFlatBuf(b *flatbuffers.Builder, src string, funcExpOffset flatbuffers.UOffsetT) (feOffset flatbuffers.UOffsetT) {
+func getFnExprFlatBufOffset(b *flatbuffers.Builder, src string, funcExpOffset flatbuffers.UOffsetT) (feOffset flatbuffers.UOffsetT) {
 	p0loc := getFBLoc(b, "1:6", "1:7", src)
 	p0n := b.CreateString("a")
 	fbsemantic.IdentifierStart(b)
@@ -407,12 +323,33 @@ func getFnExprFlatBuf(b *flatbuffers.Builder, src string, funcExpOffset flatbuff
 	if funcExpOffset != 0 {
 		fbsemantic.FunctionExpressionAddVectorized(b, funcExpOffset)
 	}
-	fe := fbsemantic.FunctionExpressionEnd(b)
+	fnExprOffset := fbsemantic.FunctionExpressionEnd(b)
 
-	return fe
+	return fnExprOffset
 }
 
-func funcExpression(fe *semantic.FunctionExpression) *semantic.FunctionExpression {
+func getStmtAndLocOffset(b *flatbuffers.Builder, src string, feOffset flatbuffers.UOffsetT) (stmtOffset, locOffset flatbuffers.UOffsetT) {
+	str := b.CreateString("f")
+	idLoc := getFBLoc(b, "1:1", "1:2", src)
+	fbsemantic.IdentifierStart(b)
+	fbsemantic.IdentifierAddLoc(b, idLoc)
+	fbsemantic.IdentifierAddName(b, str)
+	id := fbsemantic.IdentifierEnd(b)
+
+	pt := getFnPolyType(b)
+	asnLoc := getFBLoc(b, "1:1", "1:36", src)
+	fbsemantic.NativeVariableAssignmentStart(b)
+	fbsemantic.NativeVariableAssignmentAddLoc(b, asnLoc)
+	fbsemantic.NativeVariableAssignmentAddTyp(b, pt)
+	fbsemantic.NativeVariableAssignmentAddIdentifier(b, id)
+	fbsemantic.NativeVariableAssignmentAddInit_(b, feOffset)
+	fbsemantic.NativeVariableAssignmentAddInit_type(b, fbsemantic.ExpressionFunctionExpression)
+	nva := fbsemantic.NativeVariableAssignmentEnd(b)
+	return nva, asnLoc
+}
+
+// getSematicFnExpr takes pointer to a funtion expression and use it to populate Vectorized field of the function expression
+func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionExpression {
 
 	return &semantic.FunctionExpression{
 		Loc: semantic.Loc{
@@ -538,7 +475,38 @@ func funcExpression(fe *semantic.FunctionExpression) *semantic.FunctionExpressio
 				},
 			},
 		},
-		Vectorized: fe,
+		Vectorized: fnExpr,
+	}
+}
+
+func getSemanticPkg(feSemanticPkg *semantic.FunctionExpression) *semantic.Package {
+	return &semantic.Package{
+		Package: "main",
+		Files: []*semantic.File{{
+			Loc: semantic.Loc{
+				Start:  ast.Position{Line: 1, Column: 1},
+				End:    ast.Position{Line: 1, Column: 36},
+				Source: `f = (a, b=<-, c=72) => { return c }`,
+			},
+			Body: []semantic.Statement{
+				&semantic.NativeVariableAssignment{
+					Loc: semantic.Loc{
+						Start:  ast.Position{Line: 1, Column: 1},
+						End:    ast.Position{Line: 1, Column: 36},
+						Source: `f = (a, b=<-, c=72) => { return c }`,
+					},
+					Identifier: &semantic.Identifier{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 1},
+							End:    ast.Position{Line: 1, Column: 2},
+							Source: `f`,
+						},
+						Name: "f",
+					},
+					Init: feSemanticPkg,
+				},
+			},
+		}},
 	}
 }
 

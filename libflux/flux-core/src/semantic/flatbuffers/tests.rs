@@ -116,6 +116,8 @@ re !~ /foo/
     }
 }
 
+// Adding extra testcase for vectorization as the existing parse/analyze sequence won't populate the vectorized field.
+// vectorize function needs to be called explicitly
 #[test]
 fn test_serialize_vectorization() {
     let f = vec![
