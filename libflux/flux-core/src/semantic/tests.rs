@@ -102,7 +102,7 @@ fn infer_types(
     imp: HashMap<&str, HashMap<&str, &str>>,
     want: Option<HashMap<&str, &str>>,
     config: AnalyzerConfig,
-) -> Result<ExportEnvironment, Error> {
+) -> Result<(ExportEnvironment, semantic::nodes::Package), Error> {
     let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<Symbol, PolyType>> = imp
@@ -122,7 +122,7 @@ fn infer_types(
     let env = Environment::from(env);
 
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
-    let (env, _) = analyzer
+    let (env, pkg) = analyzer
         .analyze_source("main".into(), "".into(), src)
         .map_err(Error::Semantic)?;
 
@@ -135,7 +135,7 @@ fn infer_types(
             return Err(Error::TypeMismatch { want, got });
         }
     }
-    return Ok(env);
+    return Ok((env, pkg));
 }
 
 /// The test_infer! macro generates test cases for type inference.
@@ -240,7 +240,7 @@ macro_rules! test_infer_err {
             env = $env;
         )?
         match infer_types($src, env, imp, None, AnalyzerConfig::default()) {
-            Ok(env) => {
+            Ok((env, _)) => {
                 panic!(
                     "\n\n{}\n\n{}\n",
                     "expected type error but instead inferred the: following types:"
@@ -3718,4 +3718,32 @@ fn missing_return() {
         "#,
         expect: expect_test::expect![[r#"error @2:19-2:22: missing return statement in block"#]]
     }
+}
+
+#[test]
+fn symbol_resolution() {
+    let imp = map![
+        "types" => package![
+            "isType" => "(v: A, type: string) => bool } where A: Basic",
+        ],
+    ];
+    let src = r#"
+            import "types"
+            x = types.isType(v: 1, type: "int")
+        "#;
+    let (_, pkg) = infer_types(src, Default::default(), imp, None, Default::default()).unwrap();
+
+    let mut expr = None;
+    semantic::walk::walk(
+        &mut |node| {
+            if let semantic::walk::Node::MemberExpr(e) = node {
+                expr = Some(e);
+            }
+        },
+        semantic::walk::Node::Package(&pkg),
+    );
+    assert_eq!(
+        expr.expect("member expression").property,
+        Symbol::from("isType").with_package("types")
+    );
 }

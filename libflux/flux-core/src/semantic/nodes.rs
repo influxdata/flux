@@ -346,6 +346,7 @@ impl Expression {
                                 )),
                             )
                         })?
+                        .v
                         .clone(),
                     object,
                     property: member.property.clone(),
@@ -476,6 +477,7 @@ impl File {
                 infer.error(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()));
                 PolyType::error()
             });
+
             infer.env.add(name, poly);
         }
 
@@ -1555,7 +1557,11 @@ impl MemberExpr {
     //
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.object.infer(infer)?;
-        let t = self.object.type_of();
+        let t = self.object.type_of().apply(infer.sub);
+
+        if let Some(prop) = t.field(&self.property) {
+            self.property = prop.k.clone().into();
+        }
 
         let r = {
             let head = types::Property {

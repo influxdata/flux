@@ -2,6 +2,7 @@ package semantic
 
 import (
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux/ast"
@@ -1116,13 +1117,25 @@ func (e *UnsignedIntegerLiteral) TypeOf() MonoType {
 }
 
 type Symbol struct {
-	FullName string
+	Package   string
+	LocalName string
 }
 
 func NewSymbol(name string) Symbol {
-	return Symbol{FullName: name}
+	split := strings.SplitN(name, "@", 2)
+
+	pkg := ""
+	localName := ""
+	if len(split) == 2 {
+		pkg = split[0]
+		localName = split[1]
+	} else {
+		localName = split[0]
+	}
+
+	return Symbol{Package: pkg, LocalName: localName}
 }
 
 func (s *Symbol) Name() string {
-	return s.FullName
+	return s.LocalName
 }

@@ -147,6 +147,7 @@ impl ExportEnvironment {
 }
 
 /// Analyzer provides an API for analyzing Flux code.
+#[derive(Default)]
 pub struct Analyzer<'env, I: import::Importer> {
     env: env::Environment<'env>,
     importer: I,

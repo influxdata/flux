@@ -191,19 +191,22 @@ impl<'a> Symbols<'a> {
         }
     }
 
-    fn new_symbol(&mut self, name: &str) -> Symbol {
+    fn new_symbol(&mut self, name: String) -> Symbol {
         Symbol::from(name)
     }
 
-    fn insert(&mut self, name: String) -> Symbol {
-        let symbol = self.new_symbol(&name);
+    fn insert(&mut self, package: Option<&str>, name: String) -> Symbol {
+        let symbol = self.new_symbol(match package {
+            Some(package) => format!("{}@{}", package, name),
+            None => name.clone(),
+        });
         self.symbols.insert(name, symbol.clone());
         symbol
     }
 
     fn lookup(&mut self, name: &str) -> Symbol {
         self.lookup_option(name)
-            .unwrap_or_else(|| self.new_symbol(name))
+            .unwrap_or_else(|| self.new_symbol(name.into()))
     }
 
     fn lookup_option(&mut self, name: &str) -> Option<Symbol> {
@@ -272,21 +275,26 @@ impl<'a> Converter<'a> {
     }
 
     fn convert_package(&mut self, pkg: ast::Package) -> Result<Package> {
+        let package = pkg.package;
+
+        self.symbols.enter_scope();
+
         let files = pkg
             .files
             .into_iter()
-            .map(|file| self.convert_file(file))
+            .map(|file| self.convert_file(&package, file))
             .collect::<Result<Vec<File>>>()?;
+
+        self.symbols.exit_scope();
+
         Ok(Package {
             loc: pkg.base.location,
-            package: pkg.package,
+            package,
             files,
         })
     }
 
-    fn convert_file(&mut self, file: ast::File) -> Result<File> {
-        self.symbols.enter_scope();
-
+    fn convert_file(&mut self, package_name: &str, file: ast::File) -> Result<File> {
         let package = self.convert_package_clause(file.package)?;
         let imports = file
             .imports
@@ -296,10 +304,9 @@ impl<'a> Converter<'a> {
         let body = file
             .body
             .into_iter()
-            .map(|s| self.convert_statement(s))
+            .map(|s| self.convert_statement(package_name, s))
             .collect::<Result<Vec<Statement>>>()?;
 
-        self.symbols.exit_scope();
         Ok(File {
             loc: file.base.location,
             package,
@@ -331,10 +338,10 @@ impl<'a> Converter<'a> {
         let (import_symbol, alias) = match imp.alias {
             None => {
                 let name = path.rsplit_once('/').map_or(&path[..], |t| t.1).to_owned();
-                (self.symbols.insert(name), None)
+                (self.symbols.insert(None, name), None)
             }
             Some(id) => {
-                let id = self.define_identifier(id)?;
+                let id = self.define_identifier(None, id)?;
                 (id.name.clone(), Some(id))
             }
         };
@@ -348,14 +355,14 @@ impl<'a> Converter<'a> {
         })
     }
 
-    fn convert_statement(&mut self, stmt: ast::Statement) -> Result<Statement> {
+    fn convert_statement(&mut self, package: &str, stmt: ast::Statement) -> Result<Statement> {
         match stmt {
             ast::Statement::Option(s) => Ok(Statement::Option(Box::new(
                 self.convert_option_statement(*s)?,
             ))),
-            ast::Statement::Builtin(s) => {
-                Ok(Statement::Builtin(self.convert_builtin_statement(*s)?))
-            }
+            ast::Statement::Builtin(s) => Ok(Statement::Builtin(
+                self.convert_builtin_statement(package, *s)?,
+            )),
             ast::Statement::Test(s) => {
                 Ok(Statement::Test(Box::new(self.convert_test_statement(*s)?)))
             }
@@ -371,7 +378,7 @@ impl<'a> Converter<'a> {
             //  This is not a problem when parsing, because we parse it only in the option assignment case,
             //  and we return an OptionStmt, which is a Statement.
             ast::Statement::Variable(s) => Ok(Statement::Variable(Box::new(
-                self.convert_variable_assignment(*s)?,
+                self.convert_variable_assignment(Some(package), *s)?,
             ))),
             ast::Statement::Bad(s) => Ok(Statement::Error(s.base.location.clone())),
         }
@@ -379,9 +386,9 @@ impl<'a> Converter<'a> {
 
     fn convert_assignment(&mut self, assign: ast::Assignment) -> Result<Assignment> {
         match assign {
-            ast::Assignment::Variable(a) => {
-                Ok(Assignment::Variable(self.convert_variable_assignment(*a)?))
-            }
+            ast::Assignment::Variable(a) => Ok(Assignment::Variable(
+                self.convert_variable_assignment(None, *a)?,
+            )),
             ast::Assignment::Member(a) => {
                 Ok(Assignment::Member(self.convert_member_assignment(*a)?))
             }
@@ -395,10 +402,14 @@ impl<'a> Converter<'a> {
         })
     }
 
-    fn convert_builtin_statement(&mut self, stmt: ast::BuiltinStmt) -> Result<BuiltinStmt> {
+    fn convert_builtin_statement(
+        &mut self,
+        package: &str,
+        stmt: ast::BuiltinStmt,
+    ) -> Result<BuiltinStmt> {
         Ok(BuiltinStmt {
             loc: stmt.base.location,
-            id: self.define_identifier(stmt.id)?,
+            id: self.define_identifier(Some(package), stmt.id)?,
             typ_expr: self.convert_polytype(stmt.ty)?,
         })
     }
@@ -555,7 +566,7 @@ impl<'a> Converter<'a> {
     fn convert_test_statement(&mut self, stmt: ast::TestStmt) -> Result<TestStmt> {
         Ok(TestStmt {
             loc: stmt.base.location,
-            assignment: self.convert_variable_assignment(stmt.assignment)?,
+            assignment: self.convert_variable_assignment(None, stmt.assignment)?,
         })
     }
 
@@ -573,10 +584,14 @@ impl<'a> Converter<'a> {
         })
     }
 
-    fn convert_variable_assignment(&mut self, stmt: ast::VariableAssgn) -> Result<VariableAssgn> {
+    fn convert_variable_assignment(
+        &mut self,
+        package: Option<&str>,
+        stmt: ast::VariableAssgn,
+    ) -> Result<VariableAssgn> {
         let expr = self.convert_expression(stmt.init)?;
         Ok(VariableAssgn::new(
-            self.define_identifier(stmt.id)?,
+            self.define_identifier(package, stmt.id)?,
             expr,
             stmt.base.location,
         ))
@@ -732,7 +747,7 @@ impl<'a> Converter<'a> {
                     continue;
                 }
             };
-            let key = self.define_identifier(id)?;
+            let key = self.define_identifier(None, id)?;
 
             let (is_pipe, default) = match default {
                 Default::Expr(expr) => (false, Some(expr)),
@@ -784,7 +799,7 @@ impl<'a> Converter<'a> {
         for s in block.body {
             match s {
                 ast::Statement::Variable(dec) => body.push(TempBlock::Variable(Box::new(
-                    self.convert_variable_assignment(*dec)?,
+                    self.convert_variable_assignment(None, *dec)?,
                 ))),
                 ast::Statement::Expr(stmt) => {
                     body.push(TempBlock::Expr(self.convert_expression_statement(*stmt)?))
@@ -1029,8 +1044,12 @@ impl<'a> Converter<'a> {
         })
     }
 
-    fn define_identifier(&mut self, id: ast::Identifier) -> Result<Identifier> {
-        let name = self.symbols.insert(id.name);
+    fn define_identifier(
+        &mut self,
+        package: Option<&str>,
+        id: ast::Identifier,
+    ) -> Result<Identifier> {
+        let name = self.symbols.insert(package, id.name);
         Ok(Identifier {
             loc: id.base.location,
             name,
@@ -1363,7 +1382,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("a"),
+                            name: Symbol::from("main@a"),
                         },
                         Expression::Boolean(BooleanLit {
                             loc: b.location.clone(),
@@ -1376,7 +1395,7 @@ mod tests {
                         expression: Expression::Identifier(IdentifierExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
-                            name: Symbol::from("a"),
+                            name: Symbol::from("main@a"),
                         }),
                     }),
                 ],
@@ -2112,7 +2131,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f"),
+                            name: Symbol::from("main@f"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2168,7 +2187,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f"),
+                                name: Symbol::from("main@f"),
                             }),
                             arguments: vec![
                                 Property {
@@ -2336,7 +2355,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f"),
+                            name: Symbol::from("main@f"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2417,7 +2436,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f"),
+                                name: Symbol::from("main@f"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
@@ -2714,7 +2733,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("f"),
+                            name: Symbol::from("main@f"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2773,7 +2792,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("f"),
+                                name: Symbol::from("main@f"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),

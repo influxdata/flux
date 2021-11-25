@@ -729,9 +729,9 @@ impl MonoType {
             _ => None,
         }
     }
-    pub(crate) fn field(&self, field: &str) -> Option<&MonoType> {
+    pub(crate) fn field(&self, field: &str) -> Option<&Property> {
         match self {
-            MonoType::Record(r) => r.fields().find(|p| p.k == field).map(|p| &p.v),
+            MonoType::Record(r) => r.fields().find(|p| p.k == field),
             _ => None,
         }
     }
@@ -1358,6 +1358,13 @@ impl PartialOrd for Label {
 impl Ord for Label {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.0.name().cmp(other.0.name())
+    }
+}
+
+impl Label {
+    /// Returns the inner [`Symbol`]
+    pub fn as_symbol(&self) -> &Symbol {
+        &self.0
     }
 }
 

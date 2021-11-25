@@ -419,6 +419,7 @@ mod tests {
             y = a.f(x: x)
         "#;
         let c = r#"
+            package c
             import "b"
 
             z = b.y
