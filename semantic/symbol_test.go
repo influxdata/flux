@@ -31,7 +31,7 @@ func TestSymbol(t *testing.T) {
 
 			call := pkg.Files[0].Body[0].(*semantic.NativeVariableAssignment).Init.(*semantic.CallExpression)
 			property := call.Callee.(*semantic.MemberExpression).Property
-			if property != semantic.NewSymbol("types@isType") {
+			if property != semantic.NewSymbol("isType@types") {
 				t.Fatalf("Expected the `isType` call to resolve to the module type: got:\n%v", property)
 			}
 		})

@@ -433,7 +433,7 @@ mod tests {
         let (types, _) = infer_state.infer_pkg("c", &ast_packages, &ExportEnvironment::new())?;
 
         let want = semantic_map! {
-            String::from("c@z") => {
+            Symbol::from("z@c") => {
                 let mut p = parser::Parser::new("int");
                 let typ_expr = p.parse_type_expression();
                 let err = get_err_type_expression(typ_expr.clone());

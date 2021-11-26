@@ -1117,8 +1117,8 @@ func (e *UnsignedIntegerLiteral) TypeOf() MonoType {
 }
 
 type Symbol struct {
-	Package   string
 	LocalName string
+	Package   string
 }
 
 func NewSymbol(name string) Symbol {
@@ -1127,8 +1127,8 @@ func NewSymbol(name string) Symbol {
 	pkg := ""
 	localName := ""
 	if len(split) == 2 {
-		pkg = split[0]
-		localName = split[1]
+		pkg = split[1]
+		localName = split[0]
 	} else {
 		localName = split[0]
 	}
@@ -1136,6 +1136,6 @@ func NewSymbol(name string) Symbol {
 	return Symbol{Package: pkg, LocalName: localName}
 }
 
-func (s *Symbol) Name() string {
+func (s Symbol) Name() string {
 	return s.LocalName
 }

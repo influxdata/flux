@@ -739,7 +739,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Node: &semantic.CallExpression{
 								Callee: &semantic.MemberExpression{
 									Object:   &semantic.IdentifierExpression{Name: semantic.NewSymbol("testutil")},
-									Property: semantic.NewSymbol("yield"),
+									Property: semantic.NewSymbol("yield@testutil"),
 								},
 								Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								Pipe:      &semantic.IntegerLiteral{Value: 0},
@@ -749,7 +749,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Value: values.NewInt(1),
 							Node: &semantic.ExpressionStatement{
 								Expression: &semantic.CallExpression{
-									Callee:    &semantic.IdentifierExpression{Name: semantic.NewSymbol("foo")},
+									Callee:    &semantic.IdentifierExpression{Name: semantic.NewSymbol("foo@main")},
 									Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								},
 							},

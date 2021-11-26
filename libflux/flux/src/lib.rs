@@ -704,7 +704,7 @@ vstr = v.str + "hello"
   "Record": {
     "type": "Extension",
     "head": {
-      "k": "int",
+      "k": "int@universe",
       "v": "Int"
     },
     "tail": {
@@ -768,7 +768,7 @@ p = o.ethan
   "Record": {
     "type": "Extension",
     "head": {
-      "k": "int",
+      "k": "int@universe",
       "v": "Int"
     },
     "tail": {

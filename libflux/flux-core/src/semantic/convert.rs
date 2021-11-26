@@ -156,12 +156,17 @@ impl From<String> for Symbol {
 impl Symbol {
     /// Casts self into a `&str`
     pub fn as_str(&self) -> &str {
-        self.name.rsplit('@').next().unwrap()
+        self.name.split_once('@').map_or(&self.name, |x| x.0)
     }
 
     /// Returns just the name of the symbol
     pub fn name(&self) -> &str {
         self.as_str()
+    }
+
+    /// Returns the package that his symbol was defined in (if it exists)
+    pub fn package(&self) -> Option<&str> {
+        self.name.split_once('@').map(|x| x.1)
     }
 
     /// Returns the full name, package qualified name of `Symbol`
@@ -171,7 +176,7 @@ impl Symbol {
 
     /// Attaches a package identifier to `self`
     pub fn with_package(self, package: &str) -> Self {
-        Symbol::from(format!("{}@{}", package, self.as_str()))
+        Symbol::from(format!("{}@{}", self.as_str(), package))
     }
 }
 
@@ -197,7 +202,7 @@ impl<'a> Symbols<'a> {
 
     fn insert(&mut self, package: Option<&str>, name: String) -> Symbol {
         let symbol = self.new_symbol(match package {
-            Some(package) => format!("{}@{}", package, name),
+            Some(package) => format!("{}@{}", name, package),
             None => name.clone(),
         });
         self.symbols.insert(name, symbol.clone());
@@ -1382,7 +1387,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("main@a"),
+                            name: Symbol::from("a@main"),
                         },
                         Expression::Boolean(BooleanLit {
                             loc: b.location.clone(),
@@ -1395,7 +1400,7 @@ mod tests {
                         expression: Expression::Identifier(IdentifierExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
-                            name: Symbol::from("main@a"),
+                            name: Symbol::from("a@main"),
                         }),
                     }),
                 ],
@@ -2131,7 +2136,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("main@f"),
+                            name: Symbol::from("f@main"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2187,7 +2192,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("main@f"),
+                                name: Symbol::from("f@main"),
                             }),
                             arguments: vec![
                                 Property {
@@ -2355,7 +2360,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("main@f"),
+                            name: Symbol::from("f@main"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2436,7 +2441,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("main@f"),
+                                name: Symbol::from("f@main"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
@@ -2733,7 +2738,7 @@ mod tests {
                     Statement::Variable(Box::new(VariableAssgn::new(
                         Identifier {
                             loc: b.location.clone(),
-                            name: Symbol::from("main@f"),
+                            name: Symbol::from("f@main"),
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
@@ -2792,7 +2797,7 @@ mod tests {
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
                                 typ: type_info(),
-                                name: Symbol::from("main@f"),
+                                name: Symbol::from("f@main"),
                             }),
                             arguments: vec![Property {
                                 loc: b.location.clone(),
