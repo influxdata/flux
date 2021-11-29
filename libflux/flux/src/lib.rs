@@ -704,7 +704,7 @@ vstr = v.str + "hello"
   "Record": {
     "type": "Extension",
     "head": {
-      "k": "int@universe",
+      "k": "int",
       "v": "Int"
     },
     "tail": {
@@ -768,7 +768,7 @@ p = o.ethan
   "Record": {
     "type": "Extension",
     "head": {
-      "k": "int@universe",
+      "k": "int",
       "v": "Int"
     },
     "tail": {
@@ -858,7 +858,7 @@ from(bucket: v.bucket)
         }
         let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(want, got.lookup_str("x").expect("'x' not found").clone());
+        assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
     }
 
     #[test]
@@ -932,9 +932,9 @@ from(bucket: v.bucket)
         }
         let want_c = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(want_a, got.lookup_str("a").expect("'a' not found").clone());
-        assert_eq!(want_b, got.lookup_str("b").expect("'b' not found").clone());
-        assert_eq!(want_c, got.lookup_str("c").expect("'c' not found").clone());
+        assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
+        assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
+        assert_eq!(want_c, got.lookup("c").expect("'c' not found").clone());
     }
 
     #[test]

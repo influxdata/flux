@@ -105,7 +105,7 @@ fn infer_types(
 ) -> Result<(ExportEnvironment, semantic::nodes::Package), Error> {
     let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
-    let imports: SemanticMap<&str, SemanticMap<Symbol, PolyType>> = imp
+    let imports: SemanticMap<&str, SemanticMap<_, PolyType>> = imp
         .into_iter()
         .map(|(path, pkg)| (path, parse_map(pkg)))
         .collect();
@@ -3730,20 +3730,47 @@ fn symbol_resolution() {
     let src = r#"
             import "types"
             x = types.isType(v: 1, type: "int")
-        "#;
-    let (_, pkg) = infer_types(src, Default::default(), imp, None, Default::default()).unwrap();
 
-    let mut expr = None;
+            foo = () => (1)
+            foo()
+
+            types = { isType: (v, type) => 1 }
+            y = types.isType(v: 1, type: "int")
+        "#;
+    let (_, pkg) = infer_types(src, Default::default(), imp, None, Default::default())
+        .unwrap_or_else(|err| panic!("{}", err));
+
+    let mut member_expr_1 = None;
+    let mut member_expr_2 = None;
+    let mut ident_expr = None;
     semantic::walk::walk(
         &mut |node| {
             if let semantic::walk::Node::MemberExpr(e) = node {
-                expr = Some(e);
+                if e.loc.start.line == 3 {
+                    member_expr_1 = Some(e);
+                }
+                if e.loc.start.line == 9 {
+                    member_expr_2 = Some(e);
+                }
+            }
+            if let semantic::walk::Node::IdentifierExpr(e) = node {
+                if e.name == "foo" {
+                    ident_expr = Some(e);
+                }
             }
         },
         semantic::walk::Node::Package(&pkg),
     );
     assert_eq!(
-        expr.expect("member expression").property,
+        member_expr_1.expect("member expression").property,
         Symbol::from("isType").with_package("types")
+    );
+    assert_eq!(
+        ident_expr.expect("ident expression").name,
+        Symbol::from("foo").with_package("main")
+    );
+    assert_eq!(
+        member_expr_2.expect("member expression").property,
+        Symbol::from("isType")
     );
 }

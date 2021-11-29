@@ -340,7 +340,7 @@ fn build_type_assignment<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     assignment: (String, PolyType),
 ) -> flatbuffers::WIPOffset<fb::TypeAssignment<'a>> {
-    let id = builder.create_string(assignment.0.full_name());
+    let id = builder.create_string(&assignment.0);
     let ty = build_polytype(builder, assignment.1);
     fb::TypeAssignment::create(
         builder,

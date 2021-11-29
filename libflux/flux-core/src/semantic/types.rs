@@ -1313,6 +1313,18 @@ impl fmt::Display for Label {
     }
 }
 
+impl From<String> for Label {
+    fn from(name: String) -> Self {
+        Label(Symbol::from(name))
+    }
+}
+
+impl From<Label> for String {
+    fn from(name: Label) -> Self {
+        name.to_string()
+    }
+}
+
 impl From<Label> for Symbol {
     fn from(name: Label) -> Self {
         name.0
@@ -1321,13 +1333,18 @@ impl From<Label> for Symbol {
 
 impl From<&str> for Label {
     fn from(name: &str) -> Self {
+        assert!(!name.contains('@'));
         Self(Symbol::from(name))
     }
 }
 
 impl From<Symbol> for Label {
     fn from(name: Symbol) -> Self {
-        Self(name)
+        Self(if name.package().is_none() {
+            name
+        } else {
+            Symbol::from(name.name())
+        })
     }
 }
 

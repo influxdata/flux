@@ -18,7 +18,7 @@ use crate::{
         fs::{FileSystemImporter, StdFS},
         import::Importer,
         infer::{self, Constraints},
-        nodes::{self, infer_package, inject_pkg_types, Package, Symbol},
+        nodes::{self, infer_package, inject_pkg_types, Package},
         sub::{Substitutable, Substitution},
         types::{
             Label, MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds,
@@ -311,7 +311,7 @@ where
 }
 
 fn add_record_to_map(
-    env: &mut PolyTypeMap<Symbol>,
+    env: &mut PolyTypeMap<String>,
     r: &Record,
     free_vars: &[Tvar],
     cons: &TvarKinds,
@@ -433,7 +433,7 @@ mod tests {
         let (types, _) = infer_state.infer_pkg("c", &ast_packages, &ExportEnvironment::new())?;
 
         let want = semantic_map! {
-            Symbol::from("z@c") => {
+            String::from("z") => {
                 let mut p = parser::Parser::new("int");
                 let typ_expr = p.parse_type_expression();
                 let err = get_err_type_expression(typ_expr.clone());

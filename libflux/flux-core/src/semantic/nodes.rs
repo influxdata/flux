@@ -116,11 +116,23 @@ type VectorizeEnv = HashMap<Symbol, MonoType>;
 
 struct InferState<'a, 'env> {
     sub: &'a mut Substitution,
+    importer: &'a mut dyn Importer,
+    imports: Vec<Symbol>,
     env: Environment<'env>,
     errors: Errors<Error>,
 }
 
 impl InferState<'_, '_> {
+    fn lookup(&mut self, loc: &ast::SourceLocation, name: &Symbol) -> PolyType {
+        self.env.lookup(name).cloned().unwrap_or_else(|| {
+            self.error(
+                loc.clone(),
+                ErrorKind::UndefinedIdentifier(name.to_string()),
+            );
+            PolyType::error()
+        })
+    }
+
     fn constrain(&mut self, exp: Kind, act: &MonoType, loc: &ast::SourceLocation) {
         if let Err(err) = infer::constrain(exp, act, loc, self.sub) {
             self.errors.push(err.into());
@@ -375,11 +387,12 @@ where
 {
     let mut infer = InferState {
         sub,
+        importer,
+        imports: Vec::new(),
         env,
         errors: Errors::new(),
     };
-    pkg.infer(&mut infer, importer)
-        .map_err(|err| err.apply(infer.sub))?;
+    pkg.infer(&mut infer).map_err(|err| err.apply(infer.sub))?;
 
     infer.env.apply_mut(infer.sub);
 
@@ -435,12 +448,9 @@ pub struct Package {
 }
 
 impl Package {
-    fn infer<T>(&mut self, infer: &mut InferState, importer: &mut T) -> Result
-    where
-        T: Importer,
-    {
+    fn infer(&mut self, infer: &mut InferState) -> Result {
         for file in &mut self.files {
-            file.infer(infer, importer)?;
+            file.infer(infer)?;
         }
         Ok(())
     }
@@ -461,19 +471,14 @@ pub struct File {
 }
 
 impl File {
-    fn infer<T>(&mut self, infer: &mut InferState, importer: &mut T) -> Result
-    where
-        T: Importer,
-    {
-        let mut imports = Vec::with_capacity(self.imports.len());
-
+    fn infer(&mut self, infer: &mut InferState) -> Result {
         for dec in &self.imports {
             let path = &dec.path.value;
             let name = dec.import_symbol.clone();
 
-            imports.push(name.clone());
+            infer.imports.push(name.clone());
 
-            let poly = importer.import(path).unwrap_or_else(|| {
+            let poly = infer.importer.import(path).unwrap_or_else(|| {
                 infer.error(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()));
                 PolyType::error()
             });
@@ -494,7 +499,7 @@ impl File {
             }
         }
 
-        for name in imports {
+        for name in infer.imports.drain(..) {
             infer.env.remove(&name);
         }
         Ok(())
@@ -1559,8 +1564,10 @@ impl MemberExpr {
         self.object.infer(infer)?;
         let t = self.object.type_of().apply(infer.sub);
 
-        if let Some(prop) = t.field(&self.property) {
-            self.property = prop.k.clone().into();
+        if let Expression::Identifier(object) = &self.object {
+            if infer.imports.contains(&object.name) {
+                self.property = self.property.clone().with_package(&object.name);
+            }
         }
 
         let r = {
@@ -1755,13 +1762,7 @@ pub struct IdentifierExpr {
 
 impl IdentifierExpr {
     fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
-        let poly = infer.env.lookup(&self.name).cloned().unwrap_or_else(|| {
-            infer.error(
-                self.loc.clone(),
-                ErrorKind::UndefinedIdentifier(self.name.to_string()),
-            );
-            PolyType::error()
-        });
+        let poly = infer.lookup(&self.loc, &self.name);
 
         let (t, cons) = infer::instantiate(poly, infer.sub, self.loc.clone());
         infer.solve(&cons);

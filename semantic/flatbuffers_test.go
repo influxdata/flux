@@ -376,7 +376,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 7},
 							Source: `a`,
 						},
-						Name: "a",
+						Name: semantic.NewSymbol("a"),
 					},
 				},
 				{
@@ -391,7 +391,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 10},
 							Source: `b`,
 						},
-						Name: "b",
+						Name: semantic.NewSymbol("b"),
 					},
 				},
 				{
@@ -406,7 +406,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 16},
 							Source: `c`,
 						},
-						Name: "c",
+						Name: semantic.NewSymbol("c"),
 					},
 				},
 			},
@@ -416,7 +416,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 					End:    ast.Position{Line: 1, Column: 10},
 					Source: `b`,
 				},
-				Name: "b",
+				Name: semantic.NewSymbol("b"),
 			},
 		},
 		Defaults: &semantic.ObjectExpression{
@@ -438,7 +438,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 16},
 							Source: `c`,
 						},
-						Name: "c",
+						Name: semantic.NewSymbol("c"),
 					},
 					Value: &semantic.IntegerLiteral{
 						Loc: semantic.Loc{
@@ -470,7 +470,7 @@ func getSemanticFnExpr(fnExpr *semantic.FunctionExpression) *semantic.FunctionEx
 							End:    ast.Position{Line: 1, Column: 34},
 							Source: `c`,
 						},
-						Name: "c",
+						Name: semantic.NewSymbol("c"),
 					},
 				},
 			},
