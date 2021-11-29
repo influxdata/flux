@@ -11,8 +11,8 @@ fn check(actual: &str, expect: Expect) {
     let mut analyzer = Analyzer::new_with_defaults(Environment::default(), PolyTypeMap::new());
     let (_, mut sem_pkg) = analyzer
         .analyze_source("main".to_string(), "main.flux".to_string(), actual)
-        .unwrap();
-    let actual = format(&sem_pkg).unwrap();
+        .unwrap_or_else(|err| panic!("{}", err));
+    let actual = format(&sem_pkg).unwrap_or_else(|err| panic!("{}", err));
 
     expect.assert_eq(&actual);
 }

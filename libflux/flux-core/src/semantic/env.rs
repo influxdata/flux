@@ -141,6 +141,17 @@ impl Environment {
         self.lookup(&Symbol::from(v))
     }
 
+    pub(crate) fn lookup_symbol(&self, v: &str) -> Option<&Symbol> {
+        // TODO Avoid iteration here
+        if let Some(t) = self.values.keys().find(|symbol| *symbol == v) {
+            Some(t)
+        } else if let Some(env) = &self.parent {
+            env.lookup_symbol(v)
+        } else {
+            None
+        }
+    }
+
     /// Add a new variable binding to the current stack frame.
     pub fn add(&mut self, name: Symbol, t: PolyType) {
         self.values.insert(name, t);

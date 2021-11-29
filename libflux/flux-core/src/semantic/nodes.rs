@@ -10,7 +10,7 @@
 extern crate chrono;
 extern crate derivative;
 
-use std::{collections::HashMap, fmt, fmt::Debug, vec::Vec};
+use std::{collections::HashMap, fmt::Debug, vec::Vec};
 
 use anyhow::{anyhow, bail, Result as AnyhowResult};
 use chrono::{prelude::DateTime, FixedOffset};
@@ -31,6 +31,8 @@ use crate::{
         },
     },
 };
+
+pub use crate::semantic::convert::Symbol;
 
 /// Result returned from the various 'infer' methods defined in this
 /// module. The result of inferring an expression or statement is a
@@ -456,7 +458,7 @@ impl File {
 
         for dec in &self.imports {
             let path = &dec.path.value;
-            let name = Symbol::from(dec.import_name());
+            let name = dec.import_symbol.clone();
 
             imports.push(name.clone());
 
@@ -528,17 +530,7 @@ pub struct ImportDeclaration {
 
     pub alias: Option<Identifier>,
     pub path: StringLit,
-}
-
-impl ImportDeclaration {
-    #[allow(missing_docs)]
-    pub fn import_name(&self) -> &str {
-        let path = &self.path.value;
-        match &self.alias {
-            None => path.rsplitn(2, '/').next().unwrap(),
-            Some(id) => &id.name[..],
-        }
-    }
+    pub import_symbol: Symbol,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1799,53 +1791,6 @@ pub struct Property {
 impl Property {
     fn apply(mut self, sub: &Substitution) -> Self {
         self.value = self.value.apply(sub);
-        self
-    }
-}
-
-// #[allow(missing_docs)]
-// pub type Symbol = String;
-
-#[allow(missing_docs)]
-#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Clone)]
-pub struct Symbol {
-    name: String,
-}
-
-impl std::ops::Deref for Symbol {
-    type Target = str;
-    fn deref(&self) -> &Self::Target {
-        &self.name
-    }
-}
-
-impl PartialEq<&str> for Symbol {
-    fn eq(&self, other: &&str) -> bool {
-        &self.name[..] == *other
-    }
-}
-
-impl fmt::Display for Symbol {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.name)
-    }
-}
-
-impl From<&str> for Symbol {
-    fn from(name: &str) -> Self {
-        Self { name: name.into() }
-    }
-}
-
-impl From<String> for Symbol {
-    fn from(name: String) -> Self {
-        Self { name }
-    }
-}
-
-impl Symbol {
-    /// Casts self into a `&str`
-    pub fn as_str(&self) -> &str {
         self
     }
 }

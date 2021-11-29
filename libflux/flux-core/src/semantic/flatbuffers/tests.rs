@@ -95,13 +95,15 @@ re !~ /foo/
         package: String::from("test"),
         files: f,
     };
-    let mut pkg = match convert::convert_package(pkg, &mut sub::Substitution::default()) {
-        Ok(pkg) => pkg,
-        Err(e) => {
-            assert!(false, "{}", e);
-            return;
-        }
-    };
+    let mut pkg =
+        match convert::convert_package(pkg, &Default::default(), &mut sub::Substitution::default())
+        {
+            Ok(pkg) => pkg,
+            Err(e) => {
+                assert!(false, "{}", e);
+                return;
+            }
+        };
     let (vec, offset) = match super::serialize_pkg(&mut pkg) {
         Ok((v, o)) => (v, o),
         Err(e) => {
