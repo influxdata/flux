@@ -305,7 +305,7 @@ impl<'a> Converter<'a> {
         let import_symbol = {
             let path = &imp.path.value;
             let name = match &imp.alias {
-                None => path.rsplitn(2, '/').next().unwrap().to_owned(),
+                None => path.rsplit_once('/').map_or(&path[..], |t| t.1).to_owned(),
                 Some(id) => id.name.clone(),
             };
             self.symbols.insert(name)

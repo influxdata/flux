@@ -23,7 +23,7 @@ use crate::{
     semantic::{
         env::Environment,
         import::Importer,
-        infer::{self, Constraint, Constraints},
+        infer::{self, Constraint},
         sub::{Substitutable, Substituter, Substitution},
         types::{
             self, Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap,
@@ -37,7 +37,7 @@ pub use crate::semantic::convert::Symbol;
 /// Result returned from the various 'infer' methods defined in this
 /// module. The result of inferring an expression or statement is a
 /// set of type constraints to be solved.
-pub type Result<T = Constraints> = std::result::Result<T, Error>;
+pub type Result<T = ()> = std::result::Result<T, Error>;
 
 /// Error returned from the various 'infer' methods defined in this
 /// module.
@@ -121,8 +121,20 @@ struct InferState<'a> {
 }
 
 impl InferState<'_> {
-    fn solve(&mut self, cons: &Constraints) {
-        if let Err(err) = infer::solve(cons, self.sub) {
+    fn constrain(&mut self, exp: Kind, act: &MonoType, loc: &ast::SourceLocation) {
+        if let Err(err) = infer::constrain(exp, act, loc, self.sub) {
+            self.errors.push(err.into());
+        }
+    }
+
+    fn equal(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) {
+        if let Err(err) = infer::equal(exp, act, loc, self.sub) {
+            self.errors.push(err.into());
+        }
+    }
+
+    fn solve(&mut self, cons: &impl AsRef<[Constraint]>) {
+        if let Err(err) = infer::solve(cons.as_ref(), self.sub) {
             self.errors.push(err.into());
         }
     }
@@ -283,7 +295,7 @@ impl Expression {
             Expression::Boolean(lit) => lit.infer(),
             Expression::DateTime(lit) => lit.infer(),
             Expression::Regexp(lit) => lit.infer(),
-            Expression::Error(_) => Ok(Constraints::empty()),
+            Expression::Error(_) => Ok(()),
         }
     }
     fn apply(self, sub: &Substitution) -> Self {
@@ -365,11 +377,11 @@ where
         env,
         errors: Errors::new(),
     };
-    let cons = pkg
-        .infer(&mut infer, importer)
+    pkg.infer(&mut infer, importer)
         .map_err(|err| err.apply(infer.sub))?;
 
-    infer.solve(&cons);
+    infer.env.apply_mut(infer.sub);
+
     if infer.errors.has_errors() {
         for err in &mut infer.errors {
             err.apply_mut(infer.sub);
@@ -426,12 +438,10 @@ impl Package {
     where
         T: Importer,
     {
-        self.files
-            .iter_mut()
-            .try_fold(Constraints::empty(), |rest, file| {
-                let cons = file.infer(infer, importer)?;
-                Ok(cons + rest)
-            })
+        for file in &mut self.files {
+            file.infer(infer, importer)?;
+        }
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.files = self.files.into_iter().map(|file| file.apply(sub)).collect();
@@ -469,45 +479,23 @@ impl File {
             infer.env.add(name, poly);
         }
 
-        let constraints = self
-            .body
-            .iter_mut()
-            .try_fold(Constraints::empty(), |rest, node| match node {
-                Statement::Builtin(stmt) => {
-                    stmt.infer(&mut infer.env)?;
-                    Ok(rest)
-                }
-                Statement::Variable(stmt) => {
-                    stmt.infer(infer)?;
-                    Ok(rest)
-                }
-                Statement::Option(stmt) => {
-                    let cons = stmt.infer(infer)?;
-                    Ok(cons + rest)
-                }
-                Statement::Expr(stmt) => {
-                    stmt.infer(infer)?;
-                    Ok(rest)
-                }
-                Statement::Test(stmt) => {
-                    stmt.infer(infer)?;
-                    Ok(rest)
-                }
-                Statement::TestCase(stmt) => {
-                    let cons = stmt.infer(infer)?;
-                    Ok(cons + rest)
-                }
-                Statement::Return(stmt) => {
-                    infer.error(stmt.loc.clone(), ErrorKind::InvalidReturn);
-                    Ok::<_, Error>(rest)
-                }
-                Statement::Error(_) => Ok(rest),
-            })?;
+        for node in &mut self.body {
+            match node {
+                Statement::Builtin(stmt) => stmt.infer(&mut infer.env)?,
+                Statement::Variable(stmt) => stmt.infer(infer)?,
+                Statement::Option(stmt) => stmt.infer(infer)?,
+                Statement::Expr(stmt) => stmt.infer(infer)?,
+                Statement::Test(stmt) => stmt.infer(infer)?,
+                Statement::TestCase(stmt) => stmt.infer(infer)?,
+                Statement::Return(stmt) => infer.error(stmt.loc.clone(), ErrorKind::InvalidReturn),
+                Statement::Error(_) => (),
+            }
+        }
 
         for name in imports {
             infer.env.remove(&name);
         }
-        Ok(constraints)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.body = self.body.into_iter().map(|stmt| stmt.apply(sub)).collect();
@@ -545,21 +533,19 @@ impl OptionStmt {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         match &mut self.assignment {
             Assignment::Member(stmt) => {
-                let cons = stmt.init.infer(infer)?;
-                let rest = stmt.member.infer(infer)?;
+                stmt.init.infer(infer)?;
+                stmt.member.infer(infer)?;
 
-                Ok(cons
-                    + rest
-                    + vec![Constraint::Equal {
-                        exp: stmt.member.typ.clone(),
-                        act: stmt.init.type_of(),
-                        loc: stmt.init.loc().clone(),
-                    }]
-                    .into())
+                infer.equal(
+                    &stmt.member.typ.clone(),
+                    &stmt.init.type_of(),
+                    stmt.init.loc(),
+                );
+                Ok(())
             }
             Assignment::Variable(stmt) => {
                 stmt.infer(infer)?;
-                Ok(Constraints::empty())
+                Ok(())
             }
         }
     }
@@ -633,9 +619,7 @@ pub struct ExprStmt {
 
 impl ExprStmt {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
-        let cons = self.expression.infer(infer)?;
-        infer.solve(&cons);
-        infer.env.apply_mut(infer.sub);
+        self.expression.infer(infer)?;
         Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -708,9 +692,7 @@ impl VariableAssgn {
     // before inferring the rest of the program.
     //
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
-        let constraints = self.init.infer(infer)?;
-
-        infer.solve(&constraints);
+        self.init.infer(infer)?;
 
         // Apply substitution to the type environment
         infer.env.apply_mut(infer.sub);
@@ -763,19 +745,17 @@ pub struct StringExpr {
 
 impl StringExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let mut constraints = Vec::new();
         for p in &mut self.parts {
             if let StringExprPart::Interpolated(ref mut ip) = p {
-                let cons = ip.expression.infer(infer)?;
-                constraints.append(&mut Vec::from(cons));
-                constraints.push(Constraint::Kind {
-                    exp: Kind::Stringable,
-                    act: ip.expression.type_of(),
-                    loc: ip.expression.loc().clone(),
-                });
+                ip.expression.infer(infer)?;
+                infer.constrain(
+                    Kind::Stringable,
+                    &ip.expression.type_of(),
+                    &ip.expression.loc(),
+                );
             }
         }
-        Ok(Constraints::from(constraints))
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.parts = self.parts.into_iter().map(|part| part.apply(sub)).collect();
@@ -835,26 +815,20 @@ pub struct ArrayExpr {
 
 impl ArrayExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let mut cons = Constraints::empty();
         let mut elt = None;
         for el in &mut self.elements {
-            let c = el.infer(infer)?;
-            cons += c;
+            el.infer(infer)?;
 
             match &elt {
                 None => {
                     elt = Some(el.type_of());
                 }
-                Some(elt) => cons.add(Constraint::Equal {
-                    exp: elt.clone(),
-                    act: el.type_of(),
-                    loc: el.loc().clone(),
-                }),
+                Some(elt) => infer.equal(elt, &el.type_of(), el.loc()),
             }
         }
         let elt = elt.unwrap_or_else(|| MonoType::Var(infer.sub.fresh()));
         self.typ = MonoType::from(Array(elt));
-        Ok(cons)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -879,30 +853,18 @@ pub struct DictExpr {
 
 impl DictExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let mut cons = Constraints::empty();
-
         let key = MonoType::Var(infer.sub.fresh());
         let val = MonoType::Var(infer.sub.fresh());
 
         for (k, v) in &mut self.elements {
-            let c0 = k.infer(infer)?;
-            let c1 = v.infer(infer)?;
+            k.infer(infer)?;
+            v.infer(infer)?;
 
             let kt = k.type_of();
             let vt = v.type_of();
 
-            let kc = Constraint::Equal {
-                exp: key.clone(),
-                act: kt,
-                loc: k.loc().clone(),
-            };
-            let vc = Constraint::Equal {
-                exp: val.clone(),
-                act: vt,
-                loc: v.loc().clone(),
-            };
-
-            cons += c0 + c1 + vec![kc, vc].into();
+            infer.equal(&key, &kt, k.loc());
+            infer.equal(&val, &vt, v.loc());
         }
 
         self.typ = MonoType::from(Dictionary {
@@ -910,13 +872,9 @@ impl DictExpr {
             val,
         });
 
-        Ok(cons
-            + vec![Constraint::Kind {
-                exp: Kind::Comparable,
-                act: key,
-                loc: self.loc.clone(),
-            }]
-            .into())
+        infer.constrain(Kind::Comparable, &key, &self.loc);
+
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -946,7 +904,6 @@ pub struct FunctionExpr {
 
 impl FunctionExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let mut cons = Constraints::empty();
         let mut pipe = None;
         let mut req = MonoTypeMap::new();
         let mut opt = MonoTypeMap::new();
@@ -998,11 +955,9 @@ impl FunctionExpr {
             infer.env.add(id, param);
         }
         // And use it to infer the body.
-        let bcons = self.body.infer(infer)?;
+        self.body.infer(infer)?;
         // Now pop the nested environment, we don't need it anymore.
         infer.env.exit_scope();
-
-        cons += bcons;
 
         let retn = self.body.type_of();
         let func = MonoType::from(Function {
@@ -1014,15 +969,13 @@ impl FunctionExpr {
 
         self.typ = func.clone();
 
-        let ncons = if self.params.iter().any(|param| param.default.is_some()) {
+        if self.params.iter().any(|param| param.default.is_some()) {
             let t = func.apply(infer.sub);
             let p = infer::generalize(&infer.env, infer.sub.cons(), t);
             self.infer_default_params(infer, p)?
-        } else {
-            Constraints::empty()
         };
 
-        Ok(cons + ncons)
+        Ok(())
     }
 
     fn infer_default_params(
@@ -1030,7 +983,6 @@ impl FunctionExpr {
         infer: &mut InferState<'_>,
         function_type: PolyType,
     ) -> Result {
-        let mut cons = Constraints::empty();
         let mut pipe = None;
         let mut req = MonoTypeMap::new();
         let mut opt = MonoTypeMap::new();
@@ -1038,8 +990,7 @@ impl FunctionExpr {
         for param in &mut self.params {
             match param.default {
                 Some(ref mut e) => {
-                    let ncons = e.infer(infer)?;
-                    cons += ncons;
+                    e.infer(infer)?;
                     let id = param.key.name.clone();
                     opt.insert(id.to_string(), e.type_of());
                 }
@@ -1069,15 +1020,12 @@ impl FunctionExpr {
         });
 
         let (exp, ncons) = infer::instantiate(function_type, infer.sub, self.loc.clone());
-        cons += ncons;
 
-        cons.add(Constraint::Equal {
-            exp,
-            act: default_func,
-            loc: self.loc.clone(),
-        });
+        infer.solve(&ncons);
 
-        Ok(cons)
+        infer.equal(&exp, &default_func, &self.loc);
+
+        Ok(())
     }
 
     #[allow(missing_docs)]
@@ -1233,15 +1181,15 @@ impl Block {
         match self {
             Block::Variable(stmt, block) => {
                 stmt.infer(infer)?;
-                let cons = block.infer(infer)?;
+                block.infer(infer)?;
 
-                Ok(cons)
+                Ok(())
             }
             Block::Expr(stmt, block) => {
                 stmt.infer(infer)?;
-                let cons = block.infer(infer)?;
+                block.infer(infer)?;
 
-                Ok(cons)
+                Ok(())
             }
             Block::Return(e) => e.infer(infer),
         }
@@ -1316,61 +1264,68 @@ impl BinaryExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         // Compute the left and right constraints.
         // Do this first so that we can return an error if one occurs.
-        let lcons = self.left.infer(infer)?;
-        let rcons = self.right.infer(infer)?;
+        self.left.infer(infer)?;
+        self.right.infer(infer)?;
 
-        let binop_arithmetic_constraints = |this: &mut BinaryExpr, kind| {
-            let left = this.left.type_of();
-            this.typ = left.clone();
-            Constraints::from(vec![
-                Constraint::Equal {
-                    exp: left.clone(),
-                    act: this.right.type_of(),
-                    loc: this.right.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: left,
-                    exp: kind,
-                    loc: this.loc.clone(),
-                },
-            ])
-        };
-        let binop_compare_constraints = |this: &mut BinaryExpr, kind| {
-            this.typ = MonoType::Bool;
-            Constraints::from(vec![
-                // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
-                Constraint::Kind {
-                    act: this.left.type_of(),
-                    exp: kind,
-                    loc: this.left.loc().clone(),
-                },
-                Constraint::Kind {
-                    act: this.right.type_of(),
-                    exp: kind,
-                    loc: this.right.loc().clone(),
-                },
-            ])
-        };
-        let cons = match self.operator {
+        let binop_arithmetic_constraints =
+            |this: &mut BinaryExpr, infer: &mut InferState<'_>, kind| {
+                let left = this.left.type_of();
+                this.typ = left.clone();
+
+                infer.solve(&[
+                    Constraint::Equal {
+                        exp: left.clone(),
+                        act: this.right.type_of(),
+                        loc: this.right.loc().clone(),
+                    },
+                    Constraint::Kind {
+                        act: left,
+                        exp: kind,
+                        loc: this.loc.clone(),
+                    },
+                ]);
+            };
+        let binop_compare_constraints =
+            |this: &mut BinaryExpr, infer: &mut InferState<'_>, kind| {
+                this.typ = MonoType::Bool;
+                infer.solve(&[
+                    // https://github.com/influxdata/flux/issues/2393
+                    // Constraint::Equal{self.left.type_of(), self.right.type_of()),
+                    Constraint::Kind {
+                        act: this.left.type_of(),
+                        exp: kind,
+                        loc: this.left.loc().clone(),
+                    },
+                    Constraint::Kind {
+                        act: this.right.type_of(),
+                        exp: kind,
+                        loc: this.right.loc().clone(),
+                    },
+                ]);
+            };
+        match self.operator {
             // The following operators require both sides to be equal.
-            ast::Operator::AdditionOperator => binop_arithmetic_constraints(self, Kind::Addable),
+            ast::Operator::AdditionOperator => {
+                binop_arithmetic_constraints(self, infer, Kind::Addable)
+            }
             ast::Operator::SubtractionOperator => {
-                binop_arithmetic_constraints(self, Kind::Subtractable)
+                binop_arithmetic_constraints(self, infer, Kind::Subtractable)
             }
             ast::Operator::MultiplicationOperator
             | ast::Operator::DivisionOperator
             | ast::Operator::PowerOperator
-            | ast::Operator::ModuloOperator => binop_arithmetic_constraints(self, Kind::Divisible),
+            | ast::Operator::ModuloOperator => {
+                binop_arithmetic_constraints(self, infer, Kind::Divisible)
+            }
             ast::Operator::GreaterThanOperator | ast::Operator::LessThanOperator => {
-                binop_compare_constraints(self, Kind::Comparable)
+                binop_compare_constraints(self, infer, Kind::Comparable)
             }
             ast::Operator::EqualOperator | ast::Operator::NotEqualOperator => {
-                binop_compare_constraints(self, Kind::Equatable)
+                binop_compare_constraints(self, infer, Kind::Equatable)
             }
             ast::Operator::GreaterThanEqualOperator | ast::Operator::LessThanEqualOperator => {
                 self.typ = MonoType::Bool;
-                Constraints::from(vec![
+                infer.solve(&[
                     // https://github.com/influxdata/flux/issues/2393
                     // Constraint::Equal{self.left.type_of(), self.right.type_of()),
                     Constraint::Kind {
@@ -1393,12 +1348,12 @@ impl BinaryExpr {
                         exp: Kind::Comparable,
                         loc: self.right.loc().clone(),
                     },
-                ])
+                ]);
             }
             // Regular expression operators.
             ast::Operator::RegexpMatchOperator | ast::Operator::NotRegexpMatchOperator => {
                 self.typ = MonoType::Bool;
-                Constraints::from(vec![
+                infer.solve(&[
                     Constraint::Equal {
                         act: self.left.type_of(),
                         exp: MonoType::String,
@@ -1409,19 +1364,17 @@ impl BinaryExpr {
                         exp: MonoType::Regexp,
                         loc: self.right.loc().clone(),
                     },
-                ])
+                ]);
             }
             _ => {
                 infer.error(
                     self.loc.clone(),
                     ErrorKind::InvalidBinOp(self.operator.clone()),
                 );
-                Constraints::empty()
             }
-        };
+        }
 
-        // Otherwise, add the constraints together and return them.
-        Ok(lcons + rcons + cons)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1449,7 +1402,7 @@ impl CallExpr {
         // First, recursively infer every type of the children of this call expression,
         // update the environment and the constraints, and use the inferred types to
         // build the fields of the type for this call expression.
-        let mut cons = self.callee.infer(infer)?;
+        self.callee.infer(infer)?;
         let mut req = MonoTypeMap::new();
         let mut pipe = None;
         for Property {
@@ -1458,21 +1411,19 @@ impl CallExpr {
             ..
         } in &mut self.arguments
         {
-            let ncons = expr.infer(infer)?;
-            cons += ncons;
+            expr.infer(infer)?;
             // Every argument is required in a function call.
             req.insert(id.name.to_string(), expr.type_of());
         }
         if let Some(ref mut p) = &mut self.pipe {
-            let ncons = p.infer(infer)?;
-            cons += ncons;
+            p.infer(infer)?;
             pipe = Some(types::Property {
                 k: "<-".to_string(),
                 v: p.type_of(),
             });
         }
         // Constrain the callee to be a Function.
-        cons.add(Constraint::Equal {
+        infer.solve(&[Constraint::Equal {
             exp: self.callee.type_of(),
             act: MonoType::from(Function {
                 opt: MonoTypeMap::new(),
@@ -1490,8 +1441,8 @@ impl CallExpr {
                 retn: self.typ.clone(),
             }),
             loc: self.loc.clone(),
-        });
-        Ok(cons)
+        }]);
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1523,25 +1474,22 @@ pub struct ConditionalExpr {
 
 impl ConditionalExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let tcons = self.test.infer(infer)?;
-        let ccons = self.consequent.infer(infer)?;
-        let acons = self.alternate.infer(infer)?;
-        let cons = tcons
-            + ccons
-            + acons
-            + Constraints::from(vec![
-                Constraint::Equal {
-                    exp: MonoType::Bool,
-                    act: self.test.type_of(),
-                    loc: self.test.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: self.consequent.type_of(),
-                    act: self.alternate.type_of(),
-                    loc: self.alternate.loc().clone(),
-                },
-            ]);
-        Ok(cons)
+        self.test.infer(infer)?;
+        self.consequent.infer(infer)?;
+        self.alternate.infer(infer)?;
+        infer.solve(&[
+            Constraint::Equal {
+                exp: MonoType::Bool,
+                act: self.test.type_of(),
+                loc: self.test.loc().clone(),
+            },
+            Constraint::Equal {
+                exp: self.consequent.type_of(),
+                act: self.alternate.type_of(),
+                loc: self.alternate.loc().clone(),
+            },
+        ]);
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.test = self.test.apply(sub);
@@ -1563,23 +1511,21 @@ pub struct LogicalExpr {
 
 impl LogicalExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let lcons = self.left.infer(infer)?;
-        let rcons = self.right.infer(infer)?;
-        let cons = lcons
-            + rcons
-            + Constraints::from(vec![
-                Constraint::Equal {
-                    exp: MonoType::Bool,
-                    act: self.left.type_of(),
-                    loc: self.left.loc().clone(),
-                },
-                Constraint::Equal {
-                    exp: MonoType::Bool,
-                    act: self.right.type_of(),
-                    loc: self.right.loc().clone(),
-                },
-            ]);
-        Ok(cons)
+        self.left.infer(infer)?;
+        self.right.infer(infer)?;
+        infer.solve(&[
+            Constraint::Equal {
+                exp: MonoType::Bool,
+                act: self.left.type_of(),
+                loc: self.left.loc().clone(),
+            },
+            Constraint::Equal {
+                exp: MonoType::Bool,
+                act: self.right.type_of(),
+                loc: self.right.loc().clone(),
+            },
+        ]);
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.left = self.left.apply(sub);
@@ -1608,7 +1554,7 @@ impl MemberExpr {
     // where 'r is a fresh type variable.
     //
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let cons = self.object.infer(infer)?;
+        self.object.infer(infer)?;
         let t = self.object.type_of();
 
         let r = {
@@ -1620,13 +1566,12 @@ impl MemberExpr {
             MonoType::from(types::Record::Extension { head, tail })
         };
 
-        Ok(cons
-            + vec![Constraint::Equal {
-                exp: r,
-                act: t,
-                loc: self.object.loc().clone(),
-            }]
-            .into())
+        infer.solve(&[Constraint::Equal {
+            exp: r,
+            act: t,
+            loc: self.object.loc().clone(),
+        }]);
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1649,23 +1594,22 @@ pub struct IndexExpr {
 
 impl IndexExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let acons = self.array.infer(infer)?;
-        let icons = self.index.infer(infer)?;
-        let cons = acons
-            + icons
-            + Constraints::from(vec![
-                Constraint::Equal {
-                    act: self.index.type_of(),
-                    exp: MonoType::Int,
-                    loc: self.index.loc().clone(),
-                },
-                Constraint::Equal {
-                    act: self.array.type_of(),
-                    exp: MonoType::from(Array(self.typ.clone())),
-                    loc: self.array.loc().clone(),
-                },
-            ]);
-        Ok(cons)
+        self.array.infer(infer)?;
+        self.index.infer(infer)?;
+
+        infer.solve(&[
+            Constraint::Equal {
+                act: self.index.type_of(),
+                exp: MonoType::Int,
+                loc: self.index.loc().clone(),
+            },
+            Constraint::Equal {
+                act: self.array.type_of(),
+                exp: MonoType::from(Array(self.typ.clone())),
+                loc: self.array.loc().clone(),
+            },
+        ]);
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1690,17 +1634,16 @@ pub struct ObjectExpr {
 impl ObjectExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
         // If record extension, infer constraints for base
-        let (mut r, mut cons) = match &mut self.with {
+        let mut r = match &mut self.with {
             Some(expr) => {
-                let cons = expr.infer(infer)?;
-                (expr.typ.to_owned(), cons)
+                expr.infer(infer)?;
+                expr.typ.to_owned()
             }
-            None => (MonoType::from(types::Record::Empty), Constraints::empty()),
+            None => MonoType::from(types::Record::Empty),
         };
         // Infer constraints for properties
         for prop in self.properties.iter_mut().rev() {
-            let rest = prop.value.infer(infer)?;
-            cons += rest;
+            prop.value.infer(infer)?;
             r = MonoType::from(types::Record::Extension {
                 head: types::Property {
                     k: prop.key.name.to_string(),
@@ -1710,7 +1653,7 @@ impl ObjectExpr {
             });
         }
         self.typ = r;
-        Ok(cons)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1740,37 +1683,35 @@ pub struct UnaryExpr {
 
 impl UnaryExpr {
     fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
-        let acons = self.argument.infer(infer)?;
-        let cons = match self.operator {
+        self.argument.infer(infer)?;
+        match self.operator {
             ast::Operator::NotOperator => {
                 self.typ = MonoType::Bool;
-                Constraints::from(vec![Constraint::Equal {
+                infer.solve(&[Constraint::Equal {
                     act: self.argument.type_of(),
                     exp: MonoType::Bool,
                     loc: self.argument.loc().clone(),
-                }])
+                }]);
             }
             ast::Operator::ExistsOperator => {
                 self.typ = MonoType::Bool;
-                Constraints::empty()
             }
             ast::Operator::AdditionOperator | ast::Operator::SubtractionOperator => {
                 self.typ = self.argument.type_of();
-                Constraints::from(vec![Constraint::Kind {
+                infer.solve(&[Constraint::Kind {
                     act: self.argument.type_of(),
                     exp: Kind::Negatable,
                     loc: self.argument.loc().clone(),
-                }])
+                }]);
             }
             _ => {
                 infer.error(
                     self.loc.clone(),
                     ErrorKind::InvalidUnaryOp(self.operator.clone()),
                 );
-                Constraints::empty()
             }
-        };
-        Ok(acons + cons)
+        }
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1817,8 +1758,9 @@ impl IdentifierExpr {
         });
 
         let (t, cons) = infer::instantiate(poly, infer.sub, self.loc.clone());
+        infer.solve(&cons);
         self.typ = t;
-        Ok(cons)
+        Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(sub);
@@ -1854,7 +1796,7 @@ pub struct BooleanLit {
 
 impl BooleanLit {
     fn infer(&mut self) -> Result {
-        Ok(Constraints::empty())
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1871,7 +1813,7 @@ pub struct IntegerLit {
 
 impl IntegerLit {
     fn infer(&mut self) -> Result {
-        Ok(Constraints::empty())
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1888,7 +1830,7 @@ pub struct FloatLit {
 
 impl FloatLit {
     fn infer(&mut self) -> Result {
-        Ok(Constraints::empty())
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1905,7 +1847,7 @@ pub struct RegexpLit {
 
 impl RegexpLit {
     fn infer(&mut self) -> Result {
-        Ok(Constraints::empty())
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1922,7 +1864,7 @@ pub struct StringLit {
 
 impl StringLit {
     fn infer(&mut self) -> Result {
-        Ok(Constraints::empty())
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1939,7 +1881,7 @@ pub struct UintLit {
 
 impl UintLit {
     fn infer(&mut self) -> Result {
-        Ok(Constraints::empty())
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1956,7 +1898,7 @@ pub struct DateTimeLit {
 
 impl DateTimeLit {
     fn infer(&mut self) -> Result {
-        Ok(Constraints::empty())
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
@@ -1990,7 +1932,7 @@ pub struct DurationLit {
 
 impl DurationLit {
     fn infer(&mut self) -> Result {
-        Ok(Constraints::empty())
+        Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
         self
