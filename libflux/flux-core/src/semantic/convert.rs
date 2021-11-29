@@ -190,7 +190,7 @@ impl<'a> Symbols<'a> {
     }
 
     fn enter_scope(&mut self) {
-        let parent = std::mem::replace(self, Symbols::default());
+        let parent = std::mem::take(self);
         self.parent = Some(Box::new(parent));
     }
 
@@ -738,7 +738,7 @@ impl<'a> Converter<'a> {
             TempBlock::Variable(dec) => Ok(Block::Variable(dec, Box::new(acc))),
             TempBlock::Expr(stmt) => Ok(Block::Expr(stmt, Box::new(acc))),
             TempBlock::Return(s) => Err(located(
-                s.loc.clone(),
+                s.loc,
                 ErrorKind::InvalidFunctionStatement("return"),
             )),
         })
