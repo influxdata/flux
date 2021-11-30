@@ -244,14 +244,14 @@ fn infer_pkg(
     // Infer all dependencies
     for pkg in deps {
         if imports.import(pkg).is_none() {
-            let file = ast_packages.get(pkg);
-            if file.is_none() {
-                bail!(r#"package import "{}" not found"#, pkg);
-            }
-            let file = file.unwrap().to_owned();
+            let file = ast_packages
+                .get(pkg)
+                .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, pkg))?
+                .to_owned();
 
             let env = Environment::from(prelude);
-            let env = infer_package(&mut convert_package(file, &env, sub)?, env, sub, imports)?;
+            let mut sem_pkg = convert_package(file, &env, sub)?;
+            let env = infer_package(&mut sem_pkg, env, sub, imports)?;
 
             imports.insert(pkg.to_string(), build_polytype(env.string_values(), sub)?);
         }
