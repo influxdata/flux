@@ -42,6 +42,11 @@ VALUES
 
 # Cleanup previous runs.
 docker rm -f "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}"
+# XXX: if you want to shutdown all the containers (after you're done running
+# integration tests), you should be able to run something like:
+# ```
+# docker ps --format '{{.Names}}' | grep flux-integ- | xargs docker rm -f
+# ```
 
 # mysql is sort of annoying when it comes to logging so to look at the query log,
 # you'll probably want to either use `docker cp` to get a copy of `/tmp/query.log`
