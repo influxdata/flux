@@ -24,6 +24,7 @@ use crate::{
 // that was found, and the source location of the actual type.
 //
 #[derive(Debug, PartialEq)]
+#[must_use = "Constraints must be solved"]
 pub enum Constraint {
     Kind {
         exp: Kind,
@@ -38,7 +39,21 @@ pub enum Constraint {
 }
 
 #[derive(Debug, PartialEq)]
+#[must_use = "Constraints must be solved"]
 pub struct Constraints(Vec<Constraint>);
+
+impl std::ops::Deref for Constraints {
+    type Target = [Constraint];
+    fn deref(&self) -> &[Constraint] {
+        &self.0
+    }
+}
+
+impl AsRef<[Constraint]> for Constraints {
+    fn as_ref(&self) -> &[Constraint] {
+        &self.0
+    }
+}
 
 impl Constraints {
     pub fn empty() -> Constraints {
@@ -106,31 +121,48 @@ impl Substitutable for Error {
 }
 
 // Solve a set of type constraints
-pub fn solve(cons: &Constraints, sub: &mut Substitution) -> Result<(), Error> {
-    for constraint in &cons.0 {
+pub fn solve(cons: &[Constraint], sub: &mut Substitution) -> Result<(), Error> {
+    for constraint in cons {
         match constraint {
             Constraint::Kind { exp, act, loc } => {
                 // Apply the current substitution to the type, then constrain
-                log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
-                act.clone()
-                    .apply(sub)
-                    .constrain(*exp, sub.cons())
-                    .map_err(|err| Error {
-                        loc: loc.clone(),
-                        err,
-                    })?;
+                constrain(*exp, act, loc, sub)?;
             }
             Constraint::Equal { exp, act, loc } => {
                 // Apply the current substitution to the constraint, then unify
-                log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
-                exp.unify(act, sub).map_err(|err| Error {
-                    loc: loc.clone(),
-                    err,
-                })?;
+                equal(exp, act, loc, sub)?;
             }
         }
     }
     Ok(())
+}
+
+pub fn constrain(
+    exp: Kind,
+    act: &MonoType,
+    loc: &SourceLocation,
+    sub: &mut Substitution,
+) -> Result<(), Error> {
+    log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
+    act.apply_cow(sub)
+        .constrain(exp, sub.cons())
+        .map_err(|err| Error {
+            loc: loc.clone(),
+            err,
+        })
+}
+
+pub fn equal(
+    exp: &MonoType,
+    act: &MonoType,
+    loc: &SourceLocation,
+    sub: &mut Substitution,
+) -> Result<(), Error> {
+    log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
+    exp.unify(act, sub).map_err(|err| Error {
+        loc: loc.clone(),
+        err,
+    })
 }
 
 // Create a parametric type from a monotype by universally quantifying
