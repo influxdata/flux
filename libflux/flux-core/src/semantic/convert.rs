@@ -7,7 +7,7 @@ use thiserror::Error;
 
 use crate::{
     ast,
-    errors::{located, Located},
+    errors::{located, Errors, Located},
     semantic::{
         env::Environment,
         nodes::*,
@@ -48,7 +48,7 @@ pub enum ErrorKind {
 }
 
 /// Result encapsulates any error during the conversion process.
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 /// convert_package converts an [AST package] node to its semantic representation.
 ///
@@ -66,8 +66,10 @@ pub fn convert_package(
     pkg: ast::Package,
     env: &Environment,
     sub: &mut Substitution,
-) -> Result<Package> {
-    Converter::with_env(sub, env).convert_package(pkg)
+) -> Result<Package, Errors<Error>> {
+    let mut converter = Converter::with_env(sub, env);
+    let r = converter.convert_package(pkg);
+    converter.finish(r)
 }
 
 /// Converts a [type expression] in the AST into a [`PolyType`].
@@ -77,8 +79,10 @@ pub fn convert_package(
 pub fn convert_polytype(
     type_expression: ast::TypeExpression,
     sub: &mut Substitution,
-) -> Result<types::PolyType> {
-    Converter::new(sub).convert_polytype(type_expression)
+) -> Result<types::PolyType, Errors<Error>> {
+    let mut converter = Converter::new(sub);
+    let r = converter.convert_polytype(type_expression);
+    converter.finish(r)
 }
 
 #[cfg(test)]
@@ -86,8 +90,10 @@ pub(crate) fn convert_monotype(
     ty: ast::MonoType,
     tvars: &mut BTreeMap<String, types::Tvar>,
     sub: &mut Substitution,
-) -> Result<MonoType> {
-    Converter::new(sub).convert_monotype(ty, tvars)
+) -> Result<MonoType, Errors<Error>> {
+    let mut converter = Converter::new(sub);
+    let r = converter.convert_monotype(ty, tvars);
+    converter.finish(r)
 }
 
 #[allow(missing_docs)]
@@ -205,6 +211,7 @@ impl<'a> Symbols<'a> {
 struct Converter<'a> {
     sub: &'a mut Substitution,
     symbols: Symbols<'a>,
+    errors: Errors<Error>,
 }
 
 impl<'a> Converter<'a> {
@@ -212,6 +219,7 @@ impl<'a> Converter<'a> {
         Converter {
             sub,
             symbols: Symbols::default(),
+            errors: Errors::new(),
         }
     }
 
@@ -219,6 +227,22 @@ impl<'a> Converter<'a> {
         Converter {
             sub,
             symbols: Symbols::with_env(env),
+            errors: Errors::new(),
+        }
+    }
+
+    fn finish<R>(mut self, result: Result<R>) -> Result<R, Errors<Error>> {
+        let r = match result {
+            Ok(r) => r,
+            Err(err) => {
+                self.errors.push(err);
+                return Err(self.errors);
+            }
+        };
+        if self.errors.has_errors() {
+            Err(self.errors)
+        } else {
+            Ok(r)
         }
     }
 
@@ -312,7 +336,9 @@ impl<'a> Converter<'a> {
                 Ok(Statement::Test(Box::new(self.convert_test_statement(*s)?)))
             }
             ast::Statement::TestCase(s) => {
-                Err(located(s.base.location.clone(), ErrorKind::TestCase))
+                self.errors
+                    .push(located(s.base.location.clone(), ErrorKind::TestCase));
+                Ok(Statement::Error(s.base.location.clone()))
             }
             ast::Statement::Expr(s) => Ok(Statement::Expr(self.convert_expression_statement(*s)?)),
             ast::Statement::Return(s) => Ok(Statement::Return(self.convert_return_statement(*s)?)),
@@ -375,10 +401,13 @@ impl<'a> Converter<'a> {
                 "time" => Ok(MonoType::Time),
                 "regexp" => Ok(MonoType::Regexp),
                 "bytes" => Ok(MonoType::Bytes),
-                _ => Err(located(
-                    basic.base.location.clone(),
-                    ErrorKind::InvalidNamedType(basic.name.name.to_string()),
-                )),
+                _ => {
+                    self.errors.push(located(
+                        basic.base.location.clone(),
+                        ErrorKind::InvalidNamedType(basic.name.name.to_string()),
+                    ));
+                    Ok(MonoType::Error)
+                }
             },
             ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(
                 self.convert_monotype(arr.element, tvars)?,
@@ -416,7 +445,8 @@ impl<'a> Converter<'a> {
                                 });
                                 dirty = true;
                             } else {
-                                return Err(located(base.location, ErrorKind::AtMostOnePipe));
+                                self.errors
+                                    .push(located(base.location, ErrorKind::AtMostOnePipe));
                             }
                         }
                     }
@@ -484,7 +514,7 @@ impl<'a> Converter<'a> {
                             "Basic" => kinds.push(types::Kind::Basic),
                             "Stringable" => kinds.push(types::Kind::Stringable),
                             _ => {
-                                return Err(located(
+                                self.errors.push(located(
                                     k.base.location.clone(),
                                     ErrorKind::InvalidConstraint(k.name.clone()),
                                 ));
@@ -605,7 +635,12 @@ impl<'a> Converter<'a> {
                 Ok(Expression::DateTime(self.convert_date_time_literal(lit)?))
             }
             ast::Expression::PipeLit(lit) => {
-                Err(located(lit.base.location, ErrorKind::InvalidPipeLit))
+                self.errors.push(located(
+                    lit.base.location.clone(),
+                    ErrorKind::InvalidPipeLit,
+                ));
+
+                Ok(Expression::Error(lit.base.location))
             }
             ast::Expression::Bad(bad) => Ok(Expression::Error(bad.base.location.clone())),
         }
@@ -637,12 +672,15 @@ impl<'a> Converter<'a> {
         let mut piped = false;
         for prop in props {
             let id = match prop.key {
-                ast::PropertyKey::Identifier(id) => Ok(id),
-                _ => Err(located(
-                    prop.base.location.clone(),
-                    ErrorKind::FunctionParameterIdents,
-                )),
-            }?;
+                ast::PropertyKey::Identifier(id) => id,
+                _ => {
+                    self.errors.push(located(
+                        prop.base.location.clone(),
+                        ErrorKind::FunctionParameterIdents,
+                    ));
+                    continue;
+                }
+            };
             let key = self.define_identifier(id)?;
             let mut default: Option<Expression> = None;
             let mut is_pipe = false;
@@ -650,7 +688,8 @@ impl<'a> Converter<'a> {
                 match expr {
                     ast::Expression::PipeLit(lit) => {
                         if piped {
-                            return Err(located(lit.base.location, ErrorKind::AtMostOnePipe));
+                            self.errors
+                                .push(located(lit.base.location, ErrorKind::AtMostOnePipe));
                         } else {
                             piped = true;
                             is_pipe = true;
@@ -699,48 +738,64 @@ impl<'a> Converter<'a> {
             }
         }
 
-        let body = block
-            .body
-            .into_iter()
-            .map(|s| match s {
-                ast::Statement::Variable(dec) => Ok(TempBlock::Variable(Box::new(
+        let mut body = Vec::with_capacity(block.body.len());
+        for s in block.body {
+            match s {
+                ast::Statement::Variable(dec) => body.push(TempBlock::Variable(Box::new(
                     self.convert_variable_assignment(*dec)?,
                 ))),
                 ast::Statement::Expr(stmt) => {
-                    Ok(TempBlock::Expr(self.convert_expression_statement(*stmt)?))
+                    body.push(TempBlock::Expr(self.convert_expression_statement(*stmt)?))
                 }
                 ast::Statement::Return(stmt) => {
                     let argument = self.convert_expression(stmt.argument)?;
-                    Ok(TempBlock::Return(ReturnStmt {
+                    body.push(TempBlock::Return(ReturnStmt {
                         loc: stmt.base.location.clone(),
                         argument,
-                    }))
+                    }));
                 }
-                _ => Err(located(
-                    s.base().location.clone(),
-                    ErrorKind::InvalidFunctionStatement(s.type_name()),
-                )),
-            })
-            .collect::<Result<Vec<_>>>()?;
+                _ => {
+                    self.errors.push(located(
+                        s.base().location.clone(),
+                        ErrorKind::InvalidFunctionStatement(s.type_name()),
+                    ));
+                }
+            }
+        }
 
         let mut body = body.into_iter().rev();
         let block = match body.next() {
             Some(TempBlock::Return(stmt)) => Block::Return(stmt),
             Some(s) => {
-                return Err(located(s.loc().clone(), ErrorKind::MissingReturn));
+                self.errors
+                    .push(located(s.loc().clone(), ErrorKind::MissingReturn));
+                Block::Return(ReturnStmt {
+                    loc: s.loc().clone(),
+                    argument: Expression::Error(s.loc().clone()),
+                })
             }
             None => {
-                return Err(located(block.base.location, ErrorKind::MissingReturn));
+                self.errors.push(located(
+                    block.base.location.clone(),
+                    ErrorKind::MissingReturn,
+                ));
+                Block::Return(ReturnStmt {
+                    loc: block.base.location.clone(),
+                    argument: Expression::Error(block.base.location),
+                })
             }
         };
 
         body.try_fold(block, |acc, s| match s {
             TempBlock::Variable(dec) => Ok(Block::Variable(dec, Box::new(acc))),
             TempBlock::Expr(stmt) => Ok(Block::Expr(stmt, Box::new(acc))),
-            TempBlock::Return(s) => Err(located(
-                s.loc,
-                ErrorKind::InvalidFunctionStatement("return"),
-            )),
+            TempBlock::Return(s) => {
+                self.errors.push(located(
+                    s.loc,
+                    ErrorKind::InvalidFunctionStatement("return"),
+                ));
+                Ok(acc)
+            }
         })
     }
 
@@ -1065,10 +1120,11 @@ mod tests {
         MonoType::Var(Tvar(0))
     }
 
-    fn test_convert(pkg: ast::Package) -> Result<Package> {
+    fn test_convert(pkg: ast::Package) -> Result<Package, Errors<Error>> {
         let mut sub = sub::Substitution::default();
         let mut converter = Converter::new(&mut sub);
-        converter.convert_package(pkg)
+        let r = converter.convert_package(pkg);
+        converter.finish(r)
     }
 
     #[test]
