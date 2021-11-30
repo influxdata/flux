@@ -146,14 +146,10 @@ fn ast_map(files: Vec<ast::File>) -> ASTPackageMap {
         })
 }
 
-fn imports(pkg: &ast::Package) -> Vec<&str> {
-    let mut dependencies = Vec::new();
-    for file in &pkg.files {
-        for import in &file.imports {
-            dependencies.push(&import.path.value[..]);
-        }
-    }
-    dependencies
+fn imports(pkg: &ast::Package) -> impl Iterator<Item = &str> {
+    pkg.files
+        .iter()
+        .flat_map(|file| file.imports.iter().map(|import| &import.path.value[..]))
 }
 
 // Determines the dependencies of a package. That is, all packages
