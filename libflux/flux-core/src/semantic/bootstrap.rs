@@ -23,6 +23,7 @@ use crate::{
         nodes::{infer_package, inject_pkg_types, Package},
         sub::{Substitutable, Substitution},
         types::{MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds},
+        ExternalEnvironment,
     },
 };
 
@@ -288,7 +289,7 @@ fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
     FileSystemImporter::new(fs)
 }
 
-fn prelude_from_importer<I>(importer: &mut I) -> Result<Environment>
+fn prelude_from_importer<I>(importer: &mut I) -> Result<ExternalEnvironment>
 where
     I: Importer,
 {
@@ -344,7 +345,7 @@ fn add_record_to_map(
 
 /// Stdlib returns the prelude and importer for the Flux standard library given a path to a
 /// compiled directory structure.
-pub fn stdlib(dir: &Path) -> Result<(Environment, FileSystemImporter<StdFS>)> {
+pub fn stdlib(dir: &Path) -> Result<(ExternalEnvironment, FileSystemImporter<StdFS>)> {
     let mut stdlib_importer = stdlib_importer(dir);
     let prelude = prelude_from_importer(&mut stdlib_importer)?;
     Ok((prelude, stdlib_importer))

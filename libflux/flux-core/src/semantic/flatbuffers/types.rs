@@ -1,7 +1,7 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
 use crate::semantic::{
-    env::Environment, flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher,
+    flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, ExternalEnvironment,
 };
 
 #[rustfmt::skip]
@@ -32,16 +32,16 @@ impl From<fb::Fresher<'_>> for Fresher {
     }
 }
 
-impl From<fb::TypeEnvironment<'_>> for Option<Environment> {
-    fn from(env: fb::TypeEnvironment) -> Option<Environment> {
+impl From<fb::TypeEnvironment<'_>> for Option<ExternalEnvironment> {
+    fn from(env: fb::TypeEnvironment) -> Option<ExternalEnvironment> {
         let env = env.assignments()?;
         let mut types = PolyTypeMap::new();
         for value in env.iter() {
             let assignment: Option<(String, PolyType)> = value.into();
             let (id, ty) = assignment?;
-            types.insert(Symbol::from(id), ty);
+            types.insert(id, ty);
         }
-        Some(Environment::from(types))
+        Some(ExternalEnvironment::from(types))
     }
 }
 
@@ -308,7 +308,7 @@ where
 
 pub fn build_env<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    env: Environment,
+    env: ExternalEnvironment,
 ) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
     let assignments = build_vec(
         env.values.into_iter().collect(),
@@ -337,7 +337,7 @@ pub fn build_module<'a>(
 
 fn build_type_assignment<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    assignment: (Symbol, PolyType),
+    assignment: (String, PolyType),
 ) -> flatbuffers::WIPOffset<fb::TypeAssignment<'a>> {
     let id = builder.create_string(&assignment.0);
     let ty = build_polytype(builder, assignment.1);
@@ -700,15 +700,15 @@ mod tests {
         }
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        let want: Environment = semantic_map! {
-            Symbol::from("a") => a,
-            Symbol::from("b") => b,
+        let want: ExternalEnvironment = semantic_map! {
+            String::from("a") => a,
+            String::from("b") => b,
         }
         .into();
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
         let buf = serialize(&mut builder, want.clone(), build_env);
-        let got = deserialize::<fb::TypeEnvironment, Option<Environment>>(buf);
+        let got = deserialize::<fb::TypeEnvironment, Option<ExternalEnvironment>>(buf);
 
         assert_eq!(want, got.unwrap());
     }

@@ -162,26 +162,6 @@ impl Environment {
         self.values.remove(name);
     }
 
-    /// After inferring the types in each lexical block, the frame at the top
-    /// of the stack is popped, returning the type environment for the
-    /// enclosing block.
-    ///
-    /// `pop` must be paired with a corresponding call to `new`. In
-    /// particular when inferring the type of a function expression, a new
-    /// frame must be added to the top of the stack by calling `new`. Then the
-    /// bindings for the function arguments must be added to the new frame. At
-    /// that point the type of the function body is inferred and the last frame
-    /// is popped from the stack and returned to the calling function.
-    ///
-    /// # Panics
-    ///
-    /// It is invalid to call `pop` on a type environment with only one stack
-    /// frame. This will result in a panic.
-    pub fn pop(mut self) -> Environment {
-        self.exit_scope();
-        self
-    }
-
     pub(crate) fn exit_scope(&mut self) {
         match self.parent.take() {
             Some(env) => *self = *env,
@@ -191,6 +171,7 @@ impl Environment {
 
     /// Copy all the variable bindings from another [`Environment`] to the current environment.
     /// This does not change the current environment's `parent` or `readwrite` flag.
+    #[cfg(test)]
     pub fn copy_bindings_from(&mut self, other: &Environment) {
         for (name, t) in other.values.iter() {
             self.add(name.clone(), t.clone());

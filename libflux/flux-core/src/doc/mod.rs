@@ -18,8 +18,8 @@ use regex::Regex;
 use crate::{
     ast,
     semantic::{
-        env::Environment,
         types::{Function, MonoType, PolyType},
+        ExternalEnvironment,
     },
 };
 
@@ -150,7 +150,7 @@ pub type Table = String;
 pub fn parse_package_doc_comments(
     pkg: &ast::Package,
     pkgpath: &str,
-    types: &Environment,
+    types: &ExternalEnvironment,
 ) -> Result<(PackageDoc, Diagnostics)> {
     // TODO(nathanielc): Support package with more than one file.
     parse_file_doc_comments(&pkg.files[0], pkgpath, types)
@@ -159,7 +159,7 @@ pub fn parse_package_doc_comments(
 fn parse_file_doc_comments(
     file: &ast::File,
     pkgpath: &str,
-    types: &Environment,
+    types: &ExternalEnvironment,
 ) -> Result<(PackageDoc, Diagnostics)> {
     let mut diagnostics: Diagnostics = Vec::new();
     let mut pkg = match &file.package {
@@ -447,7 +447,7 @@ where
 // Generates docs for the values in a given source file.
 fn parse_package_values(
     f: &ast::File,
-    pkgtypes: &Environment,
+    pkgtypes: &ExternalEnvironment,
     diagnostics: &mut Diagnostics,
 ) -> Result<BTreeMap<String, Doc>> {
     let mut members: BTreeMap<String, Doc> = BTreeMap::new();
@@ -479,7 +479,7 @@ fn parse_package_values(
             // package.
             _ => None,
         } {
-            if let Some(typ) = &pkgtypes.lookup_str(name.as_str()) {
+            if let Some(typ) = &pkgtypes.lookup(name.as_str()) {
                 if !name.starts_with("_") {
                     let doc = parse_any_value(&name, &comment, typ, loc, diagnostics, is_option)?;
                     members.insert(name.clone(), doc);
