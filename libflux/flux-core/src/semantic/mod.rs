@@ -99,6 +99,11 @@ impl ExternalEnvironment {
     pub fn len(&self) -> usize {
         self.values.len()
     }
+
+    /// Returns `true` if the environment contains no elements.
+    pub fn is_empty(&self) -> bool {
+        self.values.is_empty()
+    }
 }
 
 /// Analyzer provides an API for analyzing Flux code.

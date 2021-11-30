@@ -425,10 +425,9 @@ impl StatefulAnalyzer {
         let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
             Ok(r) => r,
             Err(e) => {
-                // In the face of an error we need to get the env and imports
+                // In the face of an error we need to get the imports
                 // back from the analyzer.
-                let (env, imports) = analyzer.drop();
-                self.env = env;
+                let (_env, imports) = analyzer.drop();
                 self.imports = imports;
                 return Err(e.into());
             }
@@ -453,7 +452,7 @@ impl StatefulAnalyzer {
                 }
             }
         }
-        self.env = env;
+        self.env.copy_bindings_from(&env);
         Ok(sem_pkg)
     }
 }

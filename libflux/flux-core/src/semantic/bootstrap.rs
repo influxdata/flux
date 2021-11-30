@@ -151,7 +151,7 @@ pub fn build_polytype(from: PolyTypeMap) -> Result<PolyType> {
     let mut sub = Substitution::default();
     let (r, cons) = build_record(from, &mut sub);
     infer::solve(&cons, &mut sub)?;
-    let typ = MonoType::record(r).apply(&mut sub);
+    let typ = MonoType::record(r).apply(&sub);
     Ok(infer::generalize(
         &Environment::empty(false),
         sub.cons(),
@@ -214,7 +214,7 @@ impl InferState {
             // No need to infer the package again if it has already been inferred through a
             // dependency
             if !self.sem_pkg_map.contains_key(path) {
-                let (types, sem_pkg) = self.infer_pkg(path, ast_packages, &prelude)?;
+                let (types, sem_pkg) = self.infer_pkg(path, ast_packages, prelude)?;
 
                 self.sem_pkg_map.insert(path.to_string(), sem_pkg);
                 if !self.imports.contains_key(path) {
@@ -277,7 +277,7 @@ impl InferState {
         let mut sub = Substitution::default();
         let mut sem_pkg = convert_package(file, &env, &mut sub)?;
         let env = infer_package(&mut sem_pkg, env, &mut sub, &mut self.imports)?;
-        sem_pkg = inject_pkg_types(sem_pkg, &mut sub);
+        sem_pkg = inject_pkg_types(sem_pkg, &sub);
 
         Ok((env.string_values(), sem_pkg))
     }
