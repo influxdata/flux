@@ -128,13 +128,17 @@ test-rust:
 	$(CARGO) test --doc && \
 	$(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
 
-INTEGRATION_TESTS=integration_mysql_read_from,integration_mysql_write_to,integration_pg_read_from,integration_pg_write_to
+INTEGRATION_READ_TESTS=integration_mysql_read_from_seed,integration_mysql_read_from_nonseed,integration_pg_read_from_seed,integration_pg_read_from_nonseed
+INTEGRATION_WRITE_TESTS=integration_mysql_write_to,integration_pg_write_to
+INTEGRATION_TESTS="$(INTEGRATION_WRITE_TESTS),$(INTEGRATION_READ_TESTS)"
 
 test-flux:
-	$(GO_RUN) ./cmd/flux test -v --skip ${INTEGRATION_TESTS}
+	$(GO_RUN) ./cmd/flux test -v --skip $(INTEGRATION_TESTS)
 
 test-flux-integration:
-	./etc/spawn-dbs.sh && $(GO_RUN) ./cmd/flux test -v --test ${INTEGRATION_TESTS}
+	./etc/spawn-dbs.sh
+	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_WRITE_TESTS)
+	$(GO_RUN) ./cmd/flux test -v --test $(INTEGRATION_READ_TESTS)
 
 test-race: libflux-go
 	$(GO_TEST) -race -count=1 ./...
