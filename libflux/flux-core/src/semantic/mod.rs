@@ -58,12 +58,6 @@ pub struct ExternalEnvironment {
     values: types::PolyTypeMap<String>,
 }
 
-impl From<ExternalEnvironment> for env::Environment {
-    fn from(env: ExternalEnvironment) -> Self {
-        Self::from(env.values)
-    }
-}
-
 impl From<types::PolyTypeMap<String>> for ExternalEnvironment {
     fn from(values: types::PolyTypeMap<String>) -> Self {
         ExternalEnvironment { values }
@@ -90,11 +84,15 @@ impl ExternalEnvironment {
             self.add(name.clone(), t.clone());
         }
     }
+
+    pub(crate) fn iter(&self) -> impl Iterator<Item = (&String, &PolyType)> + '_ {
+        self.values.iter()
+    }
 }
 
 /// Analyzer provides an API for analyzing Flux code.
-pub struct Analyzer<I: import::Importer> {
-    env: env::Environment,
+pub struct Analyzer<'env, I: import::Importer> {
+    env: env::Environment<'env>,
     importer: I,
     config: AnalyzerConfig,
 }
@@ -107,10 +105,10 @@ pub struct AnalyzerConfig {
     pub skip_checks: bool,
 }
 
-impl<I: import::Importer> Analyzer<I> {
+impl<'env, I: import::Importer> Analyzer<'env, I> {
     /// Create an analyzer with the given environment and importer.
     /// The environment represents any values in scope.
-    pub fn new(env: env::Environment, importer: I, config: AnalyzerConfig) -> Self {
+    pub fn new(env: env::Environment<'env>, importer: I, config: AnalyzerConfig) -> Self {
         Analyzer {
             env,
             importer,
@@ -119,7 +117,7 @@ impl<I: import::Importer> Analyzer<I> {
     }
     /// Create an analyzer with the given environment and importer using default configuration.
     /// The environment represents any values in scope.
-    pub fn new_with_defaults(env: env::Environment, importer: I) -> Self {
+    pub fn new_with_defaults(env: env::Environment<'env>, importer: I) -> Self {
         Analyzer::new(env, importer, AnalyzerConfig::default())
     }
     /// Analyze Flux source code returning the semantic package and the package environment.

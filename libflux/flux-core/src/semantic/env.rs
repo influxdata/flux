@@ -5,6 +5,7 @@ use crate::semantic::{
     nodes::Symbol,
     sub::{apply2, Substitutable, Substituter},
     types::{union, PolyType, PolyTypeMap, Tvar},
+    ExternalEnvironment,
 };
 
 /// A type environment maps program identifiers to their polymorphic types.
@@ -13,16 +14,18 @@ use crate::semantic::{
 /// frame holds the bindings for the identifiers declared in a particular
 /// lexical block.
 #[derive(Debug, Clone, PartialEq)]
-pub struct Environment {
+pub struct Environment<'a> {
+    /// An external environment if one is provided
+    pub external: Option<&'a ExternalEnvironment>,
     /// An optional parent environment.
-    pub parent: Option<Box<Environment>>,
+    pub parent: Option<Box<Environment<'a>>>,
     /// Values in the environment.
     pub values: PolyTypeMap<Symbol>,
     /// Read/write permissions flag.
     pub readwrite: bool,
 }
 
-impl fmt::Display for Environment {
+impl fmt::Display for Environment<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut debug_map = f.debug_map();
         self.fmt_display(&mut debug_map);
@@ -30,7 +33,7 @@ impl fmt::Display for Environment {
     }
 }
 
-impl Substitutable for Environment {
+impl Substitutable for Environment<'_> {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match (self.readwrite, &self.parent) {
             // This is a performance optimization where false implies
@@ -41,12 +44,14 @@ impl Substitutable for Environment {
             // and apply should be a no-op, readwrite is set to true so
             // we apply anyway.
             (true, None) => self.values.apply_ref(sub).map(|values| Environment {
+                external: self.external,
                 parent: None,
                 values,
                 readwrite: true,
             }),
             (true, Some(env)) => {
                 apply2(&**env, &self.values, sub).map(|(parent, values)| Environment {
+                    external: self.external,
                     parent: Some(Box::new(parent)),
                     values,
                     readwrite: true,
@@ -64,9 +69,10 @@ impl Substitutable for Environment {
 }
 
 // Derive a type environment from a hash map
-impl From<PolyTypeMap<Symbol>> for Environment {
-    fn from(bindings: PolyTypeMap<Symbol>) -> Environment {
+impl From<PolyTypeMap<Symbol>> for Environment<'_> {
+    fn from(bindings: PolyTypeMap<Symbol>) -> Self {
         Environment {
+            external: None,
             parent: None,
             values: bindings,
             readwrite: false,
@@ -74,8 +80,8 @@ impl From<PolyTypeMap<Symbol>> for Environment {
     }
 }
 
-impl From<PolyTypeMap> for Environment {
-    fn from(bindings: PolyTypeMap) -> Environment {
+impl From<PolyTypeMap> for Environment<'_> {
+    fn from(bindings: PolyTypeMap) -> Self {
         Environment::from(
             bindings
                 .into_iter()
@@ -85,16 +91,25 @@ impl From<PolyTypeMap> for Environment {
     }
 }
 
-impl Default for Environment {
+impl<'env> From<&'env ExternalEnvironment> for Environment<'env> {
+    fn from(external: &'env ExternalEnvironment) -> Self {
+        let mut env = Environment::empty(true);
+        env.external = Some(external);
+        env
+    }
+}
+
+impl Default for Environment<'_> {
     fn default() -> Self {
         Environment::empty(false)
     }
 }
 
-impl Environment {
+impl Environment<'_> {
     /// Create an empty environment with no parent.
-    pub fn empty(readwrite: bool) -> Environment {
+    pub fn empty(readwrite: bool) -> Self {
         Environment {
+            external: None,
             parent: None,
             values: PolyTypeMap::new(),
             readwrite,
@@ -107,8 +122,9 @@ impl Environment {
     // used in a place that shouldn't take a `self` parameter.
     // See https://github.com/rust-lang/rust-clippy/issues/3414
     #[allow(clippy::wrong_self_convention)]
-    pub fn new(from: Self) -> Environment {
+    pub fn new(from: Self) -> Self {
         Environment {
+            external: None,
             parent: Some(Box::new(from)),
             values: PolyTypeMap::new(),
             readwrite: true,
@@ -127,8 +143,10 @@ impl Environment {
     pub fn lookup(&self, v: &Symbol) -> Option<&PolyType> {
         if let Some(t) = self.values.get(v) {
             Some(t)
-        } else if let Some(env) = &self.parent {
-            env.lookup(v)
+        } else if let Some(t) = self.external.as_ref().and_then(|env| env.lookup(v)) {
+            Some(t)
+        } else if let Some(t) = self.parent.as_ref().and_then(|env| env.lookup(v)) {
+            Some(t)
         } else {
             None
         }
@@ -138,7 +156,16 @@ impl Environment {
     /// string identifier is in the environment. Also checks parent environments.
     /// If the type is present, returns a pointer to `t`; otherwise, returns `None`.
     pub fn lookup_str(&self, v: &str) -> Option<&PolyType> {
-        self.lookup(&Symbol::from(v))
+        // TODO Avoid iteration here
+        if let Some((_, t)) = self.values.iter().find(|(symbol, _)| *symbol == v) {
+            Some(t)
+        } else if let Some(t) = self.external.as_ref().and_then(|env| env.lookup(v)) {
+            Some(t)
+        } else if let Some(t) = self.parent.as_ref().and_then(|env| env.lookup_str(v)) {
+            Some(t)
+        } else {
+            None
+        }
     }
 
     pub(crate) fn lookup_symbol(&self, v: &str) -> Option<&Symbol> {
@@ -190,6 +217,9 @@ impl Environment {
         f.entries(self.values.iter().map(|(k, v)| (k, v.to_string())));
         if let Some(parent) = &self.parent {
             parent.fmt_display(f);
+        }
+        if let Some(external) = &self.external {
+            f.entries(external.iter().map(|(k, v)| (k, v.to_string())));
         }
     }
 }

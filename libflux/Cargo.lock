@@ -446,6 +446,7 @@ dependencies = [
  "getrandom",
  "lazy_static",
  "maplit",
+ "once_cell",
  "pretty_assertions 1.0.0",
  "serde",
  "serde-aux",

@@ -15,6 +15,8 @@ extern crate pretty_assertions;
 use std::{ffi::*, mem, os::raw::c_char};
 
 use anyhow::{self, bail, Result};
+use once_cell::sync::Lazy;
+
 pub use fluxcore::{ast, formatter, scanner, semantic, *};
 use fluxcore::{
     parser::Parser,
@@ -41,6 +43,8 @@ pub fn prelude() -> Option<ExternalEnvironment> {
         .into()
 }
 
+static PRELUDE: Lazy<Option<ExternalEnvironment>> = Lazy::new(prelude);
+
 /// Imports is a map of import path to types of packages.
 pub fn imports() -> Option<ExternalEnvironment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
@@ -52,9 +56,11 @@ pub fn imports() -> Option<ExternalEnvironment> {
 /// Creates a new analyzer that can semantically analyze Flux source code.
 ///
 /// The analyzer is aware of the stdlib and prelude.
-pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<ExternalEnvironment>> {
-    let env = match prelude() {
-        Some(prelude) => ExternalEnvironment::from(prelude),
+pub fn new_semantic_analyzer(
+    config: AnalyzerConfig,
+) -> Result<Analyzer<'static, ExternalEnvironment>> {
+    let env = match &*PRELUDE {
+        Some(prelude) => prelude,
         None => bail!("missing prelude"),
     };
     let importer = match imports() {
@@ -414,10 +420,8 @@ pub struct StatefulAnalyzer {
 
 impl StatefulAnalyzer {
     fn analyze(&mut self, ast_pkg: ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
-        let mut analyzer = Analyzer::new_with_defaults(
-            Environment::from(mem::take(&mut self.env)),
-            mem::take(&mut self.imports),
-        );
+        let mut analyzer =
+            Analyzer::new_with_defaults(Environment::from(&self.env), mem::take(&mut self.imports));
         let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
             Ok(r) => r,
             Err(e) => {
@@ -513,17 +517,17 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
 pub fn infer_with_env(
     ast_pkg: ast::Package,
     mut sub: Substitution,
-    env: Option<Environment>,
+    env: Option<Environment<'static>>,
 ) -> Result<(ExternalEnvironment, Package)> {
     let prelude = match prelude() {
         Some(prelude) => ExternalEnvironment::from(prelude),
         None => bail!("missing prelude"),
     };
     let env = if let Some(mut e) = env {
-        e.parent = Some(Box::new(Environment::from(prelude)));
+        e.parent = Some(Box::new(Environment::from(&prelude)));
         e
     } else {
-        Environment::from(prelude)
+        Environment::from(&prelude)
     };
     let importer = match imports() {
         Some(imports) => imports,

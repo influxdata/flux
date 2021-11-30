@@ -3487,6 +3487,7 @@ fn copy_bindings_from_other_env() {
     assert_eq!(
         sub_env,
         Environment {
+            external: None,
             parent: Some(env.clone().into()),
             readwrite: true,
             values: semantic_map!(

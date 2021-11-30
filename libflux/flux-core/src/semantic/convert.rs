@@ -151,7 +151,7 @@ impl Symbol {
 #[derive(Debug, Default)]
 struct Symbols<'a> {
     parent: Option<Box<Symbols<'a>>>,
-    env: Option<&'a Environment>,
+    env: Option<&'a Environment<'a>>,
     symbols: BTreeMap<String, Symbol>,
 }
 
