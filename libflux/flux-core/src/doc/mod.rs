@@ -11,7 +11,7 @@ use std::{
 
 use anyhow::{bail, Result};
 use derive_more::Display;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use pulldown_cmark::{Event, OffsetIter, Parser as MarkdownParser, Tag};
 use regex::Regex;
 
@@ -410,9 +410,9 @@ fn metadata_from_tokens<'a: 'b, 'b, I>(
 where
     I: Iterator<Item = &'b Token<'a>>,
 {
-    lazy_static! {
-        static ref KEY_VALUE_PATTERN: Regex = Regex::new("^(\\w[\\w_]+): (.+)$").unwrap();
-    }
+    static KEY_VALUE_PATTERN: Lazy<Regex> =
+        Lazy::new(|| Regex::new("^(\\w[\\w_]+): (.+)$").unwrap());
+
     if let Some(Token::Metadata) = tokens.peek() {
         tokens.next();
         let mut metadata = Metadata::new();
