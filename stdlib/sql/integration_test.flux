@@ -45,8 +45,12 @@ testcase integration_pg_write_to {
            dataSourceName: pgDsn,
            table: "pets",
            batchSize: 1)
-
+        // The array.from() will be returned and will cause the test to fail.
+        // Filtering will mean the test can pass. Hopefully `sql.to()` will
+        // error if there's a problem.
         |> filter(fn: (r) => false)
+        // Without the yield, the flux script can "finish", closing the db
+        // connection before the insert commits!
         |> yield()
 }
 
@@ -83,6 +87,11 @@ testcase integration_mysql_write_to {
            dataSourceName: mysqlDsn,
            table: "pets",
            batchSize: 1)
+        // The array.from() will be returned and will cause the test to fail.
+        // Filtering will mean the test can pass. Hopefully `sql.to()` will
+        // error if there's a problem.
         |> filter(fn: (r) => false)
+        // Without the yield, the flux script can "finish", closing the db
+        // connection before the insert commits!
         |> yield()
 }
