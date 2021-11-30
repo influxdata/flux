@@ -1,7 +1,7 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
 use crate::semantic::{
-    flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, ExternalEnvironment,
+    flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, ExportEnvironment,
 };
 
 #[rustfmt::skip]
@@ -32,8 +32,8 @@ impl From<fb::Fresher<'_>> for Fresher {
     }
 }
 
-impl From<fb::TypeEnvironment<'_>> for Option<ExternalEnvironment> {
-    fn from(env: fb::TypeEnvironment) -> Option<ExternalEnvironment> {
+impl From<fb::TypeEnvironment<'_>> for Option<ExportEnvironment> {
+    fn from(env: fb::TypeEnvironment) -> Option<ExportEnvironment> {
         let env = env.assignments()?;
         let mut types = PolyTypeMap::new();
         for value in env.iter() {
@@ -41,7 +41,7 @@ impl From<fb::TypeEnvironment<'_>> for Option<ExternalEnvironment> {
             let (id, ty) = assignment?;
             types.insert(id, ty);
         }
-        Some(ExternalEnvironment::from(types))
+        Some(ExportEnvironment::from(types))
     }
 }
 
@@ -308,7 +308,7 @@ where
 
 pub fn build_env<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    env: ExternalEnvironment,
+    env: ExportEnvironment,
 ) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
     let assignments = build_vec(
         env.values.into_iter().collect(),
@@ -700,7 +700,7 @@ mod tests {
         }
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        let want: ExternalEnvironment = semantic_map! {
+        let want: ExportEnvironment = semantic_map! {
             String::from("a") => a,
             String::from("b") => b,
         }
@@ -708,7 +708,7 @@ mod tests {
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
         let buf = serialize(&mut builder, want.clone(), build_env);
-        let got = deserialize::<fb::TypeEnvironment, Option<ExternalEnvironment>>(buf);
+        let got = deserialize::<fb::TypeEnvironment, Option<ExportEnvironment>>(buf);
 
         assert_eq!(want, got.unwrap());
     }

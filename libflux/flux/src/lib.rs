@@ -29,24 +29,24 @@ use fluxcore::{
         nodes::{Package, Symbol},
         sub::Substitution,
         types::{MonoType, PolyType, TvarKinds},
-        Analyzer, AnalyzerConfig, ExternalEnvironment,
+        Analyzer, AnalyzerConfig, ExportEnvironment,
     },
 };
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
 /// Prelude are the names and types of values that are inscope in all Flux scripts.
-pub fn prelude() -> Option<ExternalEnvironment> {
+pub fn prelude() -> Option<ExportEnvironment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
         .unwrap()
         .into()
 }
 
-static PRELUDE: Lazy<Option<ExternalEnvironment>> = Lazy::new(prelude);
+static PRELUDE: Lazy<Option<ExportEnvironment>> = Lazy::new(prelude);
 
 /// Imports is a map of import path to types of packages.
-pub fn imports() -> Option<ExternalEnvironment> {
+pub fn imports() -> Option<ExportEnvironment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
         .unwrap()
@@ -58,7 +58,7 @@ pub fn imports() -> Option<ExternalEnvironment> {
 /// The analyzer is aware of the stdlib and prelude.
 pub fn new_semantic_analyzer(
     config: AnalyzerConfig,
-) -> Result<Analyzer<'static, ExternalEnvironment>> {
+) -> Result<Analyzer<'static, ExportEnvironment>> {
     let env = match &*PRELUDE {
         Some(prelude) => prelude,
         None => bail!("missing prelude"),
@@ -401,7 +401,7 @@ pub unsafe extern "C" fn flux_find_var_type(
 
 fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
     let env = match prelude() {
-        Some(prelude) => ExternalEnvironment::from(prelude),
+        Some(prelude) => ExportEnvironment::from(prelude),
         None => bail!("missing prelude"),
     };
     let imports = match imports() {
@@ -414,8 +414,8 @@ fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
 /// StatefulAnalyzer updates its environment with the contents of any previously analyzed package.
 /// This enables uses cases where analysis is performed iteratively, for example in a REPL.
 pub struct StatefulAnalyzer {
-    env: ExternalEnvironment,
-    imports: ExternalEnvironment,
+    env: ExportEnvironment,
+    imports: ExportEnvironment,
 }
 
 impl StatefulAnalyzer {
@@ -517,9 +517,9 @@ pub fn infer_with_env(
     ast_pkg: ast::Package,
     mut sub: Substitution,
     env: Option<Environment<'static>>,
-) -> Result<(ExternalEnvironment, Package)> {
+) -> Result<(ExportEnvironment, Package)> {
     let prelude = match prelude() {
-        Some(prelude) => ExternalEnvironment::from(prelude),
+        Some(prelude) => ExportEnvironment::from(prelude),
         None => bail!("missing prelude"),
     };
     let env = if let Some(mut e) = env {

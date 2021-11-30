@@ -53,18 +53,18 @@ pub enum Error {
 
 /// An environment of values that are available outside of a package
 #[derive(Default, Debug, Clone, PartialEq)]
-pub struct ExternalEnvironment {
+pub struct ExportEnvironment {
     /// Values in the environment.
     values: types::PolyTypeMap<String>,
 }
 
-impl From<types::PolyTypeMap<String>> for ExternalEnvironment {
+impl From<types::PolyTypeMap<String>> for ExportEnvironment {
     fn from(values: types::PolyTypeMap<String>) -> Self {
-        ExternalEnvironment { values }
+        ExportEnvironment { values }
     }
 }
 
-impl ExternalEnvironment {
+impl ExportEnvironment {
     /// Returns an empty environment
     pub fn new() -> Self {
         Self::default()
@@ -82,7 +82,7 @@ impl ExternalEnvironment {
         self.values.get(v)
     }
 
-    /// Copy all the variable bindings from another [`ExternalEnvironment`] to the current environment.
+    /// Copy all the variable bindings from another [`ExportEnvironment`] to the current environment.
     /// This does not change the current environment's `parent` or `readwrite` flag.
     pub fn copy_bindings_from(&mut self, other: &Self) {
         for (name, t) in other.values.iter() {
@@ -142,7 +142,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         pkgpath: String,
         file_name: String,
         src: &str,
-    ) -> Result<(ExternalEnvironment, nodes::Package), Errors<Error>> {
+    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
         let ast_file = parser::parse_string(file_name, src);
         let ast_pkg = ast::Package {
             base: ast_file.base.clone(),
@@ -156,7 +156,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     pub fn analyze_ast(
         &mut self,
         ast_pkg: ast::Package,
-    ) -> Result<(ExternalEnvironment, nodes::Package), Errors<Error>> {
+    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
     /// Analyze Flux AST returning the semantic package and the package environment.
@@ -167,7 +167,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         // operation.
         ast_pkg: ast::Package,
         sub: &mut sub::Substitution,
-    ) -> Result<(ExternalEnvironment, nodes::Package), Errors<Error>> {
+    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
         let mut errors = Errors::new();
         if !self.config.skip_checks {
             if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
@@ -191,7 +191,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         let env = self.env.clone();
         // Clone the environment as the inferred package may mutate it.
         let env = match nodes::infer_package(&mut sem_pkg, env, sub, &mut self.importer) {
-            Ok(env) => ExternalEnvironment {
+            Ok(env) => ExportEnvironment {
                 values: env
                     .values
                     .into_iter()
@@ -211,9 +211,9 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     }
 
     /// Drop returns ownership of the environment and importer.
-    pub fn drop(self) -> (ExternalEnvironment, I) {
+    pub fn drop(self) -> (ExportEnvironment, I) {
         (
-            ExternalEnvironment {
+            ExportEnvironment {
                 values: self
                     .env
                     .values

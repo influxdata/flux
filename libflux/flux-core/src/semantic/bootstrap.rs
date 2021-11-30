@@ -23,7 +23,7 @@ use crate::{
         nodes::{infer_package, inject_pkg_types, Package},
         sub::{Substitutable, Substitution},
         types::{MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds},
-        ExternalEnvironment,
+        ExportEnvironment,
     },
 };
 
@@ -40,7 +40,7 @@ pub type SemanticPackageMap = SemanticMap<String, Package>;
 #[allow(clippy::type_complexity)]
 pub fn infer_stdlib_dir(
     path: &Path,
-) -> Result<(ExternalEnvironment, PolyTypeMap, SemanticPackageMap)> {
+) -> Result<(ExportEnvironment, PolyTypeMap, SemanticPackageMap)> {
     let ast_packages = parse_dir(path)?;
 
     let mut infer_state = InferState::default();
@@ -191,8 +191,8 @@ struct InferState {
 }
 
 impl InferState {
-    fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<ExternalEnvironment> {
-        let mut prelude_map = ExternalEnvironment::new();
+    fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<ExportEnvironment> {
+        let mut prelude_map = ExportEnvironment::new();
         for name in PRELUDE {
             // Infer each package in the prelude allowing the earlier packages to be used by later
             // packages within the prelude list.
@@ -208,7 +208,7 @@ impl InferState {
     fn infer_std(
         &mut self,
         ast_packages: &ASTPackageMap,
-        prelude: &ExternalEnvironment,
+        prelude: &ExportEnvironment,
     ) -> Result<()> {
         for (path, _) in ast_packages.iter() {
             // No need to infer the package again if it has already been inferred through a
@@ -234,7 +234,7 @@ impl InferState {
         &mut self,
         name: &str,                    // name of package to infer
         ast_packages: &ASTPackageMap,  // ast_packages available for inference
-        prelude: &ExternalEnvironment, // prelude types
+        prelude: &ExportEnvironment, // prelude types
     ) -> Result<(
         PolyTypeMap, // inferred types
         Package,     // semantic graph
@@ -288,7 +288,7 @@ fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
     FileSystemImporter::new(fs)
 }
 
-fn prelude_from_importer<I>(importer: &mut I) -> Result<ExternalEnvironment>
+fn prelude_from_importer<I>(importer: &mut I) -> Result<ExportEnvironment>
 where
     I: Importer,
 {
@@ -344,7 +344,7 @@ fn add_record_to_map(
 
 /// Stdlib returns the prelude and importer for the Flux standard library given a path to a
 /// compiled directory structure.
-pub fn stdlib(dir: &Path) -> Result<(ExternalEnvironment, FileSystemImporter<StdFS>)> {
+pub fn stdlib(dir: &Path) -> Result<(ExportEnvironment, FileSystemImporter<StdFS>)> {
     let mut stdlib_importer = stdlib_importer(dir);
     let prelude = prelude_from_importer(&mut stdlib_importer)?;
     Ok((prelude, stdlib_importer))
@@ -426,7 +426,7 @@ mod tests {
             String::from("c") => parse_string("c.flux".to_string(), c).into(),
         };
         let mut infer_state = InferState::default();
-        let (types, _) = infer_state.infer_pkg("c", &ast_packages, &ExternalEnvironment::new())?;
+        let (types, _) = infer_state.infer_pkg("c", &ast_packages, &ExportEnvironment::new())?;
 
         let want = semantic_map! {
             String::from("z") => {

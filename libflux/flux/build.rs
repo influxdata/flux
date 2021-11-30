@@ -9,7 +9,7 @@ use std::{
 
 use anyhow::{bail, Result};
 use fluxcore::semantic::{
-    bootstrap, flatbuffers::types as fb, sub::Substitutable, ExternalEnvironment,
+    bootstrap, flatbuffers::types as fb, sub::Substitutable, ExportEnvironment,
 };
 use walkdir::WalkDir;
 
@@ -74,10 +74,10 @@ fn main() -> Result<()> {
     }
 
     let path = dir.join("prelude.data");
-    serialize(ExternalEnvironment::from(prelude), fb::build_env, &path)?;
+    serialize(prelude, fb::build_env, &path)?;
 
     let path = dir.join("stdlib.data");
-    serialize(ExternalEnvironment::from(imports), fb::build_env, &path)?;
+    serialize(ExportEnvironment::from(imports), fb::build_env, &path)?;
 
     Ok(())
 }

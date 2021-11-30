@@ -40,7 +40,7 @@ use crate::{
         nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
-        Analyzer, AnalyzerConfig, ExternalEnvironment,
+        Analyzer, AnalyzerConfig, ExportEnvironment,
     },
 };
 
@@ -113,7 +113,7 @@ fn infer_types(
     imp: HashMap<&str, HashMap<&str, &str>>,
     want: Option<HashMap<&str, &str>>,
     config: AnalyzerConfig,
-) -> Result<ExternalEnvironment, Error> {
+) -> Result<ExportEnvironment, Error> {
     let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp

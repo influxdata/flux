@@ -2,7 +2,7 @@
 
 use crate::semantic::{
     types::{PolyType, PolyTypeMap},
-    ExternalEnvironment,
+    ExportEnvironment,
 };
 
 /// Importer defines an API for resolving Flux import paths to their corresponding types.
@@ -13,7 +13,7 @@ pub trait Importer {
         None
     }
 }
-impl Importer for ExternalEnvironment {
+impl Importer for ExportEnvironment {
     fn import(&mut self, path: &str) -> Option<PolyType> {
         self.lookup(path).cloned()
     }
