@@ -60,12 +60,10 @@ fn infer_pre(
     for name in PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
         // packages within the prelude list.
-        let (types, importer, _sem_pkg) =
-            infer_pkg(name, sub, ast_packages, &prelude_map, imports)?;
+        let (types, _sem_pkg) = infer_pkg(name, sub, ast_packages, &prelude_map, &mut imports)?;
         for (k, v) in types {
             prelude_map.add(k, v);
         }
-        imports = importer;
     }
     Ok((prelude_map, imports))
 }
@@ -79,12 +77,10 @@ fn infer_std(
 ) -> Result<(PolyTypeMap, SemanticPackageMap)> {
     let mut sem_pkg_map = SemanticPackageMap::new();
     for (path, _) in ast_packages.iter() {
-        let (types, mut importer, sem_pkg) =
-            infer_pkg(path, sub, ast_packages, &prelude, imports.clone())?;
+        let (types, sem_pkg) = infer_pkg(path, sub, ast_packages, &prelude, &mut imports)?;
         sem_pkg_map.insert(path.to_string(), sem_pkg);
         if !imports.contains_key(path) {
-            importer.insert(path.to_string(), build_polytype(types, sub)?);
-            imports = importer;
+            imports.insert(path.to_string(), build_polytype(types, sub)?);
         }
     }
     Ok((imports, sem_pkg_map))
@@ -231,10 +227,9 @@ fn infer_pkg(
     sub: &mut Substitution,        // type variable substitution
     ast_packages: &ASTPackageMap,  // ast_packages available for inference
     prelude: &ExternalEnvironment, // prelude types
-    imports: PolyTypeMap,          // types available for import
+    imports: &mut PolyTypeMap,     // types available for import
 ) -> Result<(
     PolyTypeMap, // inferred types
-    PolyTypeMap, // types available for import (possibly updated)
     Package,     // semantic graph
 )> {
     // Determine the order in which we must infer dependencies
@@ -245,7 +240,6 @@ fn infer_pkg(
         HashSet::new(),
         HashSet::new(),
     )?;
-    let mut imports = imports;
 
     // Infer all dependencies
     for pkg in deps {
@@ -257,12 +251,7 @@ fn infer_pkg(
             let file = file.unwrap().to_owned();
 
             let env = Environment::from(prelude);
-            let env = infer_package(
-                &mut convert_package(file, &env, sub)?,
-                env,
-                sub,
-                &mut imports,
-            )?;
+            let env = infer_package(&mut convert_package(file, &env, sub)?, env, sub, imports)?;
 
             imports.insert(pkg.to_string(), build_polytype(env.string_values(), sub)?);
         }
@@ -276,10 +265,10 @@ fn infer_pkg(
 
     let env = Environment::new(prelude.into());
     let mut sem_pkg = convert_package(file, &env, sub)?;
-    let env = infer_package(&mut sem_pkg, env, sub, &mut imports)?;
+    let env = infer_package(&mut sem_pkg, env, sub, imports)?;
     sem_pkg = inject_pkg_types(sem_pkg, sub);
 
-    Ok((env.string_values(), imports, sem_pkg))
+    Ok((env.string_values(), sem_pkg))
 }
 
 fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
@@ -424,12 +413,13 @@ mod tests {
             String::from("b") => parse_string("b.flux".to_string(), b).into(),
             String::from("c") => parse_string("c.flux".to_string(), c).into(),
         };
-        let (types, imports, _) = infer_pkg(
+        let mut imports = PolyTypeMap::new();
+        let (types, _) = infer_pkg(
             "c",
             &mut Substitution::default(),
             &ast_packages,
             &ExternalEnvironment::new(),
-            PolyTypeMap::new(),
+            &mut imports,
         )?;
 
         let want = semantic_map! {
