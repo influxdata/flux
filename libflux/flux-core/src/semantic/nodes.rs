@@ -751,7 +751,7 @@ impl StringExpr {
                 infer.constrain(
                     Kind::Stringable,
                     &ip.expression.type_of(),
-                    &ip.expression.loc(),
+                    ip.expression.loc(),
                 );
             }
         }
