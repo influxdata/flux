@@ -65,6 +65,11 @@ impl From<types::PolyTypeMap<String>> for ExternalEnvironment {
 }
 
 impl ExternalEnvironment {
+    /// Returns an empty environment
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Add a new variable binding to the current stack frame.
     pub fn add(&mut self, name: String, t: PolyType) {
         self.values.insert(name, t);
@@ -85,8 +90,14 @@ impl ExternalEnvironment {
         }
     }
 
-    pub(crate) fn iter(&self) -> impl Iterator<Item = (&String, &PolyType)> + '_ {
-        self.values.iter()
+    /// Returns an iterator over all values
+    pub fn iter(&self) -> impl Iterator<Item = (&str, &PolyType)> + '_ {
+        self.values.iter().map(|(k, v)| (k.as_str(), v))
+    }
+
+    /// Returns how many values exist in the environment
+    pub fn len(&self) -> usize {
+        self.values.len()
     }
 }
 

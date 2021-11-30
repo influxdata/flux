@@ -62,7 +62,7 @@ fn main() -> Result<()> {
     let (prelude, imports, _) = bootstrap::infer_stdlib_dir(stdlib_path)?;
 
     // Validate there aren't any free type variables in the environment
-    for (name, ty) in &prelude {
+    for (name, ty) in prelude.iter() {
         if !ty.free_vars().is_empty() {
             bail!("found free variables in type of {}: {}", name, ty);
         }

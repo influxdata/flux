@@ -38,13 +38,15 @@ pub type SemanticPackageMap = SemanticMap<String, Package>;
 /// Infers the Flux standard library given the path to the source code.
 /// The prelude and the imports are returned.
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib_dir(path: &Path) -> Result<(PolyTypeMap, PolyTypeMap, SemanticPackageMap)> {
+pub fn infer_stdlib_dir(
+    path: &Path,
+) -> Result<(ExternalEnvironment, PolyTypeMap, SemanticPackageMap)> {
     let mut sub = Substitution::default();
 
     let ast_packages = parse_dir(path)?;
 
     let (prelude, importer) = infer_pre(&mut sub, &ast_packages)?;
-    let (imports, sem_pkg_map) = infer_std(&mut sub, &ast_packages, prelude.clone(), importer)?;
+    let (imports, sem_pkg_map) = infer_std(&mut sub, &ast_packages, &prelude, importer)?;
 
     Ok((prelude, imports, sem_pkg_map))
 }
@@ -52,16 +54,16 @@ pub fn infer_stdlib_dir(path: &Path) -> Result<(PolyTypeMap, PolyTypeMap, Semant
 fn infer_pre(
     sub: &mut Substitution,
     ast_packages: &ASTPackageMap,
-) -> Result<(PolyTypeMap, PolyTypeMap)> {
-    let mut prelude_map = PolyTypeMap::new();
+) -> Result<(ExternalEnvironment, PolyTypeMap)> {
+    let mut prelude_map = ExternalEnvironment::new();
     let mut imports = PolyTypeMap::new();
     for name in PRELUDE {
         // Infer each package in the prelude allowing the earlier packages to be used by later
         // packages within the prelude list.
         let (types, importer, _sem_pkg) =
-            infer_pkg(name, sub, ast_packages, prelude_map.clone(), imports)?;
+            infer_pkg(name, sub, ast_packages, &prelude_map, imports)?;
         for (k, v) in types {
-            prelude_map.insert(k, v);
+            prelude_map.add(k, v);
         }
         imports = importer;
     }
@@ -72,13 +74,13 @@ fn infer_pre(
 fn infer_std(
     sub: &mut Substitution,
     ast_packages: &ASTPackageMap,
-    prelude: PolyTypeMap,
+    prelude: &ExternalEnvironment,
     mut imports: PolyTypeMap,
 ) -> Result<(PolyTypeMap, SemanticPackageMap)> {
     let mut sem_pkg_map = SemanticPackageMap::new();
     for (path, _) in ast_packages.iter() {
         let (types, mut importer, sem_pkg) =
-            infer_pkg(path, sub, ast_packages, prelude.clone(), imports.clone())?;
+            infer_pkg(path, sub, ast_packages, &prelude, imports.clone())?;
         sem_pkg_map.insert(path.to_string(), sem_pkg);
         if !imports.contains_key(path) {
             importer.insert(path.to_string(), build_polytype(types, sub)?);
@@ -229,11 +231,11 @@ fn build_record(from: PolyTypeMap, sub: &mut Substitution) -> (Record, Constrain
 //
 #[allow(clippy::type_complexity)]
 fn infer_pkg(
-    name: &str,                   // name of package to infer
-    sub: &mut Substitution,       // type variable substitution
-    ast_packages: &ASTPackageMap, // ast_packages available for inference
-    prelude: PolyTypeMap,         // prelude types
-    imports: PolyTypeMap,         // types available for import
+    name: &str,                    // name of package to infer
+    sub: &mut Substitution,        // type variable substitution
+    ast_packages: &ASTPackageMap,  // ast_packages available for inference
+    prelude: &ExternalEnvironment, // prelude types
+    imports: PolyTypeMap,          // types available for import
 ) -> Result<(
     PolyTypeMap, // inferred types
     PolyTypeMap, // types available for import (possibly updated)
@@ -258,7 +260,7 @@ fn infer_pkg(
             }
             let file = file.unwrap().to_owned();
 
-            let env = Environment::new(prelude.clone().into());
+            let env = Environment::from(prelude);
             let env = infer_package(
                 &mut convert_package(file, &env, sub)?,
                 env,
@@ -430,7 +432,7 @@ mod tests {
             "c",
             &mut Substitution::default(),
             &ast_packages,
-            PolyTypeMap::new(),
+            &ExternalEnvironment::new(),
             PolyTypeMap::new(),
         )?;
 
