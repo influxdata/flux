@@ -41,13 +41,11 @@ pub type SemanticPackageMap = SemanticMap<String, Package>;
 pub fn infer_stdlib_dir(
     path: &Path,
 ) -> Result<(ExternalEnvironment, PolyTypeMap, SemanticPackageMap)> {
-    let mut sub = Substitution::default();
-
     let ast_packages = parse_dir(path)?;
 
     let mut infer_state = InferState::default();
-    let prelude = infer_state.infer_pre(&mut sub, &ast_packages)?;
-    infer_state.infer_std(&mut sub, &ast_packages, &prelude)?;
+    let prelude = infer_state.infer_pre(&ast_packages)?;
+    infer_state.infer_std(&ast_packages, &prelude)?;
 
     Ok((prelude, infer_state.imports, infer_state.sem_pkg_map))
 }
@@ -149,10 +147,11 @@ fn dependencies<'a>(
 }
 
 /// Constructs a polytype, or more specifically a generic record type, from a hash map.
-pub fn build_polytype(from: PolyTypeMap, sub: &mut Substitution) -> Result<PolyType> {
-    let (r, cons) = build_record(from, sub);
-    infer::solve(&cons, sub)?;
-    let typ = MonoType::record(r).apply(sub);
+pub fn build_polytype(from: PolyTypeMap) -> Result<PolyType> {
+    let mut sub = Substitution::default();
+    let (r, cons) = build_record(from, &mut sub);
+    infer::solve(&cons, &mut sub)?;
+    let typ = MonoType::record(r).apply(&mut sub);
     Ok(infer::generalize(
         &Environment::empty(false),
         sub.cons(),
@@ -192,16 +191,12 @@ struct InferState {
 }
 
 impl InferState {
-    fn infer_pre(
-        &mut self,
-        sub: &mut Substitution,
-        ast_packages: &ASTPackageMap,
-    ) -> Result<ExternalEnvironment> {
+    fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<ExternalEnvironment> {
         let mut prelude_map = ExternalEnvironment::new();
         for name in PRELUDE {
             // Infer each package in the prelude allowing the earlier packages to be used by later
             // packages within the prelude list.
-            let (types, _sem_pkg) = self.infer_pkg(name, sub, ast_packages, &prelude_map)?;
+            let (types, _sem_pkg) = self.infer_pkg(name, ast_packages, &prelude_map)?;
             for (k, v) in types {
                 prelude_map.add(k, v);
             }
@@ -212,18 +207,19 @@ impl InferState {
     #[allow(clippy::type_complexity)]
     fn infer_std(
         &mut self,
-        sub: &mut Substitution,
         ast_packages: &ASTPackageMap,
         prelude: &ExternalEnvironment,
     ) -> Result<()> {
         for (path, _) in ast_packages.iter() {
+            // No need to infer the package again if it has already been inferred through a
+            // dependency
             if !self.sem_pkg_map.contains_key(path) {
-                let (types, sem_pkg) = self.infer_pkg(path, sub, ast_packages, &prelude)?;
+                let (types, sem_pkg) = self.infer_pkg(path, ast_packages, &prelude)?;
 
                 self.sem_pkg_map.insert(path.to_string(), sem_pkg);
                 if !self.imports.contains_key(path) {
                     self.imports
-                        .insert(path.to_string(), build_polytype(types, sub)?);
+                        .insert(path.to_string(), build_polytype(types)?);
                 }
             }
         }
@@ -237,7 +233,6 @@ impl InferState {
     fn infer_pkg(
         &mut self,
         name: &str,                    // name of package to infer
-        sub: &mut Substitution,        // type variable substitution
         ast_packages: &ASTPackageMap,  // ast_packages available for inference
         prelude: &ExternalEnvironment, // prelude types
     ) -> Result<(
@@ -262,12 +257,13 @@ impl InferState {
                     .to_owned();
 
                 let env = Environment::from(prelude);
-                let mut sem_pkg = convert_package(file, &env, sub)?;
-                let env = infer_package(&mut sem_pkg, env, sub, &mut self.imports)?;
+                let mut sub = Substitution::default();
+                let mut sem_pkg = convert_package(file, &env, &mut sub)?;
+                let env = infer_package(&mut sem_pkg, env, &mut sub, &mut self.imports)?;
 
                 self.sem_pkg_map.insert(pkg.to_string(), sem_pkg);
                 self.imports
-                    .insert(pkg.to_string(), build_polytype(env.string_values(), sub)?);
+                    .insert(pkg.to_string(), build_polytype(env.string_values())?);
             }
         }
 
@@ -278,9 +274,10 @@ impl InferState {
         let file = file.unwrap().to_owned();
 
         let env = Environment::new(prelude.into());
-        let mut sem_pkg = convert_package(file, &env, sub)?;
-        let env = infer_package(&mut sem_pkg, env, sub, &mut self.imports)?;
-        sem_pkg = inject_pkg_types(sem_pkg, sub);
+        let mut sub = Substitution::default();
+        let mut sem_pkg = convert_package(file, &env, &mut sub)?;
+        let env = infer_package(&mut sem_pkg, env, &mut sub, &mut self.imports)?;
+        sem_pkg = inject_pkg_types(sem_pkg, &mut sub);
 
         Ok((env.string_values(), sem_pkg))
     }
@@ -429,12 +426,7 @@ mod tests {
             String::from("c") => parse_string("c.flux".to_string(), c).into(),
         };
         let mut infer_state = InferState::default();
-        let (types, _) = infer_state.infer_pkg(
-            "c",
-            &mut Substitution::default(),
-            &ast_packages,
-            &ExternalEnvironment::new(),
-        )?;
+        let (types, _) = infer_state.infer_pkg("c", &ast_packages, &ExternalEnvironment::new())?;
 
         let want = semantic_map! {
             String::from("z") => {

@@ -124,12 +124,7 @@ fn infer_types(
     // Instantiate package importer using generic objects
     let importer: HashMap<&str, PolyType> = imports
         .into_iter()
-        .map(|(path, types)| {
-            (
-                path,
-                build_polytype(types, &mut Substitution::default()).unwrap(),
-            )
-        })
+        .map(|(path, types)| (path, build_polytype(types).unwrap()))
         .collect();
 
     // Parse polytype expressions in initial environment.
