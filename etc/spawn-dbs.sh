@@ -5,9 +5,11 @@ set -e
 PREFIX=flux-integ-tests
 
 PG_NAME="${PREFIX}-postgres"
-PG_TAG="postgres"
+PG_TAG="postgres:14"
+MYSQL_NAME="${PREFIX}-mysql"
+MYSQL_TAG="mysql:8"
 
-SEED="
+PG_SEED="
 CREATE TABLE pets (
  id SERIAL PRIMARY KEY,
  name VARCHAR(20),
@@ -22,8 +24,36 @@ VALUES
  ('Lucy', 14, true)
 ;"
 
+MYSQL_SEED="
+CREATE TABLE pets (
+ id SERIAL,
+ name VARCHAR(20),
+ age INT,
+ seeded TINYINT(1) NOT NULL DEFAULT false,
+ PRIMARY KEY (id)
+) ENGINE = MEMORY;
+INSERT INTO pets (name, age, seeded)
+VALUES
+ ('Stanley', 15, true),
+ ('Lucy', 14, true)
+;"
+
 # Cleanup in case of failed previous runs.
-docker rm -f "${PG_NAME}"
+docker rm -f "${PG_NAME}" "${MYSQL_NAME}"
+
+# mysql is sort of annoying when it comes to logging so to look at the query log,
+# you'll probably want to either use `docker cp` to get a copy of `/tmp/query.log`
+# out of the container, or `docker exec ${MYSQL_NAME} cat /tmp/query.log` and
+# redirect the output to a host-local file.
+docker run --rm --detach \
+  --name "${MYSQL_NAME}" \
+  --publish 3306:3306 \
+  -e MYSQL_USER=flux \
+  -e MYSQL_ROOT_PASSWORD=flux \
+  -e MYSQL_PASSWORD=flux \
+  -e MYSQL_DATABASE=flux \
+  ${MYSQL_TAG} \
+  --general-log=1 --general-log-file=/tmp/query.log
 
 docker run --rm --detach \
   --name "${PG_NAME}" \
@@ -32,11 +62,19 @@ docker run --rm --detach \
   ${PG_TAG} \
   postgres -c log_statement=all
 
-until docker exec "${PREFIX}-postgres" psql -U postgres -c '\q'; do
+until docker exec "${MYSQL_NAME}" mysql --database=flux --host=127.0.0.1 --password=flux --user=flux --execute '\q'; do
+  >&2 echo "MySQL: Waiting"
+  sleep 1
+done
+echo "MySQL: Ready"
+
+until docker exec "${PG_NAME}" psql -U postgres -c '\q'; do
   >&2 echo "Postgres: Waiting"
   sleep 1
 done
-
 echo "Postgres: Ready"
 
-docker exec "${PG_NAME}" psql -U postgres -c "${SEED}"
+docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
+# XXX: query logs don't seem to show up in stdout even when this is set...
+# docker exec "${MYSQL_NAME}" mysql --host=127.0.0.1 --password=flux --user=root --execute "SET GLOBAL general_log = 'ON';"
+docker exec "${MYSQL_NAME}" mysql --database=flux --host=127.0.0.1 --password=flux --user=flux --execute "${MYSQL_SEED}"
