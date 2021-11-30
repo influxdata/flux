@@ -6,6 +6,7 @@ import "testing"
 
 
 mysqlDsn = "flux:flux@tcp(127.0.0.1:3306)/flux"
+mariaDbDsn = "flux:flux@tcp(127.0.0.1:3307)/flux"
 pgDsn = "postgresql://postgres@127.0.0.1:5432/postgres?sslmode=disable"
 
 stanley = { name: "Stanley", age: 15 }
@@ -85,6 +86,48 @@ testcase integration_mysql_write_to {
         |> sql.to(
            driverName: "mysql",
            dataSourceName: mysqlDsn,
+           table: "pets",
+           batchSize: 1)
+        // The array.from() will be returned and will cause the test to fail.
+        // Filtering will mean the test can pass. Hopefully `sql.to()` will
+        // error if there's a problem.
+        |> filter(fn: (r) => false)
+        // Without the yield, the flux script can "finish", closing the db
+        // connection before the insert commits!
+        |> yield()
+}
+
+testcase integration_mariadb_read_from_seed {
+    want = array.from(rows: [stanley, lucy])
+    got = sql.from(
+        driverName: "mysql",
+        dataSourceName: mariaDbDsn,
+        query: "SELECT name, age FROM pets WHERE seeded = true"
+    )
+    testing.diff(
+        got: got,
+        want: want
+    ) |> yield()
+}
+
+testcase integration_mariadb_read_from_nonseed {
+    want = array.from(rows: [sophie])
+    got = sql.from(
+        driverName: "mysql",
+        dataSourceName: mariaDbDsn,
+        query: "SELECT name, age FROM pets WHERE seeded = false"
+    )
+    testing.diff(
+        got: got,
+        want: want
+    ) |> yield()
+}
+
+testcase integration_mariadb_write_to {
+    array.from(rows: [sophie])
+        |> sql.to(
+           driverName: "mysql",
+           dataSourceName: mariaDbDsn,
            table: "pets",
            batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.

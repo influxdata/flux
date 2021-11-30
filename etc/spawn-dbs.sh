@@ -8,6 +8,8 @@ PG_NAME="${PREFIX}-postgres"
 PG_TAG="postgres:14"
 MYSQL_NAME="${PREFIX}-mysql"
 MYSQL_TAG="mysql:8"
+MARIADB_NAME="${PREFIX}-mariadb"
+MARIADB_TAG="mariadb:10"
 
 PG_SEED="
 CREATE TABLE pets (
@@ -39,7 +41,7 @@ VALUES
 ;"
 
 # Cleanup previous runs.
-docker rm -f "${PG_NAME}" "${MYSQL_NAME}"
+docker rm -f "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}"
 
 # mysql is sort of annoying when it comes to logging so to look at the query log,
 # you'll probably want to either use `docker cp` to get a copy of `/tmp/query.log`
@@ -56,6 +58,16 @@ docker run --rm --detach \
   --general-log=1 --general-log-file=/tmp/query.log
 
 docker run --rm --detach \
+  --name "${MARIADB_NAME}" \
+  --publish 3307:3306 \
+  -e MARIADB_USER=flux \
+  -e MARIADB_ROOT_PASSWORD=flux \
+  -e MARIADB_PASSWORD=flux \
+  -e MARIADB_DATABASE=flux \
+  ${MARIADB_TAG} \
+  --general-log=1 --general-log-file=/tmp/query.log
+
+docker run --rm --detach \
   --name "${PG_NAME}" \
   --publish 5432:5432 \
   -e POSTGRES_HOST_AUTH_METHOD=trust \
@@ -66,15 +78,22 @@ until docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --hos
   >&2 echo "MySQL: Waiting"
   sleep 1
 done
-echo "MySQL: Ready"
+>&2 echo "MySQL: Ready"
+
+until docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'; do
+  >&2 echo "MariaDB: Waiting"
+  sleep 1
+done
+>&2 echo "MariaDB: Ready"
 
 until docker exec "${PG_NAME}" psql -U postgres -c '\q'; do
   >&2 echo "Postgres: Waiting"
   sleep 1
 done
-echo "Postgres: Ready"
+>&2 echo "Postgres: Ready"
 
 docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
 # XXX: query logs don't seem to show up in stdout even when this is set...
 # docker exec "${MYSQL_NAME}" mysql --host=127.0.0.1 --password=flux --user=root --execute "SET GLOBAL general_log = 'ON';"
 docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
