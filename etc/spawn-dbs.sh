@@ -10,6 +10,8 @@ MYSQL_NAME="${PREFIX}-mysql"
 MYSQL_TAG="mysql:8"
 MARIADB_NAME="${PREFIX}-mariadb"
 MARIADB_TAG="mariadb:10"
+MS_NAME="${PREFIX}-mssql"
+MS_TAG="mcr.microsoft.com/mssql/server:2019-latest"
 
 PG_SEED="
 CREATE TABLE pets (
@@ -40,8 +42,21 @@ VALUES
  ('Lucy', 14, true)
 ;"
 
+MSSQL_SEED="
+CREATE TABLE pets (
+ id INT IDENTITY(1, 1) PRIMARY KEY,
+ name VARCHAR(20),
+ age INT,
+ seeded BIT NOT NULL DEFAULT 0
+);
+INSERT INTO pets (name, age, seeded)
+VALUES
+ ('Stanley', 15, 1),
+ ('Lucy', 14, 1)
+;"
+
 # Cleanup previous runs.
-docker rm -f "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}"
+docker rm -f "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}"
 # XXX: if you want to shutdown all the containers (after you're done running
 # integration tests), you should be able to run something like:
 # ```
@@ -59,7 +74,7 @@ docker run --rm --detach \
   -e MYSQL_ROOT_PASSWORD=flux \
   -e MYSQL_PASSWORD=flux \
   -e MYSQL_DATABASE=flux \
-  ${MYSQL_TAG} \
+  "${MYSQL_TAG}" \
   --general-log=1 --general-log-file=/tmp/query.log
 
 docker run --rm --detach \
@@ -69,15 +84,33 @@ docker run --rm --detach \
   -e MARIADB_ROOT_PASSWORD=flux \
   -e MARIADB_PASSWORD=flux \
   -e MARIADB_DATABASE=flux \
-  ${MARIADB_TAG} \
+  "${MARIADB_TAG}" \
   --general-log=1 --general-log-file=/tmp/query.log
 
 docker run --rm --detach \
   --name "${PG_NAME}" \
   --publish 5432:5432 \
   -e POSTGRES_HOST_AUTH_METHOD=trust \
-  ${PG_TAG} \
+  "${PG_TAG}" \
   postgres -c log_statement=all
+
+# To look at the query log for MSSQL, try something like the following:
+# ```
+# docker exec -it flux-integ-tests-mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q 'SELECT TOP(100) t.TEXT FROM sys.dm_exec_query_stats s CROSS APPLY sys.dm_exec_sql_text(s.sql_handle) t ORDER BY s.last_execution_time'
+# ```
+docker run --rm --detach \
+  --name "${MS_NAME}" \
+  --publish 1433:1433 \
+  -e ACCEPT_EULA=Y \
+  -e 'SA_PASSWORD=fluX!234' \
+  -e MSSQL_PID=Developer \
+  "${MS_TAG}"
+
+until docker exec "${MS_NAME}" /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q "EXIT"; do
+  >&2 echo "MSSQL: Waiting"
+  sleep 1
+done
+>&2 echo "MSSQL: Ready"
 
 until docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'; do
   >&2 echo "MySQL: Waiting"
@@ -98,7 +131,6 @@ done
 >&2 echo "Postgres: Ready"
 
 docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
-# XXX: query logs don't seem to show up in stdout even when this is set...
-# docker exec "${MYSQL_NAME}" mysql --host=127.0.0.1 --password=flux --user=root --execute "SET GLOBAL general_log = 'ON';"
 docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
 docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+docker exec "${MS_NAME}" /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q "${MSSQL_SEED}";
