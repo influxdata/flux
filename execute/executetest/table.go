@@ -362,7 +362,7 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 }
 
 func TablesFromCache(c execute.DataCache) (tables []*Table, err error) {
-	c.ForEach(func(key flux.GroupKey) {
+	err = c.ForEach(func(key flux.GroupKey) {
 		if err != nil {
 			return
 		}

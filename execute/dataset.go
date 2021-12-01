@@ -34,8 +34,8 @@ type DatasetContext interface {
 type DataCache interface {
 	Table(flux.GroupKey) (flux.Table, error)
 
-	ForEach(func(flux.GroupKey))
-	ForEachWithContext(func(flux.GroupKey, Trigger, TableContext))
+	ForEach(func(flux.GroupKey)) error
+	ForEachWithContext(func(flux.GroupKey, Trigger, TableContext)) error
 
 	DiscardTable(flux.GroupKey)
 	ExpireTable(flux.GroupKey)
@@ -126,7 +126,12 @@ func (d *dataset) UpdateProcessingTime(time Time) error {
 }
 
 func (d *dataset) evalTriggers() (err error) {
-	d.cache.ForEachWithContext(func(key flux.GroupKey, trigger Trigger, bc TableContext) {
+	// Once the ForEach call is finished, it's possible that err != nil,
+	// but that the error returned from ForEach is nil.
+	//
+	// Store that error in a separate variable to avoid overwriting
+	// valid errors with nil.
+	e := d.cache.ForEachWithContext(func(key flux.GroupKey, trigger Trigger, bc TableContext) {
 		if err != nil {
 			// Skip the rest once we have encountered an error
 			return
@@ -149,7 +154,11 @@ func (d *dataset) evalTriggers() (err error) {
 			d.expireTable(key)
 		}
 	})
-	return err
+	// Only set err = e if err is nil to avoid overwriting a valid error
+	if err == nil && e != nil {
+		err = e
+	}
+	return
 }
 
 func (d *dataset) triggerTable(key flux.GroupKey) error {
@@ -180,9 +189,13 @@ func (d *dataset) RetractTable(key flux.GroupKey) error {
 }
 
 func (d *dataset) Finish(err error) {
+	// Only trigger tables if we are not finishing because of an error.
 	if err == nil {
-		// Only trigger tables we if we not finishing because of an error.
-		d.cache.ForEach(func(bk flux.GroupKey) {
+		// Once the ForEach call is finished, it's possible that e == nil && err != nil
+		//
+		// So we store that error in a separate variable to avoid overwriting
+		// valid errors with nil.
+		e := d.cache.ForEach(func(bk flux.GroupKey) {
 			if err != nil {
 				return
 			}
@@ -194,6 +207,10 @@ func (d *dataset) Finish(err error) {
 			err = d.triggerTable(bk)
 			d.cache.ExpireTable(bk)
 		})
+		// Only set err = e if err is nil to avoid overwriting a valid error
+		if err == nil && e != nil {
+			err = e
+		}
 	}
 	d.ts.Finish(d.id, err)
 }

@@ -1649,6 +1649,80 @@ func TestMergeJoin_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			// Give one table an extra column.
+			// When join tries to look up that column name in the column index map,
+			// it will get a value of 0.
+			//
+			// Prior to the fix, this would cause the join transformation to try to
+			// append whatever value was in the extra column to the column at index 0.
+			// If they are not the same type, we get a panic.
+			name: "mismatched schemas",
+			spec: &universe.MergeJoinProcedureSpec{
+				On:         []string{"_time", "Alias", "Device", "SerialNumber"},
+				TableNames: tableNames,
+			},
+			data0: []*executetest.Table{
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch", Type: flux.TFloat},
+						{Label: "Angle", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(1), "12345", execute.Time(1), 8.4, 1.2},
+					},
+				},
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch", Type: flux.TFloat},
+						{Label: "Angle", Type: flux.TFloat},
+						{Label: "Gauge", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(2), "13579", execute.Time(1), 9.3, 5.6, 9.3},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(1), "12345", execute.Time(1), 8.4},
+					},
+				},
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(2), "13579", execute.Time(1), 9.3},
+					},
+				},
+			},
+			want: []*executetest.Table{},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

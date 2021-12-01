@@ -230,18 +230,20 @@ func (d *DataStore) Table(key flux.GroupKey) (flux.Table, error) {
 
 func (d *DataStore) Err() error { return d.err }
 
-func (d *DataStore) ForEach(f func(key flux.GroupKey)) {
+func (d *DataStore) ForEach(f func(key flux.GroupKey)) error {
 	d.tables.Range(func(key flux.GroupKey, _ interface{}) {
 		f(key)
 	})
+	return nil
 }
 
-func (d *DataStore) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) {
+func (d *DataStore) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) error {
 	d.tables.Range(func(key flux.GroupKey, _ interface{}) {
 		f(key, nil, execute.TableContext{
 			Key: key,
 		})
 	})
+	return nil
 }
 
 func (d *DataStore) DiscardTable(key flux.GroupKey) {

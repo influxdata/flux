@@ -2089,13 +2089,14 @@ func (d *tableBuilderCache) ExpireTable(key flux.GroupKey) {
 	}
 }
 
-func (d *tableBuilderCache) ForEach(f func(flux.GroupKey)) {
+func (d *tableBuilderCache) ForEach(f func(flux.GroupKey)) error {
 	d.tables.Range(func(key flux.GroupKey, value interface{}) {
 		f(key)
 	})
+	return nil
 }
 
-func (d *tableBuilderCache) ForEachWithContext(f func(flux.GroupKey, Trigger, TableContext)) {
+func (d *tableBuilderCache) ForEachWithContext(f func(flux.GroupKey, Trigger, TableContext)) error {
 	d.tables.Range(func(key flux.GroupKey, value interface{}) {
 		b := value.(tableState)
 		f(key, b.trigger, TableContext{
@@ -2103,6 +2104,7 @@ func (d *tableBuilderCache) ForEachWithContext(f func(flux.GroupKey, Trigger, Ta
 			Count: b.builder.NRows(),
 		})
 	})
+	return nil
 }
 
 type emptyTable struct {

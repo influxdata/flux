@@ -285,15 +285,16 @@ func (c *mergeJoinCache) Table(key flux.GroupKey) (flux.Table, error) {
 	return c.join(key, t.l, t.r)
 }
 
-func (c *mergeJoinCache) ForEach(f func(flux.GroupKey)) {
+func (c *mergeJoinCache) ForEach(f func(flux.GroupKey)) error {
 	c.data.Range(func(key flux.GroupKey, value interface{}) {
 		if value.(*cacheEntry).ready() {
 			f(key)
 		}
 	})
+	return nil
 }
 
-func (c *mergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) {
+func (c *mergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) error {
 	c.data.Range(func(key flux.GroupKey, value interface{}) {
 		if value.(*cacheEntry).ready() {
 			f(key, execute.NewTriggerFromSpec(c.spec), execute.TableContext{
@@ -301,6 +302,7 @@ func (c *mergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigge
 			})
 		}
 	})
+	return nil
 }
 
 func (c *mergeJoinCache) DiscardTable(key flux.GroupKey) {
