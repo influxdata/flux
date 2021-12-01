@@ -26,7 +26,7 @@ pub mod flatbuffers;
 
 use thiserror::Error;
 
-use crate::{ast, errors::Errors, parser};
+use crate::{ast, errors::Errors, parser, semantic::types::PolyType};
 
 /// Error represents any any error that can occur during any step of the type analysis process.
 ///
@@ -51,9 +51,64 @@ pub enum Error {
     Inference(#[from] nodes::Error),
 }
 
+/// An environment of values that are available outside of a package
+#[derive(Default, Debug, Clone, PartialEq)]
+pub struct ExportEnvironment {
+    /// Values in the environment.
+    values: types::PolyTypeMap<String>,
+}
+
+impl From<types::PolyTypeMap<String>> for ExportEnvironment {
+    fn from(values: types::PolyTypeMap<String>) -> Self {
+        ExportEnvironment { values }
+    }
+}
+
+impl ExportEnvironment {
+    /// Returns an empty environment
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Add a new variable binding to the current stack frame.
+    pub fn add(&mut self, name: String, t: PolyType) {
+        self.values.insert(name, t);
+    }
+
+    /// Check whether a `PolyType` `t` given by a
+    /// string identifier is in the environment. Also checks parent environments.
+    /// If the type is present, returns a pointer to `t`; otherwise, returns `None`.
+    pub fn lookup(&self, v: &str) -> Option<&PolyType> {
+        self.values.get(v)
+    }
+
+    /// Copy all the variable bindings from another [`ExportEnvironment`] to the current environment.
+    /// This does not change the current environment's `parent` or `readwrite` flag.
+    pub fn copy_bindings_from(&mut self, other: &Self) {
+        for (name, t) in other.values.iter() {
+            self.add(name.clone(), t.clone());
+        }
+    }
+
+    /// Returns an iterator over all values
+    pub fn iter(&self) -> impl Iterator<Item = (&str, &PolyType)> + '_ {
+        self.values.iter().map(|(k, v)| (k.as_str(), v))
+    }
+
+    /// Returns how many values exist in the environment
+    pub fn len(&self) -> usize {
+        self.values.len()
+    }
+
+    /// Returns `true` if the environment contains no elements.
+    pub fn is_empty(&self) -> bool {
+        self.values.is_empty()
+    }
+}
+
 /// Analyzer provides an API for analyzing Flux code.
-pub struct Analyzer<I: import::Importer> {
-    env: env::Environment,
+pub struct Analyzer<'env, I: import::Importer> {
+    env: env::Environment<'env>,
     importer: I,
     config: AnalyzerConfig,
 }
@@ -66,10 +121,10 @@ pub struct AnalyzerConfig {
     pub skip_checks: bool,
 }
 
-impl<I: import::Importer> Analyzer<I> {
+impl<'env, I: import::Importer> Analyzer<'env, I> {
     /// Create an analyzer with the given environment and importer.
     /// The environment represents any values in scope.
-    pub fn new(env: env::Environment, importer: I, config: AnalyzerConfig) -> Self {
+    pub fn new(env: env::Environment<'env>, importer: I, config: AnalyzerConfig) -> Self {
         Analyzer {
             env,
             importer,
@@ -78,7 +133,7 @@ impl<I: import::Importer> Analyzer<I> {
     }
     /// Create an analyzer with the given environment and importer using default configuration.
     /// The environment represents any values in scope.
-    pub fn new_with_defaults(env: env::Environment, importer: I) -> Self {
+    pub fn new_with_defaults(env: env::Environment<'env>, importer: I) -> Self {
         Analyzer::new(env, importer, AnalyzerConfig::default())
     }
     /// Analyze Flux source code returning the semantic package and the package environment.
@@ -87,7 +142,7 @@ impl<I: import::Importer> Analyzer<I> {
         pkgpath: String,
         file_name: String,
         src: &str,
-    ) -> Result<(env::Environment, nodes::Package), Errors<Error>> {
+    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
         let ast_file = parser::parse_string(file_name, src);
         let ast_pkg = ast::Package {
             base: ast_file.base.clone(),
@@ -101,7 +156,7 @@ impl<I: import::Importer> Analyzer<I> {
     pub fn analyze_ast(
         &mut self,
         ast_pkg: ast::Package,
-    ) -> Result<(env::Environment, nodes::Package), Errors<Error>> {
+    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
     /// Analyze Flux AST returning the semantic package and the package environment.
@@ -112,7 +167,7 @@ impl<I: import::Importer> Analyzer<I> {
         // operation.
         ast_pkg: ast::Package,
         sub: &mut sub::Substitution,
-    ) -> Result<(env::Environment, nodes::Package), Errors<Error>> {
+    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
         let mut errors = Errors::new();
         if !self.config.skip_checks {
             if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
@@ -133,10 +188,16 @@ impl<I: import::Importer> Analyzer<I> {
             }
         }
 
-        // Clone the environment as the inferred package may mutate it.
         let env = self.env.clone();
+        // Clone the environment as the inferred package may mutate it.
         let env = match nodes::infer_package(&mut sem_pkg, env, sub, &mut self.importer) {
-            Ok(env) => env,
+            Ok(env) => ExportEnvironment {
+                values: env
+                    .values
+                    .into_iter()
+                    .map(|(k, v)| (k.to_string(), v))
+                    .collect(),
+            },
             Err(err) => {
                 errors.extend(err.into_iter().map(Error::from));
                 return Err(errors);
@@ -150,7 +211,17 @@ impl<I: import::Importer> Analyzer<I> {
     }
 
     /// Drop returns ownership of the environment and importer.
-    pub fn drop(self) -> (env::Environment, I) {
-        (self.env, self.importer)
+    pub fn drop(self) -> (ExportEnvironment, I) {
+        (
+            ExportEnvironment {
+                values: self
+                    .env
+                    .values
+                    .into_iter()
+                    .map(|(k, v)| (k.to_string(), v))
+                    .collect(),
+            },
+            self.importer,
+        )
     }
 }

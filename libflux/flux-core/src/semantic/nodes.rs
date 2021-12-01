@@ -114,13 +114,13 @@ impl From<infer::Error> for Error {
 
 type VectorizeEnv = HashMap<Symbol, MonoType>;
 
-struct InferState<'a> {
+struct InferState<'a, 'env> {
     sub: &'a mut Substitution,
-    env: Environment,
+    env: Environment<'env>,
     errors: Errors<Error>,
 }
 
-impl InferState<'_> {
+impl InferState<'_, '_> {
     fn constrain(&mut self, exp: Kind, act: &MonoType, loc: &ast::SourceLocation) {
         if let Err(err) = infer::constrain(exp, act, loc, self.sub) {
             self.errors.push(err.into());
@@ -272,7 +272,7 @@ impl Expression {
             Expression::Error(loc) => loc,
         }
     }
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         match self {
             Expression::Identifier(e) => e.infer(infer),
             Expression::Array(e) => e.infer(infer),
@@ -363,12 +363,12 @@ impl Expression {
 
 /// Infer the types of a Flux package.
 #[allow(missing_docs)]
-pub fn infer_package<T>(
+pub fn infer_package<'a, T>(
     pkg: &mut Package,
-    env: Environment,
+    env: Environment<'a>,
     sub: &mut Substitution,
     importer: &mut T,
-) -> std::result::Result<Environment, Errors<Error>>
+) -> std::result::Result<Environment<'a>, Errors<Error>>
 where
     T: Importer,
 {
@@ -530,7 +530,7 @@ pub struct OptionStmt {
 }
 
 impl OptionStmt {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         match &mut self.assignment {
             Assignment::Member(stmt) => {
                 stmt.init.infer(infer)?;
@@ -582,7 +582,7 @@ pub struct TestStmt {
 }
 
 impl TestStmt {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result<()> {
         self.assignment.infer(infer)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -600,7 +600,7 @@ pub struct TestCaseStmt {
 }
 
 impl TestCaseStmt {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.block.infer(infer)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -618,7 +618,7 @@ pub struct ExprStmt {
 }
 
 impl ExprStmt {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result<()> {
         self.expression.infer(infer)?;
         Ok(())
     }
@@ -638,7 +638,7 @@ pub struct ReturnStmt {
 
 impl ReturnStmt {
     #[allow(dead_code)]
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.argument.infer(infer)
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -691,7 +691,7 @@ impl VariableAssgn {
     // the variable to its newly generalized type in the type environment
     // before inferring the rest of the program.
     //
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result<()> {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result<()> {
         self.init.infer(infer)?;
 
         // Apply substitution to the type environment
@@ -744,7 +744,7 @@ pub struct StringExpr {
 }
 
 impl StringExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         for p in &mut self.parts {
             if let StringExprPart::Interpolated(ref mut ip) = p {
                 ip.expression.infer(infer)?;
@@ -814,7 +814,7 @@ pub struct ArrayExpr {
 }
 
 impl ArrayExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         let mut elt = None;
         for el in &mut self.elements {
             el.infer(infer)?;
@@ -852,7 +852,7 @@ pub struct DictExpr {
 }
 
 impl DictExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         let key = MonoType::Var(infer.sub.fresh());
         let val = MonoType::Var(infer.sub.fresh());
 
@@ -903,7 +903,7 @@ pub struct FunctionExpr {
 }
 
 impl FunctionExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         let mut pipe = None;
         let mut req = MonoTypeMap::new();
         let mut opt = MonoTypeMap::new();
@@ -980,7 +980,7 @@ impl FunctionExpr {
 
     fn infer_default_params(
         &mut self,
-        infer: &mut InferState<'_>,
+        infer: &mut InferState<'_, '_>,
         function_type: PolyType,
     ) -> Result {
         let mut pipe = None;
@@ -1177,7 +1177,7 @@ pub enum Block {
 }
 
 impl Block {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         match self {
             Block::Variable(stmt, block) => {
                 stmt.infer(infer)?;
@@ -1261,14 +1261,14 @@ pub struct BinaryExpr {
 }
 
 impl BinaryExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         // Compute the left and right constraints.
         // Do this first so that we can return an error if one occurs.
         self.left.infer(infer)?;
         self.right.infer(infer)?;
 
         let binop_arithmetic_constraints =
-            |this: &mut BinaryExpr, infer: &mut InferState<'_>, kind| {
+            |this: &mut BinaryExpr, infer: &mut InferState<'_, '_>, kind| {
                 let left = this.left.type_of();
                 this.typ = left.clone();
 
@@ -1286,7 +1286,7 @@ impl BinaryExpr {
                 ]);
             };
         let binop_compare_constraints =
-            |this: &mut BinaryExpr, infer: &mut InferState<'_>, kind| {
+            |this: &mut BinaryExpr, infer: &mut InferState<'_, '_>, kind| {
                 this.typ = MonoType::Bool;
                 infer.solve(&[
                     // https://github.com/influxdata/flux/issues/2393
@@ -1398,7 +1398,7 @@ pub struct CallExpr {
 }
 
 impl CallExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         // First, recursively infer every type of the children of this call expression,
         // update the environment and the constraints, and use the inferred types to
         // build the fields of the type for this call expression.
@@ -1473,7 +1473,7 @@ pub struct ConditionalExpr {
 }
 
 impl ConditionalExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.test.infer(infer)?;
         self.consequent.infer(infer)?;
         self.alternate.infer(infer)?;
@@ -1510,7 +1510,7 @@ pub struct LogicalExpr {
 }
 
 impl LogicalExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.left.infer(infer)?;
         self.right.infer(infer)?;
         infer.solve(&[
@@ -1553,7 +1553,7 @@ impl MemberExpr {
     //
     // where 'r is a fresh type variable.
     //
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.object.infer(infer)?;
         let t = self.object.type_of();
 
@@ -1593,7 +1593,7 @@ pub struct IndexExpr {
 }
 
 impl IndexExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.array.infer(infer)?;
         self.index.infer(infer)?;
 
@@ -1632,7 +1632,7 @@ pub struct ObjectExpr {
 }
 
 impl ObjectExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         // If record extension, infer constraints for base
         let mut r = match &mut self.with {
             Some(expr) => {
@@ -1682,7 +1682,7 @@ pub struct UnaryExpr {
 }
 
 impl UnaryExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         self.argument.infer(infer)?;
         match self.operator {
             ast::Operator::NotOperator => {
@@ -1748,7 +1748,7 @@ pub struct IdentifierExpr {
 }
 
 impl IdentifierExpr {
-    fn infer(&mut self, infer: &mut InferState<'_>) -> Result {
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> Result {
         let poly = infer.env.lookup(&self.name).cloned().unwrap_or_else(|| {
             infer.error(
                 self.loc.clone(),

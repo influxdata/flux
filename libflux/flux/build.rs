@@ -9,7 +9,7 @@ use std::{
 
 use anyhow::{bail, Result};
 use fluxcore::semantic::{
-    bootstrap, env::Environment, flatbuffers::types as fb, sub::Substitutable,
+    bootstrap, flatbuffers::types as fb, sub::Substitutable, ExportEnvironment,
 };
 use walkdir::WalkDir;
 
@@ -62,7 +62,7 @@ fn main() -> Result<()> {
     let (prelude, imports, _) = bootstrap::infer_stdlib_dir(stdlib_path)?;
 
     // Validate there aren't any free type variables in the environment
-    for (name, ty) in &prelude {
+    for (name, ty) in prelude.iter() {
         if !ty.free_vars().is_empty() {
             bail!("found free variables in type of {}: {}", name, ty);
         }
@@ -74,10 +74,10 @@ fn main() -> Result<()> {
     }
 
     let path = dir.join("prelude.data");
-    serialize(Environment::from(prelude), fb::build_env, &path)?;
+    serialize(prelude, fb::build_env, &path)?;
 
     let path = dir.join("stdlib.data");
-    serialize(Environment::from(imports), fb::build_env, &path)?;
+    serialize(ExportEnvironment::from(imports), fb::build_env, &path)?;
 
     Ok(())
 }

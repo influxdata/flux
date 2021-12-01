@@ -40,7 +40,7 @@ use crate::{
         nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
-        Analyzer, AnalyzerConfig,
+        Analyzer, AnalyzerConfig, ExportEnvironment,
     },
 };
 
@@ -113,7 +113,7 @@ fn infer_types(
     imp: HashMap<&str, HashMap<&str, &str>>,
     want: Option<HashMap<&str, &str>>,
     config: AnalyzerConfig,
-) -> Result<Environment, Error> {
+) -> Result<ExportEnvironment, Error> {
     let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<String, PolyType>> = imp
@@ -124,18 +124,13 @@ fn infer_types(
     // Instantiate package importer using generic objects
     let importer: HashMap<&str, PolyType> = imports
         .into_iter()
-        .map(|(path, types)| {
-            (
-                path,
-                build_polytype(types, &mut Substitution::default()).unwrap(),
-            )
-        })
+        .map(|(path, types)| (path, build_polytype(types).unwrap()))
         .collect();
 
     // Parse polytype expressions in initial environment.
     let env = parse_map(env);
 
-    let env: Environment = env.into();
+    let env = Environment::from(env);
 
     let pkg = parse_program(src);
     let mut analyzer = Analyzer::new(Environment::new(env), importer, config);
@@ -3487,6 +3482,7 @@ fn copy_bindings_from_other_env() {
     assert_eq!(
         sub_env,
         Environment {
+            external: None,
             parent: Some(env.clone().into()),
             readwrite: true,
             values: semantic_map!(

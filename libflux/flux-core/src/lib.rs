@@ -20,7 +20,6 @@ extern crate derive_more;
 extern crate fnv;
 #[macro_use]
 extern crate serde_derive;
-extern crate lazy_static;
 extern crate serde_aux;
 
 // Only include the doc module if the feature is enabled.

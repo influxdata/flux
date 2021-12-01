@@ -6,12 +6,12 @@ use std::{
 };
 
 use anyhow::{bail, Context, Result};
-use fluxcore::{
-    doc,
-    doc::example,
-    semantic::{bootstrap, Analyzer},
-};
 use structopt::StructOpt;
+
+use fluxcore::{
+    doc::{self, example},
+    semantic::{bootstrap, env::Environment, Analyzer},
+};
 
 #[derive(Debug, StructOpt)]
 #[structopt(about = "generate and validate Flux source code documentation")]
@@ -237,7 +237,7 @@ fn parse_docs(
     exceptions: &[&str],
 ) -> Result<(Vec<doc::PackageDoc>, doc::Diagnostics)> {
     let (prelude, stdlib_importer) = bootstrap::stdlib(stdlib_dir)?;
-    let mut analyzer = Analyzer::new_with_defaults(prelude, stdlib_importer);
+    let mut analyzer = Analyzer::new_with_defaults(Environment::from(&prelude), stdlib_importer);
     let ast_packages = bootstrap::parse_dir(dir)?;
     let mut docs = Vec::with_capacity(ast_packages.len());
     let mut diagnostics = Vec::new();

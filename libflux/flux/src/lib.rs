@@ -15,6 +15,8 @@ extern crate pretty_assertions;
 use std::{ffi::*, mem, os::raw::c_char};
 
 use anyhow::{self, bail, Result};
+use once_cell::sync::Lazy;
+
 pub use fluxcore::{ast, formatter, scanner, semantic, *};
 use fluxcore::{
     parser::Parser,
@@ -27,22 +29,24 @@ use fluxcore::{
         nodes::{Package, Symbol},
         sub::Substitution,
         types::{MonoType, PolyType, TvarKinds},
-        Analyzer, AnalyzerConfig,
+        Analyzer, AnalyzerConfig, ExportEnvironment,
     },
 };
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
 /// Prelude are the names and types of values that are inscope in all Flux scripts.
-pub fn prelude() -> Option<Environment> {
+pub fn prelude() -> Option<ExportEnvironment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
         .unwrap()
         .into()
 }
 
+static PRELUDE: Lazy<Option<ExportEnvironment>> = Lazy::new(prelude);
+
 /// Imports is a map of import path to types of packages.
-pub fn imports() -> Option<Environment> {
+pub fn imports() -> Option<ExportEnvironment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
         .unwrap()
@@ -52,16 +56,18 @@ pub fn imports() -> Option<Environment> {
 /// Creates a new analyzer that can semantically analyze Flux source code.
 ///
 /// The analyzer is aware of the stdlib and prelude.
-pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<Environment>> {
-    let env = match prelude() {
-        Some(prelude) => Environment::new(prelude),
+pub fn new_semantic_analyzer(
+    config: AnalyzerConfig,
+) -> Result<Analyzer<'static, ExportEnvironment>> {
+    let env = match &*PRELUDE {
+        Some(prelude) => prelude,
         None => bail!("missing prelude"),
     };
     let importer = match imports() {
         Some(imports) => imports,
         None => bail!("missing stdlib imports"),
     };
-    Ok(Analyzer::new(env, importer, config))
+    Ok(Analyzer::new(Environment::from(env), importer, config))
 }
 
 /// An error handle designed to allow passing `Error` instances to library
@@ -395,7 +401,7 @@ pub unsafe extern "C" fn flux_find_var_type(
 
 fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
     let env = match prelude() {
-        Some(prelude) => Environment::new(prelude),
+        Some(prelude) => prelude,
         None => bail!("missing prelude"),
     };
     let imports = match imports() {
@@ -408,21 +414,20 @@ fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
 /// StatefulAnalyzer updates its environment with the contents of any previously analyzed package.
 /// This enables uses cases where analysis is performed iteratively, for example in a REPL.
 pub struct StatefulAnalyzer {
-    env: Environment,
-    imports: Environment,
+    env: ExportEnvironment,
+    imports: ExportEnvironment,
 }
 
 impl StatefulAnalyzer {
     fn analyze(&mut self, ast_pkg: ast::Package) -> Result<fluxcore::semantic::nodes::Package> {
         let mut analyzer =
-            Analyzer::new_with_defaults(mem::take(&mut self.env), mem::take(&mut self.imports));
+            Analyzer::new_with_defaults(Environment::from(&self.env), mem::take(&mut self.imports));
         let (mut env, sem_pkg) = match analyzer.analyze_ast(ast_pkg) {
             Ok(r) => r,
             Err(e) => {
-                // In the face of an error we need to get the env and imports
+                // In the face of an error we need to get the imports
                 // back from the analyzer.
-                let (env, imports) = analyzer.drop();
-                self.env = env;
+                let (_env, imports) = analyzer.drop();
                 self.imports = imports;
                 return Err(e.into());
             }
@@ -442,12 +447,12 @@ impl StatefulAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                if let Some(poly) = self.imports.lookup_str(path) {
-                    env.add(dec.import_symbol.clone(), poly.to_owned());
+                if let Some(poly) = self.imports.lookup(path) {
+                    env.add(dec.import_symbol.to_string(), poly.to_owned());
                 }
             }
         }
-        self.env = env;
+        self.env.copy_bindings_from(&env);
         Ok(sem_pkg)
     }
 }
@@ -511,20 +516,23 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<Package> {
 pub fn infer_with_env(
     ast_pkg: ast::Package,
     mut sub: Substitution,
-    env: Option<Environment>,
-) -> Result<(Environment, Package)> {
-    let mut prelude = match prelude() {
-        Some(prelude) => Environment::new(prelude),
+    env: Option<Environment<'static>>,
+) -> Result<(ExportEnvironment, Package)> {
+    let prelude = match prelude() {
+        Some(prelude) => prelude,
         None => bail!("missing prelude"),
     };
-    if let Some(e) = env {
-        prelude.copy_bindings_from(&e);
-    }
+    let env = if let Some(mut e) = env {
+        e.parent = Some(Box::new(Environment::from(&prelude)));
+        e
+    } else {
+        Environment::from(&prelude)
+    };
     let importer = match imports() {
         Some(imports) => imports,
         None => bail!("missing stdlib imports"),
     };
-    let mut analyzer = Analyzer::new_with_defaults(prelude, importer);
+    let mut analyzer = Analyzer::new_with_defaults(env, importer);
     analyzer
         .analyze_ast_with_substitution(ast_pkg, &mut sub)
         .map_err(anyhow::Error::from)

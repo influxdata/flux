@@ -144,11 +144,7 @@ fn test_serialize_vectorization() {
         package: String::from("test"),
         files: f,
     };
-    let mut analyzer = Analyzer::new(
-        Environment::default(),
-        HashMap::default(),
-        Default::default(),
-    );
+    let mut analyzer = Analyzer::new(Default::default(), HashMap::default(), Default::default());
     let (_, mut pkg) = match analyzer.analyze_ast(pkg) {
         Ok(pkg) => pkg,
         Err(e) => {
