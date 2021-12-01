@@ -254,27 +254,30 @@ impl InferState {
         // Infer all dependencies
         for pkg in deps {
             if self.imports.import(pkg).is_none() {
-                let file = ast_packages
-                    .get(pkg)
-                    .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, pkg))?
-                    .to_owned();
-
-                let env = Environment::from(prelude);
-                let mut sub = Substitution::default();
-                let mut sem_pkg = convert_package(file, &env, &mut sub)?;
-                let env = infer_package(&mut sem_pkg, env, &mut sub, &mut self.imports)?;
+                let (env, sem_pkg) =
+                    self.infer_pkg_with_resolved_deps(pkg, ast_packages, prelude)?;
 
                 self.sem_pkg_map.insert(pkg.to_string(), sem_pkg);
-                self.imports
-                    .insert(pkg.to_string(), build_polytype(env.string_values())?);
+                self.imports.insert(pkg.to_string(), build_polytype(env)?);
             }
         }
 
-        let file = ast_packages.get(name);
-        if file.is_none() {
-            bail!(r#"package "{}" not found"#, name);
-        }
-        let file = file.unwrap().to_owned();
+        self.infer_pkg_with_resolved_deps(name, ast_packages, prelude)
+    }
+
+    fn infer_pkg_with_resolved_deps(
+        &mut self,
+        name: &str,                   // name of package to infer
+        ast_packages: &ASTPackageMap, // ast_packages available for inference
+        prelude: &ExportEnvironment,  // prelude types
+    ) -> Result<(
+        PolyTypeMap, // inferred types
+        Package,     // semantic graph
+    )> {
+        let file = ast_packages
+            .get(name)
+            .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, name))?
+            .to_owned();
 
         let env = Environment::new(prelude.into());
         let mut sub = Substitution::default();
