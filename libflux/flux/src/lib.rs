@@ -401,7 +401,7 @@ pub unsafe extern "C" fn flux_find_var_type(
 
 fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
     let env = match prelude() {
-        Some(prelude) => ExportEnvironment::from(prelude),
+        Some(prelude) => prelude,
         None => bail!("missing prelude"),
     };
     let imports = match imports() {
@@ -519,7 +519,7 @@ pub fn infer_with_env(
     env: Option<Environment<'static>>,
 ) -> Result<(ExportEnvironment, Package)> {
     let prelude = match prelude() {
-        Some(prelude) => ExportEnvironment::from(prelude),
+        Some(prelude) => prelude,
         None => bail!("missing prelude"),
     };
     let env = if let Some(mut e) = env {
