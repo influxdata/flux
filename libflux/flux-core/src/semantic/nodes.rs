@@ -118,7 +118,7 @@ struct InferState<'a, 'env> {
     sub: &'a mut Substitution,
     importer: &'a mut dyn Importer,
     imports: Vec<Symbol>,
-    env: Environment<'env>,
+    env: &'a mut Environment<'env>,
     errors: Errors<Error>,
 }
 
@@ -376,12 +376,12 @@ impl Expression {
 
 /// Infer the types of a Flux package.
 #[allow(missing_docs)]
-pub fn infer_package<'a, T>(
+pub fn infer_package<T>(
     pkg: &mut Package,
-    env: Environment<'a>,
+    env: &mut Environment<'_>,
     sub: &mut Substitution,
     importer: &mut T,
-) -> std::result::Result<Environment<'a>, Errors<Error>>
+) -> std::result::Result<(), Errors<Error>>
 where
     T: Importer,
 {
@@ -402,7 +402,7 @@ where
         }
         Err(infer.errors)
     } else {
-        Ok(infer.env)
+        Ok(())
     }
 }
 
@@ -488,7 +488,7 @@ impl File {
 
         for node in &mut self.body {
             match node {
-                Statement::Builtin(stmt) => stmt.infer(&mut infer.env)?,
+                Statement::Builtin(stmt) => stmt.infer(infer)?,
                 Statement::Variable(stmt) => stmt.infer(infer)?,
                 Statement::Option(stmt) => stmt.infer(infer)?,
                 Statement::Expr(stmt) => stmt.infer(infer)?,
@@ -571,8 +571,8 @@ pub struct BuiltinStmt {
 }
 
 impl BuiltinStmt {
-    fn infer(&mut self, env: &mut Environment) -> std::result::Result<(), Error> {
-        env.add(self.id.name.clone(), self.typ_expr.clone());
+    fn infer(&mut self, infer: &mut InferState<'_, '_>) -> std::result::Result<(), Error> {
+        infer.env.add(self.id.name.clone(), self.typ_expr.clone());
         Ok(())
     }
     fn apply(self, _: &Substitution) -> Self {
@@ -705,7 +705,7 @@ impl VariableAssgn {
         infer.env.apply_mut(infer.sub);
 
         let t = self.init.type_of().apply(infer.sub);
-        let p = infer::generalize(&infer.env, infer.sub.cons(), t);
+        let p = infer::generalize(infer.env, infer.sub.cons(), t);
 
         // Update variable assignment nodes with the free vars
         // and kind constraints obtained from generalization.
@@ -978,7 +978,7 @@ impl FunctionExpr {
 
         if self.params.iter().any(|param| param.default.is_some()) {
             let t = func.apply(infer.sub);
-            let p = infer::generalize(&infer.env, infer.sub.cons(), t);
+            let p = infer::generalize(infer.env, infer.sub.cons(), t);
             self.infer_default_params(infer, p)?
         };
 

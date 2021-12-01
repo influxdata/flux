@@ -24,13 +24,19 @@ mod tests;
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
 
+use std::convert::TryFrom;
+
 use thiserror::Error;
 
 use crate::{
     ast,
     errors::{Errors, Located},
     parser,
-    semantic::types::PolyType,
+    semantic::{
+        infer::Constraints,
+        sub::Substitution,
+        types::{Label, MonoType, PolyType, PolyTypeMap, Property, Record},
+    },
 };
 
 /// Error represents any error that can occur during any step of the type analysis process.
@@ -92,27 +98,53 @@ impl From<nodes::Error> for Error {
 }
 
 /// An environment of values that are available outside of a package
-#[derive(Default, Debug, Clone, PartialEq)]
-pub struct ExportEnvironment {
+#[derive(Debug, Clone, PartialEq)]
+pub struct PackageExports {
     /// Values in the environment.
     values: types::PolyTypeMap<String>,
+
+    /// The type representing this package
+    typ: PolyType,
 }
 
-impl From<types::PolyTypeMap<String>> for ExportEnvironment {
-    fn from(values: types::PolyTypeMap<String>) -> Self {
-        ExportEnvironment { values }
+impl Default for PackageExports {
+    fn default() -> Self {
+        PackageExports {
+            typ: PolyType {
+                vars: Default::default(),
+                cons: Default::default(),
+                expr: MonoType::from(Record::Empty),
+            },
+            values: Default::default(),
+        }
     }
 }
 
-impl ExportEnvironment {
+impl TryFrom<types::PolyTypeMap<String>> for PackageExports {
+    type Error = Error;
+    fn try_from(values: types::PolyTypeMap<String>) -> Result<Self, Error> {
+        Ok(PackageExports {
+            typ: build_polytype(&values)?,
+            values,
+        })
+    }
+}
+
+impl PackageExports {
     /// Returns an empty environment
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Returns the type representing this package
+    pub fn typ(&self) -> PolyType {
+        self.typ.clone()
+    }
+
     /// Add a new variable binding to the current stack frame.
     pub fn add(&mut self, name: String, t: PolyType) {
         self.values.insert(name, t);
+        self.typ = build_polytype(&self.values).unwrap();
     }
 
     /// Check whether a `PolyType` `t` given by a
@@ -126,8 +158,9 @@ impl ExportEnvironment {
     /// This does not change the current environment's `parent` or `readwrite` flag.
     pub fn copy_bindings_from(&mut self, other: &Self) {
         for (name, t) in other.values.iter() {
-            self.add(name.clone(), t.clone());
+            self.values.insert(name.clone(), t.clone());
         }
+        self.typ = build_polytype(&self.values).unwrap();
     }
 
     /// Returns an iterator over all values
@@ -144,6 +177,51 @@ impl ExportEnvironment {
     pub fn is_empty(&self) -> bool {
         self.values.is_empty()
     }
+
+    /// Returns an iterator over exported bindings in this package
+    pub fn into_bindings(self) -> impl Iterator<Item = (String, PolyType)> {
+        self.values.into_iter()
+    }
+}
+
+/// Constructs a polytype, or more specifically a generic record type, from a hash map.
+pub fn build_polytype(from: &PolyTypeMap<String>) -> Result<PolyType, Error> {
+    let mut sub = Substitution::default();
+    let (r, cons) = build_record(from, &mut sub);
+    infer::solve(&cons, &mut sub).map_err(nodes::Error::from)?;
+    let typ = MonoType::record(r);
+    Ok(infer::generalize(
+        &env::Environment::empty(false),
+        sub.cons(),
+        typ,
+    ))
+}
+
+fn build_record(from: &PolyTypeMap<String>, sub: &mut Substitution) -> (Record, Constraints) {
+    let mut r = Record::Empty;
+    let mut cons = Constraints::empty();
+
+    for (name, poly) in from {
+        let (ty, constraints) = infer::instantiate(
+            poly.clone(),
+            sub,
+            ast::SourceLocation {
+                file: None,
+                start: ast::Position::default(),
+                end: ast::Position::default(),
+                source: None,
+            },
+        );
+        r = Record::Extension {
+            head: Property {
+                k: Label::from(name.as_str()),
+                v: ty,
+            },
+            tail: MonoType::record(r),
+        };
+        cons += constraints;
+    }
+    (r, cons)
 }
 
 /// Analyzer provides an API for analyzing Flux code.
@@ -183,7 +261,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         pkgpath: String,
         file_name: String,
         src: &str,
-    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
         let ast_file = parser::parse_string(file_name, src);
         let ast_pkg = ast::Package {
             base: ast_file.base.clone(),
@@ -197,7 +275,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     pub fn analyze_ast(
         &mut self,
         ast_pkg: ast::Package,
-    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
     /// Analyze Flux AST returning the semantic package and the package environment.
@@ -208,7 +286,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         // operation.
         ast_pkg: ast::Package,
         sub: &mut sub::Substitution,
-    ) -> Result<(ExportEnvironment, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
         let mut errors = Errors::new();
         if !self.config.skip_checks {
             if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
@@ -229,17 +307,19 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             }
         }
 
-        let env = self.env.clone();
-        // Clone the environment as the inferred package may mutate it.
-        let env = match nodes::infer_package(&mut sem_pkg, env, sub, &mut self.importer) {
-            Ok(env) => ExportEnvironment {
-                values: env
-                    .values
-                    .into_iter()
-                    .map(|(k, v)| (k.to_string(), v))
-                    .collect(),
-            },
+        self.env.enter_scope();
+        let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
+            Ok(()) => {
+                let env = self.env.exit_scope();
+                PackageExports::try_from(
+                    env.values
+                        .into_iter()
+                        .map(|(k, v)| (k.to_string(), v))
+                        .collect::<types::SemanticMap<_, _>>(),
+                )?
+            }
             Err(err) => {
+                self.env.exit_scope();
                 errors.extend(err.into_iter().map(Error::from));
                 return Err(errors);
             }
@@ -252,17 +332,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     }
 
     /// Drop returns ownership of the environment and importer.
-    pub fn drop(self) -> (ExportEnvironment, I) {
-        (
-            ExportEnvironment {
-                values: self
-                    .env
-                    .values
-                    .into_iter()
-                    .map(|(k, v)| (k.to_string(), v))
-                    .collect(),
-            },
-            self.importer,
-        )
+    pub fn drop(self) -> (env::Environment<'env>, I) {
+        (self.env, self.importer)
     }
 }

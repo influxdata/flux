@@ -1,13 +1,17 @@
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
+
+use std::convert::TryFrom;
+
 use crate::semantic::{
-    flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, ExportEnvironment,
+    flatbuffers::semantic_generated::fbsemantic as fb, fresh::Fresher, PackageExports,
 };
 
 #[rustfmt::skip]
 use crate::semantic::{
     bootstrap::Module,
     nodes::Symbol,
+    import::Packages,
     types::{
         Label,
         Array,
@@ -33,8 +37,28 @@ impl From<fb::Fresher<'_>> for Fresher {
     }
 }
 
-impl From<fb::TypeEnvironment<'_>> for Option<ExportEnvironment> {
-    fn from(env: fb::TypeEnvironment) -> Option<ExportEnvironment> {
+impl From<fb::Packages<'_>> for Option<Packages> {
+    fn from(fb_packages: fb::Packages<'_>) -> Option<Packages> {
+        let fb_packages = fb_packages.packages()?;
+        let mut packages = Packages::new();
+        for package in fb_packages.iter() {
+            let (id, package) = Option::<(String, PackageExports)>::from(package)?;
+            packages.insert(id, package);
+        }
+        Some(packages)
+    }
+}
+
+impl From<fb::PackageExports<'_>> for Option<(String, PackageExports)> {
+    fn from(a: fb::PackageExports<'_>) -> Self {
+        let id: String = a.id()?.into();
+        let exports: Option<PackageExports> = a.package()?.into();
+        Some((id, exports?))
+    }
+}
+
+impl From<fb::TypeEnvironment<'_>> for Option<PackageExports> {
+    fn from(env: fb::TypeEnvironment) -> Option<PackageExports> {
         let env = env.assignments()?;
         let mut types = PolyTypeMap::new();
         for value in env.iter() {
@@ -42,7 +66,7 @@ impl From<fb::TypeEnvironment<'_>> for Option<ExportEnvironment> {
             let (id, ty) = assignment?;
             types.insert(id, ty);
         }
-        Some(ExportEnvironment::from(types))
+        PackageExports::try_from(types).ok()
     }
 }
 
@@ -307,9 +331,38 @@ where
     mapped
 }
 
+pub fn build_packages<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    env: Packages,
+) -> flatbuffers::WIPOffset<fb::Packages<'a>> {
+    let packages = build_vec(env.into_iter().collect(), builder, build_package);
+    let packages = builder.create_vector(packages.as_slice());
+    fb::Packages::create(
+        builder,
+        &fb::PackagesArgs {
+            packages: Some(packages),
+        },
+    )
+}
+
+fn build_package<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    (id, package): (String, PackageExports),
+) -> flatbuffers::WIPOffset<fb::PackageExports<'a>> {
+    let id = builder.create_string(&id);
+    let package = build_env(builder, package);
+    fb::PackageExports::create(
+        builder,
+        &fb::PackageExportsArgs {
+            id: Some(id),
+            package: Some(package),
+        },
+    )
+}
+
 pub fn build_env<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    env: ExportEnvironment,
+    env: PackageExports,
 ) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
     let assignments = build_vec(
         env.values.into_iter().collect(),
@@ -640,6 +693,9 @@ fn build_arg<'a>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use std::convert::TryInto;
+
     use crate::{
         ast::get_err_type_expression,
         parser,
@@ -701,15 +757,16 @@ mod tests {
         }
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        let want: ExportEnvironment = semantic_map! {
+        let want: PackageExports = semantic_map! {
             String::from("a") => a,
             String::from("b") => b,
         }
-        .into();
+        .try_into()
+        .unwrap();
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();
         let buf = serialize(&mut builder, want.clone(), build_env);
-        let got = deserialize::<fb::TypeEnvironment, Option<ExportEnvironment>>(buf);
+        let got = deserialize::<fb::TypeEnvironment, Option<PackageExports>>(buf);
 
         assert_eq!(want, got.unwrap());
     }

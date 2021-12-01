@@ -19,7 +19,7 @@ use crate::{
     ast,
     semantic::{
         types::{Function, MonoType, PolyType},
-        ExportEnvironment,
+        PackageExports,
     },
 };
 
@@ -150,7 +150,7 @@ pub type Table = String;
 pub fn parse_package_doc_comments(
     pkg: &ast::Package,
     pkgpath: &str,
-    types: &ExportEnvironment,
+    types: &PackageExports,
 ) -> Result<(PackageDoc, Diagnostics)> {
     // TODO(nathanielc): Support package with more than one file.
     parse_file_doc_comments(&pkg.files[0], pkgpath, types)
@@ -159,7 +159,7 @@ pub fn parse_package_doc_comments(
 fn parse_file_doc_comments(
     file: &ast::File,
     pkgpath: &str,
-    types: &ExportEnvironment,
+    types: &PackageExports,
 ) -> Result<(PackageDoc, Diagnostics)> {
     let mut diagnostics: Diagnostics = Vec::new();
     let mut pkg = match &file.package {
@@ -447,7 +447,7 @@ where
 // Generates docs for the values in a given source file.
 fn parse_package_values(
     f: &ast::File,
-    pkgtypes: &ExportEnvironment,
+    pkgtypes: &PackageExports,
     diagnostics: &mut Diagnostics,
 ) -> Result<BTreeMap<String, Doc>> {
     let mut members: BTreeMap<String, Doc> = BTreeMap::new();

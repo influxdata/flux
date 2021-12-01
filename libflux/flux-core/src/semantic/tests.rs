@@ -31,8 +31,7 @@ use crate::{
     errors::Errors,
     parser,
     semantic::{
-        self,
-        bootstrap::build_polytype,
+        self, build_polytype,
         convert::convert_polytype,
         env::Environment,
         fresh::Fresher,
@@ -40,7 +39,7 @@ use crate::{
         nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
-        Analyzer, AnalyzerConfig, ExportEnvironment,
+        Analyzer, AnalyzerConfig, PackageExports,
     },
 };
 
@@ -102,7 +101,7 @@ fn infer_types(
     imp: HashMap<&str, HashMap<&str, &str>>,
     want: Option<HashMap<&str, &str>>,
     config: AnalyzerConfig,
-) -> Result<(ExportEnvironment, semantic::nodes::Package), Error> {
+) -> Result<(PackageExports, semantic::nodes::Package), Error> {
     let _ = env_logger::try_init();
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<_, PolyType>> = imp
@@ -113,7 +112,7 @@ fn infer_types(
     // Instantiate package importer using generic objects
     let importer: HashMap<&str, PolyType> = imports
         .into_iter()
-        .map(|(path, types)| (path, build_polytype(types).unwrap()))
+        .map(|(path, types)| (path, build_polytype(&types).unwrap()))
         .collect();
 
     // Parse polytype expressions in initial environment.

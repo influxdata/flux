@@ -4,6 +4,15 @@ table Fresher {
   u:ulong;
 }
 
+table Packages {
+  packages:[PackageExports];
+}
+
+table PackageExports {
+  id:string;
+  package:TypeEnvironment;
+}
+
 table TypeEnvironment {
   assignments:[TypeAssignment];
 }
