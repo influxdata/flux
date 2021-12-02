@@ -26,29 +26,69 @@ pub mod flatbuffers;
 
 use thiserror::Error;
 
-use crate::{ast, errors::Errors, parser, semantic::types::PolyType};
+use crate::{
+    ast,
+    errors::{Errors, Located},
+    parser,
+    semantic::types::PolyType,
+};
 
-/// Error represents any any error that can occur during any step of the type analysis process.
+/// Error represents any error that can occur during any step of the type analysis process.
+pub type Error = Located<ErrorKind>;
+
+/// ErrorKind exposes details about where in the type analysis process an error occurred.
 ///
 /// Users of Flux do not care to understand the various steps involved with type analysis
 /// as such these errors do not add any context to the error messages.
 ///
-/// However users of this library may care and therefore can use this Error enum to determine where in
+/// However users of this library may care and therefore can use this enum to determine where in
 /// the process an error occurred.
 #[derive(Error, Debug, PartialEq)]
-pub enum Error {
+pub enum ErrorKind {
     /// Errors that occur because of bad syntax or in valid AST
     #[error("{0}")]
-    InvalidAST(#[from] ast::check::Error),
+    InvalidAST(ast::check::ErrorKind),
     /// Errors that occur converting AST to semantic graph
     #[error("{0}")]
-    Convert(#[from] convert::Error),
+    Convert(convert::ErrorKind),
     /// Errors that occur because of bad semantic graph
     #[error("{0}")]
-    InvalidSemantic(#[from] check::Error),
+    InvalidSemantic(check::ErrorKind),
     /// Errors that occur because of incompatible/incomplete types
     #[error("{0}")]
-    Inference(#[from] nodes::Error),
+    Inference(nodes::ErrorKind),
+}
+impl From<ast::check::Error> for Error {
+    fn from(error: ast::check::Error) -> Self {
+        Self {
+            location: error.location,
+            error: ErrorKind::InvalidAST(error.error),
+        }
+    }
+}
+impl From<convert::Error> for Error {
+    fn from(error: convert::Error) -> Self {
+        Self {
+            location: error.location,
+            error: ErrorKind::Convert(error.error),
+        }
+    }
+}
+impl From<check::Error> for Error {
+    fn from(error: check::Error) -> Self {
+        Self {
+            location: error.location,
+            error: ErrorKind::InvalidSemantic(error.error),
+        }
+    }
+}
+impl From<nodes::Error> for Error {
+    fn from(error: nodes::Error) -> Self {
+        Self {
+            location: error.location,
+            error: ErrorKind::Inference(error.error),
+        }
+    }
 }
 
 /// An environment of values that are available outside of a package

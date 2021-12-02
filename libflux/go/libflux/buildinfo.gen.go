@@ -49,7 +49,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/semantic/fs.rs":                                                        "f7f609bc8149769d99b737150e184a2d54029c0b768365dbcf08ff193b0e1f6f",
 	"libflux/flux-core/src/semantic/import.rs":                                                    "d7e43ebc51cf94abf296d2b7ae7e99f051a6d69fe1f8be7ecbd64df95ee1edb7",
 	"libflux/flux-core/src/semantic/infer.rs":                                                     "59537dfa04502b727618481e88536bd45c39495581d2c29a69d91926913920c5",
-	"libflux/flux-core/src/semantic/mod.rs":                                                       "811c35ef0e19e7a1eb4b461d1800edfbb8ec1cabc1888701512c19b1e52aadb2",
+	"libflux/flux-core/src/semantic/mod.rs":                                                       "acf4ecb7634855b93cf48bbc7cb5cf37f0e4a4f1ee5b6af2fa0d5f7751d5216c",
 	"libflux/flux-core/src/semantic/nodes.rs":                                                     "e4990c2104a215f5f1c484abaca94cc629885e8fb5d8924445c62471246348f0",
 	"libflux/flux-core/src/semantic/sub.rs":                                                       "41349b1e6185faf6f85ceec11ea6e568788999ab46e6c43d09d11bc07837b616",
 	"libflux/flux-core/src/semantic/types.rs":                                                     "f1d5fafec82ba16aba7f52c7dca51ba0a08cd2d7a5bb669f478a04639fb943aa",
