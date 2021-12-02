@@ -505,7 +505,6 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/join_agg_test.flux":                                                          "bf89dbe3c400418488af058e8e5a56c7171678ee2028607a6310ddb7f0a76625",
 	"stdlib/universe/join_mismatched_schema_test.flux":                                            "78c5c1b3da6fa074122641b38166cfa6f06d8f3005fd2c28a4749c7721c6957c",
 	"stdlib/universe/join_missing_on_col_test.flux":                                               "66d8b8f0f9c4c02bf76af1424a8a03b0bbbda2cb06542c205ceafc564851ab16",
-	"stdlib/universe/join_mystery_panic_test.flux":                                                "1878f0570c1154ad280259e0201280bd2164ebbcc25c498a593dcfe2f8d98ac1",
 	"stdlib/universe/join_panic_test.flux":                                                        "165809f897023f15cf8cd9499e83e9ed9f2c63b330f984a418f2588c1606707f",
 	"stdlib/universe/join_test.flux":                                                              "e5d894f43ba93b0cf56b010a9797be99ed938a403673c1ada627e46a500dc8eb",
 	"stdlib/universe/join_two_same_sources_test.flux":                                             "e5679c7111377d04ed76394e14c8ad06a693aa2fa68cebe227c7b13156e47fe1",
