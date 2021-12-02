@@ -27,7 +27,7 @@ use crate::{
         sub::{Substitutable, Substituter, Substitution},
         types::{
             self, Array, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType,
-            PolyTypeMap, Tvar, TvarKinds,
+            PolyTypeMap, SemanticMap, Tvar, TvarKinds,
         },
     },
 };
@@ -117,7 +117,7 @@ type VectorizeEnv = HashMap<Symbol, MonoType>;
 struct InferState<'a, 'env> {
     sub: &'a mut Substitution,
     importer: &'a mut dyn Importer,
-    imports: Vec<Symbol>,
+    imports: SemanticMap<Symbol, String>,
     env: &'a mut Environment<'env>,
     errors: Errors<Error>,
 }
@@ -388,7 +388,7 @@ where
     let mut infer = InferState {
         sub,
         importer,
-        imports: Vec::new(),
+        imports: Default::default(),
         env,
         errors: Errors::new(),
     };
@@ -476,7 +476,7 @@ impl File {
             let path = &dec.path.value;
             let name = dec.import_symbol.clone();
 
-            infer.imports.push(name.clone());
+            infer.imports.insert(name.clone(), path.clone());
 
             let poly = infer.importer.import(path).unwrap_or_else(|| {
                 infer.error(dec.loc.clone(), ErrorKind::InvalidImportPath(path.clone()));
@@ -499,9 +499,10 @@ impl File {
             }
         }
 
-        for name in infer.imports.drain(..) {
-            infer.env.remove(&name);
+        for name in infer.imports.keys() {
+            infer.env.remove(name);
         }
+        infer.imports.clear();
         Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -1565,8 +1566,8 @@ impl MemberExpr {
         let t = self.object.type_of().apply(infer.sub);
 
         if let Expression::Identifier(object) = &self.object {
-            if infer.imports.contains(&object.name) {
-                if let Some(property) = infer.importer.symbol(&object.name, &self.property) {
+            if let Some(package_name) = infer.imports.get(&object.name) {
+                if let Some(property) = infer.importer.symbol(package_name, &self.property) {
                     self.property = property;
                 }
             }

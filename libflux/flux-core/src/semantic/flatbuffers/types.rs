@@ -365,7 +365,7 @@ pub fn build_env<'a>(
     env: PackageExports,
 ) -> flatbuffers::WIPOffset<fb::TypeEnvironment<'a>> {
     let assignments = build_vec(
-        env.values.into_iter().collect(),
+        env.into_bindings().collect(),
         builder,
         build_type_assignment,
     );

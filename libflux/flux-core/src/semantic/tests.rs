@@ -125,7 +125,7 @@ fn infer_types(
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
     if let Some(want_env) = want {
-        let got = env.values.clone();
+        let got = env.clone().into_bindings().collect();
         let want = parse_map(Some("main"), want_env);
         if want != got {
             return Err(Error::TypeMismatch { want, got });
@@ -242,8 +242,7 @@ macro_rules! test_infer_err {
                     "expected type error but instead inferred the: following types:"
                         .red()
                         .bold(),
-                    env.values
-                        .iter()
+                    env.iter()
                         .fold(String::new(), |acc, (name, poly)| acc
                             + &format!("\t{}: {}\n", name, poly))
                 )
