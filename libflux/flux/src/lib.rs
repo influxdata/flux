@@ -445,7 +445,7 @@ impl StatefulAnalyzer {
                 // A failure should have already happened if any of these
                 // imports would have failed.
                 if let Some(typ) = self.imports.import(path) {
-                    env.add(dec.import_symbol.to_string(), typ);
+                    env.add(dec.import_symbol.clone(), typ);
                 }
             }
         }
@@ -566,7 +566,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
     let env = PackageExports::try_from(
         imports
             .into_iter()
-            .map(|(k, v)| (k, v.typ()))
+            .map(|(k, v)| (Symbol::from(k), v.typ()))
             .collect::<SemanticMap<_, _>>(),
     )
     .unwrap();

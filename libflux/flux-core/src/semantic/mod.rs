@@ -34,6 +34,7 @@ use crate::{
     parser,
     semantic::{
         infer::Constraints,
+        nodes::Symbol,
         sub::Substitution,
         types::{Label, MonoType, PolyType, PolyTypeMap, Property, Record},
     },
@@ -101,7 +102,7 @@ impl From<nodes::Error> for Error {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PackageExports {
     /// Values in the environment.
-    values: types::PolyTypeMap<String>,
+    values: types::PolyTypeMap<Symbol>,
 
     /// The type representing this package
     typ: PolyType,
@@ -120,9 +121,9 @@ impl Default for PackageExports {
     }
 }
 
-impl TryFrom<types::PolyTypeMap<String>> for PackageExports {
+impl TryFrom<types::PolyTypeMap<Symbol>> for PackageExports {
     type Error = Error;
-    fn try_from(values: types::PolyTypeMap<String>) -> Result<Self, Error> {
+    fn try_from(values: types::PolyTypeMap<Symbol>) -> Result<Self, Error> {
         Ok(PackageExports {
             typ: build_polytype(&values)?,
             values,
@@ -142,16 +143,20 @@ impl PackageExports {
     }
 
     /// Add a new variable binding to the current stack frame.
-    pub fn add(&mut self, name: String, t: PolyType) {
+    pub fn add(&mut self, name: Symbol, t: PolyType) {
         self.values.insert(name, t);
         self.typ = build_polytype(&self.values).unwrap();
     }
 
-    /// Check whether a `PolyType` `t` given by a
-    /// string identifier is in the environment. Also checks parent environments.
-    /// If the type is present, returns a pointer to `t`; otherwise, returns `None`.
-    pub fn lookup(&self, v: &str) -> Option<&PolyType> {
-        self.values.get(v)
+    /// Check whether a `PolyType` `k` given by a
+    /// string identifier is in the environment.
+    pub fn lookup(&self, k: &str) -> Option<&PolyType> {
+        self.values.iter().find(|(s, _)| *s == k).map(|(_, v)| v)
+    }
+
+    /// Check whether a `Symbol` `k` identifier is in the environment.
+    pub fn lookup_symbol(&self, k: &str) -> Option<&Symbol> {
+        self.values.keys().find(|s| *s == k)
     }
 
     /// Copy all the variable bindings from another [`ExportEnvironment`] to the current environment.
@@ -179,13 +184,13 @@ impl PackageExports {
     }
 
     /// Returns an iterator over exported bindings in this package
-    pub fn into_bindings(self) -> impl Iterator<Item = (String, PolyType)> {
+    pub fn into_bindings(self) -> impl Iterator<Item = (Symbol, PolyType)> {
         self.values.into_iter()
     }
 }
 
 /// Constructs a polytype, or more specifically a generic record type, from a hash map.
-pub fn build_polytype(from: &PolyTypeMap<String>) -> Result<PolyType, Error> {
+pub fn build_polytype(from: &PolyTypeMap<Symbol>) -> Result<PolyType, Error> {
     let mut sub = Substitution::default();
     let (r, cons) = build_record(from, &mut sub);
     infer::solve(&cons, &mut sub).map_err(nodes::Error::from)?;
@@ -197,7 +202,7 @@ pub fn build_polytype(from: &PolyTypeMap<String>) -> Result<PolyType, Error> {
     ))
 }
 
-fn build_record(from: &PolyTypeMap<String>, sub: &mut Substitution) -> (Record, Constraints) {
+fn build_record(from: &PolyTypeMap<Symbol>, sub: &mut Substitution) -> (Record, Constraints) {
     let mut r = Record::Empty;
     let mut cons = Constraints::empty();
 
@@ -311,12 +316,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
             Ok(()) => {
                 let env = self.env.exit_scope();
-                PackageExports::try_from(
-                    env.values
-                        .into_iter()
-                        .map(|(k, v)| (k.to_string(), v))
-                        .collect::<types::SemanticMap<_, _>>(),
-                )?
+                PackageExports::try_from(env.values)?
             }
             Err(err) => {
                 self.env.exit_scope();

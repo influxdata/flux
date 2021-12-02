@@ -1566,7 +1566,9 @@ impl MemberExpr {
 
         if let Expression::Identifier(object) = &self.object {
             if infer.imports.contains(&object.name) {
-                self.property = self.property.clone().with_package(&object.name);
+                if let Some(property) = infer.importer.symbol(&object.name, &self.property) {
+                    self.property = property;
+                }
             }
         }
 

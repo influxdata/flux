@@ -16,7 +16,7 @@ use crate::{
         flatbuffers::types::{build_module, finish_serialize},
         fs::{FileSystemImporter, StdFS},
         import::{Importer, Packages},
-        nodes::{self, Package},
+        nodes::{self, Package, Symbol},
         sub::Substitutable,
         types::{MonoType, PolyType, PolyTypeMap, Record, SemanticMap, Tvar, TvarKinds},
         Analyzer, PackageExports,
@@ -266,7 +266,7 @@ where
 }
 
 fn add_record_to_map(
-    env: &mut PolyTypeMap<String>,
+    env: &mut PolyTypeMap<Symbol>,
     r: &Record,
     free_vars: &[Tvar],
     cons: &TvarKinds,
@@ -360,7 +360,7 @@ mod tests {
         ast::get_err_type_expression,
         parser,
         parser::parse_string,
-        semantic::{convert::convert_polytype, sub::Substitution},
+        semantic::{convert::convert_polytype, nodes::Symbol, sub::Substitution},
     };
 
     #[test]
@@ -390,7 +390,7 @@ mod tests {
         let (types, _) = infer_state.infer_pkg("c", &ast_packages, &PackageExports::new())?;
 
         let want = PackageExports::try_from(semantic_map! {
-            String::from("z") => {
+            Symbol::from("z@c") => {
                 let mut p = parser::Parser::new("int");
                 let typ_expr = p.parse_type_expression();
                 let err = get_err_type_expression(typ_expr.clone());

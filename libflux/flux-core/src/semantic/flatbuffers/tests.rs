@@ -10,6 +10,7 @@ use crate::{
     semantic::{
         convert,
         env::Environment,
+        import::Packages,
         nodes::{FunctionExpr, Package},
         sub,
         walk::{walk, Node},
@@ -144,7 +145,7 @@ fn test_serialize_vectorization() {
         package: String::from("test"),
         files: f,
     };
-    let mut analyzer = Analyzer::new(Default::default(), HashMap::default(), Default::default());
+    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), Default::default());
     let (_, mut pkg) = match analyzer.analyze_ast(pkg) {
         Ok(pkg) => pkg,
         Err(e) => {

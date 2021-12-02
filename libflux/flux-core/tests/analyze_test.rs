@@ -1,8 +1,9 @@
 use fluxcore::{
     ast,
     semantic::{
+        import::Packages,
         nodes::*,
-        types::{Function, MonoType, PolyTypeMap, SemanticMap, Tvar},
+        types::{Function, MonoType, SemanticMap, Tvar},
         walk::{walk_mut, NodeMut},
         Analyzer,
     },
@@ -11,7 +12,7 @@ use pretty_assertions::assert_eq;
 
 #[test]
 fn analyze_end_to_end() {
-    let mut analyzer = Analyzer::new_with_defaults(Default::default(), PolyTypeMap::new());
+    let mut analyzer = Analyzer::new_with_defaults(Default::default(), Packages::new());
     let (_, mut got) = analyzer
         .analyze_source(
             "main".to_string(),

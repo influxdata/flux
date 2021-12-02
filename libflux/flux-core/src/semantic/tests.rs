@@ -21,7 +21,7 @@
 //! `assert_eq`, as the types retured from type inference can be
 //! arbitrarily complex.
 //!
-use std::collections::HashMap;
+use std::{collections::HashMap, convert::TryFrom};
 
 use colored::*;
 use derive_more::Display;
@@ -31,11 +31,11 @@ use crate::{
     errors::Errors,
     parser,
     semantic::{
-        self, build_polytype,
+        self,
         convert::convert_polytype,
         env::Environment,
         fresh::Fresher,
-        import::Importer,
+        import::Packages,
         nodes::Symbol,
         sub::Substitution,
         types::{MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds},
@@ -45,7 +45,7 @@ use crate::{
 
 mod vectorize;
 
-fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap<String> {
+fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeMap<Symbol> {
     m.into_iter()
         .map(|(name, expr)| {
             let mut p = parser::Parser::new(expr);
@@ -59,18 +59,15 @@ fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap<String> {
             let poly = convert_polytype(typ_expr, &mut Substitution::default());
 
             // let poly = parse(expr).expect(format!("failed to parse {}", name).as_str());
-            return (name.to_string(), poly.unwrap());
+            return (
+                match package {
+                    None => Symbol::from(name),
+                    Some(package) => Symbol::from(name).with_package(package),
+                },
+                poly.unwrap(),
+            );
         })
         .collect()
-}
-
-impl Importer for HashMap<&str, PolyType> {
-    fn import(&mut self, name: &str) -> Option<PolyType> {
-        match self.get(name) {
-            Some(pty) => Some(pty.clone()),
-            None => None,
-        }
-    }
 }
 
 #[derive(Debug, Display, PartialEq)]
@@ -88,8 +85,8 @@ enum Error {
                     + &format!("\t{}: {}\n", name, poly))"#
     )]
     TypeMismatch {
-        want: SemanticMap<String, PolyType>,
-        got: SemanticMap<String, PolyType>,
+        want: SemanticMap<Symbol, PolyType>,
+        got: SemanticMap<Symbol, PolyType>,
     },
 }
 
@@ -106,17 +103,17 @@ fn infer_types(
     // Parse polytype expressions in external packages.
     let imports: SemanticMap<&str, SemanticMap<_, PolyType>> = imp
         .into_iter()
-        .map(|(path, pkg)| (path, parse_map(pkg)))
+        .map(|(path, pkg)| (path, parse_map(Some(path), pkg)))
         .collect();
 
     // Instantiate package importer using generic objects
-    let importer: HashMap<&str, PolyType> = imports
+    let importer: Packages = imports
         .into_iter()
-        .map(|(path, types)| (path, build_polytype(&types).unwrap()))
+        .map(|(path, types)| (path.to_string(), PackageExports::try_from(types).unwrap()))
         .collect();
 
     // Parse polytype expressions in initial environment.
-    let env = parse_map(env);
+    let env = parse_map(None, env);
 
     let env = Environment::from(env);
 
@@ -129,7 +126,7 @@ fn infer_types(
     // Only perform this step if a map of wanted types exists.
     if let Some(want_env) = want {
         let got = env.values.clone();
-        let want = parse_map(want_env);
+        let want = parse_map(Some("main"), want_env);
         if want != got {
             return Err(Error::TypeMismatch { want, got });
         }

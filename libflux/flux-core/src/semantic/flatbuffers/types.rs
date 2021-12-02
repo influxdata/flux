@@ -64,7 +64,7 @@ impl From<fb::TypeEnvironment<'_>> for Option<PackageExports> {
         for value in env.iter() {
             let assignment: Option<(String, PolyType)> = value.into();
             let (id, ty) = assignment?;
-            types.insert(id, ty);
+            types.insert(Symbol::from(id), ty);
         }
         PackageExports::try_from(types).ok()
     }
@@ -391,9 +391,9 @@ pub fn build_module<'a>(
 
 fn build_type_assignment<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
-    assignment: (String, PolyType),
+    assignment: (Symbol, PolyType),
 ) -> flatbuffers::WIPOffset<fb::TypeAssignment<'a>> {
-    let id = builder.create_string(&assignment.0);
+    let id = builder.create_string(assignment.0.full_name());
     let ty = build_polytype(builder, assignment.1);
     fb::TypeAssignment::create(
         builder,
@@ -758,8 +758,8 @@ mod tests {
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let want: PackageExports = semantic_map! {
-            String::from("a") => a,
-            String::from("b") => b,
+            Symbol::from("a") => a,
+            Symbol::from("b") => b,
         }
         .try_into()
         .unwrap();

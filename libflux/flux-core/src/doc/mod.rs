@@ -1134,10 +1134,9 @@ mod test {
         PackageDoc, ParameterDoc, Parser, Token, ValueDoc,
     };
     use crate::{
-        ast,
-        ast::tests::Locator,
+        ast::{self, tests::Locator},
         parser::parse_string,
-        semantic::{env::Environment, types::PolyTypeMap, Analyzer},
+        semantic::{env::Environment, import::Packages, Analyzer},
     };
 
     macro_rules! map {
@@ -1170,8 +1169,7 @@ mod test {
         assert_docs(src, pkg, diags, true)
     }
     fn assert_docs(src: &str, pkg: PackageDoc, diags: Diagnostics, short: bool) {
-        let mut analyzer =
-            Analyzer::new_with_defaults(Environment::empty(true), PolyTypeMap::new());
+        let mut analyzer = Analyzer::new_with_defaults(Environment::empty(true), Packages::new());
         let ast_pkg = parse_program(src);
         let (types, _) = match analyzer.analyze_ast(ast_pkg.clone()) {
             Ok(t) => t,
