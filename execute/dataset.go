@@ -126,11 +126,10 @@ func (d *dataset) UpdateProcessingTime(time Time) error {
 }
 
 func (d *dataset) evalTriggers() (err error) {
-	// Once the ForEach call is finished, it's possible that err != nil,
-	// but that the error returned from ForEach is nil.
+	// Once the ForEach call is finished, it's possible that e == nil && err != nil
 	//
-	// Store that error in a separate variable to avoid overwriting
-	// valid errors with nil.
+	// So we store the error from the ForEach call in a separate variable to avoid
+	// overwriting valid errors with nil.
 	e := d.cache.ForEachWithContext(func(key flux.GroupKey, trigger Trigger, bc TableContext) {
 		if err != nil {
 			// Skip the rest once we have encountered an error
@@ -193,8 +192,8 @@ func (d *dataset) Finish(err error) {
 	if err == nil {
 		// Once the ForEach call is finished, it's possible that e == nil && err != nil
 		//
-		// So we store that error in a separate variable to avoid overwriting
-		// valid errors with nil.
+		// So we store the error from the ForEach call in a separate variable to avoid
+		// overwriting valid errors with nil.
 		e := d.cache.ForEach(func(bk flux.GroupKey) {
 			if err != nil {
 				return

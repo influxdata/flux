@@ -598,8 +598,9 @@ func (c *MergeJoinCache) ForEach(f func(flux.GroupKey)) error {
 			leftBuilder := c.buffers[c.leftID].table(leftKey)
 			rightBuilder := c.buffers[c.rightID].table(rightKey)
 
-			table, err := c.join(leftBuilder, rightBuilder)
-			if err != nil || table.Empty() {
+			table, e := c.join(leftBuilder, rightBuilder)
+			if e != nil || table.Empty() {
+				err = e
 				c.DiscardTable(key)
 				return
 			}
@@ -631,9 +632,10 @@ func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigge
 
 		if _, ok := c.tables[key]; !ok {
 
-			table, err := c.join(leftBuilder, rightBuilder)
+			table, e := c.join(leftBuilder, rightBuilder)
 
-			if err != nil || table.Empty() {
+			if e != nil || table.Empty() {
+				err = e
 				c.DiscardTable(key)
 				return
 			}
@@ -936,12 +938,14 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 						}
 						newColumn, ok := c.schemaMap[column]
 						if !ok {
-							err = errors.Newf(codes.Invalid, "column '%s' not found in schema", columnName)
+							println("left Column not found in schema")
+							err = errors.Newf(codes.Internal, "column '%s' not found in join schema", columnName)
 							return
 						}
 						newColumnIdx, ok := c.colIndex[newColumn]
 						if !ok {
-							err = errors.Newf(codes.Invalid, "could not find index for column '%s'", columnName)
+							println("left index not found in map")
+							err = errors.Newf(codes.Internal, "could not find index for column '%s' in column index map", columnName)
 						}
 						_ = builder.AppendValue(newColumnIdx, columnVal)
 					})
@@ -956,12 +960,14 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 						}
 						newColumn, ok := c.schemaMap[column]
 						if !ok {
-							err = errors.Newf(codes.Invalid, "column '%s' not found in schema", columnName)
+							println("right Column not found in schema")
+							err = errors.Newf(codes.Internal, "column '%s' not found in schema", columnName)
 							return
 						}
 						newColumnIdx, ok := c.colIndex[newColumn]
 						if !ok {
-							err = errors.Newf(codes.Invalid, "could not find index for column '%s'", columnName)
+							println("right index not found in map")
+							err = errors.Newf(codes.Internal, "could not find index for column '%s'", columnName)
 						}
 
 						// No need to append value if column is part of the join key.

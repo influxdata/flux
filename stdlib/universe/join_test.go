@@ -1721,7 +1721,23 @@ func TestMergeJoin_Process(t *testing.T) {
 					},
 				},
 			},
-			want: []*executetest.Table{},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch_a", Type: flux.TFloat},
+						{Label: "Pitch_b", Type: flux.TFloat},
+						{Label: "Angle", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(1), "12345", execute.Time(1), 8.4, 8.4, 1.2},
+					},
+				},
+			},
 		},
 	}
 	for _, tc := range testCases {
