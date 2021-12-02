@@ -215,7 +215,7 @@ builtin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record
 //   fields with the column name as the field key and the column value as the field value.
 //
 // If using the `from()` to query data from InfluxDB, use pivot() to transform
-// data into the structure `experimetnal.to()` expects.
+// data into the structure `experimental.to()` expects.
 //
 // ## Parameters
 // - bucket: Name of the bucket to write to.
