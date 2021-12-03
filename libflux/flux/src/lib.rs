@@ -169,7 +169,7 @@ pub extern "C" fn flux_ast_format(
     for file in &ast_pkg.files {
         let s = match formatter::convert_to_string(file) {
             Ok(v) => v,
-            Err(e) => return Some(Error::from(anyhow::Error::from(e)).into()),
+            Err(e) => return Some(Error::from(e).into()),
         };
         out_str.push_str(&s);
     }
@@ -504,6 +504,7 @@ pub extern "C" fn flux_free_stateful_analyzer(_: Option<Box<Result<StatefulAnaly
 #[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_analyze_with(
     analyzer: *mut Result<StatefulAnalyzer>,
+    csrc: *const c_char,
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
@@ -524,9 +525,14 @@ pub unsafe extern "C" fn flux_analyze_with(
         }
     };
 
+    let src = std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap();
+
     let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
         Ok(sem_pkg) => sem_pkg,
-        Err(err) => {
+        Err(mut err) => {
+            if let Error::Semantic(err) = &mut err {
+                err.source = Some(src.into());
+            }
             return Some(err.into());
         }
     });

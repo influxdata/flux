@@ -115,7 +115,14 @@ func NewAnalyzer() *Analyzer {
 	return p
 }
 
-func (p *Analyzer) Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
+func (p *Analyzer) AnalyzeString(src string) (*SemanticPkg, *FluxError) {
+	return p.Analyze(src, ParseString(src))
+}
+
+func (p *Analyzer) Analyze(src string, astPkg *ASTPkg) (*SemanticPkg, *FluxError) {
+	csrc := C.CString(src)
+	defer C.free(unsafe.Pointer(csrc))
+
 	var semPkg *C.struct_flux_semantic_pkg_t
 	defer func() {
 		// This is necessary because the ASTPkg returned from the libflux API calls has its finalizer
@@ -124,11 +131,10 @@ func (p *Analyzer) Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 		// Setting this ptr to nil will prevent a double-free error.
 		astPkg.ptr = nil
 	}()
-	if err := C.flux_analyze_with(p.ptr, astPkg.ptr, &semPkg); err != nil {
-		defer C.flux_free_error(err)
-		cstr := C.flux_error_str(err)
-		str := C.GoString(cstr)
-		return nil, errors.New(codes.Invalid, str)
+	if err := C.flux_analyze_with(p.ptr, csrc, astPkg.ptr, &semPkg); err != nil {
+		err := &FluxError { ptr: err }
+		runtime.SetFinalizer(err, free)
+		return nil, err
 	}
 	runtime.KeepAlive(p)
 
@@ -156,4 +162,30 @@ func EnvStdlib() []byte {
 	C.flux_get_env_stdlib(&buf)
 	defer C.flux_free_bytes(buf.data)
 	return C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
+}
+
+
+type FluxError struct {
+	ptr *C.struct_flux_error_t
+}
+
+func (p *FluxError) Free() {
+	if p.ptr != nil {
+		C.flux_free_error(p.ptr)
+	}
+	p.ptr = nil
+
+	// See the equivalent method in ASTPkg for why
+	// this is needed.
+	runtime.KeepAlive(p)
+}
+
+func (p *FluxError) Print() {
+	C.flux_error_print(p.ptr)
+}
+
+func (p *FluxError) GoError() error {
+	cstr := C.flux_error_str(p.ptr)
+	str := C.GoString(cstr)
+	return  errors.New(codes.Invalid, str)
 }

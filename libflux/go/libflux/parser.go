@@ -122,8 +122,10 @@ func ParseString(src string) *ASTPkg {
 func Parse(fname string, src string) *ASTPkg {
 	csrc := C.CString(src)
 	defer C.free(unsafe.Pointer(csrc))
+
 	cfname := C.CString(fname)
 	defer C.free(unsafe.Pointer(cfname))
+
 	ptr := C.flux_parse(cfname, csrc)
 	p := &ASTPkg{ptr: ptr}
 	runtime.SetFinalizer(p, free)
