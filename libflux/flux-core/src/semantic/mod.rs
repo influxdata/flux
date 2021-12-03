@@ -29,7 +29,10 @@ use std::{convert::TryFrom, fmt, ops::Range};
 use codespan_reporting::{
     diagnostic,
     files::Files,
-    term::{self, termcolor::WriteColor},
+    term::{
+        self,
+        termcolor::{self, WriteColor},
+    },
 };
 use thiserror::Error;
 
@@ -307,14 +310,38 @@ impl FileErrors {
         )
     }
 
-    /// Prints the errors
+    /// Prints the errors to stdout
+    pub fn print(&self) {
+        match &self.source {
+            Some(source) => {
+                let mut stdout = termcolor::StandardStream::stdout(termcolor::ColorChoice::Auto);
+                // Mirror println! by ignoring errors
+                let _ = self.print_config(&term::Config::default(), source, &mut stdout);
+            }
+            None => println!("{}", self.errors),
+        }
+    }
+
+    /// Prints the errors to a `String`
     pub fn pretty_config(&self, config: &term::Config, source: &str) -> String {
-        let mut buffer = term::termcolor::Buffer::no_color();
+        let mut buffer = termcolor::Buffer::no_color();
+        self.print_config(config, source, &mut buffer)
+            .expect("Writing to a termcolor::Buffer can't fail");
+        String::from_utf8(buffer.into_inner())
+            .expect("We only write utf-8 when we don't use coloring")
+    }
+
+    fn print_config(
+        &self,
+        config: &term::Config,
+        source: &str,
+        writer: &mut dyn WriteColor,
+    ) -> Result<(), codespan_reporting::files::Error> {
         let files = codespan_reporting::files::SimpleFile::new(&self.file[..], source);
         for err in &self.errors {
-            err.pretty_fmt(config, &files, &mut buffer).unwrap();
+            err.pretty_fmt(config, &files, writer)?;
         }
-        String::from_utf8(buffer.into_inner()).unwrap()
+        Ok(())
     }
 }
 

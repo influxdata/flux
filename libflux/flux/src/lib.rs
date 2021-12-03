@@ -86,19 +86,18 @@ pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static,
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
 pub struct ErrorHandle {
-    /// A heap-allocated `Error`
-    pub err: CString,
+    /// A heap-allocated `Error` message
+    message: CString,
+
+    /// The actual error
+    err: Error,
 }
 
 impl From<Error> for Box<ErrorHandle> {
-    fn from(mut err: Error) -> Self {
-        (&mut err).into()
-    }
-}
-impl From<&mut Error> for Box<ErrorHandle> {
-    fn from(err: &mut Error) -> Self {
+    fn from(err: Error) -> Self {
         Box::new(ErrorHandle {
-            err: CString::new(format!("{}", err)).unwrap(),
+            message: CString::new(format!("{}", err)).unwrap(),
+            err,
         })
     }
 }
@@ -324,7 +323,21 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 /// parameter
 #[no_mangle]
 pub unsafe extern "C" fn flux_error_str(errh: &ErrorHandle) -> *const c_char {
-    errh.err.as_ptr()
+    errh.message.as_ptr()
+}
+
+/// flux_error_print prints the error message associated with the given error to stdout.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer passed as a
+/// parameter
+#[no_mangle]
+pub unsafe extern "C" fn flux_error_print(errh: &ErrorHandle) {
+    match &errh.err {
+        Error::Semantic(err) => err.print(),
+        Error::Other(err) => println!("{}", err),
+    }
 }
 
 /// # Safety
@@ -495,10 +508,19 @@ pub unsafe extern "C" fn flux_analyze_with(
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
     let ast_pkg = *ast_pkg;
-    let analyzer = match &mut *analyzer {
+    let analyzer = &mut *analyzer;
+    let analyzer = match analyzer {
         Ok(a) => a,
-        Err(err) => {
-            return Some(err.into());
+        Err(_) => {
+            match mem::replace(
+                analyzer,
+                Err(Error::from(anyhow!("The error has already been return!"))),
+            ) {
+                Err(err) => {
+                    return Some(err.into());
+                }
+                Ok(_) => unreachable!(),
+            }
         }
     };
 
@@ -840,7 +862,7 @@ from(bucket: v.bucket)
             error test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
 
             error test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF"#]]
-        .assert_eq(&errh.unwrap().err.into_string().unwrap());
+        .assert_eq(&errh.unwrap().message.into_string().unwrap());
     }
 
     #[test]

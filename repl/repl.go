@@ -133,6 +133,7 @@ func (r *REPL) Input(t string) error {
 // input processes a line of input and prints the result.
 func (r *REPL) input(t string) {
 	if err := r.executeLine(t); err != nil {
+		libflux.PrintError(err)
 		fmt.Println("Error:", err)
 	}
 }
