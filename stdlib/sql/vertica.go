@@ -42,7 +42,11 @@ func (m *VerticaRowReader) GetNextRow() ([]values.Value, error) {
 	row := make([]values.Value, len(m.columns))
 	for i, col := range m.columns {
 		switch col := col.(type) {
-		case bool, int, uint, int64, uint64, float64, string:
+		case int:
+			row[i] = values.NewInt(int64(col))
+		case uint:
+			row[i] = values.NewUInt(uint64(col))
+		case bool, int64, uint64, float64, string:
 			row[i] = values.New(col)
 		case time.Time:
 			row[i] = values.NewTime(values.ConvertTime(col))
