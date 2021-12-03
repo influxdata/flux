@@ -223,8 +223,12 @@ func New(v interface{}) Value {
 		return NewString(v)
 	case []byte:
 		return NewBytes(v)
+	case int:
+		return NewInt(int64(v))
 	case int64:
 		return NewInt(v)
+	case uint:
+		return NewUInt(uint64(v))
 	case uint64:
 		return NewUInt(v)
 	case float64:
