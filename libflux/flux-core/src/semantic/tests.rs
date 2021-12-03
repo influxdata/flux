@@ -27,9 +27,7 @@ use colored::*;
 use derive_more::Display;
 
 use crate::{
-    ast,
-    errors::Errors,
-    parser,
+    ast, parser,
     semantic::{
         self,
         convert::convert_polytype,

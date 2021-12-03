@@ -45,6 +45,8 @@ use crate::{
     },
 };
 
+/// Result type for multiple semantic errors
+pub type Result<T, E = FileErrors> = std::result::Result<T, E>;
 /// Error represents any error that can occur during any step of the type analysis process.
 pub type Error = Located<ErrorKind>;
 
@@ -439,7 +441,17 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
             Ok(()) => {
                 let env = self.env.exit_scope();
-                PackageExports::try_from(env.values)?
+                match PackageExports::try_from(env.values) {
+                    Ok(env) => env,
+                    Err(err) => {
+                        errors.push(err);
+                        return Err(FileErrors {
+                            file: sem_pkg.package,
+                            source: None,
+                            errors,
+                        });
+                    }
+                }
             }
             Err(err) => {
                 self.env.exit_scope();
