@@ -15,6 +15,23 @@ MS_TAG="mcr.microsoft.com/mssql/server:2019-latest"
 VERTICA_NAME="${PREFIX}-vertica"
 VERTICA_TAG="vertica/vertica-ce:11.0.0-0"
 
+# XXX: The SAP HANA docker image requires you to be logged in to pull (but it's
+# free). We'll need some shared creds if we want to run this in CI.
+# The image is also LARGE. 1.2G+.
+# HDB_NAME="${PREFIX-hdb}"
+# HDB_TAG="store/saplabs/hanaexpress:2.00.054.00.20210603.1"
+
+# FIXME(onelson): get hdb into the test flow.
+#  the hdb container doesn't seem to run without jumping through many hoops
+#  including:
+#  - custom kernel tuning.
+#  - elevating the container security context.
+#  Combine these hassles with the fact the documented procedures for
+#  configuration don't seem to work as advertised _and_ the docker hub login
+#  requirement, I'm punting on this one for now. When we get to refactoring the
+#  SQL package, we'll have to look at the risk to hdb support carefully to
+#  decide if we can afford to skip this or not.
+
 
 PG_SEED="
 CREATE TABLE pets (
