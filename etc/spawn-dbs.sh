@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# This script will try to spin up a docker container for a series of database
+# engines which select flux tests will run against.
+#
+# Typically you will not invoke this script yourself.
+# Instead use: `make test-flux-integration` from the repo root since the Make
+# target knows specifically which tests to run.
+#
+# This script expects to find `docker` in your `PATH` and to be run as a user
+# with the privs to create/destroy containers.
+# Additionally, the script expects to find `sqlite3` (the cli sqlite client) in
+# your `PATH`.
+#
+# As a diagnostic consideration, the docker containers are left running after
+# the tests run to allow you to inspect the records and/or logs.
+# These containers are destroyed and recreated with each invocation of this script.
+#
+# To shutdown all the containers (after you're done running
+# integration tests), you should be able to do something like:
+# ```
+# docker ps --format '{{.Names}}' | grep flux-integ-tests | xargs docker rm -f
+# ```
+
+
 set -e
 
 PREFIX=flux-integ-tests
@@ -15,7 +38,6 @@ MS_TAG="mcr.microsoft.com/mssql/server:2019-latest"
 VERTICA_NAME="${PREFIX}-vertica"
 VERTICA_TAG="vertica/vertica-ce:11.0.0-0"
 SQLITE_DB_PATH="/tmp/${PREFIX}-sqlite.db"
-
 # XXX: The SAP HANA docker image requires you to be logged in to pull (but it's
 # free). We'll need some shared creds if we want to run this in CI.
 # The image is also LARGE. 1.2G+.
@@ -33,70 +55,89 @@ SQLITE_DB_PATH="/tmp/${PREFIX}-sqlite.db"
 #  SQL package, we'll have to look at the risk to hdb support carefully to
 #  decide if we can afford to skip this or not.
 
+# Seed Data
+# ---------
+#
+# Each db engine will be seeded with an equivalent schema and sample data to help
+# exercise each driver as it is exposed to Flux.
+#
+# 4 columns: id (auto inc pk), name (varchar), age (int), and seeded (bool or
+# equivalent).
+# The `seeded` column is used to separate initial data from new rows written
+# during testing.
 
 PG_SEED="
 CREATE TABLE pets (
- id SERIAL PRIMARY KEY,
- name VARCHAR(20),
- age INT,
- -- When seeded is true, this indicates the rows were a part of the initial
- -- data load (prior to tests making changes).
- seeded BOOL NOT NULL DEFAULT false
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(20),
+  age INT,
+  seeded BOOL NOT NULL DEFAULT false
 );
 INSERT INTO pets (name, age, seeded)
 VALUES
- ('Stanley', 15, true),
- ('Lucy', 14, true)
-;"
+  ('Stanley', 15, true),
+  ('Lucy', 14, true)
+;
+"
 
 MYSQL_SEED="
 CREATE TABLE pets (
- id SERIAL,
- name VARCHAR(20),
- age INT,
- seeded TINYINT(1) NOT NULL DEFAULT false,
- PRIMARY KEY (id)
+  id SERIAL,
+  name VARCHAR(20),
+  age INT,
+  seeded TINYINT(1) NOT NULL DEFAULT false,
+  PRIMARY KEY (id)
 );
 INSERT INTO pets (name, age, seeded)
 VALUES
- ('Stanley', 15, true),
- ('Lucy', 14, true)
-;"
+  ('Stanley', 15, true),
+  ('Lucy', 14, true)
+;
+"
 
 MSSQL_SEED="
 CREATE TABLE pets (
- id INT IDENTITY(1, 1) PRIMARY KEY,
- name VARCHAR(20),
- age INT,
- seeded BIT NOT NULL DEFAULT 0
+  id INT IDENTITY(1, 1) PRIMARY KEY,
+  name VARCHAR(20),
+  age INT,
+  seeded BIT NOT NULL DEFAULT 0
 );
 INSERT INTO pets (name, age, seeded)
 VALUES
- ('Stanley', 15, 1),
- ('Lucy', 14, 1)
-;"
+  ('Stanley', 15, 1),
+  ('Lucy', 14, 1)
+;
+"
 
 VERTICA_SEED="
 CREATE TABLE pets (
- id IDENTITY(1, 1) PRIMARY KEY,
- name VARCHAR(20),
- age INT,
- seeded BOOLEAN NOT NULL DEFAULT false
+  id IDENTITY(1, 1) PRIMARY KEY,
+  name VARCHAR(20),
+  age INT,
+  seeded BOOLEAN NOT NULL DEFAULT false
 );
 -- Vertica doesn't seem to support inserting more than one record at a time?
-INSERT INTO pets (name, age, seeded)
-VALUES ('Stanley', 15, true);
-INSERT INTO pets (name, age, seeded)
-VALUES ('Lucy', 14, true);
+INSERT INTO pets (name, age, seeded) VALUES ('Stanley', 15, true);
+INSERT INTO pets (name, age, seeded) VALUES ('Lucy', 14, true);
 "
 
-# Cleanup previous runs.
+SQLITE_SEED="
+CREATE TABLE pets (
+  id INT PRIMARY KEY,
+  name VARCHAR(20),
+  age INT,
+  seeded BOOLEAN NOT NULL DEFAULT false
+);
+INSERT INTO pets (name, age, seeded)
+VALUES
+  ('Stanley', 15, true),
+  ('Lucy', 14, true);
+"
+
+# Cleanup previous runs (just in case).
+echo "Cleaning up prior db data..."
+rm -f "$SQLITE_DB_PATH"
 docker rm -f "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}"
-# XXX: if you want to shutdown all the containers (after you're done running
-# integration tests), you should be able to run something like:
-# ```
-# docker ps --format '{{.Names}}' | grep flux-integ- | xargs docker rm -f
-# ```
 
 # mysql is sort of annoying when it comes to logging so to look at the query log,
 # you'll probably want to either use `docker cp` to get a copy of `/tmp/query.log`
@@ -147,39 +188,29 @@ docker run --rm --detach \
   -e VERTICA_DB_NAME=flux \
   "${VERTICA_TAG}"
 
-until docker exec "${VERTICA_NAME}" /opt/vertica/bin/vsql -l;  do
-  >&2 echo "Vertica: Waiting"
-  sleep 1
-done
->&2 echo "Vertica: Ready"
+function wait_for () {
+  name="${1}"
+  cmd="${2}"
+  until eval "${cmd}";  do
+    >&2 echo "${name}: Waiting"
+    sleep 1
+  done
+  >&2 echo "${name}: Ready"
+}
 
-until docker exec "${MS_NAME}" /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q "EXIT"; do
-  >&2 echo "MSSQL: Waiting"
-  sleep 1
-done
->&2 echo "MSSQL: Ready"
-
-until docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'; do
-  >&2 echo "MySQL: Waiting"
-  sleep 1
-done
->&2 echo "MySQL: Ready"
-
-until docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'; do
-  >&2 echo "MariaDB: Waiting"
-  sleep 1
-done
->&2 echo "MariaDB: Ready"
-
-until docker exec "${PG_NAME}" psql -U postgres -c '\q'; do
-  >&2 echo "Postgres: Waiting"
-  sleep 1
-done
->&2 echo "Postgres: Ready"
-
-docker exec "${VERTICA_NAME}" /opt/vertica/bin/vsql -d flux -v AUTOCOMMIT=on -c "${VERTICA_SEED}"
-docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
-docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+wait_for "MariaDB" "docker exec ${MARIADB_NAME} env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'"
 docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+
+wait_for "MSSQL" "docker exec ${MS_NAME} /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q 'EXIT'"
 docker exec "${MS_NAME}" /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q "${MSSQL_SEED}";
+
+wait_for "MySQL" "docker exec ${MYSQL_NAME} env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute '\q'"
+docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
+
+wait_for "Postgres" "docker exec ${PG_NAME} psql -U postgres -c '\q'"
+docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
+
+wait_for "Vertica" "docker exec ${VERTICA_NAME} /opt/vertica/bin/vsql -l"
+docker exec "${VERTICA_NAME}" /opt/vertica/bin/vsql -d flux -v AUTOCOMMIT=on -c "${VERTICA_SEED}"
+
 sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}"
