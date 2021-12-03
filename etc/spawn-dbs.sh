@@ -12,6 +12,9 @@ MARIADB_NAME="${PREFIX}-mariadb"
 MARIADB_TAG="mariadb:10"
 MS_NAME="${PREFIX}-mssql"
 MS_TAG="mcr.microsoft.com/mssql/server:2019-latest"
+VERTICA_NAME="${PREFIX}-vertica"
+VERTICA_TAG="vertica/vertica-ce:11.0.0-0"
+
 
 PG_SEED="
 CREATE TABLE pets (
@@ -55,8 +58,22 @@ VALUES
  ('Lucy', 14, 1)
 ;"
 
+VERTICA_SEED="
+CREATE TABLE pets (
+ id IDENTITY(1, 1) PRIMARY KEY,
+ name VARCHAR(20),
+ age INT,
+ seeded BOOLEAN NOT NULL DEFAULT false
+);
+-- Vertica doesn't seem to support inserting more than one record at a time?
+INSERT INTO pets (name, age, seeded)
+VALUES ('Stanley', 15, true);
+INSERT INTO pets (name, age, seeded)
+VALUES ('Lucy', 14, true);
+"
+
 # Cleanup previous runs.
-docker rm -f "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}"
+docker rm -f "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}"
 # XXX: if you want to shutdown all the containers (after you're done running
 # integration tests), you should be able to run something like:
 # ```
@@ -106,6 +123,18 @@ docker run --rm --detach \
   -e MSSQL_PID=Developer \
   "${MS_TAG}"
 
+docker run --rm --detach \
+  --name "${VERTICA_NAME}" \
+  --publish 5433:5433 \
+  -e VERTICA_DB_NAME=flux \
+  "${VERTICA_TAG}"
+
+until docker exec "${VERTICA_NAME}" /opt/vertica/bin/vsql -l;  do
+  >&2 echo "Vertica: Waiting"
+  sleep 1
+done
+>&2 echo "Vertica: Ready"
+
 until docker exec "${MS_NAME}" /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q "EXIT"; do
   >&2 echo "MSSQL: Waiting"
   sleep 1
@@ -130,6 +159,7 @@ until docker exec "${PG_NAME}" psql -U postgres -c '\q'; do
 done
 >&2 echo "Postgres: Ready"
 
+docker exec "${VERTICA_NAME}" /opt/vertica/bin/vsql -d flux -v AUTOCOMMIT=on -c "${VERTICA_SEED}"
 docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
 docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
 docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
