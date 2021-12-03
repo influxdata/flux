@@ -1784,8 +1784,14 @@ func TestMergeJoin_Process(t *testing.T) {
 			jt.Finish(parents[1], err)
 
 			got, err := executetest.TablesFromCache(c)
-			if err.Error() != tc.wantErr.Error() {
-				t.Fatalf("unexpected error value: wanted '%s', got '%s'\n", tc.wantErr, err)
+			if err != nil {
+				if tc.wantErr == nil {
+					t.Fatalf("got unexpected error: '%s'", err)
+				} else if err.Error() != tc.wantErr.Error() {
+					t.Fatalf("got unexpected error: wanted '%s', got '%s'", tc.wantErr, err)
+				}
+			} else if tc.wantErr != nil {
+				t.Fatalf("expected error '%s', but got none", tc.wantErr)
 			}
 
 			executetest.NormalizeTables(got)
