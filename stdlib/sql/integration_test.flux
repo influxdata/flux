@@ -9,6 +9,7 @@ mysqlDsn = "flux:flux@tcp(127.0.0.1:3306)/flux"
 mariaDbDsn = "flux:flux@tcp(127.0.0.1:3307)/flux"
 pgDsn = "postgresql://postgres@127.0.0.1:5432/postgres?sslmode=disable"
 verticaDsn = "vertica://dbadmin@localhost:5433/flux"
+sqliteDsn = "file:///tmp/flux-integ-tests-sqlite.db"
 
 stanley = { name: "Stanley", age: 15 }
 lucy = { name: "Lucy", age: 14 }
@@ -219,6 +220,49 @@ testcase integration_vertica_write_to {
         |> sql.to(
            driverName: "vertica",
            dataSourceName: verticaDsn,
+           table: "pets",
+           batchSize: 1)
+        // The array.from() will be returned and will cause the test to fail.
+        // Filtering will mean the test can pass. Hopefully `sql.to()` will
+        // error if there's a problem.
+        |> filter(fn: (r) => false)
+        // Without the yield, the flux script can "finish", closing the db
+        // connection before the insert commits!
+        |> yield()
+}
+
+
+testcase integration_sqlite_read_from_seed {
+    want = array.from(rows: [stanley, lucy])
+    got = sql.from(
+        driverName: "sqlite3",
+        dataSourceName: sqliteDsn,
+        query: "SELECT name, age FROM pets where seeded = true"
+    )
+    testing.diff(
+        got: got,
+        want: want
+    ) |> yield()
+}
+
+testcase integration_sqlite_read_from_nonseed {
+    want = array.from(rows: [sophie])
+    got = sql.from(
+        driverName: "sqlite3",
+        dataSourceName: sqliteDsn,
+        query: "SELECT name, age FROM pets where seeded = false"
+    )
+    testing.diff(
+        got: got,
+        want: want
+    ) |> yield()
+}
+
+testcase integration_sqlite_write_to {
+    array.from(rows: [sophie])
+        |> sql.to(
+           driverName: "sqlite3",
+           dataSourceName: sqliteDsn,
            table: "pets",
            batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.

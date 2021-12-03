@@ -14,6 +14,7 @@ MS_NAME="${PREFIX}-mssql"
 MS_TAG="mcr.microsoft.com/mssql/server:2019-latest"
 VERTICA_NAME="${PREFIX}-vertica"
 VERTICA_TAG="vertica/vertica-ce:11.0.0-0"
+SQLITE_DB_PATH="/tmp/${PREFIX}-sqlite.db"
 
 # XXX: The SAP HANA docker image requires you to be logged in to pull (but it's
 # free). We'll need some shared creds if we want to run this in CI.
@@ -181,3 +182,4 @@ docker exec "${PG_NAME}" psql -U postgres -c "${PG_SEED}"
 docker exec "${MYSQL_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
 docker exec "${MARIADB_NAME}" env MYSQL_PWD=flux mysql --database=flux --host=127.0.0.1 --user=flux --execute "${MYSQL_SEED}"
 docker exec "${MS_NAME}" /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'fluX!234' -Q "${MSSQL_SEED}";
+sqlite3 "${SQLITE_DB_PATH}" "${SQLITE_SEED}"
