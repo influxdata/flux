@@ -39,6 +39,7 @@ import (
 	planner "github.com/influxdata/flux/stdlib/planner"
 	regexp "github.com/influxdata/flux/stdlib/regexp"
 	sampledata "github.com/influxdata/flux/stdlib/sampledata"
+	sql "github.com/influxdata/flux/stdlib/sql"
 	strings "github.com/influxdata/flux/stdlib/strings"
 	chronograf "github.com/influxdata/flux/stdlib/testing/chronograf"
 	influxql "github.com/influxdata/flux/stdlib/testing/influxql"
@@ -88,6 +89,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, planner.FluxTestPackages...)
 	pkgs = append(pkgs, regexp.FluxTestPackages...)
 	pkgs = append(pkgs, sampledata.FluxTestPackages...)
+	pkgs = append(pkgs, sql.FluxTestPackages...)
 	pkgs = append(pkgs, strings.FluxTestPackages...)
 	pkgs = append(pkgs, chronograf.FluxTestPackages...)
 	pkgs = append(pkgs, influxql.FluxTestPackages...)
