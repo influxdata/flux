@@ -2,6 +2,7 @@
 
 use anyhow::{anyhow, Error, Result};
 use chrono::SecondsFormat;
+use pretty::{docs, DocAllocator};
 
 use crate::{
     ast::{self, walk::Node, File, Statement},
@@ -33,6 +34,274 @@ pub fn format(contents: &str) -> Result<String> {
 }
 
 const MULTILINE: usize = 4;
+
+type Arena<'doc> = pretty::Arena<'doc>;
+type Doc<'doc> = pretty::DocBuilder<'doc, Arena<'doc>, ()>;
+
+struct DocFormatter<'doc> {
+    arena: &'doc Arena<'doc>,
+    err: Option<Error>,
+}
+
+#[allow(dead_code, unused_variables)]
+impl<'doc> DocFormatter<'doc> {
+    pub fn format_file(&mut self, file: &'doc File, include_pkg: bool) -> Doc<'doc> {
+        let arena = self.arena;
+        let mut doc = arena.nil();
+        if let Some(pkg) = &file.package {
+            if include_pkg && !pkg.name.name.is_empty() {
+                doc = docs![
+                    arena,
+                    doc,
+                    self.format_comments(&file.base.comments),
+                    "package ",
+                    &file.name,
+                    arena.hardline(),
+                    if !file.imports.is_empty() || !file.body.is_empty() {
+                        arena.hardline().append(arena.hardline())
+                    } else {
+                        arena.nil()
+                    }
+                ];
+            }
+        }
+
+        doc = docs![
+            arena,
+            doc,
+            arena.intersperse(
+                file.imports
+                    .iter()
+                    .map(|import| self.format_import_declaration(import)),
+                arena.hardline()
+            ),
+        ];
+        if !file.imports.is_empty() && !file.body.is_empty() {
+            doc = docs![arena, doc, arena.hardline(), arena.hardline(),];
+        }
+
+        // format the file statements
+        doc = doc.append(self.format_statement_list(&file.body));
+
+        if !file.eof.is_empty() {
+            doc = doc.append(self.format_comments(&file.eof));
+        }
+
+        doc
+    }
+
+    fn format_comments(&mut self, comments: &'doc [ast::Comment]) -> Doc<'doc> {
+        let arena = self.arena;
+        arena.intersperse(
+            comments.iter().map(|c| arena.text(c.text.as_str())),
+            arena.nil(),
+        )
+    }
+
+    fn format_import_declaration(&mut self, n: &'doc ast::ImportDeclaration) -> Doc<'doc> {
+        todo!()
+    }
+
+    fn format_statement_list(&mut self, s: &'doc [Statement]) -> Doc<'doc> {
+        let arena = self.arena;
+
+        arena.intersperse(s.iter().map(|s| self.format_statement(s)), arena.hardline())
+    }
+
+    fn format_statement(&mut self, s: &'doc Statement) -> Doc<'doc> {
+        match s {
+            Statement::Expr(s) => self.format_expression(&s.expression),
+            Statement::Variable(s) => todo!(),
+            Statement::Option(s) => todo!(),
+            Statement::Return(s) => todo!(),
+            Statement::Bad(s) => {
+                self.err = Some(anyhow!("bad statement"));
+                todo!()
+            }
+            Statement::Test(s) => todo!(),
+            Statement::TestCase(s) => todo!(),
+            Statement::Builtin(s) => todo!(),
+        }
+    }
+
+    fn format_identifier(&mut self, id: &'doc ast::Identifier) -> Doc<'doc> {
+        self.format_comments(&id.base.comments);
+        // self.write_string(&id.name);
+        todo!()
+    }
+
+    fn format_date_time_literal(&mut self, n: &'doc ast::DateTimeLit) -> Doc<'doc> {
+        // rust rfc3339NANO only support nano3, nano6, nano9 precisions
+        // for frac nano6 timestamp in go like "2018-05-22T19:53:23.09012Z",
+        // rust will append a zero at the end, like "2018-05-22T19:53:23.090120Z"
+        // the following implementation will match go's rfc3339nano
+        let mut f: String;
+        let v = &n.value;
+        let nano_sec = v.timestamp_subsec_nanos();
+        if nano_sec > 0 {
+            f = v.format("%FT%T").to_string();
+            let mut frac_nano: String = v.format("%f").to_string();
+            frac_nano.insert(0, '.');
+            let mut r = frac_nano.chars().last().unwrap();
+            while r == '0' {
+                frac_nano.pop();
+                r = frac_nano.chars().last().unwrap();
+            }
+            f.push_str(&frac_nano);
+
+            if v.timezone().local_minus_utc() == 0 {
+                f.push('Z')
+            } else {
+                f.push_str(&v.format("%:z").to_string());
+            }
+        } else {
+            f = v.to_rfc3339_opts(SecondsFormat::Secs, true)
+        }
+
+        let arena = self.arena;
+        docs![arena, self.format_comments(&n.base.comments), f]
+    }
+
+    fn format_expression(&mut self, expr: &'doc ast::Expression) -> Doc<'doc> {
+        let arena = self.arena;
+        match expr {
+            ast::Expression::Identifier(expr) => todo!(),
+            ast::Expression::Array(expr) => todo!(),
+            ast::Expression::Dict(expr) => todo!(),
+            ast::Expression::Function(expr) => todo!(),
+            ast::Expression::Logical(expr) => todo!(),
+            ast::Expression::Object(expr) => todo!(),
+            ast::Expression::Member(expr) => todo!(),
+            ast::Expression::Index(expr) => todo!(),
+            ast::Expression::Binary(expr) => todo!(),
+            ast::Expression::Unary(expr) => todo!(),
+            ast::Expression::PipeExpr(n) => self.format_pipe_expression(n),
+            ast::Expression::Call(expr) => self.format_call_expression(expr),
+            ast::Expression::Conditional(expr) => todo!(),
+            ast::Expression::Integer(expr) => todo!(),
+            ast::Expression::Float(expr) => todo!(),
+            ast::Expression::StringLit(expr) => todo!(),
+            ast::Expression::Duration(expr) => todo!(),
+            ast::Expression::Uint(expr) => todo!(),
+            ast::Expression::Boolean(expr) => todo!(),
+            ast::Expression::DateTime(expr) => todo!(),
+            ast::Expression::Regexp(expr) => todo!(),
+            ast::Expression::PipeLit(expr) => todo!(),
+            ast::Expression::Bad(expr) => todo!(),
+            ast::Expression::StringExpr(expr) => todo!(),
+            ast::Expression::Paren(expr) => todo!(),
+        }
+    }
+
+    fn format_pipe_expression(&mut self, n: &'doc ast::PipeExpr) -> Doc<'doc> {
+        let arena = self.arena;
+        docs![
+            arena,
+            self.format_expression(&n.argument),
+            arena.softline(),
+            self.format_comments(&n.base.comments),
+            "|> ",
+            self.format_call_expression(&n.call),
+        ]
+    }
+
+    fn format_call_expression(&mut self, n: &'doc ast::CallExpr) -> Doc<'doc> {
+        todo!()
+    }
+
+    fn format_node(&mut self, n: Node<'doc>) -> Doc<'doc> {
+        let arena = self.arena;
+        match n {
+            Node::File(f) => self.format_file(f, true),
+            Node::Block(m) => todo!(),
+            Node::ExprStmt(e) => self.format_expression(&e.expression),
+            Node::PackageClause(m) => todo!(),
+            Node::ImportDeclaration(m) => todo!(),
+            Node::ReturnStmt(m) => todo!(),
+            Node::OptionStmt(m) => todo!(),
+            Node::TestStmt(m) => todo!(),
+            Node::TestCaseStmt(m) => todo!(),
+            Node::VariableAssgn(n) => {
+                docs![
+                    arena,
+                    self.format_identifier(&n.id),
+                    self.format_comments(&n.base.comments),
+                    " = ",
+                    self.format_expression(&n.init),
+                ]
+            }
+            Node::IndexExpr(m) => todo!(),
+            Node::MemberAssgn(m) => todo!(),
+            Node::CallExpr(m) => todo!(),
+            Node::PipeExpr(n) => self.format_pipe_expression(n),
+            Node::ConditionalExpr(m) => todo!(),
+            Node::StringExpr(m) => todo!(),
+            Node::ArrayExpr(m) => todo!(),
+            Node::DictExpr(m) => todo!(),
+            Node::MemberExpr(m) => todo!(),
+            Node::UnaryExpr(m) => todo!(),
+            Node::BinaryExpr(m) => todo!(),
+            Node::LogicalExpr(m) => todo!(),
+            Node::ParenExpr(m) => todo!(),
+            Node::FunctionExpr(m) => todo!(),
+            Node::Property(m) => todo!(),
+            Node::TextPart(m) => todo!(),
+            Node::InterpolatedPart(m) => todo!(),
+            Node::StringLit(m) => todo!(),
+            Node::BooleanLit(m) => todo!(),
+            Node::FloatLit(f) => {
+                docs![arena, self.format_comments(&f.base.comments), {
+                    let mut s = format!("{}", f.value);
+                    if !s.contains('.') {
+                        s.push_str(".0");
+                    }
+                    s
+                }]
+            }
+            Node::IntegerLit(m) => todo!(),
+            Node::UintLit(m) => todo!(),
+            Node::RegexpLit(n) => {
+                docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    "/",
+                    n.value.replace("/", "\\/"),
+                    "/",
+                ]
+            }
+            Node::DurationLit(n) => {
+                docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    arena.concat(
+                        n.values
+                            .iter()
+                            .map(|d| { docs![arena, format!("{}", d.magnitude), &d.unit] })
+                    )
+                ]
+            }
+            Node::DateTimeLit(m) => self.format_date_time_literal(m),
+            Node::PipeLit(m) => todo!(),
+            Node::Identifier(m) => self.format_identifier(m),
+            Node::ObjectExpr(m) => todo!(),
+            Node::Package(m) => todo!(),
+            Node::BadStmt(_) => {
+                self.err = Some(anyhow!("bad statement"));
+                todo!()
+            }
+            Node::BadExpr(_) => {
+                self.err = Some(anyhow!("bad expression"));
+                todo!()
+            }
+            Node::BuiltinStmt(m) => todo!(),
+            Node::TypeExpression(n) => todo!(),
+            Node::MonoType(n) => todo!(),
+            Node::ParameterType(n) => todo!(),
+            Node::PropertyType(n) => todo!(),
+            Node::TypeConstraint(n) => todo!(),
+        }
+    }
+}
 
 /// Struct to hold data related to formatting such as formatted code,
 /// options, and errors.
@@ -190,6 +459,19 @@ impl Formatter {
 
     /// Format a file.
     pub fn format_file(&mut self, n: &File, include_pkg: bool) {
+        if true {
+            let arena = Arena::new();
+            self.builder = DocFormatter {
+                arena: &arena,
+                err: None,
+            }
+            .format_file(n, include_pkg)
+            .1
+            .pretty(80)
+            .to_string();
+            return;
+        }
+
         let multiline = n.base.is_multiline();
         let sep = '\n';
         if let Some(pkg) = &n.package {
