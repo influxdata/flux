@@ -148,7 +148,11 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/aggregate/aggregate_test.flux":                                           "81836db2280307926eff6e12dccfaa46aed4233daeca3a02744c976054ccfed6",
 	"stdlib/experimental/alignTime_test.flux":                                                     "fda718da4d7764798808598fd41435c661061f1dde79d15cb2c8e1bf4c43f932",
 	"stdlib/experimental/array/array.flux":                                                        "6f21d1bb00b5681a37e0de6cecbf880e98972e589778535b87eea321af55f3b4",
+<<<<<<< HEAD
 	"stdlib/experimental/bigtable/bigtable.flux":                                                  "0804b6467063186adaac1cdea1b92bcde2e07042fd592d1dfe0a8ec0eedb6aa5",
+=======
+	"stdlib/experimental/bigtable/bigtable.flux":                                                  "d08d8b9d4c8518dad9c8555f90870789d2cb5e58c7d1c446c1d953c30ba78032",
+>>>>>>> e5a6b880 (feat(docs): added inline documentation to experimental packages)
 	"stdlib/experimental/bitwise/bitwise.flux":                                                    "c0214eefcdc9c04c8baf9251df105dd7627c4ff73ea0d4d533385e9e4520ce23",
 	"stdlib/experimental/bitwise/bitwise_test.flux":                                               "e09822cf4b44f1bbec785fc9c4fff7a108e348a20c154fa9c65c99a983b996bf",
 	"stdlib/experimental/count_test.flux":                                                         "403a41883d97ac4a94ba590a878b32a68cfa6d6a5ce219c957d66e27010d9ab6",

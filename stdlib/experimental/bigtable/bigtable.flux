@@ -5,7 +5,6 @@
 // 
 package bigtable
 
-
 // from retrieves data from a [Google Cloud Bigtable](https://cloud.google.com/bigtable/) data source.
 // 
 // ## Parameters
@@ -26,7 +25,7 @@ package bigtable
 // ### Query Google Cloud Bigtable
 // ```no_run
 // import "experimental/bigtable"
-// 
+
 // bigtable.from(
 //     token: "example-token",
 //     project: "example-project",
