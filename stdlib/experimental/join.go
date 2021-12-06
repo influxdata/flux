@@ -265,8 +265,9 @@ func (c *mergeJoinCache) delete(key flux.GroupKey) {
 
 func (c *mergeJoinCache) clean() {
 	var keys []flux.GroupKey
-	c.data.Range(func(key flux.GroupKey, value interface{}) {
+	_ = c.data.Range(func(key flux.GroupKey, value interface{}) error {
 		keys = append(keys, key)
+		return nil
 	})
 	for _, key := range keys {
 		c.delete(key)
@@ -285,24 +286,24 @@ func (c *mergeJoinCache) Table(key flux.GroupKey) (flux.Table, error) {
 	return c.join(key, t.l, t.r)
 }
 
-func (c *mergeJoinCache) ForEach(f func(flux.GroupKey)) error {
-	c.data.Range(func(key flux.GroupKey, value interface{}) {
+func (c *mergeJoinCache) ForEach(f func(flux.GroupKey) error) error {
+	return c.data.Range(func(key flux.GroupKey, value interface{}) error {
 		if value.(*cacheEntry).ready() {
-			f(key)
+			return f(key)
 		}
+		return nil
 	})
-	return nil
 }
 
-func (c *mergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) error {
-	c.data.Range(func(key flux.GroupKey, value interface{}) {
+func (c *mergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext) error) error {
+	return c.data.Range(func(key flux.GroupKey, value interface{}) error {
 		if value.(*cacheEntry).ready() {
-			f(key, execute.NewTriggerFromSpec(c.spec), execute.TableContext{
+			return f(key, execute.NewTriggerFromSpec(c.spec), execute.TableContext{
 				Key: key,
 			})
 		}
+		return nil
 	})
-	return nil
 }
 
 func (c *mergeJoinCache) DiscardTable(key flux.GroupKey) {

@@ -2011,7 +2011,7 @@ type TableBuilderCache interface {
 	// TableBuilder returns an existing or new TableBuilder for the given meta data.
 	// The boolean return value indicates if TableBuilder is new.
 	TableBuilder(key flux.GroupKey) (TableBuilder, bool)
-	ForEachBuilder(f func(flux.GroupKey, TableBuilder))
+	ForEachBuilder(f func(flux.GroupKey, TableBuilder) error) error
 }
 
 type tableBuilderCache struct {
@@ -2069,9 +2069,9 @@ func (d *tableBuilderCache) TableBuilder(key flux.GroupKey) (TableBuilder, bool)
 	return b.builder, !ok
 }
 
-func (d *tableBuilderCache) ForEachBuilder(f func(flux.GroupKey, TableBuilder)) {
-	d.tables.Range(func(key flux.GroupKey, value interface{}) {
-		f(key, value.(tableState).builder)
+func (d *tableBuilderCache) ForEachBuilder(f func(flux.GroupKey, TableBuilder) error) error {
+	return d.tables.Range(func(key flux.GroupKey, value interface{}) error {
+		return f(key, value.(tableState).builder)
 	})
 }
 
@@ -2089,22 +2089,20 @@ func (d *tableBuilderCache) ExpireTable(key flux.GroupKey) {
 	}
 }
 
-func (d *tableBuilderCache) ForEach(f func(flux.GroupKey)) error {
-	d.tables.Range(func(key flux.GroupKey, value interface{}) {
-		f(key)
+func (d *tableBuilderCache) ForEach(f func(flux.GroupKey) error) error {
+	return d.tables.Range(func(key flux.GroupKey, value interface{}) error {
+		return f(key)
 	})
-	return nil
 }
 
-func (d *tableBuilderCache) ForEachWithContext(f func(flux.GroupKey, Trigger, TableContext)) error {
-	d.tables.Range(func(key flux.GroupKey, value interface{}) {
+func (d *tableBuilderCache) ForEachWithContext(f func(flux.GroupKey, Trigger, TableContext) error) error {
+	return d.tables.Range(func(key flux.GroupKey, value interface{}) error {
 		b := value.(tableState)
-		f(key, b.trigger, TableContext{
+		return f(key, b.trigger, TableContext{
 			Key:   key,
 			Count: b.builder.NRows(),
 		})
 	})
-	return nil
 }
 
 type emptyTable struct {

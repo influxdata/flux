@@ -581,13 +581,8 @@ func (c *MergeJoinCache) Table(key flux.GroupKey) (flux.Table, error) {
 }
 
 // ForEach iterates over each table in the output stream
-func (c *MergeJoinCache) ForEach(f func(flux.GroupKey)) error {
-	var err error
-	c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) {
-		if err != nil {
-			return
-		}
-
+func (c *MergeJoinCache) ForEach(f func(flux.GroupKey) error) error {
+	return c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) error {
 		if _, ok := c.tables[key]; !ok {
 
 			preJoinGroupKeys := c.reverseLookup[key]
@@ -598,30 +593,23 @@ func (c *MergeJoinCache) ForEach(f func(flux.GroupKey)) error {
 			leftBuilder := c.buffers[c.leftID].table(leftKey)
 			rightBuilder := c.buffers[c.rightID].table(rightKey)
 
-			table, e := c.join(leftBuilder, rightBuilder)
-			if e != nil || table.Empty() {
-				err = e
+			table, err := c.join(leftBuilder, rightBuilder)
+			if err != nil || table.Empty() {
 				c.DiscardTable(key)
-				return
+				return err
 			}
 
 			c.tables[key] = table
 		}
-		f(key)
+		return f(key)
 	})
-	return err
 }
 
 // ForEachWithContext iterates over each table in the output stream
-func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) error {
+func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext) error) error {
 	trigger := execute.NewTriggerFromSpec(c.triggerSpec)
 
-	var err error
-	c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) {
-		if err != nil {
-			return
-		}
-
+	return c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) error {
 		preJoinGroupKeys := c.reverseLookup[key]
 
 		leftKey := preJoinGroupKeys.left
@@ -632,12 +620,11 @@ func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigge
 
 		if _, ok := c.tables[key]; !ok {
 
-			table, e := c.join(leftBuilder, rightBuilder)
+			table, err := c.join(leftBuilder, rightBuilder)
 
-			if e != nil || table.Empty() {
-				err = e
+			if err != nil || table.Empty() {
 				c.DiscardTable(key)
-				return
+				return err
 			}
 
 			c.tables[key] = table
@@ -651,9 +638,8 @@ func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigge
 			Count: leftsize + rightsize,
 		}
 
-		f(key, trigger, ctx)
+		return f(key, trigger, ctx)
 	})
-	return err
 }
 
 // DiscardTable removes a table from the output buffer
@@ -938,16 +924,15 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 						}
 						newColumn, ok := c.schemaMap[column]
 						if !ok {
-							println("left Column not found in schema")
 							err = errors.Newf(codes.Internal, "column '%s' not found in join schema", columnName)
 							return
 						}
 						newColumnIdx, ok := c.colIndex[newColumn]
 						if !ok {
-							println("left index not found in map")
 							err = errors.Newf(codes.Internal, "could not find index for column '%s' in column index map", columnName)
+							return
 						}
-						_ = builder.AppendValue(newColumnIdx, columnVal)
+						err = builder.AppendValue(newColumnIdx, columnVal)
 					})
 					if err != nil {
 						return nil, err
@@ -960,20 +945,19 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 						}
 						newColumn, ok := c.schemaMap[column]
 						if !ok {
-							println("right Column not found in schema")
 							err = errors.Newf(codes.Internal, "column '%s' not found in schema", columnName)
 							return
 						}
 						newColumnIdx, ok := c.colIndex[newColumn]
 						if !ok {
-							println("right index not found in map")
 							err = errors.Newf(codes.Internal, "could not find index for column '%s'", columnName)
+							return
 						}
 
 						// No need to append value if column is part of the join key.
 						// Because value already appended when iterating over left record.
 						if !c.on[newColumn.Label] {
-							_ = builder.AppendValue(newColumnIdx, columnVal)
+							err = builder.AppendValue(newColumnIdx, columnVal)
 						}
 					})
 					if err != nil {

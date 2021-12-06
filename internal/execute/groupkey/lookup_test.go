@@ -148,11 +148,12 @@ func testGroupLookup(t *testing.T, l table.KeyLookup) {
 	}
 
 	var got []entry
-	l.Range(func(k flux.GroupKey, v interface{}) {
+	_ = l.Range(func(k flux.GroupKey, v interface{}) error {
 		got = append(got, entry{
 			Key:   k,
 			Value: v.(int),
 		})
+		return nil
 	})
 
 	if !cmp.Equal(want, got) {
@@ -216,7 +217,7 @@ func testGroupLookup_RangeWithDelete(t *testing.T, l table.KeyLookup) {
 		{Key: key1, Value: 1},
 	}
 	var got []entry
-	l.Range(func(k flux.GroupKey, v interface{}) {
+	_ = l.Range(func(k flux.GroupKey, v interface{}) error {
 		// Delete the current key
 		l.Delete(key0)
 		// Delete a future key
@@ -226,6 +227,7 @@ func testGroupLookup_RangeWithDelete(t *testing.T, l table.KeyLookup) {
 			Key:   k,
 			Value: v.(int),
 		})
+		return nil
 	})
 	if !cmp.Equal(want, got) {
 		t.Fatalf("unexpected range: -want/+got:\n%s", cmp.Diff(want, got))
@@ -472,8 +474,9 @@ func testGroupLookup_Clear(t *testing.T, fn func() table.KeyLookup) {
 			}
 
 			count := 0
-			l.Range(func(key flux.GroupKey, value interface{}) {
+			l.Range(func(key flux.GroupKey, value interface{}) error {
 				count++
+				return nil
 			})
 
 			if count == 0 {
@@ -482,8 +485,9 @@ func testGroupLookup_Clear(t *testing.T, fn func() table.KeyLookup) {
 
 			l.Clear()
 			count = 0
-			l.Range(func(key flux.GroupKey, value interface{}) {
+			_ = l.Range(func(key flux.GroupKey, value interface{}) error {
 				count++
+				return nil
 			})
 
 			if count > 0 {

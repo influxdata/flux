@@ -361,31 +361,22 @@ func (t *RowWiseTable) Do(f func(flux.ColReader) error) error {
 	return nil
 }
 
-func TablesFromCache(c execute.DataCache) (tables []*Table, err error) {
-	// Once the ForEach call is finished, it's possible that e == nil && err != nil
-	//
-	// So we store the error from the ForEach call in a separate variable to avoid
-	// overwriting valid errors with nil.
-	e := c.ForEach(func(key flux.GroupKey) {
+func TablesFromCache(c execute.DataCache) ([]*Table, error) {
+	var tables []*Table
+	err := c.ForEach(func(key flux.GroupKey) error {
+		tbl, err := c.Table(key)
 		if err != nil {
-			return
-		}
-		var tbl flux.Table
-		tbl, err = c.Table(key)
-		if err != nil {
-			return
+			return err
 		}
 		var cb *Table
 		cb, err = ConvertTable(tbl)
 		if err != nil {
-			return
+			return err
 		}
 		tables = append(tables, cb)
 		c.ExpireTable(key)
+		return nil
 	})
-	if err == nil && e != nil {
-		err = e
-	}
 	return tables, err
 }
 
