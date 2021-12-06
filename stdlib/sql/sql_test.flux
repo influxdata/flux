@@ -1,4 +1,4 @@
-package integration_test
+package sql_test
 
 
 import "array"
