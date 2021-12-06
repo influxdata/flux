@@ -452,7 +452,7 @@ dependencies = [
  "getrandom",
  "maplit",
  "once_cell",
- "pretty_assertions 1.0.0",
+ "pretty_assertions",
  "serde",
  "serde-aux",
  "serde_derive",
@@ -484,7 +484,7 @@ dependencies = [
  "once_cell",
  "pad",
  "pretty",
- "pretty_assertions 0.7.2",
+ "pretty_assertions",
  "pulldown-cmark",
  "regex",
  "serde",
@@ -840,18 +840,6 @@ dependencies = [
  "log",
  "typed-arena 2.0.1",
  "unicode-segmentation",
-]
-
-[[package]]
-name = "pretty_assertions"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cab0e7c02cf376875e9335e0ba1da535775beb5450d21e1dffca068818ed98b"
-dependencies = [
- "ansi_term 0.12.1",
- "ctor",
- "diff",
- "output_vt100",
 ]
 
 [[package]]

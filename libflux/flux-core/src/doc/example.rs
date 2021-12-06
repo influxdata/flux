@@ -457,7 +457,8 @@ Example on using array.from
         let mut executor = MockExecutor {
             code: expect![[r#"import "array"
 
-array.from(rows: [{_value: "a"}, {_value: "b"}]) |> yield(name: "input")
+array.from(rows: [{_value: "a"}, {_value: "b"}])
+    |> yield(name: "input")
     |> map(fn: (r) => ({r with _value: "b"}))
     |> yield(name: "output")"#]],
             results: r#"#datatype,string,long,string
