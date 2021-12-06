@@ -292,6 +292,16 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 	cols := tbl.Cols()
 	batchSize := correctBatchSize(t.spec.Spec.BatchSize, len(cols))
 
+	tableName := t.spec.Spec.Table
+	if err := validateIdent(tableName); err != nil {
+		return nil, nil, nil, err
+	}
+	for _, col := range cols {
+		if err := validateIdent(col.Label); err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
 	labels := make(map[string]idxType, len(cols))
 	var questionMarks, newSQLTableCols []string
 	for i, col := range cols {
@@ -459,4 +469,26 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 		}
 	}
 	return err
+}
+
+// Check if a SQL identifier name contains denied patterns
+func validateIdent(ident string) error {
+	// Typical tactics for SQL injection revolve around "stacking" via early
+	// statement termination (ending the original query with `;` then starting a
+	// new one), and/or via using comments to "hide" any SQL following the
+	// injected content.
+	// N.b. injection typically happens via *values* which we are already
+	// parameterizing, meaning they should be escaped automatically.
+	// This check is intended for checking table and column identifiers which
+	// are _really_ expected to be the responsibility of the developer (ie the
+	// author of the flux program) to ensure are coming from trusted sources.
+	denied := [5]string{
+		";", "#", "--", "/*", "*/",
+	}
+	for _, x := range denied {
+		if strings.Contains(ident, x) {
+			return errors.Newf(codes.Invalid, "encountered invalid identifier (%s)", ident)
+		}
+	}
+	return nil
 }
