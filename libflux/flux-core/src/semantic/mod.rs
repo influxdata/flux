@@ -262,13 +262,8 @@ pub struct FileErrors {
 
 impl fmt::Display for FileErrors {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match &self.source {
-            Some(source) => {
-                let s = self.pretty(source);
-                f.write_str(&s)
-            }
-            None => self.errors.fmt(f),
-        }
+        // TODO Use codespan's formatting for errors
+        self.errors.fmt(f)
     }
 }
 

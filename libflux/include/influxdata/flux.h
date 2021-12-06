@@ -28,7 +28,7 @@ void flux_free_error(struct flux_error_t *);
 const char *flux_error_str(struct flux_error_t *);
 
 // Prints the flux error to stdout
-const char *flux_error_print(struct flux_error_t *);
+void flux_error_print(struct flux_error_t *);
 
 // flux_free_bytes will release the memory pointed to by the pointer argument.
 void flux_free_bytes(const char *);

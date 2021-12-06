@@ -525,13 +525,19 @@ pub unsafe extern "C" fn flux_analyze_with(
         }
     };
 
-    let src = std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap();
+    let src = if csrc.is_null() {
+        None
+    } else {
+        Some(std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap())
+    };
 
     let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
         Ok(sem_pkg) => sem_pkg,
         Err(mut err) => {
-            if let Error::Semantic(err) = &mut err {
-                err.source = Some(src.into());
+            if let Some(src) = src {
+                if let Error::Semantic(err) = &mut err {
+                    err.source = Some(src.into());
+                }
             }
             return Some(err.into());
         }
