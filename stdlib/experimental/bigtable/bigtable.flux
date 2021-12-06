@@ -5,6 +5,7 @@
 // 
 package bigtable
 
+
 // from retrieves data from a [Google Cloud Bigtable](https://cloud.google.com/bigtable/) data source.
 // 
 // ## Parameters
