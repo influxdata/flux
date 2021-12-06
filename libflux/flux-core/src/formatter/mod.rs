@@ -703,6 +703,12 @@ impl Formatter {
 
     fn format_text_part(&mut self, n: &ast::TextPart) {
         let escaped_string = self.escape_string(&n.value);
+
+        if escaped_string.contains('\n') {
+            self.unindent();
+            self.safe_to_reindent = false;
+        }
+
         self.write_string(&escaped_string);
     }
 

@@ -1598,3 +1598,12 @@ j
 "#,
     );
 }
+
+#[test]
+fn dont_alter_string_literal() {
+    let script = r#"sendSlackMessage(
+    text: "*Earthquake Alert*
+M *${string(v: r.mag)}*",
+)"#;
+    assert_unchanged(script);
+}
