@@ -25,7 +25,7 @@ package bigtable
 // ### Query Google Cloud Bigtable
 // ```no_run
 // import "experimental/bigtable"
-
+// 
 // bigtable.from(
 //     token: "example-token",
 //     project: "example-project",
