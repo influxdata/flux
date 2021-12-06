@@ -93,7 +93,7 @@ impl Formatter {
                 self.clear = true;
             }
         }
-        (&mut self.builder).push_str(s);
+        self.builder.push_str(s);
     }
 
     fn write_rune(&mut self, c: char) {
@@ -106,7 +106,7 @@ impl Formatter {
         } else if c != '\t' && c != ' ' {
             self.clear = false;
         }
-        (&mut self.builder).push(c);
+        self.builder.push(c);
     }
 
     fn write_indent(&mut self) {
@@ -703,6 +703,12 @@ impl Formatter {
 
     fn format_text_part(&mut self, n: &ast::TextPart) {
         let escaped_string = self.escape_string(&n.value);
+
+        if escaped_string.contains('\n') {
+            self.unindent();
+            self.safe_to_reindent = false;
+        }
+
         self.write_string(&escaped_string);
     }
 
@@ -1259,8 +1265,7 @@ impl Formatter {
         if !(s.contains('\"') || s.contains('\\')) {
             return s.to_string();
         }
-        let mut escaped: String;
-        escaped = String::with_capacity(s.len() * 2);
+        let mut escaped = String::with_capacity(s.len() * 2);
         for r in s.chars() {
             if r == '"' || r == '\\' {
                 escaped.push('\\')
@@ -1272,12 +1277,7 @@ impl Formatter {
 
     // TODO(adriandt): this code appears dead. Boolean literal is no longer a node type?
     fn format_boolean_literal(&mut self, n: &ast::BooleanLit) {
-        let s: &str;
-        if n.value {
-            s = "true"
-        } else {
-            s = "false"
-        }
+        let s = if n.value { "true" } else { "false" };
         self.write_string(s)
     }
 
