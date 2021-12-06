@@ -1,10 +1,12 @@
 use pretty_assertions::assert_eq;
 
 use super::*;
-use crate::ast::{
-    tests::Locator,
-    Expression::{Array, Member},
-    StringExprPart::{Interpolated, Text},
+use crate::{
+    ast::{
+        Expression::{Array, Member},
+        StringExprPart::{Interpolated, Text},
+    },
+    locator::Locator,
 };
 
 #[test]

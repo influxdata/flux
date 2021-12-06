@@ -727,14 +727,6 @@ impl Formatter {
     }
 
     fn format_string_literal(&mut self, n: &semantic::nodes::StringLit) {
-        if let Some(src) = &n.loc.source {
-            if !src.is_empty() {
-                // Preserve the exact literal if we have it
-                self.write_string(src);
-                // self.write_string(&format!(":{}", MonoType::String.to_string()));
-                return;
-            }
-        }
         // Write out escaped string value
         self.write_rune('"');
         let escaped_string = self.escape_string(&n.value);

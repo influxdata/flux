@@ -24,7 +24,6 @@ func (l *Loc) FromBuf(fb *fbsemantic.SourceLocation) error {
 	l.File = string(fb.File())
 	posFromBuf(&l.Start, fb.Start(nil))
 	posFromBuf(&l.End, fb.End(nil))
-	l.Source = string(fb.Source())
 	return nil
 }
 
@@ -650,7 +649,6 @@ func objectExprFromProperties(fb *fbsemantic.CallExpression) (*ObjectExpression,
 	if len(props) > 0 {
 		l = props[0].Loc
 		l.End = props[len(props)-1].Loc.End
-		l.Source = ""
 	}
 	obj := &ObjectExpression{
 		Loc:        l,

@@ -495,7 +495,6 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
                     file: func.loc.file.clone(),
                     start: *body_start_pos,
                     end: *body_end_pos,
-                    source: None,
                 };
                 let body_loc = v.create_loc(&body_loc);
                 let body_vec = {
@@ -1092,7 +1091,6 @@ impl<'a, 'b> SerializingVisitorState<'a, 'b> {
         loc: &ast::SourceLocation,
     ) -> Option<WIPOffset<fbsemantic::SourceLocation<'a>>> {
         let file = self.create_opt_string(&loc.file);
-        let source = self.create_opt_string(&loc.source);
 
         Some(fbsemantic::SourceLocation::create(
             self.builder,
@@ -1106,7 +1104,6 @@ impl<'a, 'b> SerializingVisitorState<'a, 'b> {
                     loc.end.line as i32,
                     loc.end.column as i32,
                 )),
-                source,
             },
         ))
     }

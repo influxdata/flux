@@ -27,15 +27,18 @@ func free(f freeable) {
 
 // ASTPkg is a parsed AST.
 type ASTPkg struct {
-	ptr *C.struct_flux_ast_pkg_t
+	source string
+	ptr    *C.struct_flux_ast_pkg_t
 }
 
 // ASTHandle makes sure that this type implements the flux.ASTHandle interface.
 func (p ASTPkg) ASTHandle() {}
 
 func (p ASTPkg) Format() (string, error) {
+	csrc := C.CString(p.source)
+	defer C.free(unsafe.Pointer(csrc))
 	var buf C.struct_flux_buffer_t
-	if err := C.flux_ast_format(p.ptr, &buf); err != nil {
+	if err := C.flux_ast_format(p.ptr, csrc, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
 		str := C.GoString(cstr)
@@ -127,7 +130,7 @@ func Parse(fname string, src string) *ASTPkg {
 	defer C.free(unsafe.Pointer(cfname))
 
 	ptr := C.flux_parse(cfname, csrc)
-	p := &ASTPkg{ptr: ptr}
+	p := &ASTPkg{source: src, ptr: ptr}
 	runtime.SetFinalizer(p, free)
 	return p
 }

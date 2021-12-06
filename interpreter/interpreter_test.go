@@ -869,18 +869,16 @@ func TestStack(t *testing.T) {
 		{
 			FunctionName: "window",
 			Location: ast.SourceLocation{
-				File:   "universe.flux",
-				Start:  ast.Position{Line: 388, Column: 12},
-				End:    ast.Position{Line: 388, Column: 51},
-				Source: `window(every: inf, timeColumn: timeDst)`,
+				File:  "universe.flux",
+				Start: ast.Position{Line: 388, Column: 12},
+				End:   ast.Position{Line: 388, Column: 51},
 			},
 		},
 		{
 			FunctionName: "aggregateWindow",
 			Location: ast.SourceLocation{
-				Start:  ast.Position{Line: 1, Column: 50},
-				End:    ast.Position{Line: 1, Column: 86},
-				Source: `aggregateWindow(every: 1m, fn: mean)`,
+				Start: ast.Position{Line: 1, Column: 50},
+				End:   ast.Position{Line: 1, Column: 86},
 			},
 		},
 	}

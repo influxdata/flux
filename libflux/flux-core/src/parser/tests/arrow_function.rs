@@ -1,7 +1,7 @@
 use pretty_assertions::assert_eq;
 
 use super::*;
-use crate::ast::tests::Locator;
+use crate::locator::Locator;
 
 #[test]
 fn arrow_function_called() {

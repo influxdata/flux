@@ -1,7 +1,7 @@
 use pretty_assertions::assert_eq;
 
 use super::*;
-use crate::ast::tests::Locator;
+use crate::locator::Locator;
 
 #[test]
 fn function_call_with_unbalanced_braces() {
@@ -464,9 +464,6 @@ fn missing_arrow_in_function_expression() {
                         line: 1,
                         column: 13,
                     },
-                    source: Some(
-                        "(a, b) a + b",
-                    ),
                 },
                 comments: [],
                 errors: [],
@@ -491,9 +488,6 @@ fn missing_arrow_in_function_expression() {
                                     line: 1,
                                     column: 13,
                                 },
-                                source: Some(
-                                    "(a, b) a + b",
-                                ),
                             },
                             comments: [],
                             errors: [],
@@ -513,9 +507,6 @@ fn missing_arrow_in_function_expression() {
                                             line: 1,
                                             column: 13,
                                         },
-                                        source: Some(
-                                            "(a, b) a + b",
-                                        ),
                                     },
                                     comments: [],
                                     errors: [],
@@ -536,9 +527,6 @@ fn missing_arrow_in_function_expression() {
                                                     line: 1,
                                                     column: 3,
                                                 },
-                                                source: Some(
-                                                    "a",
-                                                ),
                                             },
                                             comments: [],
                                             errors: [],
@@ -558,9 +546,6 @@ fn missing_arrow_in_function_expression() {
                                                             line: 1,
                                                             column: 3,
                                                         },
-                                                        source: Some(
-                                                            "a",
-                                                        ),
                                                     },
                                                     comments: [],
                                                     errors: [],
@@ -586,9 +571,6 @@ fn missing_arrow_in_function_expression() {
                                                     line: 1,
                                                     column: 6,
                                                 },
-                                                source: Some(
-                                                    "b",
-                                                ),
                                             },
                                             comments: [],
                                             errors: [],
@@ -608,9 +590,6 @@ fn missing_arrow_in_function_expression() {
                                                             line: 1,
                                                             column: 6,
                                                         },
-                                                        source: Some(
-                                                            "b",
-                                                        ),
                                                     },
                                                     comments: [],
                                                     errors: [],
@@ -641,9 +620,6 @@ fn missing_arrow_in_function_expression() {
                                                         line: 1,
                                                         column: 13,
                                                     },
-                                                    source: Some(
-                                                        "a + b",
-                                                    ),
                                                 },
                                                 comments: [],
                                                 errors: [],
@@ -664,9 +640,6 @@ fn missing_arrow_in_function_expression() {
                                                                 line: 1,
                                                                 column: 9,
                                                             },
-                                                            source: Some(
-                                                                "a",
-                                                            ),
                                                         },
                                                         comments: [],
                                                         errors: [
@@ -691,9 +664,6 @@ fn missing_arrow_in_function_expression() {
                                                                 line: 1,
                                                                 column: 13,
                                                             },
-                                                            source: Some(
-                                                                "b",
-                                                            ),
                                                         },
                                                         comments: [],
                                                         errors: [],

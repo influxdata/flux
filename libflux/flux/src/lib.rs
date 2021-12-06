@@ -163,11 +163,22 @@ pub fn parse(fname: String, src: &str) -> ast::Package {
 #[no_mangle]
 pub extern "C" fn flux_ast_format(
     ast_pkg: &ast::Package,
+    csrc: *const c_char,
     out: &mut flux_buffer_t,
 ) -> Option<Box<ErrorHandle>> {
     let mut out_str = String::new();
+    let source = if csrc.is_null() {
+        None
+    } else {
+        unsafe {
+            match CStr::from_ptr(csrc).to_str() {
+                Ok(s) => Some(s),
+                Err(err) => return Some(Error::from(anyhow::Error::from(err)).into()),
+            }
+        }
+    };
     for file in &ast_pkg.files {
-        let s = match formatter::convert_to_string(file) {
+        let s = match formatter::convert_to_string(file, source) {
             Ok(v) => v,
             Err(e) => return Some(Error::from(e).into()),
         };

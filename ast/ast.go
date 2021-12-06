@@ -33,10 +33,9 @@ func (p Position) IsValid() bool {
 
 // SourceLocation represents the location of a node in the AST
 type SourceLocation struct {
-	File   string   `json:"file,omitempty"`
-	Start  Position `json:"start"`            // Start is the location in the source the node starts
-	End    Position `json:"end"`              // End is the location in the source the node ends
-	Source string   `json:"source,omitempty"` // Source is optional raw source
+	File  string   `json:"file,omitempty"`
+	Start Position `json:"start"` // Start is the location in the source the node starts
+	End   Position `json:"end"`   // End is the location in the source the node ends
 }
 
 func (l SourceLocation) String() string {

@@ -25,7 +25,6 @@ func (l SourceLocation) FromBuf(buf *fbast.SourceLocation) *SourceLocation {
 	l.File = string(buf.File())
 	l.Start.FromBuf(buf.Start(nil))
 	l.End.FromBuf(buf.End(nil))
-	l.Source = string(buf.Source())
 	return &l
 }
 

@@ -3,7 +3,7 @@
 use std::{collections::HashMap, mem, str};
 
 use super::DefaultHasher;
-use crate::{ast, ast::*, scanner, scanner::*};
+use crate::{ast, ast::*, scanner::*};
 
 mod strconv;
 
@@ -30,6 +30,8 @@ pub struct Parser<'input> {
     blocks: HashMap<TokenType, i32, DefaultHasher>,
 
     fname: String,
+
+    #[cfg(test)]
     source: &'input str,
 }
 
@@ -43,6 +45,7 @@ impl<'input> Parser<'input> {
             errs: Vec::new(),
             blocks: HashMap::default(),
             fname: "".to_string(),
+            #[cfg(test)]
             source: src,
         }
     }
@@ -279,14 +282,10 @@ impl<'input> Parser<'input> {
             return SourceLocation::default();
         }
 
-        let s_off = self.s.offset(&scanner::Position::from(start)) as usize;
-        let e_off = self.s.offset(&scanner::Position::from(end)) as usize;
-
         SourceLocation {
             file: Some(self.fname.clone()),
             start: *start,
             end: *end,
-            source: Some(self.source[s_off..e_off].to_string()),
         }
     }
 

@@ -2038,7 +2038,6 @@ fn test_object_expression_with_source_locations_and_errors() {
                     line: 1,
                     column: 13,
                 },
-                source: Some("{a: \"hello\"}".to_string()),
             },
             ..BaseNode::default()
         },
@@ -2053,7 +2052,6 @@ fn test_object_expression_with_source_locations_and_errors() {
                         line: 1,
                         column: 12,
                     },
-                    source: Some("a: \"hello\"".to_string()),
                 },
                 errors: vec!["an error".to_string()],
                 ..BaseNode::default()
@@ -2064,7 +2062,6 @@ fn test_object_expression_with_source_locations_and_errors() {
                         file: Some("foo.flux".to_string()),
                         start: Position { line: 1, column: 2 },
                         end: Position { line: 1, column: 3 },
-                        source: Some("a".to_string()),
                     },
                     ..BaseNode::default()
                 },
@@ -2080,7 +2077,6 @@ fn test_object_expression_with_source_locations_and_errors() {
                             line: 1,
                             column: 12,
                         },
-                        source: Some("\"hello\"".to_string()),
                     },
                     errors: vec!["an error".to_string(), "another error".to_string()],
                     ..BaseNode::default()
@@ -2092,10 +2088,7 @@ fn test_object_expression_with_source_locations_and_errors() {
         rbrace: vec![],
     }));
     let serialized = serde_json::to_string(&n).unwrap();
-    assert_eq!(
-        serialized,
-        r#"{"type":"ObjectExpression","location":{"file":"foo.flux","start":{"line":1,"column":1},"end":{"line":1,"column":13},"source":"{a: \"hello\"}"},"properties":[{"type":"Property","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":12},"source":"a: \"hello\""},"errors":[{"msg":"an error"}],"key":{"type":"Identifier","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":3},"source":"a"},"name":"a"},"value":{"type":"StringLiteral","location":{"file":"foo.flux","start":{"line":1,"column":5},"end":{"line":1,"column":12},"source":"\"hello\""},"errors":[{"msg":"an error"},{"msg":"another error"}],"value":"hello"}}]}"#
-    );
+    expect_test::expect![[r#"{"type":"ObjectExpression","location":{"file":"foo.flux","start":{"line":1,"column":1},"end":{"line":1,"column":13}},"properties":[{"type":"Property","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":12}},"errors":[{"msg":"an error"}],"key":{"type":"Identifier","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":3}},"name":"a"},"value":{"type":"StringLiteral","location":{"file":"foo.flux","start":{"line":1,"column":5},"end":{"line":1,"column":12}},"errors":[{"msg":"an error"},{"msg":"another error"}],"value":"hello"}}]}"#]].assert_eq(&serialized);
     // TODO(affo): leaving proper error deserialization for the future.
     // let deserialized: ObjectExpr = serde_json::from_str(serialized.as_str()).unwrap();
     // assert_eq!(deserialized, n)
@@ -2131,49 +2124,4 @@ fn test_ast_json_roundtrip() {
         Err(e) => panic!("error deserializing JSON: {}", e),
     };
     assert_eq!(ast, roundtrip_ast);
-}
-
-/// Locator makes constructing an SourceLocation from a string simple.
-pub struct Locator<'a> {
-    source: &'a str,
-    lines: Vec<u32>,
-}
-
-impl<'a> Locator<'a> {
-    /// Create a new Locator for the given source code
-    pub fn new(source: &'a str) -> Self {
-        let mut lines = Vec::new();
-        lines.push(0);
-        let ci = source.char_indices();
-        for (i, c) in ci {
-            match c {
-                '\n' => lines.push((i + 1) as u32),
-                _ => (),
-            }
-        }
-        Self { source, lines }
-    }
-
-    /// Get the SourceLocation for the given start line, start column, end line and end
-    /// column.
-    pub fn get(&self, sl: u32, sc: u32, el: u32, ec: u32) -> SourceLocation {
-        SourceLocation {
-            file: Some("".to_string()),
-            source: Some(self.get_src(sl, sc, el, ec).to_string()),
-            start: Position {
-                line: sl,
-                column: sc,
-            },
-            end: Position {
-                line: el,
-                column: ec,
-            },
-        }
-    }
-
-    fn get_src(&self, sl: u32, sc: u32, el: u32, ec: u32) -> &str {
-        let start_offset = self.lines.get(sl as usize - 1).expect("line not found") + sc - 1;
-        let end_offset = self.lines.get(el as usize - 1).expect("line not found") + ec - 1;
-        return &self.source[start_offset as usize..end_offset as usize];
-    }
 }

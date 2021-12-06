@@ -159,7 +159,7 @@ pub fn constrain(
     loc: &SourceLocation,
     sub: &mut Substitution,
 ) -> Result<(), Located<types::Error>> {
-    log::debug!("Constraint::Kind {:?}: {} => {}", loc.source, exp, act);
+    log::debug!("Constraint::Kind {} => {}", exp, act);
     act.apply_cow(sub)
         .constrain(exp, sub.cons())
         .map_err(|error| Located {
@@ -174,7 +174,7 @@ pub fn equal(
     loc: &SourceLocation,
     sub: &mut Substitution,
 ) -> Result<MonoType, Located<Errors<types::Error>>> {
-    log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
+    log::debug!("Constraint::Equal {} <===> {}", exp, act);
     exp.try_unify(act, sub).map_err(|error| {
         log::debug!("Unify error: {} <=> {}", exp, act);
 

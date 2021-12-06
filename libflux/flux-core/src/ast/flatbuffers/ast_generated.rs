@@ -4178,9 +4178,6 @@ pub mod fbast {
             args: &'args SourceLocationArgs<'args>,
         ) -> flatbuffers::WIPOffset<SourceLocation<'bldr>> {
             let mut builder = SourceLocationBuilder::new(_fbb);
-            if let Some(x) = args.source {
-                builder.add_source(x);
-            }
             if let Some(x) = args.end {
                 builder.add_end(x);
             }
@@ -4196,7 +4193,6 @@ pub mod fbast {
         pub const VT_FILE: flatbuffers::VOffsetT = 4;
         pub const VT_START: flatbuffers::VOffsetT = 6;
         pub const VT_END: flatbuffers::VOffsetT = 8;
-        pub const VT_SOURCE: flatbuffers::VOffsetT = 10;
 
         #[inline]
         pub fn file(&self) -> Option<&'a str> {
@@ -4211,11 +4207,6 @@ pub mod fbast {
         pub fn end(&self) -> Option<&'a Position> {
             self._tab.get::<Position>(SourceLocation::VT_END, None)
         }
-        #[inline]
-        pub fn source(&self) -> Option<&'a str> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<&str>>(SourceLocation::VT_SOURCE, None)
-        }
     }
 
     impl flatbuffers::Verifiable for SourceLocation<'_> {
@@ -4229,11 +4220,6 @@ pub mod fbast {
                 .visit_field::<flatbuffers::ForwardsUOffset<&str>>(&"file", Self::VT_FILE, false)?
                 .visit_field::<Position>(&"start", Self::VT_START, false)?
                 .visit_field::<Position>(&"end", Self::VT_END, false)?
-                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(
-                    &"source",
-                    Self::VT_SOURCE,
-                    false,
-                )?
                 .finish();
             Ok(())
         }
@@ -4242,7 +4228,6 @@ pub mod fbast {
         pub file: Option<flatbuffers::WIPOffset<&'a str>>,
         pub start: Option<&'a Position>,
         pub end: Option<&'a Position>,
-        pub source: Option<flatbuffers::WIPOffset<&'a str>>,
     }
     impl<'a> Default for SourceLocationArgs<'a> {
         #[inline]
@@ -4251,7 +4236,6 @@ pub mod fbast {
                 file: None,
                 start: None,
                 end: None,
-                source: None,
             }
         }
     }
@@ -4276,11 +4260,6 @@ pub mod fbast {
                 .push_slot_always::<&Position>(SourceLocation::VT_END, end);
         }
         #[inline]
-        pub fn add_source(&mut self, source: flatbuffers::WIPOffset<&'b str>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(SourceLocation::VT_SOURCE, source);
-        }
-        #[inline]
         pub fn new(
             _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
         ) -> SourceLocationBuilder<'a, 'b> {
@@ -4303,7 +4282,6 @@ pub mod fbast {
             ds.field("file", &self.file());
             ds.field("start", &self.start());
             ds.field("end", &self.end());
-            ds.field("source", &self.source());
             ds.finish()
         }
     }

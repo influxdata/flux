@@ -19,7 +19,6 @@ fn test_object_check() {
                 line: 2,
                 column: 14,
             },
-            source: Some(String::from("{c: 2, a}")),
         },
         ErrorKind {
             message: String::from("cannot mix implicit and explicit properties"),
@@ -37,7 +36,6 @@ fn test_bad_stmt() {
             file: Some(String::from("bad_stmt_test")),
             start: Position { line: 3, column: 2 },
             end: Position { line: 3, column: 3 },
-            source: Some(String::from("=")),
         },
         ErrorKind {
             message: String::from("invalid statement: ="),
@@ -58,7 +56,6 @@ fn test_bad_expr() {
                 line: 1,
                 column: 10,
             },
-            source: Some(String::from("/")),
         },
         ErrorKind {
             message: String::from("invalid expression: invalid token for primary expression: DIV"),
@@ -81,7 +78,6 @@ fn test_check_collect_existing_error() {
                 file: Some(String::from("test_check_collect_existing_error")),
                 start: Position { line: 1, column: 1 },
                 end: Position { line: 3, column: 6 },
-                source: Some(String::from("a = 1\nb=2\nc=a+b")),
             },
             errors: vec![String::from("error 1")],
             ..BaseNode::default()
@@ -96,7 +92,6 @@ fn test_check_collect_existing_error() {
                     file: Some(String::from("test_check_collect_existing_error")),
                     start: Position { line: 1, column: 1 },
                     end: Position { line: 1, column: 6 },
-                    source: Some(String::from("a = 1")),
                 },
                 ..BaseNode::default()
             },
@@ -106,7 +101,6 @@ fn test_check_collect_existing_error() {
                         file: Some(String::from("test_check_collect_existing_error")),
                         start: Position { line: 1, column: 1 },
                         end: Position { line: 1, column: 2 },
-                        source: Some(String::from("a")),
                     },
                     ..BaseNode::default()
                 },
@@ -118,7 +112,6 @@ fn test_check_collect_existing_error() {
                         file: Some(String::from("test_check_collect_existing_error")),
                         start: Position { line: 1, column: 5 },
                         end: Position { line: 1, column: 6 },
-                        source: Some(String::from("1")),
                     },
                     errors: vec![String::from("error 2"), String::from("error 3")],
                     ..BaseNode::default()

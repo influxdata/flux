@@ -1,6 +1,6 @@
 use super::*;
 
-use crate::ast::tests::Locator;
+use crate::locator::Locator;
 use pretty_assertions::assert_eq;
 
 #[test]

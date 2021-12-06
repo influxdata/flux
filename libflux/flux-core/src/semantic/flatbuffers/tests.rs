@@ -838,11 +838,6 @@ fn compare_loc(
     compare_opt_strings("source location file", &semantic_loc.file, &fb_loc.file())?;
     compare_pos(&semantic_loc.start, &fb_loc.start())?;
     compare_pos(&semantic_loc.end, &fb_loc.end())?;
-    compare_opt_strings(
-        "source location source",
-        &semantic_loc.source,
-        &fb_loc.source(),
-    )?;
     Ok(())
 }
 

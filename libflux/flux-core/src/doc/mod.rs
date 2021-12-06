@@ -1134,7 +1134,8 @@ mod test {
         PackageDoc, ParameterDoc, Parser, Token, ValueDoc,
     };
     use crate::{
-        ast::{self, tests::Locator},
+        ast,
+        locator::Locator,
         parser::parse_string,
         semantic::{env::Environment, import::Packages, Analyzer},
     };

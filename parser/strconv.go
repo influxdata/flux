@@ -15,7 +15,7 @@ func ParseTime(lit string) (*ast.DateTimeLiteral, error) {
 	}
 	return &ast.DateTimeLiteral{
 		Value:    d,
-		BaseNode: ast.BaseNode{Loc: &ast.SourceLocation{Source: lit}},
+		BaseNode: ast.BaseNode{Loc: &ast.SourceLocation{}},
 	}, nil
 }
 
@@ -30,7 +30,7 @@ func ParseSignedDuration(lit string) (*ast.DurationLiteral, error) {
 		for i := range d.Values {
 			d.Values[i].Magnitude = -d.Values[i].Magnitude
 		}
-		d.BaseNode = ast.BaseNode{Loc: &ast.SourceLocation{Source: lit}}
+		d.BaseNode = ast.BaseNode{Loc: &ast.SourceLocation{}}
 		return d, nil
 	}
 	return ParseDuration(lit)
@@ -44,7 +44,7 @@ func ParseDuration(lit string) (*ast.DurationLiteral, error) {
 	}
 	return &ast.DurationLiteral{
 		Values:   d,
-		BaseNode: ast.BaseNode{Loc: &ast.SourceLocation{Source: lit}},
+		BaseNode: ast.BaseNode{Loc: &ast.SourceLocation{}},
 	}, nil
 }
 
@@ -61,7 +61,7 @@ func ParseString(lit string) (*ast.StringLiteral, error) {
 	}
 	return &ast.StringLiteral{
 		Value:    d,
-		BaseNode: ast.BaseNode{Loc: &ast.SourceLocation{Source: lit}},
+		BaseNode: ast.BaseNode{Loc: &ast.SourceLocation{}},
 	}, nil
 
 }
@@ -71,6 +71,6 @@ func MustParseTime(lit string) *ast.DateTimeLiteral {
 	d := parser.MustParseTime(lit)
 	return &ast.DateTimeLiteral{
 		Value:    d,
-		BaseNode: ast.BaseNode{Loc: &ast.SourceLocation{Source: lit}},
+		BaseNode: ast.BaseNode{Loc: &ast.SourceLocation{}},
 	}
 }

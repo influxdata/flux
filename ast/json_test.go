@@ -757,38 +757,34 @@ func TestJSONMarshal(t *testing.T) {
 			node: &ast.ObjectExpression{
 				BaseNode: ast.BaseNode{
 					Loc: &ast.SourceLocation{
-						File:   "foo.flux",
-						Start:  ast.Position{Line: 1, Column: 1},
-						End:    ast.Position{Line: 1, Column: 13},
-						Source: "{a: \"hello\"}",
+						File:  "foo.flux",
+						Start: ast.Position{Line: 1, Column: 1},
+						End:   ast.Position{Line: 1, Column: 13},
 					},
 				},
 				Properties: []*ast.Property{{
 					BaseNode: ast.BaseNode{
 						Loc: &ast.SourceLocation{
-							File:   "foo.flux",
-							Start:  ast.Position{Line: 1, Column: 2},
-							End:    ast.Position{Line: 1, Column: 12},
-							Source: "a: \"hello\"",
+							File:  "foo.flux",
+							Start: ast.Position{Line: 1, Column: 2},
+							End:   ast.Position{Line: 1, Column: 12},
 						},
 						Errors: []ast.Error{{Msg: "an error"}},
 					},
 					Key: &ast.Identifier{BaseNode: ast.BaseNode{
 						Loc: &ast.SourceLocation{
-							File:   "foo.flux",
-							Start:  ast.Position{Line: 1, Column: 2},
-							End:    ast.Position{Line: 1, Column: 3},
-							Source: "a",
+							File:  "foo.flux",
+							Start: ast.Position{Line: 1, Column: 2},
+							End:   ast.Position{Line: 1, Column: 3},
 						},
 					},
 						Name: "a",
 					},
 					Value: &ast.StringLiteral{BaseNode: ast.BaseNode{
 						Loc: &ast.SourceLocation{
-							File:   "foo.flux",
-							Start:  ast.Position{Line: 1, Column: 5},
-							End:    ast.Position{Line: 1, Column: 12},
-							Source: "\"hello\"",
+							File:  "foo.flux",
+							Start: ast.Position{Line: 1, Column: 5},
+							End:   ast.Position{Line: 1, Column: 12},
 						},
 						Errors: []ast.Error{{Msg: "an error"}, {Msg: "another error"}},
 					},
@@ -796,7 +792,7 @@ func TestJSONMarshal(t *testing.T) {
 					},
 				}},
 			},
-			want: `{"type":"ObjectExpression","location":{"file":"foo.flux","start":{"line":1,"column":1},"end":{"line":1,"column":13},"source":"{a: \"hello\"}"},"properties":[{"type":"Property","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":12},"source":"a: \"hello\""},"errors":[{"msg":"an error"}],"key":{"type":"Identifier","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":3},"source":"a"},"name":"a"},"value":{"type":"StringLiteral","location":{"file":"foo.flux","start":{"line":1,"column":5},"end":{"line":1,"column":12},"source":"\"hello\""},"errors":[{"msg":"an error"},{"msg":"another error"}],"value":"hello"}}]}`,
+			want: `{"type":"ObjectExpression","location":{"file":"foo.flux","start":{"line":1,"column":1},"end":{"line":1,"column":13}},"properties":[{"type":"Property","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":12}},"errors":[{"msg":"an error"}],"key":{"type":"Identifier","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":3}},"name":"a"},"value":{"type":"StringLiteral","location":{"file":"foo.flux","start":{"line":1,"column":5},"end":{"line":1,"column":12}},"errors":[{"msg":"an error"},{"msg":"another error"}],"value":"hello"}}]}`,
 		},
 		{
 			name: "Comments in BaseNode",

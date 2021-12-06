@@ -59,14 +59,15 @@ void test_ast() {
   }
   {
     printf("Format AST\n");
-    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx=1+1");
+    const char* src = "package foo\nx=1+1";
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", src);
     assert(ast_pkg_foo != NULL);
 
     struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo);
     assert(err == NULL);
 
     struct flux_buffer_t buf;
-    err = flux_ast_format(ast_pkg_foo, &buf);
+    err = flux_ast_format(ast_pkg_foo, src, &buf);
     assert(err == NULL);
 
     flux_free_ast_pkg(ast_pkg_foo);

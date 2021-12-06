@@ -60,10 +60,6 @@ fn build_loc<'a>(
         None => None,
         Some(name) => Some(builder.create_string(&name)),
     };
-    let source = match loc.source {
-        None => None,
-        Some(src) => Some(builder.create_string(&src)),
-    };
     fb::SourceLocation::create(
         builder,
         &fb::SourceLocationArgs {
@@ -76,7 +72,6 @@ fn build_loc<'a>(
                 loc.end.line as i32,
                 loc.end.column as i32,
             )),
-            source,
         },
     )
 }

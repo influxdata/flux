@@ -3,8 +3,8 @@ use pretty_assertions::assert_eq;
 
 use super::*;
 use crate::{
-    ast,
-    ast::{tests::Locator, Statement::Variable},
+    ast::{self, Statement::Variable},
+    locator::Locator,
 };
 
 mod arrow_function;

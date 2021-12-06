@@ -86,9 +86,6 @@ pub struct SourceLocation {
     pub start: Position,
     /// End is the location in the source the node ends.
     pub end: Position,
-    /// Source is optional raw source.
-    #[serde(skip_serializing_if = "skip_string_option")]
-    pub source: Option<String>,
 }
 
 impl SourceLocation {
@@ -1536,7 +1533,5 @@ pub struct DateTimeLit {
     pub value: chrono::DateTime<FixedOffset>,
 }
 
-// The tests code exports a few helpers for writing AST related tests.
-// We make it public so other tests can consume those helpers.
 #[cfg(test)]
-pub mod tests;
+mod tests;

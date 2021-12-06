@@ -254,7 +254,6 @@ fn build_record(
                 file: None,
                 start: ast::Position::default(),
                 end: ast::Position::default(),
-                source: None,
             },
         );
         r = Record::Extension {

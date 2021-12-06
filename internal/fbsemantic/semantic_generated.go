@@ -1996,16 +1996,8 @@ func (rcv *SourceLocation) End(obj *Position) *Position {
 	return nil
 }
 
-func (rcv *SourceLocation) Source() []byte {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
-	if o != 0 {
-		return rcv._tab.ByteVector(o + rcv._tab.Pos)
-	}
-	return nil
-}
-
 func SourceLocationStart(builder *flatbuffers.Builder) {
-	builder.StartObject(4)
+	builder.StartObject(3)
 }
 func SourceLocationAddFile(builder *flatbuffers.Builder, file flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(file), 0)
@@ -2015,9 +2007,6 @@ func SourceLocationAddStart(builder *flatbuffers.Builder, start flatbuffers.UOff
 }
 func SourceLocationAddEnd(builder *flatbuffers.Builder, end flatbuffers.UOffsetT) {
 	builder.PrependStructSlot(2, flatbuffers.UOffsetT(end), 0)
-}
-func SourceLocationAddSource(builder *flatbuffers.Builder, source flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(source), 0)
 }
 func SourceLocationEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

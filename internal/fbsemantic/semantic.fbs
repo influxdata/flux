@@ -190,7 +190,6 @@ table SourceLocation {
   file:string;
   start:Position;
   end:Position;
-  source:string;
 }
 
 struct Position {

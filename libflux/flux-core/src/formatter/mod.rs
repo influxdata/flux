@@ -6,12 +6,13 @@ use pretty::{docs, DocAllocator};
 
 use crate::{
     ast::{self, walk::Node, File, Statement},
+    locator::Locator,
     parser::parse_string,
 };
 
 /// Format a [`File`].
-pub fn convert_to_string(file: &File) -> Result<String> {
-    format_to_string(file, true)
+pub fn convert_to_string(file: &File, source: Option<&str>) -> Result<String> {
+    format_to_string(file, source, true)
 }
 
 /// Format a string of Flux code.
@@ -28,7 +29,7 @@ pub fn format(contents: &str) -> Result<String> {
     let file = parse_string("".to_string(), contents);
     let node = ast::walk::Node::File(&file);
     ast::check::check(node)?;
-    convert_to_string(&file)
+    convert_to_string(&file, Some(contents))
 }
 
 const MULTILINE: usize = 4;
@@ -247,10 +248,11 @@ impl<'doc> HangDoc<'doc> {
     }
 }
 
-fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
+fn format_to_string(file: &File, source: Option<&str>, include_pkg: bool) -> Result<String> {
     let arena = Arena::new();
     let mut formatter = Formatter {
         arena: &arena,
+        locator: source.map(Locator::new),
         err: None,
     };
     let doc = formatter.format_file(file, include_pkg).group().1;
@@ -268,6 +270,7 @@ fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
 
 struct Formatter<'doc> {
     arena: &'doc Arena<'doc>,
+    locator: Option<Locator<'doc>>,
     err: Option<Error>,
 }
 
@@ -978,7 +981,11 @@ impl<'doc> Formatter<'doc> {
 
         let doc = self.format_comments(&n.base.comments);
 
-        if let Some(src) = &n.base.location.source {
+        if let Some(src) = self
+            .locator
+            .as_ref()
+            .and_then(|l| l.get_src(&n.base.location))
+        {
             if !src.is_empty() {
                 // Preserve the exact literal if we have it
                 return HangDoc {
