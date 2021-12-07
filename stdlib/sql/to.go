@@ -487,7 +487,7 @@ func validateIdent(ident string) error {
 	}
 	for _, x := range denied {
 		if strings.Contains(ident, x) {
-			return errors.Newf(codes.Invalid, "encountered invalid identifier (%s)", ident)
+			return errors.Newf(codes.Invalid, "encountered invalid identifier: %s", ident)
 		}
 	}
 	return nil

@@ -1,6 +1,7 @@
 package sql_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -684,6 +685,151 @@ func TestToSQLite3_Process(t *testing.T) {
 					t.Log(cmp.Diff(tc.want.ValueArgs, valArgs))
 					t.Fail()
 				}
+			}
+		})
+	}
+}
+
+func TestTo_IdentifierValidation(t *testing.T) {
+	driverName := "sqlmock"
+	dsn := "root@/db"
+	_, _, _ = sqlmock.NewWithDSN(dsn)
+
+	testCases := []struct {
+		name    string
+		spec    *fsql.ToSQLProcedureSpec
+		data    flux.Table
+		wantErr string
+	}{
+		{
+			name: "invalid column identifier semi",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     driverName,
+					DataSourceName: dsn,
+					Table:          "tbl",
+					BatchSize:      1,
+				},
+			},
+			data: executetest.MustCopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "; drop table users", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			}),
+			wantErr: "encountered invalid identifier",
+		}, {
+			name: "invalid column identifier hash line comment",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     driverName,
+					DataSourceName: dsn,
+					Table:          "tbl",
+					BatchSize:      1,
+				},
+			},
+			data: executetest.MustCopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "drop table users #", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			}),
+			wantErr: "encountered invalid identifier",
+		}, {
+			name: "invalid column identifier dash line comment",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     driverName,
+					DataSourceName: dsn,
+					Table:          "tbl",
+					BatchSize:      1,
+				},
+			},
+			data: executetest.MustCopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "drop table users --", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			}),
+			wantErr: "encountered invalid identifier",
+		}, {
+			name: "invalid column identifier block comment open",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     driverName,
+					DataSourceName: dsn,
+					Table:          "tbl",
+					BatchSize:      1,
+				},
+			},
+			data: executetest.MustCopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "dr/*", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			}),
+			wantErr: "encountered invalid identifier",
+		}, {
+			name: "invalid column identifier block comment close",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     driverName,
+					DataSourceName: dsn,
+					Table:          "users",
+					BatchSize:      1,
+				},
+			},
+			data: executetest.MustCopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "*/op table users", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			}),
+			wantErr: "encountered invalid identifier",
+		},
+		{
+			name: "invalid table identifier",
+			spec: &fsql.ToSQLProcedureSpec{
+				Spec: &fsql.ToSQLOpSpec{
+					DriverName:     driverName,
+					DataSourceName: dsn,
+					Table:          "users; INSERT INTO users (login, password, is_admin) VALUES ('neo', 'matrix', true)",
+					BatchSize:      1,
+				},
+			},
+			data: executetest.MustCopyTable(&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "anything", Type: flux.TString},
+				},
+				Data: [][]interface{}{},
+			}),
+			wantErr: "encountered invalid identifier",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			d := executetest.NewDataset(executetest.RandomDatasetID())
+			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
+			c.SetTriggerSpec(plan.DefaultTriggerSpec)
+
+			transformation, err := fsql.NewToSQLTransformation(d, dependenciestest.Default(), c, tc.spec)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			a := tc.data
+			_, _, _, err = fsql.CreateInsertComponents(transformation, a)
+
+			if err != nil {
+				got := err.Error()
+				if !strings.Contains(got, tc.wantErr) {
+					t.Fatalf("unexpected result -want/+got:\n%s",
+						cmp.Diff(got, tc.wantErr))
+				}
+			} else {
+				t.Fatal("expected err but got none")
 			}
 		})
 	}
