@@ -572,7 +572,7 @@ func (c *MergeJoinCache) Table(key flux.GroupKey) (flux.Table, error) {
 
 		table, err := c.join(left, right)
 		if err != nil {
-			return nil, errors.Newf(codes.NotFound, "table with group key (%v) could not be fetched", key)
+			return nil, err
 		}
 
 		c.tables[key] = table
@@ -581,9 +581,8 @@ func (c *MergeJoinCache) Table(key flux.GroupKey) (flux.Table, error) {
 }
 
 // ForEach iterates over each table in the output stream
-func (c *MergeJoinCache) ForEach(f func(flux.GroupKey)) {
-	c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) {
-
+func (c *MergeJoinCache) ForEach(f func(flux.GroupKey) error) error {
+	return c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) error {
 		if _, ok := c.tables[key]; !ok {
 
 			preJoinGroupKeys := c.reverseLookup[key]
@@ -597,21 +596,20 @@ func (c *MergeJoinCache) ForEach(f func(flux.GroupKey)) {
 			table, err := c.join(leftBuilder, rightBuilder)
 			if err != nil || table.Empty() {
 				c.DiscardTable(key)
-				return
+				return err
 			}
 
 			c.tables[key] = table
 		}
-		f(key)
+		return f(key)
 	})
 }
 
 // ForEachWithContext iterates over each table in the output stream
-func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext)) {
+func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigger, execute.TableContext) error) error {
 	trigger := execute.NewTriggerFromSpec(c.triggerSpec)
 
-	c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) {
-
+	return c.postJoinKeys.Range(func(key flux.GroupKey, value interface{}) error {
 		preJoinGroupKeys := c.reverseLookup[key]
 
 		leftKey := preJoinGroupKeys.left
@@ -626,7 +624,7 @@ func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigge
 
 			if err != nil || table.Empty() {
 				c.DiscardTable(key)
-				return
+				return err
 			}
 
 			c.tables[key] = table
@@ -640,7 +638,7 @@ func (c *MergeJoinCache) ForEachWithContext(f func(flux.GroupKey, execute.Trigge
 			Count: leftsize + rightsize,
 		}
 
-		f(key, trigger, ctx)
+		return f(key, trigger, ctx)
 	})
 }
 
@@ -918,30 +916,53 @@ func (c *MergeJoinCache) join(left, right *execute.ColListTableBuilder) (flux.Ta
 					leftRecord := left.GetRow(l)
 					rightRecord := right.GetRow(r)
 
+					var err error
 					leftRecord.Range(func(columnName string, columnVal values.Value) {
 						column := tableCol{
 							table: c.names[c.leftID],
 							col:   columnName,
 						}
-						newColumn := c.schemaMap[column]
-						newColumnIdx := c.colIndex[newColumn]
-						_ = builder.AppendValue(newColumnIdx, columnVal)
+						newColumn, ok := c.schemaMap[column]
+						if !ok {
+							err = errors.Newf(codes.Internal, "column '%s' not found in join schema", columnName)
+							return
+						}
+						newColumnIdx, ok := c.colIndex[newColumn]
+						if !ok {
+							err = errors.Newf(codes.Internal, "could not find index for column '%s' in column index map", columnName)
+							return
+						}
+						err = builder.AppendValue(newColumnIdx, columnVal)
 					})
+					if err != nil {
+						return nil, err
+					}
 
 					rightRecord.Range(func(columnName string, columnVal values.Value) {
 						column := tableCol{
 							table: c.names[c.rightID],
 							col:   columnName,
 						}
-						newColumn := c.schemaMap[column]
-						newColumnIdx := c.colIndex[newColumn]
+						newColumn, ok := c.schemaMap[column]
+						if !ok {
+							err = errors.Newf(codes.Internal, "column '%s' not found in schema", columnName)
+							return
+						}
+						newColumnIdx, ok := c.colIndex[newColumn]
+						if !ok {
+							err = errors.Newf(codes.Internal, "could not find index for column '%s'", columnName)
+							return
+						}
 
 						// No need to append value if column is part of the join key.
 						// Because value already appended when iterating over left record.
 						if !c.on[newColumn.Label] {
-							_ = builder.AppendValue(newColumnIdx, columnVal)
+							err = builder.AppendValue(newColumnIdx, columnVal)
 						}
 					})
+					if err != nil {
+						return nil, err
+					}
 
 					// append nil for the missing column in the result table
 					for _, mIdx := range missingIdxs {

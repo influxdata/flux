@@ -204,11 +204,12 @@ func TestMergeJoin_Process(t *testing.T) {
 	tableNames := []string{"a", "b"}
 
 	testCases := []struct {
-		name  string
-		spec  *universe.MergeJoinProcedureSpec
-		data0 []*executetest.Table // data from parent 0
-		data1 []*executetest.Table // data from parent 1
-		want  []*executetest.Table
+		name    string
+		spec    *universe.MergeJoinProcedureSpec
+		data0   []*executetest.Table // data from parent 0
+		data1   []*executetest.Table // data from parent 1
+		want    []*executetest.Table
+		wantErr error // expected error
 	}{
 		{
 			name: "simple inner",
@@ -1649,6 +1650,97 @@ func TestMergeJoin_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			// Give one table in data0 an extra column.
+			// When join tries to look up that column name in the column index map,
+			// it will get a value of 0.
+			//
+			// Prior to #4310, this would cause the join transformation to try to
+			// append whatever value was in the extra column to the column at index 0.
+			// If they did not have the same type, join would panic.
+			name: "extra column",
+			spec: &universe.MergeJoinProcedureSpec{
+				On:         []string{"_time", "Alias", "Device", "SerialNumber"},
+				TableNames: tableNames,
+			},
+			data0: []*executetest.Table{
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch", Type: flux.TFloat},
+						{Label: "Angle", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(1), "12345", execute.Time(1), 8.4, 1.2},
+					},
+				},
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch", Type: flux.TFloat},
+						{Label: "Angle", Type: flux.TFloat},
+						{Label: "Gauge", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(2), "13579", execute.Time(1), 9.3, 5.6, 9.3},
+					},
+				},
+			},
+			data1: []*executetest.Table{
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(1), "12345", execute.Time(1), 8.4},
+					},
+				},
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(2), "13579", execute.Time(1), 9.3},
+					},
+				},
+			},
+			want: []*executetest.Table{
+				{
+					KeyCols: []string{"Alias", "Device", "SerialNumber", "_time"},
+					ColMeta: []flux.ColMeta{
+						{Label: "Alias", Type: flux.TString},
+						{Label: "Device", Type: flux.TInt},
+						{Label: "SerialNumber", Type: flux.TString},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "Pitch_a", Type: flux.TFloat},
+						{Label: "Pitch_b", Type: flux.TFloat},
+						{Label: "Angle", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{"SIM-SAM-M169", int64(1), "12345", execute.Time(1), 8.4, 8.4, 1.2},
+					},
+				},
+			},
+			wantErr: errors.New("column 'Gauge' not found in join schema"),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -1693,7 +1785,13 @@ func TestMergeJoin_Process(t *testing.T) {
 
 			got, err := executetest.TablesFromCache(c)
 			if err != nil {
-				t.Fatal(err)
+				if tc.wantErr == nil {
+					t.Fatalf("got unexpected error: '%s'", err)
+				} else if err.Error() != tc.wantErr.Error() {
+					t.Fatalf("got unexpected error: wanted '%s', got '%s'", tc.wantErr, err)
+				}
+			} else if tc.wantErr != nil {
+				t.Fatalf("expected error '%s', but got none", tc.wantErr)
 			}
 
 			executetest.NormalizeTables(got)

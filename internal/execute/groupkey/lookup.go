@@ -293,7 +293,7 @@ func (l *Lookup) Delete(key flux.GroupKey) (v interface{}, found bool) {
 // Range will iterate over all groups keys in a stable ordering.
 // Range must not be called within another call to Range.
 // It is safe to call Set/Delete while ranging.
-func (l *Lookup) Range(f func(key flux.GroupKey, value interface{})) {
+func (l *Lookup) Range(f func(key flux.GroupKey, value interface{}) error) error {
 	for i := 0; i < len(l.groups); {
 		kg := l.groups[i]
 		for j := 0; j < len(kg.elements); j++ {
@@ -301,12 +301,15 @@ func (l *Lookup) Range(f func(key flux.GroupKey, value interface{})) {
 			if entry.deleted {
 				continue
 			}
-			f(entry.key, entry.value)
+			if err := f(entry.key, entry.value); err != nil {
+				return err
+			}
 		}
 		if i < len(l.groups) && l.groups[i].id == kg.id {
 			i++
 		}
 	}
+	return nil
 }
 
 // RandomAccessLookup is a GroupLookup container that is optimized
@@ -427,11 +430,14 @@ func (l *RandomAccessLookup) Delete(key flux.GroupKey) (v interface{}, found boo
 // Range will iterate over all groups keys in a stable ordering.
 // Range must not be called within another call to Range.
 // It is safe to call Set/Delete while ranging.
-func (l *RandomAccessLookup) Range(f func(key flux.GroupKey, value interface{})) {
+func (l *RandomAccessLookup) Range(f func(key flux.GroupKey, value interface{}) error) error {
 	for _, e := range l.elements {
 		if e.Deleted {
 			continue
 		}
-		f(e.Key, e.Value)
+		if err := f(e.Key, e.Value); err != nil {
+			return err
+		}
 	}
+	return nil
 }

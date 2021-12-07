@@ -25,8 +25,9 @@ func Sort(tables flux.TableIterator) (flux.TableIterator, error) {
 	}
 
 	var buffered []flux.Table
-	groups.Range(func(_ flux.GroupKey, value interface{}) {
+	groups.Range(func(_ flux.GroupKey, value interface{}) error {
 		buffered = append(buffered, value.(flux.Table))
+		return nil
 	})
 	return Iterator(buffered), nil
 }

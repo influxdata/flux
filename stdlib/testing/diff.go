@@ -657,18 +657,14 @@ func (t *DiffTransformation) Finish(id execute.DatasetID, err error) {
 		// There will be no more tables so any tables we have should
 		// have a table created with a diff for every line since all
 		// of them are missing.
-		t.inputCache.Range(func(key flux.GroupKey, value interface{}) {
-			if err != nil {
-				return
-			}
-
+		err = t.inputCache.Range(func(key flux.GroupKey, value interface{}) error {
 			var got, want *tableBuffer
 			if obj := value.(*tableBuffer); obj.id == t.wantID {
 				want, got = obj, &tableBuffer{}
 			} else {
 				want, got = &tableBuffer{}, obj
 			}
-			err = t.diff(key, want, got)
+			return t.diff(key, want, got)
 		})
 		t.d.Finish(err)
 	}

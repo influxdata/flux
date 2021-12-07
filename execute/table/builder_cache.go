@@ -41,7 +41,7 @@ type KeyLookup interface {
 	// Range will iterate over all groups keys in a stable ordering.
 	// Range must not be called within another call to Range.
 	// It is safe to call Set/Delete while ranging.
-	Range(f func(key flux.GroupKey, value interface{}))
+	Range(f func(key flux.GroupKey, value interface{}) error) error
 
 	// Clear will clear the lookup and reset it to contain nothing.
 	Clear()
@@ -105,15 +105,10 @@ func (d *BuilderCache) ForEach(f func(key flux.GroupKey, builder Builder) error)
 	if d.Tables == nil {
 		return nil
 	}
-	var err error
-	d.Tables.Range(func(key flux.GroupKey, value interface{}) {
-		if err != nil {
-			return
-		}
+	return d.Tables.Range(func(key flux.GroupKey, value interface{}) error {
 		builder := value.(Builder)
-		err = f(key, builder)
+		return f(key, builder)
 	})
-	return err
 }
 
 func (d *BuilderCache) lookupState(key flux.GroupKey) (Builder, bool) {
