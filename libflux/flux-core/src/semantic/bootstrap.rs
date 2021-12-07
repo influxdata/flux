@@ -232,9 +232,9 @@ impl InferState {
     #[allow(clippy::type_complexity)]
     fn infer_pkg(
         &mut self,
-        name: &str,                    // name of package to infer
-        ast_packages: &ASTPackageMap,  // ast_packages available for inference
-        prelude: &ExportEnvironment, // prelude types
+        name: &str,                   // name of package to infer
+        ast_packages: &ASTPackageMap, // ast_packages available for inference
+        prelude: &ExportEnvironment,  // prelude types
     ) -> Result<(
         PolyTypeMap, // inferred types
         Package,     // semantic graph
