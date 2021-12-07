@@ -61,7 +61,11 @@ testcase integration_hdb_write_to {
 testcase integration_pg_read_from_seed {
     want = array.from(rows: [stanley, lucy])
     got =
-        sql.from(driverName: "postgres", dataSourceName: pgDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
+        sql.from(
+            driverName: "postgres",
+            dataSourceName: pgDsn,
+            query: "SELECT name, age FROM \"pet info\" WHERE seeded = true",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -73,7 +77,7 @@ testcase integration_pg_read_from_nonseed {
         sql.from(
             driverName: "postgres",
             dataSourceName: pgDsn,
-            query: "SELECT name, age FROM pets WHERE seeded = false",
+            query: "SELECT name, age FROM \"pet info\" WHERE seeded = false",
         )
 
     testing.diff(got: got, want: want)
@@ -82,7 +86,7 @@ testcase integration_pg_read_from_nonseed {
 
 testcase integration_pg_write_to {
     array.from(rows: [sophie])
-        |> sql.to(driverName: "postgres", dataSourceName: pgDsn, table: "pets", batchSize: 1)
+        |> sql.to(driverName: "postgres", dataSourceName: pgDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will
         // error if there's a problem.
@@ -95,7 +99,11 @@ testcase integration_pg_write_to {
 testcase integration_mysql_read_from_seed {
     want = array.from(rows: [stanley, lucy])
     got =
-        sql.from(driverName: "mysql", dataSourceName: mysqlDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
+        sql.from(
+            driverName: "mysql",
+            dataSourceName: mysqlDsn,
+            query: "SELECT name, age FROM `pet info` WHERE seeded = true",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -107,7 +115,7 @@ testcase integration_mysql_read_from_nonseed {
         sql.from(
             driverName: "mysql",
             dataSourceName: mysqlDsn,
-            query: "SELECT name, age FROM pets WHERE seeded = false",
+            query: "SELECT name, age FROM `pet info` WHERE seeded = false",
         )
 
     testing.diff(got: got, want: want)
@@ -116,7 +124,7 @@ testcase integration_mysql_read_from_nonseed {
 
 testcase integration_mysql_write_to {
     array.from(rows: [sophie])
-        |> sql.to(driverName: "mysql", dataSourceName: mysqlDsn, table: "pets", batchSize: 1)
+        |> sql.to(driverName: "mysql", dataSourceName: mysqlDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will
         // error if there's a problem.
@@ -132,7 +140,7 @@ testcase integration_mariadb_read_from_seed {
         sql.from(
             driverName: "mysql",
             dataSourceName: mariaDbDsn,
-            query: "SELECT name, age FROM pets WHERE seeded = true",
+            query: "SELECT name, age FROM `pet info` WHERE seeded = true",
         )
 
     testing.diff(got: got, want: want)
@@ -145,7 +153,7 @@ testcase integration_mariadb_read_from_nonseed {
         sql.from(
             driverName: "mysql",
             dataSourceName: mariaDbDsn,
-            query: "SELECT name, age FROM pets WHERE seeded = false",
+            query: "SELECT name, age FROM `pet info` WHERE seeded = false",
         )
 
     testing.diff(got: got, want: want)
@@ -154,7 +162,7 @@ testcase integration_mariadb_read_from_nonseed {
 
 testcase integration_mariadb_write_to {
     array.from(rows: [sophie])
-        |> sql.to(driverName: "mysql", dataSourceName: mariaDbDsn, table: "pets", batchSize: 1)
+        |> sql.to(driverName: "mysql", dataSourceName: mariaDbDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will
         // error if there's a problem.
@@ -170,7 +178,7 @@ testcase integration_mssql_read_from_seed {
         sql.from(
             driverName: "sqlserver",
             dataSourceName: mssqlDsn,
-            query: "SELECT name, age FROM pets WHERE seeded = 1",
+            query: "SELECT name, age FROM \"pet info\" WHERE seeded = 1",
         )
 
     testing.diff(got: got, want: want)
@@ -183,7 +191,7 @@ testcase integration_mssql_read_from_nonseed {
         sql.from(
             driverName: "sqlserver",
             dataSourceName: mssqlDsn,
-            query: "SELECT name, age FROM pets WHERE seeded = 0",
+            query: "SELECT name, age FROM \"pet info\" WHERE seeded = 0",
         )
 
     testing.diff(got: got, want: want)
@@ -199,7 +207,7 @@ testcase integration_mssql_read_from_nonseed {
 testcase integration_mssql_write_to
 {
         array.from(rows: [sophie])
-            |> sql.to(driverName: "sqlserver", dataSourceName: mssqlDsn, table: "pets", batchSize: 1)
+            |> sql.to(driverName: "sqlserver", dataSourceName: mssqlDsn, table: "pet info", batchSize: 1)
             // The array.from() will be returned and will cause the test to fail.
             // Filtering will mean the test can pass. Hopefully `sql.to()` will
             // error if there's a problem.
@@ -215,7 +223,7 @@ testcase integration_vertica_read_from_seed {
         sql.from(
             driverName: "vertica",
             dataSourceName: verticaDsn,
-            query: "SELECT name, age FROM pets where seeded = true",
+            query: "SELECT name, age FROM \"pet info\" where seeded = true",
         )
 
     testing.diff(got: got, want: want)
@@ -228,7 +236,7 @@ testcase integration_vertica_read_from_nonseed {
         sql.from(
             driverName: "vertica",
             dataSourceName: verticaDsn,
-            query: "SELECT name, age FROM pets where seeded = false",
+            query: "SELECT name, age FROM \"pet info\" where seeded = false",
         )
 
     testing.diff(got: got, want: want)
@@ -237,7 +245,7 @@ testcase integration_vertica_read_from_nonseed {
 
 testcase integration_vertica_write_to {
     array.from(rows: [sophie])
-        |> sql.to(driverName: "vertica", dataSourceName: verticaDsn, table: "pets", batchSize: 1)
+        |> sql.to(driverName: "vertica", dataSourceName: verticaDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will
         // error if there's a problem.
@@ -253,7 +261,7 @@ testcase integration_sqlite_read_from_seed {
         sql.from(
             driverName: "sqlite3",
             dataSourceName: sqliteDsn,
-            query: "SELECT name, age FROM pets where seeded = true",
+            query: "SELECT name, age FROM \"pet info\" where seeded = true",
         )
 
     testing.diff(got: got, want: want)
@@ -266,7 +274,7 @@ testcase integration_sqlite_read_from_nonseed {
         sql.from(
             driverName: "sqlite3",
             dataSourceName: sqliteDsn,
-            query: "SELECT name, age FROM pets where seeded = false",
+            query: "SELECT name, age FROM \"pet info\" where seeded = false",
         )
 
     testing.diff(got: got, want: want)
@@ -275,7 +283,7 @@ testcase integration_sqlite_read_from_nonseed {
 
 testcase integration_sqlite_write_to {
     array.from(rows: [sophie])
-        |> sql.to(driverName: "sqlite3", dataSourceName: sqliteDsn, table: "pets", batchSize: 1)
+        |> sql.to(driverName: "sqlite3", dataSourceName: sqliteDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will
         // error if there's a problem.

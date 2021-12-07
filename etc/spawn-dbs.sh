@@ -72,42 +72,44 @@ INSERT INTO pets (name, age, seeded) VALUES ('Lucy', 14, true);
 EOF
 
 PG_SEED="
-CREATE TABLE pets (
+CREATE TABLE \"pet info\" (
   id SERIAL PRIMARY KEY,
   name VARCHAR(20),
   age INT,
   seeded BOOL NOT NULL DEFAULT false
 );
-INSERT INTO pets (name, age, seeded)
+INSERT INTO \"pet info\" (name, age, seeded)
 VALUES
   ('Stanley', 15, true),
   ('Lucy', 14, true)
 ;
 "
 
-MYSQL_SEED="
-CREATE TABLE pets (
+MYSQL_SEED=$(cat <<'EOF'
+CREATE TABLE `pet info` (
   id SERIAL,
   name VARCHAR(20),
   age INT,
   seeded TINYINT(1) NOT NULL DEFAULT false,
   PRIMARY KEY (id)
 );
-INSERT INTO pets (name, age, seeded)
+INSERT INTO `pet info` (name, age, seeded)
 VALUES
   ('Stanley', 15, true),
   ('Lucy', 14, true)
 ;
-"
+EOF
+)
 
 MSSQL_SEED="
-CREATE TABLE pets (
+SET QUOTED_IDENTIFIER ON;
+CREATE TABLE \"pet info\" (
   id INT IDENTITY(1, 1) PRIMARY KEY,
   name VARCHAR(20),
   age INT,
   seeded BIT NOT NULL DEFAULT 0
 );
-INSERT INTO pets (name, age, seeded)
+INSERT INTO \"pet info\" (name, age, seeded)
 VALUES
   ('Stanley', 15, 1),
   ('Lucy', 14, 1)
@@ -115,25 +117,25 @@ VALUES
 "
 
 VERTICA_SEED="
-CREATE TABLE pets (
+CREATE TABLE \"pet info\" (
   id IDENTITY(1, 1) PRIMARY KEY,
   name VARCHAR(20),
   age INT,
   seeded BOOLEAN NOT NULL DEFAULT false
 );
 -- Vertica doesn't seem to support inserting more than one record at a time?
-INSERT INTO pets (name, age, seeded) VALUES ('Stanley', 15, true);
-INSERT INTO pets (name, age, seeded) VALUES ('Lucy', 14, true);
+INSERT INTO \"pet info\" (name, age, seeded) VALUES ('Stanley', 15, true);
+INSERT INTO \"pet info\" (name, age, seeded) VALUES ('Lucy', 14, true);
 "
 
 SQLITE_SEED="
-CREATE TABLE pets (
+CREATE TABLE \"pet info\" (
   id INT PRIMARY KEY,
   name VARCHAR(20),
   age INT,
   seeded BOOLEAN NOT NULL DEFAULT false
 );
-INSERT INTO pets (name, age, seeded)
+INSERT INTO \"pet info\" (name, age, seeded)
 VALUES
   ('Stanley', 15, true),
   ('Lucy', 14, true);

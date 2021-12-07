@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/values"
+	"github.com/lib/pq"
 )
 
 type PostgresRowReader struct {
@@ -158,4 +159,8 @@ func PostgresColumnTranslateFunc() translationFunc {
 		return colName + " " + s, nil
 	}
 
+}
+
+func PostgresQuoteIdent(name string) string {
+	return pq.QuoteIdentifier(name)
 }

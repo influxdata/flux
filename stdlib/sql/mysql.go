@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -191,4 +192,8 @@ func MysqlColumnTranslateFunc() translationFunc {
 		}
 		return colName + " " + s, nil
 	}
+}
+
+func MysqlQuoteIdent(name string) string {
+	return fmt.Sprintf("`%s`", strings.ReplaceAll(name, "`", "\\`"))
 }
