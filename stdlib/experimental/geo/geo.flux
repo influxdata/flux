@@ -273,7 +273,7 @@ ST_DWithin = (region, geometry, distance, units=units) => stDistance(region: reg
 // ST_Intersects tests if the specified GIS geometry intersects with the
 // specified region and returns `true` or `false`.
 // 
-// ## Paramters
+// ## Parameters
 // - region: Region to test. Specify record properties for the shape. 
 // - geometry: GIS geometry to test. Can be either point or linestring geometry. 
 // - units: Record that defines the unit of measurement for distance.
@@ -443,7 +443,7 @@ builtin s2CellIDToken : (?token: string, ?point: {lat: float, lon: float}, level
 // s2CellLatLon returns the latitude and longitude of the center of an S2 cell.
 // 
 // ## Parameters
-// token: S2 cell ID token.
+// - token: S2 cell ID token.
 // 
 // ## Examples
 // ### Return the center coordinates of an S2 cell
@@ -596,6 +596,8 @@ shapeData = (tables=<-, latField, lonField, level) => tables
 // 
 // - s2cellIDLevel: [S2 cell level](https://s2geometry.io/resources/s2cell_statistics.html)
 //   used in the `s2_cell_id` tag. Default is `-1` (detects S2 cell level from the S2 cell ID token).
+// - units: Record that defines the unit of measurement for distance.
+//   Default is the `geo.units` option.
 // - tables: Input data. Default is piped-forward data (`<-`).
 // 
 // ## Examples
@@ -786,8 +788,7 @@ filterRows = (
 ) => {
     _columns = tables
         |> columns(column: "_value")
-        |> tableFind(fn: (key) => true)
-        |> getColumn(column: "_value")
+        |> findColumn(column: "_value", fn: (key) => true)
     _rows = if contains(value: "lat", set: _columns) then
         tables
             |> gridFilter(
