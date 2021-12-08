@@ -305,7 +305,6 @@ const EXCEPTIONS: &[&str] = &[
     "contrib/sranka",
     "contrib/sranka/teams",
     "contrib/sranka/webexteams",
-    "experimental/geo",
     "experimental/http",
     "experimental/influxdb",
     "experimental/json",
