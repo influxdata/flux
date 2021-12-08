@@ -23,7 +23,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux-core/src/ast/walk/mod.rs":                                                       "385602a619842d32ce2205e049a4c397044e595ba481f67aecbdc6059402066e",
 	"libflux/flux-core/src/bin/README.md":                                                         "c1245a4938c923d065647b4dc4f7e19486e85c93d868ef2f7f47ddff62ec81df",
 	"libflux/flux-core/src/bin/fluxc.rs":                                                          "bf275289e690236988049fc0a07cf832dbac25bb5739c02135b069dcdfab4d0f",
-	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "cf13e36df069b30cebae6c1bf48acc5a06ddb9e7ab2cc8727cd49cf1ce4e5d59",
+	"libflux/flux-core/src/bin/fluxdoc.rs":                                                        "671beed5a574a6d4b3f9d9b9259fc21abc629379a76fc8f215b2a496f870248b",
 	"libflux/flux-core/src/doc/example.rs":                                                        "ec887ef108ec8c78694d7feb233b61f6b480fac18b17156d202bb37a0a51f81b",
 	"libflux/flux-core/src/doc/mod.rs":                                                            "119765f5352b282ebc5fa940284d410742ebb7a9de18361afecfccfa7d3d6362",
 	"libflux/flux-core/src/errors.rs":                                                             "4944f1b71bbc6499b3d11a3b8afdb7c993f14b5be6bf7189ad066ddf5a6c6203",
@@ -148,11 +148,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/aggregate/aggregate_test.flux":                                           "81836db2280307926eff6e12dccfaa46aed4233daeca3a02744c976054ccfed6",
 	"stdlib/experimental/alignTime_test.flux":                                                     "fda718da4d7764798808598fd41435c661061f1dde79d15cb2c8e1bf4c43f932",
 	"stdlib/experimental/array/array.flux":                                                        "6f21d1bb00b5681a37e0de6cecbf880e98972e589778535b87eea321af55f3b4",
-<<<<<<< HEAD
-	"stdlib/experimental/bigtable/bigtable.flux":                                                  "0804b6467063186adaac1cdea1b92bcde2e07042fd592d1dfe0a8ec0eedb6aa5",
-=======
 	"stdlib/experimental/bigtable/bigtable.flux":                                                  "d08d8b9d4c8518dad9c8555f90870789d2cb5e58c7d1c446c1d953c30ba78032",
->>>>>>> e5a6b880 (feat(docs): added inline documentation to experimental packages)
 	"stdlib/experimental/bitwise/bitwise.flux":                                                    "c0214eefcdc9c04c8baf9251df105dd7627c4ff73ea0d4d533385e9e4520ce23",
 	"stdlib/experimental/bitwise/bitwise_test.flux":                                               "e09822cf4b44f1bbec785fc9c4fff7a108e348a20c154fa9c65c99a983b996bf",
 	"stdlib/experimental/count_test.flux":                                                         "403a41883d97ac4a94ba590a878b32a68cfa6d6a5ce219c957d66e27010d9ab6",
@@ -165,7 +161,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/geo/filterRowsNotStrict_test.flux":                                       "13468503f3d515fbfe135a6bfb0f80a7443494b0b90c76ea14ccaf6de1b2e926",
 	"stdlib/experimental/geo/filterRowsPivoted_test.flux":                                         "f86c3597ae733a57bdf55913a94f2247ff6a1ee325a9960e446020ca1ae0812c",
 	"stdlib/experimental/geo/filterRowsStrict_test.flux":                                          "775d0e03afc5b2e0547e455192b3e4150a4bde3f5e89d16f49e2514725137635",
-	"stdlib/experimental/geo/geo.flux":                                                            "cd20b8d6fa05717d011b33feedfad729859ea6985f61484c41e3a817144780f5",
+	"stdlib/experimental/geo/geo.flux":                                                            "4f9bf92cad8f2169f627fea4768d259b2132d17cf297061e15347e80d4267192",
 	"stdlib/experimental/geo/gridFilterLevel_test.flux":                                           "7e31336d04a67f67b02ce1d04e7a31eb46b30c3ca9e020fdf79ff712707e53d4",
 	"stdlib/experimental/geo/gridFilter_test.flux":                                                "0725a69323300c4ae2207bac61cd3665652d3b9c307db2f5a0c8176ca934ce3b",
 	"stdlib/experimental/geo/groupByArea_test.flux":                                               "50ad1aeaaf39016a58acd7ea4bddeb7129619cea21b8f728809e1a3ddf9e2caf",
