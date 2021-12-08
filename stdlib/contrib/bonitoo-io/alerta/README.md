@@ -30,9 +30,9 @@ Example:
 
     import "contrib/bonitoo-io/alerta"
     import "influxdata/influxdb/secrets"
-    
+
     apiKey = secrets.get(key: "ALERTA_API_KEY")
-    
+
     lastReported =
       from(bucket: "example-bucket")
         |> range(start: -1m)
@@ -42,9 +42,9 @@ Example:
         )
         |> last()
         |> findRecord(fn: (key) => true, idx: 0)
-    
+
     severity = if lastReported._value > 50 then "warning" else "ok"
-    
+
     alerta.alert(
       url: "https://alerta.io:8080/alert",
       apiKey: apiKey,
@@ -95,7 +95,7 @@ Example:
 
     import "contrib/bonitoo-io/alerta"
     import "influxdata/influxdb/secrets"
-    
+
     apiKey = secrets.get(key: "ALERTA_API_KEY")
     endpoint = alerta.endpoint(
       url: "https://alerta.io:8080/alert",
@@ -103,11 +103,11 @@ Example:
       environment: "Production",
       origin: "InfluxDB"
     )
-    
+
     crit_events = from(bucket: "example-bucket")
       |> range(start: -1m)
       |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
-    
+
     crit_events
       |> endpoint(mapFn: (r) => {
         return { r with
