@@ -3,6 +3,7 @@ package date
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/values"
@@ -258,6 +259,14 @@ func TestTimeFns_Duration(t *testing.T) {
 			ctx := deps.Inject(context.Background())
 			ctx = execDeps.Inject(ctx)
 			got, err := fluxFn.Call(ctx, fluxArg)
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewTime(time),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString("UTC"),
+					"offset": values.NewDuration(values.Duration{}),
+				}),
+			})
+			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -455,4 +464,286 @@ func TestTruncateNilErrors(t *testing.T) {
 			t.Errorf("expected: argument t was nil, got: %v", err.Error())
 		}
 	})
+}
+
+func TestTimeFnsWithLocationZone(t *testing.T) {
+	const (
+		US_Pacific     = "America/Los_Angeles"
+		Australia_East = "Australia/Sydney"
+	)
+	testCases := []struct {
+		name    string
+		locname string
+		time    string
+		want    int64
+	}{
+		{
+			name:    "minute",
+			locname: Australia_East,
+			time:    "2019-06-03T04:59:00.000000000Z",
+			want:    59,
+		},
+		{
+			name:    "hour",
+			locname: US_Pacific,
+			time:    "2019-06-03T08:00:00.000000000Z",
+			want:    1,
+		},
+		{
+			name:    "weekDay",
+			locname: US_Pacific,
+			time:    "2011-12-30T18:00:00.000000000Z",
+			want:    5,
+		},
+		{
+			name:    "monthDay",
+			locname: US_Pacific,
+			time:    "2019-06-03T13:59:01.000000000Z",
+			want:    3,
+		},
+		{
+			name:    "yearDay",
+			locname: Australia_East,
+			time:    "2019-06-03T23:00:00.000000000Z",
+			want:    155,
+		},
+		{
+			name:    "month",
+			locname: Australia_East,
+			time:    "2019-06-03T13:59:01.000000000Z",
+			want:    6,
+		},
+		{
+			name:    "year",
+			locname: Australia_East,
+			time:    "2011-12-31T23:59:00.000000000Z",
+			want:    2012,
+		},
+		{
+			name:    "week",
+			locname: Australia_East,
+			time:    "2011-12-31T23:59:00.000000000Z",
+			want:    52,
+		},
+		{
+			name:    "quarter",
+			locname: Australia_East,
+			time:    "2019-03-31T23:00:00.000000000Z",
+			want:    2,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fluxFn := SpecialFns[tc.name]
+			time, err := values.ParseTime(tc.time)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewTime(time),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString(tc.locname),
+					"offset": values.NewDuration(values.Duration{}),
+				}),
+			})
+			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.want != got.Int() {
+				t.Errorf("input %v: expected %v, got %f", time, tc.want, got)
+			}
+		})
+	}
+}
+
+func TestTimeFnsWithLocationOffset(t *testing.T) {
+	testCases := []struct {
+		name   string
+		offset values.Duration
+		time   string
+		want   int64
+	}{
+		{
+			name:   "minute",
+			offset: values.ConvertDurationNsecs(time.Minute),
+			time:   "2019-06-03T13:59:01.000000000Z",
+			want:   0,
+		},
+		{
+			name:   "hour",
+			offset: values.ConvertDurationNsecs(time.Hour),
+			time:   "2019-06-03T13:59:01.000000000Z",
+			want:   14,
+		},
+		{
+			name:   "weekDay",
+			offset: values.ConvertDurationNsecs(24 * time.Hour),
+			time:   "2011-12-30T18:00:00.000000000Z",
+			want:   6,
+		},
+		{
+			name:   "monthDay",
+			offset: values.ConvertDurationNsecs(24 * time.Hour),
+			time:   "2019-06-03T13:59:01.000000000Z",
+			want:   4,
+		},
+		{
+			name:   "yearDay",
+			offset: values.ConvertDurationNsecs(24 * time.Hour),
+			time:   "2019-06-03T13:59:01.000000000Z",
+			want:   155,
+		},
+		{
+			name:   "month",
+			offset: values.ConvertDurationNsecs(48 * time.Hour),
+			time:   "2019-06-30T13:59:01.000000000Z",
+			want:   7,
+		},
+		{
+			name:   "year",
+			offset: values.ConvertDurationNsecs(-24 * time.Hour),
+			time:   "2019-01-01T13:59:01.000000000Z",
+			want:   2018,
+		},
+		{
+			name:   "week",
+			offset: values.ConvertDurationNsecs(48 * time.Hour),
+			time:   "2011-12-31T23:59:00.000000000Z",
+			want:   1,
+		},
+		{
+			name:   "quarter",
+			offset: values.ConvertDurationNsecs(-5 * time.Minute),
+			time:   "2019-04-01T00:01:00.000000000Z",
+			want:   1,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fluxFn := SpecialFns[tc.name]
+			time, err := values.ParseTime(tc.time)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewTime(time),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString("UTC"),
+					"offset": values.NewDuration(tc.offset),
+				}),
+			})
+			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.want != got.Int() {
+				t.Errorf("input %v: expected %v, got %f", time, tc.want, got)
+			}
+		})
+	}
+}
+
+func TestTimeFnsWithLocationZoneOffset(t *testing.T) {
+	const (
+		US_Pacific     = "America/Los_Angeles"
+		Australia_East = "Australia/Sydney"
+	)
+	testCases := []struct {
+		name    string
+		locname string
+		offset  values.Duration
+		time    string
+		want    int64
+	}{
+		{
+			name:    "minute",
+			locname: Australia_East,
+			offset:  values.ConvertDurationNsecs(time.Minute),
+			time:    "2019-06-03T04:59:00.000000000Z",
+			want:    0,
+		},
+		{
+			name:    "hour",
+			locname: US_Pacific,
+			offset:  values.ConvertDurationNsecs(time.Hour),
+			time:    "2019-06-03T08:00:00.000000000Z",
+			want:    2,
+		},
+		{
+			name:    "weekDay",
+			locname: US_Pacific,
+			offset:  values.ConvertDurationNsecs(24 * time.Hour),
+			time:    "2011-12-30T18:00:00.000000000Z",
+			want:    6,
+		},
+		{
+			name:    "monthDay",
+			locname: US_Pacific,
+			offset:  values.ConvertDurationNsecs(24 * time.Hour),
+			time:    "2019-06-03T13:59:01.000000000Z",
+			want:    4,
+		},
+		{
+			name:    "yearDay",
+			locname: Australia_East,
+			offset:  values.ConvertDurationNsecs(24 * time.Hour),
+			time:    "2019-06-03T23:00:00.000000000Z",
+			want:    156,
+		},
+		{
+			name:    "month",
+			locname: Australia_East,
+			offset:  values.ConvertDurationNsecs(48 * time.Hour),
+			time:    "2019-06-03T13:59:01.000000000Z",
+			want:    6,
+		},
+		{
+			name:    "year",
+			locname: Australia_East,
+			offset:  values.ConvertDurationNsecs(-24 * time.Hour),
+			time:    "2011-12-31T23:59:00.000000000Z",
+			want:    2011,
+		},
+		{
+			name:    "week",
+			locname: Australia_East,
+			offset:  values.ConvertDurationNsecs(48 * time.Hour),
+			time:    "2011-12-31T23:59:00.000000000Z",
+			want:    1,
+		},
+		{
+			name:    "quarter",
+			locname: Australia_East,
+			offset:  values.ConvertDurationNsecs(-5 * time.Minute),
+			time:    "2019-03-31T23:00:00.000000000Z",
+			want:    2,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fluxFn := SpecialFns[tc.name]
+			time, err := values.ParseTime(tc.time)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewTime(time),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString(tc.locname),
+					"offset": values.NewDuration(tc.offset),
+				}),
+			})
+			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.want != got.Int() {
+				t.Errorf("input %v: expected %v, got %f", time, tc.want, got)
+			}
+		})
+	}
 }

@@ -12,6 +12,14 @@
 package experimental
 
 
+import "timezone"
+
+// location is a function option whose default behaviour is to return linear clock and no offset
+option location = timezone.utc
+
+// builtin _addDuration used by addDuration
+builtin _addDuration : (d: duration, to: time, location: {zone: string, offset: duration}) => time
+
 // addDuration adds a duration to a time value and returns the resulting time value.
 //
 // ## Parameters
@@ -54,6 +62,10 @@ package experimental
 // tags: date/time
 //
 builtin addDuration : (d: duration, to: T) => time where T: Timeable
+addDuration = (d, to, location=location) => _addDuration(d, to, location)
+
+// builtin _subDuration used by subDuration
+builtin _subDuration : (d: duration, from: time, location: {zone: string, offset: duration}) => time
 
 // subDuration subtracts a duration from a time value and returns the resulting time value.
 //
@@ -97,6 +109,7 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 // tags: date/time
 //
 builtin subDuration : (from: T, d: duration) => time where T: Timeable
+subDuration = (d, from, location=location) => _subDuration(d, from, location)
 
 // group introduces an `extend` mode to the existing `group()` function.
 //
