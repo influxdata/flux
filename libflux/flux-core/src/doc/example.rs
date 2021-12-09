@@ -533,7 +533,8 @@ array.from(rows: [{_value: "a"}, {_value: "b"}])
         let want_exec = expect![[r#"
             import "array"
 
-            array.from(rows: [{_value: "a"}]) |> yield(name: "input")
+            array.from(rows: [{_value: "a"}])
+                |> yield(name: "input")
                 |> map(fn: (r) => ({r with _value: "b"}))
                 |> yield(name: "output")"#]];
         want_exec.assert_eq(exec.as_str());

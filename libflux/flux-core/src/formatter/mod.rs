@@ -844,10 +844,7 @@ impl<'doc> DocFormatter<'doc> {
 
         let mut doc = None;
 
-        dbg!((surrounding.len(), &surrounding, &body));
-
         for split in (1..surrounding.len() + 1).rev() {
-            dbg!(("-------------------", split));
             let (before, after) = surrounding.split_at(split);
             let last = before.len() == 1;
             let doc2 = docs![
@@ -990,7 +987,6 @@ impl<'doc> DocFormatter<'doc> {
         }
         surrounding.push((prefix, arena.nil(), true));
         surrounding.reverse();
-        dbg!(&surrounding, &body);
         docs![arena, comment, self.format_prefixes(&surrounding, body)]
     }
 
@@ -1730,12 +1726,11 @@ impl Formatter {
                 err: None,
             };
             let doc = formatter.format_file(n, include_pkg).group().1;
-            dbg!(&doc);
             self.builder = doc
                 .pretty(120)
                 .to_string()
                 .split("\n")
-                // TODO Handline in pretty.rs
+                // TODO Handle whitespace only lines in pretty.rs instead of pruning here
                 .map(|s| if s.chars().all(|c| c == ' ') { "" } else { s })
                 .collect::<Vec<_>>()
                 .join("\n");
