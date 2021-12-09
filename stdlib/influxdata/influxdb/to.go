@@ -514,6 +514,10 @@ func (o *ToOpSpec) ReadArgs(args flux.Arguments) error {
 	}
 
 	if tags, ok, _ := args.GetArray("tagColumns", semantic.String); ok {
+		// FIXME: needs a test
+		if _, ok := tags.(*flux.TableObject); ok {
+			return errors.New(codes.Invalid, "tagColumns cannot be a table stream; expected an array")
+		}
 		o.TagColumns = make([]string, tags.Len())
 		tags.Sort(func(i, j values.Value) bool {
 			return i.Str() < j.Str()

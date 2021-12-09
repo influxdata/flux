@@ -592,6 +592,10 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	if typ := i.Type().Nature(); typ != semantic.Int {
 		return nil, errors.Newf(codes.Invalid, "cannot index into an array with value of type %s; expected an int", typ)
 	}
+	// FIXME: needs a test
+	if _, ok := a.(values.ITableObject); ok {
+		return nil, errors.Newf(codes.Invalid, "cannot index into a table stream; expected an array")
+	}
 	ix := int(i.Int())
 	l := a.Array().Len()
 	if ix < 0 || ix >= l {

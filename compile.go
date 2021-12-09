@@ -92,6 +92,10 @@ type TableObject struct {
 	Parents []*TableObject
 }
 
+// TableObject satisfies the values.ITableObject interface.
+// This is a hacky workaround to avoid an import cycles.
+func (t *TableObject) TableObject() {}
+
 func (t *TableObject) Operation(ider IDer) *Operation {
 	if iderOpSpec, ok := t.Spec.(IDerOpSpec); ok {
 		iderOpSpec.IDer(ider)

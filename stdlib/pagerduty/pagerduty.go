@@ -54,7 +54,10 @@ func createDedupKeyOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 			},
 		)
 	}
-
+	// FIXME: needs a test
+	if _, ok := exclude.(*flux.TableObject); ok {
+		return nil, errors.New(codes.Invalid, "exclude cannot be a table stream; expected an array")
+	}
 	spec := &DedupKeyOpSpec{
 		Exclude: make([]string, exclude.Len()),
 	}

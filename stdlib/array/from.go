@@ -42,7 +42,10 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		}
 		spec.Rows = rows.Array()
 	}
-
+	// FIXME: needs a test
+	if _, ok := spec.Rows.(*flux.TableObject); ok {
+		return nil, errors.Newf(codes.Invalid, "rows cannot be a table stream; expected an array")
+	}
 	if spec.Rows.Len() == 0 {
 		return nil, errors.New(codes.Invalid, "rows must be non-empty")
 	}
@@ -119,7 +122,10 @@ func buildTable(rows values.Array, mem *memory.Allocator) (flux.Table, error) {
 	} else if typ.Nature() != semantic.Object {
 		return nil, errors.New(codes.Internal, "rows should have been a list of records")
 	}
-
+	// FIXME: needs a test
+	if _, ok := rows.(*flux.TableObject); ok {
+		return nil, errors.Newf(codes.Invalid, "rows cannot be a table stream; expected an array")
+	}
 	l, err := typ.NumProperties()
 	if err != nil {
 		return nil, err

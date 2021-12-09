@@ -579,6 +579,10 @@ func getOptionValues(pkg values.Object, optionName string) ([]string, error) {
 	}
 
 	rules := value.Array()
+	// FIXME: needs a test
+	if _, ok := rules.(values.ITableObject); ok {
+		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
+	}
 	noRules := rules.Len()
 	rs := make([]string, noRules)
 	rules.Range(func(i int, v values.Value) {
