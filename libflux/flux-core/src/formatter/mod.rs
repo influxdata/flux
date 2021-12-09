@@ -11,7 +11,7 @@ use crate::{
 
 /// Format a [`File`].
 pub fn convert_to_string(file: &File) -> Result<String> {
-    Ok(format_to_string(file, true))
+    format_to_string(file, true)
 }
 
 /// Format a string of Flux code.
@@ -103,20 +103,24 @@ fn comma_list_without_trailing_comma<'doc>(
 
 type SurroundingList<'doc> = Vec<(Doc<'doc>, Doc<'doc>, bool)>;
 
-fn format_to_string(file: &File, include_pkg: bool) -> String {
+fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
     let arena = Arena::new();
     let mut formatter = Formatter {
         arena: &arena,
         err: None,
     };
     let doc = formatter.format_file(file, include_pkg).group().1;
-    doc.pretty(120)
+    if let Some(err) = formatter.err {
+        return Err(err);
+    }
+    Ok(doc
+        .pretty(120)
         .to_string()
         .split("\n")
         // TODO Handle whitespace only lines in pretty.rs instead of pruning here
         .map(|s| if s.chars().all(|c| c == ' ') { "" } else { s })
         .collect::<Vec<_>>()
-        .join("\n")
+        .join("\n"))
 }
 
 struct Formatter<'doc> {
