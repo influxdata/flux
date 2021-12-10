@@ -448,7 +448,7 @@ func init() {
 				}
 				arr := val.Array()
 				// FIXME: needs a test
-				if _, ok := arr.(values.ITableObject); ok {
+				if _, ok := arr.(values.TableObject); ok {
 					return nil, fmt.Errorf("%q cannot be a table stream; expected an array", "arr")
 				}
 				if arr.Len() >= 0 {

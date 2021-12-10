@@ -126,7 +126,7 @@ func (a *array) Equal(rhs Value) bool {
 	}
 	r := rhs.Array()
 	// When RHS is a table stream, mark it false
-	if _, ok := r.(ITableObject); ok {
+	if _, ok := r.(TableObject); ok {
 		return false
 	}
 	if a.Len() != r.Len() {

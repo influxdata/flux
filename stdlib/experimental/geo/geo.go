@@ -343,7 +343,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 	if polygonOk && arg.Len() == 1 {
 		array := points.Array()
 		// FIXME: needs a test
-		if _, ok := array.(values.ITableObject); ok {
+		if _, ok := array.(values.TableObject); ok {
 			return nil, errors.New(codes.Invalid, "points cannot be a table stream; expected an array")
 		}
 		if array.Len() < 3 {

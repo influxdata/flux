@@ -32,7 +32,7 @@ func MakeContainsFunc() values.Function {
 			set := setarg.Array()
 			found := false
 			// FIXME: needs a test
-			if _, ok := set.(values.ITableObject); ok {
+			if _, ok := set.(values.TableObject); ok {
 				return nil, errors.New(codes.Invalid, "set cannot be a table stream; expected an array")
 			}
 			if set.Len() > 0 {

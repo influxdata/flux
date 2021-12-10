@@ -44,7 +44,7 @@ func RespondersToJSON(args interpreter.Arguments) (values.Value, error) {
 		return nil, err
 	}
 	// FIXME: needs a test
-	if _, ok := v.(values.ITableObject); ok {
+	if _, ok := v.(values.TableObject); ok {
 		return nil, errors.New("got a table stream; expected an array")
 	}
 	responders := make([]interface{}, v.Len())

@@ -92,7 +92,7 @@ type TableObject struct {
 	Parents []*TableObject
 }
 
-// TableObject satisfies the values.ITableObject interface.
+// TableObject satisfies the values.TableObject interface.
 // This is a hacky workaround to avoid an import cycles.
 func (t *TableObject) TableObject() {}
 

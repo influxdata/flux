@@ -69,7 +69,7 @@ func display(w *bufio.Writer, v Value, indent int) (err error) {
 	case semantic.Array:
 		a := v.Array()
 		// FIXME: needs a test
-		if _, ok := a.(ITableObject); ok {
+		if _, ok := a.(TableObject); ok {
 			_, err = w.WriteString("<table stream>")
 			return
 		}

@@ -17,12 +17,10 @@ type Typer interface {
 	Type() semantic.MonoType
 }
 
-// ITableObject serves as sort of a "marker trait" to allow us to check if a
-// value is a TableObject without having to import TableObject which would be a
-// cyclical import.
-// Identical purpose to the interface in the interpreter package, but sadly we
-// can't import it here because of yet another potential cycle.
-type ITableObject interface {
+// TableObject serves as sort of a "marker trait" to allow us to check if a
+// value is a flux.TableObject without having to import the flux package which
+// in many cases will cause a cyclical import.
+type TableObject interface {
 	TableObject()
 }
 
@@ -191,7 +189,7 @@ func Unwrap(v Value) interface{} {
 	case semantic.Array:
 		arr := v.Array()
 		// FIXME: needs a test
-		if _, ok := arr.(ITableObject); ok {
+		if _, ok := arr.(TableObject); ok {
 			panic(errors.New(codes.Invalid, "cannot unwrap a table stream"))
 		}
 		a := make([]interface{}, arr.Len())

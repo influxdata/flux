@@ -237,7 +237,7 @@ func (irtp *Interpreter) evaluateNowOption(ctx context.Context, name string, ini
 
 func convert(rules values.Array) ([]string, error) {
 	// FIXME: not sure how to test
-	if _, ok := rules.(values.ITableObject); ok {
+	if _, ok := rules.(values.TableObject); ok {
 		return nil, errors.New(codes.Invalid, "got table stream; expected an array")
 	}
 	noRules := rules.Len()
@@ -395,7 +395,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		}
 		ix := int(idx.Int())
 		// FIXME: needs a test
-		if _, ok := arr.(values.ITableObject); ok {
+		if _, ok := arr.(values.TableObject); ok {
 			return nil, errors.New(codes.Invalid, "cannot index into table stream; expected an array")
 		}
 		l := arr.Array().Len()
@@ -1265,7 +1265,7 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 	case semantic.Array:
 		arr := v.Array()
 		// FIXME: needs a test
-		if _, ok := arr.(values.ITableObject); ok {
+		if _, ok := arr.(values.TableObject); ok {
 			return nil, false, errors.New(codes.Invalid, "got a table stream; expected an array")
 		}
 		node := new(semantic.ArrayExpression)
@@ -1374,7 +1374,7 @@ func ToStringArray(a values.Array) ([]string, error) {
 		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of strings", t)
 	}
 	// FIXME: needs a test
-	if _, ok := a.(values.ITableObject); ok {
+	if _, ok := a.(values.TableObject); ok {
 		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
 	}
 	strs := make([]string, a.Len())
@@ -1392,7 +1392,7 @@ func ToFloatArray(a values.Array) ([]float64, error) {
 		return nil, errors.Newf(codes.Invalid, "cannot convert array of %v to an array of floats", t)
 	}
 	// FIXME: needs a test
-	if _, ok := a.(values.ITableObject); ok {
+	if _, ok := a.(values.TableObject); ok {
 		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
 	}
 	vs := make([]float64, a.Len())
@@ -1571,7 +1571,7 @@ func (a *arguments) GetArrayAllowEmpty(name string, t semantic.Nature) (values.A
 	}
 	arr := v.Array()
 	// FIXME: needs a test
-	if _, ok := arr.(values.ITableObject); ok {
+	if _, ok := arr.(values.TableObject); ok {
 		return nil, false, errors.New(codes.Invalid, "got a table stream; expected an array")
 	}
 	if arr.Len() > 0 {
@@ -1610,7 +1610,7 @@ func (a *arguments) GetRequiredArrayAllowEmpty(name string, t semantic.Nature) (
 	}
 	arr := v.Array()
 	// FIXME: needs a test
-	if _, ok := arr.(values.ITableObject); ok {
+	if _, ok := arr.(values.TableObject); ok {
 		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
 	}
 	if arr.Array().Len() > 0 {
