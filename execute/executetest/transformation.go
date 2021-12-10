@@ -2,11 +2,10 @@ package executetest
 
 import (
 	"math"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"testing"
-
-	"runtime/debug"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -23,7 +22,7 @@ import (
 
 // Two floating point values are considered
 // equal if they are within tol of each other.
-const tol float64 = 1e-25
+const tol float64 = 1e-6
 
 // The maximum number of floating point values that are allowed
 // to lie between two float64s and still be considered equal.
