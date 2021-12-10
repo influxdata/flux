@@ -68,42 +68,42 @@ func TestConcat_Process(t *testing.T) {
 		return vals
 	}
 	testCases := []struct {
-		name     string
-		typ      semantic.MonoType
-		arr      []interface{}
-		v        []interface{}
-		want     []interface{}
+		name string
+		typ  semantic.MonoType
+		arr  []interface{}
+		v    []interface{}
+		want []interface{}
 	}{
 		{
-			name:     "int",
-			typ:      semantic.BasicInt,
-			arr:      []interface{}{int64(1),int64(2),int64(3)},
-			v:        []interface{}{int64(4),int64(5)},
-			want:     []interface{}{int64(1),int64(2),int64(3),int64(4),int64(5)},
+			name: "int",
+			typ:  semantic.BasicInt,
+			arr:  []interface{}{int64(1), int64(2), int64(3)},
+			v:    []interface{}{int64(4), int64(5)},
+			want: []interface{}{int64(1), int64(2), int64(3), int64(4), int64(5)},
 		},
 		{
-			name:     "float",
-			typ:      semantic.BasicFloat,
-			arr:      []interface{}{1.1,2.2,3.3},
-			v:        []interface{}{4.4,5.5},
-			want:     []interface{}{1.1,2.2,3.3,4.4,5.5},
+			name: "float",
+			typ:  semantic.BasicFloat,
+			arr:  []interface{}{1.1, 2.2, 3.3},
+			v:    []interface{}{4.4, 5.5},
+			want: []interface{}{1.1, 2.2, 3.3, 4.4, 5.5},
 		},
 		{
-			name:     "string",
-			typ:      semantic.BasicString,
-			arr:      []interface{}{"a","b","c"},
-			v:        []interface{}{"d", "e"},
-			want:     []interface{}{"a","b","c","d","e"},
+			name: "string",
+			typ:  semantic.BasicString,
+			arr:  []interface{}{"a", "b", "c"},
+			v:    []interface{}{"d", "e"},
+			want: []interface{}{"a", "b", "c", "d", "e"},
 		},
 		{
-			name:     "record",
-			typ:      semantic.NewObjectType([]semantic.PropertyType{
+			name: "record",
+			typ: semantic.NewObjectType([]semantic.PropertyType{
 				{Key: []byte("s"), Value: semantic.BasicString},
 				{Key: []byte("i"), Value: semantic.BasicInt},
 			}),
-			arr:      []interface{}{record{s:"a",i:1},record{s:"b",i:2},record{s:"c",i:3}},
-			v:        []interface{}{record{s:"d",i:4},record{s:"e",i:5}},
-			want:     []interface{}{record{s:"a",i:1},record{s:"b",i:2},record{s:"c",i:3},record{s:"d",i:4},record{s:"e",i:5}},
+			arr:  []interface{}{record{s: "a", i: 1}, record{s: "b", i: 2}, record{s: "c", i: 3}},
+			v:    []interface{}{record{s: "d", i: 4}, record{s: "e", i: 5}},
+			want: []interface{}{record{s: "a", i: 1}, record{s: "b", i: 2}, record{s: "c", i: 3}, record{s: "d", i: 4}, record{s: "e", i: 5}},
 		},
 	}
 
@@ -177,30 +177,30 @@ func TestMap_Process(t *testing.T) {
 		return vals
 	}
 	testCases := []struct {
-		name     string
-		atyp     semantic.MonoType
-		arr      []interface{}
-		fn       string
-		wtyp     semantic.MonoType
-		want     []interface{}
+		name string
+		atyp semantic.MonoType
+		arr  []interface{}
+		fn   string
+		wtyp semantic.MonoType
+		want []interface{}
 	}{
 		{
-			name:     "int to string",
-			atyp:     semantic.BasicInt,
-			arr:      []interface{}{int64(1),int64(2),int64(3)},
-			fn:       `fx = (x) => string(v: x)`,
-			wtyp:     semantic.BasicString,
-			want:     []interface{}{"1","2","3"},
+			name: "int to string",
+			atyp: semantic.BasicInt,
+			arr:  []interface{}{int64(1), int64(2), int64(3)},
+			fn:   `fx = (x) => string(v: x)`,
+			wtyp: semantic.BasicString,
+			want: []interface{}{"1", "2", "3"},
 		},
 		{
-			name:     "float to record",
-			atyp:     semantic.BasicFloat,
-			arr:      []interface{}{1.1,2.2,3.3},
-			fn:       `fx = (x) => ({f: x})`,
-			wtyp:     semantic.NewObjectType([]semantic.PropertyType{
+			name: "float to record",
+			atyp: semantic.BasicFloat,
+			arr:  []interface{}{1.1, 2.2, 3.3},
+			fn:   `fx = (x) => ({f: x})`,
+			wtyp: semantic.NewObjectType([]semantic.PropertyType{
 				{Key: []byte("f"), Value: semantic.BasicFloat},
 			}),
-			want:     []interface{}{record{f:1.1},record{f:2.2},record{f:3.3}},
+			want: []interface{}{record{f: 1.1}, record{f: 2.2}, record{f: 3.3}},
 		},
 	}
 

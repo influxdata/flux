@@ -104,4 +104,4 @@ fromStr = (arr) => ejson.parse(data: bytes(v: arr))
 //       )})
 //  )
 // ```
-concatStr = (arr = emptyStr, v) => string(v: json.encode(v: concat(arr: fromStr(arr: arr), v: v)))
+concatStr = (arr=emptyStr, v) => string(v: json.encode(v: concat(arr: fromStr(arr: arr), v: v)))
