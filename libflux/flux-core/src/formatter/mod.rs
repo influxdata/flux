@@ -101,6 +101,44 @@ fn comma_list_without_trailing_comma<'doc>(
     arena.intersperse(docs, arena.text(",").append(line))
 }
 
+/// Constructs a document which attempts to "hang" its prefix  on the same line to reduce how much
+/// the `body` needs to be indented. To do this it tries to fit these (example) layouts in order,
+/// selecting the first that fits
+///
+/// ```flux
+/// foo = () => { x: 1 }
+/// ```
+/// gets turned into
+///
+/// Prefixes: `[foo =, () =>, {]`
+/// Body: `x: 1`
+/// Suffixes: `[}]`
+///
+/// Layouts:
+///
+/// ```flux
+/// foo = () => {
+///     x: 1,
+/// }
+/// ```
+///
+/// ```flux
+/// foo = () =>
+///     {
+///         x: 1,
+///     }
+/// ```
+///
+/// ```flux
+/// foo =
+///     () =>
+///         {
+///             x: 1,
+///         }
+/// ```
+///
+/// (The record in these layouts are laid out on multiple lines, however if they fit they will of
+/// course still be on a single line)
 fn format_hang_doc<'doc>(
     arena: &'doc Arena<'doc>,
     surrounding: &[Affixes<'doc>],
