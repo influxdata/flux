@@ -1,6 +1,7 @@
 package date_test
 
 
+import "csv"
 import "testing"
 import "date"
 
@@ -23,6 +24,14 @@ inData =
 "
 outData =
     "
+
+testcase week_day_time {
+    got = csv.from(csv: inData)
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> map(fn: (r) => ({r with _value: date.weekDay(t: r._time)}))
+
+    want = csv.from(
+        csv: "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -43,3 +52,33 @@ t_time_week_day = (table=<-) =>
 
 test _time_week_day = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week_day})
+",
+    )
+
+    testing.diff(got: got, want: want)
+}
+
+testcase week_day_time_location {
+    got = csv.from(csv: inData)
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> map(fn: (r) => ({r with _value: date.weekDay(t: r._time, location: {zone: "America/Los_Angeles", offset: -5mo})}))
+
+    want = csv.from(
+        csv: "
+#group,false,false,true,true,true,true,false,false
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
+#default,_result,,,,,,,
+,result,table,_start,_stop,_field,_measurement,_time,_value
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-20T19:53:00Z,3
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-21T19:53:10Z,4
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:53:20Z,5
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-23T19:53:30Z,6
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-24T19:53:40Z,0
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-25T19:53:50Z,1
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-26T19:53:00Z,2
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-27T19:53:10Z,3
+",
+    )
+
+    testing.diff(got: got, want: want)
+}

@@ -1,6 +1,7 @@
 package date_test
 
 
+import "csv"
 import "testing"
 import "date"
 
@@ -39,6 +40,14 @@ inData =
 "
 outData =
     "
+
+testcase hour_time {
+    got = csv.from(csv: inData)
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> map(fn: (r) => ({r with _value: date.hour(t: r._time)}))
+
+    want = csv.from(
+        csv: "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -75,3 +84,49 @@ t_time_hour = (table=<-) =>
 
 test _time_hour = () =>
     ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_hour})
+",
+    )
+
+    testing.diff(got: got, want: want)
+}
+
+testcase hour_time_location {
+    got = csv.from(csv: inData)
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> map(fn: (r) => ({r with _value: date.hour(t: r._time, location: {zone: "America/Los_Angeles", offset: 1h})}))
+
+    want = csv.from(
+        csv: "
+#group,false,false,true,true,true,true,false,false
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
+#default,_result,,,,,,,
+,result,table,_start,_stop,_field,_measurement,_time,_value
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T00:53:00Z,18
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T01:53:00Z,19
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T02:53:10Z,20
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T03:53:20Z,21
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T04:53:30Z,22
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T05:53:40Z,23
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T06:53:50Z,0
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T07:53:00Z,1
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T08:53:10Z,2
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T09:53:20Z,3
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T10:53:30Z,4
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T11:53:40Z,5
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T12:53:50Z,6
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T13:54:00Z,7
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T14:54:10Z,8
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-22T15:54:20Z,9
+,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,RR,_m,2018-05-22T16:53:00Z,10
+,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,RR,_m,2018-05-22T17:53:10Z,11
+,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,RR,_m,2018-05-22T18:53:20Z,12
+,,2,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,RR,_m,2018-05-22T19:53:30Z,13
+,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SR,_m,2018-05-22T20:53:40Z,14
+,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SR,_m,2018-05-22T21:53:50Z,15
+,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SR,_m,2018-05-22T22:53:00Z,16
+,,3,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SR,_m,2018-05-22T23:53:50Z,17
+",
+    )
+
+    testing.diff(got: got, want: want)
+}
