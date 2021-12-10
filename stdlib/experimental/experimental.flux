@@ -25,6 +25,7 @@ builtin _addDuration : (d: duration, to: time, location: {zone: string, offset: 
 // ## Parameters
 // - d: Duration to add.
 // - to: Time to add the duration to.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -72,6 +73,7 @@ builtin _subDuration : (d: duration, from: time, location: {zone: string, offset
 // ## Parameters
 // - from: Time to subtract the duration from.
 // - d: Duration to subtract.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //

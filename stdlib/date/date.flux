@@ -53,6 +53,7 @@ builtin _minute : (t: T, location: {zone: string, offset: duration}) => int wher
 //
 //    Use an absolute time, relative duration, or integer.
 //    Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -88,6 +89,7 @@ builtin _hour : (t: T, location: {zone: string, offset: duration}) => int where 
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -125,6 +127,7 @@ builtin _weekDay : (t: T, location: {zone: string, offset: duration}) => int whe
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -162,6 +165,7 @@ builtin _monthDay : (t: T, location: {zone: string, offset: duration}) => int wh
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -199,6 +203,7 @@ builtin _yearDay : (t: T, location: {zone: string, offset: duration}) => int whe
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -235,6 +240,7 @@ builtin _month : (t: T, location: {zone: string, offset: duration}) => int where
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -271,6 +277,7 @@ builtin _year : (t: T, location: {zone: string, offset: duration}) => int where 
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -308,6 +315,7 @@ builtin _week : (t: T, location: {zone: string, offset: duration}) => int where 
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -344,6 +352,7 @@ builtin _quarter : (t: T, location: {zone: string, offset: duration}) => int whe
 //
 //   Use an absolute time, relative duration, or integer.
 //   Durations are relative to `now()`.
+// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
