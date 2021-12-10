@@ -605,7 +605,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/task_per_line_test.flux":                                                     "7542b5bf93d9e20af2faa6e63baf5a5cb7116e3dc921ab4db68c4f180ad61e56",
 	"stdlib/universe/time_weighted_avg_test.flux":                                                 "228156abd1f91b1588cec556175576afdcfb4f1f5b0f8cff771aac39995f56fe",
 	"stdlib/universe/timed_moving_average_test.flux":                                              "b488427680e31d6385b3c0c058ed47f4f747d30c927fe17966dd6d2fe6d862e4",
-	"stdlib/universe/to_convert_test.flux":                                                        "0086cb1260ca8669268a2ce4e739426e9dfc9da49f23eef2df5bb76fb8d92a0d",
+	"stdlib/universe/to_convert_test.flux":                                                        "7c120cba3c0adef4722597e80db8b64f17cc96dbb33ba7649d5c6991d3f2f33e",
 	"stdlib/universe/today_test.flux":                                                             "514c988f2d4452c2130f11be734fcb29c8b8242f260c62039324476376d58ee4",
 	"stdlib/universe/top_test.flux":                                                               "396222f5e5dacb217c7adbb81cc25656f6da2993fed2f258b24aaffdb1346e1a",
 	"stdlib/universe/triple_exponential_derivative_test.flux":                                     "37f08c4e9c5017d360ac45671296cb7a0d12cfec19cf3b78bb53a2837ed13e7c",
