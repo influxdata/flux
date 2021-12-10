@@ -5,15 +5,15 @@ package array
 import ejson "experimental/json"
 import "json"
 
-// append is a function that appends value to array.
+// concat joins two arrays. It returns a new array.
 //
 // ## Parameters
-// - `arr` is the array to operate on.
-// - `v` is the value to append to the array.
+// - `arr` is the first array.
+// - `v` is the additional array to join.
 //
 //   Array may be empty. If not, value type must match the type of existing element(s).
 //
-// ## Append to array
+// ## Concat arrays
 //
 // ```
 // import "contrib/bonitoo-io/array"
@@ -22,11 +22,11 @@ import "json"
 //
 // from(bucket: "my-bucket")
 //   |> range(start: -1h)
-//   |> keep(columns: array.append(arr: ["_time", "_value"], v: good)
+//   |> keep(columns: array.concat(arr: ["_time", "_value"], v: good)
 // ```
-builtin append : (arr: [A], v: [A]) => [A]
+builtin concat : (arr: [A], v: [A]) => [A]
 
-// map is a function that applies supplied function to each element and returns a new array.
+// map is a function that applies supplied function to each element. It returns a new array.
 //
 // ## Parameters
 // - `arr` is the array to operate on.
@@ -46,10 +46,10 @@ builtin map : (arr: [A], fn: (x: A) => B) => [B]
 // empty JSON-encoded array as string
 emptyStr = "[]"
 
-// fromStr parses JSON-encoded (as string) array into array.
+// fromStr parses a string representing JSON-encoded array into an array.
 //
 // ## Parameters
-// - `arr` is the JSON-encoded (as string) array to operate on.
+// - `arr` is the string representing JSON-encoded array.
 //
 // ## Parse simple type array
 //
@@ -72,16 +72,17 @@ emptyStr = "[]"
 // ```
 fromStr = (arr) => ejson.parse(data: bytes(v: arr))
 
-// appendStr is a function that appends value to JSON-encoded array.
+// concatStr joins two arrays. It returns JSON-encoded array represented as a string.
+// This variant of `concat` is intended to be used in `reduce` aggregation,
+// because Flux table column cannot be of array type.
 //
 // ## Parameters
-// - `arr` is the JSON-encoded array to operate on.
-// - `v` is the value to append to the array.
+// - `arr` is the string representing JSON-encoded array.
+// - `v` is the second array to join.
 //
 //   Array may be empty. If not, value type must match the type of existing element(s).
-//   This variant of append is useful in transformations, because flux table column cannot be of array type.
 //
-// ## Append to array
+// ## Concat arrays in reduce()
 //
 // ```
 // import "contrib/bonitoo-io/array"
@@ -90,7 +91,7 @@ fromStr = (arr) => ejson.parse(data: bytes(v: arr))
 //   |> range(start: -1h)
 //   |> reduce(
 //       fn: (r, accumulator) => ({
-//           sarr: array.appendStr(arr: accumulator.sarr, v: [r._value])
+//           sarr: array.concatStr(arr: accumulator.sarr, v: [r._value])
 //       }),
 //       identity: {
 //           sarr: array.emptyStr  // "[]"
@@ -103,4 +104,4 @@ fromStr = (arr) => ejson.parse(data: bytes(v: arr))
 //       )})
 //  )
 // ```
-appendStr = (arr = emptyStr, v) => string(v: json.encode(v: append(arr: fromStr(arr: arr), v: v)))
+concatStr = (arr = emptyStr, v) => string(v: json.encode(v: concat(arr: fromStr(arr: arr), v: v)))

@@ -13,26 +13,26 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func TestAppend_NewQuery(t *testing.T) {
+func Testconcat_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name:    "no args",
-			Raw:     `import "contrib/bonitoo-io/array" array.append()`,
+			Raw:     `import "contrib/bonitoo-io/array" array.concat()`,
 			WantErr: true, // missing required args
 		},
 		{
 			Name:    "invalid arr arg",
-			Raw:     `import "contrib/bonitoo-io/array" array.append(arr: 1, v: [2])`,
+			Raw:     `import "contrib/bonitoo-io/array" array.concat(arr: 1, v: [2])`,
 			WantErr: true, // expected [A] but found int (argument arr)
 		},
 		{
 			Name:    "invalid v arg",
-			Raw:     `import "contrib/bonitoo-io/array" array.append(arr: [1], v: 2)`,
+			Raw:     `import "contrib/bonitoo-io/array" array.concat(arr: [1], v: 2)`,
 			WantErr: true, // expected [int] but found int (argument v)
 		},
 		{
 			Name:    "type mismatch",
-			Raw:     `import "contrib/bonitoo-io/array" array.append(arr: [1], v: [2.0])`,
+			Raw:     `import "contrib/bonitoo-io/array" array.concat(arr: [1], v: [2.0])`,
 			WantErr: true, // expected int but found float (argument v)
 		},
 	}
@@ -45,7 +45,7 @@ func TestAppend_NewQuery(t *testing.T) {
 	}
 }
 
-func TestAppend_Process(t *testing.T) {
+func TestConcat_Process(t *testing.T) {
 	type record struct {
 		s string
 		i int64
@@ -107,7 +107,7 @@ func TestAppend_Process(t *testing.T) {
 		},
 	}
 
-	appendFn := array.SpecialFns["append"]
+	concatFn := array.SpecialFns["concat"]
 
 	for _, tc := range testCases {
 		tc := tc
@@ -117,7 +117,7 @@ func TestAppend_Process(t *testing.T) {
 				"v":   values.NewArrayWithBacking(semantic.NewArrayType(tc.typ), tovalarr(tc.typ, tc.v)),
 			})
 			want := values.NewArrayWithBacking(semantic.NewArrayType(tc.typ), tovalarr(tc.typ, tc.want))
-			result, err := appendFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			result, err := concatFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
 			if err != nil {
 				t.Error(err.Error())
 			}

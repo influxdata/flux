@@ -5,7 +5,7 @@ import "array"
 import barray "contrib/bonitoo-io/array"
 import "testing"
 
-testcase array_append {
+testcase array_concat {
 
     input = array.from(
         rows: [
@@ -28,11 +28,11 @@ testcase array_append {
 
     cols = ["_measurement"]
     got = input
-        |> keep(columns: barray.append(arr: ["_time", "_value"], v: cols))
+        |> keep(columns: barray.concat(arr: ["_time", "_value"], v: cols))
 
     testing.diff(got, want) |> yield()
 }
-testcase array_append_empty {
+testcase array_concat_empty {
     input = array.from(
         rows: [
             {_time: 2018-05-22T19:53:26Z, _value: 15204688, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
@@ -54,11 +54,11 @@ testcase array_append_empty {
 
     cols = ["_measurement", "_time", "_value"]
     got = input
-        |> keep(columns: barray.append(arr: cols, v: []))
+        |> keep(columns: barray.concat(arr: cols, v: []))
 
     testing.diff(got, want) |> yield()
 }
-testcase array_append_to_empty {
+testcase array_concat_to_empty {
     input = array.from(
         rows: [
             {_time: 2018-05-22T19:53:26Z, _value: 15204688, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
@@ -80,11 +80,11 @@ testcase array_append_to_empty {
 
     cols = ["_measurement", "_time", "_value"]
     got = input
-        |> keep(columns: barray.append(arr: [], v: cols))
+        |> keep(columns: barray.concat(arr: [], v: cols))
 
     testing.diff(got, want) |> yield()
 }
-testcase array_appendstr {
+testcase array_concatstr {
     input = array.from(
         rows: [
             {_time: 2018-05-22T19:53:26Z, _value: 15204688, _field: "io_time", _measurement: "diskio", host: "host.local", name: "disk0"},
@@ -106,7 +106,7 @@ testcase array_appendstr {
         |> keep(columns: ["_measurement", "_time", "_value"])
         |> reduce(
             fn: (r, accumulator) => ({
-                sarr: barray.appendStr(arr: accumulator.sarr, v: [float(v: r._value)])
+                sarr: barray.concatStr(arr: accumulator.sarr, v: [float(v: r._value)])
             }),
             identity: {
                 sarr: barray.emptyStr

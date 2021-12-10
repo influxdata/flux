@@ -16,9 +16,9 @@ const packagePath = "contrib/bonitoo-io/array"
 
 func init() {
 	SpecialFns = map[string]values.Function{
-		"append": values.NewFunction(
-			"append",
-			runtime.MustLookupBuiltinType(packagePath, "append"),
+		"concat": values.NewFunction(
+			"concat",
+			runtime.MustLookupBuiltinType(packagePath, "concat"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
 				return interpreter.DoFunctionCallContext(func(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
 					_v, err := args.GetRequired("v")
@@ -117,6 +117,6 @@ func init() {
 		),
 	}
 
-	runtime.RegisterPackageValue(packagePath, "append", SpecialFns["append"])
+	runtime.RegisterPackageValue(packagePath, "concat", SpecialFns["concat"])
 	runtime.RegisterPackageValue(packagePath, "map", SpecialFns["map"])
 }
