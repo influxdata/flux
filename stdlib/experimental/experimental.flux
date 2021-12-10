@@ -32,9 +32,28 @@ package experimental
 // // Returns 2019-09-16T18:00:00.000000000Z
 // ```
 //
+// ### Add one month to yesterday
+//
+// A time may be represented as either an explicit timestamp
+// or as a relative time from the current `now` time. addDuration can
+// support either type of value.
+//
+// ```no_run
+// import "experimental"
+//
+// option now = () => 2021-12-10T16:27:40Z
+//
+// experimental.addDuration(
+//     d: 1mo,
+//     to: -1d,
+// )
+//
+// // Returns 2022-01-09T16:27:40Z
+// ```
+//
 // tags: date/time
 //
-builtin addDuration : (d: duration, to: time) => time
+builtin addDuration : (d: duration, to: T) => time where T: Timeable
 
 // subDuration subtracts a duration from a time value and returns the resulting time value.
 //
@@ -56,9 +75,28 @@ builtin addDuration : (d: duration, to: time) => time
 // // Returns 2019-09-16T06:00:00.000000000Z
 // ```
 //
+// ### Subtract two days from one hour ago
+//
+// A time may be represented as either an explicit timestamp
+// or as a relative time from the current `now` time. subDuration can
+// support either type of value.
+//
+// ```no_run
+// import "experimental"
+//
+// option now = () => 2021-12-10T16:27:40Z
+//
+// experimental.subDuration(
+//     d: 2d,
+//     from: -1h,
+// )
+//
+// // Returns 2021-12-08T15:27:40Z
+// ```
+//
 // tags: date/time
 //
-builtin subDuration : (d: duration, from: time) => time
+builtin subDuration : (d: duration, from: T) => time where T: Timeable
 
 // group introduces an `extend` mode to the existing `group()` function.
 //
