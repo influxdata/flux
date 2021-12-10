@@ -146,62 +146,63 @@ fn format_hang_doc<'doc>(
 ) -> Doc<'doc> {
     let fail_on_multi_line = arena.fail().flat_alt(arena.nil());
 
-    let mut doc = None;
-
-    for split in (1..surrounding.len() + 1).rev() {
-        let (before, after) = surrounding.split_at(split);
-        let last = before.len() == 1;
-        let doc2 = docs![
-            arena,
+    (1..surrounding.len() + 1)
+        .rev()
+        .map(|split| {
+            let (before, after) = surrounding.split_at(split);
+            let last = before.len() == 1;
             docs![
                 arena,
-                arena.concat(before.iter().map(|affixes| affixes.prefix.clone())),
-                if last {
-                    arena.nil()
-                } else {
-                    fail_on_multi_line.clone()
-                }
-            ]
-            .group(),
-            docs![
-                arena,
-                after.iter().rev().cloned().fold(
-                    docs![
-                        arena,
-                        body.clone(),
-                        // If there is no prefix then we must not allow the body to laid out on multiple
-                        // lines without nesting
-                        if !last
-                            && before
-                                .iter()
-                                .all(|affixes| matches!(&*affixes.prefix.1, ::pretty::Doc::Nil))
-                        {
-                            fail_on_multi_line.clone()
-                        } else {
-                            arena.nil()
+                docs![
+                    arena,
+                    arena.concat(before.iter().map(|affixes| affixes.prefix.clone())),
+                    if last {
+                        arena.nil()
+                    } else {
+                        fail_on_multi_line.clone()
+                    }
+                ]
+                .group(),
+                docs![
+                    arena,
+                    after.iter().rev().cloned().fold(
+                        docs![
+                            arena,
+                            body.clone(),
+                            // If there is no prefix then we must not allow the body to laid out on multiple
+                            // lines without nesting
+                            if !last
+                                && before
+                                    .iter()
+                                    .all(|affixes| matches!(&*affixes.prefix.1, ::pretty::Doc::Nil))
+                            {
+                                fail_on_multi_line.clone()
+                            } else {
+                                arena.nil()
+                            },
+                        ]
+                        .nest(INDENT)
+                        .append(arena.concat(after.iter().map(|affixes| affixes.suffix.clone()))),
+                        |acc, affixes| {
+                            let mut doc = affixes.prefix.append(acc);
+                            if affixes.nest {
+                                doc = doc.nest(INDENT);
+                            }
+                            doc.group()
                         },
-                    ]
-                    .nest(INDENT)
-                    .append(arena.concat(after.iter().map(|affixes| affixes.suffix.clone()))),
-                    |acc, affixes| {
-                        let mut doc = affixes.prefix.append(acc);
-                        if affixes.nest {
-                            doc = doc.nest(INDENT);
-                        }
-                        doc.group()
-                    },
-                ),
-                arena.concat(before.iter().map(|affixes| affixes.suffix.clone())),
+                    ),
+                    arena.concat(before.iter().map(|affixes| affixes.suffix.clone())),
+                ]
+                .group(),
             ]
-            .group(),
-        ];
-        match doc {
-            None => doc = Some(doc2),
-            Some(d) => doc = Some(d.union(doc2)),
-        }
-    }
-
-    doc.unwrap_or_else(|| body)
+        })
+        .fold(None::<Doc<'doc>>, |acc, doc| {
+            Some(match acc {
+                None => doc,
+                Some(acc) => acc.union(doc),
+            })
+        })
+        .unwrap_or_else(|| body)
 }
 
 #[derive(Clone)]
