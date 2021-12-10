@@ -17,7 +17,7 @@ import (
 )
 
 const DiffKind = "diff"
-const DefaultEpsilon = 1e-9
+const DefaultEpsilon = 1e-6
 const DefaultNaNsEqual = false
 
 type DiffOpSpec struct {
