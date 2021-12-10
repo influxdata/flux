@@ -8,8 +8,8 @@ import "json"
 // concat joins two arrays. It returns a new array.
 //
 // ## Parameters
-// - `arr` is the first array.
-// - `v` is the additional array to join.
+// - arr: The first array.
+// - v: Additional array to join.
 //
 //   Array may be empty. If not, value type must match the type of existing element(s).
 //
@@ -29,8 +29,8 @@ builtin concat : (arr: [A], v: [A]) => [A]
 // map is a function that applies supplied function to each element. It returns a new array.
 //
 // ## Parameters
-// - `arr` is the array to operate on.
-// - `fn` is the function to convert items.
+// - arr: The array to operate on.
+// - fn: The function to be applied on items.
 //
 // ## Convert array of ints to array of strings
 //
@@ -43,13 +43,13 @@ builtin concat : (arr: [A], v: [A]) => [A]
 // ```
 builtin map : (arr: [A], fn: (x: A) => B) => [B]
 
-// empty JSON-encoded array as string
+// emptyStr is a string representing JSON-encoded empty array
 emptyStr = "[]"
 
 // fromStr parses a string representing JSON-encoded array into an array.
 //
 // ## Parameters
-// - `arr` is the string representing JSON-encoded array.
+// - arr: The string representing JSON-encoded array.
 //
 // ## Parse simple type array
 //
@@ -77,8 +77,8 @@ fromStr = (arr) => ejson.parse(data: bytes(v: arr))
 // because Flux table column cannot be of array type.
 //
 // ## Parameters
-// - `arr` is the string representing JSON-encoded array.
-// - `v` is the second array to join.
+// - arr: The string representing JSON-encoded first array.
+// - v: The second array to join.
 //
 //   Array may be empty. If not, value type must match the type of existing element(s).
 //
