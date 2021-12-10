@@ -39,3 +39,9 @@
   key: optimizeShiftTransformation
   default: false
   contact: Jonathan Sternberg
+
+- name: Optimize Union Transformation
+  description: Optimize the union transformation
+  key: optimizeUnionTransformation
+  default: false
+  contact: Jonathan Sternberg
