@@ -101,6 +101,71 @@ fn comma_list_without_trailing_comma<'doc>(
     arena.intersperse(docs, arena.text(",").append(line))
 }
 
+fn format_hang_doc<'doc>(
+    arena: &'doc Arena<'doc>,
+    surrounding: &[Affixes<'doc>],
+    body: Doc<'doc>,
+) -> Doc<'doc> {
+    let fail_on_multi_line = arena.fail().flat_alt(arena.nil());
+
+    let mut doc = None;
+
+    for split in (1..surrounding.len() + 1).rev() {
+        let (before, after) = surrounding.split_at(split);
+        let last = before.len() == 1;
+        let doc2 = docs![
+            arena,
+            docs![
+                arena,
+                arena.concat(before.iter().map(|affixes| affixes.prefix.clone())),
+                if last {
+                    arena.nil()
+                } else {
+                    fail_on_multi_line.clone()
+                }
+            ]
+            .group(),
+            docs![
+                arena,
+                after.iter().rev().cloned().fold(
+                    docs![
+                        arena,
+                        body.clone(),
+                        // If there is no prefix then we must not allow the body to laid out on multiple
+                        // lines without nesting
+                        if !last
+                            && before
+                                .iter()
+                                .all(|affixes| matches!(&*affixes.prefix.1, ::pretty::Doc::Nil))
+                        {
+                            fail_on_multi_line.clone()
+                        } else {
+                            arena.nil()
+                        },
+                    ]
+                    .nest(INDENT)
+                    .append(arena.concat(after.iter().map(|affixes| affixes.suffix.clone()))),
+                    |acc, affixes| {
+                        let mut doc = affixes.prefix.append(acc);
+                        if affixes.nest {
+                            doc = doc.nest(INDENT);
+                        }
+                        doc.group()
+                    },
+                ),
+                arena.concat(before.iter().map(|affixes| affixes.suffix.clone())),
+            ]
+            .group(),
+        ];
+        match doc {
+            None => doc = Some(doc2),
+            Some(d) => doc = Some(d.union(doc2)),
+        }
+    }
+
+    doc.unwrap_or_else(|| body)
+}
+
 #[derive(Clone)]
 struct Affixes<'doc> {
     prefix: Doc<'doc>,
@@ -123,7 +188,25 @@ fn affixes<'doc>(prefix: Doc<'doc>, suffix: Doc<'doc>) -> Affixes<'doc> {
     }
 }
 
-type SurroundingList<'doc> = Vec<Affixes<'doc>>;
+struct HangDoc<'doc> {
+    affixes: Vec<Affixes<'doc>>,
+    body: Doc<'doc>,
+}
+
+impl<'doc> HangDoc<'doc> {
+    fn add_prefix(&mut self, doc: Doc<'doc>) {
+        if let Some(affixes) = self.affixes.last_mut() {
+            affixes.prefix = doc.append(affixes.prefix.clone());
+        } else {
+            self.body = doc.append(self.body.clone());
+        }
+    }
+
+    fn format(mut self) -> Doc<'doc> {
+        self.affixes.reverse();
+        format_hang_doc(self.body.0, &self.affixes, self.body)
+    }
+}
 
 fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
     let arena = Arena::new();
@@ -449,22 +532,22 @@ impl<'doc> Formatter<'doc> {
         ]
     }
 
-    fn format_block(&mut self, n: &'doc ast::Block) -> (SurroundingList<'doc>, Doc<'doc>) {
+    fn format_block(&mut self, n: &'doc ast::Block) -> HangDoc<'doc> {
         let arena = self.arena;
-        (
-            vec![affixes(
+        HangDoc {
+            affixes: vec![affixes(
                 docs![arena, self.format_comments(&n.lbrace), "{"],
                 docs![arena, arena.hardline(), "}"],
             )
             .nest()],
-            docs![
+            body: docs![
                 arena,
                 arena.hardline(),
                 // format the block statements
                 self.format_statement_list(&n.body),
                 self.format_comments(&n.rbrace),
             ],
-        )
+        }
     }
 
     fn format_statement_list(&mut self, s: &'doc [Statement]) -> Doc<'doc> {
@@ -499,13 +582,9 @@ impl<'doc> Formatter<'doc> {
         let arena = self.arena;
         match n {
             ast::Assignment::Variable(n) => {
-                let (mut surrounding, mut body) = self.hang_expression(&n.init);
-                if let Some(affixes) = surrounding.last_mut() {
-                    affixes.prefix = arena.line().append(affixes.prefix.clone());
-                } else {
-                    body = arena.line().append(body);
-                }
-                surrounding.push(
+                let mut hang_doc = self.hang_expression(&n.init);
+                hang_doc.add_prefix(arena.line());
+                hang_doc.affixes.push(
                     affixes(
                         docs![
                             arena,
@@ -517,17 +596,12 @@ impl<'doc> Formatter<'doc> {
                     )
                     .nest(),
                 );
-                surrounding.reverse();
-                self.format_prefixes(&surrounding, body)
+                hang_doc.format()
             }
             ast::Assignment::Member(n) => {
-                let (mut surrounding, mut body) = self.hang_expression(&n.init);
-                if let Some(affixes) = surrounding.last_mut() {
-                    affixes.prefix = arena.line().append(affixes.prefix.clone());
-                } else {
-                    body = arena.line().append(body);
-                }
-                surrounding.push(
+                let mut hang_doc = self.hang_expression(&n.init);
+                hang_doc.add_prefix(arena.line());
+                hang_doc.affixes.push(
                     affixes(
                         docs![
                             arena,
@@ -539,8 +613,7 @@ impl<'doc> Formatter<'doc> {
                     )
                     .nest(),
                 );
-                surrounding.reverse();
-                self.format_prefixes(&surrounding, body)
+                hang_doc.format()
             }
         }
     }
@@ -560,15 +633,10 @@ impl<'doc> Formatter<'doc> {
             }
             Statement::Return(s) => {
                 let prefix = docs![arena, self.format_comments(&s.base.comments), "return"];
-                let (mut surrounding, mut body) = self.hang_expression(&s.argument);
-                if let Some(affixes) = surrounding.last_mut() {
-                    affixes.prefix = arena.line().append(affixes.prefix.clone());
-                } else {
-                    body = arena.line().append(body);
-                }
-                surrounding.push(affixes(prefix, arena.nil()).nest());
-                surrounding.reverse();
-                self.format_prefixes(&surrounding, body)
+                let mut hang_doc = self.hang_expression(&s.argument);
+                hang_doc.add_prefix(arena.line());
+                hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+                hang_doc.format()
             }
             Statement::Bad(s) => {
                 self.err = Some(anyhow!("bad statement"));
@@ -596,10 +664,9 @@ impl<'doc> Formatter<'doc> {
                     arena.line(),
                 ];
 
-                let (mut surrounding, body) = self.format_block(&n.block);
-                surrounding.push(affixes(prefix, arena.nil()).nest());
-                surrounding.reverse();
-                self.format_prefixes(&surrounding, body)
+                let mut hang_doc = self.format_block(&n.block);
+                hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+                hang_doc.format()
             }
             Statement::Builtin(n) => docs![
                 arena,
@@ -760,10 +827,7 @@ impl<'doc> Formatter<'doc> {
         }
     }
 
-    fn format_function_expression(
-        &mut self,
-        n: &'doc ast::FunctionExpr,
-    ) -> (SurroundingList<'doc>, Doc<'doc>) {
+    fn format_function_expression(&mut self, n: &'doc ast::FunctionExpr) -> HangDoc<'doc> {
         let arena = self.arena;
 
         let multiline = n.params.len() > MULTILINE;
@@ -823,12 +887,12 @@ impl<'doc> Formatter<'doc> {
             ast::FunctionBody::Expr(b) => {
                 // Remove any parentheses around the body, we will re add them if needed.
                 let b = strip_parens(b);
-                (
-                    vec![
+                HangDoc {
+                    affixes: vec![
                         affixes(prefix2, arena.nil()),
                         affixes(prefix1, arena.nil()).nest(),
                     ],
-                    docs![
+                    body: docs![
                         arena,
                         arena.line(),
                         match b {
@@ -842,18 +906,14 @@ impl<'doc> Formatter<'doc> {
                             }
                         },
                     ],
-                )
+                }
             }
             ast::FunctionBody::Block(b) => {
-                let (mut surrounding, mut body) = self.format_block(b);
-                if let Some(affixes) = surrounding.last_mut() {
-                    affixes.prefix = arena.line().append(affixes.prefix.clone());
-                } else {
-                    body = arena.line().append(body);
-                }
-                surrounding.push(affixes(prefix2, arena.nil()));
-                surrounding.push(affixes(prefix1, arena.nil()).nest());
-                (surrounding, body)
+                let mut hang_doc = self.format_block(b);
+                hang_doc.add_prefix(arena.line());
+                hang_doc.affixes.push(affixes(prefix2, arena.nil()));
+                hang_doc.affixes.push(affixes(prefix1, arena.nil()).nest());
+                hang_doc
             }
         }
     }
@@ -867,80 +927,13 @@ impl<'doc> Formatter<'doc> {
                 self.format_append_comments(&n.separator),
                 ":",
             ];
-            let (mut surrounding, mut body) = self.hang_expression(v);
-            if let Some(affixes) = surrounding.last_mut() {
-                affixes.prefix = arena.line().append(affixes.prefix.clone());
-            } else {
-                body = arena.line().append(body);
-            }
-            surrounding.push(affixes(prefix, arena.nil()).nest());
-            surrounding.reverse();
-            self.format_prefixes(&surrounding, body)
+            let mut hang_doc = self.hang_expression(v);
+            hang_doc.add_prefix(arena.line());
+            hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+            hang_doc.format()
         } else {
             self.format_property_key(&n.key)
         }
-    }
-
-    fn format_prefixes(&mut self, surrounding: &[Affixes<'doc>], body: Doc<'doc>) -> Doc<'doc> {
-        let arena = self.arena;
-        let fail_on_multi_line = arena.fail().flat_alt(arena.nil());
-
-        let mut doc = None;
-
-        for split in (1..surrounding.len() + 1).rev() {
-            let (before, after) = surrounding.split_at(split);
-            let last = before.len() == 1;
-            let doc2 = docs![
-                arena,
-                docs![
-                    arena,
-                    arena.concat(before.iter().map(|affixes| affixes.prefix.clone())),
-                    if last {
-                        arena.nil()
-                    } else {
-                        fail_on_multi_line.clone()
-                    }
-                ]
-                .group(),
-                docs![
-                    arena,
-                    after.iter().rev().cloned().fold(
-                        docs![
-                            arena,
-                            body.clone(),
-                            // If there is no prefix then we must not allow the body to laid out on multiple
-                            // lines without nesting
-                            if !last
-                                && before
-                                    .iter()
-                                    .all(|affixes| matches!(&*affixes.prefix.1, ::pretty::Doc::Nil))
-                            {
-                                fail_on_multi_line.clone()
-                            } else {
-                                arena.nil()
-                            },
-                        ]
-                        .nest(INDENT)
-                        .append(arena.concat(after.iter().map(|affixes| affixes.suffix.clone()))),
-                        |acc, affixes| {
-                            let mut doc = affixes.prefix.append(acc);
-                            if affixes.nest {
-                                doc = doc.nest(INDENT);
-                            }
-                            doc.group()
-                        },
-                    ),
-                    arena.concat(before.iter().map(|affixes| affixes.suffix.clone())),
-                ]
-                .group(),
-            ];
-            match doc {
-                None => doc = Some(doc2),
-                Some(d) => doc = Some(d.union(doc2)),
-            }
-        }
-
-        doc.unwrap_or_else(|| body)
     }
 
     fn format_function_argument(&mut self, n: &'doc ast::Property) -> Doc<'doc> {
@@ -953,10 +946,9 @@ impl<'doc> Formatter<'doc> {
                 "=",
             ];
 
-            let (mut surrounding, body) = self.hang_expression(v);
-            surrounding.push(affixes(prefix, arena.nil()).nest());
-            surrounding.reverse();
-            docs![arena, self.format_prefixes(&surrounding, body)]
+            let mut hang_doc = self.hang_expression(v);
+            hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+            hang_doc.format()
         } else {
             self.format_property_key(&n.key)
         }
@@ -970,15 +962,11 @@ impl<'doc> Formatter<'doc> {
     }
 
     fn format_string_literal(&mut self, n: &'doc ast::StringLit) -> Doc<'doc> {
-        let (mut surrounding, body) = self.hang_string_literal(n);
-        surrounding.reverse();
-        self.format_prefixes(&surrounding, body)
+        let hang_doc = self.hang_string_literal(n);
+        hang_doc.format()
     }
 
-    fn hang_string_literal(
-        &mut self,
-        n: &'doc ast::StringLit,
-    ) -> (SurroundingList<'doc>, Doc<'doc>) {
+    fn hang_string_literal(&mut self, n: &'doc ast::StringLit) -> HangDoc<'doc> {
         let arena = self.arena;
 
         let doc = self.format_comments(&n.base.comments);
@@ -986,19 +974,22 @@ impl<'doc> Formatter<'doc> {
         if let Some(src) = &n.base.location.source {
             if !src.is_empty() {
                 // Preserve the exact literal if we have it
-                return (Vec::new(), docs![arena, doc, src]);
+                return HangDoc {
+                    affixes: Vec::new(),
+                    body: docs![arena, doc, src],
+                };
             }
         }
 
         let escaped_string = escape_string(&n.value);
-        (
-            vec![affixes(docs![arena, doc, arena.text("\"")], arena.text("\"")).nest()],
-            docs![
+        HangDoc {
+            affixes: vec![affixes(docs![arena, doc, arena.text("\"")], arena.text("\"")).nest()],
+            body: docs![
                 arena,
                 // Write out escaped string value
                 escaped_string,
             ],
-        )
+        }
     }
 
     fn format_identifier(&mut self, id: &'doc ast::Identifier) -> Doc<'doc> {
@@ -1022,15 +1013,10 @@ impl<'doc> Formatter<'doc> {
             self.format_append_comments(&n.base.comments),
             " =",
         ];
-        let (mut surrounding, mut body) = self.hang_expression(&n.init);
-        if let Some(affix) = surrounding.last_mut() {
-            affix.prefix = arena.line().append(affix.prefix.clone());
-        } else {
-            body = arena.line().append(body);
-        }
-        surrounding.push(affixes(prefix, arena.nil()).nest());
-        surrounding.reverse();
-        docs![arena, comment, self.format_prefixes(&surrounding, body)]
+        let mut hang_doc = self.hang_expression(&n.init);
+        hang_doc.add_prefix(arena.line());
+        hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+        docs![arena, comment, hang_doc.format()]
     }
 
     fn format_date_time_literal(&mut self, n: &'doc ast::DateTimeLit) -> Doc<'doc> {
@@ -1093,10 +1079,7 @@ impl<'doc> Formatter<'doc> {
         ]
     }
 
-    fn hang_expression(
-        &mut self,
-        expr: &'doc ast::Expression,
-    ) -> (SurroundingList<'doc>, Doc<'doc>) {
+    fn hang_expression(&mut self, expr: &'doc ast::Expression) -> HangDoc<'doc> {
         let arena = self.arena;
         match expr {
             ast::Expression::Array(n) => {
@@ -1112,27 +1095,30 @@ impl<'doc> Formatter<'doc> {
                         ]
                     }),
                 );
-                (
-                    vec![
+                HangDoc {
+                    affixes: vec![
                         affixes(prefix, suffix),
                         affixes(self.format_comments(&n.lbrack), arena.nil()).nest(),
                     ],
                     body,
-                )
+                }
             }
 
             ast::Expression::Object(expr) => {
                 let (prefix, body, suffix) = self.format_record_expression_braces(expr, true);
-                (vec![affixes(prefix, suffix).nest()], body)
+                HangDoc {
+                    affixes: vec![affixes(prefix, suffix).nest()],
+                    body,
+                }
             }
 
-            ast::Expression::StringExpr(n) => (
-                vec![affixes(
+            ast::Expression::StringExpr(n) => HangDoc {
+                affixes: vec![affixes(
                     docs![arena, self.format_comments(&n.base.comments), "\""],
                     arena.text("\""),
                 )
                 .nest()],
-                docs![
+                body: docs![
                     arena,
                     arena.concat(n.parts.iter().map(|n| {
                         match n {
@@ -1143,14 +1129,14 @@ impl<'doc> Formatter<'doc> {
                         }
                     })),
                 ],
-            ),
+            },
 
             ast::Expression::Function(expr) => self.format_function_expression(expr),
 
             ast::Expression::StringLit(expr) => self.hang_string_literal(expr),
 
-            ast::Expression::Index(n) => (
-                vec![affixes(
+            ast::Expression::Index(n) => HangDoc {
+                affixes: vec![affixes(
                     docs![
                         arena,
                         self.format_child_with_parens(
@@ -1163,10 +1149,13 @@ impl<'doc> Formatter<'doc> {
                     docs![arena, self.format_comments(&n.rbrack), "]",],
                 )
                 .nest()],
-                self.format_expression(&n.index),
-            ),
+                body: self.format_expression(&n.index),
+            },
 
-            _ => (Vec::new(), self.format_expression(expr)),
+            _ => HangDoc {
+                affixes: Vec::new(),
+                body: self.format_expression(expr),
+            },
         }
     }
 
@@ -1180,9 +1169,8 @@ impl<'doc> Formatter<'doc> {
             | ast::Expression::Function(_)
             | ast::Expression::StringLit(_)
             | ast::Expression::Index(_) => {
-                let (mut surrounding, body) = self.hang_expression(expr);
-                surrounding.reverse();
-                self.format_prefixes(&surrounding, body)
+                let hang_doc = self.hang_expression(expr);
+                hang_doc.format()
             }
             ast::Expression::Identifier(expr) => self.format_identifier(expr),
             ast::Expression::Dict(n) => {
@@ -1488,7 +1476,7 @@ impl<'doc> Formatter<'doc> {
                     docs![
                         arena,
                         "(",
-                        self.format_prefixes(&[affixes(prefix, suffix).nest()], body),
+                        format_hang_doc(arena, &[affixes(prefix, suffix).nest()], body),
                         self.format_comments(&n.rparen),
                         ")"
                     ]
@@ -1500,7 +1488,7 @@ impl<'doc> Formatter<'doc> {
                         self.format_comments(&n.rparen),
                         n.arguments.iter().map(|c| self.format_expression(c)),
                     );
-                    self.format_prefixes(&[affixes(prefix, suffix).nest()], body)
+                    format_hang_doc(arena, &[affixes(prefix, suffix).nest()], body)
                 }
             },
         ]
