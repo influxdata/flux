@@ -9,8 +9,8 @@ import "contrib/tomhollingworth/events"
 import "experimental"
 
 // computeAPQ computes availability, performance, and quality (APQ)
-// and overall equipment effectiveness (OEE) using two separate input streams—**production events**
-// and **part events**.
+// and overall equipment effectiveness (OEE) using two separate input streams:
+// **production events** and **part events**.
 // 
 // ## Output schema
 // For each input table, `oee.computeAPQ` outputs a table with a single row and

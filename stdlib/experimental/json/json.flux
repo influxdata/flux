@@ -16,7 +16,7 @@ package json
 // 
 // ## Examples
 // Parse and use JSON data to restructure tables
-// ```no_run
+// ```
 // # import "array"
 // import "experimental/json"
 // # 

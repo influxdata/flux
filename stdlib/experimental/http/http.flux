@@ -26,7 +26,7 @@ package http
 // ```no_run
 // import "experimental/http"
 // 
-// http.get(url: "http://localhost:8086/health")
+// http.get(url: "http://localhost:8086/health", headers: {Authorization: "Token mY5up3RS3crE7t0k3N", Accept: "application/json"})
 // ```
 // 
 // tags: http,inputs
