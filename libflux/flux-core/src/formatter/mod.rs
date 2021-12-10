@@ -261,8 +261,7 @@ fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
         .pretty(120)
         .to_string()
         .split("\n")
-        // TODO Handle whitespace only lines in pretty.rs instead of pruning here
-        .map(|s| if s.chars().all(|c| c == ' ') { "" } else { s })
+        .map(|s| s.trim_end())
         .collect::<Vec<_>>()
         .join("\n"))
 }
