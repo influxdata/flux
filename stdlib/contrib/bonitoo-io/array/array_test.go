@@ -13,7 +13,7 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-func Testconcat_NewQuery(t *testing.T) {
+func TestConcat_NewQuery(t *testing.T) {
 	tests := []querytest.NewQueryTestCase{
 		{
 			Name:    "no args",
