@@ -57,7 +57,7 @@ fromRange = (bucket, start, stop=now()) => from(bucket: bucket)
 // 
 filterMeasurement = (table=<-, measurement) => table |> filter(fn: (r) => r._measurement == measurement)
 
-// filterFeilds filters input data by field.
+// filterFields filters input data by field.
 // 
 // ## Parameters
 // - fields: Fields to filter by. Default is `[]`.

@@ -1,3 +1,9 @@
+// Package prometheus provide tools for working with
+// [Prometheus-formatted metrics](https://prometheus.io/docs/instrumenting/exposition_formats/).
+// 
+// introduced: 0.50.0
+// tags: prometheus
+// 
 package prometheus
 
 
@@ -20,6 +26,8 @@ import "experimental"
 //  prometheus.scrape(url: "http://localhost:8086/metrics")
 // ```
 //
+// tags: inputs,prometheus
+// 
 builtin scrape : (url: string) => [A] where A: Record
 
 // histogramQuantile calculates a quantile on a set of Prometheus histogram values.
@@ -59,6 +67,8 @@ builtin scrape : (url: string) => [A] where A: Record
 //     |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 1)
 // ```
 //
+// tags: transformations,aggregates,prometheus
+// 
 histogramQuantile = (tables=<-, quantile, metricVersion=2) => {
     _version2 = () => tables
         |> group(mode: "except", columns: ["le", "_value"])
