@@ -6,7 +6,6 @@ import (
 
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -31,16 +30,10 @@ func addDuration(name string) values.Value {
 		if !ok {
 			return nil, fmt.Errorf("%s requires 'to' parameter", name)
 		}
-		var time values.Time
-		switch t.Type().Nature() {
-		case semantic.Duration:
-			deps := execute.GetExecutionDependencies(ctx)
-			nowTime := *deps.Now
-			time = values.ConvertTime(nowTime).Add(t.Duration())
-		case semantic.Time:
-			time = t.Time()
-		default:
-			return nil, fmt.Errorf("%s 'to' parameter must be Timeable", name)
+		deps := execute.GetExecutionDependencies(ctx)
+		time, err := deps.ResolveTimeable(t)
+		if err != nil {
+			return nil, err
 		}
 		return values.NewTime(time.Add(d.Duration())), nil
 	}
@@ -58,16 +51,10 @@ func subDuration(name string) values.Value {
 		if !ok {
 			return nil, fmt.Errorf("%s requires 'from' parameter", name)
 		}
-		var time values.Time
-		switch t.Type().Nature() {
-		case semantic.Duration:
-			deps := execute.GetExecutionDependencies(ctx)
-			nowTime := *deps.Now
-			time = values.ConvertTime(nowTime).Add(t.Duration())
-		case semantic.Time:
-			time = t.Time()
-		default:
-			return nil, fmt.Errorf("%s 'to' parameter must be Timeable", name)
+		deps := execute.GetExecutionDependencies(ctx)
+		time, err := deps.ResolveTimeable(t)
+		if err != nil {
+			return nil, err
 		}
 		return values.NewTime(time.Add(d.Duration().Mul(-1))), nil
 	}

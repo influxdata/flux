@@ -58,8 +58,8 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 // subDuration subtracts a duration from a time value and returns the resulting time value.
 //
 // ## Parameters
-// - d: Duration to subtract.
 // - from: Time to subtract the duration from.
+// - d: Duration to subtract.
 //
 // ## Examples
 //
@@ -68,8 +68,8 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 // import "experimental"
 //
 // experimental.subDuration(
-//     d: 6h,
 //     from: 2019-09-16T12:00:00Z,
+//     d: 6h,
 // )
 //
 // // Returns 2019-09-16T06:00:00.000000000Z
@@ -87,8 +87,8 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 // option now = () => 2021-12-10T16:27:40Z
 //
 // experimental.subDuration(
-//     d: 2d,
 //     from: -1h,
+//     d: 2d,
 // )
 //
 // // Returns 2021-12-08T15:27:40Z
@@ -96,7 +96,7 @@ builtin addDuration : (d: duration, to: T) => time where T: Timeable
 //
 // tags: date/time
 //
-builtin subDuration : (d: duration, from: T) => time where T: Timeable
+builtin subDuration : (from: T, d: duration) => time where T: Timeable
 
 // group introduces an `extend` mode to the existing `group()` function.
 //
