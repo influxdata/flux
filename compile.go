@@ -94,6 +94,7 @@ type TableObject struct {
 
 // TableObject satisfies the values.TableObject interface.
 // This is a hacky workaround to avoid an import cycles.
+// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
 func (t *TableObject) TableObject() {}
 
 func (t *TableObject) Operation(ider IDer) *Operation {

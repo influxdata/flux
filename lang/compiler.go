@@ -579,7 +579,7 @@ func getOptionValues(pkg values.Object, optionName string) ([]string, error) {
 	}
 
 	rules := value.Array()
-	// FIXME: needs a test
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
 	if _, ok := rules.(values.TableObject); ok {
 		return nil, errors.New(codes.Invalid, "got a table stream; expected an array")
 	}

@@ -20,6 +20,7 @@ type Typer interface {
 // TableObject serves as sort of a "marker trait" to allow us to check if a
 // value is a flux.TableObject without having to import the flux package which
 // in many cases will cause a cyclical import.
+// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
 type TableObject interface {
 	TableObject()
 }
@@ -188,7 +189,6 @@ func Unwrap(v Value) interface{} {
 		return v.Regexp()
 	case semantic.Array:
 		arr := v.Array()
-		// FIXME: needs a test
 		if _, ok := arr.(TableObject); ok {
 			panic(errors.New(codes.Invalid, "cannot unwrap a table stream"))
 		}

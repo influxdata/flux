@@ -125,8 +125,11 @@ func (a *array) Equal(rhs Value) bool {
 		return false
 	}
 	r := rhs.Array()
-	// When RHS is a table stream, mark it false
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
 	if _, ok := r.(TableObject); ok {
+		// When RHS is a table stream instead of array, mark it false.
+		// This short-circuits the invalid `Len()` call below that would
+		// otherwise panic.
 		return false
 	}
 	if a.Len() != r.Len() {

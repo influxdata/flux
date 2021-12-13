@@ -42,8 +42,8 @@ func createFromOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		}
 		spec.Rows = rows.Array()
 	}
-	// FIXME: needs a test
-	if _, ok := spec.Rows.(*flux.TableObject); ok {
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+	if _, ok := spec.Rows.(values.TableObject); ok {
 		return nil, errors.Newf(codes.Invalid, "rows cannot be a table stream; expected an array")
 	}
 	if spec.Rows.Len() == 0 {
@@ -122,10 +122,6 @@ func buildTable(rows values.Array, mem *memory.Allocator) (flux.Table, error) {
 	} else if typ.Nature() != semantic.Object {
 		return nil, errors.New(codes.Internal, "rows should have been a list of records")
 	}
-	// FIXME: needs a test
-	if _, ok := rows.(*flux.TableObject); ok {
-		return nil, errors.Newf(codes.Invalid, "rows cannot be a table stream; expected an array")
-	}
 	l, err := typ.NumProperties()
 	if err != nil {
 		return nil, err
@@ -153,6 +149,10 @@ func buildTable(rows values.Array, mem *memory.Allocator) (flux.Table, error) {
 
 	key := execute.NewGroupKey(nil, nil)
 	builder := table.NewArrowBuilder(key, mem)
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+	if _, ok := rows.(values.TableObject); ok {
+		return nil, errors.Newf(codes.Invalid, "rows cannot be a table stream; expected an array")
+	}
 	for _, col := range cols {
 		i, err := builder.AddCol(col)
 		if err != nil {

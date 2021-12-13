@@ -342,7 +342,7 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 	points, polygonOk := arg.Get("points")
 	if polygonOk && arg.Len() == 1 {
 		array := points.Array()
-		// FIXME: needs a test
+		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
 		if _, ok := array.(values.TableObject); ok {
 			return nil, errors.New(codes.Invalid, "points cannot be a table stream; expected an array")
 		}

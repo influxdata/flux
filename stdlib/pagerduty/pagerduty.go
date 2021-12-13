@@ -54,8 +54,8 @@ func createDedupKeyOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 			},
 		)
 	}
-	// FIXME: needs a test
-	if _, ok := exclude.(*flux.TableObject); ok {
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+	if _, ok := exclude.(values.TableObject); ok {
 		return nil, errors.New(codes.Invalid, "exclude cannot be a table stream; expected an array")
 	}
 	spec := &DedupKeyOpSpec{

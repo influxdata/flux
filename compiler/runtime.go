@@ -592,7 +592,7 @@ func (e *arrayIndexEvaluator) Eval(ctx context.Context, scope Scope) (values.Val
 	if typ := i.Type().Nature(); typ != semantic.Int {
 		return nil, errors.Newf(codes.Invalid, "cannot index into an array with value of type %s; expected an int", typ)
 	}
-	// FIXME: needs a test
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
 	if _, ok := a.(values.TableObject); ok {
 		return nil, errors.Newf(codes.Invalid, "cannot index into a table stream; expected an array")
 	}
