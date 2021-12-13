@@ -47,7 +47,8 @@ fn evaluate_doc_examples(doc: &mut Doc, executor: &mut impl Executor) -> Result<
         }
         Doc::Function(f) => {
             for example in f.examples.iter_mut() {
-                evaluate_example(example, executor)?;
+                evaluate_example(example, executor)
+                    .with_context(|| format!("executing `{}`", example.title))?;
             }
         }
     }
@@ -515,7 +516,7 @@ array.from(rows: [{_value: "a"}, {_value: "b"}])
         let (display, exec) = preprocess(
             r#"
 # import "array"
-# 
+#
 #
 < array.from(rows:[{_value:"a"}])
 >   |> map(fn: (r) => ({r with _value: "b"}))
