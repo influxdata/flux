@@ -1024,9 +1024,9 @@ return
     );
     assert_format(
         "test1 = 1
-        
-        
-        
+
+
+
 test2 = 2",
         "test1 = 1
 
@@ -1742,5 +1742,15 @@ fn dont_alter_string_literal() {
     text: "*Earthquake Alert*
 M *${string(v: r.mag)}*",
 )"#;
+    assert_unchanged(script);
+}
+
+#[test]
+fn builtin_are_unchanged() {
+    let script = r#"builtin covariance : (<-tables: [A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => [B]
+    where
+    A: Record,
+    B: Record
+builtin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record"#;
     assert_unchanged(script);
 }
