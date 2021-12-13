@@ -9,6 +9,7 @@ import (
 
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
@@ -669,4 +670,88 @@ func (t *transformationTransportAdapter) ProcessMessage(m Message) error {
 
 func (t *transformationTransportAdapter) OperationType() string {
 	return OperationType(t.t)
+}
+
+var _ Transport = (*transportTransformationAdapter)(nil)
+
+type transportTransformationAdapter struct {
+	Transport
+}
+
+// NewTransformationFromTransport will adapt a Transport to satisfy both
+// the Transport and Transformation interfaces.
+func NewTransformationFromTransport(t Transport) Transformation {
+	return &transportTransformationAdapter{Transport: t}
+}
+
+func (t *transportTransformationAdapter) ProcessMessage(m Message) error {
+	switch m := m.(type) {
+	case ProcessMsg:
+		defer m.Ack()
+		return t.Process(m.SrcDatasetID(), m.Table())
+	default:
+		return t.Transport.ProcessMessage(m)
+	}
+}
+
+// Process is implemented to remain compatible with legacy upstreams.
+// It converts the incoming stream into a set of appropriate messages.
+func (t *transportTransformationAdapter) Process(id DatasetID, tbl flux.Table) error {
+	if tbl.Empty() {
+		// Since the table is empty, it won't produce any column readers.
+		// Create an empty buffer which can be processed instead
+		// to force the creation of any potential state.
+		buffer := arrow.EmptyBuffer(tbl.Key(), tbl.Cols())
+		chunk := table.ChunkFromBuffer(buffer)
+		if err := t.processChunk(id, chunk); err != nil {
+			return err
+		}
+	} else {
+		if err := tbl.Do(func(cr flux.ColReader) error {
+			chunk := table.ChunkFromReader(cr)
+			chunk.Retain()
+			return t.processChunk(id, chunk)
+		}); err != nil {
+			return err
+		}
+	}
+	return t.flushKey(id, tbl.Key())
+}
+
+func (t *transportTransformationAdapter) processChunk(id DatasetID, chunk table.Chunk) error {
+	m := processChunkMsg{
+		srcMessage: srcMessage(id),
+		chunk:      chunk,
+	}
+	return t.Transport.ProcessMessage(&m)
+}
+
+func (t *transportTransformationAdapter) flushKey(id DatasetID, key flux.GroupKey) error {
+	m := flushKeyMsg{
+		srcMessage: srcMessage(id),
+		key:        key,
+	}
+	return t.Transport.ProcessMessage(&m)
+}
+
+// Finish is implemented to remain compatible with legacy upstreams.
+func (t *transportTransformationAdapter) Finish(id DatasetID, err error) {
+	m := finishMsg{
+		srcMessage: srcMessage(id),
+		err:        err,
+	}
+	_ = t.Transport.ProcessMessage(&m)
+}
+
+func (t *transportTransformationAdapter) OperationType() string {
+	return OperationType(t.Transport)
+}
+func (t *transportTransformationAdapter) RetractTable(_ DatasetID, _ flux.GroupKey) error {
+	return nil
+}
+func (t *transportTransformationAdapter) UpdateWatermark(_ DatasetID, _ Time) error {
+	return nil
+}
+func (t *transportTransformationAdapter) UpdateProcessingTime(_ DatasetID, _ Time) error {
+	return nil
 }

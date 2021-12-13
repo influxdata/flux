@@ -58,7 +58,7 @@ func NewAggregateTransformation(id DatasetID, t AggregateTransformation, mem mem
 		t: t,
 		d: NewTransportDataset(id, mem),
 	}
-	return tr, tr.d, nil
+	return NewTransformationFromTransport(tr), tr.d, nil
 }
 
 // ProcessMessage will process the incoming message.
@@ -74,32 +74,9 @@ func (t *aggregateTransformation) ProcessMessage(m Message) error {
 	case FlushKeyMsg:
 		return t.flushKey(m.Key())
 	case ProcessMsg:
-		return t.Process(m.SrcDatasetID(), m.Table())
+		panic("unreachable")
 	}
 	return nil
-}
-
-// Process is implemented to remain compatible with legacy upstreams.
-// It converts the incoming stream into a set of appropriate messages.
-func (t *aggregateTransformation) Process(id DatasetID, tbl flux.Table) error {
-	if tbl.Empty() {
-		// Since the table is empty, it won't produce any column readers.
-		// Create an empty buffer which can be processed instead
-		// to force the creation of state.
-		buffer := arrow.EmptyBuffer(tbl.Key(), tbl.Cols())
-		chunk := table.ChunkFromBuffer(buffer)
-		if err := t.processChunk(chunk); err != nil {
-			return err
-		}
-	} else {
-		if err := tbl.Do(func(cr flux.ColReader) error {
-			chunk := table.ChunkFromReader(cr)
-			return t.processChunk(chunk)
-		}); err != nil {
-			return err
-		}
-	}
-	return t.flushKey(tbl.Key())
 }
 
 func (t *aggregateTransformation) processChunk(chunk table.Chunk) error {
@@ -149,15 +126,6 @@ func (t *aggregateTransformation) Finish(id DatasetID, err error) {
 
 func (t *aggregateTransformation) OperationType() string {
 	return OperationType(t.t)
-}
-func (t *aggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
-	return nil
-}
-func (t *aggregateTransformation) UpdateWatermark(id DatasetID, mark Time) error {
-	return nil
-}
-func (t *aggregateTransformation) UpdateProcessingTime(id DatasetID, ts Time) error {
-	return nil
 }
 
 type SimpleAggregateConfig struct {
@@ -224,7 +192,7 @@ type simpleAggregateTransformation struct {
 }
 
 func (t *simpleAggregateTransformation) RetractTable(id DatasetID, key flux.GroupKey) error {
-	//TODO(nathanielc): Store intermediate state for retractions
+	// TODO(nathanielc): Store intermediate state for retractions
 	return t.d.RetractTable(key)
 }
 
