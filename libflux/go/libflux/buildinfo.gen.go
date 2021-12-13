@@ -161,7 +161,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/geo/filterRowsNotStrict_test.flux":                                       "13468503f3d515fbfe135a6bfb0f80a7443494b0b90c76ea14ccaf6de1b2e926",
 	"stdlib/experimental/geo/filterRowsPivoted_test.flux":                                         "f86c3597ae733a57bdf55913a94f2247ff6a1ee325a9960e446020ca1ae0812c",
 	"stdlib/experimental/geo/filterRowsStrict_test.flux":                                          "775d0e03afc5b2e0547e455192b3e4150a4bde3f5e89d16f49e2514725137635",
-	"stdlib/experimental/geo/geo.flux":                                                            "6e0e8c71a2017501e8652c75a8c02dd945b3ef9e3da96ea27322d6195528592b",
+	"stdlib/experimental/geo/geo.flux":                                                            "5286ffc58614564d1177389508edd6888365a52345f49c9867faa70bec9b324b",
 	"stdlib/experimental/geo/gridFilterLevel_test.flux":                                           "7e31336d04a67f67b02ce1d04e7a31eb46b30c3ca9e020fdf79ff712707e53d4",
 	"stdlib/experimental/geo/gridFilter_test.flux":                                                "0725a69323300c4ae2207bac61cd3665652d3b9c307db2f5a0c8176ca934ce3b",
 	"stdlib/experimental/geo/groupByArea_test.flux":                                               "50ad1aeaaf39016a58acd7ea4bddeb7129619cea21b8f728809e1a3ddf9e2caf",
