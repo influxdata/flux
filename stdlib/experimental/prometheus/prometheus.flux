@@ -1,4 +1,4 @@
-// Package prometheus provide tools for working with
+// Package prometheus provides tools for working with
 // [Prometheus-formatted metrics](https://prometheus.io/docs/instrumenting/exposition_formats/).
 // 
 // introduced: 0.50.0
