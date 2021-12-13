@@ -33,3 +33,9 @@
   key: queryConcurrencyLimit
   default: 0
   contact: Jonathan Sternberg
+
+- name: Optimize Shift Transformation
+  description: Enable optimized shift transformation
+  key: optimizeShiftTransformation
+  default: false
+  contact: Jonathan Sternberg

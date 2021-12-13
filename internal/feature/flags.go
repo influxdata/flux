@@ -65,6 +65,18 @@ func QueryConcurrencyLimit() IntFlag {
 	return queryConcurrencyLimit
 }
 
+var optimizeShiftTransformation = feature.MakeBoolFlag(
+	"Optimize Shift Transformation",
+	"optimizeShiftTransformation",
+	"Jonathan Sternberg",
+	false,
+)
+
+// OptimizeShiftTransformation - Enable optimized shift transformation
+func OptimizeShiftTransformation() BoolFlag {
+	return optimizeShiftTransformation
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -75,6 +87,7 @@ var all = []Flag{
 	aggregateTransformationTransport,
 	groupTransformationGroup,
 	queryConcurrencyLimit,
+	optimizeShiftTransformation,
 }
 
 var byKey = map[string]Flag{
@@ -82,6 +95,7 @@ var byKey = map[string]Flag{
 	"aggregateTransformationTransport": aggregateTransformationTransport,
 	"groupTransformationGroup":         groupTransformationGroup,
 	"queryConcurrencyLimit":            queryConcurrencyLimit,
+	"optimizeShiftTransformation":      optimizeShiftTransformation,
 }
 
 // Flags returns all feature flags.
