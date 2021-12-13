@@ -257,9 +257,9 @@ fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
     if let Some(err) = formatter.err {
         return Err(err);
     }
-    Ok(doc
-        .pretty(120)
-        .to_string()
+    let formatted = doc.pretty(120).to_string();
+    // Remove indentation from whitespace only lines
+    Ok(formatted
         .split("\n")
         .map(|s| s.trim_end())
         .collect::<Vec<_>>()
