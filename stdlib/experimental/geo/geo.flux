@@ -732,7 +732,7 @@ strictFilter = (tables=<-, region) => tables
 // ## Examples
 // 
 // ### Strictly filter geotemporal data by region
-// ```
+// ```no_run
 // # import "array"
 // import "experimental/geo"
 // # 
@@ -754,7 +754,7 @@ strictFilter = (tables=<-, region) => tables
 // ```
 // 
 // ### Approximately filter geotemporal data by region
-// ```
+// ```no_run
 // # import "array"
 // import "experimental/geo"
 // # 
