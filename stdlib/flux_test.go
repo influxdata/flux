@@ -76,9 +76,6 @@ func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 		test(t, func(t *testing.T) {
 			for _, file := range pkg.Files {
 				name := strings.TrimSuffix(file.Name, "_test.flux")
-				if !strings.Contains(name, "elapsed_median") {
-					continue
-				}
 				t.Run(name, func(t *testing.T) {
 					if reason, ok := skip[pkg.Path][name]; ok {
 						t.Skip(reason)
