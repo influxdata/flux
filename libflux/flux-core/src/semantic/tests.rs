@@ -3731,12 +3731,16 @@ fn symbol_resolution() {
 
             types = { isType: (v, type) => 1 }
             y = types.isType(v: 1, type: "int")
+
+            t = types
+            z = t.isType(v: 1, type: "int")
         "#;
     let (_, pkg) = infer_types(src, Default::default(), imp, None, Default::default())
         .unwrap_or_else(|err| panic!("{}", err));
 
     let mut member_expr_1 = None;
     let mut member_expr_2 = None;
+    let mut member_expr_3 = None;
     let mut ident_expr = None;
     semantic::walk::walk(
         &mut |node| {
@@ -3746,6 +3750,9 @@ fn symbol_resolution() {
                 }
                 if e.loc.start.line == 9 {
                     member_expr_2 = Some(e);
+                }
+                if e.loc.start.line == 12 {
+                    member_expr_3 = Some(e);
                 }
             }
             if let semantic::walk::Node::IdentifierExpr(e) = node {
@@ -3766,6 +3773,12 @@ fn symbol_resolution() {
     );
     assert_eq!(
         member_expr_2.expect("member expression").property,
+        Symbol::from("isType")
+    );
+
+    // Not currently detected as from the `types` package but could be with better analysis
+    assert_eq!(
+        member_expr_3.expect("member expression").property,
         Symbol::from("isType")
     );
 }
