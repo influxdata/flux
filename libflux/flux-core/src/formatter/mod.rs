@@ -273,8 +273,11 @@ struct Formatter<'doc> {
 
 #[allow(dead_code, unused_variables)]
 impl<'doc> Formatter<'doc> {
-    fn multiline(&self, base: &ast::BaseNode) -> Doc<'doc> {
-        let multiline = base.is_multiline();
+    fn base_multiline(&self, base: &ast::BaseNode) -> Doc<'doc> {
+        self.multiline(base.is_multiline())
+    }
+
+    fn multiline(&self, multiline: bool) -> Doc<'doc> {
         if multiline {
             self.arena.hardline()
         } else {
@@ -282,8 +285,11 @@ impl<'doc> Formatter<'doc> {
         }
     }
 
-    fn multiline_(&self, base: &ast::BaseNode) -> Doc<'doc> {
-        let multiline = base.is_multiline();
+    fn base_multiline_(&self, base: &ast::BaseNode) -> Doc<'doc> {
+        self.multiline_(base.is_multiline())
+    }
+
+    fn multiline_(&self, multiline: bool) -> Doc<'doc> {
         if multiline {
             self.arena.hardline()
         } else {
@@ -361,12 +367,7 @@ impl<'doc> Formatter<'doc> {
             arena,
             self.format_monotype(&n.monotype),
             if !n.constraints.is_empty() {
-                let multiline = n.constraints.len() > MULTILINE;
-                let line = if multiline {
-                    self.arena.hardline()
-                } else {
-                    self.arena.line()
-                };
+                let line = self.multiline(n.constraints.len() > MULTILINE);
 
                 docs![
                     arena,
@@ -419,16 +420,8 @@ impl<'doc> Formatter<'doc> {
             }
             ast::MonoType::Record(n) => {
                 let multiline = n.properties.len() > MULTILINE;
-                let line = if multiline {
-                    self.arena.hardline()
-                } else {
-                    self.arena.line()
-                };
-                let line_ = if multiline {
-                    self.arena.hardline()
-                } else {
-                    self.arena.line_()
-                };
+                let line = self.multiline(multiline);
+                let line_ = self.multiline_(multiline);
 
                 docs![
                     arena,
@@ -469,16 +462,8 @@ impl<'doc> Formatter<'doc> {
             }
             ast::MonoType::Function(n) => {
                 let multiline = n.parameters.len() > MULTILINE;
-                let line = if multiline {
-                    self.arena.hardline()
-                } else {
-                    self.arena.line()
-                };
-                let line_ = if multiline {
-                    self.arena.hardline()
-                } else {
-                    self.arena.line_()
-                };
+                let line = self.multiline(multiline);
+                let line_ = self.multiline_(multiline);
 
                 docs![
                     arena,
@@ -748,16 +733,8 @@ impl<'doc> Formatter<'doc> {
     ) -> (Doc<'doc>, Doc<'doc>, Doc<'doc>) {
         let arena = self.arena;
         let multiline = n.properties.len() > MULTILINE;
-        let line = if multiline {
-            arena.hardline()
-        } else {
-            arena.line()
-        };
-        let line_ = if multiline {
-            arena.hardline()
-        } else {
-            arena.line_()
-        };
+        let line = self.multiline(multiline);
+        let line_ = self.multiline_(multiline);
 
         let first = docs![
             arena,
@@ -869,16 +846,8 @@ impl<'doc> Formatter<'doc> {
         let arena = self.arena;
 
         let multiline = n.params.len() > MULTILINE;
-        let line = if multiline {
-            arena.hardline()
-        } else {
-            arena.line()
-        };
-        let line_ = if multiline {
-            arena.hardline()
-        } else {
-            arena.line_()
-        };
+        let line = self.multiline(multiline);
+        let line_ = self.multiline_(multiline);
 
         let prefix1 = self.format_comments(&n.lparen);
 
@@ -1212,7 +1181,7 @@ impl<'doc> Formatter<'doc> {
             }
             ast::Expression::Identifier(expr) => self.format_identifier(expr),
             ast::Expression::Dict(n) => {
-                let line = self.multiline(&n.base);
+                let line = self.base_multiline(&n.base);
                 docs![
                     arena,
                     self.format_comments(&n.lbrack),
@@ -1276,7 +1245,7 @@ impl<'doc> Formatter<'doc> {
             ast::Expression::PipeExpr(n) => self.format_pipe_expression(n),
             ast::Expression::Call(expr) => self.format_call_expression(expr),
             ast::Expression::Conditional(n) => {
-                let line = self.multiline(&n.base);
+                let line = self.base_multiline(&n.base);
                 let mut alternate = &n.alternate;
                 let mut doc = docs![
                     arena,
@@ -1456,12 +1425,7 @@ impl<'doc> Formatter<'doc> {
 
         let mut arguments = Vec::new();
         let mut operators = Vec::new();
-        let multiline = pipe.base.is_multiline();
-        let line = if multiline {
-            arena.hardline()
-        } else {
-            arena.line()
-        };
+        let line = self.base_multiline(&pipe.base);
         loop {
             arguments.push(
                 self.format_right_child_with_parens(
@@ -1500,8 +1464,8 @@ impl<'doc> Formatter<'doc> {
 
     fn format_call_expression(&mut self, n: &'doc ast::CallExpr) -> Doc<'doc> {
         let arena = self.arena;
-        let line = self.multiline(&n.base);
-        let line_ = self.multiline_(&n.base);
+        let line = self.base_multiline(&n.base);
+        let line_ = self.base_multiline_(&n.base);
         docs![
             arena,
             self.format_child_with_parens(Node::CallExpr(n), ChildNode::Expr(&n.callee)),
