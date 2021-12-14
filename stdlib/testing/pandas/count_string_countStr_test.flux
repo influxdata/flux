@@ -7,7 +7,8 @@ import "regexp"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -19,7 +20,8 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,long
 #group,false,false,true,true,false,false,true,true,true,true,true,true,false
 #default,_result,,,,,,,,,,,,
@@ -31,8 +33,10 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/,1
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/,0
 "
-t_string_count = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> map(fn: (r) => ({r with count: strings.countStr(v: r._value, substr: "n")}))
+t_string_count = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> map(fn: (r) => ({r with count: strings.countStr(v: r._value, substr: "n")}))
 
-test _string_count = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_count})
+test _string_count = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_count})

@@ -1,12 +1,15 @@
 use std::str;
 
 // This gives us a colorful diff.
-#[cfg(test)]
 use pretty_assertions::assert_eq;
+
+use expect_test::expect;
 
 use super::*;
 
+#[track_caller]
 fn assert_unchanged(script: &str) {
+    let _ = env_logger::try_init();
     let output = format(script).unwrap();
     assert_eq!(
         script, output,
@@ -15,7 +18,9 @@ fn assert_unchanged(script: &str) {
     );
 }
 
+#[track_caller]
 fn assert_format(script: &str, expected: &str) {
+    let _ = env_logger::try_init();
     let output = format(script).unwrap();
     assert_eq!(
         expected, output,
@@ -55,16 +60,18 @@ fn funcs() {
 
     // multiline based on pipe depth
     assert_unchanged(
-        r#"(tables) => tables
-    |> a()
-    |> b()"#,
+        r#"(tables) =>
+    tables
+        |> a()
+        |> b()"#,
     );
     // single line
     assert_unchanged(r#"(tables) => tables |> a()"#);
     // multiline based on initial conditions
     assert_unchanged(
-        r#"(tables) => tables
-    |> a()"#,
+        r#"(tables) =>
+    tables
+        |> a()"#,
     );
 }
 
@@ -148,8 +155,8 @@ a[i]"#,
 }
 
 #[test]
-fn dict() {
-    assert_unchanged(r#"["a": 0, "b": 1]"#);
+fn dict_object() {
+    // TODO assert_unchanged(r#"["a": 0, "b": 1]"#);
     assert_unchanged(
         r#"[
     "a": 0,
@@ -246,7 +253,7 @@ builtin baz : int"#,
 }
 
 #[test]
-fn str_lit() {
+fn str_lit1() {
     assert_unchanged(r#""foo""#);
     assert_unchanged(
         r#""this is
@@ -254,6 +261,10 @@ a string
 with multiple lines""#,
     ); // multi lines
        // StringExpression format textPart with escape sequences
+}
+
+#[test]
+fn str_lit2() {
     assert_format(
         r#"qux = "{
     \"@foo\": \"bar\",
@@ -328,16 +339,18 @@ fn medium() {
 #[test]
 fn complex() {
     assert_unchanged(
-        r#"left = from(bucket: "test")
-    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> filter(fn: (r) => r.user == "user1")
-    |> group(by: ["user"])
-right = from(bucket: "test")
-    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> filter(fn: (r) => r.user == "user2")
-    |> group(by: ["_measurement"])
+        r#"left =
+    from(bucket: "test")
+        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> filter(fn: (r) => r.user == "user1")
+        |> group(by: ["user"])
+right =
+    from(bucket: "test")
+        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> filter(fn: (r) => r.user == "user2")
+        |> group(by: ["_measurement"])
 
 join(tables: {left: left, right: right}, on: ["_time", "_measurement"])"#,
     );
@@ -367,10 +380,12 @@ from(bucket: "test")
 fn functions_complete() {
     assert_unchanged(
         r#"foo = () => from(bucket: "testdb")
-bar = (x=<-) => x
-    |> filter(fn: (r) => r.name =~ /.*0/)
-baz = (y=<-) => y
-    |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
+bar = (x=<-) =>
+    x
+        |> filter(fn: (r) => r.name =~ /.*0/)
+baz = (y=<-) =>
+    y
+        |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
 
 foo()
     |> bar()
@@ -381,9 +396,11 @@ foo()
 #[test]
 fn multi_indent() {
     assert_unchanged(
-        r#"_sortLimit = (n, desc, columns=["_value"], tables=<-) => tables
-    |> sort(columns: columns, desc: desc)
-    |> limit(n: n)
+        r#"_sortLimit = (n, desc, columns=["_value"], tables=<-) =>
+    tables
+        |> sort(columns: columns, desc: desc)
+        |> limit(n: n)
+
 _highestOrLowest = (
     n,
     _sortLimit,
@@ -391,25 +408,29 @@ _highestOrLowest = (
     columns=["_value"],
     by,
     tables=<-,
-) => tables
-    |> group(by: by)
-    |> reducer()
-    |> group(none: true)
-    |> _sortLimit(n: n, columns: columns)
-highestAverage = (n, columns=["_value"], by, tables=<-) => tables
-    |> _highestOrLowest(
-        n: n,
-        columns: columns,
-        by: by,
-        reducer: (tables=<-) => tables
-            |> mean(columns: [columns[0]]),
-        _sortLimit: top,
-    )"#,
+) =>
+    tables
+        |> group(by: by)
+        |> reducer()
+        |> group(none: true)
+        |> _sortLimit(n: n, columns: columns)
+
+highestAverage = (n, columns=["_value"], by, tables=<-) =>
+    tables
+        |> _highestOrLowest(
+            n: n,
+            columns: columns,
+            by: by,
+            reducer: (tables=<-) =>
+                tables
+                    |> mean(columns: [columns[0]]),
+            _sortLimit: top,
+        )"#,
     )
 }
 
 #[test]
-fn comments() {
+fn comments1() {
     assert_unchanged("// attach to id\nid");
     assert_unchanged("// attach to int\n1");
     assert_unchanged("// attach to float\n1.1");
@@ -419,9 +440,13 @@ fn comments() {
     assert_unchanged("// attach to duration\n2m");
     assert_unchanged("// attach to bool\ntrue");
     assert_unchanged("// attach to open paren\n(1 + 1)");
-    assert_unchanged("(1 + 1\n    // attach to close paren\n    )");
-    assert_unchanged("1 * \n    // attach to open paren\n    (1 + 1)");
-    assert_unchanged("1 * (1 + 1\n    // attach to close paren\n    )");
+    assert_unchanged(
+        r#"(1 + 1
+    // attach to close paren
+    )"#,
+    );
+    assert_unchanged("1 * // attach to open paren\n    (1 + 1)");
+    assert_unchanged("1 * (1 + 1\n        // attach to close paren\n        )");
     assert_unchanged(
         "from
     //comment
@@ -436,15 +461,14 @@ fn comments() {
     );
     assert_unchanged(
         "from(
-    bucket: 
+    bucket:
         //comment
         bucket,
 )",
     );
     assert_unchanged(
-        "from(bucket: bucket
-    //comment
-    )",
+        "from(bucket: bucket//comment
+)",
     );
     assert_unchanged(
         "from(
@@ -455,8 +479,8 @@ fn comments() {
     assert_unchanged(
         "from(
     bucket
-    //comment
-    ,
+        //comment
+        ,
     _option,
 )",
     );
@@ -469,74 +493,123 @@ fn comments() {
     );
 
     /* Expressions. */
-    assert_unchanged("1 \n    //comment\n    <= 1");
-    assert_unchanged("1 \n    //comment\n    + 1");
-    assert_unchanged("1 \n    //comment\n    * 1");
+    assert_unchanged("1\n    //comment\n    <=\n    1");
+    assert_unchanged("1\n    //comment\n    +\n    1");
+    assert_unchanged("1\n    //comment\n    *\n    1");
     assert_unchanged("from()\n    //comment\n    |> to()");
     assert_unchanged("//comment\n+1");
-    assert_format("1 * //comment\n-1", "1 * (\n    //comment\n    -1)");
-    assert_unchanged("i = \n    //comment\n    not true");
+    assert_format("1 * //comment\n-1", "1 * (//comment\n    -1)");
+}
+
+#[test]
+fn comments2() {
+    assert_unchanged("i =\n    //comment\n    not true");
     assert_unchanged("//comment\nexists 1");
-    assert_unchanged("a \n    //comment\n    =~ /foo/");
-    assert_unchanged("a \n    //comment\n    !~ /foo/");
-    assert_unchanged("a \n    //comment\n    and b");
-    assert_unchanged("a \n    //comment\n    or b");
+    assert_unchanged("a\n    //comment\n    =~\n    /foo/");
+    assert_unchanged("a\n    //comment\n    !~\n    /foo/");
+    assert_unchanged("a\n    //comment\n    and\n    b");
+    assert_unchanged("a\n    //comment\n    or\n    b");
 
     assert_unchanged("a\n    //comment\n     = 1");
     assert_unchanged("//comment\noption a = 1");
     assert_unchanged("option a\n    //comment\n     = 1");
     assert_unchanged("option a\n    //comment\n    .b = 1");
-    assert_unchanged("option a.\n    //comment\n    b = 1");
+    assert_unchanged("option a.//comment\nb = 1");
     assert_unchanged("option a.b\n    //comment\n     = 1");
 
-    assert_unchanged("f = \n    //comment\n    (a) => a()");
-    assert_unchanged("f = (\n    //comment\n    a,\n    b,\n) => a()");
-    assert_unchanged("f = (\n    a\n    //comment\n    ,\n    b,\n) => a()");
-    assert_unchanged("f = (\n    a\n    //comment\n    =1,\n    b=2,\n) => a()");
+    assert_unchanged("f =\n    //comment\n    (a) => a()");
+    assert_unchanged("f = (\n    //comment\n    a,\n    b,\n) =>\n    a()");
+    assert_unchanged(
+        r"f = (
+    a//comment
+    ,
+    b,
+) =>
+    a()",
+    );
+    assert_unchanged(
+        r"f = (
+    a//comment
+    =1,
+    b=2,
+) =>
+    a()",
+    );
     assert_format(
         "f = (a=1, b=2//comment\n,) =>\n    (a())",
-        "f = (\n    a=1,\n    b=2\n    //comment\n    ,\n) => a()",
+        r"f = (
+    a=1,
+    b=2//comment
+    ,
+) =>
+    a()",
     );
-    assert_unchanged("f = (a=1, b=2\n    //comment\n    ) => a()");
+    assert_unchanged(
+        "f = (
+    a=1,
+    b=2//comment
+    ,
+) =>
+    a()",
+    );
     assert_format(
         "f = (a=1, b=2,//comment\n) =>\n    (a())",
-        "f = (a=1, b=2\n    //comment\n    ) => a()",
+        r"f = (
+    a=1,
+    b=2,
+//comment
+) =>
+    a()",
     );
-    assert_unchanged("f = (a=1, b=2) \n    //comment\n    => a()");
+    assert_unchanged(
+        r"f = (
+    a=1,
+    b=2,
+)
+    //comment
+    =>
+    a()",
+    );
     assert_format(
         "f = (x=1, y=2) =>\n    //comment\n(a())",
-        "f = (x=1, y=2) => \n    //comment\n    (a())",
+        "f = (x=1, y=2) =>\n    //comment\n    (a())",
     );
-    assert_unchanged("f = (a=1, b=2) => \n    //comment\n    a()");
+    assert_unchanged("f = (a=1, b=2) =>\n    //comment\n    a()");
 
     assert_unchanged("//comment\ntest a = 1");
-    assert_unchanged("test \n    //comment\n    a = 1");
+    assert_unchanged("test //comment\na = 1");
     assert_unchanged("test a\n    //comment\n     = 1");
-    assert_unchanged("test a = \n    //comment\n    1");
+    assert_unchanged("test a =\n    //comment\n    1");
 
     assert_unchanged("//comment\nreturn x");
-    assert_unchanged("return \n    //comment\n    x");
+    assert_unchanged("return\n    //comment\n    x");
 
     assert_unchanged("//comment\nif 1 then 2 else 3");
-    assert_unchanged("if \n    //comment\n    1 then\n    2\nelse\n    3");
-    assert_unchanged("if 1\n    //comment\n     then\n    2\nelse\n    3");
+    assert_unchanged("if //comment\n    1\nthen\n    2\nelse\n    3");
+    assert_unchanged("if 1//comment\nthen\n    2\nelse\n    3");
     assert_unchanged("if 1 then\n    //comment\n    2\nelse\n    3");
     assert_unchanged("if 1 then\n    2\n//comment\nelse\n    3");
     assert_unchanged("if 1 then\n    2\nelse\n    //comment\n    3");
 
     assert_unchanged("//comment\nfoo[\"bar\"]");
-    assert_unchanged("foo\n    //comment\n    [\"bar\"]");
-    assert_unchanged("foo[\n    //comment\n    \"bar\"]");
+    assert_unchanged("foo//comment\n[\"bar\"]");
+    assert_unchanged("foo[//comment\n\"bar\"]");
     assert_unchanged("foo[\"bar\"\n    //comment\n    ]");
 
-    assert_unchanged("a = \n    //comment\n    [1, 2, 3]");
+    assert_unchanged("a =\n    //comment\n    [1, 2, 3]");
     assert_unchanged("a = [\n    //comment\n    1,\n    2,\n    3,\n]");
-    assert_unchanged("a = [\n    1\n    //comment\n    ,\n    2,\n    3,\n]");
+    assert_unchanged("a = [\n    1//comment\n    ,\n    2,\n    3,\n]");
     assert_unchanged("a = [\n    1,\n    //comment\n    2,\n    3,\n]");
-    assert_unchanged("a = [1, 2, 3\n    //comment\n    ]");
-    assert_unchanged("a = b\n    //comment\n    [1]");
-    assert_unchanged("a = b[\n    //comment\n    1]");
-    assert_unchanged("a = b[1\n    //comment\n    ]");
+    assert_unchanged(
+        r"a = [
+    1,
+    2,
+    3,//comment
+]",
+    );
+    assert_unchanged("a =\n    b//comment\n    [1]");
+    assert_unchanged("a = b[//comment\n    1]");
+    assert_unchanged("a = b[1//comment\n]");
 
     assert_unchanged(
         "//comment
@@ -559,7 +632,7 @@ fn comments() {
     );
     assert_unchanged(
         "{
-    _time: 
+    _time:
         //comment
         r._time,
     io_time: r._value,
@@ -567,24 +640,25 @@ fn comments() {
     );
     assert_unchanged(
         "{
-    _time: r
-        //comment
-        ._time,
+    _time:
+        r
+            //comment
+            ._time,
     io_time: r._value,
 }",
     );
     assert_unchanged(
         "{
-    _time: r.
-        //comment
+    _time:
+        r.//comment
         _time,
     io_time: r._value,
 }",
     );
     assert_unchanged(
         "{
-    _time: r
-        //comment
+    _time:
+        r//comment
         [\"_time\"],
     io_time: r._value,
 }",
@@ -592,8 +666,8 @@ fn comments() {
     assert_unchanged(
         "{
     _time: r._time
-    //comment
-    ,
+        //comment
+        ,
     io_time: r._value,
 }",
     );
@@ -615,7 +689,7 @@ fn comments() {
     assert_unchanged(
         "{
     _time: r._time,
-    io_time: 
+    io_time:
         //comment
         r._value,
 }",
@@ -623,37 +697,61 @@ fn comments() {
     assert_unchanged(
         "{
     _time: r._time,
-    io_time: r
-        //comment
-        ._value,
+    io_time:
+        r
+            //comment
+            ._value,
 }",
     );
     assert_unchanged(
         "{
     _time: r._time,
-    io_time: r.
-        //comment
+    io_time:
+        r.//comment
         _value,
 }",
     );
 
     assert_unchanged("//comment\nimport \"foo\"");
-    assert_unchanged("import \n    //comment\n    \"foo\"");
-    assert_unchanged("import \n    //comment\n    foo \"foo\"");
+    assert_unchanged("import //comment\n\"foo\"");
+    assert_unchanged("import //comment\nfoo \"foo\"");
 
     assert_unchanged("//comment\npackage foo\n");
-    assert_unchanged("package \n    //comment\n    foo\n");
+    assert_unchanged("package //comment\nfoo\n");
 
-    assert_unchanged("{\n    //comment\n    foo with a: 1, b: 2}");
-    assert_unchanged("{foo\n    //comment\n     with a: 1, b: 2}");
-    assert_unchanged("{foo with\n    //comment\n    a: 1,\n    b: 2,\n}");
+    assert_unchanged(
+        r"{//comment\n
+    foo with
+    a: 1,
+    b: 2,
+}",
+    );
+    assert_unchanged(
+        r"{foo//comment
+    with
+    a: 1,
+    b: 2,
+}",
+    );
+    assert_unchanged("{foo with //comment\n    a: 1,\n    b: 2,\n}");
 
-    assert_unchanged("fn = (tables=<-) => \n    //comment\n    tables");
-    assert_unchanged("fn = (tables=<-) => \n    //comment\n    (tables)");
+    assert_unchanged("fn = (tables=<-) =>\n    //comment\n    tables");
+    assert_unchanged("fn = (tables=<-) =>\n    //comment\n    (tables)");
 
+    assert_unchanged(
+        r"fn = (a) =>
+    //comment
+    {
+        return a
+    }",
+    );
     // Comments around braces needs some work.
-    assert_unchanged("fn = (a) => \n    //comment\n    {\n    return a\n}");
-    assert_unchanged("fn = (a) => {\n    return a\n// ending\n}");
+    assert_unchanged(
+        r"fn = (a) => {
+    return a// ending
+
+}",
+    );
 }
 
 #[test]
@@ -668,9 +766,9 @@ fn builtin() {
 x = 1",
     );
     assert_unchanged("// comment\nbuiltin foo : int");
-    assert_unchanged("builtin \n    // comment\n    foo : int");
+    assert_unchanged("builtin\n    // comment\n    foo : int");
     assert_unchanged("builtin foo\n    // comment\n    : int");
-    assert_unchanged("builtin foo : \n    // comment\n    int");
+    // assert_unchanged("builtin foo : \n    // comment\n    int");
 }
 
 #[test]
@@ -679,7 +777,7 @@ fn parens() {
     assert_unchanged("// comment\n(1 * 1)");
     assert_unchanged("(1 * 1\n    // comment\n    )");
     assert_unchanged("() => ({_value: 1})");
-    assert_unchanged("() => \n    // comment\n    ({_value: 1})");
+    assert_unchanged("() =>\n    // comment\n    ({_value: 1})");
 
     // test parens are maintained according to operator precedence rules
     assert_format("(2 ^ 2)", "2 ^ 2");
@@ -729,12 +827,13 @@ fn type_expressions() {
     assert_format(
         r#"builtin foo : {a: A, b: B, c: C, d: D, e: E} where A: Numeric, B: Numeric, C: Numeric, D: Numeric, E: Numeric"#,
         r#"builtin foo : {
-    a: A,
-    b: B,
-    c: C,
-    d: D,
-    e: E,
-} where
+        a: A,
+        b: B,
+        c: C,
+        d: D,
+        e: E,
+    }
+    where
     A: Numeric,
     B: Numeric,
     C: Numeric,
@@ -743,13 +842,16 @@ fn type_expressions() {
     );
     assert_unchanged(
         r#"builtin foo : (
-    a: int,
-    b: string,
-    c: A,
-    d: [int],
-    e: [[B]],
-    fn: () => int,
-) => {x with a: int, b: string} where A: Timeable, B: Record"#,
+        a: int,
+        b: string,
+        c: A,
+        d: [int],
+        e: [[B]],
+        fn: () => int,
+    ) => {x with a: int, b: string}
+    where
+    A: Timeable,
+    B: Record"#,
     );
 }
 
@@ -785,8 +887,7 @@ fn temp_indent() {
     // the line would normally be on a single line
 
     assert_unchanged(
-        r#"a + 
-    // comment
+        r#"a + // comment
     b"#,
     );
     assert_unchanged(
@@ -803,36 +904,38 @@ fn else_indentation() {
     assert_unchanged(
         "tables
     |> map(
-        fn: (r) => ({r with
-            level_value: if r._level == levelCrit then
-                4
-            else if r._level == levelWarn then
-                3
-            else if r._level == levelInfo then
-                2
-            else if r._level == levelOK then
-                1
-            else
-                0,
-            foo: bar,
-        }),
+        fn: (r) =>
+            ({r with level_value:
+                    if r._level == levelCrit then
+                        4
+                    else if r._level == levelWarn then
+                        3
+                    else if r._level == levelInfo then
+                        2
+                    else if r._level == levelOK then
+                        1
+                    else
+                        0,
+                foo: bar,
+            }),
     )",
     );
     assert_unchanged(
         "tables
     |> map(
-        fn: (r) => ({r with
-            level_value: if r._level == levelCrit then
-                4
-            else if r._level == levelWarn then
-                3
-            else if r._level == levelInfo then
-                2
-            else if r._level == levelOK then
-                1
-            else
-                0,
-        }),
+        fn: (r) =>
+            ({r with level_value:
+                    if r._level == levelCrit then
+                        4
+                    else if r._level == levelWarn then
+                        3
+                    else if r._level == levelInfo then
+                        2
+                    else if r._level == levelOK then
+                        1
+                    else
+                        0,
+            }),
     )",
     );
     assert_unchanged(
@@ -854,10 +957,12 @@ else
     z",
     );
 }
+
 #[test]
 fn line_separation() {
     assert_unchanged(
-        r#"inData = "
+        r#"inData =
+    "
 #datatype,string,long,string,string,string,string,double,dateTime:RFC3339
 #group,false,false,true,true,true,true,false,false
 #default,_result,,,,,,,
@@ -886,7 +991,8 @@ fn line_separation() {
 ,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119554,2020-10-09T22:19:00Z
 ,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119586.6,2020-10-09T22:19:44.191958Z"
 
-outData = "
+outData =
+    "
 #group,false,false,true,false,false,false,false,false,false,false,false,false
 #datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,double,double,double
 #default,want,,,,,,,,,,,
@@ -898,15 +1004,17 @@ outData = "
 test2 = 2",
     );
     assert_unchanged(
-        r#"fn = if nfields == 0 then
-    (r) => true
-else
-    (r) => contains(value: r._field, set: fields)
+        r#"fn =
+    if nfields == 0 then
+        (r) => true
+    else
+        (r) => contains(value: r._field, set: fields)
 
-return tables
-    |> filter(fn)
-    |> v1.fieldsAsCols()
-    |> _mask(columns: ["_measurement", "_start", "_stop"])"#,
+return
+    tables
+        |> filter(fn)
+        |> v1.fieldsAsCols()
+        |> _mask(columns: ["_measurement", "_start", "_stop"])"#,
     );
     assert_unchanged(
         "a = () => {
@@ -917,9 +1025,9 @@ return tables
     );
     assert_format(
         "test1 = 1
-        
-        
-        
+
+
+
 test2 = 2",
         "test1 = 1
 
@@ -939,7 +1047,8 @@ fn preserve_multiline_test() {
     //({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})");
 
     assert_unchanged(
-        "test _covariance_missing_column_2 = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})",
+        "test _covariance_missing_column_2 = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: covariance_missing_column_2})",
     );
 
     assert_unchanged(
@@ -959,11 +1068,12 @@ fn preserve_multiline_test() {
     eventClassKey="",
     collector="",
     message="",
-) => {
-    body = json.encode(v: payload)
+) =>
+    {
+        body = json.encode(v: payload)
 
-    return http.post(headers: headers, url: url, data: body)
-}"#,
+        return http.post(headers: headers, url: url, data: body)
+    }"#,
     );
     //Checks that a method with >4 params gets expanded correctly
     assert_format(
@@ -982,15 +1092,17 @@ fn preserve_multiline_test() {
     every,
     defaultValue,
     tables=<-,
-) => {
-    _column = column
-    _as = as
+) =>
+    {
+        _column = column
+        _as = as
 
-    return tables
-        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
-        |> fill(column: _column, value: defaultValue)
-        |> rename(fn: (column) => if column == _column then _as else column)
-}"#,
+        return
+            tables
+                |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)
+                |> fill(column: _column, value: defaultValue)
+                |> rename(fn: (column) => if column == _column then _as else column)
+    }"#,
     );
     //Checks that a method with <= 4 params does not get reformatted
     assert_unchanged(
@@ -1027,32 +1139,34 @@ fn invalid_syntax() {
 }
 
 #[test]
-fn consistent_multiline_formatting() {
+fn consistent_multiline_formatting_1() {
     // builtins
     assert_format(
         r#"builtin getGrid : (
     region: T,?minSize: int,?maxSize: int,?level: int,?maxLevel: int,units: {distance: string},) => {level: int, set: [string]} where
     T: Record"#,
         r#"builtin getGrid : (
-    region: T,
-    ?minSize: int,
-    ?maxSize: int,
-    ?level: int,
-    ?maxLevel: int,
-    units: {distance: string},
-) => {level: int, set: [string]} where T: Record"#,
+        region: T,
+        ?minSize: int,
+        ?maxSize: int,
+        ?level: int,
+        ?maxLevel: int,
+        units: {distance: string},
+    ) => {level: int, set: [string]}
+    where
+    T: Record"#,
     );
 
     assert_format(
         r#"builtin fakeFunc : (v: string, w: bool, x: string,
     y: int, z: string) => string"#,
         r#"builtin fakeFunc : (
-    v: string,
-    w: bool,
-    x: string,
-    y: int,
-    z: string,
-) => string"#,
+        v: string,
+        w: bool,
+        x: string,
+        y: int,
+        z: string,
+    ) => string"#,
     );
 
     // function expressions and call expressions
@@ -1070,21 +1184,23 @@ fn consistent_multiline_formatting() {
     stuff=stuff,
     is,
     better=nice,
-) => stContains(
-    region: region,
-    geometry: geometry,
-    units: units,
-    more: more,
-    stuff: stuff,
-    is: is,
-    better: better,
-)"#,
+) =>
+    stContains(
+        region: region,
+        geometry: geometry,
+        units: units,
+        more: more,
+        stuff: stuff,
+        is: is,
+        better: better,
+    )"#,
     );
 
     assert_format(
-        r#"asTracks = (tables=<-, groupBy=["id", "tid", "foo", "bar", "baz"], orderBy=["_time"]) => tables
-    |> group(columns: groupBy)
-    |> sort(columns: orderBy)
+        r#"asTracks = (tables=<-, groupBy=["id", "tid", "foo", "bar", "baz"], orderBy=["_time"]) =>
+    tables
+        |> group(columns: groupBy)
+        |> sort(columns: orderBy)
 "#,
         r#"asTracks = (
     tables=<-,
@@ -1096,9 +1212,10 @@ fn consistent_multiline_formatting() {
         "baz",
     ],
     orderBy=["_time"],
-) => tables
-    |> group(columns: groupBy)
-    |> sort(columns: orderBy)"#,
+) =>
+    tables
+        |> group(columns: groupBy)
+        |> sort(columns: orderBy)"#,
     );
 
     // record expressions
@@ -1186,7 +1303,10 @@ array.from(
     foo: false,
 )"#,
     );
+}
 
+#[test]
+fn consistent_multiline_formatting_2() {
     // check that formatter output does not change
     assert_unchanged(
         r#"array.from(
@@ -1205,36 +1325,40 @@ array.from(
 
     assert_unchanged(
         r#"// diff = |Xi - MEDiXi| = math.abs(xi-med(xi))
-diff = join(tables: {data: data, med: med}, on: ["_time"], method: "inner")
-    |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
-    |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
+diff =
+    join(tables: {data: data, med: med}, on: ["_time"], method: "inner")
+        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
+        |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
     );
 
     assert_format(
         r#"// diff = |Xi - MEDiXi| = math.abs(xi-med(xi))
-diff = join(tables: { data: [_some: data, _more: data],med: med,foo:foo, bar:bar,multi: multi },on: ["_time"],method: "inner" )
-    |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
-    |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
+diff =
+    join(tables: { data: [_some: data, _more: data],med: med,foo:foo, bar:bar,multi: multi },on: ["_time"],method: "inner" )
+        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
+        |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
         r#"// diff = |Xi - MEDiXi| = math.abs(xi-med(xi))
-diff = join(
-    tables: {
-        data: [_some: data, _more: data],
-        med: med,
-        foo: foo,
-        bar: bar,
-        multi: multi,
-    },
-    on: ["_time"],
-    method: "inner",
-)
-    |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
-    |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
+diff =
+    join(
+        tables: {
+            data: [_some: data, _more: data],
+            med: med,
+            foo: foo,
+            bar: bar,
+            multi: multi,
+        },
+        on: ["_time"],
+        method: "inner",
+    )
+        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
+        |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
     );
 
     assert_unchanged(
-        r#"t_mad = (table=<-) => table
-    |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
-    |> anomalydetection.mad(threshold: 3.0)
+        r#"t_mad = (table=<-) =>
+    table
+        |> range(start: 2020-04-27T00:00:00Z, stop: 2020-05-01T00:00:00Z)
+        |> anomalydetection.mad(threshold: 3.0)
 
 test _mad = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mad})"#,
     );
@@ -1246,40 +1370,46 @@ diff = join(tables: { data: [_some: data, _more: data],med: med,foo:foo, bar:bar
     |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
     |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
         r#"// diff = |Xi - MEDiXi| = math.abs(xi-med(xi))
-diff = join(
-    tables: {
-        data: [_some: data, _more: data],
-        med: med,
-        foo: foo,
-        bar: bar,
-        multi: multi,
-    },
-    on: ["_time"],
-    method: "inner",
-)
-    |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
-    |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
+diff =
+    join(
+        tables: {
+            data: [_some: data, _more: data],
+            med: med,
+            foo: foo,
+            bar: bar,
+            multi: multi,
+        },
+        on: ["_time"],
+        method: "inner",
+    )
+        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
+        |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
     );
 
     // make sure that properly formatted text does not change
     assert_unchanged(
         r#"// diff = |Xi - MEDiXi| = math.abs(xi-med(xi))
-diff = join(
-    tables: {
-        data: [_some: data, _more: data],
-        med: med,
-        foo: foo,
-        bar: bar,
-        multi: multi,
-    },
-    on: ["_time"],
-    method: "inner",
-)
-    |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
-    |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
+diff =
+    join(
+        tables: {
+            data: [_some: data, _more: data],
+            med: med,
+            foo: foo,
+            bar: bar,
+            multi: multi,
+        },
+        on: ["_time"],
+        method: "inner",
+    )
+        |> map(fn: (r) => ({r with _value: math.abs(x: r._value_data - r._value_med)}))
+        |> drop(columns: ["_start", "_stop", "_value_med", "_value_data"])"#,
     );
 
-    assert_unchanged("test _join_panic = () => \n    // to trigger the panic, switch the testing.loadStorage() csv from `passData` to `failData`\n    ({input: testing.loadStorage(csv: passData), want: testing.loadMem(csv: outData), fn: t_join_panic})");
+    assert_unchanged(
+        r#"test _join_panic = () =>
+    // to trigger the panic, switch the testing.loadStorage() csv from `passData` to `failData`
+    ({input: testing.loadStorage(csv: passData), want: testing.loadMem(csv: outData), fn: t_join_panic})"#,
+    );
 
     assert_format(
         r#"[
@@ -1334,8 +1464,10 @@ diff = join(
 
     // string literals
     assert_unchanged(
-        r#"want = csv.from(
-    csv: "
+        r#"want =
+    csv.from(
+        csv:
+            "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
 #group,false,false,true,true,false,false,true,true,true
 #default,_result,,,,,,,,
@@ -1343,10 +1475,11 @@ diff = join(
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:58:00Z,2018-05-22T19:58:00Z,,load1,system,host.local
 ,,0,2018-05-22T19:53:00Z,2018-05-22T19:58:00Z,2018-05-22T19:55:00Z,1.775,load1,system,host.local
 ",
-)"#,
+    )"#,
     );
     assert_unchanged(
-        r#"data = "
+        r#"data =
+    "
 #datatype,string,long,string,string,string,dateTime:RFC3339,boolean
 #group,false,false,false,false,false,false,false
 #default,_result,,,,,,
@@ -1361,6 +1494,10 @@ check = {
     tags: {},
 }"#,
     );
+}
+
+#[test]
+fn consistent_multiline_formatting_3() {
     assert_unchanged(
         r#"string_lit = "
     this
@@ -1370,15 +1507,16 @@ check = {
 "
 
 // make sure that multiline string works
-t_dict = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> map(
-        fn: (r) => {
-            //and doesn't do weird stuff
-            return {r with error_code: error_code}
-        },
-    )"#,
+t_dict = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(
+            fn: (r) => {
+                //and doesn't do weird stuff
+                return {r with error_code: error_code}
+            },
+        )"#,
     );
 }
 
@@ -1597,4 +1735,177 @@ j
 // not lost
 "#,
     );
+}
+
+#[test]
+fn dont_alter_string_literal() {
+    let script = r#"sendSlackMessage(
+    text: "*Earthquake Alert*
+M *${string(v: r.mag)}*",
+)"#;
+    assert_unchanged(script);
+}
+
+#[test]
+fn builtin_are_unchanged() {
+    let script = r#"builtin covariance : (<-tables: [A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => [B]
+    where
+    A: Record,
+    B: Record
+builtin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record"#;
+    assert_unchanged(script);
+}
+
+#[test]
+fn astutil_test_format_with_comments() {
+    let src = r#"    // hi
+    // there
+    {_time: r._time, io_time: r._value, // this is the end
+    }
+
+    // minimal
+    foo = (arg=[1, 2]) => (1)
+
+    // left
+    left = from(bucket: "test")
+        |> range(start: 2018-05-22T19:53:00Z
+        // i write too many comments
+        , stop: 2018-05-22T19:55:00Z)
+        // and put them in strange places
+        |>  drop
+
+            // this hurts my eyes
+    (columns: ["_start", "_stop"])
+            // just terrible
+        |> filter(fn: (r) =>
+            (r.user
+
+            // (don't fire me, this is intentional)
+            == "user1"))
+        |> group(by
+        // strange place for a comment
+    : ["user"])
+
+    right = from(bucket: "test")
+        |> range(start: 2018-05-22T19:53:00Z,
+                // please stop
+                stop: 2018-05-22T19:55:00Z)
+        |> drop( // spare me the pain
+    // this hurts
+    columns: ["_start", "_stop"// what
+    ])
+        |> filter(
+            // just why
+            fn: (r) =>
+            // user 2 is the best user
+            (r.user == "user2"))
+        |> group(by: //just stop
+    ["_measurement"])
+
+    join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
+
+    from(bucket, _option // friends
+    ,// stick together
+    )
+
+    i = // definitely
+    not true
+    // a
+    // list
+    // of
+    // comments
+
+    j
+
+    // not lost"#;
+
+    expect![[r#"
+        // hi
+        // there
+        {
+            _time: r._time,
+            io_time: r._value,
+                // this is the end
+
+        }
+
+        // minimal
+        foo = (arg=[1, 2]) => 1
+
+        // left
+        left =
+            from(bucket: "test")
+                |> range(
+                    start: 2018-05-22T19:53:00Z
+                        // i write too many comments
+                        ,
+                    stop: 2018-05-22T19:55:00Z,
+                )
+                // and put them in strange places
+                |> drop
+                    // this hurts my eyes
+                    (columns: ["_start", "_stop"])
+                // just terrible
+                |> filter(
+                    fn: (r) =>
+                        r.user
+                            // (don't fire me, this is intentional)
+                            ==
+                            "user1",
+                )
+                |> group(
+                    by
+                        // strange place for a comment
+                        : ["user"],
+                )
+
+        right =
+            from(bucket: "test")
+                |> range(
+                    start: 2018-05-22T19:53:00Z,
+                    // please stop
+                    stop: 2018-05-22T19:55:00Z,
+                )
+                |> drop(
+                    // spare me the pain
+                    // this hurts
+                    columns:
+                        [
+                            "_start",
+                            "_stop",// what
+                        ],
+                )
+                |> filter(
+                    // just why
+                    fn:
+                        (r) =>
+                            // user 2 is the best user
+                            (r.user == "user2"),
+                )
+                |> group(
+                    by:
+                        //just stop
+                        ["_measurement"],
+                )
+
+        join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
+
+        from(
+            bucket,
+            _option
+                // friends
+                ,
+        // stick together
+        )
+
+        i =
+            // definitely
+            not true
+
+        // a
+        // list
+        // of
+        // comments
+        j// not lost"#]]
+    .assert_eq(&format(src).unwrap());
 }

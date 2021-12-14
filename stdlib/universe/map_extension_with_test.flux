@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -14,7 +15,8 @@ inData = "
 ,,0,2018-05-22T19:53:36Z,101,load1,system,host.local
 ,,0,2018-05-22T19:53:46Z,102,load1,system,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -23,9 +25,10 @@ outData = "
 ,,0,2018-05-22T19:53:36Z,101.0,load1,system,host.local
 ,,0,2018-05-22T19:53:46Z,102.0,load1,system,host.local
 "
-t_map = (table=<-) => table
-    |> range(start: 2018-05-22T00:00:00Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> map(fn: (r) => ({r with _value: float(v: r._value)}))
+t_map = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T00:00:00Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) => ({r with _value: float(v: r._value)}))
 
 test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})

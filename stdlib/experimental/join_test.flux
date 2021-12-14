@@ -4,7 +4,8 @@ package experimental_test
 import "experimental"
 import "testing"
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
@@ -73,7 +74,8 @@ inData = "
 ,,7,2018-12-19T22:14:10Z,_m,b,p,5
 ,,7,2018-12-19T22:14:20Z,_m,b,p,6
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double
 #group,false,false,true,true,false,true,true,false,false
 #default,_result,,,,,,,,
@@ -86,18 +88,21 @@ outData = "
 ,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:20Z,_m,g,7,6
 "
 join_test_fn = (table=<-) => {
-    a = table
-        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)
-        |> filter(fn: (r) => r._field == "a")
-        |> drop(columns: ["_field"])
-        |> rename(columns: {_value: "value_a"})
-    b = table
-        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)
-        |> filter(fn: (r) => r._field == "b")
-        |> drop(columns: ["_field"])
-        |> rename(columns: {_value: "value_b"})
+    a =
+        table
+            |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)
+            |> filter(fn: (r) => r._field == "a")
+            |> drop(columns: ["_field"])
+            |> rename(columns: {_value: "value_a"})
+    b =
+        table
+            |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)
+            |> filter(fn: (r) => r._field == "b")
+            |> drop(columns: ["_field"])
+            |> rename(columns: {_value: "value_b"})
 
     return experimental.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))
 }
 
-test experimental_join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})
+test experimental_join = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})

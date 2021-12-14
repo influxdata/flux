@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -23,16 +24,19 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,long
 #group,false,false,true,true,true,true,true,true,false
 #default,_result,,,,,,,,
 ,result,table,_start,_stop,_measurement,_field,host,name,_value
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,6
 "
-t_filter_drop_empty = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> filter(fn: (r) => r["_value"] > 1000)
-    |> count()
+t_filter_drop_empty = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> filter(fn: (r) => r["_value"] > 1000)
+        |> count()
 
-test _filter_drop_empty = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_drop_empty})
+test _filter_drop_empty = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_drop_empty})

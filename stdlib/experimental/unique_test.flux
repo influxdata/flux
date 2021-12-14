@@ -6,7 +6,8 @@ import "experimental"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -24,7 +25,8 @@ inData = "
 ,,4,2018-05-22T19:53:46Z,37,f1,e,aa
 ,,4,2018-05-22T19:53:36Z,69,f1,e,aa
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -35,9 +37,10 @@ outData = "
 ,,3,2018-05-22T19:53:26Z,23,f1,d,aa
 ,,4,2018-05-22T19:53:46Z,37,f1,e,aa
 "
-t_unique = (table=<-) => table
-    |> range(start: 2018-05-22T00:00:00Z)
-    |> experimental.unique()
-    |> drop(columns: ["_start", "_stop"])
+t_unique = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T00:00:00Z)
+        |> experimental.unique()
+        |> drop(columns: ["_start", "_stop"])
 
 test _unique = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_unique})

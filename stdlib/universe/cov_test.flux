@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -27,7 +28,8 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,2,RAM,user2,f1
 ,,3,2018-05-22T19:54:16Z,10,RAM,user2,f1
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,double
 #group,false,false,true,false
 #default,_result,,,
@@ -36,16 +38,18 @@ outData = "
 ,,1,RAM,-1.8333333333333333
 "
 t_cov = (table=<-) => {
-    t1 = table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> filter(fn: (r) => r.user == "user1")
-        |> group(columns: ["_measurement"])
-    t2 = table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> filter(fn: (r) => r.user == "user2")
-        |> group(columns: ["_measurement"])
+    t1 =
+        table
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> filter(fn: (r) => r.user == "user1")
+            |> group(columns: ["_measurement"])
+    t2 =
+        table
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> drop(columns: ["_start", "_stop"])
+            |> filter(fn: (r) => r.user == "user2")
+            |> group(columns: ["_measurement"])
 
     return cov(x: t1, y: t2, on: ["_time", "_measurement"])
 }

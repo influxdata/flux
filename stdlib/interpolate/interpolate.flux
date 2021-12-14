@@ -4,7 +4,7 @@ package interpolate
 
 
 // linear is a function that inserts rows at regular intervals using linear
-//  interpolation to determine values for inserted rows. 
+//  interpolation to determine values for inserted rows.
 //
 // ## Function Requirements
 // - Input data must have _time and _value columns.
@@ -43,4 +43,7 @@ package interpolate
 // 2021-01-08T00:00:00Z | 80.0
 // 2021-01-09T00:00:00Z | 90.0
 //
-builtin linear : (<-tables: [{T with _time: time, _value: float}], every: duration) => [{T with _time: time, _value: float}]
+builtin linear : (
+        <-tables: [{T with _time: time, _value: float}],
+        every: duration,
+    ) => [{T with _time: time, _value: float}]

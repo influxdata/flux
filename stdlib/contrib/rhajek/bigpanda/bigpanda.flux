@@ -69,16 +69,17 @@ option defaultTokenPrefix = "Bearer"
 // ```
 statusFromLevel = (level) => {
     lvl = strings.toLower(v: level)
-    sev = if lvl == "warn" then
-        "warning"
-    else if lvl == "crit" then
-        "critical"
-    else if lvl == "info" then
-        "ok"
-    else if lvl == "ok" then
-        "ok"
-    else
-        "critical"
+    sev =
+        if lvl == "warn" then
+            "warning"
+        else if lvl == "crit" then
+            "critical"
+        else if lvl == "info" then
+            "ok"
+        else if lvl == "ok" then
+            "ok"
+        else
+            "critical"
 
     return sev
 }
@@ -138,12 +139,13 @@ sendAlert = (
     appKey,
     status,
     rec,
-) => {
-    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": defaultTokenPrefix + " " + token}
-    data = {rec with app_key: appKey, status: status}
+) =>
+    {
+        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": defaultTokenPrefix + " " + token}
+        data = {rec with app_key: appKey, status: status}
 
-    return http.post(headers: headers, url: url, data: json.encode(v: data))
-}
+        return http.post(headers: headers, url: url, data: json.encode(v: data))
+    }
 
 // endpoint sends alerts to BigPanda using data from input rows.
 //
@@ -199,21 +201,25 @@ sendAlert = (
 // ```
 //
 // tags: notification endpoint
-endpoint = (url=defaultUrl, token, appKey) => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == sendAlert(
-                        url: url,
-                        appKey: appKey,
-                        token: token,
-                        status: obj.status,
-                        rec: obj,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (url=defaultUrl, token, appKey) =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == sendAlert(
+                                                url: url,
+                                                appKey: appKey,
+                                                token: token,
+                                                status: obj.status,
+                                                rec: obj,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

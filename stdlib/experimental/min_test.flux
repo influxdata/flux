@@ -6,7 +6,8 @@ import "experimental"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -36,7 +37,8 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:54:16Z,82.6416015625,used_percent,swap,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -46,9 +48,10 @@ outData = "
 ,,2,2018-05-22T19:53:56Z,1.89,load5,system,host.local
 ,,3,2018-05-22T19:53:36Z,82.598876953125,used_percent,swap,host.local
 "
-t_min = (table=<-) => table
-    |> range(start: 2018-05-22T00:00:00Z)
-    |> experimental.min()
-    |> drop(columns: ["_start", "_stop"])
+t_min = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T00:00:00Z)
+        |> experimental.min()
+        |> drop(columns: ["_start", "_stop"])
 
 test _min = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_min})

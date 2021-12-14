@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,string,dateTime:RFC3339,string
 #group,false,false,true,true,true,false,false
 #default,_result,,,,,,
@@ -91,7 +92,8 @@ inData = "
 ,,9,Reiva,rc2iOD1,qCnJDC,2019-01-09T19:45:38Z,22
 ,,9,Reiva,rc2iOD1,qCnJDC,2019-01-09T19:45:48Z,78
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,string
 #group,false,false,true,true,true,true,true,false,false
 #default,_result,,,,,,,,
@@ -123,8 +125,9 @@ outData = "
 ,,8,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,rc2iOD1,BnR,2019-01-09T19:45:38Z,96
 ,,9,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,rc2iOD1,qCnJDC,2019-01-09T19:45:48Z,78
 "
-t_quantile = (table=<-) => table
-    |> range(start: 2019-01-01T00:00:00Z)
-    |> quantile(q: 0.75, method: "exact_selector")
+t_quantile = (table=<-) =>
+    table
+        |> range(start: 2019-01-01T00:00:00Z)
+        |> quantile(q: 0.75, method: "exact_selector")
 
 test _quantile = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})

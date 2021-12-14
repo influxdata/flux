@@ -14,9 +14,10 @@ expected = "
 "
 
 testcase sample_list {
-    got = sample.list()
-        |> count(column: "name")
-        |> map(fn: (r) => ({_value: r.name > 0}))
+    got =
+        sample.list()
+            |> count(column: "name")
+            |> map(fn: (r) => ({_value: r.name > 0}))
     want = csv.from(csv: expected)
 
     testing.diff(got: got, want: want)

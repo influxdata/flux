@@ -12,7 +12,8 @@ import "strings"
 //         and r._measurement == "http_request"
 //         and r._field == "req_bytes"
 //     )
-inData = "
+inData =
+    "
 #group,false,false,true,true,false,false,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string
 #default,_result,,,,,,,,,,,
@@ -3335,7 +3336,8 @@ inData = "
 ,,46,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T11:08:40.56350665Z,10000,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-p9w8t,03d01b74c8e09000,204
 ,,46,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T11:09:00.464069692Z,10000,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-p9w8t,03d01b74c8e09000,204
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,long,dateTime:RFC3339
 #default,writes_b,,,,,
@@ -3344,13 +3346,19 @@ outData = "
 ,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,5369845,2019-08-01T13:00:00Z
 ,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,5343520,2019-08-01T14:00:00Z
 "
-_f = (table=<-) => table
-    |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
-    |> filter(fn: (r) => r.org_id == "03d01b74c8e09000" and r._measurement == "http_request" and r._field == "req_bytes" and r.endpoint == "/api/v2/write" and r.status == "204" and r.hostname !~ /^gateway-internal/)
-    |> group()
-    |> aggregateWindow(every: 1h, fn: sum)
-    |> fill(column: "_value", value: 0)
-    |> rename(columns: {_value: "writes_b"})
-    |> yield(name: "writes_b")
+_f = (table=<-) =>
+    table
+        |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
+        |> filter(
+            fn: (r) =>
+                r.org_id == "03d01b74c8e09000" and r._measurement == "http_request" and r._field == "req_bytes"
+                    and
+                    r.endpoint == "/api/v2/write" and r.status == "204" and r.hostname !~ /^gateway-internal/,
+        )
+        |> group()
+        |> aggregateWindow(every: 1h, fn: sum)
+        |> fill(column: "_value", value: 0)
+        |> rename(columns: {_value: "writes_b"})
+        |> yield(name: "writes_b")
 
 test get_writes_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

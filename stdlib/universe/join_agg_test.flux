@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -19,7 +20,8 @@ inData = "
 ,,3,2019-05-10T20:50:00Z,0,writes,diskio,ip-192-168-1-16.ec2.internal,disk2
 ,,3,2019-05-10T20:50:10Z,0,writes,diskio,ip-192-168-1-16.ec2.internal,disk2
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,long,long
 #group,false,false,true,false,false
 #default,_result,,,,
@@ -28,20 +30,22 @@ outData = "
 ,,1,disk2,782,0
 "
 t_joinNoOn = (table=<-) => {
-    left = table
-        |> range(start: 2018-05-22T19:53:00Z)
-        |> filter(fn: (r) => r._field == "reads")
-        |> group(columns: ["name"])
-        |> keep(columns: ["name", "_value"])
-        |> sum()
-        |> rename(columns: {_value: "total_reads"})
-    right = table
-        |> range(start: 2018-05-22T19:53:00Z)
-        |> filter(fn: (r) => r._field == "writes")
-        |> group(columns: ["name"])
-        |> keep(columns: ["name", "_value"])
-        |> sum()
-        |> rename(columns: {_value: "total_writes"})
+    left =
+        table
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> filter(fn: (r) => r._field == "reads")
+            |> group(columns: ["name"])
+            |> keep(columns: ["name", "_value"])
+            |> sum()
+            |> rename(columns: {_value: "total_reads"})
+    right =
+        table
+            |> range(start: 2018-05-22T19:53:00Z)
+            |> filter(fn: (r) => r._field == "writes")
+            |> group(columns: ["name"])
+            |> keep(columns: ["name", "_value"])
+            |> sum()
+            |> rename(columns: {_value: "total_writes"})
 
     return join(tables: {left, right}, on: ["name"])
 }

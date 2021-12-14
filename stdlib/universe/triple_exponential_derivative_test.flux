@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -40,7 +41,8 @@ inData = "
 ,,0,2018-05-22T00:04:30Z,2,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:04:40Z,1,used_percent,disk,disk1s1,apfs,host.local,/
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,false,false,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string
 #default,_result,,,,,,,,,,,
@@ -65,8 +67,10 @@ outData = "
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:04:30Z,-12.891818138458877,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:04:40Z,-15.074463280730022,used_percent,disk,disk1s1,apfs,host.local,/
 "
-triple_exponential_derivative = (table=<-) => table
-    |> range(start: 2018-05-22T00:00:00Z)
-    |> tripleExponentialDerivative(n: 4)
+triple_exponential_derivative = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T00:00:00Z)
+        |> tripleExponentialDerivative(n: 4)
 
-test _triple_exponential_derivative = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: triple_exponential_derivative})
+test _triple_exponential_derivative = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: triple_exponential_derivative})

@@ -7,7 +7,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,string,string,double,dateTime:RFC3339
 #group,false,false,true,true,true,true,false,false
 #default,_result,,,,,,,
@@ -36,7 +37,8 @@ inData = "
 ,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119554,2020-10-09T22:19:00Z
 ,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119586.6,2020-10-09T22:19:44.191958Z
 "
-outData = "
+outData =
+    "
 #group,false,false,true,false,false,false,false,false,false,false,false,false
 #datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,double,double,double
 #default,want,,,,,,,,,,,
@@ -45,18 +47,21 @@ outData = "
 "
 join_test_fn = (table=<-) => {
     bounded_stream = table |> range(start: 2020-10-01T00:00:00Z)
-    a = bounded_stream
-        |> filter(fn: (r) => r._measurement == "cpu")
-        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)
-        |> v1.fieldsAsCols()
-        |> group(columns: ["host"])
-    b = bounded_stream
-        |> filter(fn: (r) => r._measurement == "disk")
-        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)
-        |> v1.fieldsAsCols()
-        |> group(columns: ["host"])
+    a =
+        bounded_stream
+            |> filter(fn: (r) => r._measurement == "cpu")
+            |> aggregateWindow(fn: last, every: 5m, createEmpty: false)
+            |> v1.fieldsAsCols()
+            |> group(columns: ["host"])
+    b =
+        bounded_stream
+            |> filter(fn: (r) => r._measurement == "disk")
+            |> aggregateWindow(fn: last, every: 5m, createEmpty: false)
+            |> v1.fieldsAsCols()
+            |> group(columns: ["host"])
 
     return experimental.join(left: a, right: b, fn: (left, right) => ({left with inodes_free: right.inodes_free}))
 }
 
-test experimental_join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})
+test experimental_join = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})

@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,long
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -29,7 +30,8 @@ inData = "
 ,_result,2,2019-09-12T20:00:00Z,33784154,req_bytes,http_request,03a2c4456f0f5000,204
 ,_result,3,2019-09-12T20:00:00Z,48275,req_bytes,http_request,03c68af671227000,204
 "
-outData = "
+outData =
+    "
 #datatype,string,long,long,long,string
 #group,false,false,false,false,true
 #default,_result,,,,
@@ -39,20 +41,23 @@ outData = "
 ,_result,2,33784154,152,03a2c4456f0f5000
 "
 t_join_missing_on_col = (tables=<-) => {
-    lhs = tables
-        |> range(start: 2019-01-01T00:00:00Z)
-        |> filter(fn: (r) => r._field == "resp_bytes")
-        |> keep(columns: ["_time", "org_id", "_value"])
-        |> sum()
-        |> rename(columns: {_value: "dataout"})
-    rhs = tables
-        |> range(start: 2019-01-01T00:00:00Z)
-        |> filter(fn: (r) => r._field == "req_bytes")
-        |> keep(columns: ["_time", "org_id", "_value"])
-        |> sum()
-        |> rename(columns: {_value: "datain"})
+    lhs =
+        tables
+            |> range(start: 2019-01-01T00:00:00Z)
+            |> filter(fn: (r) => r._field == "resp_bytes")
+            |> keep(columns: ["_time", "org_id", "_value"])
+            |> sum()
+            |> rename(columns: {_value: "dataout"})
+    rhs =
+        tables
+            |> range(start: 2019-01-01T00:00:00Z)
+            |> filter(fn: (r) => r._field == "req_bytes")
+            |> keep(columns: ["_time", "org_id", "_value"])
+            |> sum()
+            |> rename(columns: {_value: "datain"})
 
     return join(tables: {lhs: lhs, rhs: rhs}, on: ["org_id"])
 }
 
-test _join_missing_on_col = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join_missing_on_col})
+test _join_missing_on_col = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join_missing_on_col})

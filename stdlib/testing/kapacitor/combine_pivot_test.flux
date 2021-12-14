@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,dateTime:RFC3339,double,string
 #group,false,false,true,false,false,true
 #default,_result,,,,,
@@ -23,7 +24,8 @@ inData = "
 ,,1,memory,2018-12-19T22:14:10Z,9,user2
 ,,1,memory,2018-12-19T22:14:20Z,8,user2
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,dateTime:RFC3339,double,double
 #group,false,false,true,false,false,false
 #default,_result,,,,,
@@ -35,13 +37,18 @@ outData = "
 ,,0,memory,2018-12-19T22:14:10Z,6,9
 ,,0,memory,2018-12-19T22:14:20Z,3,8
 "
-t_combine_join = (table=<-) => table
-    |> range(start: 2018-12-15T00:00:00Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> pivot(rowKey: ["_time", "_measurement"], columnKey: ["_field"], valueColumn: "_value")
+t_combine_join = (table=<-) =>
+    table
+        |> range(start: 2018-12-15T00:00:00Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> pivot(rowKey: ["_time", "_measurement"], columnKey: ["_field"], valueColumn: "_value")
 
-test _combine_join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_combine_join})
-// Equivalent TICKscript query:
+test _combine_join = () =>
+    ({
+        input: testing.loadStorage(csv: inData),
+        want: testing.loadMem(csv: outData),
+        fn: t_combine_join,
+    })// Equivalent TICKscript query:
 //
 // stream
 //    |from()

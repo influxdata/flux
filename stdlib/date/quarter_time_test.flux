@@ -6,7 +6,8 @@ import "date"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -24,7 +25,8 @@ inData = "
 ,,1,2018-11-22T19:53:40Z,_m,QQ,1
 ,,1,2018-12-22T19:53:50Z,_m,QQ,1
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -42,8 +44,10 @@ outData = "
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,4
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,4
 "
-t_time_quarter = (table=<-) => table
-    |> range(start: 2018-01-01T00:00:00Z)
-    |> map(fn: (r) => ({r with _value: date.quarter(t: r._time)}))
+t_time_quarter = (table=<-) =>
+    table
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> map(fn: (r) => ({r with _value: date.quarter(t: r._time)}))
 
-test _time_quarter = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_quarter})
+test _time_quarter = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_quarter})

@@ -4,7 +4,8 @@ package influxql_test
 import "testing"
 import "internal/influxql"
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,0,,,,,,
@@ -346,7 +347,8 @@ inData = "
 ,,1,1970-01-07T22:00:00Z,m,1,f,0.5459991408731746
 ,,1,1970-01-07T23:00:00Z,m,1,f,0.7066840478612406
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
 #default,0,,,,,
@@ -688,12 +690,14 @@ outData = "
 "
 
 // SELECT difference(f) FROM m GROUP BY *
-t_difference = (tables=<-) => tables
-    |> range(start: influxql.minTime, stop: influxql.maxTime)
-    |> filter(fn: (r) => r._measurement == "m")
-    |> filter(fn: (r) => r._field == "f")
-    |> difference()
-    |> drop(columns: ["_start", "_stop", "_field"])
-    |> rename(columns: {_value: "difference"})
+t_difference = (tables=<-) =>
+    tables
+        |> range(start: influxql.minTime, stop: influxql.maxTime)
+        |> filter(fn: (r) => r._measurement == "m")
+        |> filter(fn: (r) => r._field == "f")
+        |> difference()
+        |> drop(columns: ["_start", "_stop", "_field"])
+        |> rename(columns: {_value: "difference"})
 
-test _difference = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})
+test _difference = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})

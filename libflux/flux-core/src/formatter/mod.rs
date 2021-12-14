@@ -2,6 +2,7 @@
 
 use anyhow::{anyhow, Error, Result};
 use chrono::SecondsFormat;
+use pretty::{docs, DocAllocator};
 
 use crate::{
     ast::{self, walk::Node, File, Statement},
@@ -10,9 +11,7 @@ use crate::{
 
 /// Format a [`File`].
 pub fn convert_to_string(file: &File) -> Result<String> {
-    let mut formatter = Formatter::default();
-    formatter.format_file(file, true);
-    formatter.output()
+    format_to_string(file, true)
 }
 
 /// Format a string of Flux code.
@@ -34,592 +33,856 @@ pub fn format(contents: &str) -> Result<String> {
 
 const MULTILINE: usize = 4;
 
-/// Struct to hold data related to formatting such as formatted code,
-/// options, and errors.
-/// Provides methods for formatting files and strings of source code.
-pub struct Formatter {
-    builder: String,
-    indentation: i32,
-    // clear is true if the last line consists of only whitespace
-    clear: bool,
-    // temp_indent is true if we have a temporary indent because of a comment
-    // interrupting what would normally be a single line.
-    // For example '1 * 1' is formatted on a single line, but if you introduce a comment in the
-    // middle of the expression we indent like this:
-    // 1 *
-    //     // comment
-    //     1
-    temp_indent: bool,
-    err: Option<Error>,
+type Arena<'doc> = pretty::Arena<'doc>;
+type Doc<'doc> = pretty::DocBuilder<'doc, Arena<'doc>, ()>;
 
-    // temp_singleline is true then records will be formatted on a single line
-    // in order to make them read more like a table.
-    temp_singleline: bool,
-    safe_to_reindent: bool,
-}
+fn format_item_list<'doc>(
+    arena: &'doc Arena<'doc>,
+    (open, close): (&'doc str, &'doc str),
+    trailing_comments: Doc<'doc>,
+    items: impl ExactSizeIterator<Item = Doc<'doc>>,
+) -> (Doc<'doc>, Doc<'doc>, Doc<'doc>) {
+    let multiline = items.len() > MULTILINE;
+    let line = if multiline {
+        arena.hardline()
+    } else {
+        arena.line()
+    };
+    let line_ = if multiline {
+        arena.hardline()
+    } else {
+        arena.line_()
+    };
 
-// INDENT_BYTES is 4 spaces as a constant byte slice
-const INDENT_BYTES: &str = "    ";
-
-impl Default for Formatter {
-    fn default() -> Self {
-        Formatter {
-            builder: String::new(),
-            indentation: 0,
-            clear: true,
-            temp_indent: false,
-            err: None,
-            temp_singleline: false,
-            safe_to_reindent: true,
-        }
-    }
-}
-
-impl Formatter {
-    /// Returns the final formatted string and error message.
-    pub fn output(self) -> Result<String> {
-        if let Some(err) = self.err {
-            return Err(err);
-        }
-
-        Ok(self.builder)
-    }
-
-    fn write_string(&mut self, s: &str) {
-        self.clear = false;
-        // check if the string ends in whitespace
-        if let Some(nl) = s.rfind('\n') {
-            if s[nl..s.len()].trim().is_empty() {
-                self.clear = true;
-            }
-        }
-        (&mut self.builder).push_str(s);
-    }
-
-    fn write_rune(&mut self, c: char) {
-        if c == '\n' {
-            self.clear = true;
-            if self.temp_indent {
-                self.temp_indent = false;
-                self.unindent();
-            }
-        } else if c != '\t' && c != ' ' {
-            self.clear = false;
-        }
-        (&mut self.builder).push(c);
-    }
-
-    fn write_indent(&mut self) {
-        for _ in 0..self.indentation {
-            (&mut self.builder).push_str(INDENT_BYTES);
-        }
-    }
-    fn indent(&mut self) {
-        self.indentation += 1;
-    }
-
-    fn unindent(&mut self) {
-        self.indentation -= 1;
-    }
-
-    fn reindent(&mut self, want_indent: i32) {
-        if !self.safe_to_reindent {
-            return;
-        }
-
-        let add_indent = want_indent - self.indentation;
-        // if there's no indentation to add, just return
-        if add_indent < 1 {
-            return;
-        }
-        let indents = INDENT_BYTES.repeat(add_indent as usize);
-        let mut newline = "\n".to_owned();
-        newline.push_str(&indents);
-        self.builder = self.builder.replace("\n", &newline);
-        // self.builder = self.builder.replace("\n + self.indentation", "\n" + want_indent);
-    }
-
-    fn set_indent(&mut self, i: i32) {
-        self.indentation = i;
-        self.temp_indent = false;
-    }
-
-    fn format_comments(&mut self, comments: &[ast::Comment]) {
-        for c in comments {
-            if !self.clear {
-                if !self.builder.is_empty() {
-                    self.write_rune('\n');
-                    self.indent();
-                    self.write_indent();
-                }
-                self.temp_indent = true;
-            }
-            self.write_string(c.text.as_str());
-            self.clear = true;
-            self.write_indent();
-        }
-    }
-
-    fn write_comment(&mut self, comment: &str) {
-        self.write_string("// ");
-        self.write_string(comment);
-        self.write_rune('\n')
-    }
-
-    fn create_temp_formatter(&mut self) -> Formatter {
-        Formatter {
-            builder: String::new(),
-            indentation: self.indentation,
-            clear: self.clear,
-            temp_indent: self.temp_indent,
-            err: None,
-            temp_singleline: self.temp_singleline,
-            safe_to_reindent: true,
-        }
-    }
-
-    fn ingest_formatter(&mut self, temp_formatter: &mut Formatter) {
-        // if child is not safe for indentation, then parent is no longer safe for additional
-        // indentation
-        if !temp_formatter.safe_to_reindent {
-            self.safe_to_reindent = false;
-        }
-        temp_formatter.reindent(self.indentation);
-        self.write_string(&temp_formatter.builder);
-    }
-
-    /// Format a file.
-    pub fn format_file(&mut self, n: &File, include_pkg: bool) {
-        let multiline = n.base.is_multiline();
-        let sep = '\n';
-        if let Some(pkg) = &n.package {
-            if include_pkg && !pkg.name.name.is_empty() {
-                self.write_indent();
-                self.format_node(&Node::PackageClause(pkg));
-                if !n.imports.is_empty() || !n.body.is_empty() {
-                    self.write_rune(sep);
-                    self.write_rune(sep)
-                }
-            }
-        }
-        for (i, value) in n.imports.iter().enumerate() {
-            if i != 0 {
-                self.write_rune(sep)
-            }
-            self.write_indent();
-            self.format_import_declaration(value)
-        }
-        if !n.imports.is_empty() && !n.body.is_empty() {
-            self.write_rune(sep);
-            self.write_rune(sep);
-        }
-        // format the file statements
-        self.format_statement_list(&n.body);
-
-        if !n.eof.is_empty() {
-            if multiline {
-                self.write_rune(sep);
-            }
-            self.set_indent(0);
-            self.clear = true;
-            self.format_comments(&n.eof);
-        }
-    }
-
-    fn format_node(&mut self, n: &Node) {
-        // save current indentation
-        let curr_ind = self.indentation;
-        match n {
-            Node::File(m) => self.format_file(m, true),
-            Node::Block(m) => self.format_block(m),
-            Node::ExprStmt(m) => self.format_expression_statement(m),
-            Node::PackageClause(m) => self.format_package_clause(m),
-            Node::ImportDeclaration(m) => self.format_import_declaration(m),
-            Node::ReturnStmt(m) => self.format_return_statement(m),
-            Node::OptionStmt(m) => self.format_option_statement(m),
-            Node::TestStmt(m) => self.format_test_statement(m),
-            Node::TestCaseStmt(m) => self.format_testcase_statement(m),
-            Node::VariableAssgn(m) => self.format_variable_assignment(m),
-            Node::IndexExpr(m) => self.format_index_expression(m),
-            Node::MemberAssgn(m) => self.format_member_assignment(m),
-            Node::CallExpr(m) => self.format_call_expression(m),
-            Node::PipeExpr(m) => self.format_pipe_expression(m),
-            Node::ConditionalExpr(m) => self.format_conditional_expression(m),
-            Node::StringExpr(m) => self.format_string_expression(m),
-            Node::ArrayExpr(m) => self.format_array_expression(m),
-            Node::DictExpr(m) => self.format_dict_expression(m),
-            Node::MemberExpr(m) => self.format_member_expression(m),
-            Node::UnaryExpr(m) => self.format_unary_expression(m),
-            Node::BinaryExpr(m) => self.format_binary_expression(m),
-            Node::LogicalExpr(m) => self.format_logical_expression(m),
-            Node::ParenExpr(m) => self.format_paren_expression(m),
-            Node::FunctionExpr(m) => self.format_function_expression(m),
-            Node::Property(m) => self.format_property(m),
-            Node::TextPart(m) => self.format_text_part(m),
-            Node::InterpolatedPart(m) => self.format_interpolated_part(m),
-            Node::StringLit(m) => self.format_string_literal(m),
-            Node::BooleanLit(m) => self.format_boolean_literal(m),
-            Node::FloatLit(m) => self.format_float_literal(m),
-            Node::IntegerLit(m) => self.format_integer_literal(m),
-            Node::UintLit(m) => self.format_unsigned_integer_literal(m),
-            Node::RegexpLit(m) => self.format_regexp_literal(m),
-            Node::DurationLit(m) => self.format_duration_literal(m),
-            Node::DateTimeLit(m) => self.format_date_time_literal(m),
-            Node::PipeLit(m) => self.format_pipe_literal(m),
-            Node::Identifier(m) => self.format_identifier(m),
-            Node::ObjectExpr(m) => {
-                self.format_record_expression_braces(m, true, self.temp_singleline)
-            }
-            Node::Package(m) => self.format_package(m),
-            Node::BadStmt(_) => self.err = Some(anyhow!("bad statement")),
-            Node::BadExpr(_) => self.err = Some(anyhow!("bad expression")),
-            Node::BuiltinStmt(m) => self.format_builtin(m),
-            Node::TypeExpression(n) => self.format_type_expression(n),
-            Node::MonoType(n) => self.format_monotype(n),
-            Node::ParameterType(n) => self.format_parameter_type(n),
-            Node::PropertyType(n) => self.format_property_type(n),
-            Node::TypeConstraint(n) => self.format_constraint(n),
-        }
-        self.set_indent(curr_ind)
-    }
-
-    fn format_package(&mut self, n: &ast::Package) {
-        let pkg_name = &n.package;
-        self.format_package_clause(&ast::PackageClause {
-            name: ast::Identifier {
-                name: String::from(pkg_name),
-                base: ast::BaseNode::default(),
-            },
-            base: ast::BaseNode::default(),
-        });
-        for (i, file) in n.files.iter().enumerate() {
-            if i != 0 {
-                self.write_rune('\n');
-                self.write_rune('\n');
-            }
-            if !file.name.is_empty() {
-                self.write_comment(&file.name);
-            }
-            self.format_file(file, false)
-        }
-    }
-
-    fn format_builtin(&mut self, n: &ast::BuiltinStmt) {
-        self.format_comments(&n.base.comments);
-        self.write_string("builtin ");
-        self.format_identifier(&n.id);
-        self.format_comments(&n.colon);
-        if n.colon.is_empty() {
-            self.write_rune(' ');
-        }
-        self.write_string(": ");
-        self.format_type_expression(&n.ty);
-    }
-
-    fn format_type_expression(&mut self, n: &ast::TypeExpression) {
-        self.format_monotype(&n.monotype);
-        if !n.constraints.is_empty() {
-            let mut multiline = n.constraints.len() > MULTILINE;
-
-            let mut temp_formatters: Vec<Formatter> = Vec::new();
-
-            for c in &n.constraints {
-                let mut temp = self.create_temp_formatter();
-                temp.format_constraint(c);
-                // if any child node contains newlines, then that child and the parent node will be
-                // multiline as well
-                if temp.builder.contains('\n') {
-                    multiline = true;
-                }
-                temp_formatters.push(temp);
-            }
-
-            self.write_string(" where");
-
-            if multiline {
-                self.write_rune('\n');
-                self.indent();
-                self.write_indent();
+    (
+        arena.text(open),
+        docs![arena, line_.clone(), comma_list_with(arena, items, line),],
+        docs![
+            arena,
+            if let ::pretty::Doc::Nil = &*trailing_comments {
+                line_
             } else {
-                self.write_rune(' ');
-            }
+                arena.nil()
+            },
+            trailing_comments,
+            arena.text(close)
+        ],
+    )
+}
 
-            let sep = match multiline {
-                true => ",\n",
-                false => ", ",
-            };
-            for (i, temp) in temp_formatters
-                .iter_mut()
-                .enumerate()
-                .take(n.constraints.len())
-            {
-                self.ingest_formatter(temp);
-                if i < n.constraints.len() - 1 {
-                    self.write_string(sep);
-                    if multiline {
-                        self.write_indent();
+fn comma_list_with<'doc, I>(
+    arena: &'doc Arena<'doc>,
+    docs: impl IntoIterator<Item = Doc<'doc>, IntoIter = I>,
+    line: Doc<'doc>,
+) -> Doc<'doc>
+where
+    I: ExactSizeIterator<Item = Doc<'doc>>,
+{
+    let docs = docs.into_iter();
+    let len = docs.len();
+    let trailing_comma = if len == 0 {
+        arena.nil()
+    } else {
+        arena.text(",").flat_alt(arena.nil())
+    };
+    arena
+        .intersperse(
+            docs.map(move |doc| doc.group()),
+            arena.text(",").append(line.clone()),
+        )
+        .append(trailing_comma)
+}
+
+fn comma_list_without_trailing_comma<'doc>(
+    arena: &'doc Arena<'doc>,
+    docs: impl IntoIterator<Item = Doc<'doc>>,
+    line: Doc<'doc>,
+) -> Doc<'doc> {
+    arena.intersperse(docs, arena.text(",").append(line))
+}
+
+/// Constructs a document which attempts to "hang" its prefix  on the same line to reduce how much
+/// the `body` needs to be indented. To do this it tries to fit these (example) layouts in order,
+/// selecting the first that fits
+///
+/// ```flux
+/// foo = () => { x: 1 }
+/// ```
+/// gets turned into
+///
+/// Prefixes: `[foo =, () =>, {]`
+/// Body: `x: 1`
+/// Suffixes: `[}]`
+///
+/// Layouts:
+///
+/// ```flux
+/// foo = () => {
+///     x: 1,
+/// }
+/// ```
+///
+/// ```flux
+/// foo = () =>
+///     {
+///         x: 1,
+///     }
+/// ```
+///
+/// ```flux
+/// foo =
+///     () =>
+///         {
+///             x: 1,
+///         }
+/// ```
+///
+/// (The record in these layouts are laid out on multiple lines, however if they fit they will of
+/// course still be on a single line)
+fn format_hang_doc<'doc>(
+    arena: &'doc Arena<'doc>,
+    surrounding: &[Affixes<'doc>],
+    body: Doc<'doc>,
+) -> Doc<'doc> {
+    let fail_on_multi_line = arena.fail().flat_alt(arena.nil());
+
+    (1..surrounding.len() + 1)
+        .rev()
+        .map(|split| {
+            let (before, after) = surrounding.split_at(split);
+            let last = before.len() == 1;
+            docs![
+                arena,
+                docs![
+                    arena,
+                    arena.concat(before.iter().map(|affixes| affixes.prefix.clone())),
+                    if last {
+                        arena.nil()
+                    } else {
+                        fail_on_multi_line.clone()
                     }
-                }
-            }
-            if multiline {
-                self.unindent();
-            }
+                ]
+                .group(),
+                docs![
+                    arena,
+                    after.iter().rev().cloned().fold(
+                        docs![
+                            arena,
+                            body.clone(),
+                            // If there is no prefix then we must not allow the body to laid out on multiple
+                            // lines without nesting
+                            if !last
+                                && before
+                                    .iter()
+                                    .all(|affixes| matches!(&*affixes.prefix.1, ::pretty::Doc::Nil))
+                            {
+                                fail_on_multi_line.clone()
+                            } else {
+                                arena.nil()
+                            },
+                        ]
+                        .nest(INDENT)
+                        .append(arena.concat(after.iter().map(|affixes| affixes.suffix.clone()))),
+                        |acc, affixes| {
+                            let mut doc = affixes.prefix.append(acc);
+                            if affixes.nest {
+                                doc = doc.nest(INDENT);
+                            }
+                            doc.group()
+                        },
+                    ),
+                    arena.concat(before.iter().map(|affixes| affixes.suffix.clone())),
+                ]
+                .group(),
+            ]
+        })
+        .fold(None::<Doc<'doc>>, |acc, doc| {
+            Some(match acc {
+                None => doc,
+                Some(acc) => acc.union(doc),
+            })
+        })
+        .unwrap_or(body)
+}
+
+#[derive(Clone)]
+struct Affixes<'doc> {
+    prefix: Doc<'doc>,
+    suffix: Doc<'doc>,
+    nest: bool,
+}
+
+impl Affixes<'_> {
+    fn nest(mut self) -> Self {
+        self.nest = true;
+        self
+    }
+}
+
+fn affixes<'doc>(prefix: Doc<'doc>, suffix: Doc<'doc>) -> Affixes<'doc> {
+    Affixes {
+        prefix,
+        suffix,
+        nest: false,
+    }
+}
+
+struct HangDoc<'doc> {
+    affixes: Vec<Affixes<'doc>>,
+    body: Doc<'doc>,
+}
+
+impl<'doc> HangDoc<'doc> {
+    fn add_prefix(&mut self, doc: Doc<'doc>) {
+        if let Some(affixes) = self.affixes.last_mut() {
+            affixes.prefix = doc.append(affixes.prefix.clone());
+        } else {
+            self.body = doc.append(self.body.clone());
         }
     }
 
-    fn format_monotype(&mut self, n: &ast::MonoType) {
+    fn format(mut self) -> Doc<'doc> {
+        self.affixes.reverse();
+        format_hang_doc(self.body.0, &self.affixes, self.body)
+    }
+}
+
+fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
+    let arena = Arena::new();
+    let mut formatter = Formatter {
+        arena: &arena,
+        err: None,
+    };
+    let doc = formatter.format_file(file, include_pkg).group().1;
+    if let Some(err) = formatter.err {
+        return Err(err);
+    }
+    let formatted = doc.pretty(120).to_string();
+    // Remove indentation from whitespace only lines
+    Ok(formatted
+        .split('\n')
+        .map(|s| s.trim_end())
+        .collect::<Vec<_>>()
+        .join("\n"))
+}
+
+struct Formatter<'doc> {
+    arena: &'doc Arena<'doc>,
+    err: Option<Error>,
+}
+
+#[allow(dead_code, unused_variables)]
+impl<'doc> Formatter<'doc> {
+    fn base_multiline(&self, base: &ast::BaseNode) -> Doc<'doc> {
+        self.multiline(base.is_multiline())
+    }
+
+    fn multiline(&self, multiline: bool) -> Doc<'doc> {
+        if multiline {
+            self.arena.hardline()
+        } else {
+            self.arena.line()
+        }
+    }
+
+    fn base_multiline_(&self, base: &ast::BaseNode) -> Doc<'doc> {
+        self.multiline_(base.is_multiline())
+    }
+
+    fn multiline_(&self, multiline: bool) -> Doc<'doc> {
+        if multiline {
+            self.arena.hardline()
+        } else {
+            self.arena.line_()
+        }
+    }
+
+    fn format_file(&mut self, file: &'doc File, include_pkg: bool) -> Doc<'doc> {
+        let arena = self.arena;
+        let mut doc = arena.nil();
+        if let Some(pkg) = &file.package {
+            if include_pkg && !pkg.name.name.is_empty() {
+                doc = docs![
+                    arena,
+                    doc,
+                    self.format_comments(&pkg.base.comments),
+                    "package ",
+                    self.format_identifier(&pkg.name),
+                    arena.hardline(),
+                    if !file.imports.is_empty() || !file.body.is_empty() {
+                        arena.hardline().append(arena.hardline())
+                    } else {
+                        arena.nil()
+                    }
+                ];
+            }
+        }
+
+        doc = docs![
+            arena,
+            doc,
+            arena.intersperse(
+                file.imports
+                    .iter()
+                    .map(|import| self.format_import_declaration(import)),
+                arena.hardline()
+            ),
+        ];
+        if !file.imports.is_empty() && !file.body.is_empty() {
+            doc = docs![arena, doc, arena.hardline(), arena.hardline(),];
+        }
+
+        // format the file statements
+        doc = doc.append(self.format_statement_list(&file.body));
+
+        if !file.eof.is_empty() {
+            doc = doc.append(self.format_comments(&file.eof));
+        }
+
+        doc
+    }
+
+    fn format_append_comments(&mut self, comments: &'doc [ast::Comment]) -> Doc<'doc> {
+        let arena = self.arena;
+        let mut doc = arena.nil();
+        if !comments.is_empty() {
+            doc = arena.line();
+        }
+        docs![arena, doc, self.format_comments(comments)].nest(INDENT)
+    }
+
+    fn format_comments(&mut self, comments: &'doc [ast::Comment]) -> Doc<'doc> {
+        let arena = self.arena;
+        arena.concat(comments.iter().map(|c| {
+            arena.intersperse(
+                c.text.split('\n').map(|part| arena.text(part)),
+                arena.hardline(),
+            )
+        }))
+    }
+
+    fn format_type_expression(&mut self, n: &'doc ast::TypeExpression) -> Doc<'doc> {
+        let arena = self.arena;
+        docs![
+            arena,
+            self.format_monotype(&n.monotype),
+            if !n.constraints.is_empty() {
+                let line = self.multiline(n.constraints.len() > MULTILINE);
+
+                docs![
+                    arena,
+                    line.clone(),
+                    "where",
+                    line.clone(),
+                    comma_list_without_trailing_comma(
+                        arena,
+                        n.constraints.iter().map(|c| docs![
+                            arena,
+                            self.format_identifier(&c.tvar),
+                            ": ",
+                            self.format_kinds(&c.kinds),
+                        ]
+                        .group()),
+                        line,
+                    ),
+                ]
+            } else {
+                arena.nil()
+            }
+        ]
+    }
+
+    fn format_kinds(&mut self, n: &'doc [ast::Identifier]) -> Doc<'doc> {
+        let arena = self.arena;
+        arena.intersperse(
+            n.iter().map(|k| self.format_identifier(k)),
+            arena.text(" + "),
+        )
+    }
+
+    fn format_monotype(&mut self, n: &'doc ast::MonoType) -> Doc<'doc> {
+        let arena = self.arena;
         match n {
-            ast::MonoType::Tvar(tv) => self.format_tvar(tv),
-            ast::MonoType::Basic(nt) => self.format_basic_type(nt),
-            ast::MonoType::Array(arr) => self.format_array_type(arr),
-            ast::MonoType::Dict(dict) => self.format_dict_type(dict),
-            ast::MonoType::Record(rec) => self.format_record_type(rec),
-            ast::MonoType::Function(fun) => self.format_function_type(fun),
+            ast::MonoType::Tvar(tv) => self.format_identifier(&tv.name),
+            ast::MonoType::Basic(nt) => self.format_identifier(&nt.name),
+            ast::MonoType::Array(arr) => {
+                docs![arena, "[", self.format_monotype(&arr.element), "]",]
+            }
+            ast::MonoType::Dict(dict) => {
+                docs![
+                    arena,
+                    "[",
+                    self.format_monotype(&dict.key),
+                    ":",
+                    self.format_monotype(&dict.val),
+                    "]",
+                ]
+            }
+            ast::MonoType::Record(n) => {
+                let multiline = n.properties.len() > MULTILINE;
+                let line = self.multiline(multiline);
+                let line_ = self.multiline_(multiline);
+
+                docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    "{",
+                    docs![
+                        arena,
+                        line_.clone(),
+                        if let Some(tv) = &n.tvar {
+                            docs![
+                                arena,
+                                self.format_identifier(tv),
+                                arena.line(),
+                                "with",
+                                arena.line(),
+                            ]
+                        } else {
+                            arena.nil()
+                        },
+                        comma_list_with(
+                            arena,
+                            n.properties.iter().map(|p| {
+                                docs![
+                                    arena,
+                                    self.format_identifier(&p.name),
+                                    ": ",
+                                    self.format_monotype(&p.monotype),
+                                ]
+                                .group()
+                            }),
+                            line,
+                        ),
+                    ]
+                    .nest(INDENT),
+                    line_,
+                    "}",
+                ]
+            }
+            ast::MonoType::Function(n) => {
+                let multiline = n.parameters.len() > MULTILINE;
+                let line = self.multiline(multiline);
+                let line_ = self.multiline_(multiline);
+
+                docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    "(",
+                    docs![
+                        arena,
+                        line_.clone(),
+                        comma_list_with(
+                            arena,
+                            n.parameters.iter().map(|p| self.format_parameter_type(p)),
+                            line,
+                        ),
+                    ]
+                    .nest(INDENT),
+                    line_.clone(),
+                    ")",
+                    " => ",
+                    self.format_monotype(&n.monotype),
+                ]
+            }
         }
+        .group()
     }
 
-    fn format_function_type(&mut self, n: &ast::FunctionType) {
-        let mut multiline = n.parameters.len() > MULTILINE;
-        self.format_comments(&n.base.comments);
-        self.write_rune('(');
-
-        let mut temp_formatters: Vec<Formatter> = Vec::new();
-
-        for p in &n.parameters {
-            let mut temp = self.create_temp_formatter();
-            temp.format_parameter_type(p);
-            // if any child node contains newlines, then that child and the parent node will be
-            // multiline as well
-            if temp.builder.contains('\n') {
-                multiline = true;
-            }
-            temp_formatters.push(temp);
-        }
-
-        if multiline {
-            self.write_rune('\n');
-            self.indent();
-            self.write_indent();
-        }
-
-        let sep = match multiline {
-            true => ",\n",
-            false => ", ",
-        };
-
-        for (i, temp) in temp_formatters
-            .iter_mut()
-            .enumerate()
-            .take(n.parameters.len())
-        {
-            self.ingest_formatter(temp);
-            if i < n.parameters.len() - 1 {
-                self.write_string(sep);
-                if multiline {
-                    self.write_indent();
-                }
-            }
-        }
-
-        if multiline {
-            self.write_string(sep);
-            self.unindent();
-            self.write_indent();
-        }
-        self.write_rune(')');
-        self.write_string(" => ");
-        self.format_monotype(&n.monotype);
-    }
-
-    fn format_parameter_type(&mut self, n: &ast::ParameterType) {
+    fn format_parameter_type(&mut self, n: &'doc ast::ParameterType) -> Doc<'doc> {
+        let arena = self.arena;
         match &n {
             ast::ParameterType::Required {
                 base: _,
                 name,
                 monotype,
             } => {
-                self.format_identifier(name);
-                self.write_string(": ");
-                self.format_monotype(monotype);
+                docs![
+                    arena,
+                    self.format_identifier(name),
+                    ": ",
+                    self.format_monotype(monotype),
+                ]
             }
             ast::ParameterType::Optional {
                 base: _,
                 name,
                 monotype,
             } => {
-                self.write_rune('?');
-                self.format_identifier(name);
-                self.write_string(": ");
-                self.format_monotype(monotype);
+                docs![
+                    arena,
+                    "?",
+                    self.format_identifier(name),
+                    ": ",
+                    self.format_monotype(monotype),
+                ]
             }
             ast::ParameterType::Pipe {
                 base: _,
                 name,
                 monotype,
             } => {
-                self.write_string("<-");
-                match name {
-                    Some(n) => self.format_identifier(n),
-                    None => {}
+                docs![
+                    arena,
+                    "<-",
+                    match name {
+                        Some(n) => self.format_identifier(n),
+                        None => arena.nil(),
+                    },
+                    ": ",
+                    self.format_monotype(monotype),
+                ]
+            }
+        }
+    }
+
+    fn format_import_declaration(&mut self, n: &'doc ast::ImportDeclaration) -> Doc<'doc> {
+        let arena = self.arena;
+        docs![
+            arena,
+            self.format_comments(&n.base.comments),
+            "import ",
+            if let Some(alias) = &n.alias {
+                if !alias.name.is_empty() {
+                    docs![arena, self.format_identifier(alias), " "]
+                } else {
+                    arena.nil()
                 }
-                self.write_string(": ");
-                self.format_monotype(monotype);
-            }
+            } else {
+                arena.nil()
+            },
+            self.format_string_literal(&n.path)
+        ]
+    }
+
+    fn format_block(&mut self, n: &'doc ast::Block) -> HangDoc<'doc> {
+        let arena = self.arena;
+        HangDoc {
+            affixes: vec![affixes(
+                docs![arena, self.format_comments(&n.lbrace), "{"],
+                docs![arena, arena.hardline(), "}"],
+            )
+            .nest()],
+            body: docs![
+                arena,
+                arena.hardline(),
+                // format the block statements
+                self.format_statement_list(&n.body),
+                self.format_comments(&n.rbrace),
+            ],
         }
     }
-    fn format_record_type(&mut self, n: &ast::RecordType) {
-        let mut multiline = n.properties.len() > MULTILINE;
-        self.format_comments(&n.base.comments);
-        self.write_rune('{');
 
-        let mut temp_formatters: Vec<Formatter> = Vec::new();
+    fn format_statement_list(&mut self, s: &'doc [Statement]) -> Doc<'doc> {
+        let arena = self.arena;
 
-        for p in &n.properties {
-            let mut temp = self.create_temp_formatter();
-            temp.format_property_type(p);
-            // if any child node contains newlines, then that child and the parent node will be
-            // multiline as well
-            if temp.builder.contains('\n') {
-                multiline = true;
-            }
-            temp_formatters.push(temp);
-        }
+        let mut prev: i8 = -1;
+        let mut previous_location: i32 = -1;
+        arena.intersperse(
+            s.iter().enumerate().map(|(i, stmt)| {
+                let mut extra_line = arena.nil();
 
-        if let Some(tv) = &n.tvar {
-            self.format_identifier(tv);
-            self.write_string(" with");
-            if !multiline {
-                self.write_rune(' ');
-            }
-        }
-        if multiline {
-            self.write_rune('\n');
-            self.indent();
-            self.write_indent();
-        }
-
-        let sep = match multiline {
-            true => ",\n",
-            false => ", ",
-        };
-
-        for (i, temp) in temp_formatters
-            .iter_mut()
-            .enumerate()
-            .take(n.properties.len())
-        {
-            self.ingest_formatter(temp);
-            if i < n.properties.len() - 1 {
-                self.write_string(sep);
-                if multiline {
-                    self.write_indent();
+                let cur = stmt.typ();
+                if i != 0 {
+                    let current_location: i32 = stmt.base().location.start.line as i32;
+                    //compare the line position of adjacent lines to preserve formatted double new lines
+                    let line_gap = current_location - previous_location;
+                    // separate different statements with double newline or statements with comments
+                    if line_gap > 1 || cur != prev || starts_with_comment(Node::from_stmt(stmt)) {
+                        extra_line = arena.hardline();
+                    }
                 }
+                previous_location = stmt.base().location.end.line as i32;
+                prev = cur;
+
+                extra_line.append(self.format_statement(stmt))
+            }),
+            arena.hardline(),
+        )
+    }
+
+    fn format_assignment(&mut self, n: &'doc ast::Assignment) -> Doc<'doc> {
+        let arena = self.arena;
+        match n {
+            ast::Assignment::Variable(n) => {
+                let mut hang_doc = self.hang_expression(&n.init);
+                hang_doc.add_prefix(arena.line());
+                hang_doc.affixes.push(
+                    affixes(
+                        docs![
+                            arena,
+                            self.format_identifier(&n.id),
+                            self.format_append_comments(&n.base.comments),
+                            " =",
+                        ],
+                        arena.nil(),
+                    )
+                    .nest(),
+                );
+                hang_doc.format()
+            }
+            ast::Assignment::Member(n) => {
+                let mut hang_doc = self.hang_expression(&n.init);
+                hang_doc.add_prefix(arena.line());
+                hang_doc.affixes.push(
+                    affixes(
+                        docs![
+                            arena,
+                            self.format_member_expression(&n.member),
+                            self.format_append_comments(&n.base.comments),
+                            " =",
+                        ],
+                        arena.nil(),
+                    )
+                    .nest(),
+                );
+                hang_doc.format()
             }
         }
-
-        if multiline {
-            self.write_string(sep);
-            self.unindent();
-            self.write_indent();
-        }
-        self.write_rune('}');
     }
 
-    fn format_property_type(&mut self, n: &ast::PropertyType) {
-        self.format_identifier(&n.name);
-        self.write_string(": ");
-        self.format_monotype(&n.monotype);
-    }
-    fn format_dict_type(&mut self, n: &ast::DictType) {
-        self.write_rune('[');
-        self.format_monotype(&n.key);
-        self.write_rune(':');
-        self.format_monotype(&n.val);
-        self.write_rune(']');
-    }
-    fn format_array_type(&mut self, n: &ast::ArrayType) {
-        self.write_rune('[');
-        self.format_monotype(&n.element);
-        self.write_rune(']');
-    }
-    fn format_basic_type(&mut self, n: &ast::NamedType) {
-        self.format_identifier(&n.name);
-    }
-    fn format_constraint(&mut self, n: &ast::TypeConstraint) {
-        self.format_identifier(&n.tvar);
-        self.write_string(": ");
-        self.format_kinds(&n.kinds);
-    }
-    fn format_kinds(&mut self, n: &[ast::Identifier]) {
-        self.format_identifier(&n[0]);
-        for k in &n[1..] {
-            self.write_string(" + ");
-            self.format_identifier(k);
-        }
-    }
-    fn format_tvar(&mut self, n: &ast::TvarType) {
-        self.format_identifier(&n.name);
-    }
-
-    fn format_property(&mut self, n: &ast::Property) {
-        self.format_property_key(&n.key);
-        if let Some(v) = &n.value {
-            self.format_comments(&n.separator);
-            self.write_string(": ");
-            self.format_node(&Node::from_expr(v));
-        }
-    }
-
-    fn format_function_expression(&mut self, n: &ast::FunctionExpr) {
-        self.format_comments(&n.lparen);
-        let mut multiline = n.params.len() > MULTILINE;
-        self.write_rune('(');
-
-        let mut temp_formatters: Vec<Formatter> = Vec::new();
-
-        for property in &n.params {
-            let mut temp = self.create_temp_formatter();
-            // treat properties differently than in general case
-            temp.format_function_argument(property);
-            temp.format_comments(&property.comma);
-
-            // if any child node contains newlines, then that child and the parent node will be
-            // multiline as well
-            if temp.builder.contains('\n') {
-                multiline = true;
+    fn format_statement(&mut self, s: &'doc Statement) -> Doc<'doc> {
+        let arena = self.arena;
+        match s {
+            Statement::Expr(s) => self.format_expression(&s.expression),
+            Statement::Variable(s) => self.format_variable_assignment(s),
+            Statement::Option(s) => {
+                docs![
+                    arena,
+                    self.format_comments(&s.base.comments),
+                    "option ",
+                    self.format_assignment(&s.assignment),
+                ]
             }
-            temp_formatters.push(temp);
-        }
+            Statement::Return(s) => {
+                let prefix = docs![arena, self.format_comments(&s.base.comments), "return"];
+                let mut hang_doc = self.hang_expression(&s.argument);
+                hang_doc.add_prefix(arena.line());
+                hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+                hang_doc.format()
+            }
+            Statement::Bad(s) => {
+                self.err = Some(anyhow!("bad statement"));
+                arena.nil()
+            }
+            Statement::Test(n) => {
+                docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    "test ",
+                    self.format_variable_assignment(&n.assignment),
+                ]
+            }
+            Statement::TestCase(n) => {
+                let prefix = docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    "testcase ",
+                    self.format_identifier(&n.id),
+                    if let Some(extends) = &n.extends {
+                        docs![arena, " extends ", self.format_string_literal(extends),]
+                    } else {
+                        arena.nil()
+                    },
+                    arena.line(),
+                ];
 
-        let sep;
-        if multiline && n.params.len() > 1 {
-            sep = ",\n";
-            self.write_string("\n");
-            self.indent();
-            self.write_indent();
+                let mut hang_doc = self.format_block(&n.block);
+                hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+                hang_doc.format()
+            }
+            Statement::Builtin(n) => docs![
+                arena,
+                self.format_comments(&n.base.comments),
+                docs![
+                    arena,
+                    docs![
+                        arena,
+                        "builtin",
+                        arena.line(),
+                        self.format_identifier(&n.id)
+                    ]
+                    .group(),
+                    if n.colon.is_empty() {
+                        arena.text(" ")
+                    } else {
+                        arena.line()
+                    },
+                    self.format_comments(&n.colon),
+                    ": ",
+                    self.format_type_expression(&n.ty),
+                ]
+                .nest(INDENT)
+                .group()
+            ],
+        }
+        .group()
+    }
+
+    fn format_record_expression_as_function_argument(
+        &mut self,
+        n: &'doc ast::ObjectExpr,
+    ) -> (Doc<'doc>, Doc<'doc>, Doc<'doc>) {
+        self.format_record_expression_braces(n, false)
+    }
+
+    fn format_record_expression_braces(
+        &mut self,
+        n: &'doc ast::ObjectExpr,
+        braces: bool,
+    ) -> (Doc<'doc>, Doc<'doc>, Doc<'doc>) {
+        let arena = self.arena;
+        let multiline = n.properties.len() > MULTILINE;
+        let line = self.multiline(multiline);
+        let line_ = self.multiline_(multiline);
+
+        let first = docs![
+            arena,
+            self.format_comments(&n.lbrace),
+            if braces { arena.text("{") } else { arena.nil() },
+        ];
+        let doc = docs![
+            arena,
+            if let Some(with) = &n.with {
+                docs![
+                    arena,
+                    self.format_identifier(&with.source),
+                    self.format_comments(&with.with),
+                    if with.with.is_empty() {
+                        arena.text(" ")
+                    } else {
+                        arena.nil()
+                    },
+                    "with",
+                    line.clone(),
+                ]
+                .group()
+            } else {
+                line_.clone()
+            },
+            comma_list_with(
+                arena,
+                n.properties.iter().map(|property| {
+                    docs![
+                        arena,
+                        self.format_property(property),
+                        self.format_append_comments(&property.comma),
+                    ]
+                }),
+                line,
+            ),
+            self.format_append_comments(&n.rbrace),
+        ];
+        (
+            first,
+            doc,
+            docs![
+                arena,
+                line_,
+                if braces { arena.text("}") } else { arena.nil() },
+            ],
+        )
+    }
+
+    // format_child_with_parens applies the generic rule for parenthesis (not for binary expressions).
+    fn format_child_with_parens(
+        &mut self,
+        parent: Node<'doc>,
+        child: ChildNode<'doc>,
+    ) -> Doc<'doc> {
+        self.format_left_child_with_parens(parent, child)
+    }
+
+    // format_right_child_with_parens applies the generic rule for parenthesis to the right child of a binary expression.
+    fn format_right_child_with_parens(
+        &mut self,
+        parent: Node<'doc>,
+        child: ChildNode<'doc>,
+    ) -> Doc<'doc> {
+        let (pvp, pvc) = get_precedences(&parent, &child.as_node());
+        if needs_parenthesis(pvp, pvc, true) {
+            self.format_node_with_parens(child)
         } else {
-            sep = ", ";
+            self.format_childnode(child)
         }
+    }
 
-        for (i, temp) in temp_formatters.iter_mut().enumerate().take(n.params.len()) {
-            self.ingest_formatter(temp);
-            if i < n.params.len() - 1 {
-                self.write_string(sep);
-                if multiline {
-                    self.write_indent();
-                }
-            }
+    // format_left_child_with_parens applies the generic rule for parenthesis to the left child of a binary expression.
+    fn format_left_child_with_parens(
+        &mut self,
+        parent: Node<'doc>,
+        child: ChildNode<'doc>,
+    ) -> Doc<'doc> {
+        let (pvp, pvc) = get_precedences(&parent, &child.as_node());
+        if needs_parenthesis(pvp, pvc, false) {
+            self.format_node_with_parens(child)
+        } else {
+            self.format_childnode(child)
         }
+    }
 
-        if multiline {
-            self.unindent();
-            self.write_string(sep);
+    // XXX: rockstar (17 Jun 2021) - This clippy lint erroneously flags this
+    // function with lint. It's allowed here, for now.
+    // See https://github.com/rust-lang/rust-clippy/issues/7369
+    #[allow(clippy::branches_sharing_code)]
+    fn format_node_with_parens(&mut self, node: ChildNode<'doc>) -> Doc<'doc> {
+        let arena = self.arena;
+        if has_parens(&node.as_node()) {
+            // If the AST already has parens here do not double add them
+            self.format_childnode(node)
+        } else {
+            docs![arena, "(", self.format_childnode(node), ")"]
         }
+    }
 
-        self.format_comments(&n.rparen);
-        self.write_string(") ");
-        self.format_comments(&n.arrow);
-        self.write_string("=>");
+    fn format_childnode(&mut self, node: ChildNode<'doc>) -> Doc<'doc> {
+        match node {
+            ChildNode::Call(c) => self.format_call_expression(c),
+            ChildNode::Expr(e) => self.format_expression(e),
+        }
+    }
+
+    fn format_function_expression(&mut self, n: &'doc ast::FunctionExpr) -> HangDoc<'doc> {
+        let arena = self.arena;
+
+        let multiline = n.params.len() > MULTILINE;
+        let line = self.multiline(multiline);
+        let line_ = self.multiline_(multiline);
+
+        let prefix1 = self.format_comments(&n.lparen);
+
+        let prefix2 = docs![
+            arena,
+            "(",
+            docs![
+                arena,
+                line_.clone(),
+                comma_list_with(
+                    arena,
+                    n.params.iter().map(|property| {
+                        docs![
+                            arena,
+                            // treat properties differently than in general case
+                            self.format_function_argument(property),
+                            self.format_comments(&property.comma),
+                        ]
+                    }),
+                    line
+                ),
+            ]
+            .nest(INDENT),
+            line_,
+            self.format_comments(&n.rparen),
+            ")",
+            if n.arrow.is_empty() {
+                arena.softline()
+            } else {
+                arena.nil()
+            },
+            self.format_append_comments(&n.arrow),
+            "=>",
+        ]
+        .group();
 
         // must wrap body with parenthesis in order to discriminate between:
         //  - returning a record: (x) => ({foo: x})
@@ -631,657 +894,139 @@ impl Formatter {
             ast::FunctionBody::Expr(b) => {
                 // Remove any parentheses around the body, we will re add them if needed.
                 let b = strip_parens(b);
-                match b {
-                    ast::Expression::Object(_) => {
-                        // Add parens because we have an object literal for the body
-                        self.write_rune(' ');
-                        self.write_rune('(');
-                        self.format_node(&Node::from_expr(b));
-                        self.write_rune(')')
-                    }
-                    _ => {
-                        // Do not add parens for everything else
-                        self.write_rune(' ');
-                        self.format_node(&Node::from_expr(b));
-                    }
+                HangDoc {
+                    affixes: vec![
+                        affixes(prefix2, arena.nil()),
+                        affixes(prefix1, arena.nil()).nest(),
+                    ],
+                    body: docs![
+                        arena,
+                        arena.line(),
+                        match b {
+                            ast::Expression::Object(_) => {
+                                // Add parens because we have an object literal for the body
+                                docs![arena, "(", self.format_expression(b), ")",].group()
+                            }
+                            _ => {
+                                // Do not add parens for everything else
+                                self.format_expression(b)
+                            }
+                        },
+                    ],
                 }
             }
             ast::FunctionBody::Block(b) => {
-                self.write_rune(' ');
-                self.format_block(b);
+                let mut hang_doc = self.format_block(b);
+                hang_doc.add_prefix(arena.line());
+                hang_doc.affixes.push(affixes(prefix2, arena.nil()));
+                hang_doc.affixes.push(affixes(prefix1, arena.nil()).nest());
+                hang_doc
             }
         }
     }
 
-    fn format_function_argument(&mut self, n: &ast::Property) {
+    fn format_property(&mut self, n: &'doc ast::Property) -> Doc<'doc> {
+        let arena = self.arena;
         if let Some(v) = &n.value {
-            self.format_property_key(&n.key);
-            self.format_comments(&n.separator);
-            self.write_rune('=');
-            self.format_node(&Node::from_expr(v));
+            let prefix = docs![
+                arena,
+                self.format_property_key(&n.key),
+                self.format_append_comments(&n.separator),
+                ":",
+            ];
+            let mut hang_doc = self.hang_expression(v);
+            hang_doc.add_prefix(arena.line());
+            hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+            hang_doc.format()
         } else {
             self.format_property_key(&n.key)
         }
     }
 
-    fn format_property_key(&mut self, n: &ast::PropertyKey) {
+    fn format_function_argument(&mut self, n: &'doc ast::Property) -> Doc<'doc> {
+        let arena = self.arena;
+        if let Some(v) = &n.value {
+            let prefix = docs![
+                arena,
+                self.format_property_key(&n.key),
+                self.format_comments(&n.separator),
+                "=",
+            ];
+
+            let mut hang_doc = self.hang_expression(v);
+            hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+            hang_doc.format()
+        } else {
+            self.format_property_key(&n.key)
+        }
+    }
+
+    fn format_property_key(&mut self, n: &'doc ast::PropertyKey) -> Doc<'doc> {
         match n {
             ast::PropertyKey::StringLit(m) => self.format_string_literal(m),
             ast::PropertyKey::Identifier(m) => self.format_identifier(m),
         }
     }
 
-    fn format_paren_expression(&mut self, n: &ast::ParenExpr) {
-        if has_parens(&Node::ParenExpr(n)) {
-            // The paren node has comments so we should format them
-            self.format_comments(&n.lparen);
-            self.write_rune('(');
-            self.format_node(&Node::from_expr(&n.expression));
-            self.format_comments(&n.rparen);
-            self.write_rune(')');
-        } else {
-            // The paren node does not have comments so we can skip adding the parens
-            self.format_node(&Node::from_expr(&n.expression));
-        }
+    fn format_string_literal(&mut self, n: &'doc ast::StringLit) -> Doc<'doc> {
+        let hang_doc = self.hang_string_literal(n);
+        hang_doc.format()
     }
 
-    fn format_string_expression(&mut self, n: &ast::StringExpr) {
-        self.format_comments(&n.base.comments);
-        self.write_rune('"');
-        for p in &n.parts {
-            self.format_string_expression_part(p)
-        }
-        self.write_rune('"');
-    }
+    fn hang_string_literal(&mut self, n: &'doc ast::StringLit) -> HangDoc<'doc> {
+        let arena = self.arena;
 
-    fn format_string_expression_part(&mut self, n: &ast::StringExprPart) {
-        match n {
-            ast::StringExprPart::Text(p) => self.format_text_part(p),
-            ast::StringExprPart::Interpolated(p) => self.format_interpolated_part(p),
-        }
-    }
+        let doc = self.format_comments(&n.base.comments);
 
-    fn format_text_part(&mut self, n: &ast::TextPart) {
-        let escaped_string = self.escape_string(&n.value);
-        self.write_string(&escaped_string);
-    }
-
-    fn format_interpolated_part(&mut self, n: &ast::InterpolatedPart) {
-        self.write_string("${");
-        self.format_node(&Node::from_expr(&n.expression));
-        self.write_rune('}')
-    }
-
-    fn format_array_expression(&mut self, n: &ast::ArrayExpr) {
-        let mut multiline = n.elements.len() > MULTILINE;
-        self.format_comments(&n.lbrack);
-        self.write_rune('[');
-
-        let mut temp_formatters: Vec<Formatter> = Vec::new();
-
-        for item in &n.elements {
-            let mut temp = self.create_temp_formatter();
-
-            temp.format_node(&Node::from_expr(&item.expression));
-            temp.format_comments(&item.comma);
-
-            // if any child node contains newlines, then that child and the parent node will be
-            // multiline as well
-            if temp.builder.contains('\n') {
-                multiline = true;
-            }
-            temp_formatters.push(temp);
-        }
-
-        if multiline {
-            self.temp_singleline = true;
-            self.write_rune('\n');
-            self.indent();
-            self.write_indent();
-        }
-
-        let sep = match multiline {
-            true => ",\n",
-            false => ", ",
-        };
-
-        for (i, temp) in temp_formatters
-            .iter_mut()
-            .enumerate()
-            .take(n.elements.len())
-        {
-            self.ingest_formatter(temp);
-            if i < n.elements.len() - 1 {
-                self.write_string(sep);
-                if multiline {
-                    self.write_indent();
-                }
-            }
-        }
-
-        if multiline {
-            self.temp_singleline = false;
-            self.write_string(sep);
-            self.unindent();
-            self.write_indent();
-        }
-
-        self.format_comments(&n.rbrack);
-        self.write_rune(']')
-    }
-
-    fn format_dict_expression(&mut self, n: &ast::DictExpr) {
-        let mut multiline = n.elements.len() > MULTILINE;
-        self.format_comments(&n.lbrack);
-        self.write_rune('[');
-
-        let mut temp_formatters: Vec<Formatter> = Vec::new();
-
-        if !n.elements.is_empty() {
-            for item in &n.elements {
-                let mut temp = self.create_temp_formatter();
-
-                temp.format_node(&Node::from_expr(&item.key));
-                temp.write_rune(':');
-                temp.write_rune(' ');
-                temp.format_node(&Node::from_expr(&item.val));
-                temp.format_comments(&item.comma);
-
-                // if any child node contains newlines, then that child and the parent node will be
-                // multiline as well
-                if temp.builder.contains('\n') {
-                    multiline = true;
-                }
-                temp_formatters.push(temp);
-            }
-        }
-
-        if multiline {
-            self.write_rune('\n');
-            self.indent();
-            self.write_indent();
-        }
-
-        let sep = match multiline {
-            true => ",\n",
-            false => ", ",
-        };
-
-        for (i, temp) in temp_formatters
-            .iter_mut()
-            .enumerate()
-            .take(n.elements.len())
-        {
-            self.ingest_formatter(temp);
-
-            if i < n.elements.len() - 1 {
-                self.write_string(sep);
-                if multiline {
-                    self.write_indent()
-                }
-            }
-        }
-
-        if n.elements.is_empty() {
-            self.write_rune(':');
-        }
-
-        if multiline {
-            self.write_string(sep);
-            self.unindent();
-            self.write_indent();
-        }
-        self.format_comments(&n.rbrack);
-        self.write_rune(']')
-    }
-
-    fn format_index_expression(&mut self, n: &ast::IndexExpr) {
-        self.format_child_with_parens(Node::IndexExpr(n), Node::from_expr(&n.array));
-        self.format_comments(&n.lbrack);
-        self.write_rune('[');
-        self.format_node(&Node::from_expr(&n.index));
-        self.format_comments(&n.rbrack);
-        self.write_rune(']');
-    }
-
-    fn format_block(&mut self, n: &ast::Block) {
-        self.format_comments(&n.lbrace);
-        self.write_rune('{');
-        let sep = '\n';
-        if !n.body.is_empty() {
-            self.indent()
-        }
-        self.write_rune(sep);
-        // format the block statements
-        self.format_statement_list(&n.body);
-
-        if !n.body.is_empty() {
-            self.write_rune(sep);
-            self.unindent();
-            self.write_indent()
-        }
-        self.format_comments(&n.rbrace);
-        self.write_rune('}')
-    }
-
-    fn format_statement_list(&mut self, n: &[Statement]) {
-        let mut prev: i8 = -1;
-        let mut previous_location: i32 = -1;
-        let sep = '\n';
-        for (i, stmt) in n.iter().enumerate() {
-            let cur = stmt.typ();
-            if i != 0 {
-                let current_location: i32 = stmt.base().location.start.line as i32;
-                //compare the line position of adjacent lines to preserve formatted double new lines
-                let line_gap = current_location - previous_location;
-                self.write_rune(sep);
-                // separate different statements with double newline or statements with comments
-                if line_gap > 1 || cur != prev || starts_with_comment(Node::from_stmt(stmt)) {
-                    self.write_rune(sep);
-                }
-            }
-            previous_location = stmt.base().location.end.line as i32;
-            self.write_indent();
-            self.format_node(&Node::from_stmt(stmt));
-            prev = cur;
-        }
-    }
-
-    fn format_return_statement(&mut self, n: &ast::ReturnStmt) {
-        self.format_comments(&n.base.comments);
-        self.write_string("return ");
-        self.format_node(&Node::from_expr(&n.argument));
-    }
-
-    fn format_option_statement(&mut self, n: &ast::OptionStmt) {
-        self.format_comments(&n.base.comments);
-        self.write_string("option ");
-        self.format_assignment(&n.assignment);
-    }
-
-    fn format_test_statement(&mut self, n: &ast::TestStmt) {
-        self.format_comments(&n.base.comments);
-        self.write_string("test ");
-        self.format_node(&Node::VariableAssgn(&n.assignment));
-    }
-
-    fn format_testcase_statement(&mut self, n: &ast::TestCaseStmt) {
-        self.format_comments(&n.base.comments);
-        self.write_string("testcase ");
-        self.format_node(&Node::Identifier(&n.id));
-        if let Some(extends) = &n.extends {
-            self.write_string(" extends ");
-            self.format_node(&Node::StringLit(extends));
-        }
-        self.write_rune(' ');
-        self.format_node(&Node::Block(&n.block));
-    }
-
-    fn format_assignment(&mut self, n: &ast::Assignment) {
-        match &n {
-            ast::Assignment::Variable(m) => {
-                self.format_node(&Node::VariableAssgn(m));
-            }
-            ast::Assignment::Member(m) => {
-                self.format_node(&Node::MemberAssgn(m));
-            }
-        }
-    }
-
-    // format_child_with_parens applies the generic rule for parenthesis (not for binary expressions).
-    fn format_child_with_parens(&mut self, parent: Node, child: Node) {
-        self.format_left_child_with_parens(&parent, &child)
-    }
-
-    // format_right_child_with_parens applies the generic rule for parenthesis to the right child of a binary expression.
-    fn format_right_child_with_parens(&mut self, parent: &Node, child: &Node) {
-        let (pvp, pvc) = get_precedences(parent, child);
-        if needs_parenthesis(pvp, pvc, true) {
-            self.format_node_with_parens(child);
-        } else {
-            self.format_node(child);
-        }
-    }
-
-    // format_left_child_with_parens applies the generic rule for parenthesis to the left child of a binary expression.
-    fn format_left_child_with_parens(&mut self, parent: &Node, child: &Node) {
-        let (pvp, pvc) = get_precedences(parent, child);
-        if needs_parenthesis(pvp, pvc, false) {
-            self.format_node_with_parens(child);
-        } else {
-            self.format_node(child);
-        }
-    }
-
-    // XXX: rockstar (17 Jun 2021) - This clippy lint erroneously flags this
-    // function with lint. It's allowed here, for now.
-    // See https://github.com/rust-lang/rust-clippy/issues/7369
-    #[allow(clippy::branches_sharing_code)]
-    fn format_node_with_parens(&mut self, node: &Node) {
-        if has_parens(node) {
-            // If the AST already has parens here do not double add them
-            self.format_node(node);
-        } else {
-            self.write_rune('(');
-            self.format_node(node);
-            self.write_rune(')')
-        }
-    }
-
-    fn format_member_expression(&mut self, n: &ast::MemberExpr) {
-        self.format_child_with_parens(Node::MemberExpr(n), Node::from_expr(&n.object));
-
-        match &n.property {
-            ast::PropertyKey::Identifier(m) => {
-                self.format_comments(&n.lbrack);
-                self.write_rune('.');
-                self.format_node(&Node::Identifier(m));
-            }
-            ast::PropertyKey::StringLit(m) => {
-                self.format_comments(&n.lbrack);
-                self.write_rune('[');
-                self.format_node(&Node::StringLit(m));
-                self.format_comments(&n.rbrack);
-                self.write_rune(']');
-            }
-        }
-    }
-
-    fn format_pipe_expression(&mut self, n: &ast::PipeExpr) {
-        let multiline = at_least_pipe_depth(2, n) || n.base.is_multiline();
-        self.format_child_with_parens(Node::PipeExpr(n), Node::from_expr(&n.argument));
-        if multiline {
-            self.write_rune('\n');
-            self.indent();
-            self.write_indent();
-        } else {
-            self.write_rune(' ');
-        }
-        self.format_comments(&n.base.comments);
-        self.write_string("|> ");
-        self.format_node(&Node::CallExpr(&n.call));
-    }
-
-    fn format_call_expression(&mut self, n: &ast::CallExpr) {
-        self.format_child_with_parens(Node::CallExpr(n), Node::from_expr(&n.callee));
-        self.format_comments(&n.lparen);
-        self.write_rune('(');
-        let sep = ", ";
-        for (i, c) in n.arguments.iter().enumerate() {
-            if i != 0 {
-                self.write_string(sep);
-            }
-            match c {
-                ast::Expression::Object(s) => self.format_record_expression_as_function_argument(s),
-                _ => self.format_node(&Node::from_expr(c)),
-            }
-        }
-        self.format_comments(&n.rparen);
-        self.write_rune(')');
-    }
-
-    fn format_record_expression_as_function_argument(&mut self, n: &ast::ObjectExpr) {
-        // not called from formatNode, need to save indentation
-        let i = self.indentation;
-        self.format_record_expression_braces(n, false, false);
-        self.set_indent(i);
-    }
-
-    fn format_record_expression_braces(
-        &mut self,
-        n: &ast::ObjectExpr,
-        braces: bool,
-        single_line: bool,
-    ) {
-        let mut multiline = !single_line && n.properties.len() > MULTILINE;
-        self.format_comments(&n.lbrace);
-        if braces {
-            self.write_rune('{');
-        }
-        let mut temp_formatters: Vec<Formatter> = Vec::new();
-
-        for property in &n.properties {
-            let mut temp = self.create_temp_formatter();
-
-            temp.format_node(&Node::Property(property));
-            temp.format_comments(&property.comma);
-
-            // if any child node contains newlines, then that child and the parent node will be
-            // multiline as well
-            if temp.builder.contains('\n') {
-                multiline = true;
-            }
-            temp_formatters.push(temp);
-        }
-
-        if let Some(with) = &n.with {
-            self.format_identifier(&with.source);
-            self.format_comments(&with.with);
-            self.write_string(" with");
-            if !multiline {
-                self.write_rune(' ');
-            }
-        }
-
-        if multiline {
-            self.write_rune('\n');
-            self.indent();
-            self.write_indent();
-        }
-
-        let sep = match multiline {
-            true => ",\n",
-            false => ", ",
-        };
-
-        for (i, temp) in temp_formatters
-            .iter_mut()
-            .enumerate()
-            .take(n.properties.len())
-        {
-            self.ingest_formatter(temp);
-            if i < n.properties.len() - 1 {
-                self.write_string(sep);
-                if multiline {
-                    self.write_indent();
-                }
-            }
-        }
-
-        if multiline {
-            self.write_string(sep);
-            self.unindent();
-            self.write_indent();
-        }
-        self.format_comments(&n.rbrace);
-        if braces {
-            self.write_rune('}');
-        }
-    }
-
-    fn format_identifier(&mut self, n: &ast::Identifier) {
-        self.format_comments(&n.base.comments);
-        self.write_string(&n.name);
-    }
-
-    fn format_variable_assignment(&mut self, n: &ast::VariableAssgn) {
-        self.format_node(&Node::Identifier(&n.id));
-        self.format_comments(&n.base.comments);
-        self.write_string(" = ");
-        self.format_node(&Node::from_expr(&n.init));
-    }
-
-    fn format_conditional_expression(&mut self, n: &ast::ConditionalExpr) {
-        let multiline = n.base.is_multiline();
-        let nested = matches!(&n.alternate, ast::Expression::Conditional(_));
-        self.format_comments(&n.tk_if);
-        self.write_string("if ");
-        self.format_node(&Node::from_expr(&n.test));
-        self.format_comments(&n.tk_then);
-        self.write_string(" then");
-        if multiline {
-            self.write_rune('\n');
-            self.indent();
-            self.write_indent();
-        } else {
-            self.write_rune(' ');
-        }
-        self.format_node(&Node::from_expr(&n.consequent));
-        if multiline {
-            self.write_rune('\n');
-            self.unindent();
-            self.write_indent();
-        } else {
-            self.write_rune(' ');
-        }
-        self.format_comments(&n.tk_else);
-        self.write_string("else");
-        if multiline && !nested {
-            self.write_rune('\n');
-            self.indent();
-            self.write_indent();
-        } else {
-            self.write_rune(' ');
-        }
-        self.format_node(&Node::from_expr(&n.alternate));
-        if multiline && !nested {
-            self.unindent();
-        }
-    }
-
-    fn format_member_assignment(&mut self, n: &ast::MemberAssgn) {
-        self.format_node(&Node::MemberExpr(&n.member));
-        self.format_comments(&n.base.comments);
-        self.write_string(" = ");
-        self.format_node(&Node::from_expr(&n.init));
-    }
-
-    fn format_unary_expression(&mut self, n: &ast::UnaryExpr) {
-        self.format_comments(&n.base.comments);
-        self.write_string(&n.operator.to_string());
-        match n.operator {
-            ast::Operator::SubtractionOperator => {}
-            ast::Operator::AdditionOperator => {}
-            _ => {
-                self.write_rune(' ');
-            }
-        }
-        self.format_child_with_parens(Node::UnaryExpr(n), Node::from_expr(&n.argument));
-    }
-
-    fn format_binary_expression(&mut self, n: &ast::BinaryExpr) {
-        self.format_binary(
-            &n.base.comments,
-            &n.operator.to_string(),
-            Node::BinaryExpr(n),
-            Node::from_expr(&n.left),
-            Node::from_expr(&n.right),
-        );
-    }
-
-    fn format_logical_expression(&mut self, n: &ast::LogicalExpr) {
-        self.format_binary(
-            &n.base.comments,
-            &n.operator.to_string(),
-            Node::LogicalExpr(n),
-            Node::from_expr(&n.left),
-            Node::from_expr(&n.right),
-        );
-    }
-
-    fn format_binary(
-        &mut self,
-        comments: &[ast::Comment],
-        op: &str,
-        parent: Node,
-        left: Node,
-        right: Node,
-    ) {
-        self.format_left_child_with_parens(&parent, &left);
-        self.write_rune(' ');
-        self.format_comments(comments);
-        self.write_string(op);
-        self.write_rune(' ');
-        self.format_right_child_with_parens(&parent, &right);
-    }
-
-    fn format_import_declaration(&mut self, n: &ast::ImportDeclaration) {
-        self.format_comments(&n.base.comments);
-        self.write_string("import ");
-        if let Some(alias) = &n.alias {
-            if !alias.name.is_empty() {
-                self.format_node(&Node::Identifier(alias));
-                self.write_rune(' ')
-            }
-        }
-        self.format_node(&Node::StringLit(&n.path))
-    }
-
-    fn format_expression_statement(&mut self, n: &ast::ExprStmt) {
-        self.format_node(&Node::from_expr(&n.expression))
-    }
-
-    fn format_package_clause(&mut self, n: &ast::PackageClause) {
-        self.format_comments(&n.base.comments);
-        self.write_string("package ");
-        self.format_node(&Node::Identifier(&n.name));
-        self.write_rune('\n');
-    }
-
-    fn format_string_literal(&mut self, n: &ast::StringLit) {
-        self.format_comments(&n.base.comments);
         if let Some(src) = &n.base.location.source {
             if !src.is_empty() {
                 // Preserve the exact literal if we have it
-                self.write_string(src);
-                if src.contains('\n') {
-                    self.safe_to_reindent = false;
-                }
-                return;
+                return HangDoc {
+                    affixes: Vec::new(),
+                    body: docs![arena, doc, src],
+                };
             }
         }
-        // Write out escaped string value
-        self.write_rune('"');
-        let escaped_string = self.escape_string(&n.value);
 
-        // if the string literal contains any newlines, then its not safe to `reindent` the string
-        // literal. Applying `reindent` to string literals with newlines can break them
-        // e.g. csv data
-        if escaped_string.contains('\n') {
-            self.unindent();
-            self.safe_to_reindent = false;
+        let escaped_string = escape_string(&n.value);
+        HangDoc {
+            affixes: vec![affixes(docs![arena, doc, arena.text("\"")], arena.text("\"")).nest()],
+            body: docs![
+                arena,
+                // Write out escaped string value
+                escaped_string,
+            ],
         }
-        self.write_string(&escaped_string);
-        self.write_rune('"');
     }
 
-    fn escape_string(&mut self, s: &str) -> String {
-        if !(s.contains('\"') || s.contains('\\')) {
-            return s.to_string();
-        }
-        let mut escaped: String;
-        escaped = String::with_capacity(s.len() * 2);
-        for r in s.chars() {
-            if r == '"' || r == '\\' {
-                escaped.push('\\')
-            }
-            escaped.push(r)
-        }
-        escaped
+    fn format_identifier(&mut self, id: &'doc ast::Identifier) -> Doc<'doc> {
+        let (x, y) = self.format_split_identifier(id);
+        x.append(y)
     }
 
-    // TODO(adriandt): this code appears dead. Boolean literal is no longer a node type?
-    fn format_boolean_literal(&mut self, n: &ast::BooleanLit) {
-        let s: &str;
-        if n.value {
-            s = "true"
-        } else {
-            s = "false"
-        }
-        self.write_string(s)
+    fn format_split_identifier(&mut self, id: &'doc ast::Identifier) -> (Doc<'doc>, Doc<'doc>) {
+        (
+            self.format_comments(&id.base.comments),
+            docs![self.arena, &id.name,],
+        )
     }
 
-    fn format_date_time_literal(&mut self, n: &ast::DateTimeLit) {
+    fn format_variable_assignment(&mut self, n: &'doc ast::VariableAssgn) -> Doc<'doc> {
+        let arena = self.arena;
+        let (comment, id) = self.format_split_identifier(&n.id);
+        let prefix = docs![
+            arena,
+            id,
+            self.format_append_comments(&n.base.comments),
+            " =",
+        ];
+        let mut hang_doc = self.hang_expression(&n.init);
+        hang_doc.add_prefix(arena.line());
+        hang_doc.affixes.push(affixes(prefix, arena.nil()).nest());
+        docs![arena, comment, hang_doc.format()]
+    }
+
+    fn format_date_time_literal(&mut self, n: &'doc ast::DateTimeLit) -> Doc<'doc> {
         // rust rfc3339NANO only support nano3, nano6, nano9 precisions
         // for frac nano6 timestamp in go like "2018-05-22T19:53:23.09012Z",
         // rust will append a zero at the end, like "2018-05-22T19:53:23.090120Z"
@@ -1308,49 +1053,551 @@ impl Formatter {
         } else {
             f = v.to_rfc3339_opts(SecondsFormat::Secs, true)
         }
-        self.format_comments(&n.base.comments);
-        self.write_string(&f);
+
+        let arena = self.arena;
+        docs![arena, self.format_comments(&n.base.comments), f]
     }
 
-    fn format_duration_literal(&mut self, n: &ast::DurationLit) {
-        self.format_comments(&n.base.comments);
-        for d in &n.values {
-            self.write_string(&format!("{}", d.magnitude));
-            self.write_string(&d.unit)
+    fn format_member_expression(&mut self, n: &'doc ast::MemberExpr) -> Doc<'doc> {
+        let arena = self.arena;
+        docs![
+            arena,
+            self.format_child_with_parens(Node::MemberExpr(n), ChildNode::Expr(&n.object)),
+            match &n.property {
+                ast::PropertyKey::Identifier(m) => {
+                    docs![
+                        arena,
+                        self.format_append_comments(&n.lbrack),
+                        ".",
+                        self.format_identifier(m),
+                    ]
+                }
+                ast::PropertyKey::StringLit(m) => {
+                    docs![
+                        arena,
+                        self.format_comments(&n.lbrack),
+                        "[",
+                        self.format_string_literal(m),
+                        self.format_append_comments(&n.rbrack),
+                        "]",
+                    ]
+                }
+            }
+        ]
+    }
+
+    fn hang_expression(&mut self, expr: &'doc ast::Expression) -> HangDoc<'doc> {
+        let arena = self.arena;
+        match expr {
+            ast::Expression::Array(n) => {
+                let (prefix, body, suffix) = format_item_list(
+                    arena,
+                    ("[", "]"),
+                    self.format_comments(&n.rbrack),
+                    n.elements.iter().map(|item| {
+                        docs![
+                            arena,
+                            self.format_expression(&item.expression),
+                            self.format_comments(&item.comma),
+                        ]
+                    }),
+                );
+                HangDoc {
+                    affixes: vec![
+                        affixes(prefix, suffix),
+                        affixes(self.format_comments(&n.lbrack), arena.nil()).nest(),
+                    ],
+                    body,
+                }
+            }
+
+            ast::Expression::Object(expr) => {
+                let (prefix, body, suffix) = self.format_record_expression_braces(expr, true);
+                HangDoc {
+                    affixes: vec![affixes(prefix, suffix).nest()],
+                    body,
+                }
+            }
+
+            ast::Expression::StringExpr(n) => HangDoc {
+                affixes: vec![affixes(
+                    docs![arena, self.format_comments(&n.base.comments), "\""],
+                    arena.text("\""),
+                )
+                .nest()],
+                body: docs![
+                    arena,
+                    arena.concat(n.parts.iter().map(|n| {
+                        match n {
+                            ast::StringExprPart::Text(p) => self.format_text_part(p),
+                            ast::StringExprPart::Interpolated(p) => {
+                                self.format_interpolated_part(p)
+                            }
+                        }
+                    })),
+                ],
+            },
+
+            ast::Expression::Function(expr) => self.format_function_expression(expr),
+
+            ast::Expression::StringLit(expr) => self.hang_string_literal(expr),
+
+            ast::Expression::Index(n) => HangDoc {
+                affixes: vec![affixes(
+                    docs![
+                        arena,
+                        self.format_child_with_parens(
+                            Node::IndexExpr(n),
+                            ChildNode::Expr(&n.array)
+                        ),
+                        self.format_comments(&n.lbrack),
+                        "[",
+                    ],
+                    docs![arena, self.format_comments(&n.rbrack), "]",],
+                )
+                .nest()],
+                body: self.format_expression(&n.index),
+            },
+
+            _ => HangDoc {
+                affixes: Vec::new(),
+                body: self.format_expression(expr),
+            },
         }
     }
 
-    fn format_float_literal(&mut self, n: &ast::FloatLit) {
-        self.format_comments(&n.base.comments);
-        let mut s = format!("{}", n.value);
-        if !s.contains('.') {
-            s.push_str(".0");
+    fn format_expression(&mut self, expr: &'doc ast::Expression) -> Doc<'doc> {
+        let arena = self.arena;
+        let parent = expr;
+        match expr {
+            ast::Expression::Array(_)
+            | ast::Expression::Object(_)
+            | ast::Expression::StringExpr(_)
+            | ast::Expression::Function(_)
+            | ast::Expression::StringLit(_)
+            | ast::Expression::Index(_) => {
+                let hang_doc = self.hang_expression(expr);
+                hang_doc.format()
+            }
+            ast::Expression::Identifier(expr) => self.format_identifier(expr),
+            ast::Expression::Dict(n) => {
+                let line = self.base_multiline(&n.base);
+                docs![
+                    arena,
+                    self.format_comments(&n.lbrack),
+                    "[",
+                    docs![
+                        arena,
+                        arena.line_(),
+                        if n.elements.is_empty() {
+                            arena.text(":")
+                        } else {
+                            comma_list_with(
+                                arena,
+                                n.elements.iter().map(|item| {
+                                    docs![
+                                        arena,
+                                        self.format_expression(&item.key),
+                                        ":",
+                                        " ",
+                                        self.format_expression(&item.val),
+                                        self.format_comments(&item.comma),
+                                    ]
+                                }),
+                                line,
+                            )
+                        },
+                        self.format_comments(&n.rbrack),
+                    ]
+                    .nest(INDENT),
+                    arena.line_(),
+                    "]",
+                ]
+            }
+            ast::Expression::Logical(expr) => self.format_binary_expression(
+                parent,
+                &expr.left,
+                expr.operator.to_string(),
+                &expr.right,
+            ),
+            ast::Expression::Member(n) => self.format_member_expression(n),
+            ast::Expression::Binary(expr) => self.format_binary_expression(
+                parent,
+                &expr.left,
+                expr.operator.to_string(),
+                &expr.right,
+            ),
+            ast::Expression::Unary(n) => {
+                docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    n.operator.to_string(),
+                    match n.operator {
+                        ast::Operator::SubtractionOperator => arena.nil(),
+                        ast::Operator::AdditionOperator => arena.nil(),
+                        _ => {
+                            arena.text(" ")
+                        }
+                    },
+                    self.format_child_with_parens(Node::UnaryExpr(n), ChildNode::Expr(&n.argument)),
+                ]
+            }
+            ast::Expression::PipeExpr(n) => self.format_pipe_expression(n),
+            ast::Expression::Call(expr) => self.format_call_expression(expr),
+            ast::Expression::Conditional(n) => {
+                let line = self.base_multiline(&n.base);
+                let mut alternate = &n.alternate;
+                let mut doc = docs![
+                    arena,
+                    docs![
+                        arena,
+                        "if ",
+                        self.format_expression(&n.test).nest(INDENT),
+                        self.format_comments(&n.tk_then),
+                        if n.tk_then.is_empty() {
+                            arena.line()
+                        } else {
+                            arena.nil()
+                        },
+                        "then",
+                    ]
+                    .group(),
+                    docs![arena, line.clone(), self.format_expression(&n.consequent)].nest(INDENT),
+                    line.clone(),
+                    self.format_comments(&n.tk_else),
+                ];
+                loop {
+                    match alternate {
+                        ast::Expression::Conditional(n) => {
+                            doc = docs![
+                                arena,
+                                doc,
+                                self.format_comments(&n.tk_if),
+                                "else if ",
+                                self.format_expression(&n.test).nest(INDENT),
+                                self.format_comments(&n.tk_then),
+                                " then",
+                                docs![arena, line.clone(), self.format_expression(&n.consequent)]
+                                    .nest(INDENT),
+                                line.clone(),
+                                self.format_comments(&n.tk_else),
+                            ];
+                            alternate = &n.alternate;
+                        }
+                        _ => {
+                            doc = docs![
+                                arena,
+                                doc,
+                                "else",
+                                docs![arena, line, self.format_expression(alternate)].nest(INDENT),
+                            ];
+                            break;
+                        }
+                    }
+                }
+                docs![arena, self.format_comments(&n.tk_if), doc.group()]
+            }
+            ast::Expression::Integer(expr) => {
+                docs![
+                    arena,
+                    self.format_comments(&expr.base.comments),
+                    format!("{}", expr.value),
+                ]
+            }
+            ast::Expression::Float(expr) => {
+                docs![arena, self.format_comments(&expr.base.comments), {
+                    let mut s = format!("{}", expr.value);
+                    if !s.contains('.') {
+                        s.push_str(".0");
+                    }
+                    s
+                }]
+            }
+            ast::Expression::Duration(n) => {
+                docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    arena.concat(
+                        n.values
+                            .iter()
+                            .map(|d| { docs![arena, format!("{}", d.magnitude), &d.unit,] })
+                    )
+                ]
+            }
+            ast::Expression::Uint(n) => {
+                docs![
+                    arena,
+                    self.format_comments(&n.base.comments),
+                    format!("{0:10}", n.value),
+                ]
+            }
+            ast::Expression::Boolean(expr) => {
+                let s = if expr.value { "true" } else { "false" };
+                arena.text(s)
+            }
+            ast::Expression::DateTime(expr) => self.format_date_time_literal(expr),
+            ast::Expression::Regexp(expr) => self.format_regexp_literal(expr),
+            ast::Expression::PipeLit(expr) => {
+                docs![arena, self.format_comments(&expr.base.comments), "<-"]
+            }
+            ast::Expression::Bad(expr) => {
+                self.err = Some(anyhow!("bad expression"));
+                arena.nil()
+            }
+            ast::Expression::Paren(n) => {
+                if has_parens(&Node::ParenExpr(n)) {
+                    docs![
+                        arena,
+                        // The paren node has comments so we should format them
+                        self.format_comments(&n.lparen),
+                        "(",
+                        self.format_expression(&n.expression),
+                        self.format_append_comments(&n.rparen),
+                        ")",
+                    ]
+                } else {
+                    // The paren node does not have comments so we can skip adding the parens
+                    self.format_expression(&n.expression)
+                }
+            }
         }
-        self.write_string(&s)
+        .group()
     }
 
-    fn format_integer_literal(&mut self, n: &ast::IntegerLit) {
-        self.format_comments(&n.base.comments);
-        self.write_string(&format!("{}", n.value));
+    fn format_text_part(&mut self, n: &'doc ast::TextPart) -> Doc<'doc> {
+        let arena = self.arena;
+
+        arena.intersperse(
+            n.value.split('\n').map(|s| {
+                let escaped_string = escape_string(s);
+                arena.text(escaped_string)
+            }),
+            arena.nesting(move |indentation| {
+                arena.hardline().nest(-(indentation as isize)).into_doc()
+            }),
+        )
     }
 
-    fn format_unsigned_integer_literal(&mut self, n: &ast::UintLit) {
-        self.format_comments(&n.base.comments);
-        self.write_string(&format!("{0:10}", n.value))
+    fn format_interpolated_part(&mut self, n: &'doc ast::InterpolatedPart) -> Doc<'doc> {
+        let arena = self.arena;
+        docs![arena, "${", self.format_expression(&n.expression), "}",]
     }
 
-    fn format_pipe_literal(&mut self, n: &ast::PipeLit) {
-        self.format_comments(&n.base.comments);
-        self.write_string("<-")
+    fn layout_binary_expressions(
+        &mut self,
+        mut arguments: impl Iterator<Item = Doc<'doc>>,
+        mut operators: impl Iterator<Item = Doc<'doc>>,
+        line: Doc<'doc>,
+    ) -> Doc<'doc> {
+        let arena = self.arena;
+        let first = match arguments.next() {
+            Some(doc) => doc,
+            None => return arena.nil(),
+        };
+        let mut doc = line.clone();
+        let mut arguments = arguments.peekable();
+        loop {
+            match (operators.next(), arguments.next()) {
+                (Some(operator), Some(arg)) => {
+                    doc = docs![
+                        arena,
+                        doc,
+                        docs![
+                            arena,
+                            operator,
+                            arg,
+                            if arguments.peek().is_some() {
+                                line.clone()
+                            } else {
+                                arena.nil()
+                            }
+                        ]
+                        .group(),
+                    ];
+                }
+                _ => return docs![arena, first, doc.nest(INDENT)].group(),
+            }
+        }
     }
 
-    fn format_regexp_literal(&mut self, n: &ast::RegexpLit) {
-        self.format_comments(&n.base.comments);
-        self.write_rune('/');
-        self.write_string(&n.value.replace("/", "\\/"));
-        self.write_rune('/')
+    fn format_pipe_expression(&mut self, mut pipe: &'doc ast::PipeExpr) -> Doc<'doc> {
+        let arena = self.arena;
+
+        let mut arguments = Vec::new();
+        let mut operators = Vec::new();
+        let line = self.base_multiline(&pipe.base);
+        loop {
+            arguments.push(
+                self.format_right_child_with_parens(
+                    Node::PipeExpr(pipe),
+                    ChildNode::Call(&pipe.call),
+                )
+                .group(),
+            );
+            operators.push(docs![
+                arena,
+                self.format_comments(&pipe.base.comments),
+                arena.text("|> "),
+            ]);
+            match &pipe.argument {
+                ast::Expression::PipeExpr(expr) => {
+                    pipe = expr;
+                }
+                _ => {
+                    arguments.push(
+                        self.format_left_child_with_parens(
+                            Node::PipeExpr(pipe),
+                            ChildNode::Expr(&pipe.argument),
+                        )
+                        .group(),
+                    );
+                    break;
+                }
+            }
+        }
+        self.layout_binary_expressions(
+            arguments.into_iter().rev(),
+            operators.into_iter().rev(),
+            line,
+        )
+    }
+
+    fn format_call_expression(&mut self, n: &'doc ast::CallExpr) -> Doc<'doc> {
+        let arena = self.arena;
+        let line = self.base_multiline(&n.base);
+        let line_ = self.base_multiline_(&n.base);
+        docs![
+            arena,
+            self.format_child_with_parens(Node::CallExpr(n), ChildNode::Expr(&n.callee)),
+            self.format_append_comments(&n.lparen),
+            match n.arguments.first() {
+                Some(ast::Expression::Object(o)) if n.arguments.len() == 1 => {
+                    let (prefix, body, suffix) =
+                        self.format_record_expression_as_function_argument(o);
+
+                    docs![
+                        arena,
+                        "(",
+                        format_hang_doc(arena, &[affixes(prefix, suffix).nest()], body),
+                        self.format_comments(&n.rparen),
+                        ")"
+                    ]
+                }
+                _ => {
+                    let (prefix, body, suffix) = format_item_list(
+                        arena,
+                        ("(", ")"),
+                        self.format_comments(&n.rparen),
+                        n.arguments.iter().map(|c| self.format_expression(c)),
+                    );
+                    format_hang_doc(arena, &[affixes(prefix, suffix).nest()], body)
+                }
+            },
+        ]
+        .group()
+    }
+
+    fn format_binary_expression(
+        &mut self,
+        mut parent: &'doc ast::Expression,
+        lhs: &'doc ast::Expression,
+        mut operator: String,
+        mut rhs: &'doc ast::Expression,
+    ) -> Doc<'doc> {
+        let arena = self.arena;
+        let l = self.format_left_child_with_parens(Node::from_expr(parent), ChildNode::Expr(lhs));
+        let mut doc = arena.nil();
+        loop {
+            match rhs {
+                ast::Expression::Binary(expr) => {
+                    doc = docs![
+                        arena,
+                        doc,
+                        docs![
+                            arena,
+                            arena.line(),
+                            self.format_comments(&parent.base().comments),
+                            operator,
+                            arena.line(),
+                        ]
+                        .group(),
+                        self.format_left_child_with_parens(
+                            Node::BinaryExpr(expr),
+                            ChildNode::Expr(&expr.left)
+                        ),
+                    ];
+
+                    parent = rhs;
+                    operator = expr.operator.to_string();
+                    rhs = &expr.right;
+                }
+                _ => {
+                    doc = docs![
+                        arena,
+                        doc,
+                        docs![
+                            arena,
+                            arena.line(),
+                            self.format_comments(&parent.base().comments),
+                            operator,
+                            arena.line(),
+                        ]
+                        .group(),
+                        self.format_right_child_with_parens(
+                            Node::from_expr(parent),
+                            ChildNode::Expr(rhs)
+                        ),
+                    ];
+                    break;
+                }
+            }
+        }
+        docs![arena, l, doc.nest(INDENT)].group()
+    }
+
+    fn format_regexp_literal(&mut self, n: &'doc ast::RegexpLit) -> Doc<'doc> {
+        let arena = self.arena;
+        docs![
+            arena,
+            self.format_comments(&n.base.comments),
+            "/",
+            n.value.replace("/", "\\/"),
+            "/",
+        ]
     }
 }
+
+fn escape_string(s: &str) -> String {
+    if !(s.contains('\"') || s.contains('\\')) {
+        return s.to_string();
+    }
+    let mut escaped = String::with_capacity(s.len() * 2);
+    for r in s.chars() {
+        if r == '"' || r == '\\' {
+            escaped.push('\\')
+        }
+        escaped.push(r)
+    }
+    escaped
+}
+
+enum ChildNode<'doc> {
+    Call(&'doc ast::CallExpr),
+    Expr(&'doc ast::Expression),
+}
+
+impl<'doc> ChildNode<'doc> {
+    fn as_node(&self) -> Node<'doc> {
+        match *self {
+            Self::Call(c) => Node::CallExpr(c),
+            Self::Expr(c) => Node::from_expr(c),
+        }
+    }
+}
+
+// INDENT_BYTES is 4 spaces as a constant byte slice
+const INDENT_BYTES: &str = "    ";
+const INDENT: isize = INDENT_BYTES.len() as isize;
 
 fn get_precedences(parent: &Node, child: &Node) -> (u32, u32) {
     let pvp: u32;
@@ -1486,18 +1733,6 @@ fn strip_parens(n: &ast::Expression) -> &ast::Expression {
         }
     }
     n
-}
-
-// at_least_pipe_depth return true if the number of pipes that occur in sequence is greater than or
-// equal to depth
-fn at_least_pipe_depth(depth: i32, p: &ast::PipeExpr) -> bool {
-    if depth == 0 {
-        return true;
-    }
-    match &p.argument {
-        ast::Expression::PipeExpr(p) => at_least_pipe_depth(depth - 1, p),
-        _ => false,
-    }
 }
 
 // starts_with_comment reports if the node has a comment that it would format before anything else as part

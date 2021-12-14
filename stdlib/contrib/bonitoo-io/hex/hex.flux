@@ -41,82 +41,82 @@ builtin int : (v: string) => int
 //
 // // Returns 4d2
 // ```
-// 
+//
 // ### Convert a boolean to a hexadecimal string value
 // ```no_run
 // import "contrib/bonitoo-io/hex"
-// 
+//
 // hex.string(v: true)
-// 
+//
 // // Returns "true"
 // ```
 //
 // ### Convert a duration to a hexadecimal string value
 // ```no_run
 // import "contrib/bonitoo-io/hex"
-// 
+//
 // hex.string(v: 1m)
-// 
+//
 // // Returns "1m"
 // ```
-// 
+//
 // ### Convert a time to a hexadecimal string value
 // ```no_run
 // import "contrib/bonitoo-io/hex"
-// 
+//
 // hex.string(v: 2021-01-01T00:00:00Z)
-// 
+//
 // // Returns "2021-01-01T00:00:00Z"
 // ```
-// 
+//
 // ### Convert an integer to a hexadecimal string value
 // ```no_run
 // import "contrib/bonitoo-io/hex"
-// 
+//
 // hex.string(v: 1234)
-// 
+//
 // // Returns "4d2"
 // ```
-// 
+//
 // ### Convert a uinteger to a hexadecimal string value
 // ```no_run
 // import "contrib/bonitoo-io/hex"
-// 
+//
 // hex.string(v: uint(v: 5678))
-// 
+//
 // // Returns "162e"
 // ```
 //
 // ### Convert a float to a hexadecimal string value
 // ```no_run
 // import "contrib/bonitoo-io/hex"
-// 
+//
 // hex.string(v: 10.12)
-// 
+//
 // // Returns "10.12"
 // ```
 //
 // ### Convert bytes to a hexadecimal string value
 // ```no_run
 // import "contrib/bonitoo-io/hex"
-// 
+//
 // hex.string(v: bytes(v: "Hello world!"))
-// 
+//
 // // Returns "48656c6c6f20776f726c6421"
 // ```
-// 
+//
 // ### Convert all values in a column to hexadecimal string values
 // Use `map()` to iterate over and update all input rows.
 // Use `hex.string()` to update the value of a column.
 // The following example uses data provided by the sampledata package.
-// 
+//
 // ```
 // import "sampledata"
 // import "contrib/bonitoo-io/hex"
-// 
+//
 // data = sampledata.int()
 //     |> map(fn: (r) => ({ r with _value: r._value * 1000 }))
-// 
+//
 // < data
 // >     |> map(fn:(r) => ({ r with _value: hex.string(v: r.foo) }))
 // ```

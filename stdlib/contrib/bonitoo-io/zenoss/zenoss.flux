@@ -97,29 +97,30 @@ event = (
     eventClassKey="",
     collector="",
     message="",
-) => {
-    event = {
-        summary: summary,
-        device: device,
-        component: component,
-        severity: severity,
-        evclass: eventClass,
-        evclasskey: eventClassKey,
-        collector: collector,
-        message: message,
-    }
-    payload = {
-        action: action,
-        method: method,
-        data: [event],
-        type: type,
-        tid: tid,
-    }
-    headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
-    body = json.encode(v: payload)
+) =>
+    {
+        event = {
+            summary: summary,
+            device: device,
+            component: component,
+            severity: severity,
+            evclass: eventClass,
+            evclasskey: eventClassKey,
+            collector: collector,
+            message: message,
+        }
+        payload = {
+            action: action,
+            method: method,
+            data: [event],
+            type: type,
+            tid: tid,
+        }
+        headers = {"Authorization": http.basicAuth(u: username, p: password), "Content-Type": "application/json"}
+        body = json.encode(v: payload)
 
-    return http.post(headers: headers, url: url, data: body)
-}
+        return http.post(headers: headers, url: url, data: body)
+    }
 
 // endpoint sends events to Zenoss using data from input rows.
 //
@@ -203,31 +204,35 @@ endpoint = (
     method="add_event",
     type="rpc",
     tid=1,
-) => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == event(
-                        url: url,
-                        username: username,
-                        password: password,
-                        action: action,
-                        method: method,
-                        type: type,
-                        tid: tid,
-                        summary: obj.summary,
-                        device: obj.device,
-                        component: obj.component,
-                        severity: obj.severity,
-                        eventClass: obj.eventClass,
-                        eventClassKey: obj.eventClassKey,
-                        collector: obj.collector,
-                        message: obj.message,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+) =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == event(
+                                                url: url,
+                                                username: username,
+                                                password: password,
+                                                action: action,
+                                                method: method,
+                                                type: type,
+                                                tid: tid,
+                                                summary: obj.summary,
+                                                device: obj.device,
+                                                component: obj.component,
+                                                severity: obj.severity,
+                                                eventClass: obj.eventClass,
+                                                eventClassKey: obj.eventClassKey,
+                                                collector: obj.collector,
+                                                message: obj.message,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

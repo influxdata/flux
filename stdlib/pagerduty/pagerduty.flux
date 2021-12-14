@@ -41,16 +41,17 @@ option defaultURL = "https://events.pagerduty.com/v2/enqueue"
 //
 severityFromLevel = (level) => {
     lvl = strings.toLower(v: level)
-    sev = if lvl == "warn" then
-        "warning"
-    else if lvl == "crit" then
-        "critical"
-    else if lvl == "info" then
-        "info"
-    else if lvl == "ok" then
-        "info"
-    else
-        "error"
+    sev =
+        if lvl == "warn" then
+            "warning"
+        else if lvl == "crit" then
+            "critical"
+        else if lvl == "info" then
+            "info"
+        else if lvl == "ok" then
+            "info"
+        else
+            "error"
 
     return sev
 }
@@ -60,10 +61,11 @@ severityFromLevel = (level) => {
 // ## Parameters
 // - `severity` is the severity to convert to a PagerDuty action.
 //
-actionFromSeverity = (severity) => if strings.toLower(v: severity) == "ok" then
-    "resolve"
-else
-    "trigger"
+actionFromSeverity = (severity) =>
+    if strings.toLower(v: severity) == "ok" then
+        "resolve"
+    else
+        "trigger"
 
 // `actionFromLevel` converts a monitoring level to an action; "ok" becomes "resolve" everything else converts to "trigger".
 actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve" else "trigger"
@@ -127,32 +129,34 @@ sendEvent = (
     summary,
     timestamp,
     customDetails=record.any,
-) => {
-    payload = {
-        summary: summary,
-        timestamp: timestamp,
-        source: source,
-        component: component,
-        severity: severity,
-        group: group,
-        class: class,
-    }
-    data = {
-        payload: payload,
-        routing_key: routingKey,
-        dedup_key: dedupKey,
-        event_action: eventAction,
-        client: client,
-        client_url: clientURL,
-    }
-    headers = {"Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"}
-    enc = if customDetails == record.any then
-        json.encode(v: data)
-    else
-        json.encode(v: {data with payload: {payload with custom_details: customDetails}})
+) =>
+    {
+        payload = {
+            summary: summary,
+            timestamp: timestamp,
+            source: source,
+            component: component,
+            severity: severity,
+            group: group,
+            class: class,
+        }
+        data = {
+            payload: payload,
+            routing_key: routingKey,
+            dedup_key: dedupKey,
+            event_action: eventAction,
+            client: client,
+            client_url: clientURL,
+        }
+        headers = {"Accept": "application/vnd.pagerduty+json;version=2", "Content-Type": "application/json"}
+        enc =
+            if customDetails == record.any then
+                json.encode(v: data)
+            else
+                json.encode(v: {data with payload: {payload with custom_details: customDetails}})
 
-    return http.post(headers: headers, url: pagerdutyURL, data: enc)
-}
+        return http.post(headers: headers, url: pagerdutyURL, data: enc)
+    }
 
 // endpoint returns a function that can be used to send a message to PagerDuty that includes output data.
 //
@@ -212,31 +216,36 @@ sendEvent = (
 //   )()
 // ```
 //
-endpoint = (url=defaultURL) => (mapFn) => (tables=<-) => tables
-    |> dedupKey()
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == sendEvent(
-                        pagerdutyURL: url,
-                        routingKey: obj.routingKey,
-                        client: obj.client,
-                        clientURL: obj.clientURL,
-                        dedupKey: r._pagerdutyDedupKey,
-                        class: obj.class,
-                        group: obj.group,
-                        severity: obj.severity,
-                        eventAction: obj.eventAction,
-                        source: obj.source,
-                        component: record.get(r: obj, key: "component", default: ""),
-                        summary: obj.summary,
-                        timestamp: obj.timestamp,
-                        customDetails: record.get(r: obj, key: "customDetails", default: record.any),
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (url=defaultURL) =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> dedupKey()
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == sendEvent(
+                                                pagerdutyURL: url,
+                                                routingKey: obj.routingKey,
+                                                client: obj.client,
+                                                clientURL: obj.clientURL,
+                                                dedupKey: r._pagerdutyDedupKey,
+                                                class: obj.class,
+                                                group: obj.group,
+                                                severity: obj.severity,
+                                                eventAction: obj.eventAction,
+                                                source: obj.source,
+                                                component: record.get(r: obj, key: "component", default: ""),
+                                                summary: obj.summary,
+                                                timestamp: obj.timestamp,
+                                                customDetails:
+                                                    record.get(r: obj, key: "customDetails", default: record.any),
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

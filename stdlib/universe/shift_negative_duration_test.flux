@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,long
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -33,7 +34,8 @@ inData = "
 ,,3,2018-05-22T19:54:10Z,_m,SR,72
 ,,3,2018-05-22T19:54:20Z,_m,SR,88
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,long
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -61,8 +63,10 @@ outData = "
 ,,3,2018-05-22T19:49:10Z,_m,SR,72
 ,,3,2018-05-22T19:49:20Z,_m,SR,88
 "
-t_shift_negative_duration = (table=<-) => table
-    |> timeShift(duration: -5m)
-    |> drop(columns: ["_start", "_stop"])
+t_shift_negative_duration = (table=<-) =>
+    table
+        |> timeShift(duration: -5m)
+        |> drop(columns: ["_start", "_stop"])
 
-test _shift_negative_duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift_negative_duration})
+test _shift_negative_duration = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift_negative_duration})

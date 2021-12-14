@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -19,8 +20,10 @@ inData = "
 "
 outData = "error: invalid use of function: *functions.MaxSelector has no implementation for type string
 "
-t_string_max = (table=<-) => table
-    |> range(start: 2018-05-22T19:54:16Z)
-    |> max()
+t_string_max = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:54:16Z)
+        |> max()
 
-test _string_max = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_max})
+test _string_max = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_max})
