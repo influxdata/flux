@@ -202,7 +202,7 @@ fn format_hang_doc<'doc>(
                 Some(acc) => acc.union(doc),
             })
         })
-        .unwrap_or_else(|| body)
+        .unwrap_or(body)
 }
 
 #[derive(Clone)]
@@ -260,7 +260,7 @@ fn format_to_string(file: &File, include_pkg: bool) -> Result<String> {
     let formatted = doc.pretty(120).to_string();
     // Remove indentation from whitespace only lines
     Ok(formatted
-        .split("\n")
+        .split('\n')
         .map(|s| s.trim_end())
         .collect::<Vec<_>>()
         .join("\n"))
@@ -355,7 +355,7 @@ impl<'doc> Formatter<'doc> {
         let arena = self.arena;
         arena.concat(comments.iter().map(|c| {
             arena.intersperse(
-                c.text.split("\n").map(|part| arena.text(part)),
+                c.text.split('\n').map(|part| arena.text(part)),
                 arena.hardline(),
             )
         }))
@@ -1368,7 +1368,7 @@ impl<'doc> Formatter<'doc> {
         let arena = self.arena;
 
         arena.intersperse(
-            n.value.split("\n").map(|s| {
+            n.value.split('\n').map(|s| {
                 let escaped_string = escape_string(s);
                 arena.text(escaped_string)
             }),
