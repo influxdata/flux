@@ -11,7 +11,8 @@ import "math"
 //         r.org_id == "038b7a85ca099000"
 //         and r._measurement == "storage_usage_org_bytes"
 //     )
-inData = "
+inData =
+    "
 #group,false,false,true,true,false,false,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #default,_result,,,,,,,,,
@@ -2182,7 +2183,8 @@ inData = "
 ,,1,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:59:40Z,34,gauge,storage_usage_org_bytes,storage-4,038b7a85ca099000
 ,,1,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:59:50Z,34,gauge,storage_usage_org_bytes,storage-4,038b7a85ca099000
 "
-outData = "
+outData =
+    "
 #group,false,false,false,false
 #datatype,string,long,dateTime:RFC3339,long
 #default,storage_b,,,
@@ -2191,16 +2193,20 @@ outData = "
 ,,0,2019-08-01T13:00:00Z,68
 ,,0,2019-08-01T14:00:00Z,68
 "
-_f = (table=<-) => table
-    |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
-    |> filter(fn: (r) => r.org_id == "038b7a85ca099000" and r._measurement == "storage_usage_org_bytes" and r._field == "gauge")
-    |> aggregateWindow(every: 1h, fn: mean)
-    |> fill(column: "_value", value: 0.0)
-    |> group(columns: ["_time"])
-    |> sum()
-    |> group()
-    |> map(fn: (r) => ({r with _value: int(v: math.round(x: r._value))}))
-    |> rename(columns: {_value: "storage_b"})
-    |> yield(name: "storage_b")
+_f = (table=<-) =>
+    table
+        |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
+        |> filter(
+            fn: (r) =>
+                r.org_id == "038b7a85ca099000" and r._measurement == "storage_usage_org_bytes" and r._field == "gauge",
+        )
+        |> aggregateWindow(every: 1h, fn: mean)
+        |> fill(column: "_value", value: 0.0)
+        |> group(columns: ["_time"])
+        |> sum()
+        |> group()
+        |> map(fn: (r) => ({r with _value: int(v: math.round(x: r._value))}))
+        |> rename(columns: {_value: "storage_b"})
+        |> yield(name: "storage_b")
 
 test get_storage_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

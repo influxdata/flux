@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -20,7 +21,8 @@ inData = "
 ,,4,2018-05-22T19:53:36Z,1,used_percent,swap,host.local2
 ,,4,2018-05-22T19:53:46Z,1,used_percent,swap,host.local2
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,double
 #group,false,false,true,true,true,true,true,false,false
 #default,got,,,,,,,,
@@ -28,8 +30,9 @@ outData = "
 ,,0,2018-05-21T13:09:22.885021542Z,2030-01-01T00:00:00Z,used_percent,swap,host.local,1.0,6
 ,,1,2018-05-21T13:09:22.885021542Z,2030-01-01T00:00:00Z,used_percent,swap,host.local2,1.0,3
 "
-t_reduce = (tables=<-) => tables
-    |> range(start: 2018-05-21T13:09:22.885021542Z)
-    |> reduce(fn: (r, accumulator) => ({sum: r._value + accumulator.sum, b: 1.0}), identity: {sum: 0.0, b: 0.0})
+t_reduce = (tables=<-) =>
+    tables
+        |> range(start: 2018-05-21T13:09:22.885021542Z)
+        |> reduce(fn: (r, accumulator) => ({sum: r._value + accumulator.sum, b: 1.0}), identity: {sum: 0.0, b: 0.0})
 
 test _reduce = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_reduce})

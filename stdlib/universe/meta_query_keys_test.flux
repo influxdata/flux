@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -37,7 +38,8 @@ inData = "
 ,,4,2018-05-22T19:53:26Z,0,usage_irq,cpu,cpu-total,host.local
 ,,4,2018-05-22T19:53:36Z,0,usage_irq,cpu,cpu-total,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string
 #group,false,false,true,true,true,true,true,true,false
 #default,0,,,,,,,,
@@ -74,10 +76,12 @@ outData = "
 ,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,usage_irq,cpu,cpu-total,host.local,host
 "
 t_meta_query_keys = (table=<-) => {
-    return table
-        |> range(start: 2018-05-22T19:53:26Z)
-        |> filter(fn: (r) => r._measurement == "cpu")
-        |> keys()
+    return
+        table
+            |> range(start: 2018-05-22T19:53:26Z)
+            |> filter(fn: (r) => r._measurement == "cpu")
+            |> keys()
 }
 
-test _meta_query_keys = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_keys})
+test _meta_query_keys = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_meta_query_keys})

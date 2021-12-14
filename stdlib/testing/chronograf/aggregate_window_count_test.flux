@@ -3,7 +3,8 @@ package chronograf_test
 
 import "testing"
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double
 #group,false,false,false,true,true,true,true,true,false
 #default,_result,,,,,,,,
@@ -69,7 +70,8 @@ inData = "
 ,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35
 ,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,long
 #group,false,false,true,true,false,true,true,true,true,true,false
 #default,_result,,,,,,,,,,
@@ -88,10 +90,12 @@ outData = "
 ,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:00:30Z,percentage,cpu,core2,host.local,3
 ,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,2018-05-22T00:01:00Z,percentage,cpu,core2,host.local,3
 "
-agg_window_count_fn = (table=<-) => table
-    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
-    |> filter(fn: (r) => r._measurement == "disk" or r._measurement == "cpu")
-    |> filter(fn: (r) => r.host == "host.local")
-    |> aggregateWindow(every: 30s, fn: count)
+agg_window_count_fn = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
+        |> filter(fn: (r) => r._measurement == "disk" or r._measurement == "cpu")
+        |> filter(fn: (r) => r.host == "host.local")
+        |> aggregateWindow(every: 30s, fn: count)
 
-test agg_window_count = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn})
+test agg_window_count = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_count_fn})

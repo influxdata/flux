@@ -6,7 +6,8 @@ import "contrib/jsternberg/rows"
 
 option now = () => 2020-08-02T17:24:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,true,false,false
 #default,,,,,,,
@@ -48,7 +49,8 @@ inData = "
 ,,2,m0,f0,a-2,2020-08-02T17:23:40Z,-92.49751968643372
 ,,2,m0,f0,a-2,2020-08-02T17:23:50Z,2.187536871928522
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,true,false,false
 #default,,,,,,,
@@ -90,9 +92,10 @@ outData = "
 ,,2,m0,f0,a-2,2020-08-02T17:23:40Z,92.49751968643372
 ,,2,m0,f0,a-2,2020-08-02T17:23:50Z,-2.187536871928522
 "
-t_map = (table=<-) => table
-    |> range(start: -2m)
-    |> drop(columns: ["_start", "_stop"])
-    |> rows.map(fn: (r) => ({r with _value: -r._value}))
+t_map = (table=<-) =>
+    table
+        |> range(start: -2m)
+        |> drop(columns: ["_start", "_stop"])
+        |> rows.map(fn: (r) => ({r with _value: -r._value}))
 
 test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})

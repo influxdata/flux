@@ -6,7 +6,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #group,false,false,true,true,false,false,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #default,_result,,,,,,,,,
@@ -184,7 +185,8 @@ inData = "
 ,result,table,_start,_stop,_time,_value,s2_cell_id,_field,_measurement,_pt
 ,,28,2019-02-18T04:17:43.176943164Z,2020-02-18T10:17:43.176943164Z,2019-11-01T00:33:07.54916732Z,-73.716583,89c2624,lon,taxi,end
 "
-outData = "
+outData =
+    "
 #group,false,false,false,true,false,false,false,false,false,false,false,false
 #datatype,string,long,string,string,string,string,dateTime:RFC3339,double,double,double,long,double
 #default,_result,,,,,,,,,,,
@@ -198,10 +200,12 @@ outData = "
 ,,1,89c2624,89c264,taxi,start,2019-11-01T13:32:45.632969758Z,,40.733585,-73.737175,1572615165632969758,
 ,,1,89c2664,89c264,taxi,start,2019-11-01T00:17:38.287113937Z,,40.645245,-73.776665,1572567458287113937,
 "
-t_groupByArea = (table=<-) => table
-    |> range(start: 2019-11-01T00:00:00Z)
-    |> geo.toRows()
-    |> geo.groupByArea(newColumn: "ci9", level: 9)
-    |> drop(columns: ["_start", "_stop"])
+t_groupByArea = (table=<-) =>
+    table
+        |> range(start: 2019-11-01T00:00:00Z)
+        |> geo.toRows()
+        |> geo.groupByArea(newColumn: "ci9", level: 9)
+        |> drop(columns: ["_start", "_stop"])
 
-test _groupByArea = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea})
+test _groupByArea = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_groupByArea})

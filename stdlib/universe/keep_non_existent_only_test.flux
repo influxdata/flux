@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -35,8 +36,10 @@ outData = "
 #default,_result,0
 ,result,table
 "
-t_keep = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> keep(columns: ["non_existent"])
+t_keep = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> keep(columns: ["non_existent"])
 
-test _keep_non_existent = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep})
+test _keep_non_existent = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep})

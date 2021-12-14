@@ -6,7 +6,8 @@ import "experimental"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double,double,string
 #group,false,false,true,true,false,false,true
 #default,_result,,,,,,
@@ -29,7 +30,8 @@ inData = "
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,45,1,l
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,45,+Inf,l
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,string
 #group,false,false,true,true,true,true,false,true
 #default,_result,,,,,,,
@@ -37,8 +39,10 @@ outData = "
 ,,0,2018-05-22T19:53:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:00Z,x_duration_seconds,0.8500000000000001,l
 ,,1,2018-05-22T19:53:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:00Z,y_duration_seconds,0.91,l
 "
-t_histogram_quantile = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:00Z)
-    |> experimental.histogramQuantile(quantile: 0.9)
+t_histogram_quantile = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:00Z)
+        |> experimental.histogramQuantile(quantile: 0.9)
 
-test _histogram_quantile = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram_quantile})
+test _histogram_quantile = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram_quantile})

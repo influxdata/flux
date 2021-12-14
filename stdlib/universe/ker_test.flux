@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -17,7 +18,8 @@ inData = "
 ,,0,2018-05-22T00:00:40Z,22,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:50Z,21,used_percent,disk,disk1s1,apfs,host.local,/
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -26,9 +28,10 @@ outData = "
 ,,0,2018-05-22T00:00:40Z,0.33333333333333337,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:50Z,0.33333333333333337,used_percent,disk,disk1s1,apfs,host.local,/
 "
-ker = (table=<-) => table
-    |> range(start: 2018-05-22T00:00:00Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> kaufmansER(n: 3)
+ker = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T00:00:00Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> kaufmansER(n: 3)
 
 test _ker = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: ker})

@@ -6,7 +6,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -19,7 +20,8 @@ datatype,string,long,dateTime:RFC3339,double,string,string,string
 ,,0,2018-05-22T19:54:16Z,50.75,used_percent,mem,host.local
 "
 
-outData = "
+outData =
+    "
 #group,false,false,true,true,false,false,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
 #default,_result,,,,,,,,
@@ -32,8 +34,10 @@ outData = "
 ,,0,2029-12-31T23:59:10Z,2030-01-01T00:00:44Z,2030-01-01T00:00:00Z,50.75,used_percent,mem,host.local
 "
 
-t_sample_alignToNow = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
-    |> sample.alignToNow()
+t_sample_alignToNow = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
+        |> sample.alignToNow()
 
-test _sample_alignToNow = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})
+test _sample_alignToNow = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample_alignToNow})

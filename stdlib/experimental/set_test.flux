@@ -6,7 +6,8 @@ import "experimental"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,string,dateTime:RFC3339,boolean
 #group,false,false,true,true,true,false,false
 #default,_result,,,,,,
@@ -92,7 +93,8 @@ inData = "
 ,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:10Z,96
 ,,9,thmWJ,zmk1YWi,gpmhNEw,2018-12-19T22:14:20Z,10
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,boolean
 #group,false,false,true,true,true,true,true,false,false
 #default,_result,,,,,,,,
@@ -174,8 +176,9 @@ outData = "
 ,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:10Z,96
 ,,4,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,thmWJ,zmk1YWi,server01,2018-12-19T22:14:20Z,10
 "
-t_set = (table=<-) => table
-    |> range(start: 2018-01-01T00:00:00Z)
-    |> experimental.set(o: {t0: "server01"})
+t_set = (table=<-) =>
+    table
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> experimental.set(o: {t0: "server01"})
 
 test _set = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_set})

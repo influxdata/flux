@@ -39,13 +39,21 @@ builtin emptyTable : () => [{_start: time, _stop: time, _time: time, _value: flo
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#rate
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#increase
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#delta
-builtin extrapolatedRate : (<-tables: [{A with _start: time, _stop: time, _time: time, _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]
+builtin extrapolatedRate : (
+        <-tables: [{A with _start: time, _stop: time, _time: time, _value: float}],
+        ?isCounter: bool,
+        ?isRate: bool,
+    ) => [{B with _value: float}]
 
 // holtWinters() implements functionality equivalent to PromQL's holt_winters()
 // function:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters
-builtin holtWinters : (<-tables: [{A with _time: time, _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]
+builtin holtWinters : (
+        <-tables: [{A with _time: time, _value: float}],
+        ?smoothingFactor: float,
+        ?trendFactor: float,
+    ) => [{B with _value: float}]
 
 // promqlHour() implements functionality equivalent to PromQL's hour() function:
 //
@@ -63,19 +71,23 @@ builtin instantRate : (<-tables: [{A with _time: time, _value: float}], ?isRate:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace
 builtin labelReplace : (
-    <-tables: [{A with _value: float}],
-    source: string,
-    destination: string,
-    regex: string,
-    replacement: string,
-) => [{B with _value: float}]
+        <-tables: [{A with _value: float}],
+        source: string,
+        destination: string,
+        regex: string,
+        replacement: string,
+    ) => [{B with _value: float}]
 
 // linearRegression implements linear regression functionality required to implement
 // PromQL's deriv() and predict_linear() functions:
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear
-builtin linearRegression : (<-tables: [{A with _time: time, _stop: time, _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]
+builtin linearRegression : (
+        <-tables: [{A with _time: time, _stop: time, _value: float}],
+        ?predict: bool,
+        ?fromNow: float,
+    ) => [{B with _value: float}]
 
 // promqlMinute() implements functionality equivalent to PromQL's minute() function:
 //
@@ -92,12 +104,15 @@ builtin promqlMonth : (timestamp: float) => float
 //
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile
 builtin promHistogramQuantile : (
-    <-tables: [A],
-    ?quantile: float,
-    ?countColumn: string,
-    ?upperBoundColumn: string,
-    ?valueColumn: string,
-) => [B] where A: Record, B: Record
+        <-tables: [A],
+        ?quantile: float,
+        ?countColumn: string,
+        ?upperBoundColumn: string,
+        ?valueColumn: string,
+    ) => [B]
+    where
+    A: Record,
+    B: Record
 
 // resets() implements functionality equivalent to PromQL's resets() function:
 //
@@ -114,10 +129,10 @@ builtin timestamp : (<-tables: [{A with _value: float}]) => [{A with _value: flo
 // https://prometheus.io/docs/prometheus/latest/querying/functions/#year
 builtin promqlYear : (timestamp: float) => float
 
-// quantile() accounts checks for quantile values that are out of range, above 1.0 or 
-// below 0.0, by either returning positive infinity or negative infinity in the `_value` 
-// column respectively. q must be a float 
-quantile = (q, tables=<-, method="exact_mean") => 
+// quantile() accounts checks for quantile values that are out of range, above 1.0 or
+// below 0.0, by either returning positive infinity or negative infinity in the `_value`
+// column respectively. q must be a float
+quantile = (q, tables=<-, method="exact_mean") =>
     // value is in normal range. We can use the normal quantile function
     if q <= 1.0 and q >= 0.0 then
         tables

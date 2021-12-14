@@ -3,7 +3,8 @@ package schema_test
 
 import "testing"
 
-input = "
+input =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
@@ -76,13 +77,15 @@ output = "
 ,,0,load3
 ,,0,load8
 "
-show_fields_fn = (tables=<-) => tables
-    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
-    |> filter(fn: (r) => r._measurement == "sys")
-    |> filter(fn: (r) => r.host == "host.local")
-    |> keep(columns: ["_field"])
-    |> group()
-    |> distinct(column: "_field")
-    |> sort()
+show_fields_fn = (tables=<-) =>
+    tables
+        |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
+        |> filter(fn: (r) => r._measurement == "sys")
+        |> filter(fn: (r) => r.host == "host.local")
+        |> keep(columns: ["_field"])
+        |> group()
+        |> distinct(column: "_field")
+        |> sort()
 
-test show_fields = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})
+test show_fields = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})

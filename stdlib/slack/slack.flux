@@ -74,14 +74,15 @@ message = (
     channel,
     text,
     color,
-) => {
-    attachments = [{color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]}]
-    data = {channel: channel, attachments: attachments}
-    headers = {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
-    enc = json.encode(v: data)
+) =>
+    {
+        attachments = [{color: validateColorString(color), text: string(v: text), mrkdwn_in: ["text"]}]
+        data = {channel: channel, attachments: attachments}
+        headers = {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
+        enc = json.encode(v: data)
 
-    return http.post(headers: headers, url: url, data: enc)
-}
+        return http.post(headers: headers, url: url, data: enc)
+    }
 
 // endpoint sends a message to Slack that includes output data.
 //
@@ -114,21 +115,25 @@ message = (
 //    })
 //   )()
 // ```
-endpoint = (url=defaultURL, token="") => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == message(
-                        url: url,
-                        token: token,
-                        channel: obj.channel,
-                        text: obj.text,
-                        color: obj.color,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (url=defaultURL, token="") =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == message(
+                                                url: url,
+                                                token: token,
+                                                channel: obj.channel,
+                                                text: obj.text,
+                                                color: obj.color,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

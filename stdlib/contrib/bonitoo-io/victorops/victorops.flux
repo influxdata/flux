@@ -22,7 +22,7 @@ import "json"
 // ## Parameters
 //
 // - url: VictorOps REST endpoint integration URL.
-//   
+//
 //    Example: `https://alert.victorops.com/integrations/generic/00000000/alert/<api_key>/<routing_key>`
 //    Replace `<api_key>` and `<routing_key>` with valid VictorOps API and routing keys.
 //
@@ -78,21 +78,22 @@ alert = (
     stateMessage="",
     timestamp=now(),
     monitoringTool="InfluxDB",
-) => {
-    alert = {
-        message_type: messageType,
-        entity_id: entityID,
-        entity_display_name: entityDisplayName,
-        state_message: stateMessage,
-        // required in seconds
-        state_start_time: uint(v: timestamp) / uint(v: 1000000000),
-        monitoring_tool: monitoringTool,
-    }
-    headers = {"Content-Type": "application/json"}
-    body = json.encode(v: alert)
+) =>
+    {
+        alert = {
+            message_type: messageType,
+            entity_id: entityID,
+            entity_display_name: entityDisplayName,
+            state_message: stateMessage,
+            // required in seconds
+            state_start_time: uint(v: timestamp) / uint(v: 1000000000),
+            monitoring_tool: monitoringTool,
+        }
+        headers = {"Content-Type": "application/json"}
+        body = json.encode(v: alert)
 
-    return http.post(headers: headers, url: url, data: body)
-}
+        return http.post(headers: headers, url: url, data: body)
+    }
 
 // endpoint sends events to VictorOps using data from input rows.
 //
@@ -154,23 +155,27 @@ alert = (
 //
 // tags: notification endpoints,transformations
 //
-endpoint = (url, monitoringTool="InfluxDB") => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == alert(
-                        url: url,
-                        messageType: obj.messageType,
-                        entityID: obj.entityID,
-                        entityDisplayName: obj.entityDisplayName,
-                        stateMessage: obj.stateMessage,
-                        timestamp: obj.timestamp,
-                        monitoringTool: monitoringTool,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (url, monitoringTool="InfluxDB") =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == alert(
+                                                url: url,
+                                                messageType: obj.messageType,
+                                                entityID: obj.entityID,
+                                                entityDisplayName: obj.entityDisplayName,
+                                                stateMessage: obj.stateMessage,
+                                                timestamp: obj.timestamp,
+                                                monitoringTool: monitoringTool,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

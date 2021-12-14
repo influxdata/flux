@@ -3,7 +3,8 @@ package chronograf_test
 
 import "testing"
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,string,string,long,dateTime:RFC3339,string,string
 #group,false,false,true,false,false,false,false,false,true,true
 #default,_result,,0389eade5af4b000,,,,,,,
@@ -19,8 +20,9 @@ outData = "
 ,,0,A
 ,,0,B
 "
-buckets_fn = (table=<-) => table
-    |> rename(columns: {name: "_value"})
-    |> keep(columns: ["_value"])
+buckets_fn = (table=<-) =>
+    table
+        |> rename(columns: {name: "_value"})
+        |> keep(columns: ["_value"])
 
 test buckets = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: buckets_fn})

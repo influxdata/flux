@@ -442,9 +442,9 @@ builtin from : (driverName: string, dataSourceName: string, query: string) => [A
 // bigquery://projectid/?credentials=eyJ0eXBlIjoiYXV0...
 // ```
 builtin to : (
-    <-tables: [A],
-    driverName: string,
-    dataSourceName: string,
-    table: string,
-    ?batchSize: int,
-) => [A]
+        <-tables: [A],
+        driverName: string,
+        dataSourceName: string,
+        table: string,
+        ?batchSize: int,
+    ) => [A]

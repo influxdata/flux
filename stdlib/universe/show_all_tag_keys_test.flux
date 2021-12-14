@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -1114,7 +1115,8 @@ inData = "
 ,,167,2018-05-22T19:54:06Z,0,zombies,processes,host.local
 ,,167,2018-05-22T19:54:16Z,0,zombies,processes,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string
 #group,false,false,false
 #default,_result,,
@@ -1130,11 +1132,13 @@ outData = "
 ,,0,name
 ,,0,cpu
 "
-t_show_all_tag_keys = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> keys()
-    |> group()
-    |> distinct()
-    |> keep(columns: ["_value"])
+t_show_all_tag_keys = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> keys()
+        |> group()
+        |> distinct()
+        |> keep(columns: ["_value"])
 
-test _show_all_tag_keys = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys})
+test _show_all_tag_keys = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_show_all_tag_keys})

@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2020-05-15T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string
 #group,false,true,true,true,true,true
 #default,,,,,,
@@ -40,7 +41,8 @@ inData = "
 ,_result,0,2020-05-14T17:49:00Z,,a,a
 ,_result,0,2020-05-14T17:50:00Z,,a,a
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,boolean,double,string,string
 #group,false,false,false,false,false,false,false
 #default,_result,,,,,,
@@ -50,16 +52,22 @@ outData = "
 ,_result,0,2020-05-14T17:48:00Z,false,8,a,a
 "
 t_join_use_previous_test = (tables=<-) => {
-    lhs = tables
-        |> range(start: 2020-05-01T00:00:00Z)
-        |> filter(fn: (r) => exists r.value)
-        |> drop(columns: ["_start", "_stop"])
-    rhs = tables
-        |> range(start: 2020-05-01T00:00:00Z)
-        |> filter(fn: (r) => exists r.flag)
-        |> drop(columns: ["_start", "_stop"])
+    lhs =
+        tables
+            |> range(start: 2020-05-01T00:00:00Z)
+            |> filter(fn: (r) => exists r.value)
+            |> drop(columns: ["_start", "_stop"])
+    rhs =
+        tables
+            |> range(start: 2020-05-01T00:00:00Z)
+            |> filter(fn: (r) => exists r.flag)
+            |> drop(columns: ["_start", "_stop"])
 
-    return join(tables: {left: lhs, right: rhs}, on: ["_time", "_field", "_measurement"], method: "inner") |> group(columns: []) |> fill(column: "flag", usePrevious: true)
+    return
+        join(tables: {left: lhs, right: rhs}, on: ["_time", "_field", "_measurement"], method: "inner")
+            |> group(columns: [])
+            |> fill(column: "flag", usePrevious: true)
 }
 
-test _join_use_previous_test = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join_use_previous_test})
+test _join_use_previous_test = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_join_use_previous_test})

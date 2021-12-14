@@ -6,7 +6,8 @@ import "planner"
 
 option planner.disablePhysicalRules = ["PushDownGroupWindowAggregateRule"]
 
-input = "
+input =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
@@ -32,7 +33,8 @@ input = "
 ,,2,2018-05-22T19:53:56Z,system,hostC,load5,1.89
 ,,2,2018-05-22T19:54:16Z,system,hostC,load5,1.93
 "
-output = "
+output =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,long
 #group,false,false,true,true,true,false
 #default,_result,,,,,
@@ -47,10 +49,12 @@ output = "
 ,,7,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostB,2
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,hostC,1
 "
-group_window_agg_fn = (tables=<-) => tables
-    |> range(start: 0)
-    |> group(columns: ["host"])
-    |> window(every: 20s)
-    |> count()
+group_window_agg_fn = (tables=<-) =>
+    tables
+        |> range(start: 0)
+        |> group(columns: ["host"])
+        |> window(every: 20s)
+        |> count()
 
-test group_window_agg_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})
+test group_window_agg_pushdown = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: group_window_agg_fn})

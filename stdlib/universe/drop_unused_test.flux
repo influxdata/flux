@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -29,7 +30,8 @@ inData = "
 ,,2,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
 #group,false,false,true,true,false,false,true,true,true
 #default,_result,,,,,,,,
@@ -49,9 +51,11 @@ outData = "
 #default,_result,2,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,,,usage_idle,cpu-total,host.local
 ,result,table,_start,_stop,_time,_value,_field,old,host
 "
-drop_unused = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> drop(columns: ["_measurement"])
-    |> filter(fn: (r) => r._field == "usage_guest")
+drop_unused = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_measurement"])
+        |> filter(fn: (r) => r._field == "usage_guest")
 
-test _drop_unused = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_unused})
+test _drop_unused = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_unused})

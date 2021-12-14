@@ -7,7 +7,8 @@ import "regexp"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -19,7 +20,8 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,,,
@@ -30,8 +32,10 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/
 "
 re = regexp.compile(v: "[[:alpha:]]{1}")
-t_string_regexp_hasPrefix = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.split(v: r._value, t: "")[0]))
+t_string_regexp_hasPrefix = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> filter(fn: (r) => regexp.matchRegexpString(r: re, v: strings.split(v: r._value, t: "")[0]))
 
-test _string_regexp_hasPrefix = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasPrefix})
+test _string_regexp_hasPrefix = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_regexp_hasPrefix})

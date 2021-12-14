@@ -18,7 +18,8 @@ sophie = {name: "Sophie", age: 15}
 
 testcase integration_pg_read_from_seed {
     want = array.from(rows: [stanley, lucy])
-    got = sql.from(driverName: "postgres", dataSourceName: pgDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
+    got =
+        sql.from(driverName: "postgres", dataSourceName: pgDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -26,7 +27,12 @@ testcase integration_pg_read_from_seed {
 
 testcase integration_pg_read_from_nonseed {
     want = array.from(rows: [sophie])
-    got = sql.from(driverName: "postgres", dataSourceName: pgDsn, query: "SELECT name, age FROM pets WHERE seeded = false")
+    got =
+        sql.from(
+            driverName: "postgres",
+            dataSourceName: pgDsn,
+            query: "SELECT name, age FROM pets WHERE seeded = false",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -46,7 +52,8 @@ testcase integration_pg_write_to {
 
 testcase integration_mysql_read_from_seed {
     want = array.from(rows: [stanley, lucy])
-    got = sql.from(driverName: "mysql", dataSourceName: mysqlDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
+    got =
+        sql.from(driverName: "mysql", dataSourceName: mysqlDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -54,7 +61,12 @@ testcase integration_mysql_read_from_seed {
 
 testcase integration_mysql_read_from_nonseed {
     want = array.from(rows: [sophie])
-    got = sql.from(driverName: "mysql", dataSourceName: mysqlDsn, query: "SELECT name, age FROM pets WHERE seeded = false")
+    got =
+        sql.from(
+            driverName: "mysql",
+            dataSourceName: mysqlDsn,
+            query: "SELECT name, age FROM pets WHERE seeded = false",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -74,7 +86,12 @@ testcase integration_mysql_write_to {
 
 testcase integration_mariadb_read_from_seed {
     want = array.from(rows: [stanley, lucy])
-    got = sql.from(driverName: "mysql", dataSourceName: mariaDbDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
+    got =
+        sql.from(
+            driverName: "mysql",
+            dataSourceName: mariaDbDsn,
+            query: "SELECT name, age FROM pets WHERE seeded = true",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -82,7 +99,12 @@ testcase integration_mariadb_read_from_seed {
 
 testcase integration_mariadb_read_from_nonseed {
     want = array.from(rows: [sophie])
-    got = sql.from(driverName: "mysql", dataSourceName: mariaDbDsn, query: "SELECT name, age FROM pets WHERE seeded = false")
+    got =
+        sql.from(
+            driverName: "mysql",
+            dataSourceName: mariaDbDsn,
+            query: "SELECT name, age FROM pets WHERE seeded = false",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -102,7 +124,12 @@ testcase integration_mariadb_write_to {
 
 testcase integration_mssql_read_from_seed {
     want = array.from(rows: [stanley, lucy])
-    got = sql.from(driverName: "sqlserver", dataSourceName: mssqlDsn, query: "SELECT name, age FROM pets WHERE seeded = 1")
+    got =
+        sql.from(
+            driverName: "sqlserver",
+            dataSourceName: mssqlDsn,
+            query: "SELECT name, age FROM pets WHERE seeded = 1",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -110,7 +137,12 @@ testcase integration_mssql_read_from_seed {
 
 testcase integration_mssql_read_from_nonseed {
     want = array.from(rows: [sophie])
-    got = sql.from(driverName: "sqlserver", dataSourceName: mssqlDsn, query: "SELECT name, age FROM pets WHERE seeded = 0")
+    got =
+        sql.from(
+            driverName: "sqlserver",
+            dataSourceName: mssqlDsn,
+            query: "SELECT name, age FROM pets WHERE seeded = 0",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -122,21 +154,27 @@ testcase integration_mssql_read_from_nonseed {
 // skate by with "mssql" if you only ever use `sql.from()` (which doesn't
 // attempt to bind parameters!)
 // <https://github.com/denisenkom/go-mssqldb#deprecated>
-testcase integration_mssql_write_to {
-    array.from(rows: [sophie])
-        |> sql.to(driverName: "sqlserver", dataSourceName: mssqlDsn, table: "pets", batchSize: 1)
-        // The array.from() will be returned and will cause the test to fail.
-        // Filtering will mean the test can pass. Hopefully `sql.to()` will
-        // error if there's a problem.
-        |> filter(fn: (r) => false)
-        // Without the yield, the flux script can "finish", closing the db
-        // connection before the insert commits!
-        |> yield()
-}
+testcase integration_mssql_write_to
+{
+        array.from(rows: [sophie])
+            |> sql.to(driverName: "sqlserver", dataSourceName: mssqlDsn, table: "pets", batchSize: 1)
+            // The array.from() will be returned and will cause the test to fail.
+            // Filtering will mean the test can pass. Hopefully `sql.to()` will
+            // error if there's a problem.
+            |> filter(fn: (r) => false)
+            // Without the yield, the flux script can "finish", closing the db
+            // connection before the insert commits!
+            |> yield()
+    }
 
 testcase integration_vertica_read_from_seed {
     want = array.from(rows: [stanley, lucy])
-    got = sql.from(driverName: "vertica", dataSourceName: verticaDsn, query: "SELECT name, age FROM pets where seeded = true")
+    got =
+        sql.from(
+            driverName: "vertica",
+            dataSourceName: verticaDsn,
+            query: "SELECT name, age FROM pets where seeded = true",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -144,7 +182,12 @@ testcase integration_vertica_read_from_seed {
 
 testcase integration_vertica_read_from_nonseed {
     want = array.from(rows: [sophie])
-    got = sql.from(driverName: "vertica", dataSourceName: verticaDsn, query: "SELECT name, age FROM pets where seeded = false")
+    got =
+        sql.from(
+            driverName: "vertica",
+            dataSourceName: verticaDsn,
+            query: "SELECT name, age FROM pets where seeded = false",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -164,7 +207,12 @@ testcase integration_vertica_write_to {
 
 testcase integration_sqlite_read_from_seed {
     want = array.from(rows: [stanley, lucy])
-    got = sql.from(driverName: "sqlite3", dataSourceName: sqliteDsn, query: "SELECT name, age FROM pets where seeded = true")
+    got =
+        sql.from(
+            driverName: "sqlite3",
+            dataSourceName: sqliteDsn,
+            query: "SELECT name, age FROM pets where seeded = true",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -172,7 +220,12 @@ testcase integration_sqlite_read_from_seed {
 
 testcase integration_sqlite_read_from_nonseed {
     want = array.from(rows: [sophie])
-    got = sql.from(driverName: "sqlite3", dataSourceName: sqliteDsn, query: "SELECT name, age FROM pets where seeded = false")
+    got =
+        sql.from(
+            driverName: "sqlite3",
+            dataSourceName: sqliteDsn,
+            query: "SELECT name, age FROM pets where seeded = false",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()

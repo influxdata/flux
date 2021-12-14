@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -40,7 +41,8 @@ inData = "
 ,,0,2018-05-22T00:04:30Z,2,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:04:40Z,1,used_percent,disk,disk1s1,apfs,host.local,/
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -65,9 +67,10 @@ outData = "
 ,,0,2018-05-22T00:04:30Z,-100,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:04:40Z,-100,used_percent,disk,disk1s1,apfs,host.local,/
 "
-cmo = (table=<-) => table
-    |> range(start: 2018-05-22T00:00:00Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> chandeMomentumOscillator(n: 10)
+cmo = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T00:00:00Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> chandeMomentumOscillator(n: 10)
 
 test _cmo = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: cmo})

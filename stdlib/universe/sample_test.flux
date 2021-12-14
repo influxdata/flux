@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -38,7 +39,8 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:54:16Z,82.6416015625,used_percent,swap,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -53,8 +55,9 @@ outData = "
 ,,3,2018-05-22T19:53:36Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:54:06Z,82.598876953125,used_percent,swap,host.local
 "
-t_sample = (table=<-) => table
-    |> sample(n: 3, pos: 1)
-    |> drop(columns: ["_start", "_stop"])
+t_sample = (table=<-) =>
+    table
+        |> sample(n: 3, pos: 1)
+        |> drop(columns: ["_start", "_stop"])
 
 test _sample = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample})

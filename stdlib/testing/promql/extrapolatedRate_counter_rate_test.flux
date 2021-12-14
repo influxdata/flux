@@ -10,7 +10,8 @@ option now = () => 2030-01-01T00:00:00Z
 // todo(faith): remove overload https://github.com/influxdata/flux/issues/3155
 option testing.loadStorage = (csv) => c.from(csv: csv)
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double,string
 #group,false,false,false,true,false,true
 #default,inData,,,,,
@@ -35,7 +36,8 @@ inData = "
 ,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus
 ,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string
 #group,false,false,true,true,true,false,true
 #default,outData,,,,,,
@@ -44,8 +46,10 @@ outData = "
 ,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,0.3663333333333333,prometheus
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,2.533333333333333,prometheus
 "
-t_extrapolatedRate = (table=<-) => table
-    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
-    |> promql.extrapolatedRate(isCounter: true, isRate: true)
+t_extrapolatedRate = (table=<-) =>
+    table
+        |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
+        |> promql.extrapolatedRate(isCounter: true, isRate: true)
 
-test _extrapolatedRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})
+test _extrapolatedRate = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_extrapolatedRate})

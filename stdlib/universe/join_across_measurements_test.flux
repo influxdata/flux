@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -169,7 +170,8 @@ inData = "
 ,,22,2018-05-22T19:54:06Z,0,zombies,processes,host.local
 ,,22,2018-05-22T19:54:16Z,0,zombies,processes,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,string,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,long,string
 #group,false,false,true,true,true,true,true,true,false,false,false,true
 #default,_result,,,,,,,,,,,
@@ -182,12 +184,14 @@ outData = "
 ,,0,used,total,mem,processes,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,2018-05-22T19:54:16Z,10731827200,417,host.local
 "
 t_join = (table=<-) => {
-    mem = table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> filter(fn: (r) => r._measurement == "mem" and r._field == "used")
-    proc = table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-        |> filter(fn: (r) => r._measurement == "processes" and r._field == "total")
+    mem =
+        table
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> filter(fn: (r) => r._measurement == "mem" and r._field == "used")
+    proc =
+        table
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+            |> filter(fn: (r) => r._measurement == "processes" and r._field == "total")
 
     return join(tables: {mem: mem, proc: proc}, on: ["_time", "_stop", "_start", "host"])
 }

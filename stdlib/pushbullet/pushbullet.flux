@@ -122,11 +122,18 @@ pushNote = (url=defaultURL, token="", title, text) => {
 //   )()
 // ```
 //
-endpoint = (url=defaultURL, token="") => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with _sent: string(v: 2 == pushNote(url: url, token: token, title: obj.title, text: obj.text) / 100)}
-        },
-    )
+endpoint = (url=defaultURL, token="") =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v: 2 == pushNote(url: url, token: token, title: obj.title, text: obj.text) / 100,
+                                ),
+                        }
+                    },
+                )

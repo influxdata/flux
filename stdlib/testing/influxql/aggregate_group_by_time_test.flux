@@ -4,7 +4,8 @@ package influxql_test
 import "testing"
 import "internal/influxql"
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,0,,,,,,
@@ -310,7 +311,8 @@ inData = "
 ,,14,1970-01-01T18:00:00Z,m,e,f,0.051500691978027605
 ,,14,1970-01-01T19:00:00Z,m,e,f,0.16249922364133557
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double
 #group,false,false,false,true,false
 #default,0,,,,
@@ -323,13 +325,15 @@ outData = "
 "
 
 // SELECT sum(f) FROM m WHERE time >= 0 AND time <= 20h GROUP BY time(5h)
-t_aggregate_group_by_time = (tables=<-) => tables
-    |> range(start: 1970-01-01T00:00:00Z, stop: 1970-01-01T20:00:00.000000001Z)
-    |> filter(fn: (r) => r._measurement == "m")
-    |> filter(fn: (r) => r._field == "f")
-    |> group(columns: ["_measurement", "_field"])
-    |> aggregateWindow(every: 5h, fn: sum, timeSrc: "_start")
-    |> rename(columns: {_time: "time", _value: "sum"})
-    |> drop(columns: ["_field", "_start", "_stop"])
+t_aggregate_group_by_time = (tables=<-) =>
+    tables
+        |> range(start: 1970-01-01T00:00:00Z, stop: 1970-01-01T20:00:00.000000001Z)
+        |> filter(fn: (r) => r._measurement == "m")
+        |> filter(fn: (r) => r._field == "f")
+        |> group(columns: ["_measurement", "_field"])
+        |> aggregateWindow(every: 5h, fn: sum, timeSrc: "_start")
+        |> rename(columns: {_time: "time", _value: "sum"})
+        |> drop(columns: ["_field", "_start", "_stop"])
 
-test _aggregate_group_by_time = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_aggregate_group_by_time})
+test _aggregate_group_by_time = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_aggregate_group_by_time})

@@ -850,7 +850,7 @@ builtin j1 : (x: float) => float
 builtin jn : (n: int, x: float) => float
 
 // ldexp is a function that is the inverse of math.frexp(). It returns
-//  `frac x 2**exp`. 
+//  `frac x 2**exp`.
 //
 // ## Parameters
 // - frac: is the fraction used in the operation.
@@ -911,7 +911,7 @@ builtin lgamma : (x: float) => {lgamma: float, sign: int}
 //
 // ```
 // import "math"
-// 
+//
 // math.log(x: 3.14)
 // ```
 //
@@ -1113,7 +1113,7 @@ builtin mMin : (x: float, y: float) => float
 builtin mod : (x: float, y: float) => float
 
 // modf is a function that returns integer and fractional floating-point numbers
-//  that sum to f. 
+//  that sum to f.
 //
 //  Both values have the same sign as f.
 //

@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-input = "
+input =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
@@ -31,7 +32,8 @@ input = "
 ,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89
 ,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93
 "
-output = "
+output =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,true,true,true,false
 #default,_result,,,,,,,
@@ -40,8 +42,10 @@ output = "
 ,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,11.83
 ,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,11.52
 "
-bare_sum_fn = (tables=<-) => tables
-    |> range(start: 2018-05-01T00:00:00Z)
-    |> sum()
+bare_sum_fn = (tables=<-) =>
+    tables
+        |> range(start: 2018-05-01T00:00:00Z)
+        |> sum()
 
-test bare_sum_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_sum_fn})
+test bare_sum_pushdown = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_sum_fn})

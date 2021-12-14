@@ -8,7 +8,8 @@ import "testing"
 option now = () => 2030-01-01T00:00:00Z
 
 // train closing to Manhattan
-inData = "
+inData =
+    "
 #group,false,false,false,false,true,true,true,true,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string,string
 #default,_result,,,,,,,,,,,,,
@@ -166,7 +167,8 @@ inData = "
 ,,145,2020-04-08T15:56:53Z,1586304000,tid,mta,via,LLIR,GO506_20_6431,89c28a024,6,STOPPED_AT,42,GO506_20_6431
 ,,146,2020-04-08T15:57:52Z,1586304000,tid,mta,via,LLIR,GO506_20_6431,89c28a03c,6,STOPPED_AT,42,GO506_20_6431
 "
-outData = "
+outData =
+    "
 #group,false,false,false,false,false,false,false,true,false,false,false,false,false,false,false,true
 #datatype,string,long,string,string,boolean,dateTime:RFC3339,string,string,double,double,string,string,string,string,long,string
 #default,_result,,,,,,,,,,,,,,,
@@ -224,12 +226,19 @@ outData = "
 
 // reference point (Statue of Liberty)
 refPoint = {lat: 40.6892, lon: -74.0445}
-t_stDWithin = (table=<-) => table
-    |> range(start: 2020-04-01T00:00:00Z)
-    |> v1.fieldsAsCols()
-    // optional but it helps to see the train closing in
-    |> geo.asTracks(groupBy: ["id", "trip_id"])
-    |> map(fn: (r) => ({r with _st_dwithin: geo.ST_DWithin(region: refPoint, geometry: {lat: r.lat, lon: r.lon}, distance: 20.0)}))
-    |> drop(columns: ["_start", "_stop"])
+t_stDWithin = (table=<-) =>
+    table
+        |> range(start: 2020-04-01T00:00:00Z)
+        |> v1.fieldsAsCols()
+        // optional but it helps to see the train closing in
+        |> geo.asTracks(groupBy: ["id", "trip_id"])
+        |> map(
+            fn: (r) =>
+                ({r with _st_dwithin:
+                        geo.ST_DWithin(region: refPoint, geometry: {lat: r.lat, lon: r.lon}, distance: 20.0),
+                }),
+        )
+        |> drop(columns: ["_start", "_stop"])
 
-test _stDWithin = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDWithin})
+test _stDWithin = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDWithin})

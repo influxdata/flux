@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,true,true,false
 #default,_result,,,,,,
@@ -26,7 +27,8 @@ inData = "
 ,,4,2018-11-07T13:00:00Z,13,B,DD,HostE
 ,,4,2018-11-07T14:00:00Z,27,B,DD,HostE
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,false,false,false
 #default,_result,,,,,,
@@ -35,8 +37,10 @@ outData = "
 ,,0,2018-11-07T05:00:00Z,33,A,CC,HostB
 ,,0,2018-11-07T02:00:00Z,30,A,BB,HostA
 "
-t_highestMax = (table=<-) => table
-    |> highestMax(n: 3, groupColumns: ["_measurement", "host"])
-    |> drop(columns: ["_start", "_stop"])
+t_highestMax = (table=<-) =>
+    table
+        |> highestMax(n: 3, groupColumns: ["_measurement", "host"])
+        |> drop(columns: ["_start", "_stop"])
 
-test _highestMax = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestMax})
+test _highestMax = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestMax})

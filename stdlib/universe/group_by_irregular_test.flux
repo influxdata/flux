@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true
 #default,_result,,,,,,,,
@@ -22,7 +23,8 @@ inData = "
 ,,4,2018-10-03T17:55:11.01435Z,2018-10-03T17:55:12Z,scheduledFor,02bac3c8f0f37000,02bac3c8d6c5b000,success,records
 ,,4,2018-10-03T17:55:11.115415Z,2018-10-03T17:55:13Z,scheduledFor,02bac3c8f0f37000,02bac3c8d6c5b000,success,records
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string
 #group,false,false,false,false,false,false,false,false,false,true,false
 #default,r1,,,,,,,,,,
@@ -37,11 +39,13 @@ outData = "
 ,,2,2018-10-02T17:55:11.520461Z,2030-01-01T00:00:00Z,2018-10-03T17:55:11.113222Z,02bac3c8f0f37000,02bac3c8d6c5b000,started,records,,02bac3c922737000,2018-10-03T17:55:13Z
 ,,2,2018-10-02T17:55:11.520461Z,2030-01-01T00:00:00Z,2018-10-03T17:55:11.115415Z,02bac3c8f0f37000,02bac3c8d6c5b000,success,records,,02bac3c922737000,2018-10-03T17:55:13Z
 "
-t_group_by_irregular = (table=<-) => table
-    |> range(start: 2018-10-02T17:55:11.520461Z)
-    |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
-    |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-    |> group(columns: ["runID"])
-    |> yield(name: "r1")
+t_group_by_irregular = (table=<-) =>
+    table
+        |> range(start: 2018-10-02T17:55:11.520461Z)
+        |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
+        |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> group(columns: ["runID"])
+        |> yield(name: "r1")
 
-test _group_by_irregular = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_irregular})
+test _group_by_irregular = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_irregular})

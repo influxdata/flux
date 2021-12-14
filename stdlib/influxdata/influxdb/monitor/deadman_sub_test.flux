@@ -7,7 +7,8 @@ import "experimental"
 
 option now = () => 2018-05-22T20:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string
 #group,false,false,false,false,true,true
 #default,_result,,,,,
@@ -33,7 +34,8 @@ inData = "
 ,,3,2018-05-22T16:30:00Z,11,D,cpu
 ,,3,2018-05-22T17:30:00Z,11,D,cpu
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,boolean
 #group,false,false,true,true,false,false,true,true,false
 #default,_result,,,,,,,,
@@ -43,8 +45,10 @@ outData = "
 ,,2,2018-05-22T15:00:00Z,2018-05-22T20:00:00Z,2018-05-22T18:30:00Z,11,C,cpu,true
 ,,3,2018-05-22T15:00:00Z,2018-05-22T20:00:00Z,2018-05-22T19:30:00Z,11,D,cpu,false
 "
-t_deadman_sub = (table=<-) => table
-    |> range(start: -5h)
-    |> monitor.deadman(t: experimental.subDuration(d: 1h, from: now()))
+t_deadman_sub = (table=<-) =>
+    table
+        |> range(start: -5h)
+        |> monitor.deadman(t: experimental.subDuration(d: 1h, from: now()))
 
-test deadman_sub = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_deadman_sub})
+test deadman_sub = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_deadman_sub})

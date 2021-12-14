@@ -6,7 +6,8 @@ import "internal/promql"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double,string
 #group,false,false,false,true,true,true,false,true
 #default,inData,,,,,,,
@@ -16,7 +17,8 @@ inData = "
 ,,1,2018-12-18T20:52:33Z,metric_name,source-value-20,original-destination-value,3,prometheus
 ,,1,2018-12-18T20:52:43Z,metric_name,source-value-20,original-destination-value,4,prometheus
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,string,string,double,string
 #group,false,false,true,true,true,false,true
 #default,outData,,,,,,
@@ -26,9 +28,16 @@ outData = "
 ,,1,metric_name,source-value-20,original-destination-value,3,prometheus
 ,,1,metric_name,source-value-20,original-destination-value,4,prometheus
 "
-t_labelReplace = (table=<-) => table
-    |> range(start: 1980-01-01T00:00:00Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> promql.labelReplace(source: "src", destination: "dst", regex: "value-(.*)", replacement: "destination-value-$1")
+t_labelReplace = (table=<-) =>
+    table
+        |> range(start: 1980-01-01T00:00:00Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> promql.labelReplace(
+            source: "src",
+            destination: "dst",
+            regex: "value-(.*)",
+            replacement: "destination-value-$1",
+        )
 
-test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})
+test _labelReplace = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})

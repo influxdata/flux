@@ -5,7 +5,8 @@ import "array"
 import "testing"
 import "internal/debug"
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,false,false
 #default,_result,,,,,
@@ -28,9 +29,10 @@ inData = "
 ,,1,iZquGj,ucyoZ,2018-12-18T20:53:13Z,68
 ,,1,iZquGj,ucyoZ,2018-12-18T20:53:23Z,49
 "
-input = () => testing.loadStorage(csv: inData)
-    |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
-    |> drop(columns: ["_start", "_stop"])
+input = () =>
+    testing.loadStorage(csv: inData)
+        |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
+        |> drop(columns: ["_start", "_stop"])
 
 testcase slurp {
     got = input() |> debug.slurp()
@@ -66,8 +68,9 @@ testcase get_option2 {
 testcase get_option_in_map {
     option debug.vectorize = true
 
-    got = array.from(rows: [{v: 123}])
-        |> map(fn: (r) => ({v: debug.getOption(pkg: "internal/debug", name: "vectorize")}))
+    got =
+        array.from(rows: [{v: 123}])
+            |> map(fn: (r) => ({v: debug.getOption(pkg: "internal/debug", name: "vectorize")}))
     want = true
 
     testing.diff(got: got, want: array.from(rows: [{v: want}]))

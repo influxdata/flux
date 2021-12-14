@@ -91,19 +91,20 @@ message = (
     parseMode=defaultParseMode,
     disableWebPagePreview=defaultDisableWebPagePreview,
     silent=defaultSilent,
-) => {
-    data = {
-        chat_id: channel,
-        text: text,
-        parse_mode: parseMode,
-        disable_web_page_preview: disableWebPagePreview,
-        disable_notification: silent,
-    }
-    headers = {"Content-Type": "application/json; charset=utf-8"}
-    enc = json.encode(v: data)
+) =>
+    {
+        data = {
+            chat_id: channel,
+            text: text,
+            parse_mode: parseMode,
+            disable_web_page_preview: disableWebPagePreview,
+            disable_notification: silent,
+        }
+        headers = {"Content-Type": "application/json; charset=utf-8"}
+        enc = json.encode(v: data)
 
-    return http.post(headers: headers, url: url + token + "/sendMessage", data: enc)
-}
+        return http.post(headers: headers, url: url + token + "/sendMessage", data: enc)
+    }
 
 // endpoint sends a message to a Telegram channel using data from table rows.
 //
@@ -167,23 +168,27 @@ message = (
 // ```
 //
 // tag: notification endpoints, transformations
-endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == message(
-                        url: url,
-                        token: token,
-                        channel: obj.channel,
-                        text: obj.text,
-                        parseMode: parseMode,
-                        disableWebPagePreview: disableWebPagePreview,
-                        silent: obj.silent,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == message(
+                                                url: url,
+                                                token: token,
+                                                channel: obj.channel,
+                                                text: obj.text,
+                                                parseMode: parseMode,
+                                                disableWebPagePreview: disableWebPagePreview,
+                                                silent: obj.silent,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

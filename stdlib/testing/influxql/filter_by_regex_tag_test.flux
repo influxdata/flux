@@ -4,7 +4,8 @@ package influxql_test
 import "testing"
 import "internal/influxql"
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,false
 #default,0,,,,,,
@@ -210,7 +211,8 @@ inData = "
 ,,198,1970-01-01T00:00:00.000000014Z,hex,0xe,n,14
 ,,199,1970-01-01T00:00:00.000000015Z,hex,0xf,n,15
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double
 #group,false,false,false,true,false
 #default,0,,,,
@@ -238,14 +240,23 @@ outData = "
 "
 
 // SELECT n FROM hex WHERE t =~ /^(0x7b|0x70|0x55|0x19|0x65|0xa3|0x89|0xc1|0x3|0x14|0x29|0x81|0xb7|0xb9|0x82|0x56|0xa0|0xc7|0x5a|0x7d)$/
-t_filter_by_regex_tag = (tables=<-) => tables
-    |> range(start: influxql.minTime, stop: influxql.maxTime)
-    |> filter(fn: (r) => r._measurement == "hex")
-    |> filter(fn: (r) => r._field == "n")
-    |> filter(fn: (r) => r.t =~ /^(0x7b|0x70|0x55|0x19|0x65|0xa3|0x89|0xc1|0x3|0x14|0x29|0x81|0xb7|0xb9|0x82|0x56|0xa0|0xc7|0x5a|0x7d)$/)
-    |> group(columns: ["_measurement", "_field"])
-    |> sort(columns: ["_time"])
-    |> keep(columns: ["_time", "_value", "_measurement"])
-    |> rename(columns: {_time: "time", _value: "n"})
+t_filter_by_regex_tag =
+    (tables=<-) =>
+        tables
+            |> range(start: influxql.minTime, stop: influxql.maxTime)
+            |> filter(fn: (r) => r._measurement == "hex")
+            |> filter(fn: (r) => r._field == "n")
+            |> filter(
+                fn:
+                    (r) =>
+                        r.t
+                            =~
+                            /^(0x7b|0x70|0x55|0x19|0x65|0xa3|0x89|0xc1|0x3|0x14|0x29|0x81|0xb7|0xb9|0x82|0x56|0xa0|0xc7|0x5a|0x7d)$/,
+            )
+            |> group(columns: ["_measurement", "_field"])
+            |> sort(columns: ["_time"])
+            |> keep(columns: ["_time", "_value", "_measurement"])
+            |> rename(columns: {_time: "time", _value: "n"})
 
-test _filter_by_regex_tag = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex_tag})
+test _filter_by_regex_tag = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex_tag})
