@@ -7,8 +7,8 @@ import (
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/date"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/locationutil"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
@@ -48,10 +48,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -61,6 +66,8 @@ func init() {
 
 				return values.NewInt(int64(t.Time().Minute())), nil
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Minute())), nil
 			}, false,
 		),
@@ -72,10 +79,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -84,6 +96,8 @@ func init() {
 				}
 				return values.NewInt(int64(t.Time().Hour())), nil
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Hour())), nil
 			}, false,
 		),
@@ -95,10 +109,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -107,6 +126,8 @@ func init() {
 				}
 				return values.NewInt(int64(t.Time().Weekday())), nil
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Weekday())), nil
 			}, false,
 		),
@@ -118,10 +139,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -130,6 +156,8 @@ func init() {
 				}
 				return values.NewInt(int64(t.Time().Day())), nil
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Day())), nil
 			}, false,
 		),
@@ -141,10 +169,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -153,6 +186,8 @@ func init() {
 				}
 				return values.NewInt(int64(t.Time().YearDay())), nil
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().YearDay())), nil
 			}, false,
 		),
@@ -164,10 +199,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -176,6 +216,8 @@ func init() {
 				}
 				return values.NewInt(int64(t.Time().Month())), nil
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Month())), nil
 			}, false,
 		),
@@ -187,10 +229,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -199,6 +246,8 @@ func init() {
 				}
 				return values.NewInt(int64(t.Time().Year())), nil
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Year())), nil
 			}, false,
 		),
@@ -210,10 +259,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -222,6 +276,8 @@ func init() {
 				}
 				_, week := t.Time().ISOWeek()
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				_, week := lTime.Time().Time().ISOWeek()
 				return values.NewInt(int64(week)), nil
 			}, false,
@@ -234,10 +290,15 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-				location, err := getLocation(args)
+				location, offset, err := getLocation(args)
 				if err != nil {
 					return nil, err
 				}
+				lTime, err := date.GetTimeInLocation(tm, location, offset)
+				if err != nil {
+					return nil, err
+				}
+<<<<<<< HEAD
 
 				deps := execute.GetExecutionDependencies(ctx)
 				t, err := deps.ResolveTimeable(v1)
@@ -248,6 +309,8 @@ func init() {
 				return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
 
 				lTime := location.ToUTCTime(tm)
+=======
+>>>>>>> a170c552 (feat(date): incorporated review comments)
 				month := lTime.Time().Time().Month()
 				return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
 			}, false,
@@ -395,34 +458,31 @@ func getTime(args values.Object) (values.Value, error) {
 	return tArg, nil
 }
 
-func getLocation(args values.Object) (locationutil.Location, error) {
+func getLocation(args values.Object) (string, values.Duration, error) {
 	var name, offset values.Value
 	var ok bool
 	a := interpreter.NewArguments(args)
 	if location, err := a.GetRequiredObject("location"); err != nil {
-		return locationutil.Location{}, err
+		return "UTC", values.ConvertDurationNsecs(0), err
 	} else {
 		name, ok = location.Get("zone")
 		if !ok {
-			return locationutil.Location{}, errors.New(codes.Invalid, "zone property missing from location record")
+			return "UTC", values.ConvertDurationNsecs(0), errors.New(codes.Invalid, "zone property missing from location record")
 		} else if got := name.Type().Nature(); got != semantic.String {
-			return locationutil.Location{}, errors.Newf(codes.Invalid, "zone property for location must be of type %s, got %s", semantic.String, got)
+			return "UTC", values.ConvertDurationNsecs(0), errors.Newf(codes.Invalid, "zone property for location must be of type %s, got %s", semantic.String, got)
 		}
 
 		if offset, ok = location.Get("offset"); ok {
 			if got := offset.Type().Nature(); got != semantic.Duration {
-				return locationutil.Location{}, errors.Newf(codes.Invalid, "offset property for location must be of type %s, got %s", semantic.Duration, got)
+				return "UTC", values.ConvertDurationNsecs(0), errors.Newf(codes.Invalid, "offset property for location must be of type %s, got %s", semantic.Duration, got)
 			}
 		}
 	}
 	if name.IsNull() {
 		name = values.NewString("UTC")
 	}
-	loc := locationutil.Location{
-		Name:   name.Str(),
-		Offset: offset.Duration(),
-	}
-	return loc, nil
+
+	return name.Str(), offset.Duration(), nil
 }
 
 func errNotTimeable(t values.Value) (bool, error) {
