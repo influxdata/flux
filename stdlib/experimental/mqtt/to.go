@@ -92,6 +92,10 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 	}
 	o.TagColumns = o.TagColumns[:0]
 	if ok {
+		// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+		if _, ok := tagColumns.(values.TableObject); ok {
+			return errors.New(codes.Invalid, "tagColumns cannot be a table stream; expected an array")
+		}
 		for i := 0; i < tagColumns.Len(); i++ {
 			o.TagColumns = append(o.TagColumns, tagColumns.Get(i).Str())
 		}
@@ -103,7 +107,10 @@ func (o *ToMQTTOpSpec) ReadArgs(args flux.Arguments) error {
 		return err
 	}
 	o.ValueColumns = o.ValueColumns[:0]
-
+	// XXX: remove when array/stream are different types <https://github.com/influxdata/flux/issues/4343>
+	if _, ok := valueColumns.(values.TableObject); ok {
+		return errors.New(codes.Invalid, "valueColumns cannot be a table stream; expected an array")
+	}
 	if !ok || valueColumns.Len() == 0 {
 		o.ValueColumns = append(o.ValueColumns, execute.DefaultValueColLabel)
 	} else {
