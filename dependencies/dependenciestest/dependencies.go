@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/dependencies/url"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/mock"
 )
 
@@ -62,4 +63,17 @@ func Default() Deps {
 			Provider: influxdb.HttpProvider{},
 		},
 	}
+}
+
+func ExecutionDefault() execute.ExecutionDependencies {
+	return execute.DefaultExecutionDependencies()
+}
+
+// Injects all default dependencies into the context
+func InjectAllDeps(ctx context.Context) context.Context {
+	deps := Default()
+	execDeps := ExecutionDefault()
+
+	ctx = deps.Inject(ctx)
+	return execDeps.Inject(ctx)
 }
