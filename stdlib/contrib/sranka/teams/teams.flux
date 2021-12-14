@@ -78,7 +78,6 @@ message = (url, title, text, summary="") => {
 //
 // ## Parameters
 // - url: Incoming webhook URL.
-// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
 // `teams.endpoint` is a factory function that outputs another function.
