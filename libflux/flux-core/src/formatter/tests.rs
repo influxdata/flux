@@ -1,8 +1,9 @@
 use std::str;
 
 // This gives us a colorful diff.
-#[cfg(test)]
 use pretty_assertions::assert_eq;
+
+use expect_test::expect;
 
 use super::*;
 
@@ -1753,4 +1754,158 @@ fn builtin_are_unchanged() {
     B: Record
 builtin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record"#;
     assert_unchanged(script);
+}
+
+#[test]
+fn astutil_test_format_with_comments() {
+    let src = r#"    // hi
+    // there
+    {_time: r._time, io_time: r._value, // this is the end
+    }
+
+    // minimal
+    foo = (arg=[1, 2]) => (1)
+
+    // left
+    left = from(bucket: "test")
+        |> range(start: 2018-05-22T19:53:00Z
+        // i write too many comments
+        , stop: 2018-05-22T19:55:00Z)
+        // and put them in strange places
+        |>  drop
+
+            // this hurts my eyes
+    (columns: ["_start", "_stop"])
+            // just terrible
+        |> filter(fn: (r) =>
+            (r.user
+
+            // (don't fire me, this is intentional)
+            == "user1"))
+        |> group(by
+        // strange place for a comment
+    : ["user"])
+
+    right = from(bucket: "test")
+        |> range(start: 2018-05-22T19:53:00Z,
+                // please stop
+                stop: 2018-05-22T19:55:00Z)
+        |> drop( // spare me the pain
+    // this hurts
+    columns: ["_start", "_stop"// what
+    ])
+        |> filter(
+            // just why
+            fn: (r) =>
+            // user 2 is the best user
+            (r.user == "user2"))
+        |> group(by: //just stop
+    ["_measurement"])
+
+    join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
+
+    from(bucket, _option // friends
+    ,// stick together
+    )
+
+    i = // definitely
+    not true
+    // a
+    // list
+    // of
+    // comments
+
+    j
+
+    // not lost"#;
+
+    expect![[r#"
+        // hi
+        // there
+        {
+            _time: r._time,
+            io_time: r._value,
+                // this is the end
+
+        }
+
+        // minimal
+        foo = (arg=[1, 2]) => 1
+
+        // left
+        left =
+            from(bucket: "test")
+                |> range(
+                    start: 2018-05-22T19:53:00Z
+                        // i write too many comments
+                        ,
+                    stop: 2018-05-22T19:55:00Z,
+                )
+                // and put them in strange places
+                |> drop
+                    // this hurts my eyes
+                    (columns: ["_start", "_stop"])
+                // just terrible
+                |> filter(
+                    fn: (r) =>
+                        r.user
+                            // (don't fire me, this is intentional)
+                            ==
+                            "user1",
+                )
+                |> group(
+                    by
+                        // strange place for a comment
+                        : ["user"],
+                )
+
+        right =
+            from(bucket: "test")
+                |> range(
+                    start: 2018-05-22T19:53:00Z,
+                    // please stop
+                    stop: 2018-05-22T19:55:00Z,
+                )
+                |> drop(
+                    // spare me the pain
+                    // this hurts
+                    columns:
+                        [
+                            "_start",
+                            "_stop",// what
+                        ],
+                )
+                |> filter(
+                    // just why
+                    fn:
+                        (r) =>
+                            // user 2 is the best user
+                            (r.user == "user2"),
+                )
+                |> group(
+                    by:
+                        //just stop
+                        ["_measurement"],
+                )
+
+        join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
+
+        from(
+            bucket,
+            _option
+                // friends
+                ,
+        // stick together
+        )
+
+        i =
+            // definitely
+            not true
+
+        // a
+        // list
+        // of
+        // comments
+        j// not lost"#]]
+    .assert_eq(&format(src).unwrap());
 }
