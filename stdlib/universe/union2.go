@@ -1,6 +1,8 @@
 package universe
 
 import (
+	"sync"
+
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -12,6 +14,7 @@ import (
 type unionTransformation2 struct {
 	d       *execute.TransportDataset
 	parents int
+	mu      sync.Mutex
 }
 
 func newUnionTransformation2(id execute.DatasetID, parents []execute.DatasetID, mem memory.Allocator) (execute.Transformation, execute.Dataset, error) {
@@ -30,6 +33,11 @@ func (u *unionTransformation2) ProcessMessage(m execute.Message) error {
 	if u.parents == 0 {
 		return nil
 	}
+
+	// It is possible to receive messages from different parents concurrently.
+	// Lock this here to prevent a race condition.
+	u.mu.Lock()
+	defer u.mu.Unlock()
 
 	switch m := m.(type) {
 	case execute.FinishMsg:
