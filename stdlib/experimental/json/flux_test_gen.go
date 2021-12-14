@@ -20,10 +20,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 111,
-					Line:   37,
+					Line:   40,
 				},
 				File:   "json_test.flux",
-				Source: "package json_test\n\n\nimport \"experimental/json\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_field,_measurement,_value\n,,0,2018-05-22T19:53:26Z,json,m,\\\"{\\\"\\\"a\\\"\\\":1,\\\"\\\"b\\\"\\\":2,\\\"\\\"c\\\"\\\":3}\\\"\n,,0,2018-05-22T19:53:36Z,json,m,\\\"{\\\"\\\"a\\\"\\\":2,\\\"\\\"b\\\"\\\":4,\\\"\\\"c\\\"\\\":6}\\\"\n,,0,2018-05-22T19:53:46Z,json,m,\\\"{\\\"\\\"a\\\"\\\":3,\\\"\\\"b\\\"\\\":5,\\\"\\\"c\\\"\\\":7}\\\"\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,double,double,double\n#group,false,false,false,false,false,false\n#default,_result,,,,,\n,result,table,_time,a,b,c\n,,0,2018-05-22T19:53:26Z,1,2,3\n,,0,2018-05-22T19:53:36Z,2,4,6\n,,0,2018-05-22T19:53:46Z,3,5,7\n\"\n_json = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> map(\n        fn: (r) => {\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        },\n    )\n\ntest parse = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _json})",
+				Source: "package json_test\n\n\nimport \"experimental/json\"\nimport \"testing\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_field,_measurement,_value\n,,0,2018-05-22T19:53:26Z,json,m,\\\"{\\\"\\\"a\\\"\\\":1,\\\"\\\"b\\\"\\\":2,\\\"\\\"c\\\"\\\":3}\\\"\n,,0,2018-05-22T19:53:36Z,json,m,\\\"{\\\"\\\"a\\\"\\\":2,\\\"\\\"b\\\"\\\":4,\\\"\\\"c\\\"\\\":6}\\\"\n,,0,2018-05-22T19:53:46Z,json,m,\\\"{\\\"\\\"a\\\"\\\":3,\\\"\\\"b\\\"\\\":5,\\\"\\\"c\\\"\\\":7}\\\"\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,double,double\n#group,false,false,false,false,false,false\n#default,_result,,,,,\n,result,table,_time,a,b,c\n,,0,2018-05-22T19:53:26Z,1,2,3\n,,0,2018-05-22T19:53:36Z,2,4,6\n,,0,2018-05-22T19:53:46Z,3,5,7\n\"\n_json = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> map(\n            fn: (r) => {\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            },\n        )\n\ntest parse = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _json})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -132,10 +132,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   17,
+						Line:   18,
 					},
 					File:   "json_test.flux",
-					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_field,_measurement,_value\n,,0,2018-05-22T19:53:26Z,json,m,\\\"{\\\"\\\"a\\\"\\\":1,\\\"\\\"b\\\"\\\":2,\\\"\\\"c\\\"\\\":3}\\\"\n,,0,2018-05-22T19:53:36Z,json,m,\\\"{\\\"\\\"a\\\"\\\":2,\\\"\\\"b\\\"\\\":4,\\\"\\\"c\\\"\\\":6}\\\"\n,,0,2018-05-22T19:53:46Z,json,m,\\\"{\\\"\\\"a\\\"\\\":3,\\\"\\\"b\\\"\\\":5,\\\"\\\"c\\\"\\\":7}\\\"\n\"",
+					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,string,string,string\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_field,_measurement,_value\n,,0,2018-05-22T19:53:26Z,json,m,\\\"{\\\"\\\"a\\\"\\\":1,\\\"\\\"b\\\"\\\":2,\\\"\\\"c\\\"\\\":3}\\\"\n,,0,2018-05-22T19:53:36Z,json,m,\\\"{\\\"\\\"a\\\"\\\":2,\\\"\\\"b\\\"\\\":4,\\\"\\\"c\\\"\\\":6}\\\"\n,,0,2018-05-22T19:53:46Z,json,m,\\\"{\\\"\\\"a\\\"\\\":3,\\\"\\\"b\\\"\\\":5,\\\"\\\"c\\\"\\\":7}\\\"\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -168,13 +168,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   17,
+							Line:   18,
 						},
 						File:   "json_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_field,_measurement,_value\n,,0,2018-05-22T19:53:26Z,json,m,\\\"{\\\"\\\"a\\\"\\\":1,\\\"\\\"b\\\"\\\":2,\\\"\\\"c\\\"\\\":3}\\\"\n,,0,2018-05-22T19:53:36Z,json,m,\\\"{\\\"\\\"a\\\"\\\":2,\\\"\\\"b\\\"\\\":4,\\\"\\\"c\\\"\\\":6}\\\"\n,,0,2018-05-22T19:53:46Z,json,m,\\\"{\\\"\\\"a\\\"\\\":3,\\\"\\\"b\\\"\\\":5,\\\"\\\"c\\\"\\\":7}\\\"\n\"",
 						Start: ast.Position{
-							Column: 10,
-							Line:   9,
+							Column: 5,
+							Line:   10,
 						},
 					},
 				},
@@ -187,13 +187,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   26,
+						Line:   28,
 					},
 					File:   "json_test.flux",
-					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,double,double,double\n#group,false,false,false,false,false,false\n#default,_result,,,,,\n,result,table,_time,a,b,c\n,,0,2018-05-22T19:53:26Z,1,2,3\n,,0,2018-05-22T19:53:36Z,2,4,6\n,,0,2018-05-22T19:53:46Z,3,5,7\n\"",
+					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,double,double,double\n#group,false,false,false,false,false,false\n#default,_result,,,,,\n,result,table,_time,a,b,c\n,,0,2018-05-22T19:53:26Z,1,2,3\n,,0,2018-05-22T19:53:36Z,2,4,6\n,,0,2018-05-22T19:53:46Z,3,5,7\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   18,
+						Line:   19,
 					},
 				},
 			},
@@ -204,13 +204,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   18,
+							Line:   19,
 						},
 						File:   "json_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   18,
+							Line:   19,
 						},
 					},
 				},
@@ -223,13 +223,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   26,
+							Line:   28,
 						},
 						File:   "json_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,double,double\n#group,false,false,false,false,false,false\n#default,_result,,,,,\n,result,table,_time,a,b,c\n,,0,2018-05-22T19:53:26Z,1,2,3\n,,0,2018-05-22T19:53:36Z,2,4,6\n,,0,2018-05-22T19:53:46Z,3,5,7\n\"",
 						Start: ast.Position{
-							Column: 11,
-							Line:   18,
+							Column: 5,
+							Line:   20,
 						},
 					},
 				},
@@ -241,14 +241,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 6,
-						Line:   35,
+						Column: 10,
+						Line:   38,
 					},
 					File:   "json_test.flux",
-					Source: "_json = (table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> map(\n        fn: (r) => {\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        },\n    )",
+					Source: "_json = (table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> map(\n            fn: (r) => {\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            },\n        )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   27,
+						Line:   29,
 					},
 				},
 			},
@@ -259,13 +259,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   27,
+							Line:   29,
 						},
 						File:   "json_test.flux",
 						Source: "_json",
 						Start: ast.Position{
 							Column: 1,
-							Line:   27,
+							Line:   29,
 						},
 					},
 				},
@@ -278,14 +278,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 6,
-							Line:   35,
+							Column: 10,
+							Line:   38,
 						},
 						File:   "json_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> map(\n        fn: (r) => {\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        },\n    )",
+						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> map(\n            fn: (r) => {\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            },\n        )",
 						Start: ast.Position{
 							Column: 9,
-							Line:   27,
+							Line:   29,
 						},
 					},
 				},
@@ -297,14 +297,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 28,
-										Line:   27,
+										Column: 10,
+										Line:   30,
 									},
 									File:   "json_test.flux",
 									Source: "table",
 									Start: ast.Position{
-										Column: 23,
-										Line:   27,
+										Column: 5,
+										Line:   30,
 									},
 								},
 							},
@@ -315,14 +315,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 42,
-									Line:   28,
+									Column: 46,
+									Line:   31,
 								},
 								File:   "json_test.flux",
-								Source: "table\n    |> range(start: 2018-05-22T19:53:26Z)",
+								Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)",
 								Start: ast.Position{
-									Column: 23,
-									Line:   27,
+									Column: 5,
+									Line:   30,
 								},
 							},
 						},
@@ -333,14 +333,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
-											Line:   28,
+											Column: 45,
+											Line:   31,
 										},
 										File:   "json_test.flux",
 										Source: "start: 2018-05-22T19:53:26Z",
 										Start: ast.Position{
-											Column: 14,
-											Line:   28,
+											Column: 18,
+											Line:   31,
 										},
 									},
 								},
@@ -351,14 +351,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   28,
+												Column: 45,
+												Line:   31,
 											},
 											File:   "json_test.flux",
 											Source: "start: 2018-05-22T19:53:26Z",
 											Start: ast.Position{
-												Column: 14,
-												Line:   28,
+												Column: 18,
+												Line:   31,
 											},
 										},
 									},
@@ -369,14 +369,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   28,
+													Column: 23,
+													Line:   31,
 												},
 												File:   "json_test.flux",
 												Source: "start",
 												Start: ast.Position{
-													Column: 14,
-													Line:   28,
+													Column: 18,
+													Line:   31,
 												},
 											},
 										},
@@ -389,14 +389,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
-													Line:   28,
+													Column: 45,
+													Line:   31,
 												},
 												File:   "json_test.flux",
 												Source: "2018-05-22T19:53:26Z",
 												Start: ast.Position{
-													Column: 21,
-													Line:   28,
+													Column: 25,
+													Line:   31,
 												},
 											},
 										},
@@ -411,14 +411,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 42,
-										Line:   28,
+										Column: 46,
+										Line:   31,
 									},
 									File:   "json_test.flux",
 									Source: "range(start: 2018-05-22T19:53:26Z)",
 									Start: ast.Position{
-										Column: 8,
-										Line:   28,
+										Column: 12,
+										Line:   31,
 									},
 								},
 							},
@@ -428,14 +428,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
-											Line:   28,
+											Column: 17,
+											Line:   31,
 										},
 										File:   "json_test.flux",
 										Source: "range",
 										Start: ast.Position{
-											Column: 8,
-											Line:   28,
+											Column: 12,
+											Line:   31,
 										},
 									},
 								},
@@ -450,14 +450,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 6,
-								Line:   35,
+								Column: 10,
+								Line:   38,
 							},
 							File:   "json_test.flux",
-							Source: "table\n    |> range(start: 2018-05-22T19:53:26Z)\n    |> map(\n        fn: (r) => {\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        },\n    )",
+							Source: "table\n        |> range(start: 2018-05-22T19:53:26Z)\n        |> map(\n            fn: (r) => {\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            },\n        )",
 							Start: ast.Position{
-								Column: 23,
-								Line:   27,
+								Column: 5,
+								Line:   30,
 							},
 						},
 					},
@@ -468,14 +468,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   34,
+										Column: 14,
+										Line:   37,
 									},
 									File:   "json_test.flux",
-									Source: "fn: (r) => {\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        }",
+									Source: "fn: (r) => {\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            }",
 									Start: ast.Position{
-										Column: 9,
-										Line:   30,
+										Column: 13,
+										Line:   33,
 									},
 								},
 							},
@@ -486,14 +486,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 10,
-											Line:   34,
+											Column: 14,
+											Line:   37,
 										},
 										File:   "json_test.flux",
-										Source: "fn: (r) => {\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        }",
+										Source: "fn: (r) => {\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            }",
 										Start: ast.Position{
-											Column: 9,
-											Line:   30,
+											Column: 13,
+											Line:   33,
 										},
 									},
 								},
@@ -504,14 +504,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   30,
+												Column: 15,
+												Line:   33,
 											},
 											File:   "json_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 9,
-												Line:   30,
+												Column: 13,
+												Line:   33,
 											},
 										},
 									},
@@ -525,14 +525,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 10,
-												Line:   34,
+												Column: 14,
+												Line:   37,
 											},
 											File:   "json_test.flux",
-											Source: "(r) => {\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        }",
+											Source: "(r) => {\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            }",
 											Start: ast.Position{
-												Column: 13,
-												Line:   30,
+												Column: 17,
+												Line:   33,
 											},
 										},
 									},
@@ -542,14 +542,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 10,
-													Line:   34,
+													Column: 14,
+													Line:   37,
 												},
 												File:   "json_test.flux",
-												Source: "{\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        }",
+												Source: "{\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            }",
 												Start: ast.Position{
-													Column: 20,
-													Line:   30,
+													Column: 24,
+													Line:   33,
 												},
 											},
 										},
@@ -559,14 +559,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 56,
-														Line:   31,
+														Column: 60,
+														Line:   34,
 													},
 													File:   "json_test.flux",
 													Source: "data = json.parse(data: bytes(v: r._value))",
 													Start: ast.Position{
-														Column: 13,
-														Line:   31,
+														Column: 17,
+														Line:   34,
 													},
 												},
 											},
@@ -576,14 +576,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
-															Line:   31,
+															Column: 21,
+															Line:   34,
 														},
 														File:   "json_test.flux",
 														Source: "data",
 														Start: ast.Position{
-															Column: 13,
-															Line:   31,
+															Column: 17,
+															Line:   34,
 														},
 													},
 												},
@@ -596,14 +596,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 55,
-																Line:   31,
+																Column: 59,
+																Line:   34,
 															},
 															File:   "json_test.flux",
 															Source: "data: bytes(v: r._value)",
 															Start: ast.Position{
-																Column: 31,
-																Line:   31,
+																Column: 35,
+																Line:   34,
 															},
 														},
 													},
@@ -614,14 +614,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 55,
-																	Line:   31,
+																	Column: 59,
+																	Line:   34,
 																},
 																File:   "json_test.flux",
 																Source: "data: bytes(v: r._value)",
 																Start: ast.Position{
-																	Column: 31,
-																	Line:   31,
+																	Column: 35,
+																	Line:   34,
 																},
 															},
 														},
@@ -632,14 +632,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 35,
-																		Line:   31,
+																		Column: 39,
+																		Line:   34,
 																	},
 																	File:   "json_test.flux",
 																	Source: "data",
 																	Start: ast.Position{
-																		Column: 31,
-																		Line:   31,
+																		Column: 35,
+																		Line:   34,
 																	},
 																},
 															},
@@ -653,14 +653,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 54,
-																			Line:   31,
+																			Column: 58,
+																			Line:   34,
 																		},
 																		File:   "json_test.flux",
 																		Source: "v: r._value",
 																		Start: ast.Position{
-																			Column: 43,
-																			Line:   31,
+																			Column: 47,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -671,14 +671,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 54,
-																				Line:   31,
+																				Column: 58,
+																				Line:   34,
 																			},
 																			File:   "json_test.flux",
 																			Source: "v: r._value",
 																			Start: ast.Position{
-																				Column: 43,
-																				Line:   31,
+																				Column: 47,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -689,14 +689,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 44,
-																					Line:   31,
+																					Column: 48,
+																					Line:   34,
 																				},
 																				File:   "json_test.flux",
 																				Source: "v",
 																				Start: ast.Position{
-																					Column: 43,
-																					Line:   31,
+																					Column: 47,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -709,14 +709,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 54,
-																					Line:   31,
+																					Column: 58,
+																					Line:   34,
 																				},
 																				File:   "json_test.flux",
 																				Source: "r._value",
 																				Start: ast.Position{
-																					Column: 46,
-																					Line:   31,
+																					Column: 50,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -727,14 +727,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 47,
-																						Line:   31,
+																						Column: 51,
+																						Line:   34,
 																					},
 																					File:   "json_test.flux",
 																					Source: "r",
 																					Start: ast.Position{
-																						Column: 46,
-																						Line:   31,
+																						Column: 50,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -746,14 +746,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 54,
-																						Line:   31,
+																						Column: 58,
+																						Line:   34,
 																					},
 																					File:   "json_test.flux",
 																					Source: "_value",
 																					Start: ast.Position{
-																						Column: 48,
-																						Line:   31,
+																						Column: 52,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -770,14 +770,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 55,
-																		Line:   31,
+																		Column: 59,
+																		Line:   34,
 																	},
 																	File:   "json_test.flux",
 																	Source: "bytes(v: r._value)",
 																	Start: ast.Position{
-																		Column: 37,
-																		Line:   31,
+																		Column: 41,
+																		Line:   34,
 																	},
 																},
 															},
@@ -787,14 +787,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 42,
-																			Line:   31,
+																			Column: 46,
+																			Line:   34,
 																		},
 																		File:   "json_test.flux",
 																		Source: "bytes",
 																		Start: ast.Position{
-																			Column: 37,
-																			Line:   31,
+																			Column: 41,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -812,14 +812,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 56,
-															Line:   31,
+															Column: 60,
+															Line:   34,
 														},
 														File:   "json_test.flux",
 														Source: "json.parse(data: bytes(v: r._value))",
 														Start: ast.Position{
-															Column: 20,
-															Line:   31,
+															Column: 24,
+															Line:   34,
 														},
 													},
 												},
@@ -829,14 +829,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 30,
-																Line:   31,
+																Column: 34,
+																Line:   34,
 															},
 															File:   "json_test.flux",
 															Source: "json.parse",
 															Start: ast.Position{
-																Column: 20,
-																Line:   31,
+																Column: 24,
+																Line:   34,
 															},
 														},
 													},
@@ -847,14 +847,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 24,
-																	Line:   31,
+																	Column: 28,
+																	Line:   34,
 																},
 																File:   "json_test.flux",
 																Source: "json",
 																Start: ast.Position{
-																	Column: 20,
-																	Line:   31,
+																	Column: 24,
+																	Line:   34,
 																},
 															},
 														},
@@ -866,14 +866,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 30,
-																	Line:   31,
+																	Column: 34,
+																	Line:   34,
 																},
 																File:   "json_test.flux",
 																Source: "parse",
 																Start: ast.Position{
-																	Column: 25,
-																	Line:   31,
+																	Column: 29,
+																	Line:   34,
 																},
 															},
 														},
@@ -891,14 +891,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 69,
-															Line:   33,
+															Column: 73,
+															Line:   36,
 														},
 														File:   "json_test.flux",
 														Source: "{_time: r._time, a: data.a, b: data.b, c: data.c}",
 														Start: ast.Position{
-															Column: 20,
-															Line:   33,
+															Column: 24,
+															Line:   36,
 														},
 													},
 												},
@@ -909,14 +909,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 35,
-																Line:   33,
+																Column: 39,
+																Line:   36,
 															},
 															File:   "json_test.flux",
 															Source: "_time: r._time",
 															Start: ast.Position{
-																Column: 21,
-																Line:   33,
+																Column: 25,
+																Line:   36,
 															},
 														},
 													},
@@ -927,14 +927,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 26,
-																	Line:   33,
+																	Column: 30,
+																	Line:   36,
 																},
 																File:   "json_test.flux",
 																Source: "_time",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   33,
+																	Column: 25,
+																	Line:   36,
 																},
 															},
 														},
@@ -947,14 +947,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 35,
-																	Line:   33,
+																	Column: 39,
+																	Line:   36,
 																},
 																File:   "json_test.flux",
 																Source: "r._time",
 																Start: ast.Position{
-																	Column: 28,
-																	Line:   33,
+																	Column: 32,
+																	Line:   36,
 																},
 															},
 														},
@@ -965,14 +965,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 29,
-																		Line:   33,
+																		Column: 33,
+																		Line:   36,
 																	},
 																	File:   "json_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 28,
-																		Line:   33,
+																		Column: 32,
+																		Line:   36,
 																	},
 																},
 															},
@@ -984,14 +984,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 35,
-																		Line:   33,
+																		Column: 39,
+																		Line:   36,
 																	},
 																	File:   "json_test.flux",
 																	Source: "_time",
 																	Start: ast.Position{
-																		Column: 30,
-																		Line:   33,
+																		Column: 34,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1005,14 +1005,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 46,
-																Line:   33,
+																Column: 50,
+																Line:   36,
 															},
 															File:   "json_test.flux",
 															Source: "a: data.a",
 															Start: ast.Position{
-																Column: 37,
-																Line:   33,
+																Column: 41,
+																Line:   36,
 															},
 														},
 													},
@@ -1023,14 +1023,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 38,
-																	Line:   33,
+																	Column: 42,
+																	Line:   36,
 																},
 																File:   "json_test.flux",
 																Source: "a",
 																Start: ast.Position{
-																	Column: 37,
-																	Line:   33,
+																	Column: 41,
+																	Line:   36,
 																},
 															},
 														},
@@ -1043,14 +1043,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 46,
-																	Line:   33,
+																	Column: 50,
+																	Line:   36,
 																},
 																File:   "json_test.flux",
 																Source: "data.a",
 																Start: ast.Position{
-																	Column: 40,
-																	Line:   33,
+																	Column: 44,
+																	Line:   36,
 																},
 															},
 														},
@@ -1061,14 +1061,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 44,
-																		Line:   33,
+																		Column: 48,
+																		Line:   36,
 																	},
 																	File:   "json_test.flux",
 																	Source: "data",
 																	Start: ast.Position{
-																		Column: 40,
-																		Line:   33,
+																		Column: 44,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1080,14 +1080,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 46,
-																		Line:   33,
+																		Column: 50,
+																		Line:   36,
 																	},
 																	File:   "json_test.flux",
 																	Source: "a",
 																	Start: ast.Position{
-																		Column: 45,
-																		Line:   33,
+																		Column: 49,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1101,14 +1101,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 57,
-																Line:   33,
+																Column: 61,
+																Line:   36,
 															},
 															File:   "json_test.flux",
 															Source: "b: data.b",
 															Start: ast.Position{
-																Column: 48,
-																Line:   33,
+																Column: 52,
+																Line:   36,
 															},
 														},
 													},
@@ -1119,14 +1119,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 49,
-																	Line:   33,
+																	Column: 53,
+																	Line:   36,
 																},
 																File:   "json_test.flux",
 																Source: "b",
 																Start: ast.Position{
-																	Column: 48,
-																	Line:   33,
+																	Column: 52,
+																	Line:   36,
 																},
 															},
 														},
@@ -1139,14 +1139,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 57,
-																	Line:   33,
+																	Column: 61,
+																	Line:   36,
 																},
 																File:   "json_test.flux",
 																Source: "data.b",
 																Start: ast.Position{
-																	Column: 51,
-																	Line:   33,
+																	Column: 55,
+																	Line:   36,
 																},
 															},
 														},
@@ -1157,14 +1157,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 55,
-																		Line:   33,
+																		Column: 59,
+																		Line:   36,
 																	},
 																	File:   "json_test.flux",
 																	Source: "data",
 																	Start: ast.Position{
-																		Column: 51,
-																		Line:   33,
+																		Column: 55,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1176,14 +1176,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 57,
-																		Line:   33,
+																		Column: 61,
+																		Line:   36,
 																	},
 																	File:   "json_test.flux",
 																	Source: "b",
 																	Start: ast.Position{
-																		Column: 56,
-																		Line:   33,
+																		Column: 60,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1197,14 +1197,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 68,
-																Line:   33,
+																Column: 72,
+																Line:   36,
 															},
 															File:   "json_test.flux",
 															Source: "c: data.c",
 															Start: ast.Position{
-																Column: 59,
-																Line:   33,
+																Column: 63,
+																Line:   36,
 															},
 														},
 													},
@@ -1215,14 +1215,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 60,
-																	Line:   33,
+																	Column: 64,
+																	Line:   36,
 																},
 																File:   "json_test.flux",
 																Source: "c",
 																Start: ast.Position{
-																	Column: 59,
-																	Line:   33,
+																	Column: 63,
+																	Line:   36,
 																},
 															},
 														},
@@ -1235,14 +1235,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 68,
-																	Line:   33,
+																	Column: 72,
+																	Line:   36,
 																},
 																File:   "json_test.flux",
 																Source: "data.c",
 																Start: ast.Position{
-																	Column: 62,
-																	Line:   33,
+																	Column: 66,
+																	Line:   36,
 																},
 															},
 														},
@@ -1253,14 +1253,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 66,
-																		Line:   33,
+																		Column: 70,
+																		Line:   36,
 																	},
 																	File:   "json_test.flux",
 																	Source: "data",
 																	Start: ast.Position{
-																		Column: 62,
-																		Line:   33,
+																		Column: 66,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1272,14 +1272,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 68,
-																		Line:   33,
+																		Column: 72,
+																		Line:   36,
 																	},
 																	File:   "json_test.flux",
 																	Source: "c",
 																	Start: ast.Position{
-																		Column: 67,
-																		Line:   33,
+																		Column: 71,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1296,14 +1296,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 69,
-														Line:   33,
+														Column: 73,
+														Line:   36,
 													},
 													File:   "json_test.flux",
 													Source: "return {_time: r._time, a: data.a, b: data.b, c: data.c}",
 													Start: ast.Position{
-														Column: 13,
-														Line:   33,
+														Column: 17,
+														Line:   36,
 													},
 												},
 											},
@@ -1318,14 +1318,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 15,
-													Line:   30,
+													Column: 19,
+													Line:   33,
 												},
 												File:   "json_test.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 14,
-													Line:   30,
+													Column: 18,
+													Line:   33,
 												},
 											},
 										},
@@ -1336,14 +1336,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   30,
+														Column: 19,
+														Line:   33,
 													},
 													File:   "json_test.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 14,
-														Line:   30,
+														Column: 18,
+														Line:   33,
 													},
 												},
 											},
@@ -1363,14 +1363,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   35,
+									Column: 10,
+									Line:   38,
 								},
 								File:   "json_test.flux",
-								Source: "map(\n        fn: (r) => {\n            data = json.parse(data: bytes(v: r._value))\n    \n            return {_time: r._time, a: data.a, b: data.b, c: data.c}\n        },\n    )",
+								Source: "map(\n            fn: (r) => {\n                data = json.parse(data: bytes(v: r._value))\n\n                return {_time: r._time, a: data.a, b: data.b, c: data.c}\n            },\n        )",
 								Start: ast.Position{
-									Column: 8,
-									Line:   29,
+									Column: 12,
+									Line:   32,
 								},
 							},
 						},
@@ -1380,14 +1380,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
-										Line:   29,
+										Column: 15,
+										Line:   32,
 									},
 									File:   "json_test.flux",
 									Source: "map",
 									Start: ast.Position{
-										Column: 8,
-										Line:   29,
+										Column: 12,
+										Line:   32,
 									},
 								},
 							},
@@ -1405,13 +1405,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   27,
+								Line:   29,
 							},
 							File:   "json_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 10,
-								Line:   27,
+								Line:   29,
 							},
 						},
 					},
@@ -1423,13 +1423,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   27,
+									Line:   29,
 								},
 								File:   "json_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 10,
-									Line:   27,
+									Line:   29,
 								},
 							},
 						},
@@ -1442,13 +1442,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   27,
+								Line:   29,
 							},
 							File:   "json_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 16,
-								Line:   27,
+								Line:   29,
 							},
 						},
 					}},
@@ -1463,13 +1463,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 111,
-							Line:   37,
+							Line:   40,
 						},
 						File:   "json_test.flux",
 						Source: "parse = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _json})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   37,
+							Line:   40,
 						},
 					},
 				},
@@ -1480,13 +1480,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   37,
+								Line:   40,
 							},
 							File:   "json_test.flux",
 							Source: "parse",
 							Start: ast.Position{
 								Column: 6,
-								Line:   37,
+								Line:   40,
 							},
 						},
 					},
@@ -1500,13 +1500,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 111,
-								Line:   37,
+								Line:   40,
 							},
 							File:   "json_test.flux",
 							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _json})",
 							Start: ast.Position{
 								Column: 14,
-								Line:   37,
+								Line:   40,
 							},
 						},
 					},
@@ -1517,13 +1517,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 111,
-									Line:   37,
+									Line:   40,
 								},
 								File:   "json_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _json})",
 								Start: ast.Position{
 									Column: 20,
-									Line:   37,
+									Line:   40,
 								},
 							},
 						},
@@ -1534,13 +1534,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 110,
-										Line:   37,
+										Line:   40,
 									},
 									File:   "json_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _json}",
 									Start: ast.Position{
 										Column: 21,
-										Line:   37,
+										Line:   40,
 									},
 								},
 							},
@@ -1552,13 +1552,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 61,
-											Line:   37,
+											Line:   40,
 										},
 										File:   "json_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 22,
-											Line:   37,
+											Line:   40,
 										},
 									},
 								},
@@ -1570,13 +1570,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   37,
+												Line:   40,
 											},
 											File:   "json_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 22,
-												Line:   37,
+												Line:   40,
 											},
 										},
 									},
@@ -1591,13 +1591,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   37,
+													Line:   40,
 												},
 												File:   "json_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 49,
-													Line:   37,
+													Line:   40,
 												},
 											},
 										},
@@ -1609,13 +1609,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   37,
+														Line:   40,
 													},
 													File:   "json_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 49,
-														Line:   37,
+														Line:   40,
 													},
 												},
 											},
@@ -1627,13 +1627,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 52,
-															Line:   37,
+															Line:   40,
 														},
 														File:   "json_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 49,
-															Line:   37,
+															Line:   40,
 														},
 													},
 												},
@@ -1647,13 +1647,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   37,
+															Line:   40,
 														},
 														File:   "json_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 54,
-															Line:   37,
+															Line:   40,
 														},
 													},
 												},
@@ -1669,13 +1669,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 61,
-												Line:   37,
+												Line:   40,
 											},
 											File:   "json_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 29,
-												Line:   37,
+												Line:   40,
 											},
 										},
 									},
@@ -1686,13 +1686,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   37,
+													Line:   40,
 												},
 												File:   "json_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 29,
-													Line:   37,
+													Line:   40,
 												},
 											},
 										},
@@ -1704,13 +1704,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
-														Line:   37,
+														Line:   40,
 													},
 													File:   "json_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 29,
-														Line:   37,
+														Line:   40,
 													},
 												},
 											},
@@ -1723,13 +1723,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
-														Line:   37,
+														Line:   40,
 													},
 													File:   "json_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 37,
-														Line:   37,
+														Line:   40,
 													},
 												},
 											},
@@ -1747,13 +1747,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 98,
-											Line:   37,
+											Line:   40,
 										},
 										File:   "json_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 63,
-											Line:   37,
+											Line:   40,
 										},
 									},
 								},
@@ -1765,13 +1765,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 67,
-												Line:   37,
+												Line:   40,
 											},
 											File:   "json_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 63,
-												Line:   37,
+												Line:   40,
 											},
 										},
 									},
@@ -1786,13 +1786,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 97,
-													Line:   37,
+													Line:   40,
 												},
 												File:   "json_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 85,
-													Line:   37,
+													Line:   40,
 												},
 											},
 										},
@@ -1804,13 +1804,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 97,
-														Line:   37,
+														Line:   40,
 													},
 													File:   "json_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 85,
-														Line:   37,
+														Line:   40,
 													},
 												},
 											},
@@ -1822,13 +1822,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 88,
-															Line:   37,
+															Line:   40,
 														},
 														File:   "json_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 85,
-															Line:   37,
+															Line:   40,
 														},
 													},
 												},
@@ -1842,13 +1842,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 97,
-															Line:   37,
+															Line:   40,
 														},
 														File:   "json_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 90,
-															Line:   37,
+															Line:   40,
 														},
 													},
 												},
@@ -1864,13 +1864,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 98,
-												Line:   37,
+												Line:   40,
 											},
 											File:   "json_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 69,
-												Line:   37,
+												Line:   40,
 											},
 										},
 									},
@@ -1881,13 +1881,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 84,
-													Line:   37,
+													Line:   40,
 												},
 												File:   "json_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 69,
-													Line:   37,
+													Line:   40,
 												},
 											},
 										},
@@ -1899,13 +1899,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 76,
-														Line:   37,
+														Line:   40,
 													},
 													File:   "json_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 69,
-														Line:   37,
+														Line:   40,
 													},
 												},
 											},
@@ -1918,13 +1918,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 84,
-														Line:   37,
+														Line:   40,
 													},
 													File:   "json_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 77,
-														Line:   37,
+														Line:   40,
 													},
 												},
 											},
@@ -1942,13 +1942,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 109,
-											Line:   37,
+											Line:   40,
 										},
 										File:   "json_test.flux",
 										Source: "fn: _json",
 										Start: ast.Position{
 											Column: 100,
-											Line:   37,
+											Line:   40,
 										},
 									},
 								},
@@ -1960,13 +1960,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 102,
-												Line:   37,
+												Line:   40,
 											},
 											File:   "json_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 100,
-												Line:   37,
+												Line:   40,
 											},
 										},
 									},
@@ -1980,13 +1980,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 109,
-												Line:   37,
+												Line:   40,
 											},
 											File:   "json_test.flux",
 											Source: "_json",
 											Start: ast.Position{
 												Column: 104,
-												Line:   37,
+												Line:   40,
 											},
 										},
 									},
@@ -2010,13 +2010,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 111,
-						Line:   37,
+						Line:   40,
 					},
 					File:   "json_test.flux",
 					Source: "test parse = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _json})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   37,
+						Line:   40,
 					},
 				},
 			},
