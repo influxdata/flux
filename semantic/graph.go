@@ -1,6 +1,7 @@
 package semantic
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -1126,7 +1127,9 @@ func NewSymbol(name string) Symbol {
 
 	pkg := ""
 	localName := ""
-	if len(split) == 2 {
+	if len(split) > 2 {
+		panic(fmt.Errorf("Invalid symbol, only one package may be specified"))
+	} else if len(split) == 2 {
 		pkg = split[1]
 		localName = split[0]
 	} else {
