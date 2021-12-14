@@ -1,3 +1,9 @@
+// Package prometheus provides tools for working with
+// [Prometheus-formatted metrics](https://prometheus.io/docs/instrumenting/exposition_formats/).
+// 
+// introduced: 0.50.0
+// tags: prometheus
+// 
 package prometheus
 
 
@@ -14,13 +20,14 @@ import "experimental"
 // ## Examples
 //
 // ### Scrape InfluxDB OSS internal metrics
-//
-// ```
+// ```no_run
 //  import "experimental/prometheus"
 //
 //  prometheus.scrape(url: "http://localhost:8086/metrics")
 // ```
 //
+// tags: inputs,prometheus
+// 
 builtin scrape : (url: string) => [A] where A: Record
 
 // histogramQuantile calculates a quantile on a set of Prometheus histogram values.
@@ -29,19 +36,19 @@ builtin scrape : (url: string) => [A] where A: Record
 // used by `prometheus.scrape()`, the Telegraf `promtheus` input plugin, and 
 // InfluxDB scrapers available in InfluxDB OSS.
 // 
-// ## Paramters
+// ## Parameters
 // 
-// - tables: Input data.
 // - quantile: Quantile to compute. Must be a float value between 0.0 and 1.0.
 // - metricVersion: [Prometheus metric parsing format](https://docs.influxdata.com/influxdb/latest/reference/prometheus-metrics/)
 //   used to parse queried Prometheus data.
 //   Available versions are `1` and `2`.
 //   Default is `2`.
+// - tables: Input data. Default is piped-forward data (`<-`).
 // 
 // ## Examples
 //
 // ### Compute the 0.99 quantile of a Prometheus histogram
-// ```
+// ```no_run
 // import "experimental/prometheus"
 //
 // prometheus.scrape(url: "http://localhost:8086/metrics")
@@ -51,7 +58,7 @@ builtin scrape : (url: string) => [A] where A: Record
 // ```
 //
 // ### Compute the 0.99 quantile of a Prometheus histogram parsed with metric version 1
-// ```
+// ```no_run
 // import "experimental/prometheus"
 //
 // from(bucket: "example-bucket")
@@ -60,6 +67,8 @@ builtin scrape : (url: string) => [A] where A: Record
 //     |> prometheus.histogramQuantile(quantile: 0.99, metricVersion: 1)
 // ```
 //
+// tags: transformations,aggregates,prometheus
+// 
 histogramQuantile = (tables=<-, quantile, metricVersion=2) => {
     _version2 = () => tables
         |> group(mode: "except", columns: ["le", "_value"])

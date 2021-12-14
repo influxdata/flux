@@ -787,8 +787,8 @@ filterRows = (
     strict=true,
 ) => {
     _columns = tables
-        |> columns(column: "_value")
-        |> findColumn(column: "_value", fn: (key) => true)
+        |> columns(column: "columns")
+        |> findColumn(column: "columns", fn: (key) => true)
     _rows = if contains(value: "lat", set: _columns) then
         tables
             |> gridFilter(
