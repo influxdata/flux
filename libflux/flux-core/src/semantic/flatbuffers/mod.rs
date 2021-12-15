@@ -202,7 +202,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             }
 
             walk::Node::IdentifierExpr(id) => {
-                let name = v.create_string(&id.name);
+                let name = v.create_symbol(&id.name);
                 let id_typ = id.typ.clone();
                 let (typ, typ_type) = types::build_type(v.builder, &id_typ);
 
@@ -222,7 +222,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             }
 
             walk::Node::Identifier(id) => {
-                let name = v.create_string(&id.name);
+                let name = v.create_symbol(&id.name);
                 let identifier = fbsemantic::Identifier::create(
                     v.builder,
                     &fbsemantic::IdentifierArgs { loc, name },
@@ -326,7 +326,7 @@ impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
             }
 
             walk::Node::MemberExpr(member) => {
-                let property = v.create_string(&member.property);
+                let property = v.create_symbol(&member.property);
                 let (object, object_type) = v.pop_expr();
 
                 let member_typ = member.typ.clone();
@@ -1017,6 +1017,10 @@ impl<'a, 'b> SerializingVisitorState<'a, 'b> {
             }
             Some(wip) => Some(WIPOffset::new(wip.value())),
         }
+    }
+
+    fn create_symbol(&mut self, symbol: &semantic::nodes::Symbol) -> Option<WIPOffset<&'a str>> {
+        self.create_string(symbol.full_name())
     }
 
     fn create_string(&mut self, string: &str) -> Option<WIPOffset<&'a str>> {

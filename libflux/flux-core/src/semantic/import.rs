@@ -1,8 +1,9 @@
 //! Module import defines the abstractions for importing Flux package types from various sources.
 
 use crate::semantic::{
-    types::{PolyType, PolyTypeMap},
-    ExportEnvironment,
+    nodes::Symbol,
+    types::{PolyType, SemanticMap},
+    PackageExports,
 };
 
 /// Importer defines an API for resolving Flux import paths to their corresponding types.
@@ -12,14 +13,35 @@ pub trait Importer {
     fn import(&mut self, _path: &str) -> Option<PolyType> {
         None
     }
-}
-impl Importer for ExportEnvironment {
-    fn import(&mut self, path: &str) -> Option<PolyType> {
-        self.lookup(path).cloned()
+
+    /// Returns the `Symbol` for a specific exported item from a package
+    fn symbol(&mut self, _package_path: &str, _symbol_name: &str) -> Option<Symbol> {
+        None
     }
 }
-impl Importer for PolyTypeMap {
-    fn import(&mut self, name: &str) -> Option<PolyType> {
-        self.get(name).cloned()
+
+impl<T> Importer for &'_ mut T
+where
+    T: ?Sized + Importer,
+{
+    fn import(&mut self, path: &str) -> Option<PolyType> {
+        T::import(self, path)
+    }
+    fn symbol(&mut self, package_path: &str, symbol_name: &str) -> Option<Symbol> {
+        T::symbol(self, package_path, symbol_name)
+    }
+}
+
+/// In memory storage for packages
+pub type Packages = SemanticMap<String, PackageExports>;
+
+impl Importer for Packages {
+    fn import(&mut self, path: &str) -> Option<PolyType> {
+        self.get(path).map(|exports| exports.typ())
+    }
+    fn symbol(&mut self, package_path: &str, symbol_name: &str) -> Option<Symbol> {
+        self.get(package_path)
+            .and_then(|exports| exports.lookup_symbol(symbol_name))
+            .cloned()
     }
 }

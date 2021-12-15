@@ -5,7 +5,7 @@ use crate::semantic::{
     nodes::Symbol,
     sub::{apply2, Substitutable, Substituter},
     types::{union, PolyType, PolyTypeMap, Tvar},
-    ExportEnvironment,
+    PackageExports,
 };
 
 /// A type environment maps program identifiers to their polymorphic types.
@@ -16,7 +16,7 @@ use crate::semantic::{
 #[derive(Debug, Clone, PartialEq)]
 pub struct Environment<'a> {
     /// An external environment if one is provided
-    pub external: Option<&'a ExportEnvironment>,
+    pub external: Option<&'a PackageExports>,
     /// An optional parent environment.
     pub parent: Option<Box<Environment<'a>>>,
     /// Values in the environment.
@@ -91,8 +91,8 @@ impl From<PolyTypeMap> for Environment<'_> {
     }
 }
 
-impl<'env> From<&'env ExportEnvironment> for Environment<'env> {
-    fn from(external: &'env ExportEnvironment) -> Self {
+impl<'env> From<&'env PackageExports> for Environment<'env> {
+    fn from(external: &'env PackageExports) -> Self {
         let mut env = Environment::empty(true);
         env.external = Some(external);
         env
@@ -189,9 +189,12 @@ impl Environment<'_> {
         self.values.remove(name);
     }
 
-    pub(crate) fn exit_scope(&mut self) {
+    pub(crate) fn exit_scope(&mut self) -> Self {
         match self.parent.take() {
-            Some(env) => *self = *env,
+            Some(mut env) => {
+                mem::swap(self, &mut env);
+                *env
+            }
             None => panic!("cannot pop final stack frame from type environment"),
         }
     }

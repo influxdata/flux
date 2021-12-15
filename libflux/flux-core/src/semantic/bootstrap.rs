@@ -3,7 +3,7 @@
 //! This package does not assume a location of the source code but does assume which packages are
 //! part of the prelude.
 
-use std::{collections::HashSet, env::consts, fs, io, io::Write, path::Path};
+use std::{collections::HashSet, convert::TryFrom, env::consts, fs, io, io::Write, path::Path};
 
 use anyhow::{anyhow, bail, Result};
 use libflate::gzip::Encoder;
@@ -12,18 +12,14 @@ use walkdir::WalkDir;
 use crate::{
     ast, parser,
     semantic::{
-        convert::convert_package,
         env::Environment,
         flatbuffers::types::{build_module, finish_serialize},
         fs::{FileSystemImporter, StdFS},
-        import::Importer,
-        infer,
-        infer::Constraints,
-        nodes,
-        nodes::{infer_package, inject_pkg_types, Package},
-        sub::{Substitutable, Substitution},
-        types::{MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, Tvar, TvarKinds},
-        ExportEnvironment,
+        import::{Importer, Packages},
+        nodes::{self, Package, Symbol},
+        sub::Substitutable,
+        types::{MonoType, PolyType, PolyTypeMap, Record, SemanticMap, Tvar, TvarKinds},
+        Analyzer, PackageExports,
     },
 };
 
@@ -38,9 +34,7 @@ pub type SemanticPackageMap = SemanticMap<String, Package>;
 /// Infers the Flux standard library given the path to the source code.
 /// The prelude and the imports are returned.
 #[allow(clippy::type_complexity)]
-pub fn infer_stdlib_dir(
-    path: &Path,
-) -> Result<(ExportEnvironment, PolyTypeMap, SemanticPackageMap)> {
+pub fn infer_stdlib_dir(path: &Path) -> Result<(PackageExports, Packages, SemanticPackageMap)> {
     let ast_packages = parse_dir(path)?;
 
     let mut infer_state = InferState::default();
@@ -146,70 +140,33 @@ fn dependencies<'a>(
     }
 }
 
-/// Constructs a polytype, or more specifically a generic record type, from a hash map.
-pub fn build_polytype(from: PolyTypeMap) -> Result<PolyType> {
-    let mut sub = Substitution::default();
-    let (r, cons) = build_record(from, &mut sub);
-    infer::solve(&cons, &mut sub)?;
-    let typ = MonoType::record(r).apply(&sub);
-    Ok(infer::generalize(
-        &Environment::empty(false),
-        sub.cons(),
-        typ,
-    ))
-}
-
-fn build_record(from: PolyTypeMap, sub: &mut Substitution) -> (Record, Constraints) {
-    let mut r = Record::Empty;
-    let mut cons = Constraints::empty();
-
-    for (name, poly) in from {
-        let (ty, constraints) = infer::instantiate(
-            poly.clone(),
-            sub,
-            ast::SourceLocation {
-                file: None,
-                start: ast::Position::default(),
-                end: ast::Position::default(),
-                source: None,
-            },
-        );
-        r = Record::Extension {
-            head: Property { k: name, v: ty },
-            tail: MonoType::record(r),
-        };
-        cons += constraints;
-    }
-    (r, cons)
-}
-
 #[derive(Default)]
 struct InferState {
     // types available for import
-    imports: PolyTypeMap,
+    imports: Packages,
     sem_pkg_map: SemanticPackageMap,
 }
 
 impl InferState {
-    fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<ExportEnvironment> {
-        let mut prelude_map = ExportEnvironment::new();
+    fn infer_pre(&mut self, ast_packages: &ASTPackageMap) -> Result<PackageExports> {
+        let mut prelude_map = SemanticMap::new();
         for name in PRELUDE {
             // Infer each package in the prelude allowing the earlier packages to be used by later
             // packages within the prelude list.
-            let (types, _sem_pkg) = self.infer_pkg(name, ast_packages, &prelude_map)?;
-            for (k, v) in types {
-                prelude_map.add(k, v);
+            let (types, _sem_pkg) = self.infer_pkg(
+                name,
+                ast_packages,
+                &PackageExports::try_from(prelude_map.clone())?,
+            )?;
+            for (k, v) in types.into_bindings() {
+                prelude_map.insert(k, v);
             }
         }
-        Ok(prelude_map)
+        Ok(PackageExports::try_from(prelude_map)?)
     }
 
     #[allow(clippy::type_complexity)]
-    fn infer_std(
-        &mut self,
-        ast_packages: &ASTPackageMap,
-        prelude: &ExportEnvironment,
-    ) -> Result<()> {
+    fn infer_std(&mut self, ast_packages: &ASTPackageMap, prelude: &PackageExports) -> Result<()> {
         for (path, _) in ast_packages.iter() {
             // No need to infer the package again if it has already been inferred through a
             // dependency
@@ -218,8 +175,7 @@ impl InferState {
 
                 self.sem_pkg_map.insert(path.to_string(), sem_pkg);
                 if !self.imports.contains_key(path) {
-                    self.imports
-                        .insert(path.to_string(), build_polytype(types)?);
+                    self.imports.insert(path.to_string(), types);
                 }
             }
         }
@@ -234,10 +190,10 @@ impl InferState {
         &mut self,
         name: &str,                   // name of package to infer
         ast_packages: &ASTPackageMap, // ast_packages available for inference
-        prelude: &ExportEnvironment,  // prelude types
+        prelude: &PackageExports,     // prelude types
     ) -> Result<(
-        PolyTypeMap, // inferred types
-        Package,     // semantic graph
+        PackageExports, // inferred types
+        Package,        // semantic graph
     )> {
         // Determine the order in which we must infer dependencies
         let (deps, _, _) = dependencies(
@@ -251,35 +207,36 @@ impl InferState {
         // Infer all dependencies
         for pkg in deps {
             if self.imports.import(pkg).is_none() {
-                let file = ast_packages
-                    .get(pkg)
-                    .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, pkg))?
-                    .to_owned();
-
-                let env = Environment::from(prelude);
-                let mut sub = Substitution::default();
-                let mut sem_pkg = convert_package(file, &env, &mut sub)?;
-                let env = infer_package(&mut sem_pkg, env, &mut sub, &mut self.imports)?;
+                let (env, sem_pkg) =
+                    self.infer_pkg_with_resolved_deps(pkg, ast_packages, prelude)?;
 
                 self.sem_pkg_map.insert(pkg.to_string(), sem_pkg);
-                self.imports
-                    .insert(pkg.to_string(), build_polytype(env.string_values())?);
+                self.imports.insert(pkg.to_string(), env);
             }
         }
 
-        let file = ast_packages.get(name);
-        if file.is_none() {
-            bail!(r#"package "{}" not found"#, name);
-        }
-        let file = file.unwrap().to_owned();
+        self.infer_pkg_with_resolved_deps(name, ast_packages, prelude)
+    }
+
+    fn infer_pkg_with_resolved_deps(
+        &mut self,
+        name: &str,                   // name of package to infer
+        ast_packages: &ASTPackageMap, // ast_packages available for inference
+        prelude: &PackageExports,     // prelude types
+    ) -> Result<(
+        PackageExports, // inferred types
+        Package,        // semantic graph
+    )> {
+        let file = ast_packages
+            .get(name)
+            .ok_or_else(|| anyhow!(r#"package import "{}" not found"#, name))?
+            .to_owned();
 
         let env = Environment::new(prelude.into());
-        let mut sub = Substitution::default();
-        let mut sem_pkg = convert_package(file, &env, &mut sub)?;
-        let env = infer_package(&mut sem_pkg, env, &mut sub, &mut self.imports)?;
-        sem_pkg = inject_pkg_types(sem_pkg, &sub);
+        let mut analyzer = Analyzer::new_with_defaults(env, &mut self.imports);
+        let (exports, sem_pkg) = analyzer.analyze_ast(file)?;
 
-        Ok((env.string_values(), sem_pkg))
+        Ok((exports, sem_pkg))
     }
 }
 
@@ -288,7 +245,7 @@ fn stdlib_importer(path: &Path) -> FileSystemImporter<StdFS> {
     FileSystemImporter::new(fs)
 }
 
-fn prelude_from_importer<I>(importer: &mut I) -> Result<ExportEnvironment>
+fn prelude_from_importer<I>(importer: &mut I) -> Result<PackageExports>
 where
     I: Importer,
 {
@@ -304,11 +261,12 @@ where
             bail!("prelude package {} not found", pkg);
         }
     }
-    Ok(env.into())
+    let exports = PackageExports::try_from(env)?;
+    Ok(exports)
 }
 
 fn add_record_to_map(
-    env: &mut PolyTypeMap,
+    env: &mut PolyTypeMap<Symbol>,
     r: &Record,
     free_vars: &[Tvar],
     cons: &TvarKinds,
@@ -327,7 +285,7 @@ fn add_record_to_map(
                 }
             }
             env.insert(
-                head.k.clone(),
+                head.k.clone().into(),
                 PolyType {
                     vars: new_vars,
                     cons: new_cons,
@@ -344,7 +302,7 @@ fn add_record_to_map(
 
 /// Stdlib returns the prelude and importer for the Flux standard library given a path to a
 /// compiled directory structure.
-pub fn stdlib(dir: &Path) -> Result<(ExportEnvironment, FileSystemImporter<StdFS>)> {
+pub fn stdlib(dir: &Path) -> Result<(PackageExports, FileSystemImporter<StdFS>)> {
     let mut stdlib_importer = stdlib_importer(dir);
     let prelude = prelude_from_importer(&mut stdlib_importer)?;
     Ok((prelude, stdlib_importer))
@@ -354,10 +312,10 @@ pub fn stdlib(dir: &Path) -> Result<(ExportEnvironment, FileSystemImporter<StdFS
 pub fn compile_stdlib(srcdir: &Path, outdir: &Path) -> Result<()> {
     let (_, imports, mut sem_pkgs) = infer_stdlib_dir(srcdir)?;
     // Write each file as compiled module
-    for (path, pt) in &imports {
+    for (path, exports) in &imports {
         if let Some(code) = sem_pkgs.remove(path) {
             let module = Module {
-                polytype: Some(pt.clone()),
+                polytype: Some(exports.typ()),
                 code: Some(code),
             };
             let mut builder = flatbuffers::FlatBufferBuilder::new();
@@ -399,8 +357,10 @@ pub struct Module {
 mod tests {
     use super::*;
     use crate::{
-        ast::get_err_type_expression, parser, parser::parse_string,
-        semantic::convert::convert_polytype,
+        ast::get_err_type_expression,
+        parser,
+        parser::parse_string,
+        semantic::{convert::convert_polytype, nodes::Symbol, sub::Substitution},
     };
 
     #[test]
@@ -416,6 +376,7 @@ mod tests {
             y = a.f(x: x)
         "#;
         let c = r#"
+            package c
             import "b"
 
             z = b.y
@@ -426,21 +387,22 @@ mod tests {
             String::from("c") => parse_string("c.flux".to_string(), c).into(),
         };
         let mut infer_state = InferState::default();
-        let (types, _) = infer_state.infer_pkg("c", &ast_packages, &ExportEnvironment::new())?;
+        let (types, _) = infer_state.infer_pkg("c", &ast_packages, &PackageExports::new())?;
 
-        let want = semantic_map! {
-            String::from("z") => {
-                    let mut p = parser::Parser::new("int");
-                    let typ_expr = p.parse_type_expression();
-                    let err = get_err_type_expression(typ_expr.clone());
-                    if err != "" {
-                        panic!(
-                            "TypeExpression parsing failed for int. {:?}", err
-                        );
-                    }
-                    convert_polytype(typ_expr, &mut Substitution::default())?
+        let want = PackageExports::try_from(semantic_map! {
+            Symbol::from("z@c") => {
+                let mut p = parser::Parser::new("int");
+                let typ_expr = p.parse_type_expression();
+                let err = get_err_type_expression(typ_expr.clone());
+                if err != "" {
+                    panic!(
+                        "TypeExpression parsing failed for int. {:?}", err
+                    );
+                }
+                convert_polytype(typ_expr, &mut Substitution::default())?
             },
-        };
+        })
+        .unwrap();
         if want != types {
             bail!(
                 "unexpected inference result:\n\nwant: {:?}\n\ngot: {:?}",
@@ -451,29 +413,35 @@ mod tests {
 
         let want = semantic_map! {
             String::from("a") => {
-            let mut p = parser::Parser::new("{f: (x: A) => A}");
-                    let typ_expr = p.parse_type_expression();
-                    let err = get_err_type_expression(typ_expr.clone());
-                    if err != "" {
-                        panic!(
-                            "TypeExpression parsing failed for int. {:?}", err
-                        );
-                    }
-                    convert_polytype(typ_expr, &mut Substitution::default())?
+                let mut p = parser::Parser::new("{f: (x: A) => A}");
+                let typ_expr = p.parse_type_expression();
+                let err = get_err_type_expression(typ_expr.clone());
+                if err != "" {
+                    panic!(
+                        "TypeExpression parsing failed for int. {:?}", err
+                    );
+                }
+                convert_polytype(typ_expr, &mut Substitution::default())?
             },
             String::from("b") => {
-            let mut p = parser::Parser::new("{x: int , y: int}");
-                    let typ_expr = p.parse_type_expression();
-                    let err = get_err_type_expression(typ_expr.clone());
-                    if err != "" {
-                        panic!(
-                            "TypeExpression parsing failed for int. {:?}", err
-                        );
-                    }
-                    convert_polytype(typ_expr, &mut Substitution::default())?
+                let mut p = parser::Parser::new("{x: int , y: int}");
+                let typ_expr = p.parse_type_expression();
+                let err = get_err_type_expression(typ_expr.clone());
+                if err != "" {
+                    panic!(
+                        "TypeExpression parsing failed for int. {:?}", err
+                    );
+                }
+                convert_polytype(typ_expr, &mut Substitution::default())?
             },
         };
-        if want != infer_state.imports {
+        if want
+            != infer_state
+                .imports
+                .into_iter()
+                .map(|(k, v)| (k, v.typ()))
+                .collect::<SemanticMap<_, _>>()
+        {
             bail!(
                 "unexpected type importer:\n\nwant: {:?}\n\ngot: {:?}",
                 want,

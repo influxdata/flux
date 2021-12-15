@@ -29,10 +29,12 @@ pub fn evaluate_package_examples(
     for example in docs.examples.iter_mut() {
         evaluate_example(example, executor)
             .with_context(|| format!("executing example for package {}", path))?;
+        eprintln!("{} ... OK", path);
     }
     for (name, doc) in docs.members.iter_mut() {
         evaluate_doc_examples(doc, executor)
             .with_context(|| format!("executing example for {}.{}", path, name))?;
+        eprintln!("{}.{} ... OK", path, name);
     }
     Ok(())
 }

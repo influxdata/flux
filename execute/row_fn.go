@@ -52,7 +52,7 @@ func newDynamicFn(fn *semantic.FunctionExpression, scope compiler.Scope) dynamic
 	return dynamicFn{
 		scope:      scope,
 		fn:         fn,
-		recordName: fn.Parameters.List[0].Key.Name,
+		recordName: fn.Parameters.List[0].Key.Name.Name(),
 	}
 }
 

@@ -147,14 +147,14 @@ func getTimeRange(logic *semantic.LogicalExpression) (time.Time, time.Time, bool
 }
 
 func getPrefix(callExpression *semantic.CallExpression) (string, bool) {
-	if callee, ok := callExpression.Callee.(*semantic.MemberExpression); ok && callee.Property == "hasPrefix" {
+	if callee, ok := callExpression.Callee.(*semantic.MemberExpression); ok && callee.Property.Name() == "hasPrefix" {
 		var rowKey bool
 		prefix := ""
 		for _, prop := range callExpression.Arguments.Properties {
 			if key, ok := prop.Key.(*semantic.Identifier); ok {
 				if isRRowKey(prop.Value) {
 					rowKey = true
-				} else if key.Name == "prefix" {
+				} else if key.Name.Name() == "prefix" {
 					if val, ok := prop.Value.(*semantic.StringLiteral); ok {
 						prefix = val.Value
 					}
@@ -169,8 +169,8 @@ func getPrefix(callExpression *semantic.CallExpression) (string, bool) {
 // helper function to identify `r.rowKey`
 func isRRowKey(i interface{}) bool {
 	if exp, ok := i.(*semantic.MemberExpression); ok {
-		if obj, ok := exp.Object.(*semantic.IdentifierExpression); ok && obj.Name == "r" {
-			return exp.Property == "rowKey"
+		if obj, ok := exp.Object.(*semantic.IdentifierExpression); ok && obj.Name.Name() == "r" {
+			return exp.Property.Name() == "rowKey"
 		}
 	}
 	return false
@@ -179,8 +179,8 @@ func isRRowKey(i interface{}) bool {
 // helper function to identify `r.family`
 func isRFamily(i interface{}) bool {
 	if exp, ok := i.(*semantic.MemberExpression); ok {
-		if obj, ok := exp.Object.(*semantic.IdentifierExpression); ok && obj.Name == "r" {
-			return exp.Property == "family"
+		if obj, ok := exp.Object.(*semantic.IdentifierExpression); ok && obj.Name.Name() == "r" {
+			return exp.Property.Name() == "family"
 		}
 	}
 	return false
@@ -189,8 +189,8 @@ func isRFamily(i interface{}) bool {
 // helper function to identify `r._time`
 func isRTime(i interface{}) bool {
 	if exp, ok := i.(*semantic.MemberExpression); ok {
-		if obj, ok := exp.Object.(*semantic.IdentifierExpression); ok && obj.Name == "r" {
-			return exp.Property == "_time"
+		if obj, ok := exp.Object.(*semantic.IdentifierExpression); ok && obj.Name.Name() == "r" {
+			return exp.Property.Name() == "_time"
 		}
 	}
 	return false

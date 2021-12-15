@@ -26,7 +26,7 @@ func TestValidatePackageBuiltins(t *testing.T) {
 				Files: []*semantic.File{{
 					Body: []semantic.Statement{
 						&semantic.BuiltinStatement{
-							ID: &semantic.Identifier{Name: "foo"},
+							ID: &semantic.Identifier{Name: semantic.NewSymbol("foo")},
 						},
 					},
 				}},
@@ -47,7 +47,7 @@ func TestValidatePackageBuiltins(t *testing.T) {
 				Files: []*semantic.File{{
 					Body: []semantic.Statement{
 						&semantic.BuiltinStatement{
-							ID: &semantic.Identifier{Name: "foo"},
+							ID: &semantic.Identifier{Name: semantic.NewSymbol("foo")},
 						},
 					},
 				}},
@@ -64,10 +64,10 @@ func TestValidatePackageBuiltins(t *testing.T) {
 				Files: []*semantic.File{{
 					Body: []semantic.Statement{
 						&semantic.BuiltinStatement{
-							ID: &semantic.Identifier{Name: "foo"},
+							ID: &semantic.Identifier{Name: semantic.NewSymbol("foo")},
 						},
 						&semantic.BuiltinStatement{
-							ID: &semantic.Identifier{Name: "baz"},
+							ID: &semantic.Identifier{Name: semantic.NewSymbol("baz")},
 						},
 					},
 				}},

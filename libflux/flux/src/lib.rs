@@ -12,7 +12,7 @@ extern crate serde_derive;
 #[macro_use]
 extern crate pretty_assertions;
 
-use std::{ffi::*, mem, os::raw::c_char};
+use std::{convert::TryFrom, ffi::*, mem, os::raw::c_char};
 
 use anyhow::{self, bail, Result};
 use once_cell::sync::Lazy;
@@ -26,39 +26,36 @@ use fluxcore::{
             semantic_generated::fbsemantic as fb,
             types::{build_env, build_type},
         },
+        import::{Importer, Packages},
         nodes::{Package, Symbol},
         sub::Substitution,
-        types::{MonoType, PolyType, TvarKinds},
-        Analyzer, AnalyzerConfig, ExportEnvironment,
+        types::{MonoType, PolyType, SemanticMap, TvarKinds},
+        Analyzer, AnalyzerConfig, PackageExports,
     },
 };
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
 /// Prelude are the names and types of values that are inscope in all Flux scripts.
-pub fn prelude() -> Option<ExportEnvironment> {
+pub fn prelude() -> Option<PackageExports> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
     flatbuffers::root::<fb::TypeEnvironment>(buf)
         .unwrap()
         .into()
 }
 
-static PRELUDE: Lazy<Option<ExportEnvironment>> = Lazy::new(prelude);
+static PRELUDE: Lazy<Option<PackageExports>> = Lazy::new(prelude);
 
 /// Imports is a map of import path to types of packages.
-pub fn imports() -> Option<ExportEnvironment> {
+pub fn imports() -> Option<Packages> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
-    flatbuffers::root::<fb::TypeEnvironment>(buf)
-        .unwrap()
-        .into()
+    flatbuffers::root::<fb::Packages>(buf).unwrap().into()
 }
 
 /// Creates a new analyzer that can semantically analyze Flux source code.
 ///
 /// The analyzer is aware of the stdlib and prelude.
-pub fn new_semantic_analyzer(
-    config: AnalyzerConfig,
-) -> Result<Analyzer<'static, ExportEnvironment>> {
+pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static, Packages>> {
     let env = match &*PRELUDE {
         Some(prelude) => prelude,
         None => bail!("missing prelude"),
@@ -414,8 +411,8 @@ fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
 /// StatefulAnalyzer updates its environment with the contents of any previously analyzed package.
 /// This enables uses cases where analysis is performed iteratively, for example in a REPL.
 pub struct StatefulAnalyzer {
-    env: ExportEnvironment,
-    imports: ExportEnvironment,
+    env: PackageExports,
+    imports: Packages,
 }
 
 impl StatefulAnalyzer {
@@ -447,8 +444,8 @@ impl StatefulAnalyzer {
 
                 // A failure should have already happened if any of these
                 // imports would have failed.
-                if let Some(poly) = self.imports.lookup(path) {
-                    env.add(dec.import_symbol.to_string(), poly.to_owned());
+                if let Some(typ) = self.imports.import(path) {
+                    env.add(dec.import_symbol.clone(), typ);
                 }
             }
         }
@@ -517,25 +514,25 @@ pub fn infer_with_env(
     ast_pkg: ast::Package,
     mut sub: Substitution,
     env: Option<Environment<'static>>,
-) -> Result<(ExportEnvironment, Package)> {
-    let prelude = match prelude() {
+) -> Result<(Environment<'static>, Package)> {
+    let prelude = match &*PRELUDE {
         Some(prelude) => prelude,
         None => bail!("missing prelude"),
     };
     let env = if let Some(mut e) = env {
-        e.parent = Some(Box::new(Environment::from(&prelude)));
+        e.external = Some(prelude);
         e
     } else {
-        Environment::from(&prelude)
+        Environment::from(prelude)
     };
     let importer = match imports() {
         Some(imports) => imports,
         None => bail!("missing stdlib imports"),
     };
     let mut analyzer = Analyzer::new_with_defaults(env, importer);
-    analyzer
-        .analyze_ast_with_substitution(ast_pkg, &mut sub)
-        .map_err(anyhow::Error::from)
+    let (_, pkg) = analyzer.analyze_ast_with_substitution(ast_pkg, &mut sub)?;
+    let (env, _) = analyzer.drop();
+    Ok((env, pkg))
 }
 
 /// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
@@ -556,7 +553,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
             expr: MonoType::Var(tvar),
         },
     );
-    infer_with_env(ast_pkg, sub, Some(env))
+    infer_with_env(ast_pkg, sub, Some(Environment::new(env)))
         .map(|(env, _)| env.lookup(&var_name).unwrap().expr.clone())
 }
 
@@ -565,7 +562,14 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
 /// This function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
 pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
-    let env = imports().unwrap();
+    let imports = imports().unwrap();
+    let env = PackageExports::try_from(
+        imports
+            .into_iter()
+            .map(|(k, v)| (Symbol::from(k), v.typ()))
+            .collect::<SemanticMap<_, _>>(),
+    )
+    .unwrap();
     let mut builder = flatbuffers::FlatBufferBuilder::new();
     let fb_type_env = build_env(&mut builder, env);
 
@@ -588,9 +592,8 @@ mod tests {
         semantic::{
             convert::convert_polytype,
             fresh::Fresher,
-            nodes::Symbol,
             sub::Substitution,
-            types::{MonoType, Property, Ptr, Record, Tvar, TvarMap},
+            types::{Label, MonoType, Property, Ptr, Record, Tvar, TvarMap},
         },
     };
 
@@ -652,23 +655,23 @@ mod tests {
         let mut ty = MonoType::from(Record::new(
             [
                 Property {
-                    k: "a".to_string(),
+                    k: Label::from("a"),
                     v: MonoType::Var(Tvar(4949)),
                 },
                 Property {
-                    k: "b".to_string(),
+                    k: Label::from("b"),
                     v: MonoType::Var(Tvar(4949)),
                 },
                 Property {
-                    k: "e".to_string(),
+                    k: Label::from("e"),
                     v: MonoType::Var(Tvar(4957)),
                 },
                 Property {
-                    k: "f".to_string(),
+                    k: Label::from("f"),
                     v: MonoType::Var(Tvar(4957)),
                 },
                 Property {
-                    k: "g".to_string(),
+                    k: Label::from("g"),
                     v: MonoType::Var(Tvar(4957)),
                 },
             ],
@@ -859,12 +862,7 @@ from(bucket: v.bucket)
         }
         let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(
-            want,
-            got.lookup(&Symbol::from("x"))
-                .expect("'x' not found")
-                .clone()
-        );
+        assert_eq!(want, got.lookup("x").expect("'x' not found").clone());
     }
 
     #[test]
@@ -938,24 +936,9 @@ from(bucket: v.bucket)
         }
         let want_c = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
-        assert_eq!(
-            want_a,
-            got.lookup(&Symbol::from("a"))
-                .expect("'a' not found")
-                .clone()
-        );
-        assert_eq!(
-            want_b,
-            got.lookup(&Symbol::from("b"))
-                .expect("'b' not found")
-                .clone()
-        );
-        assert_eq!(
-            want_c,
-            got.lookup(&Symbol::from("c"))
-                .expect("'c' not found")
-                .clone()
-        );
+        assert_eq!(want_a, got.lookup("a").expect("'a' not found").clone());
+        assert_eq!(want_b, got.lookup("b").expect("'b' not found").clone());
+        assert_eq!(want_c, got.lookup("c").expect("'c' not found").clone());
     }
 
     #[test]
