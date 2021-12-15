@@ -1918,10 +1918,13 @@ fn astutil_test_format_with_comments() {
 #[test]
 fn format_long_single_line_pipe_expression() {
     let src = r#"from(bucket: "foo") |> range(start: -1d, stop: now()) |> filter(fn: (r) => r._field == "usage_user") |> aggregateWindow(every: 1m, fn: mean) |> yield()"#;
-    expect_format(src, expect![[r#"
+    expect_format(
+        src,
+        expect![[r#"
         from(bucket: "foo")
             |> range(start: -1d, stop: now())
             |> filter(fn: (r) => r._field == "usage_user")
             |> aggregateWindow(every: 1m, fn: mean)
-            |> yield()"#]]);
+            |> yield()"#]],
+    );
 }
