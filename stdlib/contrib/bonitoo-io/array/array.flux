@@ -72,7 +72,7 @@ emptyStr = "[]"
 // ```
 fromStr = (arr) => ejson.parse(data: bytes(v: arr))
 
-// concatStr joins two arrays. It returns JSON-encoded array represented as a string.
+// concatStr joins two arrays. It returns a JSON-encoded array represented as a string.
 // This variant of `concat` is intended to be used in `reduce` aggregation,
 // because Flux table column cannot be of array type.
 //
