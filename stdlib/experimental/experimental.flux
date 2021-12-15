@@ -18,14 +18,13 @@ import "timezone"
 option location = timezone.utc
 
 // builtin _addDuration used by addDuration
-builtin _addDuration : (d: duration, to: time, location: {zone: string, offset: duration}) => time
+builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: duration}) => time where T: Timeable
 
 // addDuration adds a duration to a time value and returns the resulting time value.
 //
 // ## Parameters
 // - d: Duration to add.
 // - to: Time to add the duration to.
-// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -62,18 +61,16 @@ builtin _addDuration : (d: duration, to: time, location: {zone: string, offset: 
 //
 // tags: date/time
 //
-builtin addDuration : (d: duration, to: T) => time where T: Timeable
 addDuration = (d, to, location=location) => _addDuration(d, to, location)
 
 // builtin _subDuration used by subDuration
-builtin _subDuration : (d: duration, from: time, location: {zone: string, offset: duration}) => time
+builtin _subDuration : (from: T, d: duration, location: {zone: string, offset: duration}) => time where T: Timeable
 
 // subDuration subtracts a duration from a time value and returns the resulting time value.
 //
 // ## Parameters
 // - from: Time to subtract the duration from.
 // - d: Duration to subtract.
-// - location: location loads a timezone based on a location name.
 //
 // ## Examples
 //
@@ -110,7 +107,6 @@ builtin _subDuration : (d: duration, from: time, location: {zone: string, offset
 //
 // tags: date/time
 //
-builtin subDuration : (from: T, d: duration) => time where T: Timeable
 subDuration = (d, from, location=location) => _subDuration(d, from, location)
 
 // group introduces an `extend` mode to the existing `group()` function.

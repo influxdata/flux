@@ -8,7 +8,8 @@ import "experimental"
 
 option now = () => 2018-05-22T20:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,long
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -22,12 +23,15 @@ inData = "
 "
 
 testcase add_durations {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.minute(t: experimental.addDuration(d: -1m, to: r._time))}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(fn: (r) => ({r with _value: date.minute(t: experimental.addDuration(d: -1m, to: r._time))}))
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -39,18 +43,33 @@ testcase add_durations {
 ,,0,2018-01-01T00:00:00Z,2018-05-22T20:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,4
 ,,0,2018-01-01T00:00:00Z,2018-05-22T20:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,5
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }
 
 testcase add_durations_location {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.minute(t: experimental.addDuration(d: -1m, to: r._time, location: {zone: "Asia/Kolkata", offset: 0h}))}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(
+                    fn: (r) =>
+                        ({r with _value:
+                                date.minute(
+                                    t:
+                                        experimental.addDuration(
+                                            d: -1m,
+                                            to: r._time,
+                                            location: {zone: "Asia/Kolkata", offset: 0h},
+                                        ),
+                                ),
+                        }),
+                )
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -62,18 +81,21 @@ testcase add_durations_location {
 ,,0,2018-01-01T00:00:00Z,2018-05-22T20:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,34
 ,,0,2018-01-01T00:00:00Z,2018-05-22T20:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,35
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }
 
 testcase sub_durations {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.minute(t: experimental.subDuration(d: -1m, from: r._time))}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(fn: (r) => ({r with _value: date.minute(t: experimental.subDuration(d: -1m, from: r._time))}))
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -85,18 +107,33 @@ testcase sub_durations {
 ,,0,2018-01-01T00:00:00Z,2018-05-22T20:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,6
 ,,0,2018-01-01T00:00:00Z,2018-05-22T20:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,7
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }
 
 testcase sub_durations_location {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.minute(t: experimental.subDuration(d: -1m, from: r._time, location: {zone: "Asia/Kolkata", offset: 0h}))}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(
+                    fn: (r) =>
+                        ({r with _value:
+                                date.minute(
+                                    t:
+                                        experimental.subDuration(
+                                            d: -1m,
+                                            from: r._time,
+                                            location: {zone: "Asia/Kolkata", offset: 0h},
+                                        ),
+                                ),
+                        }),
+                )
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -108,7 +145,7 @@ testcase sub_durations_location {
 ,,0,2018-01-01T00:00:00Z,2018-05-22T20:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,36
 ,,0,2018-01-01T00:00:00Z,2018-05-22T20:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,37
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }

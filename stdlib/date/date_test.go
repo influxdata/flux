@@ -89,7 +89,13 @@ func TestTimeFns_Time(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time)})
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewTime(time),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString("UTC"),
+					"offset": values.NewDuration(values.Duration{}),
+				}),
+			})
 			got, err := fluxFn.Call(dependenciestest.InjectAllDeps(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
@@ -249,7 +255,13 @@ func TestTimeFns_Duration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewDuration(time)})
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t": values.NewDuration(time),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString("UTC"),
+					"offset": values.NewDuration(values.Duration{}),
+				}),
+			})
 
 			//Setup deps with specific now time
 			deps := dependenciestest.Default()
@@ -259,14 +271,6 @@ func TestTimeFns_Duration(t *testing.T) {
 			ctx := deps.Inject(context.Background())
 			ctx = execDeps.Inject(ctx)
 			got, err := fluxFn.Call(ctx, fluxArg)
-			fluxArg := values.NewObjectWithValues(map[string]values.Value{
-				"t": values.NewTime(time),
-				"location": values.NewObjectWithValues(map[string]values.Value{
-					"zone":   values.NewString("UTC"),
-					"offset": values.NewDuration(values.Duration{}),
-				}),
-			})
-			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -348,7 +352,14 @@ func TestTruncate_Time(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time), "unit": values.NewDuration(unit)})
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t":    values.NewTime(time),
+				"unit": values.NewDuration(unit),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString("UTC"),
+					"offset": values.NewDuration(values.Duration{}),
+				}),
+			})
 			got, err := fluxFn.Call(dependenciestest.InjectAllDeps(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
@@ -406,7 +417,14 @@ func TestTruncate_Duration(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewDuration(time), "unit": values.NewDuration(unit)})
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{
+				"t":    values.NewDuration(time),
+				"unit": values.NewDuration(unit),
+				"location": values.NewObjectWithValues(map[string]values.Value{
+					"zone":   values.NewString("UTC"),
+					"offset": values.NewDuration(values.Duration{}),
+				}),
+			})
 
 			//Setup deps with specific now time
 			deps := dependenciestest.Default()
@@ -547,7 +565,7 @@ func TestTimeFnsWithLocationZone(t *testing.T) {
 					"offset": values.NewDuration(values.Duration{}),
 				}),
 			})
-			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			got, err := fluxFn.Call(dependenciestest.InjectAllDeps(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -635,7 +653,7 @@ func TestTimeFnsWithLocationOffset(t *testing.T) {
 					"offset": values.NewDuration(tc.offset),
 				}),
 			})
-			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			got, err := fluxFn.Call(dependenciestest.InjectAllDeps(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -737,7 +755,7 @@ func TestTimeFnsWithLocationZoneOffset(t *testing.T) {
 					"offset": values.NewDuration(tc.offset),
 				}),
 			})
-			got, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			got, err := fluxFn.Call(dependenciestest.InjectAllDeps(context.Background()), fluxArg)
 			if err != nil {
 				t.Fatal(err)
 			}

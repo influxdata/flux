@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -26,17 +27,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-
-				if v1 == nil {
-					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
-				}
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-
-				return values.NewInt(int64(t.Time().Second())), nil
 				return values.NewInt(int64(tm.Time().Second())), nil
 			}, false,
 		),
@@ -56,18 +46,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-
-				return values.NewInt(int64(t.Time().Minute())), nil
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Minute())), nil
 			}, false,
 		),
@@ -87,17 +65,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(t.Time().Hour())), nil
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Hour())), nil
 			}, false,
 		),
@@ -117,17 +84,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(t.Time().Weekday())), nil
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Weekday())), nil
 			}, false,
 		),
@@ -147,17 +103,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(t.Time().Day())), nil
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Day())), nil
 			}, false,
 		),
@@ -177,17 +122,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(t.Time().YearDay())), nil
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().YearDay())), nil
 			}, false,
 		),
@@ -207,17 +141,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(t.Time().Month())), nil
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Month())), nil
 			}, false,
 		),
@@ -237,17 +160,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(t.Time().Year())), nil
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				return values.NewInt(int64(lTime.Time().Time().Year())), nil
 			}, false,
 		),
@@ -267,17 +179,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				_, week := t.Time().ISOWeek()
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				_, week := lTime.Time().Time().ISOWeek()
 				return values.NewInt(int64(week)), nil
 			}, false,
@@ -298,19 +199,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-<<<<<<< HEAD
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				month := t.Time().Month()
-				return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
-
-				lTime := location.ToUTCTime(tm)
-=======
->>>>>>> a170c552 (feat(date): incorporated review comments)
 				month := lTime.Time().Time().Month()
 				return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
 			}, false,
@@ -323,17 +211,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-
-				if v1 == nil {
-					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
-				}
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				millisecond := int64(time.Nanosecond) * int64(t.Time().Nanosecond()) / int64(time.Millisecond)
 				millisecond := int64(time.Nanosecond) * int64(tm.Time().Nanosecond()) / int64(time.Millisecond)
 				return values.NewInt(millisecond), nil
 			}, false,
@@ -346,17 +223,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-
-				if v1 == nil {
-					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
-				}
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				microsecond := int64(time.Nanosecond) * int64(t.Time().Nanosecond()) / int64(time.Microsecond)
 				microsecond := int64(time.Nanosecond) * int64(tm.Time().Nanosecond()) / int64(time.Microsecond)
 				return values.NewInt(microsecond), nil
 			}, false,
@@ -369,17 +235,6 @@ func init() {
 				if err != nil {
 					return nil, err
 				}
-
-				if v1 == nil {
-					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
-				}
-
-				deps := execute.GetExecutionDependencies(ctx)
-				t, err := deps.ResolveTimeable(v1)
-				if err != nil {
-					return nil, err
-				}
-				return values.NewInt(int64(t.Time().Nanosecond())), nil
 				return values.NewInt(int64(tm.Time().Nanosecond())), nil
 			}, false,
 		),
@@ -387,14 +242,15 @@ func init() {
 			"truncate",
 			runtime.MustLookupBuiltinType("date", "truncate"),
 			func(ctx context.Context, args values.Object) (values.Value, error) {
-				var b execute.Bounds
 				v, ok := args.Get("t")
 				if !ok {
 					return nil, errors.New(codes.Invalid, "missing argument t")
 				}
+
 				if v == nil {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
+
 				u, unitOk := args.Get("unit")
 				if !unitOk {
 					return nil, errors.New(codes.Invalid, "missing argument unit")
@@ -404,22 +260,12 @@ func init() {
 				t, err := deps.ResolveTimeable(v)
 				if err != nil {
 					return nil, err
-				if !(values.IsTimeable(v) && u.Type().Nature() == semantic.Duration) {
-					return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot truncate argument t of type %v to unit %v", v.Type().Nature(), u))
 				}
 				w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
 				if err != nil {
 					return nil, err
 				}
 				b := w.GetEarliestBounds(t)
-				if v.Type().Nature() == semantic.Time {
-					b = w.GetEarliestBounds(v.Time())
-				}
-				if v.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-					b = w.GetEarliestBounds(values.ConvertTime(nowTime.Add(v.Duration().Duration())))
-				}
 				return values.NewTime(b.Start), nil
 			}, false,
 		),
@@ -446,15 +292,9 @@ func getTime(args values.Object) (values.Value, error) {
 	if !ok {
 		return nil, errors.New(codes.Invalid, "missing argument t")
 	}
-
 	if tArg == nil {
 		return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 	}
-
-	if ok, err := errNotTimeable(tArg); ok {
-		return nil, err
-	}
-
 	return tArg, nil
 }
 
@@ -485,26 +325,16 @@ func getLocation(args values.Object) (string, values.Duration, error) {
 	return name.Str(), offset.Duration(), nil
 }
 
-func errNotTimeable(t values.Value) (bool, error) {
-	if !values.IsTimeable(t) {
-		return true, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", t.Type().Nature()))
-	}
-	return false, nil
-}
-
 func getTimeableTime(ctx context.Context, args values.Object) (values.Time, error) {
 	var tm values.Time
 	t, err := getTime(args)
 	if err != nil {
 		return tm, err
 	}
-	if t.Type().Nature() == semantic.Time {
-		tm = t.Time()
-	}
-	if t.Type().Nature() == semantic.Duration {
-		deps := execute.GetExecutionDependencies(ctx)
-		nowTime := *deps.Now
-		tm = values.ConvertTime(nowTime.Add(t.Duration().Duration()))
+	deps := execute.GetExecutionDependencies(ctx)
+	tm, err = deps.ResolveTimeable(t)
+	if err != nil {
+		return tm, err
 	}
 	return tm, nil
 }

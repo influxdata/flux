@@ -5,11 +5,8 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux/codes"
-<<<<<<< HEAD
 	"github.com/influxdata/flux/execute"
-=======
 	"github.com/influxdata/flux/internal/date"
->>>>>>> a170c552 (feat(date): incorporated review comments)
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
@@ -38,21 +35,16 @@ func addDuration(name string) values.Value {
 		if !ok {
 			return nil, fmt.Errorf("%s requires 'to' parameter", name)
 		}
-<<<<<<< HEAD
 		deps := execute.GetExecutionDependencies(ctx)
 		time, err := deps.ResolveTimeable(t)
 		if err != nil {
 			return nil, err
 		}
-		return values.NewTime(time.Add(d.Duration())), nil
-		location, err := getLocation(args)
-=======
 		location, offset, err := getLocation(args)
 		if err != nil {
 			return nil, err
 		}
-		lTime, err := date.GetTimeInLocation(t.Time(), location, offset)
->>>>>>> a170c552 (feat(date): incorporated review comments)
+		lTime, err := date.GetTimeInLocation(time, location, offset)
 		if err != nil {
 			return nil, err
 		}
@@ -72,21 +64,16 @@ func subDuration(name string) values.Value {
 		if !ok {
 			return nil, fmt.Errorf("%s requires 'from' parameter", name)
 		}
-<<<<<<< HEAD
 		deps := execute.GetExecutionDependencies(ctx)
 		time, err := deps.ResolveTimeable(t)
 		if err != nil {
 			return nil, err
 		}
-		return values.NewTime(time.Add(d.Duration().Mul(-1))), nil
-		location, err := getLocation(args)
-=======
 		location, offset, err := getLocation(args)
 		if err != nil {
 			return nil, err
 		}
-		lTime, err := date.GetTimeInLocation(t.Time(), location, offset)
->>>>>>> a170c552 (feat(date): incorporated review comments)
+		lTime, err := date.GetTimeInLocation(time, location, offset)
 		if err != nil {
 			return nil, err
 		}

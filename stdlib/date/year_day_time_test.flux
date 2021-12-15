@@ -29,16 +29,17 @@ inData =
 ,,1,2018-12-31T19:54:00Z,_m,QQ,1
 ,,1,2019-01-01T19:54:00Z,_m,QQ,1
 "
-outData =
-    "
 
 testcase year_day_time {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.yearDay(t: r._time)}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(fn: (r) => ({r with _value: date.yearDay(t: r._time)}))
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -58,27 +59,25 @@ testcase year_day_time {
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-06-03T19:54:00Z,154
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-31T19:54:00Z,365
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2019-01-01T19:54:00Z,1
-"
-t_time_year_day = (table=<-) =>
-    table
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.yearDay(t: r._time)}))
-
-test _time_year_day = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_year_day})
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }
 
 testcase year_day_time_location {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.yearDay(t: r._time, location: {zone: "Australia/Sydney", offset: 0h})}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(
+                    fn: (r) =>
+                        ({r with _value: date.yearDay(t: r._time, location: {zone: "Australia/Sydney", offset: 0h})}),
+                )
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -99,7 +98,7 @@ testcase year_day_time_location {
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-31T19:54:00Z,1
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2019-01-01T19:54:00Z,2
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }

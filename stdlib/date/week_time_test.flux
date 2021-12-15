@@ -26,16 +26,17 @@ inData =
 ,,1,2018-11-22T19:53:40Z,_m,QQ,1
 ,,1,2018-12-22T19:53:50Z,_m,QQ,1
 "
-outData =
-    "
 
 testcase week_time {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.week(t: r._time)}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(fn: (r) => ({r with _value: date.week(t: r._time)}))
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -52,27 +53,25 @@ testcase week_time {
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-10-22T19:53:30Z,43
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,47
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,51
-"
-t_time_week = (table=<-) =>
-    table
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.week(t: r._time)}))
-
-test _time_week = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_week})
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }
 
 testcase week_time_location {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.week(t: r._time, location: {zone: "Australia/Sydney", offset: 1w})}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(
+                    fn: (r) =>
+                        ({r with _value: date.week(t: r._time, location: {zone: "Australia/Sydney", offset: 1w})}),
+                )
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -90,7 +89,7 @@ testcase week_time_location {
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-11-22T19:53:40Z,48
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-22T19:53:50Z,52
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }

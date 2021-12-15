@@ -20,16 +20,17 @@ inData =
 ,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1
 ,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2
 "
-outData =
-    "
 
 testcase quarter_duration {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.quarter(t: duration(v: r._value))}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(fn: (r) => ({r with _value: date.quarter(t: duration(v: r._value))}))
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -40,27 +41,30 @@ testcase quarter_duration {
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,1
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,1
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,1
-"
-t_duration_quarter = (table=<-) =>
-    table
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.quarter(t: duration(v: r._value))}))
-
-test _duration_quarter = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_quarter})
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }
 
 testcase quarter_duration_location {
-    got = csv.from(csv: inData)
-        |> range(start: 2018-01-01T00:00:00Z)
-        |> map(fn: (r) => ({r with _value: date.quarter(t: duration(v: r._value), location: {zone: "America/Los_Angeles", offset: -5mo})}))
+        got =
+            csv.from(csv: inData)
+                |> range(start: 2018-01-01T00:00:00Z)
+                |> map(
+                    fn: (r) =>
+                        ({r with _value:
+                                date.quarter(
+                                    t: duration(v: r._value),
+                                    location: {zone: "America/Los_Angeles", offset: -5mo},
+                                ),
+                        }),
+                )
 
-    want = csv.from(
-        csv: "
+        want =
+            csv.from(
+                csv:
+                    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -72,7 +76,7 @@ testcase quarter_duration_location {
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,3
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,3
 ",
-    )
+            )
 
-    testing.diff(got: got, want: want)
-}
+        testing.diff(got: got, want: want)
+    }
