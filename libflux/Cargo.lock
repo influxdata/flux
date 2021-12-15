@@ -832,9 +832,9 @@ checksum = "ed0cfbc8191465bed66e1718596ee0b0b35d5ee1f41c5df2189d0fe8bde535ba"
 
 [[package]]
 name = "pretty"
-version = "0.11.1"
+version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73a4b252933306dc53486fa81ab3358588af32fb78f26244b6c4a4c9d58e1804"
+checksum = "29afd15870fab34b2a8884481a68f052b3d720cfb29666d7ae0ac2a42ea10289"
 dependencies = [
  "arrayvec",
  "log",
