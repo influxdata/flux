@@ -1399,21 +1399,10 @@ impl<'doc> Formatter<'doc> {
         loop {
             match (operators.next(), arguments.next()) {
                 (Some(operator), Some(arg)) => {
-                    doc = docs![
-                        arena,
-                        doc,
-                        docs![
-                            arena,
-                            operator,
-                            arg,
-                            if arguments.peek().is_some() {
-                                line.clone()
-                            } else {
-                                arena.nil()
-                            }
-                        ]
-                        .group(),
-                    ];
+                    doc += docs![arena, operator, arg].group();
+                    if arguments.peek().is_some() {
+                        doc += line.clone();
+                    }
                 }
                 _ => return docs![arena, first, doc.nest(INDENT)].group(),
             }

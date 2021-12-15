@@ -3,7 +3,7 @@ use std::str;
 // This gives us a colorful diff.
 use pretty_assertions::assert_eq;
 
-use expect_test::expect;
+use expect_test::{expect, Expect};
 
 use super::*;
 
@@ -27,6 +27,11 @@ fn assert_format(script: &str, expected: &str) {
         "\n EXPECTED: \n {} \n OUTPUT: \n {} \n",
         expected, output
     );
+}
+
+#[track_caller]
+fn expect_format(script: &str, expect: Expect) {
+    expect.assert_eq(&format(script).unwrap());
 }
 
 #[test]
@@ -1908,4 +1913,18 @@ fn astutil_test_format_with_comments() {
         // comments
         j// not lost"#]]
     .assert_eq(&format(src).unwrap());
+}
+
+#[test]
+fn format_long_single_line_pipe_expression() {
+    let src = r#"from(bucket: "foo") |> range(start: -1d, stop: now()) |> filter(fn: (r) => r._field == "usage_user") |> aggregateWindow(every: 1m, fn: mean) |> yield()"#;
+    expect_format(
+        src,
+        expect![[r#"
+        from(bucket: "foo")
+            |> range(start: -1d, stop: now())
+            |> filter(fn: (r) => r._field == "usage_user")
+            |> aggregateWindow(every: 1m, fn: mean)
+            |> yield()"#]],
+    );
 }

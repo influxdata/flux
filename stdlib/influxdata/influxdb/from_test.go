@@ -276,7 +276,8 @@ from(bucket: "telegraf") |> range(start: 2018-05-30T09:00:00Z, stop: 2018-05-30T
 
 
 from(bucket: "telegraf")
-    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z) |> filter(
+    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+    |> filter(
         fn: (r) => {
             return r["_value"] >= 0.0
         },
@@ -318,7 +319,8 @@ from(bucket: "telegraf")
 
 
 from(bucket: "telegraf")
-    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z) |> filter(
+    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+    |> filter(
         fn: (r) => {
             return r["_value"] >= 0.0
         },
@@ -380,7 +382,8 @@ import "math"
 import math "math"
 
 from(bucket: "telegraf")
-    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z) |> filter(
+    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+    |> filter(
         fn: (r) => {
             return r["_value"] >= math["pi"]
         },
