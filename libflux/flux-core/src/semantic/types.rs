@@ -446,20 +446,13 @@ type RefMonoTypeVecMap<'a, T = String> = HashMap<&'a T, Vec<&'a MonoType>>;
 
 impl BuiltinType {
     fn unify(self, actual: Self) -> Result<(), Error> {
-        match (self, actual) {
-            (BuiltinType::Bool, BuiltinType::Bool)
-            | (BuiltinType::Int, BuiltinType::Int)
-            | (BuiltinType::Uint, BuiltinType::Uint)
-            | (BuiltinType::Float, BuiltinType::Float)
-            | (BuiltinType::String, BuiltinType::String)
-            | (BuiltinType::Duration, BuiltinType::Duration)
-            | (BuiltinType::Time, BuiltinType::Time)
-            | (BuiltinType::Regexp, BuiltinType::Regexp)
-            | (BuiltinType::Bytes, BuiltinType::Bytes) => Ok(()),
-            (exp, act) => Err(Error::CannotUnify {
-                exp: exp.into(),
-                act: act.into(),
-            }),
+        if self == actual {
+            Ok(())
+        } else {
+            Err(Error::CannotUnify {
+                exp: self.into(),
+                act: actual.into(),
+            })
         }
     }
 
