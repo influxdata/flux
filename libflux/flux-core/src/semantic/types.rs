@@ -372,7 +372,7 @@ pub enum MonoType {
     #[display(fmt = "<error>")]
     Error,
     #[display(fmt = "{}", _0)]
-    Primitive(BuiltinType),
+    Builtin(BuiltinType),
     #[display(fmt = "{}", _0)]
     Var(Tvar),
     #[display(fmt = "{}", _0)]
@@ -415,7 +415,7 @@ impl Serialize for MonoType {
 
         match self {
             Self::Error => MonoTypeSer::Error,
-            Self::Primitive(p) => match p {
+            Self::Builtin(p) => match p {
                 BuiltinType::Bool => MonoTypeSer::Bool,
                 BuiltinType::Int => MonoTypeSer::Int,
                 BuiltinType::Uint => MonoTypeSer::Uint,
@@ -571,7 +571,7 @@ impl BuiltinType {
 impl Substitutable for MonoType {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         match self {
-            MonoType::Error | MonoType::Primitive(_) => None,
+            MonoType::Error | MonoType::Builtin(_) => None,
             MonoType::Var(tvr) => sub.try_apply(*tvr).map(|new| {
                 // If a variable is the replacement we do not recurse further
                 // as `instantiate` breaks in cases where it generates a substitution map
@@ -596,7 +596,7 @@ impl Substitutable for MonoType {
     }
     fn free_vars(&self) -> Vec<Tvar> {
         match self {
-            MonoType::Error | MonoType::Primitive(_) => Vec::new(),
+            MonoType::Error | MonoType::Builtin(_) => Vec::new(),
             MonoType::Var(tvr) => vec![*tvr],
             MonoType::Arr(arr) => arr.free_vars(),
             MonoType::Vector(vector) => vector.free_vars(),
@@ -610,7 +610,7 @@ impl Substitutable for MonoType {
 impl MaxTvar for MonoType {
     fn max_tvar(&self) -> Option<Tvar> {
         match self {
-            MonoType::Error | MonoType::Primitive(_) => None,
+            MonoType::Error | MonoType::Builtin(_) => None,
             MonoType::Var(tvr) => tvr.max_tvar(),
             MonoType::Arr(arr) => arr.max_tvar(),
             MonoType::Vector(vector) => vector.max_tvar(),
@@ -629,7 +629,7 @@ impl From<Tvar> for MonoType {
 
 impl From<BuiltinType> for MonoType {
     fn from(t: BuiltinType) -> MonoType {
-        MonoType::Primitive(t)
+        MonoType::Builtin(t)
     }
 }
 
@@ -664,15 +664,15 @@ impl From<Function> for MonoType {
 
 #[allow(missing_docs)]
 impl MonoType {
-    pub const INT: MonoType = MonoType::Primitive(BuiltinType::Int);
-    pub const UINT: MonoType = MonoType::Primitive(BuiltinType::Uint);
-    pub const FLOAT: MonoType = MonoType::Primitive(BuiltinType::Float);
-    pub const BOOL: MonoType = MonoType::Primitive(BuiltinType::Bool);
-    pub const STRING: MonoType = MonoType::Primitive(BuiltinType::String);
-    pub const TIME: MonoType = MonoType::Primitive(BuiltinType::Time);
-    pub const REGEXP: MonoType = MonoType::Primitive(BuiltinType::Regexp);
-    pub const BYTES: MonoType = MonoType::Primitive(BuiltinType::Bytes);
-    pub const DURATION: MonoType = MonoType::Primitive(BuiltinType::Duration);
+    pub const INT: MonoType = MonoType::Builtin(BuiltinType::Int);
+    pub const UINT: MonoType = MonoType::Builtin(BuiltinType::Uint);
+    pub const FLOAT: MonoType = MonoType::Builtin(BuiltinType::Float);
+    pub const BOOL: MonoType = MonoType::Builtin(BuiltinType::Bool);
+    pub const STRING: MonoType = MonoType::Builtin(BuiltinType::String);
+    pub const TIME: MonoType = MonoType::Builtin(BuiltinType::Time);
+    pub const REGEXP: MonoType = MonoType::Builtin(BuiltinType::Regexp);
+    pub const BYTES: MonoType = MonoType::Builtin(BuiltinType::Bytes);
+    pub const DURATION: MonoType = MonoType::Builtin(BuiltinType::Duration);
 }
 
 impl MonoType {
@@ -715,7 +715,7 @@ impl MonoType {
             // An error has already occurred so assume everything is ok here so that we do not
             // create additional, spurious errors
             (MonoType::Error, _) | (_, MonoType::Error) => Ok(()),
-            (MonoType::Primitive(exp), MonoType::Primitive(act)) => exp.unify(*act),
+            (MonoType::Builtin(exp), MonoType::Builtin(act)) => exp.unify(*act),
             (MonoType::Var(tv), MonoType::Var(tv2)) => {
                 match (sub.try_apply(*tv), sub.try_apply(*tv2)) {
                     (Some(self_), Some(actual)) => self_.unify(&actual, sub),
@@ -748,7 +748,7 @@ impl MonoType {
     pub fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
         match self {
             MonoType::Error => Ok(()),
-            MonoType::Primitive(typ) => typ.constrain(with),
+            MonoType::Builtin(typ) => typ.constrain(with),
             MonoType::Var(tvr) => {
                 tvr.constrain(with, cons);
                 Ok(())
@@ -763,7 +763,7 @@ impl MonoType {
 
     fn contains(&self, tv: Tvar) -> bool {
         match self {
-            MonoType::Error | MonoType::Primitive(_) => false,
+            MonoType::Error | MonoType::Builtin(_) => false,
             MonoType::Var(tvr) => tv == *tvr,
             MonoType::Arr(arr) => arr.contains(tv),
             MonoType::Vector(vector) => vector.contains(tv),

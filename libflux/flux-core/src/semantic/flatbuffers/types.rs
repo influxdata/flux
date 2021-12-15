@@ -457,7 +457,7 @@ pub fn build_type(
 ) {
     match t {
         MonoType::Error => unreachable!(),
-        MonoType::Primitive(typ) => build_basic_type(builder, typ),
+        MonoType::Builtin(typ) => build_basic_type(builder, typ),
         MonoType::Var(tvr) => {
             let offset = build_var(builder, *tvr);
             (offset.as_union_value(), fb::MonoType::Var)
