@@ -884,17 +884,20 @@ impl MonoType {
         }
     }
 
-    pub(crate) fn parameter(&self, field: &str) -> Option<&MonoType> {
+    /// Returns the type of `param` if `self` is a function type
+    pub fn parameter(&self, param: &str) -> Option<&MonoType> {
         match self {
-            MonoType::Fun(f) => f.req.get(field).or_else(|| f.opt.get(field)).or_else(|| {
+            MonoType::Fun(f) => f.req.get(param).or_else(|| f.opt.get(param)).or_else(|| {
                 f.pipe
                     .as_ref()
-                    .and_then(|pipe| if pipe.k == field { Some(&pipe.v) } else { None })
+                    .and_then(|pipe| if pipe.k == param { Some(&pipe.v) } else { None })
             }),
             _ => None,
         }
     }
-    pub(crate) fn field(&self, field: &str) -> Option<&Property> {
+
+    /// Returns the type of `field` if `self` is a record type
+    pub fn field(&self, field: &str) -> Option<&Property> {
         match self {
             MonoType::Record(r) => r.fields().find(|p| p.k == field),
             _ => None,
