@@ -1,13 +1,13 @@
 // Package mqtt provides tools for working with Message Queuing Telemetry Transport (MQTT) protocol.
-// 
+//
 // introduced: 0.40.0
 // tags: mqtt
-// 
+//
 package mqtt
 
 
 // to outputs data from a stream of tables to an MQTT broker using MQTT protocol.
-// 
+//
 // ## Parameters
 // - broker: MQTT broker connection string.
 // - topic: MQTT topic to send data to.
@@ -15,14 +15,14 @@ package mqtt
 // - retain: MQTT retain flag. Default is `false`.
 // - clientid: MQTT client ID.
 // - username: Username to send to the MQTT broker.
-// 
+//
 //   Username is only required if the broker requires authentication.
 //   If you provide a username, you must provide a password.
-// 
+//
 // - password: Password to send to the MQTT broker.
 //   Password is only required if the broker requires authentication.
 //   If you provide a password, you must provide a username.
-// 
+//
 // - name: Name for the MQTT message.
 // - timeout: MQTT connection timeout. Default is `1s`.
 // - timeColumn: Column to use as time values in the output line protocol.
@@ -32,13 +32,13 @@ package mqtt
 // - valueColumns: Columns to use as field values in the output line protocol.
 //   Default is `["_value"]`.
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
 // ### Send data to an MQTT broker
 // ```no_run
 // import "experimental/mqtt"
 // import "sampledata"
-// 
+//
 // sampledata.float()
 //     |> mqtt.to(
 //         broker: "tcp://localhost:8883",
@@ -48,27 +48,30 @@ package mqtt
 //         valueColumns: ["_value"],
 //     )
 // ```
-// 
+//
 // tags: mqtt,outputs
-// 
+//
 builtin to : (
-    <-tables: [A],
-    broker: string,
-    ?topic: string,
-    ?qos: int,
-    ?retain: bool,
-    ?clientid: string,
-    ?username: string,
-    ?password: string,
-    ?name: string,
-    ?timeout: duration,
-    ?timeColumn: string,
-    ?tagColumns: [string],
-    ?valueColumns: [string],
-) => [B] where A: Record, B: Record
+        <-tables: [A],
+        broker: string,
+        ?topic: string,
+        ?qos: int,
+        ?retain: bool,
+        ?clientid: string,
+        ?username: string,
+        ?password: string,
+        ?name: string,
+        ?timeout: duration,
+        ?timeColumn: string,
+        ?tagColumns: [string],
+        ?valueColumns: [string],
+    ) => [B]
+    where
+    A: Record,
+    B: Record
 
 // publish sends data to an MQTT broker using MQTT protocol.
-// 
+//
 // ## Parameters
 // - broker: MQTT broker connection string.
 // - topic: MQTT topic to send data to.
@@ -78,22 +81,22 @@ builtin to : (
 // - retain: MQTT retain flag. Default is `false`.
 // - clientid: MQTT client ID.
 // - username: Username to send to the MQTT broker.
-// 
+//
 //   Username is only required if the broker requires authentication.
 //   If you provide a username, you must provide a password.
-// 
+//
 // - password: Password to send to the MQTT broker.
-//   
+//
 //   Password is only required if the broker requires authentication.
 //   If you provide a password, you must provide a username.
-// 
+//
 // - timeout: MQTT connection timeout. Default is `1s`.
-// 
+//
 // ## Examples
 // ### Send a message to an MQTT endpoint
 // ```no_run
 // import "experimental/mqtt"
-// 
+//
 // mqtt.publish(
 //     broker: "tcp://localhost:8883",
 //     topic: "alerts",
@@ -102,27 +105,27 @@ builtin to : (
 //     retain: true,
 // )
 // ```
-// 
+//
 // ### Send a message to an MQTT endpoint using input data
 // ```no_run
 // import "experimental/mqtt"
 // import "sampledata"
-// 
+//
 // sampledata.float()
 //     |> map(fn: (r) => ({r with sent: mqtt.publish(broker: "tcp://localhost:8883", topic: "sampledata/${r.id}", message: string(v: r._value), clientid: "sensor-12a4")}))
 // ```
-// 
+//
 // introduced: 0.133.0
 // tags: mqtt
-// 
+//
 builtin publish : (
-    broker: string,
-    topic: string,
-    message: string,
-    ?qos: int,
-    ?retain: bool,
-    ?clientid: string,
-    ?username: string,
-    ?password: string,
-    ?timeout: duration,
-) => bool
+        broker: string,
+        topic: string,
+        message: string,
+        ?qos: int,
+        ?retain: bool,
+        ?clientid: string,
+        ?username: string,
+        ?password: string,
+        ?timeout: duration,
+    ) => bool

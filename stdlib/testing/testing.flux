@@ -104,12 +104,12 @@ builtin assertEmpty : (<-tables: [A]) => [A]
 // ```
 //
 builtin diff : (
-    <-got: [A],
-    want: [A],
-    ?verbose: bool,
-    ?epsilon: float,
-    ?nansEqual: bool,
-) => [{A with _diff: string}]
+        <-got: [A],
+        want: [A],
+        ?verbose: bool,
+        ?epsilon: float,
+        ?nansEqual: bool,
+    ) => [{A with _diff: string}]
 
 // loadStorage loads annotated CSV test data as if it were queried from InfluxDB.
 // This function ensures tests behave correctly in both the Flux and InfluxDB test suites.
@@ -137,9 +137,21 @@ builtin diff : (
 // testing.loadStorage(csv: csvData)
 // ```
 //
-option loadStorage = (csv) => c.from(csv: csv)
-    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)
-    |> map(fn: (r) => ({r with _field: if exists r._field then r._field else die(msg: "test input table does not have _field column"), _measurement: if exists r._measurement then r._measurement else die(msg: "test input table does not have _measurement column"), _time: if exists r._time then r._time else die(msg: "test input table does not have _time column")}))
+option loadStorage = (csv) =>
+    c.from(csv: csv)
+        |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)
+        |> map(
+            fn: (r) =>
+                ({r with _field:
+                        if exists r._field then r._field else die(msg: "test input table does not have _field column"),
+                    _measurement:
+                        if exists r._measurement then
+                            r._measurement
+                        else
+                            die(msg: "test input table does not have _measurement column"),
+                    _time: if exists r._time then r._time else die(msg: "test input table does not have _time column"),
+                }),
+        )
 
 // load loads tests data from a stream of tables.
 //
@@ -351,6 +363,7 @@ benchmark = (case) => {
 // - `want` is the expected data to test against.
 //
 assertEqualValues = (got, want) => {
-    return diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
-        |> yield()
+    return
+        diff(got: array.from(rows: [{v: got}]), want: array.from(rows: [{v: want}]))
+            |> yield()
 }

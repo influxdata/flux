@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -23,7 +24,8 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,0,usage_guest_nice,cpu,cpu-total,host.local
 ,,1,2018-05-22T19:54:16Z,0,usage_guest_nice,cpu,cpu-total,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true
 #default,_result,,,,,,,,,
@@ -41,8 +43,10 @@ outData = "
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,0,usage_guest_nice,cpu,host.local,host.local
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,0,usage_guest_nice,cpu,host.local,host.local
 "
-t_duplicate = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> duplicate(column: "host", as: "cpu")
+t_duplicate = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> duplicate(column: "host", as: "cpu")
 
-test _duplicate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duplicate})
+test _duplicate = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duplicate})

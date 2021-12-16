@@ -323,7 +323,7 @@ where
 
 /// Merges two values using `f` if either or both them is `Some(..)`.
 /// If both are `None`, `None` is returned.
-fn merge<A: ?Sized, B: ?Sized>(
+pub(crate) fn merge<A: ?Sized, B: ?Sized>(
     a_original: &A,
     a: Option<A::Owned>,
     b_original: &B,

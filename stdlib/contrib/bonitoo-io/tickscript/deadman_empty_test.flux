@@ -13,7 +13,8 @@ option now = () => 2020-11-25T14:05:30Z
 option monitor.write = (tables=<-) => tables
 option monitor.log = (tables=<-) => tables
 
-inData = "
+inData =
+    "
 #group,false,false,false,false,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
 #default,_result,,,,,,,
@@ -25,7 +26,8 @@ inData = "
 ,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft
 ,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,true,true,false,true,false,true,false,false
 #datatype,string,long,string,string,string,string,string,string,long,string,boolean,string
 #default,_result,,,,,,,,,,,
@@ -41,14 +43,21 @@ check = {
 }
 metric_type = "kafka_message_in_rate"
 tier = "ft"
-tickscript_deadman = (table=<-) => table
-    |> range(start: 2020-11-25T14:05:15Z)
-    |> filter(fn: (r) => r._measurement == "testm" and r._field == metric_type and r.realm == tier)
-    |> schema.fieldsAsCols()
-    |> tickscript.groupBy(columns: ["host", "realm"])
-    |> tickscript.deadman(check: check, measurement: "testm", threshold: 10, id: (r) => "Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert")
-    // to avoid issue with validation
-    |> drop(columns: ["details"])
-    |> drop(columns: ["_time"])
+tickscript_deadman = (table=<-) =>
+    table
+        |> range(start: 2020-11-25T14:05:15Z)
+        |> filter(fn: (r) => r._measurement == "testm" and r._field == metric_type and r.realm == tier)
+        |> schema.fieldsAsCols()
+        |> tickscript.groupBy(columns: ["host", "realm"])
+        |> tickscript.deadman(
+            check: check,
+            measurement: "testm",
+            threshold: 10,
+            id: (r) => "Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert",
+        )
+        // to avoid issue with validation
+        |> drop(columns: ["details"])
+        |> drop(columns: ["_time"])
 
-test _tickscript_deadman = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})
+test _tickscript_deadman = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_deadman})

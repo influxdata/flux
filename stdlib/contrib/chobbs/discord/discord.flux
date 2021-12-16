@@ -26,15 +26,15 @@ option discordURL = "https://discordapp.com/api/webhooks/"
 // ```no_run
 // import "contrib/chobbs/discord"
 // import "influxdata/influxdb/secrets"
-// 
+//
 // token = secrets.get(key: "DISCORD_TOKEN")
-// 
+//
 // lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses")
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
-// 
+//
 // discord.send(
 //     webhookToken: token,
 //     webhookID: "1234567890",
@@ -52,13 +52,14 @@ send = (
     username,
     content,
     avatar_url="",
-) => {
-    data = {username: username, content: content, avatar_url: avatar_url}
-    headers = {"Content-Type": "application/json"}
-    encode = json.encode(v: data)
+) =>
+    {
+        data = {username: username, content: content, avatar_url: avatar_url}
+        headers = {"Content-Type": "application/json"}
+        encode = json.encode(v: data)
 
-    return http.post(headers: headers, url: discordURL + webhookID + "/" + webhookToken, data: encode)
-}
+        return http.post(headers: headers, url: discordURL + webhookID + "/" + webhookToken, data: encode)
+    }
 
 // endpoint sends a single message to a Discord channel using a
 // [Discord webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks&?page=3)
@@ -89,18 +90,18 @@ send = (
 // ```no_run
 // import "influxdata/influxdb/secrets"
 // import "contrib/chobbs/discord"
-// 
+//
 // discordToken = secrets.get(key: "DISCORD_TOKEN")
 // endpoint = telegram.endpoint(
 //     webhookToken: discordToken,
 //     webhookID: "123456789",
 //     username: "critBot",
 // )
-// 
+//
 // crit_statuses = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses" and status == "crit")
-// 
+//
 // crit_statuses
 //     |> endpoint(
 //         mapFn: (r) => ({
@@ -111,21 +112,25 @@ send = (
 //
 // tags: notifcation endpoints,transformations
 //
-endpoint = (webhookToken, webhookID, username, avatar_url="") => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == send(
-                        webhookToken: webhookToken,
-                        webhookID: webhookID,
-                        username: username,
-                        avatar_url: avatar_url,
-                        content: obj.content,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (webhookToken, webhookID, username, avatar_url="") =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == send(
+                                                webhookToken: webhookToken,
+                                                webhookID: webhookID,
+                                                username: username,
+                                                avatar_url: avatar_url,
+                                                content: obj.content,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

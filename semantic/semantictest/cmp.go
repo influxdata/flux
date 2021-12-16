@@ -150,6 +150,9 @@ func TransformValue(v values.Value) map[string]interface{} {
 			"value": v.Regexp(),
 		}
 	case semantic.Array:
+		// n.b. normally we need to check v.Array() to make sure it isn't a
+		// TableObject before calling Len(), but we can just let it panic here
+		// since this is test-related code.
 		elements := make([]map[string]interface{}, v.Array().Len())
 		for i := range elements {
 			elements[i] = TransformValue(v.Array().Get(i))

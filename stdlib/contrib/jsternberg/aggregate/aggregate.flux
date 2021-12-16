@@ -65,12 +65,16 @@ builtin table : (<-tables: [A], columns: C) => [B] where A: Record, B: Record, C
 //         The length of the interval. This defaults to the
 //         every duration.
 builtin window : (
-    <-tables: [A],
-    ?time: string,
-    every: duration,
-    ?period: duration,
-    columns: C,
-) => [B] where A: Record, B: Record, C: Record
+        <-tables: [A],
+        ?time: string,
+        every: duration,
+        ?period: duration,
+        columns: C,
+    ) => [B]
+    where
+    A: Record,
+    B: Record,
+    C: Record
 
 // null is a sentinel value for fill that will fill
 // in a null value if there were no values for an interval.
@@ -81,22 +85,25 @@ builtin null : A
 builtin none : A
 
 // define will define an aggregate function.
-define = (init, reduce, compute, fill=null) => (column="_value", fill=fill) => ({
-    column: column,
-    init: init,
-    reduce: reduce,
-    compute: compute,
-    fill: fill,
-})
-_make_selector = (fn) => define(
-    init: (values) => fn(values),
-    reduce: (values, state) => {
-        v = fn(values)
-    
-        return fn(values: [state, v])
-    },
-    compute: (state) => state,
-)
+define = (init, reduce, compute, fill=null) =>
+    (column="_value", fill=fill) =>
+        ({
+            column: column,
+            init: init,
+            reduce: reduce,
+            compute: compute,
+            fill: fill,
+        })
+_make_selector = (fn) =>
+    define(
+        init: (values) => fn(values),
+        reduce: (values, state) => {
+            v = fn(values)
+
+            return fn(values: [state, v])
+        },
+        compute: (state) => state,
+    )
 
 // min constructs a min aggregate or selector for the column.
 min = _make_selector(fn: math.min)
@@ -105,23 +112,30 @@ min = _make_selector(fn: math.min)
 max = _make_selector(fn: math.max)
 
 // sum constructs a sum aggregate for the column.
-sum = define(
-    init: (values) => math.sum(values),
-    reduce: (values, state) => {
-        return state + math.sum(values)
-    },
-    compute: (state) => state,
-)
+sum =
+    define(
+        init: (values) => math.sum(values),
+        reduce: (values, state) => {
+            return state + math.sum(values)
+        },
+        compute: (state) => state,
+    )
 
 // count constructs a count aggregate for the column.
-count = define(
-    init: (values) => length(arr: values),
-    reduce: (values, state) => {
-        return state + length(arr: values)
-    },
-    compute: (state) => state,
-    fill: 0,
-)
+count =
+    define(
+        init: (values) => length(arr: values),
+        reduce: (values, state) => {
+            return state + length(arr: values)
+        },
+        compute: (state) => state,
+        fill: 0,
+    )
 
 // mean constructs a mean aggregate for the column.
-mean = define(init: (values) => ({sum: math.sum(values), count: length(arr: values)}), reduce: (values, state) => ({sum: state.sum + math.sum(values), count: state.count + length(arr: values)}), compute: (state) => float(v: state.sum) / float(v: state.count))
+mean =
+    define(
+        init: (values) => ({sum: math.sum(values), count: length(arr: values)}),
+        reduce: (values, state) => ({sum: state.sum + math.sum(values), count: state.count + length(arr: values)}),
+        compute: (state) => float(v: state.sum) / float(v: state.count),
+    )

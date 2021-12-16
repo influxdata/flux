@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-input = "
+input =
+    "
 #group,false,false,false,false,true,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string
 #default,_result,,,,,,,,,,
@@ -52,12 +53,14 @@ output = "
 ,result,table,_value
 ,,0,cpu
 "
-show_measurements_fn = (tables=<-) => tables
-    |> range(start: 2018-01-01T00:00:00Z)
-    |> filter(fn: (r) => r._field == "usage_idle")
-    |> keep(columns: ["_measurement"])
-    |> group()
-    |> distinct(column: "_measurement")
-    |> sort()
+show_measurements_fn = (tables=<-) =>
+    tables
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> filter(fn: (r) => r._field == "usage_idle")
+        |> keep(columns: ["_measurement"])
+        |> group()
+        |> distinct(column: "_measurement")
+        |> sort()
 
-test show_measurements = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})
+test show_measurements = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})

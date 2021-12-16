@@ -29,10 +29,12 @@ pub fn evaluate_package_examples(
     for example in docs.examples.iter_mut() {
         evaluate_example(example, executor)
             .with_context(|| format!("executing example for package {}", path))?;
+        eprintln!("{} ... OK", path);
     }
     for (name, doc) in docs.members.iter_mut() {
         evaluate_doc_examples(doc, executor)
             .with_context(|| format!("executing example for {}.{}", path, name))?;
+        eprintln!("{}.{} ... OK", path, name);
     }
     Ok(())
 }
@@ -47,7 +49,8 @@ fn evaluate_doc_examples(doc: &mut Doc, executor: &mut impl Executor) -> Result<
         }
         Doc::Function(f) => {
             for example in f.examples.iter_mut() {
-                evaluate_example(example, executor)?;
+                evaluate_example(example, executor)
+                    .with_context(|| format!("executing `{}`", example.title))?;
             }
         }
     }
@@ -457,7 +460,8 @@ Example on using array.from
         let mut executor = MockExecutor {
             code: expect![[r#"import "array"
 
-array.from(rows: [{_value: "a"}, {_value: "b"}]) |> yield(name: "input")
+array.from(rows: [{_value: "a"}, {_value: "b"}])
+    |> yield(name: "input")
     |> map(fn: (r) => ({r with _value: "b"}))
     |> yield(name: "output")"#]],
             results: r#"#datatype,string,long,string
@@ -514,7 +518,7 @@ array.from(rows: [{_value: "a"}, {_value: "b"}]) |> yield(name: "input")
         let (display, exec) = preprocess(
             r#"
 # import "array"
-# 
+#
 #
 < array.from(rows:[{_value:"a"}])
 >   |> map(fn: (r) => ({r with _value: "b"}))
@@ -532,7 +536,8 @@ array.from(rows: [{_value: "a"}, {_value: "b"}]) |> yield(name: "input")
         let want_exec = expect![[r#"
             import "array"
 
-            array.from(rows: [{_value: "a"}]) |> yield(name: "input")
+            array.from(rows: [{_value: "a"}])
+                |> yield(name: "input")
                 |> map(fn: (r) => ({r with _value: "b"}))
                 |> yield(name: "output")"#]];
         want_exec.assert_eq(exec.as_str());

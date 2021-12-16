@@ -460,7 +460,7 @@ impl Parser {
         let colon = self.expect(TokenType::Colon);
         let _type = self.parse_type_expression();
         Statement::Builtin(Box::new(BuiltinStmt {
-            base: self.base_node_from_other_end_c(&t, &id.base, &t),
+            base: self.base_node_from_other_end_c(&t, &_type.base, &t),
             colon: colon.comments,
             id,
             ty: _type,

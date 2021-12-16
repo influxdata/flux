@@ -6,7 +6,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -15,7 +16,8 @@ inData = "
 ,,0,2018-05-22T19:53:36Z,101,load1,system,host.local
 ,,0,2018-05-22T19:53:46Z,102,load1,system,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long,long,long,long,long,string,dateTime:RFC3339,long
 #group,false,false,true,true,true,true,true,false,false,false,false,false,false,false,false,false
 #default,got,,,,,,,,,,,,,,,
@@ -34,18 +36,20 @@ obj = {
     r: -30000d,
 }
 arr = [1, 2, 3, 4]
-t_map = (table=<-) => table
-    |> range(start: obj.r)
-    |> map(
-        fn: (r) => ({r with
-            boolAdd: int(v: obj.b) + r._value,
-            intAdd: obj.i + r._value,
-            floatAdd: int(v: obj.d) + r._value,
-            uintAdd: int(v: obj.u) + r._value,
-            string: obj.s,
-            time: obj.t,
-            array: arr[0] + r._value,
-        }),
-    )
+t_map = (table=<-) =>
+    table
+        |> range(start: obj.r)
+        |> map(
+            fn: (r) =>
+                ({r with
+                    boolAdd: int(v: obj.b) + r._value,
+                    intAdd: obj.i + r._value,
+                    floatAdd: int(v: obj.d) + r._value,
+                    uintAdd: int(v: obj.u) + r._value,
+                    string: obj.s,
+                    time: obj.t,
+                    array: arr[0] + r._value,
+                }),
+        )
 
 test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})

@@ -1,5 +1,5 @@
 // Package array provides functions for building tables from Flux arrays.
-// 
+//
 // The `experimental/array` package was promoted to the `array` package in
 // Flux 0.103.0. This package is avaiable for backwards compatibility, but we
 // recommend using the `array` package instead.
@@ -7,7 +7,7 @@
 // introduced: 0.79.0
 // deprecated: 0.103.0
 // tags: array,tables
-// 
+//
 package array
 
 

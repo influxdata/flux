@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,string,string,string,dateTime:RFC3339,boolean
 #group,false,false,true,true,true,false,false
 #default,_result,,,,,,
@@ -23,7 +24,8 @@ inData = "
 ,,1,m1,f1,server02,2018-12-19T22:14:10Z,true
 ,,1,m1,f1,server02,2018-12-19T22:14:20Z,
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,boolean
 #group,false,false,true,true,true,true,true,false,false
 #default,_result,,,,,,,,
@@ -41,8 +43,9 @@ outData = "
 ,,1,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f1,server02,2018-12-19T22:14:10Z,true
 ,,1,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f1,server02,2018-12-19T22:14:20Z,false
 "
-t_fill_bool = (table=<-) => table
-    |> range(start: 2018-12-15T00:00:00Z)
-    |> fill(value: false)
+t_fill_bool = (table=<-) =>
+    table
+        |> range(start: 2018-12-15T00:00:00Z)
+        |> fill(value: false)
 
 test _fill = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_fill_bool})

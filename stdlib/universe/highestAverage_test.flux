@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
 #group,false,false,false,false,true,true,false
 #default,_result,,,,,,
@@ -26,7 +27,8 @@ inData = "
 ,,4,2018-11-07T13:00:00Z,13,B,DD,HostE
 ,,4,2018-11-07T14:00:00Z,27,B,DD,HostE
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,string,double
 #group,false,false,false,false,false
 #default,_result,,,,
@@ -35,7 +37,9 @@ outData = "
 ,,0,CC,HostB,33
 ,,0,BB,HostA,20
 "
-t_highestAverage = (table=<-) => table
-    |> highestAverage(n: 3, groupColumns: ["_measurement", "host"])
+t_highestAverage = (table=<-) =>
+    table
+        |> highestAverage(n: 3, groupColumns: ["_measurement", "host"])
 
-test _highestAverage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestAverage})
+test _highestAverage = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_highestAverage})

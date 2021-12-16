@@ -1,7 +1,9 @@
 package semantic
 
 import (
+	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux/ast"
@@ -136,7 +138,7 @@ type PropertyKey interface {
 }
 
 func (n *Identifier) Key() string {
-	return n.Name
+	return n.Name.Name()
 }
 func (n *StringLiteral) Key() string {
 	return n.Value
@@ -785,7 +787,7 @@ type MemberExpression struct {
 	Loc
 
 	Object   Expression
-	Property string
+	Property Symbol
 
 	typ MonoType
 }
@@ -915,7 +917,7 @@ func (p *Property) Copy() Node {
 type IdentifierExpression struct {
 	Loc
 
-	Name string
+	Name Symbol
 
 	typ MonoType
 }
@@ -938,7 +940,7 @@ func (e *IdentifierExpression) TypeOf() MonoType {
 type Identifier struct {
 	Loc
 
-	Name string
+	Name Symbol
 }
 
 func (*Identifier) NodeType() string { return "Identifier" }
@@ -1113,4 +1115,30 @@ func (l *UnsignedIntegerLiteral) Copy() Node {
 }
 func (e *UnsignedIntegerLiteral) TypeOf() MonoType {
 	return BasicUint
+}
+
+type Symbol struct {
+	LocalName string
+	Package   string
+}
+
+func NewSymbol(name string) Symbol {
+	split := strings.SplitN(name, "@", 2)
+
+	pkg := ""
+	localName := ""
+	if len(split) > 2 {
+		panic(fmt.Errorf("invalid symbol, only one package may be specified"))
+	} else if len(split) == 2 {
+		pkg = split[1]
+		localName = split[0]
+	} else {
+		localName = split[0]
+	}
+
+	return Symbol{Package: pkg, LocalName: localName}
+}
+
+func (s Symbol) Name() string {
+	return s.LocalName
 }

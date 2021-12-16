@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -17,7 +18,8 @@ inData = "
 ,,1,2018-05-22T19:53:46Z,7,CPU,user2,f1
 ,,2,2018-05-22T19:53:26Z,1,RAM,user1,f1
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -35,4 +37,5 @@ t_dynamic = (table=<-) => {
     return r |> filter(fn: (r) => contains(value: r.user, set: users))
 }
 
-test _dynamic_query = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dynamic})
+test _dynamic_query = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_dynamic})

@@ -294,17 +294,9 @@ impl<'a> example::Executor for CLIExecutor<'a> {
 // See https://github.com/influxdata/flux/issues/4141 for tacking removing of this list.
 const EXCEPTIONS: &[&str] = &[
     "array",
-    "contrib",
-    "contrib/bonitoo-io",
-    "contrib/bonitoo-io/servicenow",
-    "contrib/chobbs",
-    "contrib/jsternberg",
     "contrib/jsternberg/aggregate",
     "contrib/jsternberg/influxdb",
     "contrib/jsternberg/math",
-    "contrib/sranka",
-    "contrib/sranka/teams",
-    "contrib/sranka/webexteams",
     "influxdata",
     "influxdata/influxdb/internal",
     "influxdata/influxdb/internal/testutil",

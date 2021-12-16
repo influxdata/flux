@@ -6,7 +6,8 @@ import "influxdata/influxdb/v1"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
 #group,false,false,false,false,true,true,true
 #default,_result,,,,,,
@@ -30,7 +31,8 @@ inData = "
 ,,2,2018-05-22T19:54:06Z,1.94,load5,system,host.local
 ,,2,2018-05-22T19:54:16Z,1.93,load5,system,host.local
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,double
 #group,false,false,true,true,false,true,true,false,false,false
 #default,0,,,,,,,,,
@@ -54,11 +56,24 @@ rawQuery = (
     groupMode="except",
     every=inf,
     period=0s,
-) => stream
-    |> range(start: start, stop: stop)
-    |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))
-    |> group(columns: groupBy, mode: groupMode)
-    |> v1.fieldsAsCols()
-    |> window(every: every, period: period)
+) =>
+    stream
+        |> range(start: start, stop: stop)
+        |> filter(fn: (r) => r._measurement == measurement and contains(value: r._field, set: fields))
+        |> group(columns: groupBy, mode: groupMode)
+        |> v1.fieldsAsCols()
+        |> window(every: every, period: period)
 
-test influx_raw_query = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: (table=<-) => table |> rawQuery(measurement: "system", fields: ["load1", "load15", "load5"], start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:17Z)})
+test influx_raw_query = () =>
+    ({
+        input: testing.loadStorage(csv: inData),
+        want: testing.loadMem(csv: outData),
+        fn: (table=<-) =>
+            table
+                |> rawQuery(
+                    measurement: "system",
+                    fields: ["load1", "load15", "load5"],
+                    start: 2018-05-22T19:53:26Z,
+                    stop: 2018-05-22T19:54:17Z,
+                ),
+    })

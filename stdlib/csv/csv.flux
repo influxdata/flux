@@ -5,7 +5,7 @@
 package csv
 
 
-// from retrieves data from a comma separated value (CSV) data source and 
+// from retrieves data from a comma separated value (CSV) data source and
 // returns a stream of tables.
 //
 // ## Parameters
@@ -23,7 +23,7 @@ package csv
 // - mode: is the CSV parsing mode. Default is `annotations`.
 //
 //     **Available annotation modes**
-//   
+//
 //     - **annotations**: Use CSV notations to determine column data types.
 //     - **raw**: Parse all columns as strings and use the first row as the
 //       header row and all subsequent rows as data.

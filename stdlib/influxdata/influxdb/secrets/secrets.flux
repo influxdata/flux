@@ -34,5 +34,5 @@ package secrets
 //     query: "SELECT * FROM example-table",
 // )
 // ```
-// 
+//
 builtin get : (key: string) => string

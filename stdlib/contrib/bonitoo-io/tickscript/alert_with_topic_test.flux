@@ -13,7 +13,8 @@ option now = () => 2020-11-25T14:05:30Z
 option monitor.write = (tables=<-) => tables
 option monitor.log = (tables=<-) => tables
 
-inData = "
+inData =
+    "
 #group,false,false,false,false,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
 #default,_result,,,,,,,
@@ -25,7 +26,8 @@ inData = "
 ,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft
 ,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft
 "
-outData = "
+outData =
+    "
 #group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true,true
 #datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string,string
 #default,_result,,,,,,,,,,,,,,,
@@ -49,21 +51,23 @@ tier = "ft"
 h_threshold = 10
 w_threshold = 5
 l_threshold = 0.002
-tickscript_alert = (table=<-) => table
-    |> range(start: 2020-11-25T14:05:00Z)
-    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)
-    |> schema.fieldsAsCols()
-    |> tickscript.select(column: metric_type, as: "KafkaMsgRate")
-    |> tickscript.groupBy(columns: ["host", "realm"])
-    |> tickscript.alert(
-        check: check,
-        id: (r) => "Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert",
-        message: (r) => "${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}",
-        details: (r) => "some detail: myrealm=${r.realm}",
-        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,
-        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,
-        topic: "TESTING",
-    )
-    |> drop(columns: ["_time"])
+tickscript_alert = (table=<-) =>
+    table
+        |> range(start: 2020-11-25T14:05:00Z)
+        |> filter(fn: (r) => r._field == metric_type and r.realm == tier)
+        |> schema.fieldsAsCols()
+        |> tickscript.select(column: metric_type, as: "KafkaMsgRate")
+        |> tickscript.groupBy(columns: ["host", "realm"])
+        |> tickscript.alert(
+            check: check,
+            id: (r) => "Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert",
+            message: (r) => "${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}",
+            details: (r) => "some detail: myrealm=${r.realm}",
+            crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,
+            warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,
+            topic: "TESTING",
+        )
+        |> drop(columns: ["_time"])
 
-test _tickscript_alert = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})
+test _tickscript_alert = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: tickscript_alert})

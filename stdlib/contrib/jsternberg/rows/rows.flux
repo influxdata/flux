@@ -16,7 +16,7 @@ package rows
 //
 //   _(Use the `with` operator to preserve columns not in the group key
 //   and not explicitly mapped in the operation.)_
-// 
+//
 // - tables: Input data. Default is piped-forward data (`<-`).
 //
 //
@@ -33,7 +33,7 @@ package rows
 // ```
 //
 // **Important**: The `_time` column is dropped because:
-// 
+//
 // - It’s not in the group key.
 // - It’s not explicitly mapped in the operation.
 // - The `with` operator was not used to include existing columns.

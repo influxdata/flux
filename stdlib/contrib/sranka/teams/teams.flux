@@ -31,13 +31,13 @@ option summaryCutoff = 70
 // ### Send the last reported status to a Microsoft Teams channel
 // ```no_run
 // import "contrib/sranka/teams"
-// 
+//
 // lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses")
 //     |> last()
 //     |> findRecord(fn: (key) => true, idx: 0)
-// 
+//
 // teams.message(
 //     url: "https://outlook.office.com/webhook/example-webhook",
 //     title: "Disk Usage",
@@ -53,14 +53,16 @@ message = (url, title, text, summary="") => {
 
     // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields
     // using string body, object cannot be used because '@' is an illegal character in the object property key
-    summary2 = if summary == "" then
-        text
-    else
-        summary
-    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then
-        "${strings.substring(v: summary2, start: 0, end: summaryCutoff)}..."
-    else
-        summary2
+    summary2 =
+        if summary == "" then
+            text
+        else
+            summary
+    shortSummary =
+        if strings.strlen(v: summary2) > summaryCutoff then
+            "${strings.substring(v: summary2, start: 0, end: summaryCutoff)}..."
+        else
+            summary2
     body = "{
 \"@type\": \"MessageCard\",
 \"@context\": \"http://schema.org/extensions\",
@@ -76,7 +78,6 @@ message = (url, title, text, summary="") => {
 //
 // ## Parameters
 // - url: Incoming webhook URL.
-// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Usage
 // `teams.endpoint` is a factory function that outputs another function.
@@ -117,11 +118,24 @@ message = (url, title, text, summary="") => {
 //
 // tags: notification endpoints,transformations
 //
-endpoint = (url) => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with _sent: string(v: 2 == message(url: url, title: obj.title, text: obj.text, summary: if exists obj.summary then obj.summary else "") / 100)}
-        },
-    )
+endpoint = (url) =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == message(
+                                                url: url,
+                                                title: obj.title,
+                                                text: obj.text,
+                                                summary: if exists obj.summary then obj.summary else "",
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

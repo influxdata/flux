@@ -6,7 +6,8 @@ import "internal/promql"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double,string
 #group,false,false,false,true,false,true
 #default,inData,,,,,
@@ -18,7 +19,8 @@ inData = "
 ,,0,2022-11-07T20:00:00Z,metric_name,0,prometheus
 ,,0,2023-12-08T20:00:00Z,metric_name,0,prometheus
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double,string
 #group,false,false,false,true,false,true
 #default,outData,,,,,
@@ -30,10 +32,12 @@ outData = "
 ,,0,2022-11-07T20:00:00Z,metric_name,2022,prometheus
 ,,0,2023-12-08T20:00:00Z,metric_name,2023,prometheus
 "
-t_promqlYear = (table=<-) => table
-    |> range(start: 1980-01-01T00:00:00Z)
-    |> drop(columns: ["_start", "_stop"])
-    |> promql.timestamp()
-    |> map(fn: (r) => ({r with _value: promql.promqlYear(timestamp: r._value)}))
+t_promqlYear = (table=<-) =>
+    table
+        |> range(start: 1980-01-01T00:00:00Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> promql.timestamp()
+        |> map(fn: (r) => ({r with _value: promql.promqlYear(timestamp: r._value)}))
 
-test _promqlYear = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_promqlYear})
+test _promqlYear = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_promqlYear})

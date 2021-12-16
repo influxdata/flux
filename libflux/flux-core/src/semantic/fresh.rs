@@ -3,10 +3,11 @@
 use std::{collections::BTreeMap, hash::Hash};
 
 use crate::semantic::{
-    sub::{merge3, merge4, merge_collect},
+    nodes::Symbol,
+    sub::{merge, merge3, merge4, merge_collect},
     types::{
-        Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
-        TvarMap,
+        Array, Function, Kind, Label, MonoType, MonoTypeVecMap, PolyType, Property, Record,
+        SemanticMap, Tvar, TvarMap,
     },
 };
 
@@ -45,6 +46,30 @@ pub trait Fresh {
         Self: Sized;
 }
 
+impl Fresh for Label {
+    fn fresh_ref(&self, _: &mut Fresher, _: &mut TvarMap) -> Option<Self> {
+        None
+    }
+}
+
+impl Fresh for Symbol {
+    fn fresh_ref(&self, _: &mut Fresher, _: &mut TvarMap) -> Option<Self> {
+        None
+    }
+}
+
+impl Fresh for String {
+    fn fresh_ref(&self, _: &mut Fresher, _: &mut TvarMap) -> Option<Self> {
+        None
+    }
+}
+
+impl Fresh for Kind {
+    fn fresh_ref(&self, _: &mut Fresher, _: &mut TvarMap) -> Option<Self> {
+        None
+    }
+}
+
 impl<T: Fresh + Clone> Fresh for Vec<T> {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.into_iter().map(|t| t.fresh(f, sub)).collect::<Self>()
@@ -67,38 +92,19 @@ impl<T: Fresh> Fresh for Option<T> {
 }
 
 #[allow(clippy::implicit_hasher)]
-impl<T: Fresh + Clone> Fresh for SemanticMap<String, T> {
-    fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
-        self.into_iter()
-            .collect::<BTreeMap<String, T>>()
-            .into_iter()
-            .map(|(s, t)| (s, t.fresh(f, sub)))
-            .collect::<Self>()
-    }
-    fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
-        merge_collect(
-            &mut (),
-            self,
-            |_, (k, v)| v.fresh_ref(f, sub).map(|v| (k.clone(), v)),
-            |_, (k, v)| (k.clone(), v.clone()),
-        )
-    }
-}
-
-#[allow(clippy::implicit_hasher)]
-impl<T: Hash + Ord + Eq + Fresh + Clone, S: Clone> Fresh for SemanticMap<T, S> {
+impl<T: Hash + Ord + Eq + Fresh + Clone, S: Clone + Fresh> Fresh for SemanticMap<T, S> {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         self.into_iter()
             .collect::<BTreeMap<T, S>>()
             .into_iter()
-            .map(|(t, s)| (t.fresh(f, sub), s))
+            .map(|(t, s)| (t.fresh(f, sub), s.fresh(f, sub)))
             .collect::<Self>()
     }
     fn fresh_ref(&self, f: &mut Fresher, sub: &mut TvarMap) -> Option<Self> {
         merge_collect(
             &mut (),
             self,
-            |_, (k, v)| k.fresh_ref(f, sub).map(|k| (k, v.clone())),
+            |_, (k, v)| merge(k, k.fresh_ref(f, sub), v, v.fresh_ref(f, sub)),
             |_, (k, v)| (k.clone(), v.clone()),
         )
     }
@@ -235,7 +241,10 @@ impl Fresh for Record {
     }
 }
 
-impl Fresh for Property {
+impl<T> Fresh for Property<T>
+where
+    T: Clone,
+{
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         Property {
             k: self.k,

@@ -422,7 +422,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType) (Evaluator, er
 		}
 		return &declarationEvaluator{
 			t:    apply(subst, nil, n.Init.TypeOf()),
-			id:   n.Identifier.Name,
+			id:   n.Identifier.Name.Name(),
 			init: node,
 		}, nil
 	case *semantic.ObjectExpression:
@@ -497,7 +497,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType) (Evaluator, er
 	case *semantic.IdentifierExpression:
 		return &identifierEvaluator{
 			t:    apply(subst, nil, n.TypeOf()),
-			name: n.Name,
+			name: n.Name.Name(),
 		}, nil
 	case *semantic.MemberExpression:
 		object, err := compile(n.Object, subst)
@@ -508,7 +508,7 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType) (Evaluator, er
 		return &memberEvaluator{
 			t:        apply(subst, nil, n.TypeOf()),
 			object:   object,
-			property: n.Property,
+			property: n.Property.Name(),
 			nullable: isNullable(t),
 		}, nil
 	case *semantic.IndexExpression:

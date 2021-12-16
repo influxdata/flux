@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,true,true,true,true
 #default,_result,,,,,,,
@@ -173,7 +174,8 @@ inData = "
 ,,26,2018-05-22T19:54:06Z,0,writes,diskio,host.local,disk3
 ,,26,2018-05-22T19:54:16Z,0,writes,diskio,host.local,disk3
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,false,false,true,false
 #default,_result,,,,,,,
@@ -198,18 +200,21 @@ outData = "
 ,,0,2018-05-22T19:54:16Z,228613324800,read_bytes,diskio,host.local,disk0
 "
 t_union = (table=<-) => {
-    t1 = table
-        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
-        |> filter(fn: (r) => r._measurement == "diskio" and r._field == "io_time")
-        |> group(columns: ["host"])
-        |> drop(columns: ["_start", "_stop", "name"])
-    t2 = table
-        |> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
-        |> filter(fn: (r) => r._measurement == "diskio" and r._field == "read_bytes")
-        |> group(columns: ["host"])
-        |> drop(columns: ["_start", "_stop"])
+    t1 =
+        table
+            |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:50Z)
+            |> filter(fn: (r) => r._measurement == "diskio" and r._field == "io_time")
+            |> group(columns: ["host"])
+            |> drop(columns: ["_start", "_stop", "name"])
+    t2 =
+        table
+            |> range(start: 2018-05-22T19:53:50Z, stop: 2018-05-22T19:54:20Z)
+            |> filter(fn: (r) => r._measurement == "diskio" and r._field == "read_bytes")
+            |> group(columns: ["host"])
+            |> drop(columns: ["_start", "_stop"])
 
     return union(tables: [t1, t2]) |> sort(columns: ["_time", "_field", "_value"])
 }
 
-test _union_heterogeneous = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_union})
+test _union_heterogeneous = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_union})

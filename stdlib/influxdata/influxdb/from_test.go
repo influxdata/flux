@@ -275,11 +275,13 @@ from(bucket: "telegraf") |> range(start: 2018-05-30T09:00:00Z, stop: 2018-05-30T
 				Query: `package main
 
 
-from(bucket: "telegraf") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z) |> filter(
-    fn: (r) => {
-        return r["_value"] >= 0.0
-    },
-)`,
+from(bucket: "telegraf")
+    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+    |> filter(
+        fn: (r) => {
+            return r["_value"] >= 0.0
+        },
+    )`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -316,12 +318,14 @@ from(bucket: "telegraf") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T
 				Query: `package main
 
 
-from(bucket: "telegraf") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z) |> filter(
-    fn: (r) => {
-        return r["_value"] >= 0.0
-    },
-    onEmpty: "keep",
-)`,
+from(bucket: "telegraf")
+    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+    |> filter(
+        fn: (r) => {
+            return r["_value"] >= 0.0
+        },
+        onEmpty: "keep",
+    )`,
 				Tables: defaultTablesFn,
 			},
 		},
@@ -377,12 +381,14 @@ import "math"
 
 import math "math"
 
-from(bucket: "telegraf") |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z) |> filter(
-    fn: (r) => {
-        return r["_value"] >= math["pi"]
-    },
-    onEmpty: "keep",
-)`,
+from(bucket: "telegraf")
+    |> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
+    |> filter(
+        fn: (r) => {
+            return r["_value"] >= math["pi"]
+        },
+        onEmpty: "keep",
+    )`,
 				Tables: defaultTablesFn,
 			},
 		},

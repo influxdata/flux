@@ -20,18 +20,18 @@ import "experimental"
 // - data: Data body to include with the POST request.
 //
 // ## Examples
-// 
+//
 // ### Send the last reported status to a URL
 // ```no_run
 // import "json"
 // import "http"
-// 
+//
 // lastReported = from(bucket: "example-bucket")
 //     |> range(start: -1m)
 //     |> filter(fn: (r) => r._measurement == "statuses")
 //     |> last()
 //     |> findColumn(fn: (key) => true, column: "_level")
-// 
+//
 // http.post(
 //     url: "http://myawsomeurl.com/api/notify",
 //     headers: {
@@ -43,7 +43,7 @@ import "experimental"
 // ```
 //
 // introduced: 0.40.0
-// 
+//
 builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
 
 // basicAuth returns a Base64-encoded basic authentication header
@@ -55,11 +55,11 @@ builtin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record
 // - p: Password to use in the basic authentication header.
 //
 // ## Examples
-// 
+//
 // ### Set a basic authentication header in an HTTP POST request
 // ```no_run
 // import "http"
-// 
+//
 // username = "myawesomeuser"
 // password = "mySupErSecRetPasSW0rD"
 //
@@ -91,12 +91,12 @@ builtin basicAuth : (u: string, p: string) => string
 //
 // // Returns "Hello%20world%21"
 // ```
-// 
+//
 // ### URL-encode strings in a stream of tables
 // ```
 // import "http"
 // import "sampledata"
-// 
+//
 // < sampledata.string()
 //     |> map(
 //         fn: (r) => ({r with
@@ -111,17 +111,17 @@ builtin pathEscape : (inputString: string) => string
 
 // endpoint iterates over input data and sends a single POST request per input row to
 // a specficied URL.
-// 
+//
 // This function is designed to be used with `monitor.notify()`.
 //
 // `http.endpoint()` outputs a function that requires a `mapFn` parameter.
 // `mapFn` is the function that builds the record used to generate the POST request.
 // It accepts a table row (`r`) and returns a record that must include the
 // following properties:
-// 
+//
 // - `headers`
 // - `data`
-// 
+//
 // _For information about properties, see `http.post`._
 //
 // ## Parameters
@@ -147,12 +147,15 @@ builtin pathEscape : (inputString: string) => string
 //
 // tags: notification endpoints
 //
-endpoint = (url) => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))}
-        },
-    )
-    |> experimental.group(mode: "extend", columns: ["_sent"])
+endpoint = (url) =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))}
+                    },
+                )
+                |> experimental.group(mode: "extend", columns: ["_sent"])

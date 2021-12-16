@@ -12,7 +12,8 @@ import "testing"
 //         and r.endpoint == "/api/v2/query"
 //         and (r.status == "200" or r.status == "500" or r.status == "400")
 //     )
-inData = "
+inData =
+    "
 #group,false,false,true,true,false,false,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string,string,string
 #default,_result,,,,,,,,,,,
@@ -3191,7 +3192,8 @@ inData = "
 ,,45,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:53:20.420898056Z,101,resp_bytes,http_request,/api/v2/query,gateway-77ff9ccb7d-brkqv,043e0780ee2b1000,200
 ,,45,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:54:37.162546325Z,114,resp_bytes,http_request,/api/v2/query,gateway-77ff9ccb7d-brkqv,043e0780ee2b1000,200
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,long,dateTime:RFC3339
 #default,reads_b,,,,,
@@ -3199,13 +3201,19 @@ outData = "
 ,,0,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,746756,2019-08-01T13:00:00Z
 ,,0,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,78145,2019-08-01T14:00:00Z
 "
-_f = (table=<-) => table
-    |> range(start: 2019-08-01T12:00:00Z, stop: 2019-08-01T14:00:00Z)
-    |> filter(fn: (r) => r.org_id == "03b603ab272a3000" and r._measurement == "http_request" and r._field == "resp_bytes" and r.endpoint == "/api/v2/query" and r.status == "200")
-    |> group()
-    |> aggregateWindow(every: 1h, fn: sum)
-    |> fill(column: "_value", value: 0)
-    |> rename(columns: {_value: "reads_b"})
-    |> yield(name: "reads_b")
+_f = (table=<-) =>
+    table
+        |> range(start: 2019-08-01T12:00:00Z, stop: 2019-08-01T14:00:00Z)
+        |> filter(
+            fn: (r) =>
+                r.org_id == "03b603ab272a3000" and r._measurement == "http_request" and r._field == "resp_bytes"
+                    and
+                    r.endpoint == "/api/v2/query" and r.status == "200",
+        )
+        |> group()
+        |> aggregateWindow(every: 1h, fn: sum)
+        |> fill(column: "_value", value: 0)
+        |> rename(columns: {_value: "reads_b"})
+        |> yield(name: "reads_b")
 
 test get_reads_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

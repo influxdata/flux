@@ -10,6 +10,7 @@ use crate::{
     semantic::{
         convert,
         env::Environment,
+        import::Packages,
         nodes::{FunctionExpr, Package},
         sub,
         walk::{walk, Node},
@@ -144,7 +145,7 @@ fn test_serialize_vectorization() {
         package: String::from("test"),
         files: f,
     };
-    let mut analyzer = Analyzer::new(Default::default(), HashMap::default(), Default::default());
+    let mut analyzer = Analyzer::new(Default::default(), Packages::default(), Default::default());
     let (_, mut pkg) = match analyzer.analyze_ast(pkg) {
         Ok(pkg) => pkg,
         Err(e) => {
@@ -224,7 +225,7 @@ fn compare_files(semantic_file: &semantic::nodes::File, fb_file: &fbsemantic::Fi
     if let Some(package) = sem_file_ref {
         let semantic_file_name = &sem_file_ref.unwrap().name.name;
         let fb_file_name = &fb_file.package().unwrap().name().unwrap().name();
-        compare_strings("file name", &semantic_file_name, fb_file_name)?;
+        compare_symbols("file name", &semantic_file_name, fb_file_name)?;
         compare_package_clause(&semantic_file.package, &fb_file.package())?;
     }
     compare_imports(&semantic_file.imports, &fb_file.imports())?;
@@ -341,7 +342,7 @@ fn compare_ids(
 ) -> Result<()> {
     let fb_id = unwrap_or_fail("id", fb_id)?;
     compare_loc(&semantic_id.loc, &fb_id.loc())?;
-    compare_strings("id", &semantic_id.name, &fb_id.name())?;
+    compare_symbols("id", &semantic_id.name, &fb_id.name())?;
     Ok(())
 }
 
@@ -351,7 +352,7 @@ fn compare_id_exprs(
 ) -> Result<()> {
     let fb_id = unwrap_or_fail("id", fb_id)?;
     compare_loc(&semantic_id.loc, &fb_id.loc())?;
-    compare_strings("id", &semantic_id.name, &fb_id.name())?;
+    compare_symbols("id", &semantic_id.name, &fb_id.name())?;
     Ok(())
 }
 
@@ -835,6 +836,15 @@ fn unwrap_or_fail<'a, T>(msg: &str, o: &'a Option<T>) -> Result<&'a T> {
         None => Err(anyhow!("missing {}", msg)),
         Some(t) => Ok(t),
     }
+}
+
+fn compare_symbols(
+    msg: &str,
+    semantic_str: &semantic::nodes::Symbol,
+    fb_str: &Option<&str>,
+) -> Result<()> {
+    compare_strings(msg, semantic_str.full_name(), fb_str)?;
+    Ok(())
 }
 
 fn compare_strings(msg: &str, semantic_str: &str, fb_str: &Option<&str>) -> Result<()> {

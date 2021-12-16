@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,long,string
 #group,false,false,false,true,false,true
 #default,_result,,,,,
@@ -33,7 +34,8 @@ inData = "
 ,,0,2018-05-22T19:54:10Z,_m,1,f0
 ,,0,2018-05-22T19:54:20Z,_m,1,f0
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,long,string
 #group,false,false,true,true,false,true,false,true
 #default,_result,,,,,,,
@@ -61,8 +63,10 @@ outData = "
 ,,0,2018-05-15T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:10Z,_m,1,f0
 ,,0,2018-05-15T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:20Z,_m,1,f0
 "
-t_cumulative_sum_noop = (table=<-) => table
-    |> range(start: 2018-05-15T00:00:00Z)
-    |> cumulativeSum()
+t_cumulative_sum_noop = (table=<-) =>
+    table
+        |> range(start: 2018-05-15T00:00:00Z)
+        |> cumulativeSum()
 
-test _cumulative_sum_noop = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cumulative_sum_noop})
+test _cumulative_sum_noop = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_cumulative_sum_noop})

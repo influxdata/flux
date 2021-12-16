@@ -7,7 +7,8 @@ import "influxdata/influxdb/tasks"
 
 option now = () => 2020-09-08T09:00:00Z
 
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339
 #group,false,false,false
 #default,_result,,

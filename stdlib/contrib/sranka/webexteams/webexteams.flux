@@ -22,7 +22,7 @@ import "json"
 //
 // ## Examples
 // ### Send the last reported status to Webex Teams
-// ```
+// ```no_run
 // import "contrib/sranka/webexteams"
 // import "influxdata/influxdb/secrets"
 //
@@ -50,14 +50,15 @@ message = (
     roomId,
     text,
     markdown,
-) => {
-    data = {text: text, markdown: markdown, roomId: roomId}
-    headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
+) =>
+    {
+        data = {text: text, markdown: markdown, roomId: roomId}
+        headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + token}
 
-    content = json.encode(v: data)
+        content = json.encode(v: data)
 
-    return http.post(headers: headers, url: url + "/v1/messages", data: content)
-}
+        return http.post(headers: headers, url: url + "/v1/messages", data: content)
+    }
 
 // endpoint returns a function that sends a message that includes data from input rows to a Webex room.
 //
@@ -105,21 +106,25 @@ message = (
 // ```
 //
 // tags: notification endpoints,transformations
-endpoint = (url="https://webexapis.com", token) => (mapFn) => (tables=<-) => tables
-    |> map(
-        fn: (r) => {
-            obj = mapFn(r: r)
-    
-            return {r with
-                _sent: string(
-                    v: 2 == message(
-                        url: url,
-                        token: token,
-                        roomId: obj.roomId,
-                        text: obj.text,
-                        markdown: obj.markdown,
-                    ) / 100,
-                ),
-            }
-        },
-    )
+endpoint = (url="https://webexapis.com", token) =>
+    (mapFn) =>
+        (tables=<-) =>
+            tables
+                |> map(
+                    fn: (r) => {
+                        obj = mapFn(r: r)
+
+                        return {r with _sent:
+                                string(
+                                    v:
+                                        2 == message(
+                                                url: url,
+                                                token: token,
+                                                roomId: obj.roomId,
+                                                text: obj.text,
+                                                markdown: obj.markdown,
+                                            ) / 100,
+                                ),
+                        }
+                    },
+                )

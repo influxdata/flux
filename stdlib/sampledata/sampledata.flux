@@ -11,59 +11,109 @@ import "csv"
 start = 2021-01-01T00:00:00Z
 stop = 2021-01-01T00:01:00Z
 
-_numeric = (includeNull=false) => "
+_numeric =
+    (includeNull=false) =>
+        "
 #group,false,false,false,true,false
 #datatype,string,long,dateTime:RFC3339,string,double
 #default,_result,,,,
 ,result,table,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,t1,-2.18
-,,0,2021-01-01T00:00:10Z,t1," + (if includeNull then "" else "10.92") + "
+,,0,2021-01-01T00:00:10Z,t1,"
+            +
+            (if includeNull then "" else "10.92") + "
 ,,0,2021-01-01T00:00:20Z,t1,7.35
-,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then "" else "17.53") + "
-,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then "" else "15.23") + "
+,,0,2021-01-01T00:00:30Z,t1,"
+            +
+            (if includeNull then "" else "17.53") + "
+,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then
+                ""
+            else
+                "15.23") + "
 ,,0,2021-01-01T00:00:50Z,t1,4.43
-,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then "" else "19.85") + "
+,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then
+                ""
+            else
+                "19.85")
+            +
+            "
 ,,1,2021-01-01T00:00:10Z,t2,4.97
 ,,1,2021-01-01T00:00:20Z,t2,-3.75
 ,,1,2021-01-01T00:00:30Z,t2,19.77
-,,1,2021-01-01T00:00:40Z,t2," + (if includeNull then "" else "13.86") + "
+,,1,2021-01-01T00:00:40Z,t2,"
+            +
+            (if includeNull then "" else "13.86") + "
 ,,1,2021-01-01T00:00:50Z,t2,1.86
 "
 
-_string = (includeNull=false) => "
+_string =
+    (includeNull=false) =>
+        "
 #group,false,false,false,true,false
 #datatype,string,long,dateTime:RFC3339,string,string
 #default,_result,,,,
 ,result,table,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,t1,smpl_g9qczs
-,,0,2021-01-01T00:00:10Z,t1," + (if includeNull then "" else "smpl_0mgv9n") + "
+,,0,2021-01-01T00:00:10Z,t1,"
+            +
+            (if includeNull then "" else "smpl_0mgv9n")
+            +
+            "
 ,,0,2021-01-01T00:00:20Z,t1,smpl_phw664
-,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then "" else "smpl_guvzy4") + "
-,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then "" else "smpl_5v3cce") + "
+,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then
+                ""
+            else
+                "smpl_guvzy4") + "
+,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then "" else "smpl_5v3cce")
+            +
+            "
 ,,0,2021-01-01T00:00:50Z,t1,smpl_s9fmgy
-,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then "" else "smpl_b5eida") + "
+,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then
+                ""
+            else
+                "smpl_b5eida")
+            +
+            "
 ,,1,2021-01-01T00:00:10Z,t2,smpl_eu4oxp
 ,,1,2021-01-01T00:00:20Z,t2,smpl_5g7tz4
 ,,1,2021-01-01T00:00:30Z,t2,smpl_sox1ut
-,,1,2021-01-01T00:00:40Z,t2," + (if includeNull then "" else "smpl_wfm757") + "
+,,1,2021-01-01T00:00:40Z,t2,"
+            +
+            (if includeNull then "" else "smpl_wfm757") + "
 ,,1,2021-01-01T00:00:50Z,t2,smpl_dtn2bv
 "
 
-_bool = (includeNull=false) => "#group,false,false,false,true,false
+_bool =
+    (includeNull=false) =>
+        "#group,false,false,false,true,false
 #datatype,string,long,dateTime:RFC3339,string,boolean
 #default,_result,,,,
 ,result,table,_time,tag,_value
 ,,0,2021-01-01T00:00:00Z,t1,true
-,,0,2021-01-01T00:00:10Z,t1," + (if includeNull then "" else "true") + "
+,,0,2021-01-01T00:00:10Z,t1,"
+            +
+            (if includeNull then "" else "true") + "
 ,,0,2021-01-01T00:00:20Z,t1,false
-,,0,2021-01-01T00:00:30Z,t1," + (if includeNull then "" else "true") + "
-,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then "" else "false") + "
+,,0,2021-01-01T00:00:30Z,t1,"
+            +
+            (if includeNull then "" else "true") + "
+,,0,2021-01-01T00:00:40Z,t1," + (if includeNull then
+                ""
+            else
+                "false") + "
 ,,0,2021-01-01T00:00:50Z,t1,false
-,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then "" else "false") + "
+,,1,2021-01-01T00:00:00Z,t2," + (if includeNull then
+                ""
+            else
+                "false")
+            +
+            "
 ,,1,2021-01-01T00:00:10Z,t2,true
 ,,1,2021-01-01T00:00:20Z,t2,false
 ,,1,2021-01-01T00:00:30Z,t2,true
-,,1,2021-01-01T00:00:40Z,t2," + (if includeNull then "" else "true") + "
+,,1,2021-01-01T00:00:40Z,t2,"
+            +
+            (if includeNull then "" else "true") + "
 ,,1,2021-01-01T00:00:50Z,t2,false
 "
 
@@ -81,7 +131,7 @@ _bool = (includeNull=false) => "#group,false,false,false,true,false
 //
 // sampledata.float()
 // ```
-// 
+//
 float = (includeNull=false) => {
     _csvData = _numeric(includeNull: includeNull)
 
@@ -144,7 +194,7 @@ uint = (includeNull=false) => {
 //
 // sampledata.string()
 // ```
-// 
+//
 string = (includeNull=false) => {
     _csvData = _string(includeNull: includeNull)
 
@@ -165,7 +215,7 @@ string = (includeNull=false) => {
 //
 // sampledata.bool()
 // ```
-// 
+//
 bool = (includeNull=false) => {
     _csvData = _bool(includeNull: includeNull)
 
@@ -186,7 +236,7 @@ bool = (includeNull=false) => {
 //
 // sampledata.numericBool()
 // ```
-// 
+//
 numericBool = (includeNull=false) => {
     _csvData = _bool(includeNull: includeNull)
 

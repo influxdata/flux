@@ -6,7 +6,8 @@ import "internal/promql"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double,string
 #group,false,false,false,true,false,true
 #default,inData,,,,,
@@ -31,7 +32,8 @@ inData = "
 ,,2,2018-12-18T20:53:23Z,metric_name3,400,prometheus
 ,,3,2018-12-18T20:52:33Z,metric_name4,100,prometheus
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,double,string
 #group,false,false,true,true,true,false,true
 #default,outData,,,,,,
@@ -40,8 +42,10 @@ outData = "
 ,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,0,prometheus
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,10,prometheus
 "
-t_instantRate = (table=<-) => table
-    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
-    |> promql.instantRate(isRate: true)
+t_instantRate = (table=<-) =>
+    table
+        |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
+        |> promql.instantRate(isRate: true)
 
-test _instantRate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_instantRate})
+test _instantRate = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_instantRate})

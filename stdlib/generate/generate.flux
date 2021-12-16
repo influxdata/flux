@@ -6,11 +6,11 @@ package generate
 
 
 // from generates data using the provided parameter values.
-// 
+//
 // ## Parameters
 // - count: Number of rows to generate.
 // - fn: Function used to generate values.
-// 
+//
 //   The function takes an `n` parameter that represents the row index, operates
 //   on `n`, and then returns an integer value. Rows use zero-based indexing.
 //
@@ -32,4 +32,11 @@ package generate
 // ```
 //
 // tags: inputs
-builtin from : (start: A, stop: A, count: int, fn: (n: int) => int) => [{_start: time, _stop: time, _time: time, _value: int}] where A: Timeable
+builtin from : (
+        start: A,
+        stop: A,
+        count: int,
+        fn: (n: int) => int,
+    ) => [{_start: time, _stop: time, _time: time, _value: int}]
+    where
+    A: Timeable

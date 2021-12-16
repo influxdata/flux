@@ -77,6 +77,18 @@ func OptimizeShiftTransformation() BoolFlag {
 	return optimizeShiftTransformation
 }
 
+var optimizeUnionTransformation = feature.MakeBoolFlag(
+	"Optimize Union Transformation",
+	"optimizeUnionTransformation",
+	"Jonathan Sternberg",
+	false,
+)
+
+// OptimizeUnionTransformation - Optimize the union transformation
+func OptimizeUnionTransformation() BoolFlag {
+	return optimizeUnionTransformation
+}
+
 // Inject will inject the Flagger into the context.
 func Inject(ctx context.Context, flagger Flagger) context.Context {
 	return feature.Inject(ctx, flagger)
@@ -88,6 +100,7 @@ var all = []Flag{
 	groupTransformationGroup,
 	queryConcurrencyLimit,
 	optimizeShiftTransformation,
+	optimizeUnionTransformation,
 }
 
 var byKey = map[string]Flag{
@@ -96,6 +109,7 @@ var byKey = map[string]Flag{
 	"groupTransformationGroup":         groupTransformationGroup,
 	"queryConcurrencyLimit":            queryConcurrencyLimit,
 	"optimizeShiftTransformation":      optimizeShiftTransformation,
+	"optimizeUnionTransformation":      optimizeUnionTransformation,
 }
 
 // Flags returns all feature flags.

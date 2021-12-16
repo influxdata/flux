@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
@@ -130,5 +131,19 @@ func TestContains_Empty(t *testing.T) {
 
 	if !mustLookup(s, "ok").Bool() {
 		t.Errorf("ok was not OK indeed")
+	}
+}
+
+func TestContains_ReceiveTableObjectIsError(t *testing.T) {
+	src := `
+	import "array"
+	contains(value: 1, set: array.from(rows: [{_value: 1}]) |> map(fn: (r) => r._value ))`
+	_, _, err := runtime.Eval(context.Background(), src)
+	if err == nil {
+		t.Fatal("expected error, got none")
+	}
+
+	if want, got := "error calling function \"contains\" @3:2-3:87: got a table stream; expected an array", err.Error(); want != got {
+		t.Errorf("wanted error %q, got %q", want, got)
 	}
 }

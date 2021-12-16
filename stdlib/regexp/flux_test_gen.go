@@ -20,11 +20,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 134,
-					Line:   45,
+					Column: 108,
+					Line:   49,
 				},
 				File:   "replaceAllString_test.flux",
-				Source: "package regexp_test\n\n\nimport \"testing\"\nimport \"regexp\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,1,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:46Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long,string\n#group,false,false,true,true,true,true,true,false,false,true\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,_time,_value,name\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:26Z,15204688,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:36Z,15204894,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:46Z,15205102,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:56Z,15205226,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:06Z,15205499,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:16Z,15205755,disk9\n\"\nre = regexp.compile(v: \".*0\")\nt_filter_by_regex = (table=<-) => table\n    |> range(start: 2018-05-20T19:53:26Z)\n    |> filter(fn: (r) => r[\"name\"] =~ /.*0/)\n    |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))\n\ntest _filter_by_regex = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
+				Source: "package regexp_test\n\n\nimport \"testing\"\nimport \"regexp\"\n\noption now = () => 2030-01-01T00:00:00Z\n\ninData =\n    \"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,1,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:46Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"\noutData =\n    \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long,string\n#group,false,false,true,true,true,true,true,false,false,true\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,_time,_value,name\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:26Z,15204688,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:36Z,15204894,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:46Z,15205102,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:56Z,15205226,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:06Z,15205499,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:16Z,15205755,disk9\n\"\nre = regexp.compile(v: \".*0\")\nt_filter_by_regex = (table=<-) =>\n    table\n        |> range(start: 2018-05-20T19:53:26Z)\n        |> filter(fn: (r) => r[\"name\"] =~ /.*0/)\n        |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))\n\ntest _filter_by_regex = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -133,10 +133,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "replaceAllString_test.flux",
-					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,1,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:46Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"",
+					Source: "inData =\n    \"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,1,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:46Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -169,13 +169,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "replaceAllString_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,name\n,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0\n,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0\n,,1,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:46Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2\n,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2\n\"",
 						Start: ast.Position{
-							Column: 10,
-							Line:   9,
+							Column: 5,
+							Line:   10,
 						},
 					},
 				},
@@ -188,13 +188,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   38,
+						Line:   40,
 					},
 					File:   "replaceAllString_test.flux",
-					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long,string\n#group,false,false,true,true,true,true,true,false,false,true\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,_time,_value,name\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:26Z,15204688,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:36Z,15204894,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:46Z,15205102,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:56Z,15205226,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:06Z,15205499,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:16Z,15205755,disk9\n\"",
+					Source: "outData =\n    \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long,string\n#group,false,false,true,true,true,true,true,false,false,true\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,_time,_value,name\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:26Z,15204688,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:36Z,15204894,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:46Z,15205102,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:56Z,15205226,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:06Z,15205499,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:16Z,15205755,disk9\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   27,
+						Line:   28,
 					},
 				},
 			},
@@ -205,13 +205,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   27,
+							Line:   28,
 						},
 						File:   "replaceAllString_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   27,
+							Line:   28,
 						},
 					},
 				},
@@ -224,13 +224,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   38,
+							Line:   40,
 						},
 						File:   "replaceAllString_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long,string\n#group,false,false,true,true,true,true,true,false,false,true\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_measurement,_field,host,_time,_value,name\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:26Z,15204688,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:36Z,15204894,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:46Z,15205102,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:53:56Z,15205226,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:06Z,15205499,disk9\n,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:16Z,15205755,disk9\n\"",
 						Start: ast.Position{
-							Column: 11,
-							Line:   27,
+							Column: 5,
+							Line:   29,
 						},
 					},
 				},
@@ -243,13 +243,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 30,
-						Line:   39,
+						Line:   41,
 					},
 					File:   "replaceAllString_test.flux",
 					Source: "re = regexp.compile(v: \".*0\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   41,
 					},
 				},
 			},
@@ -260,13 +260,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   39,
+							Line:   41,
 						},
 						File:   "replaceAllString_test.flux",
 						Source: "re",
 						Start: ast.Position{
 							Column: 1,
-							Line:   39,
+							Line:   41,
 						},
 					},
 				},
@@ -280,13 +280,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   39,
+								Line:   41,
 							},
 							File:   "replaceAllString_test.flux",
 							Source: "v: \".*0\"",
 							Start: ast.Position{
 								Column: 21,
-								Line:   39,
+								Line:   41,
 							},
 						},
 					},
@@ -298,13 +298,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   39,
+									Line:   41,
 								},
 								File:   "replaceAllString_test.flux",
 								Source: "v: \".*0\"",
 								Start: ast.Position{
 									Column: 21,
-									Line:   39,
+									Line:   41,
 								},
 							},
 						},
@@ -316,13 +316,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   39,
+										Line:   41,
 									},
 									File:   "replaceAllString_test.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 21,
-										Line:   39,
+										Line:   41,
 									},
 								},
 							},
@@ -336,13 +336,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   39,
+										Line:   41,
 									},
 									File:   "replaceAllString_test.flux",
 									Source: "\".*0\"",
 									Start: ast.Position{
 										Column: 24,
-										Line:   39,
+										Line:   41,
 									},
 								},
 							},
@@ -358,13 +358,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 30,
-							Line:   39,
+							Line:   41,
 						},
 						File:   "replaceAllString_test.flux",
 						Source: "regexp.compile(v: \".*0\")",
 						Start: ast.Position{
 							Column: 6,
-							Line:   39,
+							Line:   41,
 						},
 					},
 				},
@@ -375,13 +375,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   39,
+								Line:   41,
 							},
 							File:   "replaceAllString_test.flux",
 							Source: "regexp.compile",
 							Start: ast.Position{
 								Column: 6,
-								Line:   39,
+								Line:   41,
 							},
 						},
 					},
@@ -393,13 +393,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   39,
+									Line:   41,
 								},
 								File:   "replaceAllString_test.flux",
 								Source: "regexp",
 								Start: ast.Position{
 									Column: 6,
-									Line:   39,
+									Line:   41,
 								},
 							},
 						},
@@ -412,13 +412,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   39,
+									Line:   41,
 								},
 								File:   "replaceAllString_test.flux",
 								Source: "compile",
 								Start: ast.Position{
 									Column: 13,
-									Line:   39,
+									Line:   41,
 								},
 							},
 						},
@@ -435,14 +435,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 94,
-						Line:   43,
+						Column: 98,
+						Line:   46,
 					},
 					File:   "replaceAllString_test.flux",
-					Source: "t_filter_by_regex = (table=<-) => table\n    |> range(start: 2018-05-20T19:53:26Z)\n    |> filter(fn: (r) => r[\"name\"] =~ /.*0/)\n    |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))",
+					Source: "t_filter_by_regex = (table=<-) =>\n    table\n        |> range(start: 2018-05-20T19:53:26Z)\n        |> filter(fn: (r) => r[\"name\"] =~ /.*0/)\n        |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))",
 					Start: ast.Position{
 						Column: 1,
-						Line:   40,
+						Line:   42,
 					},
 				},
 			},
@@ -453,13 +453,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   40,
+							Line:   42,
 						},
 						File:   "replaceAllString_test.flux",
 						Source: "t_filter_by_regex",
 						Start: ast.Position{
 							Column: 1,
-							Line:   40,
+							Line:   42,
 						},
 					},
 				},
@@ -472,14 +472,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 94,
-							Line:   43,
+							Column: 98,
+							Line:   46,
 						},
 						File:   "replaceAllString_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 2018-05-20T19:53:26Z)\n    |> filter(fn: (r) => r[\"name\"] =~ /.*0/)\n    |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))",
+						Source: "(table=<-) =>\n    table\n        |> range(start: 2018-05-20T19:53:26Z)\n        |> filter(fn: (r) => r[\"name\"] =~ /.*0/)\n        |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))",
 						Start: ast.Position{
 							Column: 21,
-							Line:   40,
+							Line:   42,
 						},
 					},
 				},
@@ -492,14 +492,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 40,
-											Line:   40,
+											Column: 10,
+											Line:   43,
 										},
 										File:   "replaceAllString_test.flux",
 										Source: "table",
 										Start: ast.Position{
-											Column: 35,
-											Line:   40,
+											Column: 5,
+											Line:   43,
 										},
 									},
 								},
@@ -510,14 +510,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 42,
-										Line:   41,
+										Column: 46,
+										Line:   44,
 									},
 									File:   "replaceAllString_test.flux",
-									Source: "table\n    |> range(start: 2018-05-20T19:53:26Z)",
+									Source: "table\n        |> range(start: 2018-05-20T19:53:26Z)",
 									Start: ast.Position{
-										Column: 35,
-										Line:   40,
+										Column: 5,
+										Line:   43,
 									},
 								},
 							},
@@ -528,14 +528,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   41,
+												Column: 45,
+												Line:   44,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "start: 2018-05-20T19:53:26Z",
 											Start: ast.Position{
-												Column: 14,
-												Line:   41,
+												Column: 18,
+												Line:   44,
 											},
 										},
 									},
@@ -546,14 +546,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
-													Line:   41,
+													Column: 45,
+													Line:   44,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "start: 2018-05-20T19:53:26Z",
 												Start: ast.Position{
-													Column: 14,
-													Line:   41,
+													Column: 18,
+													Line:   44,
 												},
 											},
 										},
@@ -564,14 +564,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 19,
-														Line:   41,
+														Column: 23,
+														Line:   44,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "start",
 													Start: ast.Position{
-														Column: 14,
-														Line:   41,
+														Column: 18,
+														Line:   44,
 													},
 												},
 											},
@@ -584,14 +584,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 41,
-														Line:   41,
+														Column: 45,
+														Line:   44,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "2018-05-20T19:53:26Z",
 													Start: ast.Position{
-														Column: 21,
-														Line:   41,
+														Column: 25,
+														Line:   44,
 													},
 												},
 											},
@@ -606,14 +606,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 42,
-											Line:   41,
+											Column: 46,
+											Line:   44,
 										},
 										File:   "replaceAllString_test.flux",
 										Source: "range(start: 2018-05-20T19:53:26Z)",
 										Start: ast.Position{
-											Column: 8,
-											Line:   41,
+											Column: 12,
+											Line:   44,
 										},
 									},
 								},
@@ -623,14 +623,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 13,
-												Line:   41,
+												Column: 17,
+												Line:   44,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "range",
 											Start: ast.Position{
-												Column: 8,
-												Line:   41,
+												Column: 12,
+												Line:   44,
 											},
 										},
 									},
@@ -645,14 +645,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 45,
-									Line:   42,
+									Column: 49,
+									Line:   45,
 								},
 								File:   "replaceAllString_test.flux",
-								Source: "table\n    |> range(start: 2018-05-20T19:53:26Z)\n    |> filter(fn: (r) => r[\"name\"] =~ /.*0/)",
+								Source: "table\n        |> range(start: 2018-05-20T19:53:26Z)\n        |> filter(fn: (r) => r[\"name\"] =~ /.*0/)",
 								Start: ast.Position{
-									Column: 35,
-									Line:   40,
+									Column: 5,
+									Line:   43,
 								},
 							},
 						},
@@ -663,14 +663,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 44,
-											Line:   42,
+											Column: 48,
+											Line:   45,
 										},
 										File:   "replaceAllString_test.flux",
 										Source: "fn: (r) => r[\"name\"] =~ /.*0/",
 										Start: ast.Position{
-											Column: 15,
-											Line:   42,
+											Column: 19,
+											Line:   45,
 										},
 									},
 								},
@@ -681,14 +681,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
-												Line:   42,
+												Column: 48,
+												Line:   45,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "fn: (r) => r[\"name\"] =~ /.*0/",
 											Start: ast.Position{
-												Column: 15,
-												Line:   42,
+												Column: 19,
+												Line:   45,
 											},
 										},
 									},
@@ -699,14 +699,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 17,
-													Line:   42,
+													Column: 21,
+													Line:   45,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 15,
-													Line:   42,
+													Column: 19,
+													Line:   45,
 												},
 											},
 										},
@@ -720,14 +720,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 44,
-													Line:   42,
+													Column: 48,
+													Line:   45,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "(r) => r[\"name\"] =~ /.*0/",
 												Start: ast.Position{
-													Column: 19,
-													Line:   42,
+													Column: 23,
+													Line:   45,
 												},
 											},
 										},
@@ -737,14 +737,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 44,
-														Line:   42,
+														Column: 48,
+														Line:   45,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "r[\"name\"] =~ /.*0/",
 													Start: ast.Position{
-														Column: 26,
-														Line:   42,
+														Column: 30,
+														Line:   45,
 													},
 												},
 											},
@@ -754,14 +754,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 35,
-															Line:   42,
+															Column: 39,
+															Line:   45,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "r[\"name\"]",
 														Start: ast.Position{
-															Column: 26,
-															Line:   42,
+															Column: 30,
+															Line:   45,
 														},
 													},
 												},
@@ -772,14 +772,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 27,
-																Line:   42,
+																Column: 31,
+																Line:   45,
 															},
 															File:   "replaceAllString_test.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 26,
-																Line:   42,
+																Column: 30,
+																Line:   45,
 															},
 														},
 													},
@@ -791,14 +791,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 34,
-																Line:   42,
+																Column: 38,
+																Line:   45,
 															},
 															File:   "replaceAllString_test.flux",
 															Source: "\"name\"",
 															Start: ast.Position{
-																Column: 28,
-																Line:   42,
+																Column: 32,
+																Line:   45,
 															},
 														},
 													},
@@ -813,14 +813,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 44,
-															Line:   42,
+															Column: 48,
+															Line:   45,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "/.*0/",
 														Start: ast.Position{
-															Column: 39,
-															Line:   42,
+															Column: 43,
+															Line:   45,
 														},
 													},
 												},
@@ -834,14 +834,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 21,
-														Line:   42,
+														Column: 25,
+														Line:   45,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 20,
-														Line:   42,
+														Column: 24,
+														Line:   45,
 													},
 												},
 											},
@@ -852,14 +852,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 21,
-															Line:   42,
+															Column: 25,
+															Line:   45,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 20,
-															Line:   42,
+															Column: 24,
+															Line:   45,
 														},
 													},
 												},
@@ -879,14 +879,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 45,
-										Line:   42,
+										Column: 49,
+										Line:   45,
 									},
 									File:   "replaceAllString_test.flux",
 									Source: "filter(fn: (r) => r[\"name\"] =~ /.*0/)",
 									Start: ast.Position{
-										Column: 8,
-										Line:   42,
+										Column: 12,
+										Line:   45,
 									},
 								},
 							},
@@ -896,14 +896,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 14,
-											Line:   42,
+											Column: 18,
+											Line:   45,
 										},
 										File:   "replaceAllString_test.flux",
 										Source: "filter",
 										Start: ast.Position{
-											Column: 8,
-											Line:   42,
+											Column: 12,
+											Line:   45,
 										},
 									},
 								},
@@ -918,14 +918,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 94,
-								Line:   43,
+								Column: 98,
+								Line:   46,
 							},
 							File:   "replaceAllString_test.flux",
-							Source: "table\n    |> range(start: 2018-05-20T19:53:26Z)\n    |> filter(fn: (r) => r[\"name\"] =~ /.*0/)\n    |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))",
+							Source: "table\n        |> range(start: 2018-05-20T19:53:26Z)\n        |> filter(fn: (r) => r[\"name\"] =~ /.*0/)\n        |> map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))",
 							Start: ast.Position{
-								Column: 35,
-								Line:   40,
+								Column: 5,
+								Line:   43,
 							},
 						},
 					},
@@ -936,14 +936,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 93,
-										Line:   43,
+										Column: 97,
+										Line:   46,
 									},
 									File:   "replaceAllString_test.flux",
 									Source: "fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")})",
 									Start: ast.Position{
-										Column: 12,
-										Line:   43,
+										Column: 16,
+										Line:   46,
 									},
 								},
 							},
@@ -954,14 +954,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 93,
-											Line:   43,
+											Column: 97,
+											Line:   46,
 										},
 										File:   "replaceAllString_test.flux",
 										Source: "fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")})",
 										Start: ast.Position{
-											Column: 12,
-											Line:   43,
+											Column: 16,
+											Line:   46,
 										},
 									},
 								},
@@ -972,14 +972,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   43,
+												Column: 18,
+												Line:   46,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 12,
-												Line:   43,
+												Column: 16,
+												Line:   46,
 											},
 										},
 									},
@@ -993,14 +993,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 93,
-												Line:   43,
+												Column: 97,
+												Line:   46,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "(r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")})",
 											Start: ast.Position{
-												Column: 16,
-												Line:   43,
+												Column: 20,
+												Line:   46,
 											},
 										},
 									},
@@ -1010,14 +1010,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 93,
-													Line:   43,
+													Column: 97,
+													Line:   46,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")})",
 												Start: ast.Position{
-													Column: 23,
-													Line:   43,
+													Column: 27,
+													Line:   46,
 												},
 											},
 										},
@@ -1027,14 +1027,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 92,
-														Line:   43,
+														Column: 96,
+														Line:   46,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "{r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}",
 													Start: ast.Position{
-														Column: 24,
-														Line:   43,
+														Column: 28,
+														Line:   46,
 													},
 												},
 											},
@@ -1045,14 +1045,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 91,
-															Line:   43,
+															Column: 95,
+															Line:   46,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")",
 														Start: ast.Position{
-															Column: 32,
-															Line:   43,
+															Column: 36,
+															Line:   46,
 														},
 													},
 												},
@@ -1063,14 +1063,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 36,
-																Line:   43,
+																Column: 40,
+																Line:   46,
 															},
 															File:   "replaceAllString_test.flux",
 															Source: "name",
 															Start: ast.Position{
-																Column: 32,
-																Line:   43,
+																Column: 36,
+																Line:   46,
 															},
 														},
 													},
@@ -1084,14 +1084,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 90,
-																	Line:   43,
+																	Column: 94,
+																	Line:   46,
 																},
 																File:   "replaceAllString_test.flux",
 																Source: "r: re, v: r.name, t: \"disk9\"",
 																Start: ast.Position{
-																	Column: 62,
-																	Line:   43,
+																	Column: 66,
+																	Line:   46,
 																},
 															},
 														},
@@ -1102,14 +1102,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 67,
-																		Line:   43,
+																		Column: 71,
+																		Line:   46,
 																	},
 																	File:   "replaceAllString_test.flux",
 																	Source: "r: re",
 																	Start: ast.Position{
-																		Column: 62,
-																		Line:   43,
+																		Column: 66,
+																		Line:   46,
 																	},
 																},
 															},
@@ -1120,14 +1120,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 63,
-																			Line:   43,
+																			Column: 67,
+																			Line:   46,
 																		},
 																		File:   "replaceAllString_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 62,
-																			Line:   43,
+																			Column: 66,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -1140,14 +1140,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 67,
-																			Line:   43,
+																			Column: 71,
+																			Line:   46,
 																		},
 																		File:   "replaceAllString_test.flux",
 																		Source: "re",
 																		Start: ast.Position{
-																			Column: 65,
-																			Line:   43,
+																			Column: 69,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -1159,14 +1159,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 78,
-																		Line:   43,
+																		Column: 82,
+																		Line:   46,
 																	},
 																	File:   "replaceAllString_test.flux",
 																	Source: "v: r.name",
 																	Start: ast.Position{
-																		Column: 69,
-																		Line:   43,
+																		Column: 73,
+																		Line:   46,
 																	},
 																},
 															},
@@ -1177,14 +1177,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 70,
-																			Line:   43,
+																			Column: 74,
+																			Line:   46,
 																		},
 																		File:   "replaceAllString_test.flux",
 																		Source: "v",
 																		Start: ast.Position{
-																			Column: 69,
-																			Line:   43,
+																			Column: 73,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -1197,14 +1197,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 78,
-																			Line:   43,
+																			Column: 82,
+																			Line:   46,
 																		},
 																		File:   "replaceAllString_test.flux",
 																		Source: "r.name",
 																		Start: ast.Position{
-																			Column: 72,
-																			Line:   43,
+																			Column: 76,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -1215,14 +1215,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 73,
-																				Line:   43,
+																				Column: 77,
+																				Line:   46,
 																			},
 																			File:   "replaceAllString_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 72,
-																				Line:   43,
+																				Column: 76,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -1234,14 +1234,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 78,
-																				Line:   43,
+																				Column: 82,
+																				Line:   46,
 																			},
 																			File:   "replaceAllString_test.flux",
 																			Source: "name",
 																			Start: ast.Position{
-																				Column: 74,
-																				Line:   43,
+																				Column: 78,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -1255,14 +1255,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 90,
-																		Line:   43,
+																		Column: 94,
+																		Line:   46,
 																	},
 																	File:   "replaceAllString_test.flux",
 																	Source: "t: \"disk9\"",
 																	Start: ast.Position{
-																		Column: 80,
-																		Line:   43,
+																		Column: 84,
+																		Line:   46,
 																	},
 																},
 															},
@@ -1273,14 +1273,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 81,
-																			Line:   43,
+																			Column: 85,
+																			Line:   46,
 																		},
 																		File:   "replaceAllString_test.flux",
 																		Source: "t",
 																		Start: ast.Position{
-																			Column: 80,
-																			Line:   43,
+																			Column: 84,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -1293,14 +1293,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 90,
-																			Line:   43,
+																			Column: 94,
+																			Line:   46,
 																		},
 																		File:   "replaceAllString_test.flux",
 																		Source: "\"disk9\"",
 																		Start: ast.Position{
-																			Column: 83,
-																			Line:   43,
+																			Column: 87,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -1315,14 +1315,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 91,
-																Line:   43,
+																Column: 95,
+																Line:   46,
 															},
 															File:   "replaceAllString_test.flux",
 															Source: "regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")",
 															Start: ast.Position{
-																Column: 38,
-																Line:   43,
+																Column: 42,
+																Line:   46,
 															},
 														},
 													},
@@ -1332,14 +1332,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 61,
-																	Line:   43,
+																	Column: 65,
+																	Line:   46,
 																},
 																File:   "replaceAllString_test.flux",
 																Source: "regexp.replaceAllString",
 																Start: ast.Position{
-																	Column: 38,
-																	Line:   43,
+																	Column: 42,
+																	Line:   46,
 																},
 															},
 														},
@@ -1350,14 +1350,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 44,
-																		Line:   43,
+																		Column: 48,
+																		Line:   46,
 																	},
 																	File:   "replaceAllString_test.flux",
 																	Source: "regexp",
 																	Start: ast.Position{
-																		Column: 38,
-																		Line:   43,
+																		Column: 42,
+																		Line:   46,
 																	},
 																},
 															},
@@ -1369,14 +1369,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 61,
-																		Line:   43,
+																		Column: 65,
+																		Line:   46,
 																	},
 																	File:   "replaceAllString_test.flux",
 																	Source: "replaceAllString",
 																	Start: ast.Position{
-																		Column: 45,
-																		Line:   43,
+																		Column: 49,
+																		Line:   46,
 																	},
 																},
 															},
@@ -1395,14 +1395,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
-															Line:   43,
+															Column: 30,
+															Line:   46,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 25,
-															Line:   43,
+															Column: 29,
+															Line:   46,
 														},
 													},
 												},
@@ -1419,14 +1419,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 18,
-													Line:   43,
+													Column: 22,
+													Line:   46,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 17,
-													Line:   43,
+													Column: 21,
+													Line:   46,
 												},
 											},
 										},
@@ -1437,14 +1437,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 18,
-														Line:   43,
+														Column: 22,
+														Line:   46,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 17,
-														Line:   43,
+														Column: 21,
+														Line:   46,
 													},
 												},
 											},
@@ -1464,14 +1464,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 94,
-									Line:   43,
+									Column: 98,
+									Line:   46,
 								},
 								File:   "replaceAllString_test.flux",
 								Source: "map(fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: \"disk9\")}))",
 								Start: ast.Position{
-									Column: 8,
-									Line:   43,
+									Column: 12,
+									Line:   46,
 								},
 							},
 						},
@@ -1481,14 +1481,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
-										Line:   43,
+										Column: 15,
+										Line:   46,
 									},
 									File:   "replaceAllString_test.flux",
 									Source: "map",
 									Start: ast.Position{
-										Column: 8,
-										Line:   43,
+										Column: 12,
+										Line:   46,
 									},
 								},
 							},
@@ -1506,13 +1506,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   40,
+								Line:   42,
 							},
 							File:   "replaceAllString_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 22,
-								Line:   40,
+								Line:   42,
 							},
 						},
 					},
@@ -1524,13 +1524,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   40,
+									Line:   42,
 								},
 								File:   "replaceAllString_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 22,
-									Line:   40,
+									Line:   42,
 								},
 							},
 						},
@@ -1543,13 +1543,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   40,
+								Line:   42,
 							},
 							File:   "replaceAllString_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 28,
-								Line:   40,
+								Line:   42,
 							},
 						},
 					}},
@@ -1563,14 +1563,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 134,
-							Line:   45,
+							Column: 108,
+							Line:   49,
 						},
 						File:   "replaceAllString_test.flux",
-						Source: "_filter_by_regex = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
+						Source: "_filter_by_regex = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   45,
+							Line:   48,
 						},
 					},
 				},
@@ -1581,13 +1581,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   45,
+								Line:   48,
 							},
 							File:   "replaceAllString_test.flux",
 							Source: "_filter_by_regex",
 							Start: ast.Position{
 								Column: 6,
-								Line:   45,
+								Line:   48,
 							},
 						},
 					},
@@ -1600,14 +1600,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 134,
-								Line:   45,
+								Column: 108,
+								Line:   49,
 							},
 							File:   "replaceAllString_test.flux",
-							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
 							Start: ast.Position{
 								Column: 25,
-								Line:   45,
+								Line:   48,
 							},
 						},
 					},
@@ -1617,14 +1617,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 134,
-									Line:   45,
+									Column: 108,
+									Line:   49,
 								},
 								File:   "replaceAllString_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
 								Start: ast.Position{
-									Column: 31,
-									Line:   45,
+									Column: 5,
+									Line:   49,
 								},
 							},
 						},
@@ -1634,14 +1634,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 133,
-										Line:   45,
+										Column: 107,
+										Line:   49,
 									},
 									File:   "replaceAllString_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex}",
 									Start: ast.Position{
-										Column: 32,
-										Line:   45,
+										Column: 6,
+										Line:   49,
 									},
 								},
 							},
@@ -1652,14 +1652,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 72,
-											Line:   45,
+											Column: 46,
+											Line:   49,
 										},
 										File:   "replaceAllString_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 33,
-											Line:   45,
+											Column: 7,
+											Line:   49,
 										},
 									},
 								},
@@ -1670,14 +1670,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 38,
-												Line:   45,
+												Column: 12,
+												Line:   49,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 33,
-												Line:   45,
+												Column: 7,
+												Line:   49,
 											},
 										},
 									},
@@ -1691,14 +1691,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 71,
-													Line:   45,
+													Column: 45,
+													Line:   49,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 60,
-													Line:   45,
+													Column: 34,
+													Line:   49,
 												},
 											},
 										},
@@ -1709,14 +1709,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 71,
-														Line:   45,
+														Column: 45,
+														Line:   49,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 60,
-														Line:   45,
+														Column: 34,
+														Line:   49,
 													},
 												},
 											},
@@ -1727,14 +1727,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 63,
-															Line:   45,
+															Column: 37,
+															Line:   49,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 60,
-															Line:   45,
+															Column: 34,
+															Line:   49,
 														},
 													},
 												},
@@ -1747,14 +1747,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 71,
-															Line:   45,
+															Column: 45,
+															Line:   49,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 65,
-															Line:   45,
+															Column: 39,
+															Line:   49,
 														},
 													},
 												},
@@ -1769,14 +1769,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 72,
-												Line:   45,
+												Column: 46,
+												Line:   49,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 40,
-												Line:   45,
+												Column: 14,
+												Line:   49,
 											},
 										},
 									},
@@ -1786,14 +1786,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 59,
-													Line:   45,
+													Column: 33,
+													Line:   49,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 40,
-													Line:   45,
+													Column: 14,
+													Line:   49,
 												},
 											},
 										},
@@ -1804,14 +1804,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 47,
-														Line:   45,
+														Column: 21,
+														Line:   49,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 40,
-														Line:   45,
+														Column: 14,
+														Line:   49,
 													},
 												},
 											},
@@ -1823,14 +1823,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 59,
-														Line:   45,
+														Column: 33,
+														Line:   49,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 48,
-														Line:   45,
+														Column: 22,
+														Line:   49,
 													},
 												},
 											},
@@ -1847,14 +1847,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 109,
-											Line:   45,
+											Column: 83,
+											Line:   49,
 										},
 										File:   "replaceAllString_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 74,
-											Line:   45,
+											Column: 48,
+											Line:   49,
 										},
 									},
 								},
@@ -1865,14 +1865,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 78,
-												Line:   45,
+												Column: 52,
+												Line:   49,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 74,
-												Line:   45,
+												Column: 48,
+												Line:   49,
 											},
 										},
 									},
@@ -1886,14 +1886,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 108,
-													Line:   45,
+													Column: 82,
+													Line:   49,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 96,
-													Line:   45,
+													Column: 70,
+													Line:   49,
 												},
 											},
 										},
@@ -1904,14 +1904,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 108,
-														Line:   45,
+														Column: 82,
+														Line:   49,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 96,
-														Line:   45,
+														Column: 70,
+														Line:   49,
 													},
 												},
 											},
@@ -1922,14 +1922,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 99,
-															Line:   45,
+															Column: 73,
+															Line:   49,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 96,
-															Line:   45,
+															Column: 70,
+															Line:   49,
 														},
 													},
 												},
@@ -1942,14 +1942,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 108,
-															Line:   45,
+															Column: 82,
+															Line:   49,
 														},
 														File:   "replaceAllString_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 101,
-															Line:   45,
+															Column: 75,
+															Line:   49,
 														},
 													},
 												},
@@ -1964,14 +1964,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 109,
-												Line:   45,
+												Column: 83,
+												Line:   49,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 80,
-												Line:   45,
+												Column: 54,
+												Line:   49,
 											},
 										},
 									},
@@ -1981,14 +1981,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 95,
-													Line:   45,
+													Column: 69,
+													Line:   49,
 												},
 												File:   "replaceAllString_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 80,
-													Line:   45,
+													Column: 54,
+													Line:   49,
 												},
 											},
 										},
@@ -1999,14 +1999,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 87,
-														Line:   45,
+														Column: 61,
+														Line:   49,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 80,
-														Line:   45,
+														Column: 54,
+														Line:   49,
 													},
 												},
 											},
@@ -2018,14 +2018,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 95,
-														Line:   45,
+														Column: 69,
+														Line:   49,
 													},
 													File:   "replaceAllString_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 88,
-														Line:   45,
+														Column: 62,
+														Line:   49,
 													},
 												},
 											},
@@ -2042,14 +2042,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 132,
-											Line:   45,
+											Column: 106,
+											Line:   49,
 										},
 										File:   "replaceAllString_test.flux",
 										Source: "fn: t_filter_by_regex",
 										Start: ast.Position{
-											Column: 111,
-											Line:   45,
+											Column: 85,
+											Line:   49,
 										},
 									},
 								},
@@ -2060,14 +2060,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 113,
-												Line:   45,
+												Column: 87,
+												Line:   49,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 111,
-												Line:   45,
+												Column: 85,
+												Line:   49,
 											},
 										},
 									},
@@ -2080,14 +2080,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 132,
-												Line:   45,
+												Column: 106,
+												Line:   49,
 											},
 											File:   "replaceAllString_test.flux",
 											Source: "t_filter_by_regex",
 											Start: ast.Position{
-												Column: 115,
-												Line:   45,
+												Column: 89,
+												Line:   49,
 											},
 										},
 									},
@@ -2110,14 +2110,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 134,
-						Line:   45,
+						Column: 108,
+						Line:   49,
 					},
 					File:   "replaceAllString_test.flux",
-					Source: "test _filter_by_regex = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
+					Source: "test _filter_by_regex = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   45,
+						Line:   48,
 					},
 				},
 			},

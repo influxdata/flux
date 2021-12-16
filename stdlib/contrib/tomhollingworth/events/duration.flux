@@ -14,11 +14,11 @@ package events
 //
 // ### Similar functions
 // `events.duration()` is similar to `elapsed()` and `stateDuration()`, but differs in important ways:
-// 
+//
 // - `elapsed()` drops the first record. `events.duration()` does not.
 // - `stateDuration()` calculates the total time spent in a state (determined by a predicate function).
 //   `events.duration()` returns the duration between all records and their subsequent records.
-// 
+//
 // See the example [below](#compared-to-similar-functions).
 //
 // ## Parameters
@@ -42,7 +42,7 @@ package events
 // ```
 // import "array"
 // import "contrib/tomhollingworth/events"
-// 
+//
 // # data = array.from(
 // #     rows: [
 // #         {_time: 2020-01-01T00:00:00Z, state: "ok"},
@@ -95,10 +95,13 @@ package events
 // tags: transformations,events
 //
 builtin duration : (
-    <-tables: [A],
-    ?unit: duration,
-    ?timeColumn: string,
-    ?columnName: string,
-    ?stopColumn: string,
-    ?stop: time,
-) => [B] where A: Record, B: Record
+        <-tables: [A],
+        ?unit: duration,
+        ?timeColumn: string,
+        ?columnName: string,
+        ?stopColumn: string,
+        ?stop: time,
+    ) => [B]
+    where
+    A: Record,
+    B: Record

@@ -4,7 +4,8 @@ package influxql_test
 import "testing"
 import "internal/influxql"
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
 #default,0,,,,,
@@ -30,7 +31,8 @@ inData = "
 ,,0,1970-01-01T00:00:00.000000018Z,ctr,n,18
 ,,0,1970-01-01T00:00:00.000000019Z,ctr,n,19
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,double
 #group,false,false,false,true,false
 #default,0,,,,
@@ -45,14 +47,16 @@ outData = "
 "
 
 // SELECT n FROM ctr WHERE n >= 8 AND n <= 14
-t_filter_by_values_with_and = (tables=<-) => tables
-    |> range(start: influxql.minTime, stop: influxql.maxTime)
-    |> filter(fn: (r) => r._measurement == "ctr")
-    |> filter(fn: (r) => r._field == "n")
-    |> filter(fn: (r) => r._value >= 8 and r._value <= 14)
-    |> group(columns: ["_measurement", "_field"])
-    |> sort(columns: ["_time"])
-    |> keep(columns: ["_time", "_value", "_measurement"])
-    |> rename(columns: {_time: "time", _value: "n"})
+t_filter_by_values_with_and = (tables=<-) =>
+    tables
+        |> range(start: influxql.minTime, stop: influxql.maxTime)
+        |> filter(fn: (r) => r._measurement == "ctr")
+        |> filter(fn: (r) => r._field == "n")
+        |> filter(fn: (r) => r._value >= 8 and r._value <= 14)
+        |> group(columns: ["_measurement", "_field"])
+        |> sort(columns: ["_time"])
+        |> keep(columns: ["_time", "_value", "_measurement"])
+        |> rename(columns: {_time: "time", _value: "n"})
 
-test _filter_by_values_with_and = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_values_with_and})
+test _filter_by_values_with_and = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_values_with_and})

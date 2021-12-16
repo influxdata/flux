@@ -2,7 +2,6 @@ package date
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -30,20 +28,13 @@ func init() {
 				if v1 == nil {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
-
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().Second())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
 
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					second := nowTime.Add(v1.Duration().Duration()).Second()
-					return values.NewInt(int64(second)), nil
-				}
-
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().Second())), nil
 			}, false,
 		),
 		"minute": values.NewFunction(
@@ -59,17 +50,13 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().Minute())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
 
-					minute := nowTime.Add(v1.Duration().Duration()).Minute()
-					return values.NewInt(int64(minute)), nil
-				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().Minute())), nil
 			}, false,
 		),
 		"hour": values.NewFunction(
@@ -85,18 +72,12 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().Hour())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					hour := nowTime.Add(v1.Duration().Duration()).Hour()
-					return values.NewInt(int64(hour)), nil
-				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().Hour())), nil
 			}, false,
 		),
 		"weekDay": values.NewFunction(
@@ -112,17 +93,12 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().Weekday())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					weekDay := nowTime.Add(v1.Duration().Duration()).Weekday()
-					return values.NewInt(int64(weekDay)), nil
-				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().Weekday())), nil
 			}, false,
 		),
 		"monthDay": values.NewFunction(
@@ -138,17 +114,12 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().Day())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					day := nowTime.Add(v1.Duration().Duration()).Day()
-					return values.NewInt(int64(day)), nil
-				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().Day())), nil
 			}, false,
 		),
 		"yearDay": values.NewFunction(
@@ -164,18 +135,12 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().YearDay())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					yearDay := nowTime.Add(v1.Duration().Duration()).YearDay()
-					return values.NewInt(int64(yearDay)), nil
-				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().YearDay())), nil
 			}, false,
 		),
 		"month": values.NewFunction(
@@ -191,18 +156,12 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().Month())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					month := nowTime.Add(v1.Duration().Duration()).Month()
-					return values.NewInt(int64(month)), nil
-				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().Month())), nil
 			}, false,
 		),
 		"year": values.NewFunction(
@@ -218,19 +177,12 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().Year())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					year := nowTime.Add(v1.Duration().Duration()).Year()
-					return values.NewInt(int64(year)), nil
-				}
-
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().Year())), nil
 			}, false,
 		),
 		"week": values.NewFunction(
@@ -246,20 +198,13 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					_, week := v1.Time().Time().ISOWeek()
-					return values.NewInt(int64(week)), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					_, week := nowTime.Add(v1.Duration().Duration()).ISOWeek()
-					return values.NewInt(int64(week)), nil
-				}
-
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				_, week := t.Time().ISOWeek()
+				return values.NewInt(int64(week)), nil
 			}, false,
 		),
 		"quarter": values.NewFunction(
@@ -275,19 +220,14 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					month := v1.Time().Time().Month()
-					return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
+				month := t.Time().Month()
+				return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
 
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					month := nowTime.Add(v1.Duration().Duration()).Month()
-					return values.NewInt(int64(math.Ceil(float64(month) / 3.0))), nil
-				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
 			}, false,
 		),
 		"millisecond": values.NewFunction(
@@ -303,18 +243,13 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					millisecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Millisecond)
-					return values.NewInt(millisecond), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond()) / int64(time.Millisecond)), nil
-				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				millisecond := int64(time.Nanosecond) * int64(t.Time().Nanosecond()) / int64(time.Millisecond)
+				return values.NewInt(millisecond), nil
 			}, false,
 		),
 		"microsecond": values.NewFunction(
@@ -330,19 +265,13 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					microsecond := int64(time.Nanosecond) * int64(v1.Time().Time().Nanosecond()) / int64(time.Microsecond)
-					return values.NewInt(microsecond), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond()) / int64(time.Microsecond)), nil
-				}
-
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				microsecond := int64(time.Nanosecond) * int64(t.Time().Nanosecond()) / int64(time.Microsecond)
+				return values.NewInt(microsecond), nil
 			}, false,
 		),
 		"nanosecond": values.NewFunction(
@@ -358,18 +287,12 @@ func init() {
 					return nil, errors.New(codes.FailedPrecondition, "argument t was nil")
 				}
 
-				if v1.Type().Nature() == semantic.Time {
-					return values.NewInt(int64(v1.Time().Time().Nanosecond())), nil
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v1)
+				if err != nil {
+					return nil, err
 				}
-
-				if v1.Type().Nature() == semantic.Duration {
-					deps := execute.GetExecutionDependencies(ctx)
-					nowTime := *deps.Now
-
-					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond())), nil
-				}
-
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot convert argument t of type %v to time", v1.Type().Nature()))
+				return values.NewInt(int64(t.Time().Nanosecond())), nil
 			}, false,
 		),
 		"truncate": values.NewFunction(
@@ -390,31 +313,17 @@ func init() {
 					return nil, errors.New(codes.Invalid, "missing argument unit")
 				}
 
-				if values.IsTimeable(v) && u.Type().Nature() == semantic.Duration {
-					if v.Type().Nature() == semantic.Time {
-						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
-						if err != nil {
-							return nil, err
-						}
-						b := w.GetEarliestBounds(v.Time())
-						return values.NewTime(b.Start), nil
-					}
-
-					if v.Type().Nature() == semantic.Duration {
-
-						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
-						if err != nil {
-							return nil, err
-						}
-
-						deps := execute.GetExecutionDependencies(ctx)
-						nowTime := *deps.Now
-
-						b := w.GetEarliestBounds(values.ConvertTime(nowTime.Add(v.Duration().Duration())))
-						return values.NewTime(b.Start), nil
-					}
+				deps := execute.GetExecutionDependencies(ctx)
+				t, err := deps.ResolveTimeable(v)
+				if err != nil {
+					return nil, err
 				}
-				return nil, errors.New(codes.FailedPrecondition, fmt.Sprintf("cannot truncate argument t of type %v to unit %v", v.Type().Nature(), u))
+				w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+				if err != nil {
+					return nil, err
+				}
+				b := w.GetEarliestBounds(t)
+				return values.NewTime(b.Start), nil
 			}, false,
 		),
 	}

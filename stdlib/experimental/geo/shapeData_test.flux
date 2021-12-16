@@ -6,7 +6,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,true,true,true,true,true,false
 #default,,,,,,,,,
@@ -77,7 +78,8 @@ inData = "
 ,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField
 ,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,true,false,false,true,false,false,true
 #datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string
 #default,_result,,,,,,,,,,
@@ -103,8 +105,10 @@ outData = "
 ,,3,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T07:00:00Z,ctrlField,91916A,21.2935,39.15833,15c3b1
 ,,4,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-02T13:00:00Z,ctrlField,91916A,21.3485,39.15083,15c3b9
 "
-t_shapeData = (table=<-) => table
-    |> range(start: 2019-01-01T00:00:00Z)
-    |> geo.shapeData(latField: "latitude", lonField: "longitude", level: 10)
+t_shapeData = (table=<-) =>
+    table
+        |> range(start: 2019-01-01T00:00:00Z)
+        |> geo.shapeData(latField: "latitude", lonField: "longitude", level: 10)
 
-test _shapeData = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData})
+test _shapeData = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeData})

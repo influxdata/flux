@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,
@@ -17,7 +18,8 @@ inData = "
 ,,0,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:53:36Z,k9ngm,used_percent,disk,disk1,apfs,host.local,/
 "
-outData = "
+outData =
+    "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true,true,true
 #default,_result,,,,,,,,,,,
@@ -29,8 +31,10 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9ngm,used_percent,disk,disk1,apfs,host.local,/
 "
-t_string_sort = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> sort()
+t_string_sort = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> sort()
 
-test _string_sort = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_sort})
+test _string_sort = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_sort})

@@ -5,7 +5,8 @@ import "testing"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -23,7 +24,8 @@ inData = "
 ,,2,2018-05-22T19:53:10Z,_m,RR,1
 ,,2,2018-05-22T19:53:30Z,_m,RR,0
 "
-outData = "
+outData =
+    "
 #datatype,string,long,string,string,double
 #group,false,false,true,true,false
 #default,_result,,,,
@@ -32,9 +34,10 @@ outData = "
 ,,1,_m,QQ,1
 ,,2,_m,RR,0
 "
-twaFn = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
-    |> timeWeightedAvg(unit: 10s)
-    |> drop(columns: ["_start", "_stop"])
+twaFn = (table=<-) =>
+    table
+        |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:54:00Z)
+        |> timeWeightedAvg(unit: 10s)
+        |> drop(columns: ["_start", "_stop"])
 
 test twa_test = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: twaFn})

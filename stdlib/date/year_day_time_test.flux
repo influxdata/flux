@@ -6,7 +6,8 @@ import "date"
 
 option now = () => 2030-01-01T00:00:00Z
 
-inData = "
+inData =
+    "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
 #default,_result,,,,,
@@ -27,7 +28,8 @@ inData = "
 ,,1,2018-12-31T19:54:00Z,_m,QQ,1
 ,,1,2019-01-01T19:54:00Z,_m,QQ,1
 "
-outData = "
+outData =
+    "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
@@ -48,8 +50,10 @@ outData = "
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-12-31T19:54:00Z,365
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2019-01-01T19:54:00Z,1
 "
-t_time_year_day = (table=<-) => table
-    |> range(start: 2018-01-01T00:00:00Z)
-    |> map(fn: (r) => ({r with _value: date.yearDay(t: r._time)}))
+t_time_year_day = (table=<-) =>
+    table
+        |> range(start: 2018-01-01T00:00:00Z)
+        |> map(fn: (r) => ({r with _value: date.yearDay(t: r._time)}))
 
-test _time_year_day = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_year_day})
+test _time_year_day = () =>
+    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_year_day})
