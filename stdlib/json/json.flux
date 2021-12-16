@@ -1,28 +1,37 @@
-// Package json functions provide tools for working with JSON.
+// Package json provides tools for working with JSON.
+// 
+// introduced: 0.40.0
+// 
 package json
 
 
-// encode converts a value into JSON bytes
-// Time values are encoded using RFC3339.
-// Duration values are encoded in number of milleseconds since the epoch.
-// Regexp values are encoded as their string representation.
-// Bytes values are encodes as base64-encoded strings.
-// Function values cannot be encoded and will produce an error.
+// encode converts a value into JSON bytes.
+// 
+// This function encodes Flux types as follows:
+// 
+// - **time** values in [RFC3339](https://docs.influxdata.com/influxdb/cloud/reference/glossary/#rfc3339-timestamp) format
+// - **duration** values in number of milliseconds since the Unix epoch
+// - **regexp** values as their string representation
+// - **bytes** values as base64-encoded strings
+// - **function** values are not encoded and produce an error
 //
 // ## Parameters
-// - `V` is the value to convert
+// - v: Value to convert.
 //
-// ## Encode all values in a column in JSON bytes
-//
-// ```
+// ## Examples
+// 
+// ### Encode a value as JSON bytes
+// ```no_run
 // import "json"
+// 
+// jsonData = {foo: "bar", baz: 123, quz: [4, 5, 6]}
 //
-// from(bucket: "example-bucket")
-//   |> range(start: -1h)
-//   |> map(fn: (r) => ({
-//       r with _value: json.encode(v: r._value)
-//   }))
+// json.encode(v: jsonData)
+// 
+// // Returns [123 34 98 97 122 34 58 49 50 51 44 34 102 111 111 34 58 34 98 97 114 34 44 34 113 117 122 34 58 91 52 44 53 44 54 93 125]
 // ```
 //
+// tags: type-conversions
+// 
 builtin encode : (v: A) => bytes
 
