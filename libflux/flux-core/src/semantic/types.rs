@@ -555,6 +555,8 @@ pub enum MonoType {
 
     #[display(fmt = "{}", _0)]
     Fun(Ptr<Function>),
+    #[display(fmt = "{}", _0)]
+    Optional(Ptr<Optional>),
 }
 
 impl Serialize for MonoType {
@@ -583,6 +585,7 @@ impl Serialize for MonoType {
             Fun(&'a Ptr<Function>),
             Vector(&'a MonoType),
             Stream(&'a MonoType),
+            Optional(&'a Ptr<Optional>),
         }
 
         match self {
@@ -610,6 +613,7 @@ impl Serialize for MonoType {
             Self::Dict(p) => MonoTypeSer::Dict(p),
             Self::Record(p) => MonoTypeSer::Record(p),
             Self::Fun(p) => MonoTypeSer::Fun(p),
+            Self::Optional(p) => MonoTypeSer::Optional(p),
         }
         .serialize(serializer)
     }
@@ -794,6 +798,7 @@ impl Substitutable for MonoType {
             MonoType::Dict(dict) => dict.visit(sub).map(MonoType::dict),
             MonoType::Record(obj) => obj.visit(sub).map(MonoType::record),
             MonoType::Fun(fun) => fun.visit(sub).map(MonoType::fun),
+            MonoType::Optional(fun) => fun.visit(sub).map(MonoType::optional),
         }
     }
 }
@@ -831,6 +836,12 @@ impl From<Record> for MonoType {
 impl From<Function> for MonoType {
     fn from(f: Function) -> MonoType {
         MonoType::Fun(Ptr::new(f))
+    }
+}
+
+impl From<Optional> for MonoType {
+    fn from(o: Optional) -> MonoType {
+        MonoType::Optional(Ptr::new(o))
     }
 }
 
@@ -890,6 +901,11 @@ impl MonoType {
     /// Creates a record type
     pub fn record(r: impl Into<Ptr<Record>>) -> Self {
         Self::Record(r.into())
+    }
+
+    /// Creates a function type
+    pub fn optional(o: impl Into<Ptr<Optional>>) -> Self {
+        Self::Optional(o.into())
     }
 
     /// Performs unification on the type with another type.
@@ -983,6 +999,8 @@ impl MonoType {
 
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier),
 
+            (MonoType::Optional(t), MonoType::Optional(s)) => t.unify(s, sub),
+
             (exp, act) => unifier.errors.push(Error::CannotUnify {
                 exp: exp.clone(),
                 act: act.clone(),
@@ -1020,6 +1038,7 @@ impl MonoType {
             MonoType::Dict(dict) => dict.constrain(with, cons),
             MonoType::Record(obj) => obj.constrain(with, cons),
             MonoType::Fun(fun) => fun.constrain(with, cons),
+            MonoType::Optional(opt) => opt.constrain(with, cons),
         }
     }
 
@@ -1033,6 +1052,7 @@ impl MonoType {
             MonoType::Dict(dict) => dict.contains(tv),
             MonoType::Record(row) => row.contains(tv),
             MonoType::Fun(fun) => fun.contains(tv),
+            MonoType::Optional(opt) => opt.contains(tv),
         }
     }
 
@@ -1223,6 +1243,41 @@ impl Collection {
 
     fn contains(&self, tv: Tvar) -> bool {
         self.arg.contains(tv)
+    }
+}
+
+/// monotype vector used by vectorization transformation
+#[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[display(fmt = "{}?", _0)]
+pub struct Optional(pub MonoType);
+
+impl Substitutable for Optional {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        self.0.apply_ref(sub).map(Self)
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        self.0.free_vars()
+    }
+}
+
+impl MaxTvar for Optional {
+    fn max_tvar(&self) -> Option<Tvar> {
+        self.0.max_tvar()
+    }
+}
+
+impl Optional {
+    // self represents the expected type.
+    fn unify(&self, with: &Self, f: &mut Substitution) -> Result<(), Error> {
+        self.0.unify(&with.0, f)
+    }
+
+    fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
+        self.0.constrain(with, cons)
+    }
+
+    fn contains(&self, tv: Tvar) -> bool {
+        self.0.contains(tv)
     }
 }
 

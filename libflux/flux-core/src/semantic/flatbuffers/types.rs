@@ -517,6 +517,9 @@ pub fn build_type(
             let offset = build_fun(builder, fun);
             (offset.as_union_value(), fb::MonoType::Fun)
         }
+        MonoType::Optional(_) => {
+            todo!()
+        }
     }
 }
 
