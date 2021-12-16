@@ -531,6 +531,7 @@ impl Serialize for MonoType {
             Fun(&'a Ptr<Function>),
             Vector(&'a MonoType),
             Stream(&'a MonoType),
+            Optional(&'a MonoType),
         }
 
         match self {
@@ -554,6 +555,7 @@ impl Serialize for MonoType {
                 CollectionType::Array => MonoTypeSer::Arr(&p.arg),
                 CollectionType::Vector => MonoTypeSer::Vector(&p.arg),
                 CollectionType::Stream => MonoTypeSer::Stream(&p.arg),
+                CollectionType::Optional => MonoTypeSer::Optional(&p.arg),
             },
             Self::Label(p) => MonoTypeSer::Label(p),
             Self::Dict(p) => MonoTypeSer::Dict(p),
@@ -577,6 +579,7 @@ pub enum CollectionType {
     Array,
     Vector,
     Stream,
+    Optional,
 }
 
 /// An ordered map of string identifiers to monotypes.
@@ -813,6 +816,14 @@ impl MonoType {
         })
     }
 
+    /// Creates an optional type
+    pub fn optional(arg: MonoType) -> Self {
+        Self::app(Collection {
+            collection: CollectionType::Optional,
+            arg,
+        })
+    }
+
     /// Creates a dictionary type
     pub fn dict(d: impl Into<Ptr<Dictionary>>) -> Self {
         Self::Dict(d.into())
@@ -1002,6 +1013,7 @@ impl MonoType {
                 CollectionType::Array => " (array)",
                 CollectionType::Vector => " (vector)",
                 CollectionType::Stream => "",
+                CollectionType::Optional => "",
             },
             _ => "",
         }
@@ -1155,7 +1167,7 @@ impl Collection {
                     exp: with,
                 }),
             },
-            CollectionType::Vector => self.arg.constrain(with, sub),
+            CollectionType::Optional | CollectionType::Vector => self.arg.constrain(with, sub),
         }
     }
 

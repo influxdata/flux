@@ -605,6 +605,9 @@ impl<'a> Converter<'a> {
             ast::MonoType::Vector(vector) => {
                 MonoType::vector(self.convert_monotype(&vector.element, tvars))
             }
+            ast::MonoType::Optional(opt) => {
+                MonoType::optional(self.convert_monotype(&opt.monotype, tvars))
+            }
             ast::MonoType::Dict(dict) => {
                 let key = self.convert_monotype(&dict.key, tvars);
                 let val = self.convert_monotype(&dict.val, tvars);

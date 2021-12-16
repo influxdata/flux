@@ -562,6 +562,7 @@ fn build_app<'a>(
                 CollectionType::Array => fb::CollectionType::Array,
                 CollectionType::Vector => fb::CollectionType::Vector,
                 CollectionType::Stream => fb::CollectionType::Stream,
+                CollectionType::Optional => todo!(), // fb::CollectionType::Stream,
             },
             arg_type: typ,
             arg: Some(off),

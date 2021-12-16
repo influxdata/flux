@@ -602,6 +602,7 @@ impl<'doc> Formatter<'doc> {
                 ]
             }
             ast::MonoType::Label(label) => self.format_string_literal(label),
+            ast::MonoType::Optional(opt) => docs![arena, self.format_monotype(&opt.monotype), "?"],
         }
         .group()
     }

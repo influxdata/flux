@@ -938,6 +938,9 @@ impl<'doc> DocFormatter<'doc> {
                 CollectionType::Stream => {
                     docs![arena, "stream[", self.format_monotype(&col.arg), "]",]
                 }
+                CollectionType::Optional => {
+                    docs![arena, self.format_monotype(&col.arg), "?",]
+                }
             },
             MonoType::Dict(dict) => {
                 docs![

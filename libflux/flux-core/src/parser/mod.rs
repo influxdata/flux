@@ -535,8 +535,8 @@ impl<'input> Parser<'input> {
     /// Parses a mono type
     pub fn parse_monotype(&mut self) -> MonoType {
         // Tvar | Basic | Array | Dict | Record | Function
-        let t = self.peek();
-        match t.tok {
+        let t = self.peek().clone();
+        let mut typ = match t.tok {
             TokenType::LBrack => {
                 let start = self.open(TokenType::LBrack, TokenType::RBrack);
                 let ty = self.parse_monotype();
@@ -589,7 +589,16 @@ impl<'input> Parser<'input> {
                     self.parse_basic_type()
                 }
             }
+        };
+        let question = self.peek();
+        if let TokenType::QuestionMark = question.tok {
+            let question = self.scan();
+            typ = MonoType::Optional(Box::new(OptionalType {
+                base: self.base_node_from_tokens(&t, &question),
+                monotype: typ,
+            }));
         }
+        typ
     }
 
     fn parse_basic_type(&mut self) -> MonoType {
