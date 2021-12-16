@@ -1,13 +1,13 @@
 // Package interpolate provides functions that insert rows for missing data
 // at regular intervals and estimate values using different interpolation methods.
-// 
+//
 // introduced: 0.87.0
-// 
+//
 package interpolate
 
 
 // linear inserts rows at regular intervals using linear interpolation to
-// determine values for inserted rows. 
+// determine values for inserted rows.
 //
 // ### Function requirements
 // - Input data must have `_time` and `_value` columns.
@@ -16,13 +16,13 @@ package interpolate
 // ## Parameters
 // - every: Duration of time between interpolated points.
 // - tables: Input data. Default is piped-forward data (`<-`).
-// 
+//
 // ## Examples
 // ### Interpolate missing data by day
 // ```
 // # import "array"
 // import "interpolate"
-// # 
+// #
 // # data = array.from(
 // #     rows: [
 // #         {_time: 2021-01-01T00:00:00Z, _value: 10.0},
@@ -34,7 +34,10 @@ package interpolate
 // #     ],
 // # )
 // ```
-// 
+//
 // tags: transformations
-// 
-builtin linear : (<-tables: [{T with _time: time, _value: float}], every: duration) => [{T with _time: time, _value: float}]
+//
+builtin linear : (
+        <-tables: [{T with _time: time, _value: float}],
+        every: duration,
+    ) => [{T with _time: time, _value: float}]
