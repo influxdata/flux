@@ -747,7 +747,7 @@ vint = v + 2
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        assert_eq!(t, MonoType::Int);
+        assert_eq!(t, MonoType::INT);
 
         assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
     }

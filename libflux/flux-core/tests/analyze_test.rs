@@ -36,19 +36,19 @@ f(a: s)
     };
     let f_call_int_type = Function {
         req: fluxcore::semantic_map! {
-            "a".to_string() => MonoType::Int,
+            "a".to_string() => MonoType::INT,
         },
         opt: SemanticMap::new(),
         pipe: None,
-        retn: MonoType::Int,
+        retn: MonoType::INT,
     };
     let f_call_string_type = Function {
         req: fluxcore::semantic_map! {
-            "a".to_string() => MonoType::String,
+            "a".to_string() => MonoType::STRING,
         },
         opt: SemanticMap::new(),
         pipe: None,
-        retn: MonoType::String,
+        retn: MonoType::STRING,
     };
     let want = Package {
         loc: ast::BaseNode::default().location,
@@ -123,7 +123,7 @@ f(a: s)
                     loc: ast::BaseNode::default().location,
                     expression: Expression::Call(Box::new(CallExpr {
                         loc: ast::BaseNode::default().location,
-                        typ: MonoType::Int,
+                        typ: MonoType::INT,
                         pipe: None,
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
@@ -138,7 +138,7 @@ f(a: s)
                             },
                             value: Expression::Identifier(IdentifierExpr {
                                 loc: ast::BaseNode::default().location,
-                                typ: MonoType::Int,
+                                typ: MonoType::INT,
                                 name: Symbol::from("n@main"),
                             }),
                         }],
@@ -148,7 +148,7 @@ f(a: s)
                     loc: ast::BaseNode::default().location,
                     expression: Expression::Call(Box::new(CallExpr {
                         loc: ast::BaseNode::default().location,
-                        typ: MonoType::String,
+                        typ: MonoType::STRING,
                         pipe: None,
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
@@ -163,7 +163,7 @@ f(a: s)
                             },
                             value: Expression::Identifier(IdentifierExpr {
                                 loc: ast::BaseNode::default().location,
-                                typ: MonoType::String,
+                                typ: MonoType::STRING,
                                 name: Symbol::from("s@main"),
                             }),
                         }],

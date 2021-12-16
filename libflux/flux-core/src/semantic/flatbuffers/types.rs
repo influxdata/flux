@@ -26,6 +26,7 @@ use crate::semantic::{
         Record,
         Tvar,
         TvarKinds,
+        BuiltinType,
         Vector,
     },
     flatbuffers::serialize_pkg_into,
@@ -180,18 +181,18 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
 
 impl From<fb::Basic<'_>> for MonoType {
     fn from(t: fb::Basic) -> MonoType {
-        match t.t() {
-            fb::Type::Bool => MonoType::Bool,
-            fb::Type::Int => MonoType::Int,
-            fb::Type::Uint => MonoType::Uint,
-            fb::Type::Float => MonoType::Float,
-            fb::Type::String => MonoType::String,
-            fb::Type::Duration => MonoType::Duration,
-            fb::Type::Time => MonoType::Time,
-            fb::Type::Regexp => MonoType::Regexp,
-            fb::Type::Bytes => MonoType::Bytes,
+        MonoType::from(match t.t() {
+            fb::Type::Bool => BuiltinType::Bool,
+            fb::Type::Int => BuiltinType::Int,
+            fb::Type::Uint => BuiltinType::Uint,
+            fb::Type::Float => BuiltinType::Float,
+            fb::Type::String => BuiltinType::String,
+            fb::Type::Duration => BuiltinType::Duration,
+            fb::Type::Time => BuiltinType::Time,
+            fb::Type::Regexp => BuiltinType::Regexp,
+            fb::Type::Bytes => BuiltinType::Bytes,
             _ => unreachable!("Unknown fb::Type"),
-        }
+        })
     }
 }
 
@@ -456,57 +457,7 @@ pub fn build_type(
 ) {
     match t {
         MonoType::Error => unreachable!(),
-        MonoType::Bool => {
-            let a = fb::BasicArgs { t: fb::Type::Bool };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Int => {
-            let a = fb::BasicArgs { t: fb::Type::Int };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Uint => {
-            let a = fb::BasicArgs { t: fb::Type::Uint };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Float => {
-            let a = fb::BasicArgs { t: fb::Type::Float };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::String => {
-            let a = fb::BasicArgs {
-                t: fb::Type::String,
-            };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Duration => {
-            let a = fb::BasicArgs {
-                t: fb::Type::Duration,
-            };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Time => {
-            let a = fb::BasicArgs { t: fb::Type::Time };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Regexp => {
-            let a = fb::BasicArgs {
-                t: fb::Type::Regexp,
-            };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
-        MonoType::Bytes => {
-            let a = fb::BasicArgs { t: fb::Type::Bytes };
-            let v = fb::Basic::create(builder, &a);
-            (v.as_union_value(), fb::MonoType::Basic)
-        }
+        MonoType::Builtin(typ) => build_basic_type(builder, typ),
         MonoType::Var(tvr) => {
             let offset = build_var(builder, *tvr);
             (offset.as_union_value(), fb::MonoType::Var)
@@ -532,6 +483,29 @@ pub fn build_type(
             (offset.as_union_value(), fb::MonoType::Fun)
         }
     }
+}
+
+fn build_basic_type(
+    builder: &mut flatbuffers::FlatBufferBuilder,
+    t: &BuiltinType,
+) -> (
+    flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+    fb::MonoType,
+) {
+    let t = match t {
+        BuiltinType::Bool => fb::Type::Bool,
+        BuiltinType::Int => fb::Type::Int,
+        BuiltinType::Uint => fb::Type::Uint,
+        BuiltinType::Float => fb::Type::Float,
+        BuiltinType::String => fb::Type::String,
+        BuiltinType::Duration => fb::Type::Duration,
+        BuiltinType::Time => fb::Type::Time,
+        BuiltinType::Regexp => fb::Type::Regexp,
+        BuiltinType::Bytes => fb::Type::Bytes,
+    };
+    let a = fb::BasicArgs { t };
+    let v = fb::Basic::create(builder, &a);
+    (v.as_union_value(), fb::MonoType::Basic)
 }
 
 fn build_var<'a>(
@@ -791,7 +765,7 @@ mod tests {
         let want = PolyType {
             vars: vec![],
             cons: TvarKinds::new(),
-            expr: MonoType::from(Vector(MonoType::Int)),
+            expr: MonoType::from(Vector(MonoType::INT)),
         };
 
         let mut builder = flatbuffers::FlatBufferBuilder::new();

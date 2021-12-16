@@ -13,7 +13,7 @@ use crate::{
         env::Environment,
         nodes::*,
         sub::Substitution,
-        types::{self, MonoType, MonoTypeMap, SemanticMap},
+        types::{self, BuiltinType, MonoType, MonoTypeMap, SemanticMap},
     },
 };
 
@@ -419,6 +419,26 @@ impl<'a> Converter<'a> {
         })
     }
 
+    fn convert_builtintype(&mut self, basic: ast::NamedType) -> Result<BuiltinType> {
+        Ok(match basic.name.name.as_str() {
+            "bool" => BuiltinType::Bool,
+            "int" => BuiltinType::Int,
+            "uint" => BuiltinType::Uint,
+            "float" => BuiltinType::Float,
+            "string" => BuiltinType::String,
+            "duration" => BuiltinType::Duration,
+            "time" => BuiltinType::Time,
+            "regexp" => BuiltinType::Regexp,
+            "bytes" => BuiltinType::Bytes,
+            _ => {
+                return Err(located(
+                    basic.base.location,
+                    ErrorKind::InvalidNamedType(basic.name.name.to_string()),
+                ))
+            }
+        })
+    }
+
     fn convert_monotype(
         &mut self,
         ty: ast::MonoType,
@@ -431,24 +451,8 @@ impl<'a> Converter<'a> {
                     .or_insert_with(|| self.sub.fresh());
                 Ok(MonoType::Var(*tvar))
             }
-            ast::MonoType::Basic(basic) => match basic.name.name.as_str() {
-                "bool" => Ok(MonoType::Bool),
-                "int" => Ok(MonoType::Int),
-                "uint" => Ok(MonoType::Uint),
-                "float" => Ok(MonoType::Float),
-                "string" => Ok(MonoType::String),
-                "duration" => Ok(MonoType::Duration),
-                "time" => Ok(MonoType::Time),
-                "regexp" => Ok(MonoType::Regexp),
-                "bytes" => Ok(MonoType::Bytes),
-                _ => {
-                    self.errors.push(located(
-                        basic.base.location.clone(),
-                        ErrorKind::InvalidNamedType(basic.name.name.to_string()),
-                    ));
-                    Ok(MonoType::Error)
-                }
-            },
+
+            ast::MonoType::Basic(basic) => Ok(MonoType::from(self.convert_builtintype(basic)?)),
             ast::MonoType::Array(arr) => Ok(MonoType::from(types::Array(
                 self.convert_monotype(arr.element, tvars)?,
             ))),
@@ -3379,7 +3383,7 @@ mod tests {
         });
         let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype, &mut m, &mut sub::Substitution::default()).unwrap();
-        let want = MonoType::Int;
+        let want = MonoType::INT;
         assert_eq!(want, got);
     }
 
@@ -3412,7 +3416,7 @@ mod tests {
         let want = MonoType::from(types::Record::Extension {
             head: types::Property {
                 k: types::Label::from("B"),
-                v: MonoType::Int,
+                v: MonoType::INT,
             },
             tail: MonoType::Var(Tvar(0)),
         });
@@ -3448,12 +3452,12 @@ mod tests {
         let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype_ex, &mut m, &mut sub::Substitution::default()).unwrap();
         let mut opt = MonoTypeMap::new();
-        opt.insert(String::from("A"), MonoType::Int);
+        opt.insert(String::from("A"), MonoType::INT);
         let want = MonoType::from(types::Function {
             req: MonoTypeMap::new(),
             opt,
             pipe: None,
-            retn: MonoType::Int,
+            retn: MonoType::INT,
         });
         assert_eq!(want, got);
     }

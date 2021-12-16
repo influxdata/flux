@@ -237,7 +237,7 @@ impl Expression {
             Expression::Array(e) => e.typ.clone(),
             Expression::Dict(e) => e.typ.clone(),
             Expression::Function(e) => e.typ.clone(),
-            Expression::Logical(_) => MonoType::Bool,
+            Expression::Logical(_) => MonoType::BOOL,
             Expression::Object(e) => e.typ.clone(),
             Expression::Member(e) => e.typ.clone(),
             Expression::Index(e) => e.typ.clone(),
@@ -245,15 +245,15 @@ impl Expression {
             Expression::Unary(e) => e.typ.clone(),
             Expression::Call(e) => e.typ.clone(),
             Expression::Conditional(e) => e.alternate.type_of(),
-            Expression::StringExpr(_) => MonoType::String,
-            Expression::Integer(_) => MonoType::Int,
-            Expression::Float(_) => MonoType::Float,
-            Expression::StringLit(_) => MonoType::String,
-            Expression::Duration(_) => MonoType::Duration,
-            Expression::Uint(_) => MonoType::Uint,
-            Expression::Boolean(_) => MonoType::Bool,
-            Expression::DateTime(_) => MonoType::Time,
-            Expression::Regexp(_) => MonoType::Regexp,
+            Expression::StringExpr(_) => MonoType::STRING,
+            Expression::Integer(_) => MonoType::INT,
+            Expression::Float(_) => MonoType::FLOAT,
+            Expression::StringLit(_) => MonoType::STRING,
+            Expression::Duration(_) => MonoType::DURATION,
+            Expression::Uint(_) => MonoType::UINT,
+            Expression::Boolean(_) => MonoType::BOOL,
+            Expression::DateTime(_) => MonoType::TIME,
+            Expression::Regexp(_) => MonoType::REGEXP,
             Expression::Error(_) => MonoType::Error,
         }
     }
@@ -1295,7 +1295,7 @@ impl BinaryExpr {
             };
         let binop_compare_constraints =
             |this: &mut BinaryExpr, infer: &mut InferState<'_, '_>, kind| {
-                this.typ = MonoType::Bool;
+                this.typ = MonoType::BOOL;
                 infer.solve(&[
                     // https://github.com/influxdata/flux/issues/2393
                     // Constraint::Equal{self.left.type_of(), self.right.type_of()),
@@ -1332,7 +1332,7 @@ impl BinaryExpr {
                 binop_compare_constraints(self, infer, Kind::Equatable)
             }
             ast::Operator::GreaterThanEqualOperator | ast::Operator::LessThanEqualOperator => {
-                self.typ = MonoType::Bool;
+                self.typ = MonoType::BOOL;
                 infer.solve(&[
                     // https://github.com/influxdata/flux/issues/2393
                     // Constraint::Equal{self.left.type_of(), self.right.type_of()),
@@ -1360,16 +1360,16 @@ impl BinaryExpr {
             }
             // Regular expression operators.
             ast::Operator::RegexpMatchOperator | ast::Operator::NotRegexpMatchOperator => {
-                self.typ = MonoType::Bool;
+                self.typ = MonoType::BOOL;
                 infer.solve(&[
                     Constraint::Equal {
                         act: self.left.type_of(),
-                        exp: MonoType::String,
+                        exp: MonoType::STRING,
                         loc: self.left.loc().clone(),
                     },
                     Constraint::Equal {
                         act: self.right.type_of(),
-                        exp: MonoType::Regexp,
+                        exp: MonoType::REGEXP,
                         loc: self.right.loc().clone(),
                     },
                 ]);
@@ -1487,7 +1487,7 @@ impl ConditionalExpr {
         self.alternate.infer(infer)?;
         infer.solve(&[
             Constraint::Equal {
-                exp: MonoType::Bool,
+                exp: MonoType::BOOL,
                 act: self.test.type_of(),
                 loc: self.test.loc().clone(),
             },
@@ -1523,12 +1523,12 @@ impl LogicalExpr {
         self.right.infer(infer)?;
         infer.solve(&[
             Constraint::Equal {
-                exp: MonoType::Bool,
+                exp: MonoType::BOOL,
                 act: self.left.type_of(),
                 loc: self.left.loc().clone(),
             },
             Constraint::Equal {
-                exp: MonoType::Bool,
+                exp: MonoType::BOOL,
                 act: self.right.type_of(),
                 loc: self.right.loc().clone(),
             },
@@ -1616,7 +1616,7 @@ impl IndexExpr {
         infer.solve(&[
             Constraint::Equal {
                 act: self.index.type_of(),
-                exp: MonoType::Int,
+                exp: MonoType::INT,
                 loc: self.index.loc().clone(),
             },
             Constraint::Equal {
@@ -1702,15 +1702,15 @@ impl UnaryExpr {
         self.argument.infer(infer)?;
         match self.operator {
             ast::Operator::NotOperator => {
-                self.typ = MonoType::Bool;
+                self.typ = MonoType::BOOL;
                 infer.solve(&[Constraint::Equal {
                     act: self.argument.type_of(),
-                    exp: MonoType::Bool,
+                    exp: MonoType::BOOL,
                     loc: self.argument.loc().clone(),
                 }]);
             }
             ast::Operator::ExistsOperator => {
-                self.typ = MonoType::Bool;
+                self.typ = MonoType::BOOL;
             }
             ast::Operator::AdditionOperator | ast::Operator::SubtractionOperator => {
                 self.typ = self.argument.type_of();
@@ -2239,14 +2239,14 @@ mod tests {
             }],
         };
         let sub: Substitution = semantic_map! {
-            Tvar(0) => MonoType::Int,
-            Tvar(1) => MonoType::Int,
-            Tvar(2) => MonoType::Int,
-            Tvar(3) => MonoType::Int,
-            Tvar(4) => MonoType::Int,
-            Tvar(5) => MonoType::Int,
-            Tvar(6) => MonoType::Int,
-            Tvar(7) => MonoType::Int,
+            Tvar(0) => MonoType::INT,
+            Tvar(1) => MonoType::INT,
+            Tvar(2) => MonoType::INT,
+            Tvar(3) => MonoType::INT,
+            Tvar(4) => MonoType::INT,
+            Tvar(5) => MonoType::INT,
+            Tvar(6) => MonoType::INT,
+            Tvar(7) => MonoType::INT,
         }
         .into();
         let pkg = inject_pkg_types(pkg, &sub);
@@ -2255,7 +2255,7 @@ mod tests {
             &mut |node: Node| {
                 let typ = node.type_of();
                 if let Some(typ) = typ {
-                    assert_eq!(typ, MonoType::Int);
+                    assert_eq!(typ, MonoType::INT);
                     no_types_checked += 1;
                 }
             },
