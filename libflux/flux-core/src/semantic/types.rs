@@ -1011,6 +1011,8 @@ impl MonoType {
 
             (MonoType::Optional(t), MonoType::Optional(s)) => t.unify(s, sub),
 
+            (MonoType::Optional(t), s) => t.0.unify(s, sub),
+
             (exp, act) => unifier.errors.push(Error::CannotUnify {
                 exp: exp.clone(),
                 act: act.clone(),
@@ -1544,12 +1546,18 @@ impl Record {
             // If we are expecting {a: u | r} but find {}, label `a` is missing.
             (
                 Record::Extension {
-                    head: Property { k: a, .. },
-                    ..
+                    head: Property { k: a, v: t },
+                    tail,
                 },
                 Record::Empty,
             ) => match *a.apply_cow(unifier.sub) {
-                RecordLabel::Concrete(_) => unifier.errors.push(Error::MissingLabel(a.to_string())),
+                RecordLabel::Concrete(_) => {
+                    if let MonoType::Optional(_) = &*t.apply_cow(unifier.sub) {
+                        tail.unify(&MonoType::from(Record::Empty), unifier)
+                    } else {
+                        unifier.errors.push(Error::MissingLabel(a.to_string()));
+                    }
+                }
                 RecordLabel::BoundVariable(v) | RecordLabel::Variable(v) => {
                     let t = unifier.sub.apply(v);
                     t.unify(&MonoType::Error, unifier);

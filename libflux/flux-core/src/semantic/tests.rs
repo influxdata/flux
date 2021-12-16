@@ -4118,7 +4118,7 @@ fn multiple_errors_in_function_call() {
 }
 
 #[test]
-fn exists_operator() {
+fn exists_operator_does_not_bleed_to_other_branches() {
     // Usage of `r.a` inside the exists operator or the true branch should not bleed into the
     // surrounding code
     test_infer! {
@@ -4126,25 +4126,51 @@ fn exists_operator() {
             f = (r) => if exists r.a then r.a else r.b + 0
         "#,
         exp: map![
-            "f" => "(r: { A with b: int }) => int",
+            "f" => "(r: { A with a: int?, b: int }) => int",
         ],
     }
+}
+
+#[test]
+fn exists_operator_does_not_forget_other_fields() {
     // r.b is a required field so that should be reflected in the type signature
     test_infer! {
         src: r#"
             f = (r) => if exists r.a then r.a + r.b + 0 else 0
         "#,
         exp: map![
-            "f" => "(r: { A with b: int }) => int",
+            "f" => "(r: { A with a: int?, b: int }) => int",
         ],
     }
+}
+
+#[test]
+fn optional_fields_allow_passing_records_with_and_without_the_field() {
+    // Should be able to pass records with and without `a`
+    test_infer! {
+        src: r#"
+            f = (r) => if exists r.a then r.a else r.b + 0
+            x = f(r: { a: 1, b: 2 })
+            y = f(r: { b: 2 })
+        "#,
+        exp: map![
+            "f" => "(r: { A with a: int?, b: int }) => int",
+            "x" => "int",
+            "y" => "int",
+        ],
+    }
+}
+
+#[test]
+fn exists_operator_errors() {
     // `r.a` should only exist in the first branch
     test_error_msg! {
         src: r#"
             r = {}
             x = if exists r.a then r.a else r.a
         "#,
-        err: "error @3:45-3:46: record is missing label a",
+        expect: expect![[r#"
+            error @3:45-3:46: record is missing label a"#]],
     }
 
     // Should be an error as `a` exists, but has the wrong type (or it should fail the exists check
@@ -4154,6 +4180,6 @@ fn exists_operator() {
             f = (r) => if exists r.a then r.a else 0
             x = f(r: { a: "" })
         "#,
-        err: "error @3:45-3:46: TODO",
+        expect: expect![[r#"error @3:17-3:32: expected int? but found string (argument r)"#]]
     }
 }
