@@ -357,9 +357,8 @@ pub struct Module {
 mod tests {
     use super::*;
     use crate::{
-        ast::get_err_type_expression,
-        parser,
-        parser::parse_string,
+        ast,
+        parser::{self, parse_string},
         semantic::{convert::convert_polytype, nodes::Symbol, sub::Substitution},
     };
 
@@ -393,8 +392,7 @@ mod tests {
             Symbol::from("z@c") => {
                 let mut p = parser::Parser::new("int");
                 let typ_expr = p.parse_type_expression();
-                let err = get_err_type_expression(typ_expr.clone());
-                if err != "" {
+                if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                     panic!(
                         "TypeExpression parsing failed for int. {:?}", err
                     );
@@ -415,8 +413,7 @@ mod tests {
             String::from("a") => {
                 let mut p = parser::Parser::new("{f: (x: A) => A}");
                 let typ_expr = p.parse_type_expression();
-                let err = get_err_type_expression(typ_expr.clone());
-                if err != "" {
+                if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                     panic!(
                         "TypeExpression parsing failed for int. {:?}", err
                     );
@@ -426,8 +423,7 @@ mod tests {
             String::from("b") => {
                 let mut p = parser::Parser::new("{x: int , y: int}");
                 let typ_expr = p.parse_type_expression();
-                let err = get_err_type_expression(typ_expr.clone());
-                if err != "" {
+                if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                     panic!(
                         "TypeExpression parsing failed for int. {:?}", err
                     );

@@ -587,7 +587,6 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 mod tests {
     use fluxcore::{
         ast,
-        ast::get_err_type_expression,
         parser::Parser,
         semantic::{
             convert::convert_polytype,
@@ -855,9 +854,7 @@ from(bucket: v.bucket)
         let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
         let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
@@ -893,9 +890,7 @@ from(bucket: v.bucket)
         let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_a = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
@@ -911,9 +906,7 @@ from(bucket: v.bucket)
         let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
@@ -929,9 +922,7 @@ from(bucket: v.bucket)
         let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_c = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();

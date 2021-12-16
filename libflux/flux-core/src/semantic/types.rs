@@ -1778,8 +1778,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        ast::get_err_type_expression,
-        parser,
+        ast, parser,
         semantic::convert::{convert_monotype, convert_polytype},
     };
 
@@ -1788,9 +1787,7 @@ mod tests {
         let mut p = parser::Parser::new(typ);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {}. {:?}", typ, err);
         }
         convert_polytype(typ_expr, &mut Substitution::default()).unwrap()
@@ -1804,9 +1801,7 @@ mod tests {
         let mut p = parser::Parser::new(expr);
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed. {:?}", err);
         }
         convert_monotype(typ_expr.monotype, tvars, sub).unwrap()
