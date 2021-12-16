@@ -27,7 +27,7 @@ use colored::*;
 use derive_more::Display;
 
 use crate::{
-    ast::get_err_type_expression,
+    ast,
     errors::Errors,
     parser,
     semantic::{
@@ -51,9 +51,8 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeMap<Symbo
             let mut p = parser::Parser::new(expr);
 
             let typ_expr = p.parse_type_expression();
-            let err = get_err_type_expression(typ_expr.clone());
 
-            if err != "" {
+            if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
                 panic!("TypeExpression parsing failed for {}. {:?}", name, err);
             }
             let poly = convert_polytype(typ_expr, &mut Substitution::default());

@@ -671,8 +671,7 @@ mod tests {
     use std::convert::TryInto;
 
     use crate::{
-        ast::get_err_type_expression,
-        parser,
+        ast, parser,
         semantic::{convert::convert_polytype, sub::Substitution, types::SemanticMap},
     };
 
@@ -700,9 +699,7 @@ mod tests {
         let mut p = parser::Parser::new(expr.clone());
 
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for {}. {:?}", expr, err);
         }
         let want = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
@@ -717,16 +714,14 @@ mod tests {
     fn serde_type_environment() {
         let mut p = parser::Parser::new("bool");
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for bool. {:?}", err);
         }
         let a = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
 
         let mut p = parser::Parser::new("time");
         let typ_expr = p.parse_type_expression();
-        let err = get_err_type_expression(typ_expr.clone());
-        if err != "" {
+        if let Err(err) = ast::check::check(ast::walk::Node::TypeExpression(&typ_expr)) {
             panic!("TypeExpression parsing failed for time. {:?}", err);
         }
         let b = convert_polytype(typ_expr, &mut Substitution::default()).unwrap();
