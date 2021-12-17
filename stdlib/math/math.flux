@@ -43,13 +43,13 @@ builtin maxfloat : float
 // smallestNonzeroFloat represents the smallest nonzero float value.
 builtin smallestNonzeroFloat : float
 
-// maxint represents the maximum integer value.
+// maxint represents the maximum integer value (`2^63 - 1`).
 builtin maxint : int
 
-// minint represents the minimum integer value.
+// minint represents the minimum integer value (`-2^63`).
 builtin minint : int
 
-// maxuint representes the maximum unsigned integer value.
+// maxuint representes the maximum unsigned integer value  (`2^64 - 1`).
 builtin maxuint : uint
 
 // abs returns the absolute value of `x`.
@@ -742,7 +742,7 @@ builtin erfinv : (x: float) => float
 //
 // < sampledata.float()
 // >    |> map(fn: (r) => ({r with _value: math.exp(x: r._value)}))
-//```
+// ```
 //
 // ## Special cases
 //
@@ -774,7 +774,7 @@ builtin exp : (x: float) => float
 //
 // < sampledata.float()
 // >    |> map(fn: (r) => ({r with _value: math.exp2(x: r._value)}))
-//```
+// ```
 //
 // ## Special cases
 //
@@ -811,7 +811,7 @@ builtin exp2 : (x: float) => float
 //
 // < data
 // >    |> map(fn: (r) => ({r with _value: math.expm1(x: r._value)}))
-//```
+// ```
 //
 // ## Special cases
 //
@@ -847,7 +847,7 @@ builtin expm1 : (x: float) => float
 //
 // < sampledata.float()
 // >    |> map(fn: (r) => ({r with _value: math.float64bits(f: r._value)}))
-//```
+// ```
 //
 builtin float64bits : (f: float) => uint
 
@@ -876,7 +876,7 @@ builtin float64bits : (f: float) => uint
 //
 // < data
 // >    |> map(fn: (r) => ({r with _value: math.float64frombits(b: r._value)}))
-//```
+// ```
 //
 builtin float64frombits : (b: uint) => float
 
@@ -901,7 +901,7 @@ builtin float64frombits : (b: uint) => float
 //
 // < sampledata.float()
 // >    |> map(fn: (r) => ({r with _value: math.floor(x: r._value)}))
-//```
+// ```
 //
 // ## Special cases
 //
@@ -976,7 +976,7 @@ builtin frexp : (f: float) => {frac: float, exp: int}
 //
 // < sampledata.float()
 // >    |> map(fn: (r) => ({r with _value: math.gamma(x: r._value)}))
-//```
+// ```
 //
 // ## Special cases
 //
@@ -1058,7 +1058,7 @@ builtin hypot : (p: float, q: float) => float
 //
 // < sampledata.float()
 // >    |> map(fn: (r) => ({r with _value: math.ilogb(x: r._value)}))
-//```
+// ```
 //
 // ## Special cases
 //
@@ -1092,7 +1092,7 @@ builtin ilogb : (x: float) => int
 //
 // < sampledata.int()
 // >    |> map(fn: (r) => ({r with _value: math.mInf(sign: r._value)}))
-//```
+// ```
 //
 builtin mInf : (sign: int) => float
 
@@ -1334,7 +1334,7 @@ builtin ldexp : (frac: float, exp: int) => float
 //             return {r with lgamma: result.lgamma, sign: result.sign}
 //         },
 // >     )
-//```
+// ```
 //
 // ## Special cases
 //
