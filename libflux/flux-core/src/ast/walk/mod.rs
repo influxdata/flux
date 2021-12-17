@@ -3,17 +3,12 @@
 #[cfg(test)]
 mod tests;
 
-use std::{
-    cell::{RefCell, RefMut},
-    rc::Rc,
-};
-
 use derive_more::Display;
 
 use crate::ast::*;
 
 /// Node represents any structure that can appear in the AST.
-#[derive(Debug, Display)]
+#[derive(Debug, Display, Clone)]
 #[allow(missing_docs)]
 pub enum Node<'a> {
     #[display(fmt = "Package")]
@@ -274,121 +269,113 @@ impl<'a> Node<'a> {
 /// See example with `FuncVisitor` below in this file.
 pub trait Visitor<'a>: Sized {
     /// Visit is called for a node.
-    /// The returned visitor will be used to walk children of the node.
-    /// If visit returns None, walk will not recurse on the children.
-    fn visit(&self, node: Rc<Node<'a>>) -> Option<Self>;
+    /// When the `Visitor` is used in [`walk`], the boolean value returned
+    /// is used to continue walking (`true`) or stop (`false`).
+    fn visit(&mut self, node: Node<'a>) -> bool;
     /// Done is called for a node once it has been visited along with all of its children.
-    fn done(&self, _: Rc<Node<'a>>) {} // default is to do nothing
+    fn done(&mut self, _: Node<'a>) {} // default is to do nothing
 }
 
 /// Walk recursively visits children of a node.
 /// Nodes are visited in depth-first order.
-pub fn walk<'a, T>(v: &T, node: Node<'a>)
+pub fn walk<'a, T>(v: &mut T, node: Node<'a>)
 where
     T: Visitor<'a>,
 {
-    walk_rc(v, Rc::new(node));
-}
-
-#[allow(missing_docs)]
-pub fn walk_rc<'a, T>(v: &T, node: Rc<Node<'a>>)
-where
-    T: Visitor<'a>,
-{
-    if let Some(w) = v.visit(node.clone()) {
-        match *node {
+    if v.visit(node.clone()) {
+        match node.clone() {
             Node::Package(n) => {
                 for file in n.files.iter() {
-                    walk(&w, Node::File(file));
+                    walk(v, Node::File(file));
                 }
             }
             Node::File(n) => {
                 if let Some(pkg) = &n.package {
-                    walk(&w, Node::PackageClause(pkg));
+                    walk(v, Node::PackageClause(pkg));
                 }
                 for imp in n.imports.iter() {
-                    walk(&w, Node::ImportDeclaration(imp));
+                    walk(v, Node::ImportDeclaration(imp));
                 }
                 for stmt in n.body.iter() {
-                    walk(&w, Node::from_stmt(stmt));
+                    walk(v, Node::from_stmt(stmt));
                 }
             }
             Node::PackageClause(n) => {
-                walk(&w, Node::Identifier(&n.name));
+                walk(v, Node::Identifier(&n.name));
             }
             Node::ImportDeclaration(n) => {
                 if let Some(alias) = &n.alias {
-                    walk(&w, Node::Identifier(alias));
+                    walk(v, Node::Identifier(alias));
                 }
-                walk(&w, Node::StringLit(&n.path));
+                walk(v, Node::StringLit(&n.path));
             }
             Node::Identifier(_) => {}
             Node::ArrayExpr(n) => {
                 for element in n.elements.iter() {
-                    walk(&w, Node::from_expr(&element.expression));
+                    walk(v, Node::from_expr(&element.expression));
                 }
             }
             Node::DictExpr(n) => {
                 for element in n.elements.iter() {
-                    walk(&w, Node::from_expr(&element.key));
-                    walk(&w, Node::from_expr(&element.val));
+                    walk(v, Node::from_expr(&element.key));
+                    walk(v, Node::from_expr(&element.val));
                 }
             }
             Node::FunctionExpr(n) => {
                 for param in n.params.iter() {
-                    walk(&w, Node::Property(param));
+                    walk(v, Node::Property(param));
                 }
-                walk(&w, Node::from_function_body(&n.body));
+                walk(v, Node::from_function_body(&n.body));
             }
             Node::LogicalExpr(n) => {
-                walk(&w, Node::from_expr(&n.left));
-                walk(&w, Node::from_expr(&n.right));
+                walk(v, Node::from_expr(&n.left));
+                walk(v, Node::from_expr(&n.right));
             }
             Node::ObjectExpr(n) => {
                 if let Some(ws) = &n.with {
-                    walk(&w, Node::Identifier(&ws.source));
+                    walk(v, Node::Identifier(&ws.source));
                 }
                 for prop in n.properties.iter() {
-                    walk(&w, Node::Property(prop));
+                    walk(v, Node::Property(prop));
                 }
             }
             Node::MemberExpr(n) => {
-                walk(&w, Node::from_expr(&n.object));
-                walk(&w, Node::from_property_key(&n.property));
+                walk(v, Node::from_expr(&n.object));
+                walk(v, Node::from_property_key(&n.property));
             }
             Node::IndexExpr(n) => {
-                walk(&w, Node::from_expr(&n.array));
-                walk(&w, Node::from_expr(&n.index));
+                walk(v, Node::from_expr(&n.array));
+                walk(v, Node::from_expr(&n.index));
             }
             Node::BinaryExpr(n) => {
-                walk(&w, Node::from_expr(&n.left));
-                walk(&w, Node::from_expr(&n.right));
+                walk(v, Node::from_expr(&n.left));
+                walk(v, Node::from_expr(&n.right));
             }
             Node::UnaryExpr(n) => {
-                walk(&w, Node::from_expr(&n.argument));
+                walk(v, Node::from_expr(&n.argument));
             }
             Node::PipeExpr(n) => {
-                walk(&w, Node::from_expr(&n.argument));
-                walk(&w, Node::CallExpr(&n.call));
+                walk(v, Node::from_expr(&n.argument));
+                walk(v, Node::CallExpr(&n.call));
             }
             Node::CallExpr(n) => {
-                walk(&w, Node::from_expr(&n.callee));
+                walk(v, Node::from_expr(&n.callee));
                 for arg in n.arguments.iter() {
-                    walk(&w, Node::from_expr(arg));
+                    walk(v, Node::from_expr(arg));
                 }
             }
             Node::ConditionalExpr(n) => {
-                walk(&w, Node::from_expr(&n.test));
-                walk(&w, Node::from_expr(&n.consequent));
-                walk(&w, Node::from_expr(&n.alternate));
+                walk(v, Node::from_expr(&n.test));
+                walk(v, Node::from_expr(&n.consequent));
+                walk(v, Node::from_expr(&n.alternate));
             }
             Node::StringExpr(n) => {
                 for part in n.parts.iter() {
-                    walk(&w, Node::from_string_expr_part(part));
+                    walk(v, Node::from_string_expr_part(part));
                 }
             }
             Node::ParenExpr(n) => {
-                walk(&w, Node::from_expr(&n.expression));
+                walk(v, Node::from_expr(&n.expression));
             }
             Node::IntegerLit(_) => {}
             Node::FloatLit(_) => {}
@@ -401,127 +388,122 @@ where
             Node::PipeLit(_) => {}
             Node::BadExpr(n) => {
                 if let Some(e) = &n.expression {
-                    walk(&w, Node::from_expr(e));
+                    walk(v, Node::from_expr(e));
                 }
             }
             Node::ExprStmt(n) => {
-                walk(&w, Node::from_expr(&n.expression));
+                walk(v, Node::from_expr(&n.expression));
             }
             Node::OptionStmt(n) => {
-                walk(&w, Node::from_assignment(&n.assignment));
+                walk(v, Node::from_assignment(&n.assignment));
             }
             Node::ReturnStmt(n) => {
-                walk(&w, Node::from_expr(&n.argument));
+                walk(v, Node::from_expr(&n.argument));
             }
             Node::BadStmt(_) => {}
             Node::TestStmt(n) => {
-                walk(&w, Node::VariableAssgn(&n.assignment));
+                walk(v, Node::VariableAssgn(&n.assignment));
             }
             Node::TestCaseStmt(n) => {
-                walk(&w, Node::Identifier(&n.id));
-                walk(&w, Node::Block(&n.block));
+                walk(v, Node::Identifier(&n.id));
+                walk(v, Node::Block(&n.block));
             }
             Node::BuiltinStmt(n) => {
-                walk(&w, Node::Identifier(&n.id));
-                walk(&w, Node::TypeExpression(&n.ty));
+                walk(v, Node::Identifier(&n.id));
+                walk(v, Node::TypeExpression(&n.ty));
             }
             Node::Block(n) => {
                 for s in n.body.iter() {
-                    walk(&w, Node::from_stmt(s));
+                    walk(v, Node::from_stmt(s));
                 }
             }
             Node::Property(n) => {
-                walk(&w, Node::from_property_key(&n.key));
-                if let Some(v) = &n.value {
-                    walk(&w, Node::from_expr(v));
+                walk(v, Node::from_property_key(&n.key));
+                if let Some(value) = &n.value {
+                    walk(v, Node::from_expr(value));
                 }
             }
             Node::TextPart(_) => {}
             Node::InterpolatedPart(n) => {
-                walk(&w, Node::from_expr(&n.expression));
+                walk(v, Node::from_expr(&n.expression));
             }
             Node::VariableAssgn(n) => {
-                walk(&w, Node::Identifier(&n.id));
-                walk(&w, Node::from_expr(&n.init));
+                walk(v, Node::Identifier(&n.id));
+                walk(v, Node::from_expr(&n.init));
             }
             Node::MemberAssgn(n) => {
-                walk(&w, Node::MemberExpr(&n.member));
-                walk(&w, Node::from_expr(&n.init));
+                walk(v, Node::MemberExpr(&n.member));
+                walk(v, Node::from_expr(&n.init));
             }
             Node::TypeExpression(n) => {
-                walk(&w, Node::MonoType(&n.monotype));
+                walk(v, Node::MonoType(&n.monotype));
                 for cons in &n.constraints {
-                    walk(&w, Node::TypeConstraint(cons));
+                    walk(v, Node::TypeConstraint(cons));
                 }
             }
             Node::MonoType(n) => match n {
                 MonoType::Tvar(_) => (),
                 MonoType::Basic(_) => (),
-                MonoType::Array(a) => walk(&w, Node::MonoType(&a.element)),
+                MonoType::Array(a) => walk(v, Node::MonoType(&a.element)),
                 MonoType::Dict(d) => {
-                    walk(&w, Node::MonoType(&d.key));
-                    walk(&w, Node::MonoType(&d.val));
+                    walk(v, Node::MonoType(&d.key));
+                    walk(v, Node::MonoType(&d.val));
                 }
                 MonoType::Record(r) => {
                     if let Some(tvar) = &r.tvar {
-                        walk(&w, Node::Identifier(tvar));
+                        walk(v, Node::Identifier(tvar));
                     }
 
                     for property in &r.properties {
-                        walk(&w, Node::PropertyType(property));
+                        walk(v, Node::PropertyType(property));
                     }
                 }
                 MonoType::Function(f) => {
                     for param in &f.parameters {
-                        walk(&w, Node::ParameterType(param));
+                        walk(v, Node::ParameterType(param));
                     }
 
-                    walk(&w, Node::MonoType(&f.monotype));
+                    walk(v, Node::MonoType(&f.monotype));
                 }
             },
             Node::PropertyType(n) => {
-                walk(&w, Node::Identifier(&n.name));
-                walk(&w, Node::MonoType(&n.monotype));
+                walk(v, Node::Identifier(&n.name));
+                walk(v, Node::MonoType(&n.monotype));
             }
             Node::ParameterType(n) => match n {
                 ParameterType::Required { name, monotype, .. } => {
-                    walk(&w, Node::Identifier(name));
-                    walk(&w, Node::MonoType(monotype));
+                    walk(v, Node::Identifier(name));
+                    walk(v, Node::MonoType(monotype));
                 }
                 ParameterType::Optional { name, monotype, .. } => {
-                    walk(&w, Node::Identifier(name));
-                    walk(&w, Node::MonoType(monotype));
+                    walk(v, Node::Identifier(name));
+                    walk(v, Node::MonoType(monotype));
                 }
                 ParameterType::Pipe { name, monotype, .. } => {
                     if let Some(name) = name {
-                        walk(&w, Node::Identifier(name));
+                        walk(v, Node::Identifier(name));
                     }
-                    walk(&w, Node::MonoType(monotype));
+                    walk(v, Node::MonoType(monotype));
                 }
             },
             Node::TypeConstraint(n) => {
-                walk(&w, Node::Identifier(&n.tvar));
+                walk(v, Node::Identifier(&n.tvar));
                 for id in &n.kinds {
-                    walk(&w, Node::Identifier(id));
+                    walk(v, Node::Identifier(id));
                 }
             }
         }
     }
 
-    v.done(node.clone())
+    v.done(node)
 }
 
-type FuncVisitor<'a> = Rc<RefCell<&'a mut dyn FnMut(Rc<Node>)>>;
-
-impl<'a> Visitor<'a> for FuncVisitor<'a> {
-    fn visit(&self, node: Rc<Node<'a>>) -> Option<Self> {
-        let mut func: RefMut<_> = self.borrow_mut();
-        (&mut *func)(node);
-        Some(Rc::clone(self))
+impl<'a, F> Visitor<'a> for F
+where
+    F: FnMut(Node<'a>),
+{
+    fn visit(&mut self, node: Node<'a>) -> bool {
+        self(node);
+        true
     }
-}
-
-/// Create Visitor will produce a visitor that calls the function for all nodes.
-pub fn create_visitor(func: &mut dyn FnMut(Rc<Node>)) -> FuncVisitor {
-    Rc::new(RefCell::new(func))
 }

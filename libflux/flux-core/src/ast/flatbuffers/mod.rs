@@ -6,8 +6,6 @@ mod ast_generated;
 #[cfg(test)]
 mod monotype;
 
-use std::{cell::RefCell, rc::Rc};
-
 use anyhow::{anyhow, bail, Error, Result};
 use ast_generated::fbast;
 use chrono::Offset;
@@ -20,69 +18,39 @@ use crate::{ast, ast::walk};
 /// also return a `usize` value which is the number of unused bytes at the start of the buffer.
 pub fn serialize(ast_pkg: &ast::Package) -> Result<(Vec<u8>, usize)> {
     // What would a good starting capacity be?
-    let v = new_serializing_visitor_with_capacity(1024);
-    walk::walk(&v, walk::Node::Package(ast_pkg));
+    let mut v = SerializingVisitor::with_capacity(1024);
+    walk::walk(&mut v, walk::Node::Package(ast_pkg));
     v.finish()
 }
 
 const UNKNOWNVARIANTNAME: &str = "UNKNOWNAST";
 
-fn new_serializing_visitor_with_capacity<'a>(_capacity: usize) -> SerializingVisitor<'a> {
-    SerializingVisitor {
-        inner: Rc::new(RefCell::new(SerializingVisitorState::with_capacity(1024))),
-    }
-}
-
-// Serializing to flatbuffers works like this:
-// A node can only be serialized once all of its internal components are also serialized.
-// This means a bottom-up walk of the tree.  We achieve this my matching on each node type
-// in the `done()` method of an AST visitor.
-//
-// As elements are serialized, state is maintained in an instance of `SerializingVisitorInner`.
-// In particular, each node in an expression tree is pushed on to a stack to be popped off
-// by the node that consumes it.
-struct SerializingVisitor<'a> {
-    inner: Rc<RefCell<SerializingVisitorState<'a>>>,
-}
-
 impl<'a> SerializingVisitor<'a> {
-    fn finish(self) -> Result<(Vec<u8>, usize)> {
-        let v = match Rc::try_unwrap(self.inner) {
-            Ok(sv) => sv,
-            Err(_) => bail!("error unwrapping rc"),
-        };
-        let mut v = v.into_inner();
-        if let Some(e) = v.err {
+    fn finish(mut self) -> Result<(Vec<u8>, usize)> {
+        if let Some(e) = self.err {
             return Err(e);
         };
-        let pkg = match v.package {
+        let pkg = match self.package {
             None => bail!("missing serialized package"),
             Some(pkg) => pkg,
         };
-        v.builder.finish(pkg, None);
+        self.builder.finish(pkg, None);
 
         // Collapse releases ownership of the byte vector and returns it to caller.
-        Ok(v.builder.collapse())
+        Ok(self.builder.collapse())
     }
 }
 
 impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
-    fn visit(&self, _node: Rc<walk::Node<'a>>) -> Option<Self> {
-        let v = self.inner.borrow();
-        if v.err.is_some() {
-            return None;
-        }
-        Some(SerializingVisitor {
-            inner: Rc::clone(&self.inner),
-        })
+    fn visit(&mut self, _node: walk::Node<'a>) -> bool {
+        self.err.is_none()
     }
 
-    fn done(&self, node: Rc<walk::Node<'a>>) {
-        let mut v = &mut *self.inner.borrow_mut();
+    fn done(&mut self, node: walk::Node<'a>) {
+        let v = self;
         if v.err.is_some() {
             return;
         }
-        let node = node.as_ref();
         let base_node = v.create_base_node(node.base());
         match node {
             walk::Node::IntegerLit(i) => {
@@ -793,7 +761,15 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
     }
 }
 
-struct SerializingVisitorState<'a> {
+// Serializing to flatbuffers works like this:
+// A node can only be serialized once all of its internal components are also serialized.
+// This means a bottom-up walk of the tree.  We achieve this my matching on each node type
+// in the `done()` method of an AST visitor.
+//
+// As elements are serialized, state is maintained in an instance of `SerializingVisitorInner`.
+// In particular, each node in an expression tree is pushed on to a stack to be popped off
+// by the node that consumes it.
+struct SerializingVisitor<'a> {
     // Any error that occurred during serialization, returned by the visitor's finish method.
     err: Option<Error>,
 
@@ -812,9 +788,9 @@ struct SerializingVisitorState<'a> {
     member_assign: Option<WIPOffset<UnionWIPOffset>>,
 }
 
-impl<'a> SerializingVisitorState<'a> {
-    fn with_capacity(capacity: usize) -> SerializingVisitorState<'a> {
-        SerializingVisitorState {
+impl<'a> SerializingVisitor<'a> {
+    fn with_capacity(capacity: usize) -> Self {
+        SerializingVisitor {
             err: None,
             builder: flatbuffers::FlatBufferBuilder::with_capacity(capacity),
             package: None,

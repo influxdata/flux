@@ -6,10 +6,7 @@ use crate::parser::parse_string;
 fn test_walk(source: &str, want: Vec<&str>) {
     let file = parse_string("test_walk".to_string(), source);
     let mut nodes = Vec::new();
-    walk(
-        &create_visitor(&mut |n| nodes.push(format!("{}", n))),
-        Node::File(&file),
-    );
+    walk(&mut |n| nodes.push(format!("{}", n)), Node::File(&file));
     assert_eq!(want, nodes);
 }
 

@@ -12,7 +12,7 @@ use crate::{
 pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
     let mut errors = Errors::new();
     walk::walk(
-        &walk::create_visitor(&mut |n| {
+        &mut |n: walk::Node| {
             // collect any errors we found prior to ast.check().
             for err in n.base().errors.iter() {
                 errors.push(located(
@@ -23,7 +23,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                 ));
             }
 
-            match *n {
+            match n {
                 walk::Node::BadStmt(n) => errors.push(located(
                     n.base.location.clone(),
                     ErrorKind {
@@ -75,7 +75,7 @@ pub fn check(node: walk::Node) -> Result<(), Errors<Error>> {
                 }
                 _ => {}
             }
-        }),
+        },
         node,
     );
     if errors.is_empty() {
