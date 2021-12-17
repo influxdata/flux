@@ -41,27 +41,26 @@ fn serialize<'a, 'b>(
     builder: &'b mut flatbuffers::FlatBufferBuilder<'a>,
 ) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {
     let mut v = SerializingVisitor {
-        inner: Rc::new(RefCell::new(SerializingVisitorState::with_builder(builder))),
+        inner: SerializingVisitorState::with_builder(builder),
     };
     walk::walk(&mut v, walk::Node::Package(semantic_pkg));
     v.offset()
 }
 
 struct SerializingVisitor<'a, 'b> {
-    inner: Rc<RefCell<SerializingVisitorState<'a, 'b>>>,
+    inner: SerializingVisitorState<'a, 'b>,
 }
 
 impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
     fn visit(&mut self, _node: walk::Node<'_>) -> bool {
-        let v = self.inner.borrow();
-        if v.err.is_some() {
+        if self.inner.err.is_some() {
             return false;
         }
         true
     }
 
     fn done(&mut self, node: walk::Node<'_>) {
-        let mut v = &mut *self.inner.borrow_mut();
+        let v = &mut self.inner;
         if v.err.is_some() {
             return;
         }
@@ -919,11 +918,7 @@ impl<'a, 'b> SerializingVisitor<'a, 'b> {
     // Return the offset for the package, checking for any error that may have occurred during
     // serialization.
     fn offset(self) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {
-        let v = match Rc::try_unwrap(self.inner) {
-            Ok(sv) => sv,
-            Err(_) => bail!("error unwrapping rc"),
-        };
-        let mut v = v.into_inner();
+        let v = self.inner;
         if let Some(e) = v.err {
             return Err(e);
         };
