@@ -452,22 +452,22 @@ pub fn vectorize(pkg: &mut Package) -> Result<()> {
         result: Result<()>,
     }
     impl VisitorMut for Vectorizer {
-        fn visit(&mut self, node: &mut NodeMut) -> bool {
-            if self.result.is_err() {
-                return false;
-            }
+        fn visit(&mut self, _node: &mut NodeMut) -> bool {
+            self.result.is_ok()
+        }
+
+        fn done(&mut self, node: &mut NodeMut) {
             if let NodeMut::FunctionExpr(function) = node {
                 match function.vectorize() {
                     Ok(vectorized) => function.vectorized = Some(Box::new(vectorized)),
                     Err(err) => self.result = Err(err),
                 }
             }
-            true
         }
     }
 
     let mut visitor = Vectorizer { result: Ok(()) };
-    walk_mut(&mut visitor, &mut NodeMut::Package(pkg));
+    walk_mut(&mut visitor, NodeMut::Package(pkg));
     visitor.result
 }
 

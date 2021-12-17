@@ -1273,7 +1273,7 @@ mod tests {
         // We don't want to specifc the exact locations for each node in the tests
         walk_mut(
             &mut |n: &mut NodeMut| n.set_loc(ast::BaseNode::default().location),
-            &mut NodeMut::Package(&mut pkg),
+            NodeMut::Package(&mut pkg),
         );
 
         Ok(pkg)

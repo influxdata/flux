@@ -1,7 +1,13 @@
 //! Walking the semantic graph.
 
 macro_rules! mk_node {
-    ($(#[$attr:meta])* $name: ident $($mut: tt)?) => {
+    (
+        $(#[$attr:meta])*
+        $name: ident,
+        $visitor: ident $(<$visitor_lt: lifetime>)?,
+        $walk: ident,
+        $($mut: tt)?
+    ) => {
 
         $(#[$attr])*
         pub enum $name<'a> {
@@ -250,6 +256,178 @@ macro_rules! mk_node {
                     Assignment::Member(m) => Self::MemberAssgn(m),
                 }
             }
+        }
+
+        /// Recursively visits children of a node given a [`Visitor`].
+        /// Nodes are visited in depth-first order.
+        pub fn $walk<'a, T>(v: &mut T, $($mut)? node: $name<'a>)
+        where
+            T: $visitor $(<$visitor_lt>)?,
+        {
+            if v.visit($(&$mut)? node) {
+                match &$($mut)? node {
+                    $name::Package(n) => {
+                        for file in &$($mut)? n.files {
+                            $walk(v, $name::File(file));
+                        }
+                    }
+                    $name::File(n) => {
+                        if let Some(pkg) = &$($mut)? n.package {
+                            $walk(v, $name::PackageClause(pkg));
+                        }
+                        for imp in &$($mut)? n.imports {
+                            $walk(v, $name::ImportDeclaration(imp));
+                        }
+                        for stmt in &$($mut)? n.body {
+                            $walk(v, $name::from_stmt(stmt));
+                        }
+                    }
+                    $name::PackageClause(n) => {
+                        $walk(v, $name::Identifier(& $($mut)? n.name));
+                    }
+                    $name::ImportDeclaration(n) => {
+                        if let Some(alias) = &$($mut)? n.alias {
+                            $walk(v, $name::Identifier(alias));
+                        }
+                        $walk(v, $name::StringLit(& $($mut)? n.path));
+                    }
+                    $name::Identifier(_) => {}
+                    $name::IdentifierExpr(_) => {}
+                    $name::ArrayExpr(n) => {
+                        for element in &$($mut)? n.elements {
+                            $walk(v, $name::from_expr(element));
+                        }
+                    }
+                    $name::DictExpr(n) => {
+                        for (key, val) in &$($mut)? n.elements {
+                            $walk(v, $name::from_expr(key));
+                            $walk(v, $name::from_expr(val));
+                        }
+                    }
+                    $name::FunctionExpr(n) => {
+                        for param in &$($mut)? n.params {
+                            $walk(v, $name::FunctionParameter(param));
+                        }
+                        $walk(v, $name::Block(& $($mut)? n.body));
+                        if let Some(vectorized) = &$($mut)? n.vectorized {
+                            $walk(v, $name::FunctionExpr(vectorized));
+                        }
+                    }
+                    $name::FunctionParameter(n) => {
+                        $walk(v, $name::Identifier(& $($mut)? n.key));
+                        if let Some(def) = &$($mut)? n.default {
+                            $walk(v, $name::from_expr(def));
+                        }
+                    }
+                    $name::LogicalExpr(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.left));
+                        $walk(v, $name::from_expr(& $($mut)? n.right));
+                    }
+                    $name::ObjectExpr(n) => {
+                        if let Some(i) = &$($mut)? n.with {
+                            $walk(v, $name::IdentifierExpr(i));
+                        }
+                        for prop in &$($mut)? n.properties {
+                            $walk(v, $name::Property(prop));
+                        }
+                    }
+                    $name::MemberExpr(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.object));
+                    }
+                    $name::IndexExpr(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.array));
+                        $walk(v, $name::from_expr(& $($mut)? n.index));
+                    }
+                    $name::BinaryExpr(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.left));
+                        $walk(v, $name::from_expr(& $($mut)? n.right));
+                    }
+                    $name::UnaryExpr(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.argument));
+                    }
+                    $name::CallExpr(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.callee));
+                        if let Some(p) = &$($mut)? n.pipe {
+                            $walk(v, $name::from_expr(p));
+                        }
+                        for arg in &$($mut)? n.arguments {
+                            $walk(v, $name::Property(arg));
+                        }
+                    }
+                    $name::ConditionalExpr(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.test));
+                        $walk(v, $name::from_expr(& $($mut)? n.consequent));
+                        $walk(v, $name::from_expr(& $($mut)? n.alternate));
+                    }
+                    $name::StringExpr(n) => {
+                        for part in &$($mut)? n.parts {
+                            $walk(v, $name::from_string_expr_part(part));
+                        }
+                    }
+                    $name::IntegerLit(_) => {}
+                    $name::FloatLit(_) => {}
+                    $name::StringLit(_) => {}
+                    $name::DurationLit(_) => {}
+                    $name::UintLit(_) => {}
+                    $name::BooleanLit(_) => {}
+                    $name::DateTimeLit(_) => {}
+                    $name::RegexpLit(_) => {}
+                    $name::ExprStmt(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.expression));
+                    }
+                    $name::OptionStmt(n) => {
+                        $walk(v, $name::from_assignment(& $($mut)? n.assignment));
+                    }
+                    $name::ReturnStmt(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.argument));
+                    }
+                    $name::TestStmt(n) => {
+                        $walk(v, $name::VariableAssgn(& $($mut)? n.assignment));
+                    }
+                    $name::TestCaseStmt(n) => {
+                        $walk(v, $name::Identifier(& $($mut)? n.id));
+                        if let Some(e) = & $($mut)? n.extends {
+                            $walk(v, $name::StringLit(e));
+                        }
+                        for stmt in & $($mut)? n.body {
+                            $walk(v, $name::from_stmt(stmt));
+                        }
+                    }
+                    $name::BuiltinStmt(n) => {
+                        $walk(v, $name::Identifier(& $($mut)? n.id));
+                    }
+                    $name::ErrorStmt(_) => {}
+                    $name::Block(n) => match n {
+                        Block::Variable(assgn, next) => {
+                            $walk(v, $name::VariableAssgn(assgn));
+                            $walk(v, $name::Block(& $($mut)? *next));
+                        }
+                        Block::Expr(estmt, next) => {
+                            $walk(v, $name::ExprStmt(estmt));
+                            $walk(v, $name::Block(& $($mut)? *next))
+                        }
+                        Block::Return(ret_stmt) => $walk(v, $name::ReturnStmt(ret_stmt)),
+                    },
+                    $name::Property(n) => {
+                        $walk(v, $name::Identifier(& $($mut)? n.key));
+                        $walk(v, $name::from_expr(& $($mut)? n.value));
+                    }
+                    $name::TextPart(_) => {}
+                    $name::InterpolatedPart(n) => {
+                        $walk(v, $name::from_expr(& $($mut)? n.expression));
+                    }
+                    $name::VariableAssgn(n) => {
+                        $walk(v, $name::Identifier(& $($mut)? n.id));
+                        $walk(v, $name::from_expr(& $($mut)? n.init));
+                    }
+                    $name::MemberAssgn(n) => {
+                        $walk(v, $name::MemberExpr(& $($mut)? n.member));
+                        $walk(v, $name::from_expr(& $($mut)? n.init));
+                    }
+                    $name::ErrorExpr(_) => (),
+                };
+            }
+            v.done($(&$mut)? node);
         }
     };
 }
