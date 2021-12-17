@@ -33,6 +33,9 @@ package interpolate
 // #         {_time: 2021-01-09T00:00:00Z, _value: 90.0},
 // #     ],
 // # )
+//
+// < data
+// >     |> interpolate.linear(every: 1d)
 // ```
 //
 // tags: transformations
