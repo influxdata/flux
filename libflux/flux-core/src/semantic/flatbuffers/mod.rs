@@ -40,27 +40,21 @@ fn serialize<'a, 'b>(
     semantic_pkg: &semantic::nodes::Package,
     builder: &'b mut flatbuffers::FlatBufferBuilder<'a>,
 ) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {
-    let mut v = SerializingVisitor {
-        inner: SerializingVisitorState::with_builder(builder),
-    };
+    let mut v = SerializingVisitor::with_builder(builder);
     walk::walk(&mut v, walk::Node::Package(semantic_pkg));
     v.offset()
 }
 
-struct SerializingVisitor<'a, 'b> {
-    inner: SerializingVisitorState<'a, 'b>,
-}
-
 impl<'a, 'b> semantic::walk::Visitor<'_> for SerializingVisitor<'a, 'b> {
     fn visit(&mut self, _node: walk::Node<'_>) -> bool {
-        if self.inner.err.is_some() {
+        if self.err.is_some() {
             return false;
         }
         true
     }
 
     fn done(&mut self, node: walk::Node<'_>) {
-        let v = &mut self.inner;
+        let v = self;
         if v.err.is_some() {
             return;
         }
@@ -918,18 +912,17 @@ impl<'a, 'b> SerializingVisitor<'a, 'b> {
     // Return the offset for the package, checking for any error that may have occurred during
     // serialization.
     fn offset(self) -> Result<flatbuffers::WIPOffset<fbsemantic::Package<'a>>> {
-        let v = self.inner;
-        if let Some(e) = v.err {
+        if let Some(e) = self.err {
             return Err(e);
         };
-        match v.package {
+        match self.package {
             None => Err(anyhow!("missing serialized package")),
             Some(offset) => Ok(offset),
         }
     }
 }
 
-struct SerializingVisitorState<'a: 'b, 'b> {
+struct SerializingVisitor<'a: 'b, 'b> {
     // Any error that occurred during serialization, returned by the visitor's check method.
     err: Option<Error>,
 
@@ -951,11 +944,9 @@ struct SerializingVisitorState<'a: 'b, 'b> {
     string_expr_parts: Vec<WIPOffset<fbsemantic::StringExpressionPart<'a>>>,
 }
 
-impl<'a, 'b> SerializingVisitorState<'a, 'b> {
-    fn with_builder(
-        builder: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-    ) -> SerializingVisitorState<'a, 'b> {
-        SerializingVisitorState {
+impl<'a, 'b> SerializingVisitor<'a, 'b> {
+    fn with_builder(builder: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> Self {
+        SerializingVisitor {
             err: None,
             builder,
             package: None,
