@@ -18,6 +18,7 @@ import "strings"
 // ## Parameters
 // - exclude: Group key columns to exclude when generating the deduplication key.
 //   Default is ["_start", "_stop", "_level"].
+// - tables: Input data. Default is piped-forward data (`<-`).
 //
 // ## Examples
 //
@@ -96,7 +97,7 @@ actionFromSeverity = (severity) =>
     else
         "trigger"
 
-// `actionFromLevel` converts a monitoring level to a PagerDuty action.
+// actionFromLevel converts a monitoring level to a PagerDuty action.
 //
 // - `ok` converts to `resolve`.
 // - All other levels convert to `trigger`.
@@ -125,7 +126,7 @@ actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve"
 // - routingKey: Routing key generated from your PagerDuty integration.
 // - client: Name of the client sending the alert.
 // - clientURL: URL of the client sending the alert.
-// - dedupkey: Per-alert ID that acts as deduplication key and allows you to
+// - dedupKey: Per-alert ID that acts as deduplication key and allows you to
 //   acknowledge or change the severity of previous messages.
 //   Supports a maximum of 255 characters.
 // - class: Class or type of the event.

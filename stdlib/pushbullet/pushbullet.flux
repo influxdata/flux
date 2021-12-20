@@ -1,10 +1,14 @@
 // Package pushbullet provides functions for sending data to Pushbullet.
+// 
+// introduced: 0.66.0
+// 
 package pushbullet
 
 
 import "http"
 import "json"
 
+// defaultURL is the default Pushbullet API URL used by functions in the `pushbullet` package.
 option defaultURL = "https://api.pushbullet.com/v2/pushes"
 
 // pushData sends a push notification to the Pushbullet API.
