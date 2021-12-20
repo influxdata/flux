@@ -152,9 +152,10 @@ void test_stateful_analyzer() {
   struct flux_error_t *err = NULL;
 
   printf("Parsing and analyzing \"x = 10\"\n");
-  ast_pkg = flux_parse("test", "x = 10");
+  const char* src = "x = 10";
+  ast_pkg = flux_parse("test", src);
   assert(ast_pkg != NULL);
-  err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
+  err = flux_analyze_with(analyzer, src, ast_pkg, &sem_pkg);
   assert(err == NULL);
   assert(sem_pkg != NULL);
   flux_free_semantic_pkg(sem_pkg);
@@ -163,7 +164,7 @@ void test_stateful_analyzer() {
   ast_pkg = flux_parse("test", "y = x * x");
   assert(ast_pkg != NULL);
   sem_pkg = NULL;
-  err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
+  err = flux_analyze_with(analyzer, NULL, ast_pkg, &sem_pkg);
   assert(err == NULL);
   assert(sem_pkg != NULL);
   flux_free_semantic_pkg(sem_pkg);
@@ -172,11 +173,12 @@ void test_stateful_analyzer() {
   ast_pkg = flux_parse("test", "z = a + y");
   assert(ast_pkg != NULL);
   sem_pkg = NULL;
-  err = flux_analyze_with(analyzer, ast_pkg, &sem_pkg);
+  err = flux_analyze_with(analyzer, NULL, ast_pkg, &sem_pkg);
   assert(err != NULL);
   assert(sem_pkg == NULL);
   const char* err_str = flux_error_str(err);
   printf("  error: %s\n", err_str);
+  flux_error_print(err);
   flux_free_error(err);
 
   flux_free_stateful_analyzer(analyzer);

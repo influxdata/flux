@@ -8,6 +8,7 @@ use std::{
     slice, vec,
 };
 
+use codespan_reporting::diagnostic;
 use derive_more::Display;
 
 use crate::{
@@ -200,5 +201,23 @@ where
     }
     fn free_vars(&self) -> Vec<Tvar> {
         self.error.free_vars()
+    }
+}
+
+pub(crate) trait AsDiagnostic {
+    fn as_diagnostic(&self, source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()>;
+}
+
+impl<E> AsDiagnostic for Located<E>
+where
+    E: AsDiagnostic,
+{
+    fn as_diagnostic(&self, source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        self.error
+            .as_diagnostic(source)
+            .with_labels(vec![diagnostic::Label::primary(
+                (),
+                source.codespan_range(&self.location),
+            )])
     }
 }

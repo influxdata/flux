@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    errors::{located, Located},
+    errors::{located, AsDiagnostic, Located},
     semantic::{
         nodes,
         nodes::{Assignment, Expression, Statement},
@@ -11,6 +11,8 @@ use crate::{
         walk::Node,
     },
 };
+
+use codespan_reporting::diagnostic;
 
 // OptionMap maps the name of a Flux option (including an optional package qualifier)
 // to its corresponding option statement.
@@ -64,6 +66,12 @@ impl std::fmt::Display for ErrorKind {
 }
 
 impl std::error::Error for Error {}
+
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
+    }
+}
 
 /// This function checks a semantic graph, looking for errors.
 ///

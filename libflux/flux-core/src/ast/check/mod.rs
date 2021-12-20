@@ -1,10 +1,11 @@
 //! Checking the AST.
 
+use codespan_reporting::diagnostic;
 use thiserror::Error;
 
 use crate::{
     ast::{walk, PropertyKey},
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
 };
 
 /// Inspects an AST node and returns a list of found AST errors plus
@@ -94,6 +95,12 @@ pub type Error = Located<ErrorKind>;
 pub struct ErrorKind {
     /// Error message.
     pub message: String,
+}
+
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
+    }
 }
 
 #[cfg(test)]

@@ -14,12 +14,13 @@ use std::{collections::HashMap, fmt::Debug, vec::Vec};
 
 use anyhow::{anyhow, bail, Result as AnyhowResult};
 use chrono::{prelude::DateTime, FixedOffset};
+use codespan_reporting::diagnostic;
 use derivative::Derivative;
 use derive_more::Display;
 
 use crate::{
     ast,
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
     semantic::{
         env::Environment,
         import::Importer,
@@ -67,6 +68,15 @@ pub enum ErrorKind {
 }
 
 impl std::error::Error for Error {}
+
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        match self {
+            ErrorKind::Inference(err) => err.as_diagnostic(),
+            _ => diagnostic::Diagnostic::error().with_message(self.to_string()),
+        }
+    }
+}
 
 impl Substitutable for ErrorKind {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {

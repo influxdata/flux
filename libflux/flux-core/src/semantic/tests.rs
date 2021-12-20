@@ -27,9 +27,7 @@ use colored::*;
 use derive_more::Display;
 
 use crate::{
-    ast,
-    errors::Errors,
-    parser,
+    ast, parser,
     semantic::{
         self,
         convert::convert_polytype,
@@ -72,7 +70,7 @@ fn parse_map(package: Option<&str>, m: HashMap<&str, &str>) -> PolyTypeMap<Symbo
 #[derive(Debug, Display, PartialEq)]
 enum Error {
     #[display(fmt = "{}", _0)]
-    Semantic(Errors<semantic::Error>),
+    Semantic(semantic::FileErrors),
     #[display(
         fmt = "\n\n{}\n\n{}\n{}\n{}\n{}\n",
         r#""unexpected types:".red().bold()"#,
@@ -87,6 +85,21 @@ enum Error {
         want: SemanticMap<Symbol, PolyType>,
         got: SemanticMap<Symbol, PolyType>,
     },
+}
+
+impl Error {
+    fn pretty(&self, source: &str) -> String {
+        match self {
+            Self::Semantic(err) => err.pretty(source),
+            _ => self.to_string(),
+        }
+    }
+    fn pretty_short(&self, source: &str) -> String {
+        match self {
+            Self::Semantic(err) => err.pretty_short(source),
+            _ => self.to_string(),
+        }
+    }
 }
 
 impl std::error::Error for Error {}
@@ -249,9 +262,9 @@ macro_rules! test_infer_err {
             Err(err @ Error::TypeMismatch {.. }) => {
                 panic!("{}", err)
             }
-            Err(Error::Semantic(errors)) => {
-                for err in errors {
-                    if let semantic::Error{error: semantic::ErrorKind::InvalidAST(_),..} = err {
+            Err(Error::Semantic(error)) => {
+                for err in error.errors {
+                    if let semantic::ErrorKind::InvalidAST(_) = err.error {
                         panic!("{}", err);
                     }
                 }
@@ -294,7 +307,36 @@ macro_rules! test_error_msg {
             None,
             AnalyzerConfig::default(),
         ) {
-            Err(e) => $expect.assert_eq(&e.to_string()),
+            Err(e) => {
+                let got = e.pretty($src);
+                $expect.assert_eq(&got);
+            }
+            Ok(_) => panic!("expected error, instead program passed type checking"),
+        }
+    }};
+
+    ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)?, expect_short: $expect:expr $(,)? ) => {{
+        #[allow(unused_mut, unused_assignments)]
+        let mut imp = HashMap::default();
+        $(
+            imp = $imp;
+        )?
+        #[allow(unused_mut, unused_assignments)]
+        let mut env = HashMap::default();
+        $(
+            env = $env;
+        )?
+        match infer_types(
+            $src,
+            env,
+            imp,
+            None,
+            AnalyzerConfig::default(),
+        ) {
+            Err(e) => {
+                let got = e.pretty_short($src);
+                $expect.assert_eq(&got);
+            }
             Ok(_) => panic!("expected error, instead program passed type checking"),
         }
     }};
@@ -3688,9 +3730,37 @@ fn primitive_kind_errors() {
             isType(v: {}, type: "record")
             isType(v: [], type: "array")
         "#,
-        err: "error @2:13-2:42: {} is not Basic (argument v)
+        expect: expect_test::expect![[r#"
+            error: {} is not Basic (argument v)
+              ┌─ main:2:13
+              │
+            2 │             isType(v: {}, type: "record")
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error @3:13-3:41: [A] is not Basic (argument v)",
+            error: [A] is not Basic (argument v)
+              ┌─ main:3:13
+              │
+            3 │             isType(v: [], type: "array")
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        "#]]
+    }
+}
+
+#[test]
+fn primitive_kind_short_errors() {
+    test_error_msg! {
+        env: map![
+            "isType" => "(v: A, type: string) => bool where A: Basic",
+        ],
+        src: r#"
+            isType(v: {}, type: "record")
+            isType(v: [], type: "array")
+        "#,
+        expect_short: expect_test::expect![[r#"
+            main:2:13: error: {} is not Basic (argument v)
+            main:3:13: error: [A] is not Basic (argument v)
+        "#]]
     }
 }
 
@@ -3700,7 +3770,14 @@ fn invalid_mono_type() {
         src: r#"
             builtin x : abc
         "#,
-        expect: expect_test::expect![[r#"error @2:25-2:28: invalid named type abc"#]]
+        expect: expect_test::expect![[r#"
+            error: invalid named type abc
+              ┌─ main:2:25
+              │
+            2 │             builtin x : abc
+              │                         ^^^
+
+        "#]]
     }
 }
 
@@ -3710,7 +3787,14 @@ fn missing_return() {
         src: r#"
             () => { }
         "#,
-        expect: expect_test::expect![[r#"error @2:19-2:22: missing return statement in block"#]]
+        expect: expect_test::expect![[r#"
+            error: missing return statement in block
+              ┌─ main:2:19
+              │
+            2 │             () => { }
+              │                   ^^^
+
+        "#]]
     }
 }
 

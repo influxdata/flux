@@ -24,13 +24,21 @@ mod tests;
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
 
-use std::convert::TryFrom;
+use std::{convert::TryFrom, fmt, ops::Range};
 
+use codespan_reporting::{
+    diagnostic,
+    files::Files,
+    term::{
+        self,
+        termcolor::{self, WriteColor},
+    },
+};
 use thiserror::Error;
 
 use crate::{
     ast,
-    errors::{Errors, Located},
+    errors::{AsDiagnostic, Errors, Located},
     parser,
     semantic::{
         infer::Constraints,
@@ -40,6 +48,8 @@ use crate::{
     },
 };
 
+/// Result type for multiple semantic errors
+pub type Result<T, E = FileErrors> = std::result::Result<T, E>;
 /// Error represents any error that can occur during any step of the type analysis process.
 pub type Error = Located<ErrorKind>;
 
@@ -237,6 +247,124 @@ fn build_record(
     (r, cons)
 }
 
+/// Error represents any any error that can occur during any step of the type analysis process.
+#[derive(Error, Debug, PartialEq)]
+pub struct FileErrors {
+    /// The file that the errors occured in
+    pub file: String,
+    /// The source for this error, if one exists
+    // TODO Change the API such that we must always provide the source?
+    pub source: Option<String>,
+    #[source]
+    /// The errors the occurred in that file
+    pub errors: Errors<Located<ErrorKind>>,
+}
+
+impl fmt::Display for FileErrors {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TODO Use codespan's formatting for errors
+        self.errors.fmt(f)
+    }
+}
+
+pub(crate) trait Source {
+    fn codespan_range(&self, location: &ast::SourceLocation) -> Range<usize>;
+}
+
+impl Source for codespan_reporting::files::SimpleFile<&str, &str> {
+    fn codespan_range(&self, location: &ast::SourceLocation) -> Range<usize> {
+        (|| {
+            let start = self
+                .line_range((), location.start.line as usize - 1)
+                .ok()?
+                .start;
+            let end = self
+                .line_range((), location.end.line as usize - 1)
+                .ok()?
+                .start;
+            Some(start + location.start.column as usize - 1..end + location.end.column as usize - 1)
+        })()
+        .unwrap_or_default()
+    }
+}
+
+impl FileErrors {
+    /// Prints the errors
+    pub fn pretty(&self, source: &str) -> String {
+        self.pretty_config(&term::Config::default(), source)
+    }
+
+    /// Prints the errors in their short form
+    pub fn pretty_short(&self, source: &str) -> String {
+        self.pretty_config(
+            &term::Config {
+                display_style: term::DisplayStyle::Short,
+                ..term::Config::default()
+            },
+            source,
+        )
+    }
+
+    /// Prints the errors to stdout
+    pub fn print(&self) {
+        match &self.source {
+            Some(source) => {
+                let mut stdout = termcolor::StandardStream::stdout(termcolor::ColorChoice::Auto);
+                // Mirror println! by ignoring errors
+                let _ = self.print_config(&term::Config::default(), source, &mut stdout);
+            }
+            None => println!("{}", self.errors),
+        }
+    }
+
+    /// Prints the errors to a `String`
+    pub fn pretty_config(&self, config: &term::Config, source: &str) -> String {
+        let mut buffer = termcolor::Buffer::no_color();
+        self.print_config(config, source, &mut buffer)
+            .expect("Writing to a termcolor::Buffer can't fail");
+        String::from_utf8(buffer.into_inner())
+            .expect("We only write utf-8 when we don't use coloring")
+    }
+
+    fn print_config(
+        &self,
+        config: &term::Config,
+        source: &str,
+        writer: &mut dyn WriteColor,
+    ) -> Result<(), codespan_reporting::files::Error> {
+        let files = codespan_reporting::files::SimpleFile::new(&self.file[..], source);
+        for err in &self.errors {
+            err.pretty_fmt(config, &files, writer)?;
+        }
+        Ok(())
+    }
+}
+
+impl Error {
+    fn pretty_fmt(
+        &self,
+        config: &term::Config,
+        files: &codespan_reporting::files::SimpleFile<&str, &str>,
+        writer: &mut dyn WriteColor,
+    ) -> Result<(), codespan_reporting::files::Error> {
+        let diagnostic = self.as_diagnostic(files);
+
+        term::emit(writer, config, files, &diagnostic)?;
+        Ok(())
+    }
+}
+
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, source: &dyn Source) -> diagnostic::Diagnostic<()> {
+        match self {
+            Self::InvalidAST(err) => err.as_diagnostic(source),
+            Self::Convert(err) => err.as_diagnostic(source),
+            Self::InvalidSemantic(err) => err.as_diagnostic(source),
+            Self::Inference(err) => err.as_diagnostic(source),
+        }
+    }
+}
+
 /// Analyzer provides an API for analyzing Flux code.
 #[derive(Default)]
 pub struct Analyzer<'env, I: import::Importer> {
@@ -268,13 +396,14 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
     pub fn new_with_defaults(env: env::Environment<'env>, importer: I) -> Self {
         Analyzer::new(env, importer, AnalyzerConfig::default())
     }
+
     /// Analyze Flux source code returning the semantic package and the package environment.
     pub fn analyze_source(
         &mut self,
         pkgpath: String,
         file_name: String,
         src: &str,
-    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
         let ast_file = parser::parse_string(file_name, src);
         let ast_pkg = ast::Package {
             base: ast_file.base.clone(),
@@ -282,15 +411,20 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             package: ast_file.get_package().to_string(),
             files: vec![ast_file],
         };
-        self.analyze_ast(ast_pkg)
+        self.analyze_ast(ast_pkg).map_err(|mut err| {
+            err.source = Some(src.into());
+            err
+        })
     }
+
     /// Analyze Flux AST returning the semantic package and the package environment.
     pub fn analyze_ast(
         &mut self,
         ast_pkg: ast::Package,
-    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
         self.analyze_ast_with_substitution(ast_pkg, &mut sub::Substitution::default())
     }
+
     /// Analyze Flux AST returning the semantic package and the package environment.
     /// A custom fresher may be provided.
     pub fn analyze_ast_with_substitution(
@@ -299,7 +433,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         // operation.
         ast_pkg: ast::Package,
         sub: &mut sub::Substitution,
-    ) -> Result<(PackageExports, nodes::Package), Errors<Error>> {
+    ) -> Result<(PackageExports, nodes::Package), FileErrors> {
         let mut errors = Errors::new();
         if !self.config.skip_checks {
             if let Err(err) = ast::check::check(ast::walk::Node::Package(&ast_pkg)) {
@@ -307,11 +441,16 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
             }
         }
 
+        let file = ast_pkg.package.clone();
         let mut sem_pkg = match convert::convert_package(ast_pkg, &self.env, sub) {
             Ok(sem_pkg) => sem_pkg,
             Err(err) => {
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(errors);
+                return Err(FileErrors {
+                    file,
+                    source: None,
+                    errors,
+                });
             }
         };
         if !self.config.skip_checks {
@@ -324,16 +463,34 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
         let env = match nodes::infer_package(&mut sem_pkg, &mut self.env, sub, &mut self.importer) {
             Ok(()) => {
                 let env = self.env.exit_scope();
-                PackageExports::try_from(env.values)?
+                match PackageExports::try_from(env.values) {
+                    Ok(env) => env,
+                    Err(err) => {
+                        errors.push(err);
+                        return Err(FileErrors {
+                            file: sem_pkg.package,
+                            source: None,
+                            errors,
+                        });
+                    }
+                }
             }
             Err(err) => {
                 self.env.exit_scope();
                 errors.extend(err.into_iter().map(Error::from));
-                return Err(errors);
+                return Err(FileErrors {
+                    file: sem_pkg.package,
+                    source: None,
+                    errors,
+                });
             }
         };
         if errors.has_errors() {
-            return Err(errors);
+            return Err(FileErrors {
+                file: sem_pkg.package,
+                source: None,
+                errors,
+            });
         }
 
         Ok((env, nodes::inject_pkg_types(sem_pkg, sub)))

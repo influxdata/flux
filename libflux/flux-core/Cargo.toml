@@ -30,6 +30,7 @@ anyhow = "1"
 ena = "0.14"
 env_logger = "0.9"
 thiserror = "1"
+codespan-reporting = "0.11"
 comrak = "0.10.1"
 fnv = "1.0.7"
 derive_more = { version = "0.99.11", default-features = false, features = [

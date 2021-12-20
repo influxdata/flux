@@ -14,8 +14,9 @@ extern crate pretty_assertions;
 
 use std::{convert::TryFrom, ffi::*, mem, os::raw::c_char};
 
-use anyhow::{self, bail, Result};
+use anyhow::anyhow;
 use once_cell::sync::Lazy;
+use thiserror::Error;
 
 pub use fluxcore::{ast, formatter, scanner, semantic, *};
 use fluxcore::{
@@ -33,6 +34,21 @@ use fluxcore::{
         Analyzer, AnalyzerConfig, PackageExports,
     },
 };
+
+/// Result type for flux
+pub type Result<T, E = Error> = std::result::Result<T, E>;
+
+/// Error type for flux
+#[derive(Error, Debug)]
+pub enum Error {
+    /// Semantic error
+    #[error(transparent)]
+    Semantic(#[from] semantic::FileErrors),
+
+    /// Other errors that do not have a dedicated variant
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
+}
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
 
@@ -58,11 +74,11 @@ pub fn imports() -> Option<Packages> {
 pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static, Packages>> {
     let env = match &*PRELUDE {
         Some(prelude) => prelude,
-        None => bail!("missing prelude"),
+        None => return Err(anyhow!("missing prelude").into()),
     };
     let importer = match imports() {
         Some(imports) => imports,
-        None => bail!("missing stdlib imports"),
+        None => return Err(anyhow!("missing stdlib inports").into()),
     };
     Ok(Analyzer::new(Environment::from(env), importer, config))
 }
@@ -70,19 +86,18 @@ pub fn new_semantic_analyzer(config: AnalyzerConfig) -> Result<Analyzer<'static,
 /// An error handle designed to allow passing `Error` instances to library
 /// consumers across language boundaries.
 pub struct ErrorHandle {
-    /// A heap-allocated `Error`
-    pub err: CString,
+    /// A heap-allocated `Error` message
+    message: CString,
+
+    /// The actual error
+    err: Error,
 }
 
-impl From<anyhow::Error> for Box<ErrorHandle> {
-    fn from(mut err: anyhow::Error) -> Self {
-        (&mut err).into()
-    }
-}
-impl From<&mut anyhow::Error> for Box<ErrorHandle> {
-    fn from(err: &mut anyhow::Error) -> Self {
+impl From<Error> for Box<ErrorHandle> {
+    fn from(err: Error) -> Self {
         Box::new(ErrorHandle {
-            err: CString::new(format!("{}", err)).unwrap(),
+            message: CString::new(format!("{}", err)).unwrap(),
+            err,
         })
     }
 }
@@ -154,7 +169,7 @@ pub extern "C" fn flux_ast_format(
     for file in &ast_pkg.files {
         let s = match formatter::convert_to_string(file) {
             Ok(v) => v,
-            Err(e) => return Some(e.into()),
+            Err(e) => return Some(Error::from(e).into()),
         };
         out_str.push_str(&s);
     }
@@ -162,7 +177,7 @@ pub extern "C" fn flux_ast_format(
     let len = out_str.len();
     let cstr = match CString::new(out_str) {
         Ok(bytes) => bytes,
-        Err(e) => return Some(anyhow::Error::from(e).into()),
+        Err(e) => return Some(Error::from(anyhow::Error::from(e)).into()),
     };
     out.data = cstr.into_raw() as *mut u8;
     out.len = len;
@@ -180,7 +195,7 @@ pub unsafe extern "C" fn flux_ast_get_error(
 ) -> Option<Box<ErrorHandle>> {
     let ast_pkg = ast::walk::Node::Package(&*ast_pkg);
     match ast::check::check(ast_pkg) {
-        Err(e) => Some(anyhow::Error::from(e).into()),
+        Err(e) => Some(Error::from(anyhow::Error::from(e)).into()),
         Ok(_) => None,
     }
 }
@@ -214,7 +229,7 @@ pub unsafe extern "C" fn flux_parse_json(
             *out_pkg = Some(Box::new(pkg));
             None
         }
-        Err(err) => Some(anyhow::Error::from(err).into()),
+        Err(err) => Some(Error::from(anyhow::Error::from(err)).into()),
     }
 }
 
@@ -232,7 +247,7 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     let data = match serde_json::to_vec(ast_pkg) {
         Ok(v) => v,
         Err(err) => {
-            return Some(anyhow::Error::from(err).into());
+            return Some(Error::from(anyhow::Error::from(err)).into());
         }
     };
 
@@ -257,7 +272,7 @@ pub unsafe extern "C" fn flux_ast_marshal_fb(
     let (mut vec, offset) = match ast::flatbuffers::serialize(ast_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            return Some(err.into());
+            return Some(Error::from(err).into());
         }
     };
 
@@ -289,7 +304,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
     let (mut vec, offset) = match semantic::flatbuffers::serialize_pkg(sem_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            return Some(err.into());
+            return Some(Error::from(err).into());
         }
     };
 
@@ -308,7 +323,21 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 /// parameter
 #[no_mangle]
 pub unsafe extern "C" fn flux_error_str(errh: &ErrorHandle) -> *const c_char {
-    errh.err.as_ptr()
+    errh.message.as_ptr()
+}
+
+/// flux_error_print prints the error message associated with the given error to stdout.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw pointer passed as a
+/// parameter
+#[no_mangle]
+pub unsafe extern "C" fn flux_error_print(errh: &ErrorHandle) {
+    match &errh.err {
+        Error::Semantic(err) => err.print(),
+        Error::Other(err) => println!("{}", err),
+    }
 }
 
 /// # Safety
@@ -329,7 +358,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 
     match merge_packages(out_pkg, in_pkg) {
         Ok(_) => None,
-        Err(e) => Some(e.into()),
+        Err(e) => Some(Error::from(e).into()),
     }
 }
 
@@ -399,11 +428,11 @@ pub unsafe extern "C" fn flux_find_var_type(
 fn new_stateful_analyzer() -> Result<StatefulAnalyzer> {
     let env = match prelude() {
         Some(prelude) => prelude,
-        None => bail!("missing prelude"),
+        None => return Err(anyhow!("missing prelude").into()),
     };
     let imports = match imports() {
         Some(imports) => imports,
-        None => bail!("missing stdlib imports"),
+        None => return Err(anyhow!("missing stdlib inports").into()),
     };
     Ok(StatefulAnalyzer { env, imports })
 }
@@ -475,20 +504,41 @@ pub extern "C" fn flux_free_stateful_analyzer(_: Option<Box<Result<StatefulAnaly
 #[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_analyze_with(
     analyzer: *mut Result<StatefulAnalyzer>,
+    csrc: *const c_char,
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
     let ast_pkg = *ast_pkg;
-    let analyzer = match &mut *analyzer {
+    let analyzer = &mut *analyzer;
+    let analyzer = match analyzer {
         Ok(a) => a,
-        Err(err) => {
-            return Some(err.into());
+        Err(_) => {
+            match mem::replace(
+                analyzer,
+                Err(Error::from(anyhow!("The error has already been return!"))),
+            ) {
+                Err(err) => {
+                    return Some(err.into());
+                }
+                Ok(_) => unreachable!(),
+            }
         }
+    };
+
+    let src = if csrc.is_null() {
+        None
+    } else {
+        Some(std::str::from_utf8(CStr::from_ptr(csrc).to_bytes()).unwrap())
     };
 
     let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
         Ok(sem_pkg) => sem_pkg,
-        Err(err) => {
+        Err(mut err) => {
+            if let Some(src) = src {
+                if let Error::Semantic(err) = &mut err {
+                    err.source = Some(src.into());
+                }
+            }
             return Some(err.into());
         }
     });
@@ -517,7 +567,7 @@ pub fn infer_with_env(
 ) -> Result<(Environment<'static>, Package)> {
     let prelude = match &*PRELUDE {
         Some(prelude) => prelude,
-        None => bail!("missing prelude"),
+        None => return Err(anyhow!("missing prelude").into()),
     };
     let env = if let Some(mut e) = env {
         e.external = Some(prelude);
@@ -527,7 +577,7 @@ pub fn infer_with_env(
     };
     let importer = match imports() {
         Some(imports) => imports,
-        None => bail!("missing stdlib imports"),
+        None => return Err(anyhow!("missing stdlib inports").into()),
     };
     let mut analyzer = Analyzer::new_with_defaults(env, importer);
     let (_, pkg) = analyzer.analyze_ast_with_substitution(ast_pkg, &mut sub)?;
@@ -824,7 +874,7 @@ from(bucket: v.bucket)
             error test@1:9-1:10: invalid expression: invalid token for primary expression: DIV
 
             error test@1:16-1:17: got unexpected token in string expression test@1:17-1:17: EOF"#]]
-        .assert_eq(&errh.unwrap().err.into_string().unwrap());
+        .assert_eq(&errh.unwrap().message.into_string().unwrap());
     }
 
     #[test]

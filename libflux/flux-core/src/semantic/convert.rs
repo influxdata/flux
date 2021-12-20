@@ -3,12 +3,13 @@
 
 use std::{collections::BTreeMap, fmt, sync::Arc};
 
+use codespan_reporting::diagnostic;
 use serde::{Serialize, Serializer};
 use thiserror::Error;
 
 use crate::{
     ast,
-    errors::{located, Errors, Located},
+    errors::{located, AsDiagnostic, Errors, Located},
     semantic::{
         env::Environment,
         nodes::*,
@@ -46,6 +47,12 @@ pub enum ErrorKind {
     ExtraParameterRecord,
     #[error("invalid duration, {0}")]
     InvalidDuration(String),
+}
+
+impl AsDiagnostic for ErrorKind {
+    fn as_diagnostic(&self, _source: &dyn crate::semantic::Source) -> diagnostic::Diagnostic<()> {
+        diagnostic::Diagnostic::error().with_message(self.to_string())
+    }
 }
 
 /// Result encapsulates any error during the conversion process.

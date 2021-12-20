@@ -27,6 +27,9 @@ void flux_free_error(struct flux_error_t *);
 // becomes invalid when the error is freed.
 const char *flux_error_str(struct flux_error_t *);
 
+// Prints the flux error to stdout
+void flux_error_print(struct flux_error_t *);
+
 // flux_free_bytes will release the memory pointed to by the pointer argument.
 void flux_free_bytes(const char *);
 
@@ -104,7 +107,7 @@ void flux_free_stateful_analyzer(struct flux_stateful_analyzer_t *);
 
 // flux_analyze_with will analyze the ast snippet using the flux_stateful_analyzer_t and produce
 // a semantic graph for that snippet.
-struct flux_error_t *flux_analyze_with(struct flux_stateful_analyzer_t *, struct flux_ast_pkg_t *, struct flux_semantic_pkg_t **);
+struct flux_error_t *flux_analyze_with(struct flux_stateful_analyzer_t *, const char * src, struct flux_ast_pkg_t *, struct flux_semantic_pkg_t **);
 
 // flux_analyze analyzes the given AST and will populate the second pointer argument with
 // a pointer to the resulting semantic graph.
