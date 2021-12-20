@@ -318,8 +318,9 @@ func TestAggregateTransformation_Finish(t *testing.T) {
 				isComputed = true
 				return nil
 			},
-			DisposeFn: func() {
+			CloseFn: func() error {
 				isDisposed = true
+				return nil
 			},
 		},
 		mem,
@@ -986,8 +987,9 @@ type mockState struct {
 	disposeCount *int
 }
 
-func (s *mockState) Dispose() {
+func (s *mockState) Close() error {
 	if s.disposeCount != nil {
 		*s.disposeCount++
 	}
+	return nil
 }

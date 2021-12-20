@@ -175,7 +175,7 @@ func (a *groupTransformationAdapter) Process(chunk table.Chunk, d *execute.Trans
 	return a.t.groupChunkByRow(chunk, d, mem)
 }
 
-func (a *groupTransformationAdapter) Dispose() {}
+func (a *groupTransformationAdapter) Close() error { return nil }
 
 type groupTransformation struct {
 	execute.ExecutionNode

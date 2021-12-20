@@ -132,7 +132,7 @@ func (p *Analyzer) Analyze(src string, astPkg *ASTPkg) (*SemanticPkg, *FluxError
 		astPkg.ptr = nil
 	}()
 	if err := C.flux_analyze_with(p.ptr, csrc, astPkg.ptr, &semPkg); err != nil {
-		err := &FluxError { ptr: err }
+		err := &FluxError{ptr: err}
 		runtime.SetFinalizer(err, free)
 		return nil, err
 	}
@@ -164,7 +164,6 @@ func EnvStdlib() []byte {
 	return C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
 }
 
-
 type FluxError struct {
 	ptr *C.struct_flux_error_t
 }
@@ -187,5 +186,5 @@ func (p *FluxError) Print() {
 func (p *FluxError) GoError() error {
 	cstr := C.flux_error_str(p.ptr)
 	str := C.GoString(cstr)
-	return  errors.New(codes.Invalid, str)
+	return errors.New(codes.Invalid, str)
 }

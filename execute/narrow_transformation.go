@@ -11,7 +11,7 @@ type NarrowTransformation interface {
 	// Process will process the table.Chunk and send any output to the TransportDataset.
 	Process(chunk table.Chunk, d *TransportDataset, mem memory.Allocator) error
 
-	Disposable
+	Closer
 }
 
 var _ Transport = (*narrowTransformation)(nil)
@@ -51,8 +51,8 @@ func (n *narrowTransformation) ProcessMessage(m Message) error {
 
 // Finish is implemented to remain compatible with legacy upstreams.
 func (n *narrowTransformation) Finish(id DatasetID, err error) {
+	err = Close(err, n.t)
 	n.d.Finish(err)
-	n.t.Dispose()
 }
 
 func (n *narrowTransformation) OperationType() string {

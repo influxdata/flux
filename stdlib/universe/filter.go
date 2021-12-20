@@ -406,7 +406,7 @@ func (t *filterTransformationAdapter) Process(chunk table.Chunk, d *execute.Tran
 	return d.Process(out)
 }
 
-func (t *filterTransformationAdapter) Dispose() {}
+func (t *filterTransformationAdapter) Close() error { return nil }
 
 // RemoveTrivialFilterRule removes Filter nodes whose predicate always evaluates to true.
 type RemoveTrivialFilterRule struct{}
@@ -464,7 +464,7 @@ func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan
 		// Not an expression.
 		return filterNode, false, nil
 	}
-	//checks if the fields of KeepEmptyTables are different and only allows merge if 1) they are the same 2) keep is the Predecessors field
+	// checks if the fields of KeepEmptyTables are different and only allows merge if 1) they are the same 2) keep is the Predecessors field
 	if filterSpec1.KeepEmptyTables != filterSpec2.KeepEmptyTables && !filterSpec2.KeepEmptyTables {
 		return filterNode, false, nil
 	}

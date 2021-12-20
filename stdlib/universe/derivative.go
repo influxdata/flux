@@ -415,7 +415,7 @@ func (t *derivativeTransformation) derivativeStateFor(col flux.ColMeta, state *d
 	}, nil
 }
 
-func (t *derivativeTransformation) Dispose() {}
+func (t *derivativeTransformation) Close() error { return nil }
 
 const derivativeUnsortedTimeErr = "derivative found out-of-order times in time column"
 
