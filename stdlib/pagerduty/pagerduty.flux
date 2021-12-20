@@ -84,7 +84,7 @@ severityFromLevel = (level) => {
 // ## Examples
 //
 // ### Convert a severity to a PagerDuty action
-// ```
+// ```no_run
 // import "pagerduty"
 //
 // pagerduty.actionFromSeverity(severity: "crit") // Returns trigger
@@ -107,7 +107,7 @@ actionFromSeverity = (severity) =>
 // ## Examples
 //
 // ### Convert a monitoring level to a PagerDuty action
-// ```
+// ```no_run
 // import "pagerduty"
 //
 // pagerduty.actionFromLevel(level: "crit") // Returns trigger
@@ -164,6 +164,7 @@ actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve"
 // - customDetails: Record with additional details about the event.
 //
 // ## Examples
+//
 // ### Send an event to PagerDuty
 // ```no_run
 // import "pagerduty"
