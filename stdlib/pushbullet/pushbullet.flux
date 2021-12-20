@@ -1,7 +1,7 @@
 // Package pushbullet provides functions for sending data to Pushbullet.
-// 
+//
 // introduced: 0.66.0
-// 
+//
 package pushbullet
 
 
