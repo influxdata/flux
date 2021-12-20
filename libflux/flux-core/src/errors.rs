@@ -63,6 +63,10 @@ impl<T> Errors<T> {
         self.errors.iter()
     }
 
+    pub fn iter_mut(&mut self) -> slice::IterMut<T> {
+        self.errors.iter_mut()
+    }
+
     pub fn drain(
         &mut self,
         range: impl std::ops::RangeBounds<usize>,
@@ -175,6 +179,15 @@ pub struct Located<E> {
     pub location: ast::SourceLocation,
     /// The error itself
     pub error: E,
+}
+
+impl<E> Located<E> {
+    pub(crate) fn map<F>(self, f: impl FnOnce(E) -> F) -> Located<F> {
+        Located {
+            location: self.location,
+            error: f(self.error),
+        }
+    }
 }
 
 impl<T: StdError> StdError for Located<T> {
