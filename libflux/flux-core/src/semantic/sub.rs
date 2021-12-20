@@ -434,7 +434,7 @@ where
     I::IntoIter: FusedIterator + Clone,
     F: FnMut(&mut S, I::Item) -> Option<U>,
     G: FnMut(&mut S, I::Item) -> U,
-    R: std::iter::FromIterator<U>,
+    R: FromIterator<U>,
 {
     merge_iter(state, types, action, converter).map(|iter| iter.collect())
 }

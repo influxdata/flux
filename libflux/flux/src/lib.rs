@@ -12,7 +12,7 @@ extern crate serde_derive;
 #[macro_use]
 extern crate pretty_assertions;
 
-use std::{convert::TryFrom, ffi::*, mem, os::raw::c_char};
+use std::{ffi::*, mem, os::raw::c_char};
 
 use anyhow::anyhow;
 use once_cell::sync::Lazy;

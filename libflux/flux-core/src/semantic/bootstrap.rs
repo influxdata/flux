@@ -3,7 +3,7 @@
 //! This package does not assume a location of the source code but does assume which packages are
 //! part of the prelude.
 
-use std::{collections::HashSet, convert::TryFrom, env::consts, fs, io, io::Write, path::Path};
+use std::{collections::HashSet, env::consts, fs, io, io::Write, path::Path};
 
 use anyhow::{anyhow, bail, Result};
 use libflate::gzip::Encoder;
