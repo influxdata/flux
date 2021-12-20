@@ -28,16 +28,16 @@ func newUnionTransformation2(id execute.DatasetID, parents []execute.DatasetID, 
 func (u *unionTransformation2) ProcessMessage(m execute.Message) error {
 	defer m.Ack()
 
+	// It is possible to receive messages from different parents concurrently.
+	// Lock this here to prevent a race condition.
+	u.mu.Lock()
+	defer u.mu.Unlock()
+
 	// If this transformation was already marked as finished
 	// from an error, do not accept new messages at all.
 	if u.parents == 0 {
 		return nil
 	}
-
-	// It is possible to receive messages from different parents concurrently.
-	// Lock this here to prevent a race condition.
-	u.mu.Lock()
-	defer u.mu.Unlock()
 
 	switch m := m.(type) {
 	case execute.FinishMsg:
