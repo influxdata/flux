@@ -159,7 +159,7 @@ pub fn equal(
     sub: &mut Substitution,
 ) -> Result<(), Error> {
     log::debug!("Constraint::Equal {:?}: {} <===> {}", loc.source, exp, act);
-    exp.unify(act, sub).map_err(|err| Error {
+    exp.try_unify(act, sub).map_err(|err| Error {
         loc: loc.clone(),
         err,
     })

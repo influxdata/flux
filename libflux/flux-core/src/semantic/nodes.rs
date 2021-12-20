@@ -1448,7 +1448,7 @@ impl CallExpr {
         }
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                if let Err(err) = func.unify(
+                if let Err(err) = func.try_unify(
                     &Function {
                         opt: MonoTypeMap::new(),
                         req,

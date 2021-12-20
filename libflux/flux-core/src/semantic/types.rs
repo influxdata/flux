@@ -24,6 +24,10 @@ pub type SemanticMap<K, V> = BTreeMap<K, V>;
 #[allow(missing_docs)]
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
+struct Unifier<'a> {
+    sub: &'a mut Substitution,
+}
+
 /// A type scheme that quantifies the free variables of a monotype.
 #[derive(Debug, Clone)]
 pub struct PolyType {
@@ -714,10 +718,18 @@ impl MonoType {
     /// If successful, results in a solution to the unification problem,
     /// in the form of a substitution. If there is no solution to the
     /// unification problem then unification fails and an error is reported.
-    pub fn unify(
+    pub fn try_unify(
         &self, // self represents the expected type
         actual: &Self,
         sub: &mut Substitution,
+    ) -> Result<(), Error> {
+        self.unify(actual, &mut Unifier { sub })
+    }
+
+    fn unify(
+        &self, // self represents the expected type
+        actual: &Self,
+        unifier: &mut Unifier<'_>,
     ) -> Result<(), Error> {
         log::debug!("Unify {} <=> {}", self, actual);
         match (self, actual) {
@@ -726,26 +738,26 @@ impl MonoType {
             (MonoType::Error, _) | (_, MonoType::Error) => Ok(()),
             (MonoType::Builtin(exp), MonoType::Builtin(act)) => exp.unify(*act),
             (MonoType::Var(tv), MonoType::Var(tv2)) => {
-                match (sub.try_apply(*tv), sub.try_apply(*tv2)) {
-                    (Some(self_), Some(actual)) => self_.unify(&actual, sub),
-                    (Some(self_), None) => self_.unify(&MonoType::Var(*tv2), sub),
-                    (None, Some(actual)) => MonoType::Var(*tv).unify(&actual, sub),
-                    (None, None) => tv.unify(&MonoType::Var(*tv2), sub),
+                match (unifier.sub.try_apply(*tv), unifier.sub.try_apply(*tv2)) {
+                    (Some(self_), Some(actual)) => self_.unify(&actual, unifier),
+                    (Some(self_), None) => self_.unify(&MonoType::Var(*tv2), unifier),
+                    (None, Some(actual)) => MonoType::Var(*tv).unify(&actual, unifier),
+                    (None, None) => tv.unify(&MonoType::Var(*tv2), unifier),
                 }
             }
-            (MonoType::Var(tv), t) => match sub.try_apply(*tv) {
-                Some(typ) => typ.unify(t, sub),
-                None => tv.unify(t, sub),
+            (MonoType::Var(tv), t) => match unifier.sub.try_apply(*tv) {
+                Some(typ) => typ.unify(t, unifier),
+                None => tv.unify(t, unifier),
             },
-            (t, MonoType::Var(tv)) => match sub.try_apply(*tv) {
-                Some(typ) => t.unify(&typ, sub),
-                None => tv.unify(t, sub),
+            (t, MonoType::Var(tv)) => match unifier.sub.try_apply(*tv) {
+                Some(typ) => t.unify(&typ, unifier),
+                None => tv.unify(t, unifier),
             },
-            (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(s, sub),
-            (MonoType::Vector(t), MonoType::Vector(s)) => t.unify(s, sub),
-            (MonoType::Dict(t), MonoType::Dict(s)) => t.unify(s, sub),
-            (MonoType::Record(t), MonoType::Record(s)) => t.unify(s, sub),
-            (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, sub),
+            (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(s, unifier),
+            (MonoType::Vector(t), MonoType::Vector(s)) => t.unify(s, unifier),
+            (MonoType::Dict(t), MonoType::Dict(s)) => t.unify(s, unifier),
+            (MonoType::Record(t), MonoType::Record(s)) => t.unify(s, unifier),
+            (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(s, unifier),
             (exp, act) => Err(Error::CannotUnify {
                 exp: exp.clone(),
                 act: act.clone(),
@@ -856,22 +868,22 @@ impl MaxTvar for Tvar {
 }
 
 impl Tvar {
-    fn unify(self, with: &MonoType, sub: &mut Substitution) -> Result<(), Error> {
+    fn unify(self, with: &MonoType, unifier: &mut Unifier<'_>) -> Result<(), Error> {
         match *with {
             MonoType::Var(tv) => {
                 if self == tv {
                     // The empty substitution will always
                     // unify a type variable with itself.
-                    Ok(())
                 } else {
                     // Unify two distinct type variables.
                     // This will update the kind constraints
                     // associated with these type variables.
-                    self.unify_with_tvar(tv, sub)
+                    self.unify_with_tvar(tv, unifier);
                 }
+                Ok(())
             }
             _ => {
-                let with = with.apply_cow(sub);
+                let with = with.apply_cow(unifier.sub);
                 if with.contains(self) {
                     // Invalid recursive type
                     Err(Error::OccursCheck(self, with.into_owned()))
@@ -879,19 +891,18 @@ impl Tvar {
                     // Unify a type variable with a monotype.
                     // The monotype must satisify any
                     // constraints placed on the type variable.
-                    self.unify_with_type(with.into_owned(), sub)
+                    self.unify_with_type(with.into_owned(), unifier)
                 }
             }
         }
     }
 
-    fn unify_with_tvar(self, tv: Tvar, sub: &mut Substitution) -> Result<(), Error> {
-        sub.union(self, tv);
-        Ok(())
+    fn unify_with_tvar(self, tv: Tvar, unifier: &mut Unifier<'_>) {
+        unifier.sub.union(self, tv);
     }
 
-    fn unify_with_type(self, t: MonoType, sub: &mut Substitution) -> Result<(), Error> {
-        sub.union_type(self, t)
+    fn unify_with_type(self, t: MonoType, unifier: &mut Unifier<'_>) -> Result<(), Error> {
+        unifier.sub.union_type(self, t)
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) {
@@ -930,8 +941,8 @@ impl MaxTvar for Array {
 
 impl Array {
     // self represents the expected type.
-    fn unify(&self, with: &Self, f: &mut Substitution) -> Result<(), Error> {
-        self.0.unify(&with.0, f)
+    fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
+        self.0.unify(&with.0, unifier)
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
@@ -971,8 +982,8 @@ impl MaxTvar for Vector {
 
 impl Vector {
     // self represents the expected type.
-    fn unify(&self, with: &Self, f: &mut Substitution) -> Result<(), Error> {
-        self.0.unify(&with.0, f)
+    fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
+        self.0.unify(&with.0, unifier)
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) -> Result<(), Error> {
@@ -1010,9 +1021,9 @@ impl MaxTvar for Dictionary {
 }
 
 impl Dictionary {
-    fn unify(&self, actual: &Self, sub: &mut Substitution) -> Result<(), Error> {
-        self.key.unify(&actual.key, sub)?;
-        apply_then_unify(&self.val, &actual.val, sub)
+    fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
+        self.key.unify(&actual.key, unifier)?;
+        apply_then_unify(&self.val, &actual.val, unifier)
     }
 
     fn constrain(&self, with: Kind, _: &mut TvarKinds) -> Result<(), Error> {
@@ -1188,7 +1199,7 @@ impl Record {
     //
     // self represents the expected type.
     //
-    fn unify(&self, actual: &Self, sub: &mut Substitution) -> Result<(), Error> {
+    fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
         match (self, actual) {
             (Record::Empty, Record::Empty) => Ok(()),
             (
@@ -1200,7 +1211,7 @@ impl Record {
                     head: Property { k: b, v: u },
                     tail: MonoType::Var(r),
                 },
-            ) if a == b && l == r => t.unify(u, sub).map_err(|_| Error::CannotUnifyLabel {
+            ) if a == b && l == r => t.unify(u, unifier).map_err(|_| Error::CannotUnifyLabel {
                 lab: a.to_string(),
                 exp: t.clone(),
                 act: u.clone(),
@@ -1228,8 +1239,8 @@ impl Record {
                     tail: r,
                 },
             ) if a == b => {
-                t.unify(u, sub)?;
-                apply_then_unify(l, r, sub)
+                t.unify(u, unifier)?;
+                apply_then_unify(l, r, unifier)
             }
             (
                 Record::Extension {
@@ -1241,7 +1252,7 @@ impl Record {
                     tail: r,
                 },
             ) if a != b => {
-                let var = sub.fresh();
+                let var = unifier.sub.fresh();
                 let exp = MonoType::from(Record::Extension {
                     head: Property {
                         k: a.clone(),
@@ -1256,8 +1267,8 @@ impl Record {
                     },
                     tail: MonoType::Var(var),
                 });
-                l.unify(&act, sub)?;
-                apply_then_unify(&exp, r, sub)
+                l.unify(&act, unifier)?;
+                apply_then_unify(&exp, r, unifier)
             }
             // If we are expecting {a: u | r} but find {}, label `a` is missing.
             (
@@ -1347,8 +1358,12 @@ impl Record {
 // is returned.
 //
 // TODO Remove
-fn apply_then_unify(exp: &MonoType, act: &MonoType, sub: &mut Substitution) -> Result<(), Error> {
-    exp.unify(act, sub)?;
+fn apply_then_unify(
+    exp: &MonoType,
+    act: &MonoType,
+    unifier: &mut Unifier<'_>,
+) -> Result<(), Error> {
+    exp.unify(act, unifier)?;
     Ok(())
 }
 
@@ -1636,6 +1651,17 @@ impl MaxTvar for Function {
 }
 
 impl Function {
+    pub(crate) fn try_unify<T>(
+        &self,
+        actual: &Function<T>,
+        sub: &mut Substitution,
+    ) -> Result<(), T::Error>
+    where
+        T: TypeLike + Clone,
+    {
+        self.unify(actual, &mut Unifier { sub })
+    }
+
     /// Given two function types f and g, the process for unifying their arguments is as follows:
     /// 1. If a required arg of f is not present in the arguments of g,
     ///    otherwise unify both argument types.
@@ -1671,11 +1697,7 @@ impl Function {
     /// Unify 3 and 4: should fail because `a` is not in the arguments of 4.
     ///
     /// self represents the expected type.
-    pub(crate) fn unify<T>(
-        &self,
-        actual: &Function<T>,
-        sub: &mut Substitution,
-    ) -> Result<(), T::Error>
+    fn unify<T>(&self, actual: &Function<T>, unifier: &mut Unifier<'_>) -> Result<(), T::Error>
     where
         T: TypeLike + Clone,
     {
@@ -1738,7 +1760,7 @@ impl Function {
         for (name, exp) in f.req.into_iter() {
             if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
                 // The required argument is in g's required arguments.
-                apply_then_unify(&exp, act.typ(), sub)
+                apply_then_unify(&exp, act.typ(), unifier)
                     .map_err(|e| act.error(Error::CannotUnifyArgument(name, Box::new(e))))?;
             } else {
                 return Err(g.retn.error(Error::MissingArgument(name)));
@@ -1747,15 +1769,15 @@ impl Function {
         // Unify f's optional arguments.
         for (name, exp) in f.opt.into_iter() {
             if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
-                apply_then_unify(&exp, act.typ(), sub)
+                apply_then_unify(&exp, act.typ(), unifier)
                     .map_err(|e| act.error(Error::CannotUnifyArgument(name, Box::new(e))))?;
             }
         }
         // Unify return types.
-        match apply_then_unify(&f.retn, g.retn.typ(), sub) {
+        match apply_then_unify(&f.retn, g.retn.typ(), unifier) {
             Err(cause) => Err(g.retn.error(Error::CannotUnifyReturn {
-                exp: f.retn.typ().clone().apply(sub),
-                act: g.retn.typ().clone().apply(sub),
+                exp: f.retn.typ().clone().apply(unifier.sub),
+                act: g.retn.typ().clone().apply(unifier.sub),
                 cause: Box::new(cause),
             })),
             Ok(sub) => Ok(sub),
@@ -2439,7 +2461,7 @@ mod tests {
     #[test]
     fn unify_ints() {
         MonoType::INT
-            .unify(&MonoType::INT, &mut Substitution::default())
+            .try_unify(&MonoType::INT, &mut Substitution::default())
             .unwrap();
     }
     #[test]
@@ -2562,7 +2584,7 @@ mod tests {
     #[test]
     fn unify_error() {
         let err = MonoType::INT
-            .unify(&MonoType::STRING, &mut Substitution::default())
+            .try_unify(&MonoType::STRING, &mut Substitution::default())
             .unwrap_err();
         assert_eq!(
             err.to_string(),
@@ -2574,7 +2596,7 @@ mod tests {
         let mut sub = Substitution::default();
         sub.mk_fresh(2);
         MonoType::Var(Tvar(0))
-            .unify(&MonoType::Var(Tvar(1)), &mut sub)
+            .try_unify(&MonoType::Var(Tvar(1)), &mut sub)
             .unwrap();
         assert_eq!(sub.apply(Tvar(0)), sub.apply(Tvar(1)));
     }
@@ -2585,7 +2607,7 @@ mod tests {
             .extend(semantic_map! {Tvar(0) => vec![Kind::Addable, Kind::Divisible]});
         sub.mk_fresh(2);
         MonoType::Var(Tvar(0))
-            .unify(&MonoType::Var(Tvar(1)), &mut sub)
+            .try_unify(&MonoType::Var(Tvar(1)), &mut sub)
             .unwrap();
         assert_eq!(sub.apply(Tvar(0)), MonoType::Var(Tvar(1)));
         assert_eq!(
@@ -2615,9 +2637,9 @@ mod tests {
             let mut sub = Substitution::default();
             sub.cons().extend(f_cons.into_iter().chain(g_cons));
             sub.mk_fresh(2);
-            let res = f.clone().unify(&g, &mut sub);
+            let res = f.clone().try_unify(&g, &mut sub);
             assert!(res.is_err());
-            let res = g.clone().unify(&f, &mut sub);
+            let res = g.clone().try_unify(&f, &mut sub);
             assert!(res.is_err());
         } else {
             panic!("the monotypes under examination are not functions");
@@ -2641,9 +2663,9 @@ mod tests {
             let mut sub = Substitution::default();
             sub.cons().extend(f_cons.into_iter().chain(g_cons));
             sub.mk_fresh(2);
-            let res = f.clone().unify(&g, &mut sub);
+            let res = f.clone().try_unify(&g, &mut sub);
             assert!(res.is_err());
-            let res = g.unify(&f, &mut sub);
+            let res = g.try_unify(&f, &mut sub);
             assert!(res.is_err());
         } else {
             panic!("the monotypes under examination are not functions");
@@ -2672,7 +2694,7 @@ mod tests {
             let mut sub = Substitution::default();
             sub.cons().extend(cons);
             sub.mk_fresh(2);
-            f.unify(&call_type, &mut sub).unwrap();
+            f.try_unify(&call_type, &mut sub).unwrap();
             assert_eq!(sub.apply(Tvar(0)), MonoType::INT);
             // the constraint on A gets removed.
             assert_eq!(
@@ -2706,7 +2728,7 @@ mod tests {
             let mut sub = Substitution::default();
             sub.cons().extend(f_cons.into_iter().chain(g_cons));
             sub.mk_fresh(2);
-            f.unify(&g, &mut sub).unwrap();
+            f.try_unify(&g, &mut sub).unwrap();
             assert_eq!(sub.apply(Tvar(0)), MonoType::INT);
             assert_eq!(sub.apply(Tvar(1)), MonoType::FLOAT);
             // we know everything about tvars, there is no constraint.
@@ -2722,7 +2744,7 @@ mod tests {
             let mut sub = Substitution::default();
             let mut tvars = BTreeMap::new();
             parse_type($expected, &mut tvars, &mut sub)
-                .unify(&parse_type($actual, &mut tvars, &mut sub), &mut sub)
+                .try_unify(&parse_type($actual, &mut tvars, &mut sub), &mut sub)
                 .unwrap_or_else(|err| panic!("{}", err));
         }};
     }
@@ -2731,7 +2753,7 @@ mod tests {
         ($expected: expr, $actual: expr $(, $pat: pat)? $(,)?) => {{
             let mut sub = Substitution::default();
             let mut tvars = BTreeMap::new();
-            let result = parse_type($expected, &mut tvars, &mut sub).unify(
+            let result = parse_type($expected, &mut tvars, &mut sub).try_unify(
                 &parse_type($actual, &mut tvars, &mut sub),
                 &mut sub,
             );
