@@ -11,37 +11,22 @@ option defaultURL = "https://api.pushbullet.com/v2/pushes"
 //
 // ## Parameters
 //
-// - `url` is the URL of the PushBullet endpoint. Defaults to: "https://api.pushbullet.com/v2/pushes".
-// - `token` is the api token string.  Defaults to: "".
-// - `data` is the data to send to the endpoint. It will be encoded in JSON and sent to PushBullet's endpoint.
-// For how to structure data, see https://docs.pushbullet.com/#create-push.
+// - url: URL of the PushBullet endpoint. Default is `"https://api.pushbullet.com/v2/pushes"`.
+// - token: API token string.  Default is `""`.
+// - data: Data to send to the endpoint. Data is JSON-encoded and sent to the Pushbullet's endpoint.
 //
-// ## Send the last reported status to Pushbullet
+//   For how to structure data, see the [Pushbullet API documentation](https://docs.pushbullet.com/#create-push).
 //
-// ```
+// ## Examples
+//
+// ### Send a push notification to Pushbullet
+// ```no_run
 // import "pushbullet"
-// import "influxdata/influxdb/secrets"
 //
-// token = secrets.get(key: "PUSHBULLET_TOKEN")
-//
-// lastReported =
-//   from(bucket: "example-bucket")
-//     |> range(start: -1m)
-//     |> filter(fn: (r) => r._measurement == "statuses")
-//     |> last()
-//     |> tableFind(fn: (key) => true)
-//     |> getRecord(idx: 0)
-//
-// pushbullet.pushData(
-//   token: token,
-//   data: {
-//     "type": "link",
-//     "title": "Last reported status",
-//     "body": "${lastReported._time}: ${lastReported.status}."
-//     "url": "${lastReported.statusURL}"
-//   }
-// )
+// pushbullet.pushData(token: "mY5up3Rs3Cre7T0k3n", data: {"type": "link", "title": "Example title", "body": "Example nofication body", "url": "http://example-url.com"})
 // ```
+//
+// tags: single notification
 //
 pushData = (url=defaultURL, token="", data) => {
     headers = {"Access-Token": token, "Content-Type": "application/json"}
@@ -50,40 +35,26 @@ pushData = (url=defaultURL, token="", data) => {
     return http.post(headers: headers, url: url, data: enc)
 }
 
-// pushNote sends a push notification of type note to the Pushbullet API.
+// pushNote sends a push notification of type "note" to the Pushbullet API.
 //
 // ## Parameters
 //
-// - `url` is the URL of the PushBullet endpoint. Defaults to: "https://api.pushbullet.com/v2/pushes".
-// - `token` is the api token string.  Defaults to: "".
-// - `title` is the title of the notification.
-// - `text` is the text to display in the notification.
+// - url: URL of the PushBullet endpoint. Default is `"https://api.pushbullet.com/v2/pushes"`.
+// - token: API token string.  Defaults to: `""`.
+// - title: Title of the notification.
+// - text: Text to display in the notification.
 //
-// ## Send the last reported status to Pushbullet
+// ## Examples
 //
-// ```
+// ### Send a push notification note to Pushbullet
+// ```no_run
 // import "pushbullet"
-// import "influxdata/influxdb/secrets"
 //
-// token = secrets.get(key: "PUSHBULLET_TOKEN")
-//
-// lastReported =
-//   from(bucket: "example-bucket")
-//     |> range(start: -1m)
-//     |> filter(fn: (r) => r._measurement == "statuses")
-//     |> last()
-//     |> tableFind(fn: (key) => true)
-//     |> getRecord(idx: 0)
-//
-// pushbullet.pushNote(
-//   token: token,
-//   data: {
-//     token: token,
-//     title: "Last reported status",
-//     text: "${lastReported._time}: ${lastReported.status}."
-//   }
-// )
+// pushbullet.pushNote(token: "mY5up3Rs3Cre7T0k3n", data: {"type": "link", "title": "Example title", "text": "Example note text"})
 // ```
+//
+// tags: single notification
+//
 pushNote = (url=defaultURL, token="", title, text) => {
     data = {type: "note", title: title, body: text}
 
@@ -94,32 +65,38 @@ pushNote = (url=defaultURL, token="", title, text) => {
 //
 // ## Parameters
 //
-// - `url` is the URL of the PushBullet endpoint. Defaults to: "https://api.pushbullet.com/v2/pushes".
-// - `token` is the api token string.  Defaults to: "".
-// - `Usage` pushbullet.endpoint is a factory function that outputs another function. The output function requires a mapFn parameter.
-// - `mapFn` is a function that builds the record used to generate the API request. Requires an r parameter.
+// - url: PushBullet API endpoint URL. Default is `"https://api.pushbullet.com/v2/pushes"`.
+// - token: Pushbullet API token string.  Default is `""`.
 //
-// ## Send the last reported status to Pushbullet
+// ## Usage
+// `pushbullet.endpoint()` is a factory function that outputs another function.
+// The output function requires a mapFn parameter.
 //
-// ```
+// ### mapFn
+// A function that builds the record used to generate the API request.
+// Requires an `r` parameter.
+//
+// `mapF`n accepts a table row (`r`) and returns a record that must include the
+// following properties (as defined in `pushbullet.pushNote()`):
+//
+// - title
+// - text
+//
+// ## Examples
+//
+// ### Send push notifications to Pushbullet
+// ```no_run
 // import "pushbullet"
 // import "influxdata/influxdb/secrets"
 //
 // token = secrets.get(key: "PUSHBULLET_TOKEN")
 //
-// lastReported =
-//   from(bucket: "example-bucket")
-//     |> range(start: -10m)
-//     |> filter(fn: (r) => r._measurement == "statuses")
-//     |> last()
+// crit_statuses = from(bucket: "example-bucket")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and r.status == "crit")
 //
-// lastReported
-//   |> e(mapFn: (r) => ({
-//       r with
-//       title: r.title,
-//       text: "${string(v: r._time)}: ${r.status}."
-//     })
-//   )()
+// crit_statuses
+//     |> pushbullet.endpoint(token: token)(mapFn: (r) => ({title: "${r.component} is critical", text: "${r.component} is critical. {$r._field} is {r._value}."}))()
 // ```
 //
 endpoint = (url=defaultURL, token="") =>

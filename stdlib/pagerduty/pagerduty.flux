@@ -1,4 +1,7 @@
 // Package pagerduty provides functions for sending data to PagerDuty.
+//
+// introduced: 0.43.0
+//
 package pagerduty
 
 
@@ -7,37 +10,51 @@ import "http"
 import "json"
 import "strings"
 
-// dedupKey uses the group key of an input table to generate and store a deduplication key in the _pagerdutyDedupKey column.
-// The function sorts, newline-concatenates, SHA256-hashes, and hex-encodes the group key to create a unique deduplication key for each input table.
+// dedupKey uses the group key of an input table to generate and store a
+// deduplication key in the `_pagerdutyDedupKey`column.
+// The function sorts, newline-concatenates, SHA256-hashes, and hex-encodes the
+// group key to create a unique deduplication key for each input table.
 //
 // ## Parameters
-// - `exclude` is the group key columns to exclude when generating the deduplication key. Default is ["_start", "_stop", "_level"].
+// - exclude: Group key columns to exclude when generating the deduplication key.
+//   Default is ["_start", "_stop", "_level"].
 //
-// ## Add a PagerDuty deduplication key to output data
+// ## Examples
+//
+// ### Add a PagerDuty deduplication key to output data
 // ```
 // import "pagerduty"
+// import "sampledata"
 //
-// from(bucket: "default")
-//   |> range(start: -5m)
-//   |> filter(fn: (r) => r._measurement == "mem")
-//   |> pagerduty.dedupKey()
+// < sampledata.int()
+// >     |> pagerduty.dedupKey()
 // ```
 //
 builtin dedupKey : (<-tables: [A], ?exclude: [string]) => [{A with _pagerdutyDedupKey: string}]
 
+// defaultURL is the default PagerDuty URL used by functions in the `pagerduty` package.
 option defaultURL = "https://events.pagerduty.com/v2/enqueue"
 
 // severityFromLevel converts an InfluxDB status level to a PagerDuty severity.
 //
-//
-//  Status level	PagerDuty severity
-//  crit	        critical
-//  warn	        warning
-//  info	        info
-//  ok	            info
+// | Status level | PagerDuty severity |
+// | :----------- | :----------------- |
+// | crit         | critical           |
+// | warn         | warning            |
+// | info         | info               |
+// | ok           | info               |
 //
 // ## Parameters
-// - `level` is the InfluxDB status level to convert to a PagerDuty severity.
+// - level: InfluxDB status level to convert to a PagerDuty severity.
+//
+// ## Examples
+//
+// ### Convert a status level to a PagerDuty serverity
+// ```no_run
+// import "pagerduty"
+//
+// pagerduty.severityFromLevel(level: "crit") // Returns critical
+// ```
 //
 severityFromLevel = (level) => {
     lvl = strings.toLower(v: level)
@@ -56,10 +73,22 @@ severityFromLevel = (level) => {
     return sev
 }
 
-// actionFromSeverity converts a severity to a PagerDuty action. ok converts to resolve. All other severities convert to trigger.
+// actionFromSeverity converts a severity to a PagerDuty action.
+//
+// - `ok` converts to `resolve`.
+// - All other severities convert to `trigger`.
 //
 // ## Parameters
-// - `severity` is the severity to convert to a PagerDuty action.
+// - severity: Severity to convert to a PagerDuty action.
+//
+// ## Examples
+//
+// ### Convert a severity to a PagerDuty action
+// ```
+// import "pagerduty"
+//
+// pagerduty.actionFromSeverity(severity: "crit") // Returns trigger
+// ```
 //
 actionFromSeverity = (severity) =>
     if strings.toLower(v: severity) == "ok" then
@@ -67,52 +96,97 @@ actionFromSeverity = (severity) =>
     else
         "trigger"
 
-// `actionFromLevel` converts a monitoring level to an action; "ok" becomes "resolve" everything else converts to "trigger".
-actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve" else "trigger"
-
-// sendEvent sends an event to PagerDuty.
+// `actionFromLevel` converts a monitoring level to a PagerDuty action.
+//
+// - `ok` converts to `resolve`.
+// - All other levels convert to `trigger`.
 //
 // ## Parameters
-// - `pagerdutyURL` is the URL of the PagerDuty endpoint.
+// - level: Monitoring level to convert to a PagerDuty action.
 //
-//      Defaults to https://events.page rduty.com/v2/enqueue.
+// ## Examples
 //
-// - `routingKey` is the routing key generated from your PagerDuty integration.
-// - `client` is the name of the client sending the alert.
-// - `clientURL` is the URL of the client sending the alert.
-// - `dedupkey` is a per-alert ID that acts as deduplication key and allows you to acknowledge or change the severity of previous messages. Supports a maximum of 255 characters.
-// - `class` is the class or type of the event.
+// ### Convert a monitoring level to a PagerDuty action
+// ```
+// import "pagerduty"
+//
+// pagerduty.actionFromSeverity(level: "crit") // Returns trigger
+// ```
+//
+actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve" else "trigger"
+
+// sendEvent sends an event to PagerDuty and returns the HTTP response code of the request.
+//
+// ## Parameters
+// - pagerdutyURL: PagerDuty endpoint URL.
+//
+//      Default is https://events.pagerduty.com/v2/enqueue.
+//
+// - routingKey: Routing key generated from your PagerDuty integration.
+// - client: Name of the client sending the alert.
+// - clientURL: URL of the client sending the alert.
+// - dedupkey: Per-alert ID that acts as deduplication key and allows you to
+//   acknowledge or change the severity of previous messages.
+//   Supports a maximum of 255 characters.
+// - class: Class or type of the event.
 //
 //      Classes are user-defined.
-//      For example, ping failure or cpu load.
+//      For example, `ping failure` or `cpu load`.
 //
-// - `group` is a logical grouping used by PagerDuty.
+// - group: Logical grouping used by PagerDuty.
 //
 //      Groups are user-defined.
-//      For example, app-stack.
+//      For example, `app-stack`.
 //
-// - `severity` is the severity of the event.
+// - severity: Severity of the event.
 //
-//      Valid values include:
+//      Valid values:
 //
-//        critical
-//        error
-//        warning
-//        info
+//      - `critical`
+//      - `error`
+//      - `warning`
+//      - `info`
 //
-// - `eventAction` is the event type to send to PagerDuty.
+// - eventAction: Event type to send to PagerDuty.
 //
-//      Valid values include:
+//      Valid values:
 //
-//        trigger
-//        resolve
-//        acknowledge
+//      - `trigger`
+//      - `resolve`
+//      - `acknowledge`
 //
-// - `source` is the unique location of the affected system. For example, the hostname or fully qualified domain name (FQDN).
-// - `component` is the component responsible for the event.
-// - `summary` is a brief text summary of the event used as the summaries or titles of associated alerts. The maximum permitted length is 1024 characters.
-// - `timestamp` is the time the detected event occurred in RFC3339nano format.
-// - `customDetails` is the record with additional details about the event.
+// - source: Unique location of the affected system.
+//   For example, the hostname or fully qualified domain name (FQDN).
+// - component: Component responsible for the event.
+// - summary: Brief text summary of the event used as the summaries or titles of associated alerts.
+//   The maximum permitted length is 1024 characters.
+// - timestamp: Time the detected event occurred in RFC3339nano format.
+// - customDetails: Record with additional details about the event.
+//
+// ## Examples
+// ### Send an event to PagerDuty
+// ```no_run
+// import "pagerduty"
+// import "pagerduty"
+//
+// pagerduty.sendEvent(
+//     routingKey: "example-routing-key",
+//     client: "example-client",
+//     clientURL: "http://example-url.com",
+//     class: "example-class",
+//     eventAction: "trigger",
+//     group: "example-group",
+//     severity: "crit",
+//     component: "example-component",
+//     source: "example-source",
+//     component: "example-component",
+//     summary: "example-summary",
+//     timestamp: now(),
+//     customDetails: {"example-key": "example value"},
+// )
+// ```
+//
+// tags: single notification
 //
 sendEvent = (
     pagerdutyURL=defaultURL,
@@ -158,36 +232,41 @@ sendEvent = (
         return http.post(headers: headers, url: pagerdutyURL, data: enc)
     }
 
-// endpoint returns a function that can be used to send a message to PagerDuty that includes output data.
+// endpoint returns a function that sends a message to PagerDuty that includes output data.
 //
 // ## Parameters
-// - `url` is the The PagerDuty v2 Events API URL.
+// - url: PagerDuty v2 Events API URL.
 //
-//      Defaults to https://events.pagerduty.com/v2/enqueue.
+//      Default is `https://events.pagerduty.com/v2/enqueue`.
 //
-// - `Usage` the pagerduty.endpoint is a factory function that outputs another function.
+// ## Usage
+// `pagerduty.endpoint()` is a factory function that outputs another function.
+//  The output function requires a `mapFn` parameter.
 //
-//      The output function requires a mapFn parameter.
-//      See the PagerDuty v2 Events API documentation for more information about these parameters.
+// ### mapFn
+// Function that builds the record used to generate the POST request.
+// Requires an `r` parameter.
 //
-// - `mapFn` is a function that builds the record used to generate the POST request. Requires an r parameter.
+// `mapFn` accepts a table row (`r`) and returns a record that must include the
+// following properties:
 //
-//      mapFn accepts a table row (r) and returns a record that must include the following fields:
-//         routingKey
-//         client
-//         client_url
-//         class
-//         eventAction
-//         group
-//         severity
-//         source
-//         component
-//         summary
-//         timestamp
-//         customDetails
+// - routingKey
+// - client
+// - client_url
+// - class
+// - eventAction
+// - group
+// - severity
+// - source
+// - component
+// - summary
+// - timestamp
+// - customDetails
 //
-// ## Send critical statuses to a PagerDuty endpoint
-// ```
+// ## Examples
+//
+// ### Send critical statuses to a PagerDuty endpoint
+// ```no_run
 // import "pagerduty"
 // import "influxdata/influxdb/secrets"
 //
@@ -195,26 +274,29 @@ sendEvent = (
 // toPagerDuty = pagerduty.endpoint()
 //
 // crit_statuses = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and r.status == "crit")
+//     |> range(start: -1m)
+//     |> filter(fn: (r) => r._measurement == "statuses" and r.status == "crit")
 //
 // crit_statuses
-//   |> toPagerDuty(mapFn: (r) => ({ r with
-//       routingKey: routingKey,
-//       client: r.client,
-//       clientURL: r.clientURL,
-//       class: r.class,
-//       eventAction: r.eventAction,
-//       group: r.group,
-//       severity: r.severity,
-//       source: r.source,
-//       component: r.component,
-//       summary: r.summary,
-//       timestamp: r._time,
-//       customDetails: { "ping time": r.ping, load: r.load },
-//     })
-//   )()
+//     |> toPagerDuty(
+//         mapFn: (r) => ({r with
+//             routingKey: routingKey,
+//             client: r.client,
+//             clientURL: r.clientURL,
+//             class: r.class,
+//             eventAction: r.eventAction,
+//             group: r.group,
+//             severity: r.severity,
+//             source: r.source,
+//             component: r.component,
+//             summary: r.summary,
+//             timestamp: r._time,
+//             customDetails: {"ping time": r.ping, load: r.load},
+//         }),
+//     )()
 // ```
+//
+// tags: notification endpoints
 //
 endpoint = (url=defaultURL) =>
     (mapFn) =>
