@@ -110,7 +110,7 @@ actionFromSeverity = (severity) =>
 // ```
 // import "pagerduty"
 //
-// pagerduty.actionFromSeverity(level: "crit") // Returns trigger
+// pagerduty.actionFromLevel(level: "crit") // Returns trigger
 // ```
 //
 actionFromLevel = (level) => if strings.toLower(v: level) == "ok" then "resolve" else "trigger"
