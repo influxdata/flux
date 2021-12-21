@@ -203,6 +203,7 @@ pub enum Error {
         lab: String,
         exp: MonoType,
         act: MonoType,
+        cause: Box<Error>,
     },
     MissingArgument(String),
     ExtraArgument(String),
@@ -240,12 +241,18 @@ impl fmt::Display for Error {
             }
             Error::MissingLabel(a) => write!(f, "record is missing label {}", a),
             Error::ExtraLabel(a) => write!(f, "found unexpected label {}", a),
-            Error::CannotUnifyLabel { lab, exp, act } => write!(
+            Error::CannotUnifyLabel {
+                lab,
+                exp,
+                act,
+                cause,
+            } => write!(
                 f,
-                "expected {} but found {} for label {}",
+                "expected {} but found {} for label {} caused by {}",
                 exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
                 act.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                lab
+                lab,
+                cause,
             ),
             Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
             Error::ExtraArgument(x) => write!(f, "found unexpected argument {}", x),
@@ -275,13 +282,17 @@ impl Substitutable for Error {
                 .apply_ref(sub)
                 .map(|act| Error::CannotConstrain { exp: *exp, act }),
             Error::OccursCheck(tv, ty) => ty.apply_ref(sub).map(|ty| Error::OccursCheck(*tv, ty)),
-            Error::CannotUnifyLabel { lab, exp, act } => {
-                apply2(exp, act, sub).map(|(exp, act)| Error::CannotUnifyLabel {
-                    lab: lab.clone(),
-                    exp,
-                    act,
-                })
-            }
+            Error::CannotUnifyLabel {
+                lab,
+                exp,
+                act,
+                cause,
+            } => apply3(exp, act, cause, sub).map(|(exp, act, cause)| Error::CannotUnifyLabel {
+                lab: lab.clone(),
+                exp,
+                act,
+                cause,
+            }),
             Error::CannotUnifyArgument(x, e) => e
                 .apply_ref(sub)
                 .map(|e| Error::CannotUnifyArgument(x.clone(), e)),
@@ -459,15 +470,12 @@ pub type MonoTypeVecMap<T = String> = SemanticMap<T, Vec<MonoType>>;
 type RefMonoTypeVecMap<'a, T = String> = HashMap<&'a T, Vec<&'a MonoType>>;
 
 impl BuiltinType {
-    fn unify(self, actual: Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
-        if self == actual {
-            Ok(())
-        } else {
+    fn unify(self, actual: Self, unifier: &mut Unifier<'_>) {
+        if self != actual {
             unifier.errors.push(Error::CannotUnify {
                 exp: self.into(),
                 act: actual.into(),
             });
-            Ok(())
         }
     }
 
@@ -729,9 +737,9 @@ impl MonoType {
             sub,
             errors: Errors::new(),
         };
-        if let Err(err) = self.unify(actual, &mut unifier) {
-            unifier.errors.push(err);
-        }
+
+        self.unify(actual, &mut unifier);
+
         if unifier.errors.has_errors() {
             Err(unifier.errors)
         } else {
@@ -743,12 +751,12 @@ impl MonoType {
         &self, // self represents the expected type
         actual: &Self,
         unifier: &mut Unifier<'_>,
-    ) -> Result<(), Error> {
+    ) {
         log::debug!("Unify {} <=> {}", self, actual);
         match (self, actual) {
             // An error has already occurred so assume everything is ok here so that we do not
             // create additional, spurious errors
-            (MonoType::Error, _) | (_, MonoType::Error) => Ok(()),
+            (MonoType::Error, _) | (_, MonoType::Error) => (),
             (MonoType::Builtin(exp), MonoType::Builtin(act)) => exp.unify(*act, unifier),
             (MonoType::Var(tv), MonoType::Var(tv2)) => {
                 match (unifier.sub.try_apply(*tv), unifier.sub.try_apply(*tv2)) {
@@ -776,7 +784,6 @@ impl MonoType {
                     exp: exp.clone(),
                     act: act.clone(),
                 });
-                Ok(())
             }
         }
     }
@@ -884,7 +891,7 @@ impl MaxTvar for Tvar {
 }
 
 impl Tvar {
-    fn unify(self, with: &MonoType, unifier: &mut Unifier<'_>) -> Result<(), Error> {
+    fn unify(self, with: &MonoType, unifier: &mut Unifier<'_>) {
         match *with {
             MonoType::Var(tv) => {
                 if self == tv {
@@ -896,7 +903,6 @@ impl Tvar {
                     // associated with these type variables.
                     self.unify_with_tvar(tv, unifier);
                 }
-                Ok(())
             }
             _ => {
                 let with = with.apply_cow(unifier.sub);
@@ -905,7 +911,6 @@ impl Tvar {
                     unifier
                         .errors
                         .push(Error::OccursCheck(self, with.into_owned()));
-                    Ok(())
                 } else {
                     // Unify a type variable with a monotype.
                     // The monotype must satisify any
@@ -920,8 +925,10 @@ impl Tvar {
         unifier.sub.union(self, tv);
     }
 
-    fn unify_with_type(self, t: MonoType, unifier: &mut Unifier<'_>) -> Result<(), Error> {
-        unifier.sub.union_type(self, t)
+    fn unify_with_type(self, t: MonoType, unifier: &mut Unifier<'_>) {
+        if let Err(err) = unifier.sub.union_type(self, t) {
+            unifier.errors.push(err);
+        }
     }
 
     fn constrain(&self, with: Kind, cons: &mut TvarKinds) {
@@ -960,7 +967,7 @@ impl MaxTvar for Array {
 
 impl Array {
     // self represents the expected type.
-    fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
+    fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
         self.0.unify(&with.0, unifier)
     }
 
@@ -1001,7 +1008,7 @@ impl MaxTvar for Vector {
 
 impl Vector {
     // self represents the expected type.
-    fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
+    fn unify(&self, with: &Self, unifier: &mut Unifier<'_>) {
         self.0.unify(&with.0, unifier)
     }
 
@@ -1040,8 +1047,8 @@ impl MaxTvar for Dictionary {
 }
 
 impl Dictionary {
-    fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
-        self.key.unify(&actual.key, unifier)?;
+    fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) {
+        self.key.unify(&actual.key, unifier);
         self.val.unify(&actual.val, unifier)
     }
 
@@ -1218,9 +1225,9 @@ impl Record {
     //
     // self represents the expected type.
     //
-    fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) -> Result<(), Error> {
+    fn unify(&self, actual: &Self, unifier: &mut Unifier<'_>) {
         match (self, actual) {
-            (Record::Empty, Record::Empty) => Ok(()),
+            (Record::Empty, Record::Empty) => (),
             (
                 Record::Extension {
                     head: Property { k: a, v: t },
@@ -1230,10 +1237,11 @@ impl Record {
                     head: Property { k: b, v: u },
                     tail: MonoType::Var(r),
                 },
-            ) if a == b && l == r => t.unify(u, unifier).map_err(|_| Error::CannotUnifyLabel {
+            ) if a == b && l == r => unify_in_context(t, u, unifier, |e| Error::CannotUnifyLabel {
                 lab: a.to_string(),
                 exp: t.clone(),
                 act: u.clone(),
+                cause: Box::new(e),
             }),
             (
                 Record::Extension {
@@ -1249,7 +1257,6 @@ impl Record {
                     exp: MonoType::from(self.clone()),
                     act: MonoType::from(actual.clone()),
                 });
-                Ok(())
             }
             (
                 Record::Extension {
@@ -1261,7 +1268,7 @@ impl Record {
                     tail: r,
                 },
             ) if a == b => {
-                t.unify(u, unifier)?;
+                t.unify(u, unifier);
                 l.unify(r, unifier)
             }
             (
@@ -1289,7 +1296,7 @@ impl Record {
                     },
                     tail: MonoType::Var(var),
                 });
-                l.unify(&act, unifier)?;
+                l.unify(&act, unifier);
                 exp.unify(r, unifier)
             }
             // If we are expecting {a: u | r} but find {}, label `a` is missing.
@@ -1301,7 +1308,6 @@ impl Record {
                 Record::Empty,
             ) => {
                 unifier.errors.push(Error::MissingLabel(a.to_string()));
-                Ok(())
             }
             // If we are expecting {} but find {a: u | r}, label `a` is extra.
             (
@@ -1312,14 +1318,12 @@ impl Record {
                 },
             ) => {
                 unifier.errors.push(Error::ExtraLabel(a.to_string()));
-                Ok(())
             }
             _ => {
                 unifier.errors.push(Error::CannotUnify {
                     exp: MonoType::from(self.clone()),
                     act: MonoType::from(actual.clone()),
                 });
-                Ok(())
             }
         }
     }
@@ -1386,17 +1390,14 @@ fn unify_in_context<T>(
     act: &T,
     unifier: &mut Unifier<'_, T::Error>,
     mut context: impl FnMut(Error) -> Error,
-) -> Result<(), T::Error>
-where
+) where
     T: TypeLike,
 {
     let mut sub_unifier = Unifier {
         sub: unifier.sub,
         errors: Errors::new(),
     };
-    let result = exp
-        .unify(act.typ(), &mut sub_unifier)
-        .map_err(|e| act.error(context(e)));
+    exp.unify(act.typ(), &mut sub_unifier);
 
     unifier.errors.extend(
         sub_unifier
@@ -1404,8 +1405,6 @@ where
             .into_iter()
             .map(|e| act.error(context(e))),
     );
-
-    result
 }
 
 /// Wrapper around [`Symbol`] that ignores the package in comparisons. Allowing field lookups of
@@ -1704,9 +1703,9 @@ impl Function {
             sub,
             errors: Errors::new(),
         };
-        if let Err(err) = self.unify(actual, &mut unifier) {
-            unifier.errors.push(err);
-        }
+
+        self.unify(actual, &mut unifier);
+
         if unifier.errors.has_errors() {
             Err(unifier.errors)
         } else {
@@ -1749,11 +1748,7 @@ impl Function {
     /// Unify 3 and 4: should fail because `a` is not in the arguments of 4.
     ///
     /// self represents the expected type.
-    fn unify<T>(
-        &self,
-        actual: &Function<T>,
-        unifier: &mut Unifier<'_, T::Error>,
-    ) -> Result<(), T::Error>
+    fn unify<T>(&self, actual: &Function<T>, unifier: &mut Unifier<'_, T::Error>)
     where
         T: TypeLike + Clone,
     {
@@ -1824,7 +1819,7 @@ impl Function {
                 // The required argument is in g's required arguments.
                 unify_in_context(&exp, &act, unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
-                })?;
+                });
             } else {
                 unifier
                     .errors
@@ -1836,7 +1831,7 @@ impl Function {
             if let Some(act) = g.req.remove(&name).or_else(|| g_opt.remove(&name)) {
                 unify_in_context(&exp, &act, unifier, |e| {
                     Error::CannotUnifyArgument(name.clone(), Box::new(e))
-                })?;
+                });
             }
         }
 
