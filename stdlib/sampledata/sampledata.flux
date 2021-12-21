@@ -1,16 +1,28 @@
 // Package sampledata provides functions that return basic sample datasets.
+//
+// introduced: 0.128.0
+// tags: sample data
+//
 package sampledata
 
 
 import "csv"
 
-// start and stop constants provide start and stop times to be used with `range`
-// when `_start` and `_stop` columns are required to demonstrate a transformation.
-// All sample data points are between start and stop.
+// start represents the earliest time included in sample datasets.
+//
+// start should be used used with `range` when `_start` and `_stop` columns are
+// required to demonstrate a transformation.
 //
 start = 2021-01-01T00:00:00Z
+
+// stop represents the latest time included in sample datasets.
+//
+// stop should be used used with `range` when `_start` and `_stop` columns are
+// required to demonstrate a transformation.
+//
 stop = 2021-01-01T00:01:00Z
 
+// Base numeric dataset used as a boilerplate for other numeric types
 _numeric =
     (includeNull=false) =>
         "
@@ -46,6 +58,7 @@ _numeric =
 ,,1,2021-01-01T00:00:50Z,t2,1.86
 "
 
+// String sample dataset.
 _string =
     (includeNull=false) =>
         "
@@ -83,6 +96,7 @@ _string =
 ,,1,2021-01-01T00:00:50Z,t2,smpl_dtn2bv
 "
 
+// Boolean sample dataset.
 _bool =
     (includeNull=false) =>
         "#group,false,false,false,true,false
@@ -121,15 +135,16 @@ _bool =
 //
 // ## Parameters
 //
-// - `includeNull` indicates whether or not to include null values in the returned dataset.
+// - includeNull: Include null values in the returned dataset.
 //   Default is `false`.
 //
-// ## Output basic sample data with float values
+// ## Examples
 //
+// ### Output basic sample data with float values
 // ```
 // import "sampledata"
 //
-// sampledata.float()
+// > sampledata.float()
 // ```
 //
 float = (includeNull=false) => {
@@ -142,15 +157,16 @@ float = (includeNull=false) => {
 //
 // ## Parameters
 //
-// - `includeNull` indicates whether or not to include null values in the returned dataset.
+// - includeNull: Include null values in the returned dataset.
 //   Default is `false`.
 //
-// ## Output basic sample data with integer values
+// ## Examples
 //
+// ### Output basic sample data with integer values
 // ```
 // import "sampledata"
 //
-// sampledata.int()
+// > sampledata.int()
 // ```
 //
 int = (includeNull=false) => {
@@ -163,15 +179,16 @@ int = (includeNull=false) => {
 //
 // ## Parameters
 //
-// - `includeNull` indicates whether or not to include null values in the returned dataset.
+// - includeNull: Include null values in the returned dataset.
 //   Default is `false`.
 //
-// ## Output basic sample data with unsigned integer values
+// ## Examples
 //
+// ### Output basic sample data with unsigned integer values
 // ```
 // import "sampledata"
 //
-// sampledata.uint()
+// > sampledata.uint()
 // ```
 //
 uint = (includeNull=false) => {
@@ -184,15 +201,16 @@ uint = (includeNull=false) => {
 //
 // ## Parameters
 //
-// - `includeNull` indicates whether or not to include null values in the returned dataset.
+// - includeNull: Include null values in the returned dataset.
 //   Default is `false`.
 //
-// ## Output basic sample data with string values
+// ## Examples
 //
+// ### Output basic sample data with string values
 // ```
 // import "sampledata"
 //
-// sampledata.string()
+// > sampledata.string()
 // ```
 //
 string = (includeNull=false) => {
@@ -205,15 +223,16 @@ string = (includeNull=false) => {
 //
 // ## Parameters
 //
-// - `includeNull` indicates whether or not to include null values in the returned dataset.
+// - includeNull: Include null values in the returned dataset.
 //   Default is `false`.
 //
-// ## Output basic sample data with boolean values
+// ## Examples
 //
+// ### Output basic sample data with boolean values
 // ```
 // import "sampledata"
 //
-// sampledata.bool()
+// > sampledata.bool()
 // ```
 //
 bool = (includeNull=false) => {
@@ -226,15 +245,16 @@ bool = (includeNull=false) => {
 //
 // ## Parameters
 //
-// - `includeNull` indicates whether or not to include null values in the returned dataset.
+// - includeNull: Include null values in the returned dataset.
 //   Default is `false`.
 //
-// ## Output basic sample data with numeric boolean values
+// ## Examples
 //
+// ### Output basic sample data with numeric boolean values
 // ```
 // import "sampledata"
 //
-// sampledata.numericBool()
+// > sampledata.numericBool()
 // ```
 //
 numericBool = (includeNull=false) => {
