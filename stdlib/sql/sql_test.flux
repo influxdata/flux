@@ -5,6 +5,7 @@ import "array"
 import "sql"
 import "testing"
 
+hdbDsn = "hdb://SYSTEM:fluX!234@localhost:39041"
 mssqlDsn = "sqlserver://sa:fluX!234@localhost:1433?database=master"
 mysqlDsn = "flux:flux@tcp(127.0.0.1:3306)/flux"
 mariaDbDsn = "flux:flux@tcp(127.0.0.1:3307)/flux"
@@ -15,6 +16,47 @@ sqliteDsn = "file:///tmp/flux-integ-tests-sqlite.db"
 stanley = {name: "Stanley", age: 15}
 lucy = {name: "Lucy", age: 14}
 sophie = {name: "Sophie", age: 15}
+
+// Some db engines will UPPERCASE table/column names when the identifiers are unquoted
+STANLEY = {NAME: "Stanley", AGE: 15}
+LUCY = {NAME: "Lucy", AGE: 14}
+SOPHIE = {NAME: "Sophie", AGE: 15}
+
+testcase integration_hdb_read_from_seed {
+    want = array.from(rows: [STANLEY, LUCY])
+    got = sql.from(driverName: "hdb", dataSourceName: hdbDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
+
+    testing.diff(got: got, want: want)
+        |> yield()
+}
+
+testcase integration_hdb_read_from_nonseed {
+    want = array.from(rows: [SOPHIE])
+    got = sql.from(driverName: "hdb", dataSourceName: hdbDsn, query: "SELECT name, age FROM pets WHERE seeded = false")
+
+    testing.diff(got: got, want: want)
+        |> yield()
+}
+
+testcase integration_hdb_write_to {
+    array.from(rows: [sophie])
+        |> sql.to(
+            driverName: "hdb",
+            dataSourceName: hdbDsn,
+            // n.b. if we don't UPPERCASE the table name here, the automatic table
+            // create (if not exists) will incorrectly think it needs to create the
+            // table. This will result in an error since the table already exists.
+            table: "PETS",
+            batchSize: 1,
+        )
+        // The array.from() will be returned and will cause the test to fail.
+        // Filtering will mean the test can pass. Hopefully `sql.to()` will
+        // error if there's a problem.
+        |> filter(fn: (r) => false)
+        // Without the yield, the flux script can "finish", closing the db
+        // connection before the insert commits!
+        |> yield()
+}
 
 testcase integration_pg_read_from_seed {
     want = array.from(rows: [stanley, lucy])
