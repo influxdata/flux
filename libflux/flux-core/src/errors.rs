@@ -3,7 +3,6 @@ use std::{
     any::Any,
     error::Error as StdError,
     fmt,
-    iter::FromIterator,
     ops::{Index, IndexMut},
     slice, vec,
 };

@@ -2,7 +2,7 @@
 name = "flux-core"
 version = "0.4.0"
 authors = ["Nathaniel Cook <nathaniel@influxdata.com>"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 name = "fluxcore"

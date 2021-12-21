@@ -21,7 +21,7 @@
 //! `assert_eq`, as the types retured from type inference can be
 //! arbitrarily complex.
 //!
-use std::{collections::HashMap, convert::TryFrom};
+use std::collections::HashMap;
 
 use colored::*;
 use derive_more::Display;

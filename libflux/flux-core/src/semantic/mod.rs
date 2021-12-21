@@ -24,7 +24,7 @@ mod tests;
 #[allow(unused, non_snake_case)]
 pub mod flatbuffers;
 
-use std::{convert::TryFrom, fmt, ops::Range};
+use std::{fmt, ops::Range};
 
 use codespan_reporting::{
     diagnostic,
