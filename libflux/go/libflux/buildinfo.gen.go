@@ -323,7 +323,7 @@ var sourceHashes = map[string]string{
 	"stdlib/planner/window_sum_push_test.flux":                                                    "7ca71355a6677407fcb3d2addec74051c310ee920952000801025275ac0717ab",
 	"stdlib/profiler/profiler.flux":                                                               "0158aa227afb901df4a0bd9652314b68444f164f0161e9d79b6d6ea76e344d84",
 	"stdlib/pushbullet/pushbullet.flux":                                                           "862d675ac70bb52eeccccc9459676285e5a48590dad05b98cd07967769449e4d",
-	"stdlib/regexp/regexp.flux":                                                                   "2bb8d8caab6bffbb45fe34f7ad522f6d2a850f6ab347cb6239f52386568096e3",
+	"stdlib/regexp/regexp.flux":                                                                   "829137e7d24fa9ddd48d3c34ee4f870256c7cac24cbe3e61ced7f59112413746",
 	"stdlib/regexp/replaceAllString_test.flux":                                                    "5468c56bd278d45a49f689b5fff673f976838e39236b24dc4594621a38512626",
 	"stdlib/runtime/runtime.flux":                                                                 "335db8189403e4ddc9b2cbfddc6a8ddfacd0b15bde3e00725b7aef8be0991d63",
 	"stdlib/sampledata/sampledata.flux":                                                           "e48e5e5e1ab7de87ed47e7f873f39cdf2e153aada0e8ecd7f8498c051e18e782",

@@ -81,7 +81,7 @@ builtin findString : (r: regexp, v: string) => string
 // ## Examples
 //
 // ### Index the bounds of first regular expression match in each row
-// ```
+// ```no_run
 // import "regexp"
 //
 // regexp.findStringIndex(r: /ab?/, v: "tablet")
