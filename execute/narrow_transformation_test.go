@@ -219,8 +219,9 @@ func TestNarrowTransformation_Finish(t *testing.T) {
 	tr, d, err := execute.NewNarrowTransformation(
 		executetest.RandomDatasetID(),
 		&mock.NarrowTransformation{
-			DisposeFn: func() {
+			CloseFn: func() error {
 				isDisposed = true
+				return nil
 			},
 		},
 		memory.DefaultAllocator,

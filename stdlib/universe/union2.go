@@ -114,7 +114,7 @@ func (u *unionTransformation2) UpdateProcessingTime(id execute.DatasetID, t exec
 	return nil
 }
 
-func (u *unionTransformation2) Dispose() {}
+func (u *unionTransformation2) Close() error { return nil }
 
 type unionSchema struct {
 	cols  []flux.ColMeta

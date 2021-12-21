@@ -91,4 +91,4 @@ func (s *shiftTransformation2) shiftTimes(vs *array.Int, mem memory.Allocator) *
 	return b.NewIntArray()
 }
 
-func (s *shiftTransformation2) Dispose() {}
+func (s *shiftTransformation2) Close() error { return nil }

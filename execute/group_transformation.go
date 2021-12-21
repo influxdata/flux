@@ -14,7 +14,7 @@ import (
 type GroupTransformation interface {
 	Process(chunk table.Chunk, d *TransportDataset, mem memory.Allocator) error
 
-	Disposable
+	Closer
 }
 
 var _ Transport = (*groupTransformation)(nil)
@@ -56,6 +56,6 @@ func (g *groupTransformation) ProcessMessage(m Message) error {
 }
 
 func (g *groupTransformation) Finish(id DatasetID, err error) {
+	err = Close(err, g.t)
 	g.d.Finish(err)
-	g.t.Dispose()
 }

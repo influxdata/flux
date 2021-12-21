@@ -274,11 +274,12 @@ func (a *QuantileAgg) NewStringAgg() execute.DoStringAgg {
 	return nil
 }
 
-func (a *QuantileAgg) Dispose() {
+func (a *QuantileAgg) Close() error {
 	for i := 0; i < len(a.freeDigests); i++ {
 		a.mem.Account(tdigest.ByteSizeForCompression(a.Compression) * -1)
 	}
 	a.freeDigests = nil
+	return nil
 }
 
 type QuantileAggState struct {
@@ -308,9 +309,10 @@ func (s *QuantileAggState) IsNull() bool {
 	return !s.ok
 }
 
-func (s *QuantileAggState) Dispose() {
+func (s *QuantileAggState) Close() error {
 	s.parent.pushFreeDigest(s.digest)
 	s.digest = nil
+	return nil
 }
 
 type ExactQuantileAgg struct {
