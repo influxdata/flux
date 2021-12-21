@@ -113,6 +113,12 @@ impl From<types::Error> for ErrorKind {
     }
 }
 
+impl From<Located<types::Error>> for Error {
+    fn from(err: Located<types::Error>) -> Self {
+        located(err.location, ErrorKind::Inference(err.error))
+    }
+}
+
 impl From<infer::Error> for Error {
     fn from(err: infer::Error) -> Self {
         Located {
@@ -1431,35 +1437,56 @@ impl CallExpr {
         {
             expr.infer(infer)?;
             // Every argument is required in a function call.
-            req.insert(id.name.to_string(), expr.type_of());
+            req.insert(id.name.to_string(), (expr.type_of(), expr.loc()));
         }
         if let Some(ref mut p) = &mut self.pipe {
             p.infer(infer)?;
             pipe = Some(types::Property {
                 k: "<-".to_string(),
-                v: p.type_of(),
+                v: (p.type_of(), p.loc()),
             });
         }
-        // Constrain the callee to be a Function.
-        infer.solve(&[Constraint::Equal {
-            exp: self.callee.type_of(),
-            act: MonoType::from(Function {
-                opt: MonoTypeMap::new(),
-                req,
-                pipe,
-                // The return type of a function call is the type of the call itself.
-                // Remind that, when two functions are unified, their return types are unified too.
-                // As an example take:
-                //   f = (a) => a + 1
-                //   f(a: 0)
-                // The return type of `f` is `int`.
-                // The return type of `f(a: 0)` is `t0` (a fresh type variable).
-                // Upon unification a substitution "t0 => int" is created, so that the compiler
-                // can infer that, for instance, `f(a: 0) + 1` is legal.
-                retn: self.typ.clone(),
-            }),
-            loc: self.loc.clone(),
-        }]);
+        match &*self.callee.type_of().apply_cow(infer.sub) {
+            MonoType::Fun(func) => {
+                if let Err(err) = func.unify(
+                    &Function {
+                        opt: MonoTypeMap::new(),
+                        req,
+                        pipe,
+                        retn: (self.typ.clone(), &self.loc),
+                    },
+                    infer.sub,
+                ) {
+                    infer.errors.push(err.into());
+                }
+            }
+            callee => {
+                // Constrain the callee to be a Function.
+                infer.equal(
+                    callee,
+                    &MonoType::from(Function {
+                        opt: MonoTypeMap::new(),
+                        req: req.into_iter().map(|(k, (v, _))| (k, v)).collect(),
+                        pipe: pipe.map(|prop| types::Property {
+                            k: prop.k,
+                            v: prop.v.0,
+                        }),
+                        // The return type of a function call is the type of the call itself.
+                        // Remind that, when two functions are unified, their return types are unified too.
+                        // As an example take:
+                        //   f = (a) => a + 1
+                        //   f(a: 0)
+                        // The return type of `f` is `int`.
+                        // The return type of `f(a: 0)` is `t0` (a fresh type variable).
+                        // Upon unification a substitution "t0 => int" is created, so that the compiler
+                        // can infer that, for instance, `f(a: 0) + 1` is legal.
+                        retn: self.typ.clone(),
+                    }),
+                    &self.loc,
+                );
+            }
+        }
+
         Ok(())
     }
     fn apply(mut self, sub: &Substitution) -> Self {
