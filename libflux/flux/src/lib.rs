@@ -30,7 +30,7 @@ use fluxcore::{
         import::{Importer, Packages},
         nodes::{Package, Symbol},
         sub::Substitution,
-        types::{MonoType, PolyType, SemanticMap, TvarKinds},
+        types::{MonoType, PolyType, TvarKinds},
         Analyzer, AnalyzerConfig, PackageExports,
     },
 };
@@ -617,7 +617,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
         imports
             .into_iter()
             .map(|(k, v)| (Symbol::from(k), v.typ()))
-            .collect::<SemanticMap<_, _>>(),
+            .collect::<Vec<_>>(),
     )
     .unwrap();
     let mut builder = flatbuffers::FlatBufferBuilder::new();

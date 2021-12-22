@@ -2,8 +2,9 @@
 
 use std::{
     cmp,
-    collections::{BTreeMap, BTreeSet, HashMap},
+    collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
+    hash::Hash,
 };
 
 use codespan_reporting::diagnostic;
@@ -12,6 +13,7 @@ use serde::ser::{Serialize, Serializer};
 
 use crate::{
     errors::{Errors, Located},
+    map::HashMap,
     semantic::{
         fresh::{Fresh, Fresher},
         nodes::Symbol,
@@ -44,6 +46,9 @@ pub struct PolyType {
 pub type PolyTypeMap<T = String> = SemanticMap<T, PolyType>;
 /// Nested map of polytypes that preserves a sorted order when iterating
 pub type PolyTypeMapMap = SemanticMap<String, PolyTypeMap>;
+
+/// Map of identifier to a polytype.
+pub type PolyTypeHashMap<T = String> = HashMap<T, PolyType>;
 
 /// Alias the maplit literal construction macro so we can specify the type here.
 #[macro_export]
@@ -1391,7 +1396,7 @@ impl Record {
         }
     }
 
-    fn fields(&self) -> impl Iterator<Item = &Property> {
+    pub(crate) fn fields(&self) -> impl Iterator<Item = &Property> {
         let mut record = Some(self);
         std::iter::from_fn(move || match record {
             Some(Record::Extension { head, tail }) => {
@@ -1626,7 +1631,22 @@ impl fmt::Display for Function {
     }
 }
 
-#[allow(clippy::implicit_hasher)]
+impl<K: Eq + Hash + Clone> Substitutable for PolyTypeHashMap<K> {
+    fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
+        merge_collect(
+            &mut (),
+            self,
+            |_, (k, v)| v.apply_ref(sub).map(|v| (k.clone(), v)),
+            |_, (k, v)| (k.clone(), v.clone()),
+        )
+    }
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        for t in self.values() {
+            t.free_vars(vars);
+        }
+    }
+}
+
 impl<K: Ord + Clone, T: Substitutable + Clone> Substitutable for SemanticMap<K, T> {
     fn apply_ref(&self, sub: &dyn Substituter) -> Option<Self> {
         merge_collect(

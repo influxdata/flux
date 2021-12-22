@@ -1020,7 +1020,7 @@ impl<'a, 'b> SerializingVisitorState<'a, 'b> {
     }
 
     fn create_symbol(&mut self, symbol: &semantic::nodes::Symbol) -> Option<WIPOffset<&'a str>> {
-        self.create_string(symbol.full_name())
+        Some(self.builder.create_shared_string(symbol.full_name()))
     }
 
     fn create_string(&mut self, string: &str) -> Option<WIPOffset<&'a str>> {

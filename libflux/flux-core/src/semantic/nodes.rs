@@ -10,7 +10,7 @@
 extern crate chrono;
 extern crate derivative;
 
-use std::{collections::HashMap, fmt::Debug, vec::Vec};
+use std::{fmt::Debug, vec::Vec};
 
 use anyhow::{anyhow, bail, Result as AnyhowResult};
 use chrono::{prelude::DateTime, FixedOffset};
@@ -21,14 +21,15 @@ use derive_more::Display;
 use crate::{
     ast,
     errors::{located, AsDiagnostic, Errors, Located},
+    map::HashMap,
     semantic::{
         env::Environment,
         import::Importer,
         infer::{self, Constraint},
         sub::{Substitutable, Substituter, Substitution},
         types::{
-            self, Array, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType,
-            PolyTypeMap, SemanticMap, Tvar, TvarKinds,
+            self, Array, Dictionary, Function, Kind, Label, MonoType, MonoTypeMap, PolyType, Tvar,
+            TvarKinds,
         },
     },
 };
@@ -140,7 +141,7 @@ type VectorizeEnv = HashMap<Symbol, MonoType>;
 struct InferState<'a, 'env> {
     sub: &'a mut Substitution,
     importer: &'a mut dyn Importer,
-    imports: SemanticMap<Symbol, String>,
+    imports: HashMap<Symbol, String>,
     env: &'a mut Environment<'env>,
     errors: Errors<Error>,
 }
@@ -942,8 +943,10 @@ impl FunctionExpr {
         let mut pipe = None;
         let mut req = MonoTypeMap::new();
         let mut opt = MonoTypeMap::new();
-        // This params will build the nested env when inferring the function body.
-        let mut params = PolyTypeMap::new();
+
+        // Add the parameters to some nested environment.
+        infer.env.enter_scope();
+
         for param in &mut self.params {
             match param.default {
                 Some(_) => {
@@ -957,7 +960,7 @@ impl FunctionExpr {
                         cons: TvarKinds::new(),
                         expr: param_type.clone(),
                     };
-                    params.insert(id.clone(), typ);
+                    infer.env.add(id.clone(), typ);
                     opt.insert(id.to_string(), param_type);
                 }
                 None => {
@@ -970,7 +973,7 @@ impl FunctionExpr {
                         cons: TvarKinds::new(),
                         expr: MonoType::Var(ftvar),
                     };
-                    params.insert(id.clone(), typ.clone());
+                    infer.env.add(id.clone(), typ.clone());
                     // Piped arguments cannot have a default value.
                     // So check if this is a piped argument.
                     if param.is_pipe {
@@ -983,11 +986,6 @@ impl FunctionExpr {
                     }
                 }
             }
-        }
-        // Add the parameters to some nested environment.
-        infer.env.enter_scope();
-        for (id, param) in params.into_iter() {
-            infer.env.add(id, param);
         }
         // And use it to infer the body.
         self.body.infer(infer)?;
