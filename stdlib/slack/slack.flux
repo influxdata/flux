@@ -1,72 +1,86 @@
-// Package slack provides functions for sending data to Slack.
+// Package slack provides functions for sending messages to [Slack](https://slack.com/).
+//
+// introduced: 0.41.0
+//
 package slack
 
 
 import "http"
 import "json"
 
+// validateColorString ensures a string contains a valid hex color code.
+//
+// ## Parameters
+// - color: Hex color code.
+//
+// ## Examples
+//
+// ### Validate a hex color code string
+// ```no_run
+// import "slack"
+//
+// slack.validateColorString(color: "#fff")
+// ```
+//
 builtin validateColorString : (color: string) => string
 
+// defaultURL defines the default Slack API URL used by functions in the `slack` package.
 option defaultURL = "https://slack.com/api/chat.postMessage"
 
-// message sends a single message to a Slack channel.
-// The function works with either with the chat.postMessage API or with a Slack webhook.
+// message sends a single message to a Slack channel and returns the HTTP
+// response code of the request.
+//
+// The function works with either with the `chat.postMessage` API or with a Slack webhook.
 //
 // ## Parameters
 //
-// - `url` is the URL of the slack endpoint.
+// - url: Slack API URL.
+//   Default is `https://slack.com/api/chat.postMessage`.
 //
-//      Defaults to: "https://slack.com/api/chat.postMessage", if one uses the webhook api this must be acquired as part of the slack API setup.
-//      This URL will be secret. Don't worry about secrets for the initial implementation.
+//   If using the Slack webhook API, this URL is provided ine Slack webhook setup process.
 //
-// - `token` is the api token string.
+// - token: Slack API token. Default is `""`.
 //
-//      Defaults to: "", and can be ignored if one uses the webhook api URL.
+//   If using the Slack Webhook API, a token is not required.
 //
-// - `channel` is the name of channel in which to post the message. No default.
-// - `text` is the text to display.
-// - `color` is the color to give message: one of good, warning, and danger, or any hex rgb color value ex. #439FE0.
+// - channel: Slack channel or user to send the message to.
+// - text: Message text.
+// - color: Slack message color.
 //
-// ## Send the last reported status to Slack using a Slack webhook
+//     Valid values:
+//     - good
+//     - warning
+//     - danger
+//     - Any hex RGB color code
 //
-// ```
+// ## Examples
+//
+// ### Send a message to Slack using a Slack webhook
+// ```no_run
 // import "slack"
 //
-// lastReported =
-//   from(bucket: "example-bucket")
-//     |> range(start: -1m)
-//     |> filter(fn: (r) => r._measurement == "statuses")
-//     |> last()
-//     |> findRecord(fn: (key) => true, idx: 0)
-//
 // slack.message(
-//   url: "https://hooks.slack.com/services/EXAMPLE-WEBHOOK-URL",
-//   channel: "#system-status",
-//   text: "The last reported status was \"${lastReported.status}\"."
-//   color: "warning"
+//     url: "https://hooks.slack.com/services/EXAMPLE-WEBHOOK-URL",
+//     channel: "#example-channel",
+//     text: "Example slack message",
+//     color: "warning",
 // )
 // ```
 //
-// ## Send the last reported status to Slack using chat.postMessage API
-//
-// ```
+// ### Send a message to Slack using chat.postMessage API
+// ```no_run
 // import "slack"
 //
-// lastReported =
-//   from(bucket: "example-bucket")
-//     |> range(start: -1m)
-//     |> filter(fn: (r) => r._measurement == "statuses")
-//     |> tableFind(fn: (key) => true)
-//     |> getRecord(idx: 0)
-//
 // slack.message(
-//   url: "https://slack.com/api/chat.postMessage",
-//   token: "mySuPerSecRetTokEn",
-//   channel: "#system-status",
-//   text: "The last reported status was \"${lastReported.status}\"."
-//   color: "warning"
+//     url: "https://slack.com/api/chat.postMessage",
+//     token: "mySuPerSecRetTokEn",
+//     channel: "#example-channel",
+//     text: "Example slack message",
+//     color: "warning",
 // )
 // ```
+//
+// tags: single notification
 //
 message = (
     url=defaultURL,
@@ -84,37 +98,52 @@ message = (
         return http.post(headers: headers, url: url, data: enc)
     }
 
-// endpoint sends a message to Slack that includes output data.
+// endpoint returns a function that can be used to send a message to Slack per input row.
+//
+// Each output row includes a `_sent` column that indicates if the message for
+// that row was sent successfully.
 //
 // ## Parameters
 //
-// - `url` is the API URL of the slack endpoint. Defaults to https://slack.com/api/chat.postMessage.
+// - url: Slack API URL. Default is  `https://slack.com/api/chat.postMessage`.
 //
-//      If using a Slack webhook, you’ll receive a Slack webhook URL when you create an incoming webhook.
+//   If using the Slack webhook API, this URL is provided ine Slack webhook setup process.
 //
-// - `token` is the Slack API token used to interact with Slack. Defaults to "".
-// - `Usage`: slack.endpoint is a factory function that outputs another function. The output function requires a mapFn parameter.
-// - `mapFn` is a function that builds the record used to generate the POST request. Requires an r parameter.
+// - token: Slack API token. Default is `""`.
 //
-// ## Send critical statuses to a Slack endpoint
+//   If using the Slack Webhook API, a token is not required.
 //
-// ```
+// ## Usage
+// `slack.endpoint()` is a factory function that outputs another function.
+// The output function requires a `mapFn` parameter.
+//
+// ### mapFn
+// A function that builds the record used to generate the POST request.
+//
+// `mapFn` accepts a table row (`r`) and returns a record that must include the
+// following properties:
+//
+// - channel
+// - color
+// - text
+//
+// ## Examples
+//
+// ### Send status alerts to a Slack endpoint
+// ```no_run
+// import "sampledata"
 // import "slack"
 //
-// toSlack = slack.endpoint(url: https://hooks.slack.com/services/EXAMPLE-WEBHOOK-URL)
+// data = sampledata.int()
+//     |> map(fn: (r) => ({r with status: if r._value > 15 then "alert" else "ok"}))
+//     |> filter(fn: (r) => r.status == "alert")
 //
-// crit_statuses = from(bucket: "example-bucket")
-//   |> range(start: -1m)
-//   |> filter(fn: (r) => r._measurement == "statuses" and r.status == "crit")
-//
-// crit_statuses
-//   |> toSlack(mapFn: (r) => ({
-//       channel: "Alerts",
-//       text: r._message,
-//       color: "danger",
-//    })
-//   )()
+// data
+//     |> slack.endpoint(token: "mY5uP3rSeCr37T0kEN")(mapFn: (r) => ({channel: "Alerts", text: r._message, color: "danger"}))()
 // ```
+//
+// tags: notification endpoints
+//
 endpoint = (url=defaultURL, token="") =>
     (mapFn) =>
         (tables=<-) =>
