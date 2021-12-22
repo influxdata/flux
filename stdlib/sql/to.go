@@ -298,14 +298,6 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 	}
 }
 
-// bareIdent returns the string it accepts.
-//
-// At this time, this is a stand-in for the quote/escape strategy needed for hbd
-// (which needs testing before we can figure out the correct impl).
-func bareIdent(s string) string {
-	return s
-}
-
 func getQuoteIdentFunc(driverName string) (quoteIdentFunc, error) {
 	switch driverName {
 	case "sqlite3":
@@ -337,9 +329,7 @@ func getQuoteIdentFunc(driverName string) (quoteIdentFunc, error) {
 		// standpoint since their "Cloud SQL" product also speaks this dialect).
 		return MysqlQuoteIdent, nil
 	case "hdb":
-		// FIXME(onelson): unable to run any tests against hdb so far.
-		//  Until we can observe the engine in action, leave idents as-is.
-		return bareIdent, nil
+		return doubleQuote, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}
@@ -424,6 +414,14 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 					t.spec.Spec.Table, quoteIdent(t.spec.Spec.Table), strings.Join(newSQLTableCols, ","))
 			} else if t.spec.Spec.DriverName == "hdb" { // SAP HANA does not support IF NOT EXIST
 				// wrap CREATE TABLE statement with HDB-specific "if not exists" SQLScript check
+
+				// XXX(onelson): Possible issues could arise from the inconsistent behaviors of `quoteIdent` (in this case,
+				// a double quote escape impl) and the more specialized `hdbEscapeName` which
+				// splits-then-uppercases-then-rejoins identifiers with this usage.
+				// Seems like it would be better to *just* quote/escape without the case transformation.
+				// If the mandate is to "always quote identifiers" as an SQL injection mitigation step, the case
+				// transformation feels like an unexpected twist on what otherwise might be easier to explain.
+				// Eg: "We quote all identifiers as a security precaution. Quoted identifiers are case-sensitive."
 				q = fmt.Sprintf("CREATE TABLE %s (%s)", hdbEscapeName(t.spec.Spec.Table, true), strings.Join(newSQLTableCols, ","))
 				q = hdbAddIfNotExist(t.spec.Spec.Table, q)
 				// SAP HANA does not support INSERT/UPDATE batching via a single SQL command

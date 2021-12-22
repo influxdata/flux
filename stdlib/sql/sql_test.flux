@@ -17,14 +17,22 @@ stanley = {name: "Stanley", age: 15}
 lucy = {name: "Lucy", age: 14}
 sophie = {name: "Sophie", age: 15}
 
-// Some db engines will UPPERCASE table/column names when the identifiers are unquoted
+// Some db engines will UPPERCASE table/column names when the identifiers are unquoted.
+// At time of writing the DDL used to create the tables has unquoted column names, so
+// for engines such as Snowflake and SAP HANA (hdb) we need to UPPERCASE these identifiers
+// here so the quoted version matches the table definition.
 STANLEY = {NAME: "Stanley", AGE: 15}
 LUCY = {NAME: "Lucy", AGE: 14}
 SOPHIE = {NAME: "Sophie", AGE: 15}
 
 testcase integration_hdb_read_from_seed {
     want = array.from(rows: [STANLEY, LUCY])
-    got = sql.from(driverName: "hdb", dataSourceName: hdbDsn, query: "SELECT name, age FROM pets WHERE seeded = true")
+    got =
+        sql.from(
+            driverName: "hdb",
+            dataSourceName: hdbDsn,
+            query: "SELECT name, age FROM \"pet info\" WHERE seeded = true",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
@@ -32,23 +40,20 @@ testcase integration_hdb_read_from_seed {
 
 testcase integration_hdb_read_from_nonseed {
     want = array.from(rows: [SOPHIE])
-    got = sql.from(driverName: "hdb", dataSourceName: hdbDsn, query: "SELECT name, age FROM pets WHERE seeded = false")
+    got =
+        sql.from(
+            driverName: "hdb",
+            dataSourceName: hdbDsn,
+            query: "SELECT name, age FROM \"pet info\" WHERE seeded = false",
+        )
 
     testing.diff(got: got, want: want)
         |> yield()
 }
 
 testcase integration_hdb_write_to {
-    array.from(rows: [sophie])
-        |> sql.to(
-            driverName: "hdb",
-            dataSourceName: hdbDsn,
-            // n.b. if we don't UPPERCASE the table name here, the automatic table
-            // create (if not exists) will incorrectly think it needs to create the
-            // table. This will result in an error since the table already exists.
-            table: "PETS",
-            batchSize: 1,
-        )
+    array.from(rows: [SOPHIE])
+        |> sql.to(driverName: "hdb", dataSourceName: hdbDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will
         // error if there's a problem.

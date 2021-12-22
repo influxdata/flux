@@ -233,6 +233,12 @@ func hdbAddIfNotExist(table string, query string) string {
 
 // hdbEscapeName escapes name in double quotes and convert it to uppercase per HDB naming conventions
 func hdbEscapeName(name string, toUpper bool) string {
+	// truncate `name` to the first interior nul byte (if there is one present).
+	end := strings.IndexRune(name, 0)
+	if end > -1 {
+		name = name[:end]
+	}
+
 	parts := strings.Split(name, ".")
 	for i := range parts {
 		if toUpper {
