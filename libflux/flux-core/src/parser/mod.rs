@@ -292,6 +292,17 @@ impl<'input> Parser<'input> {
 
     const METADATA: &'static str = "parser-type=rust";
 
+    /// Parses a file of Flux source code, returning a [`Package`].
+    pub fn parse_single_package(&mut self, pkgpath: String, fname: String) -> Package {
+        let ast_file = self.parse_file(fname);
+        Package {
+            base: ast_file.base.clone(),
+            path: pkgpath,
+            package: ast_file.get_package().to_string(),
+            files: vec![ast_file],
+        }
+    }
+
     /// Parses a file of Flux source code, returning a [`File`].
     pub fn parse_file(&mut self, fname: String) -> File {
         self.fname = fname;
@@ -485,7 +496,8 @@ impl<'input> Parser<'input> {
         }
     }
 
-    fn parse_monotype(&mut self) -> MonoType {
+    /// Parses a mono type
+    pub fn parse_monotype(&mut self) -> MonoType {
         // Tvar | Basic | Array | Dict | Record | Function
         let t = self.peek();
         match t.tok {
