@@ -107,6 +107,11 @@ impl From<nodes::Error> for Error {
         }
     }
 }
+impl From<Errors<nodes::Error>> for Errors<Error> {
+    fn from(error: Errors<nodes::Error>) -> Self {
+        error.into_iter().map(Error::from).collect()
+    }
+}
 
 /// An environment of values that are available outside of a package
 #[derive(Debug, Clone, PartialEq)]
@@ -132,8 +137,8 @@ impl Default for PackageExports {
 }
 
 impl TryFrom<types::PolyTypeMap<Symbol>> for PackageExports {
-    type Error = Error;
-    fn try_from(values: types::PolyTypeMap<Symbol>) -> Result<Self, Error> {
+    type Error = Errors<Error>;
+    fn try_from(values: types::PolyTypeMap<Symbol>) -> Result<Self, Errors<Error>> {
         Ok(PackageExports {
             typ: build_polytype(values.iter().map(|(k, v)| (k.clone(), v.clone())))?,
             values: values
@@ -205,10 +210,10 @@ impl PackageExports {
 /// Constructs a polytype, or more specifically a generic record type, from a hash map.
 pub fn build_polytype(
     from: impl IntoIterator<Item = (Symbol, PolyType)>,
-) -> Result<PolyType, Error> {
+) -> Result<PolyType, Errors<Error>> {
     let mut sub = Substitution::default();
     let (r, cons) = build_record(from, &mut sub);
-    infer::solve(&cons, &mut sub).map_err(nodes::Error::from)?;
+    infer::solve(&cons, &mut sub).map_err(Errors::<nodes::Error>::from)?;
     let typ = MonoType::record(r);
     Ok(infer::generalize(
         &env::Environment::empty(false),
@@ -466,7 +471,7 @@ impl<'env, I: import::Importer> Analyzer<'env, I> {
                 match PackageExports::try_from(env.values) {
                     Ok(env) => env,
                     Err(err) => {
-                        errors.push(err);
+                        errors.extend(err);
                         return Err(FileErrors {
                             file: sem_pkg.package,
                             source: None,

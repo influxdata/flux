@@ -25,6 +25,7 @@ use std::collections::HashMap;
 
 use colored::*;
 use derive_more::Display;
+use expect_test::expect;
 
 use crate::{
     ast, parser,
@@ -2908,8 +2909,14 @@ fn infer_pipe() {
             f = (arg=(x=<-) => x) => 0 |> arg()
             g = () => f(arg: (x) => 5 + x)
         "#,
-        expect: expect_test::expect![[r#"
+        expect: expect![[r#"
             error: missing pipe argument (argument arg)
+              ┌─ main:3:30
+              │
+            3 │             g = () => f(arg: (x) => 5 + x)
+              │                              ^^^^^^^^^^^^
+
+            error: found unexpected argument x (argument arg)
               ┌─ main:3:30
               │
             3 │             g = () => f(arg: (x) => 5 + x)
@@ -3645,7 +3652,20 @@ fn test_error_messages() {
             fn = (r) => match(r)
         "#,
         // Location points to call expression `match(r)`
-        err: "error @3:31-3:32: found unexpected argument r",
+        expect: expect![[r#"
+            error: found unexpected argument r
+              ┌─ main:3:31
+              │
+            3 │             fn = (r) => match(r)
+              │                               ^
+
+            error: missing required argument o
+              ┌─ main:3:25
+              │
+            3 │             fn = (r) => match(r)
+              │                         ^^^^^^^^
+
+        "#]],
     }
     test_error_msg! {
         src: r#"
@@ -3653,7 +3673,20 @@ fn test_error_messages() {
             f(a: 0, c: 1)
         "#,
         // Location points to call expression `f(a: 0, c: 1)`
-        err: "error @3:24-3:25: found unexpected argument c",
+        expect: expect![[r#"
+            error: found unexpected argument c
+              ┌─ main:3:24
+              │
+            3 │             f(a: 0, c: 1)
+              │                        ^
+
+            error: missing required argument b
+              ┌─ main:3:13
+              │
+            3 │             f(a: 0, c: 1)
+              │             ^^^^^^^^^^^^^
+
+        "#]],
     }
     test_error_msg! {
         src: r#"
@@ -3871,4 +3904,42 @@ fn symbol_resolution() {
         member_expr_3.expect("member expression").property,
         Symbol::from("isType")
     );
+}
+
+#[test]
+fn multiple_errors_in_function_call() {
+    test_error_msg! {
+        env: map![
+            "f" => "(a: float, b: int, c: string) => bool",
+        ],
+        src: r#"
+            f(a: 1, b: "record", d: {})
+        "#,
+        expect: expect![[r#"
+            error: found unexpected argument d
+              ┌─ main:2:37
+              │
+            2 │             f(a: 1, b: "record", d: {})
+              │                                     ^^
+
+            error: expected float but found int (argument a)
+              ┌─ main:2:18
+              │
+            2 │             f(a: 1, b: "record", d: {})
+              │                  ^
+
+            error: expected int but found string (argument b)
+              ┌─ main:2:24
+              │
+            2 │             f(a: 1, b: "record", d: {})
+              │                        ^^^^^^^^
+
+            error: missing required argument c
+              ┌─ main:2:13
+              │
+            2 │             f(a: 1, b: "record", d: {})
+              │             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+        "#]]
+    }
 }

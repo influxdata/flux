@@ -115,16 +115,23 @@ impl From<types::Error> for ErrorKind {
 
 impl From<Located<types::Error>> for Error {
     fn from(err: Located<types::Error>) -> Self {
-        located(err.location, ErrorKind::Inference(err.error))
+        err.map(ErrorKind::Inference)
     }
 }
 
-impl From<infer::Error> for Error {
-    fn from(err: infer::Error) -> Self {
-        Located {
-            location: err.loc,
-            error: ErrorKind::Inference(err.err),
-        }
+impl From<Errors<Located<types::Error>>> for Errors<Error> {
+    fn from(err: Errors<Located<types::Error>>) -> Self {
+        err.into_iter().map(Error::from).collect()
+    }
+}
+
+impl From<Located<Errors<types::Error>>> for Errors<Error> {
+    fn from(err: Located<Errors<types::Error>>) -> Self {
+        let location = err.location;
+        err.error
+            .into_iter()
+            .map(|error| located(location.clone(), ErrorKind::Inference(error)))
+            .collect()
     }
 }
 
@@ -157,13 +164,17 @@ impl InferState<'_, '_> {
 
     fn equal(&mut self, exp: &MonoType, act: &MonoType, loc: &ast::SourceLocation) {
         if let Err(err) = infer::equal(exp, act, loc, self.sub) {
-            self.errors.push(err.into());
+            self.errors
+                .extend(err.error.into_iter().map(|error| Located {
+                    location: loc.clone(),
+                    error: error.into(),
+                }));
         }
     }
 
     fn solve(&mut self, cons: &impl AsRef<[Constraint]>) {
         if let Err(err) = infer::solve(cons.as_ref(), self.sub) {
-            self.errors.push(err.into());
+            self.errors.extend(err.into_iter().map(Error::from));
         }
     }
 
@@ -1448,7 +1459,7 @@ impl CallExpr {
         }
         match &*self.callee.type_of().apply_cow(infer.sub) {
             MonoType::Fun(func) => {
-                if let Err(err) = func.unify(
+                if let Err(err) = func.try_unify(
                     &Function {
                         opt: MonoTypeMap::new(),
                         req,
@@ -1457,7 +1468,7 @@ impl CallExpr {
                     },
                     infer.sub,
                 ) {
-                    infer.errors.push(err.into());
+                    infer.errors.extend(err.into_iter().map(Error::from));
                 }
             }
             callee => {
