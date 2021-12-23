@@ -211,8 +211,12 @@ END;
 func hdbAddIfNotExist(table string, query string) string {
 	var where string
 	var args []interface{}
-	parts := strings.SplitN(strings.ToUpper(table), ".", 2) // schema and table name assumed uppercase in HDB by default (see Notes)
-	if len(parts) == 2 {                                    // fully-qualified table name
+	// XXX: currently we are forcing identifiers to be UPPER CASE.
+	//  Shadowing the table param ensures we use the UPPER CASE form regardless
+	//  of which branch we land in for the `if` below.
+	table = strings.ToUpper(table)
+	parts := strings.SplitN(table, ".", 2) // schema and table name assumed uppercase in HDB by default (see Notes)
+	if len(parts) == 2 {                   // fully-qualified table name
 		where = "WHERE SCHEMA_NAME=ESCAPE_DOUBLE_QUOTES(:SCHEMA_NAME) AND TABLE_NAME=ESCAPE_DOUBLE_QUOTES(:TABLE_NAME)"
 		args = append(args, len(parts[0]))
 		args = append(args, parts[0])
@@ -233,7 +237,15 @@ func hdbAddIfNotExist(table string, query string) string {
 
 // hdbEscapeName escapes name in double quotes and convert it to uppercase per HDB naming conventions
 func hdbEscapeName(name string, toUpper bool) string {
-	// truncate `name` to the first interior nul byte (if there is one present).
+	// XXX(onelson): Seems like it would be better to *just* quote/escape without
+	// the case transformation. If the mandate is to "always quote identifiers"
+	// as an SQL injection mitigation step, the case transformation feels like
+	// an unexpected twist on what otherwise might be easier to explain.
+	// Eg: "We quote all identifiers as a security precaution. Quoted identifiers are case-sensitive."
+	// Currently, it is (arbitrarily) impossible for Flux to reference objects
+	// in HDB that don't have an UPPER CASE identifier (which is perfectly valid).
+
+	// truncate `name` to the first interior nul byte (if one is present).
 	end := strings.IndexRune(name, 0)
 	if end > -1 {
 		name = name[:end]

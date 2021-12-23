@@ -31,7 +31,8 @@ testcase integration_hdb_read_from_seed {
         sql.from(
             driverName: "hdb",
             dataSourceName: hdbDsn,
-            query: "SELECT name, age FROM \"pet info\" WHERE seeded = true",
+            // n.b. we must explicitly UPPER CASE the table name here to match the DDL.
+            query: "SELECT name, age FROM \"PET INFO\" WHERE seeded = true",
         )
 
     testing.diff(got: got, want: want)
@@ -44,7 +45,8 @@ testcase integration_hdb_read_from_nonseed {
         sql.from(
             driverName: "hdb",
             dataSourceName: hdbDsn,
-            query: "SELECT name, age FROM \"pet info\" WHERE seeded = false",
+            // n.b. we must explicitly UPPER CASE the table name here to match the DDL.
+            query: "SELECT name, age FROM \"PET INFO\" WHERE seeded = false",
         )
 
     testing.diff(got: got, want: want)
@@ -53,6 +55,8 @@ testcase integration_hdb_read_from_nonseed {
 
 testcase integration_hdb_write_to {
     array.from(rows: [SOPHIE])
+        // n.b. our handling of identifiers for HDB mean the table name will
+        // automatically be upper cased here (matching the UPPER CASEd name in the DDL).
         |> sql.to(driverName: "hdb", dataSourceName: hdbDsn, table: "pet info", batchSize: 1)
         // The array.from() will be returned and will cause the test to fail.
         // Filtering will mean the test can pass. Hopefully `sql.to()` will

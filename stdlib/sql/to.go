@@ -329,7 +329,8 @@ func getQuoteIdentFunc(driverName string) (quoteIdentFunc, error) {
 		// standpoint since their "Cloud SQL" product also speaks this dialect).
 		return MysqlQuoteIdent, nil
 	case "hdb":
-		return doubleQuote, nil
+		// The column translate func for hdb currently escapes/quotes column names so we don't need to do anything here
+		return func(name string) string { return name }, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}
@@ -414,15 +415,10 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 					t.spec.Spec.Table, quoteIdent(t.spec.Spec.Table), strings.Join(newSQLTableCols, ","))
 			} else if t.spec.Spec.DriverName == "hdb" { // SAP HANA does not support IF NOT EXIST
 				// wrap CREATE TABLE statement with HDB-specific "if not exists" SQLScript check
-
-				// XXX(onelson): Possible issues could arise from the inconsistent behaviors of `quoteIdent` (in this case,
-				// a double quote escape impl) and the more specialized `hdbEscapeName` which
-				// splits-then-uppercases-then-rejoins identifiers with this usage.
-				// Seems like it would be better to *just* quote/escape without the case transformation.
-				// If the mandate is to "always quote identifiers" as an SQL injection mitigation step, the case
-				// transformation feels like an unexpected twist on what otherwise might be easier to explain.
-				// Eg: "We quote all identifiers as a security precaution. Quoted identifiers are case-sensitive."
 				q = fmt.Sprintf("CREATE TABLE %s (%s)", hdbEscapeName(t.spec.Spec.Table, true), strings.Join(newSQLTableCols, ","))
+				// The table name we pass to `hdbAddIfNotExist` cannot be escaped
+				// using `hdbEscapeName` since it needs to appear as both a string
+				// literal and a quoted identifier in the SQL generated within.
 				q = hdbAddIfNotExist(t.spec.Spec.Table, q)
 				// SAP HANA does not support INSERT/UPDATE batching via a single SQL command
 				batchSize = 1
@@ -527,7 +523,17 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 		}
 	}
 
-	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", quoteIdent(s.Table), strings.Join(colNames, ","), concatValueStrings)
+	// FIXME(onelson): we can unify hdb with the rest of the engines if we move column escaping to each driver's wrapper.
+	//  At that point, there'd be no need to branch here by making quoteIdent work properly for hdb.
+	var quotedTable string
+	if s.DriverName == "hdb" {
+		quotedTable = hdbEscapeName(s.Table, true)
+	} else {
+		quotedTable = quoteIdent(s.Table)
+	}
+
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", quotedTable, strings.Join(colNames, ","), concatValueStrings)
+
 	if isMssqlDriver(s.DriverName) && mssqlCheckParameter(s.DataSourceName, mssqlIdentityInsertEnabled) {
 		prologue := fmt.Sprintf("SET QUOTED_IDENTIFIER ON; DECLARE @tableHasIdentity INT = OBJECTPROPERTY(OBJECT_ID('%s'), 'TableHasIdentity'); IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s ON END",
 			// The table name is being rendered as a string literal here.
@@ -539,8 +545,8 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 			// quoted/escaped.
 			// Refs: influxdata/idpe#8689
 			s.Table,
-			quoteIdent(s.Table))
-		epilogue := fmt.Sprintf("IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s OFF END", quoteIdent(s.Table))
+			quotedTable)
+		epilogue := fmt.Sprintf("IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s OFF END", quotedTable)
 		query = strings.Join([]string{prologue, query, epilogue}, "; ")
 	}
 	if s.DriverName != "sqlmock" {
