@@ -159,7 +159,7 @@ func VerticaColumnTranslateFunc() translationFunc {
 		if !found {
 			return "", errors.Newf(codes.Internal, "Vertica does not support column type %s", f.String())
 		}
-		return colName + " " + s, nil
+		return doubleQuote(colName) + " " + s, nil
 	}
 
 }

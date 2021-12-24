@@ -169,6 +169,6 @@ func BigQueryColumnTranslateFunc() translationFunc {
 		if !found {
 			return "", errors.Newf(codes.Internal, "BigQuery does not support column type %s", f.String())
 		}
-		return colName + " " + s, nil
+		return MysqlQuoteIdent(colName) + " " + s, nil
 	}
 }

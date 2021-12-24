@@ -156,9 +156,8 @@ func PostgresColumnTranslateFunc() translationFunc {
 		if !found {
 			return "", errors.Newf(codes.Internal, "PostgreSQL does not support column type %s", f.String())
 		}
-		return colName + " " + s, nil
+		return PostgresQuoteIdent(colName) + " " + s, nil
 	}
-
 }
 
 func PostgresQuoteIdent(name string) string {

@@ -329,8 +329,7 @@ func getQuoteIdentFunc(driverName string) (quoteIdentFunc, error) {
 		// standpoint since their "Cloud SQL" product also speaks this dialect).
 		return MysqlQuoteIdent, nil
 	case "hdb":
-		// The column translate func for hdb currently escapes/quotes column names so we don't need to do anything here
-		return func(name string) string { return name }, nil
+		return func(name string) string { return hdbEscapeName(name, true) }, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}
@@ -358,22 +357,20 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 	labels := make(map[string]idxType, len(cols))
 	var questionMarks, newSQLTableCols []string
 	for i, col := range cols {
-
-		quotedColumName := quoteIdent(col.Label)
-		labels[quotedColumName] = idxType{Idx: i, Type: col.Type}
+		labels[col.Label] = idxType{Idx: i, Type: col.Type}
 		questionMarks = append(questionMarks, "?")
-		colNames = append(colNames, quotedColumName)
+		colNames = append(colNames, col.Label)
 
 		switch col.Type {
 		case flux.TFloat, flux.TInt, flux.TUInt, flux.TString, flux.TBool, flux.TTime:
 			// each type is handled within the function - precise mapping is handled within each driver's implementation
-			v, err := translateColumn()(col.Type, quotedColumName)
+			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
 			}
 			newSQLTableCols = append(newSQLTableCols, v)
 		default:
-			return nil, nil, nil, errors.Newf(codes.Internal, "invalid type for column %s", quotedColumName)
+			return nil, nil, nil, errors.Newf(codes.Internal, "invalid type for column %s", col.Label)
 		}
 	}
 
@@ -395,10 +392,6 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 		valueStrings := make([]string, 0, l)
 		// valueArgs holds all the values to pass into the query
 		valueArgs := make([]interface{}, 0, l*len(cols))
-
-		if err != nil {
-			return err
-		}
 
 		if t.spec.Spec.DriverName != "sqlmock" {
 			var q string
@@ -501,7 +494,6 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 }
 
 // ExecuteQueries runs the SQL statements required to insert the new rows.
-// XXX: colNames should be quoted before they are received here.
 func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings *[]string, valueArgs *[]interface{}) (err error) {
 	concatValueStrings := strings.Join(*valueStrings, ",")
 
@@ -523,16 +515,13 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 		}
 	}
 
-	// FIXME(onelson): we can unify hdb with the rest of the engines if we move column escaping to each driver's wrapper.
-	//  At that point, there'd be no need to branch here by making quoteIdent work properly for hdb.
-	var quotedTable string
-	if s.DriverName == "hdb" {
-		quotedTable = hdbEscapeName(s.Table, true)
-	} else {
-		quotedTable = quoteIdent(s.Table)
+	quotedTable := quoteIdent(s.Table)
+	quotedColNames := make([]string, len(colNames))
+	for idx, name := range colNames {
+		quotedColNames[idx] = quoteIdent(name)
 	}
 
-	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", quotedTable, strings.Join(colNames, ","), concatValueStrings)
+	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", quotedTable, strings.Join(quotedColNames, ","), concatValueStrings)
 
 	if isMssqlDriver(s.DriverName) && mssqlCheckParameter(s.DataSourceName, mssqlIdentityInsertEnabled) {
 		prologue := fmt.Sprintf("SET QUOTED_IDENTIFIER ON; DECLARE @tableHasIdentity INT = OBJECTPROPERTY(OBJECT_ID('%s'), 'TableHasIdentity'); IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s ON END",

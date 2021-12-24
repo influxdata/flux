@@ -175,7 +175,7 @@ func MssqlColumnTranslateFunc() translationFunc {
 		if !found {
 			return "", errors.Newf(codes.Internal, "SQLServer does not support column type %s", f.String())
 		}
-		return colName + " " + s, nil
+		return doubleQuote(colName) + " " + s, nil
 	}
 }
 
