@@ -363,7 +363,10 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 
 		switch col.Type {
 		case flux.TFloat, flux.TInt, flux.TUInt, flux.TString, flux.TBool, flux.TTime:
-			// each type is handled within the function - precise mapping is handled within each driver's implementation
+			// Each type is handled within the function - precise mapping is
+			// handled within each driver's implementation.
+			// The expectation is the identifiers in these values are
+			// quoted/escaped making them safe for formatting into SQL below.
 			v, err := translateColumn()(col.Type, col.Label)
 			if err != nil {
 				return nil, nil, nil, err
