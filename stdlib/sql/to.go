@@ -412,20 +412,32 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 			var q string
 			if isMssqlDriver(t.spec.Spec.DriverName) { // SQL Server does not support IF NOT EXIST
 				q = fmt.Sprintf("IF OBJECT_ID(%s, 'U') IS NULL BEGIN CREATE TABLE %s (%s) END",
-					singleQuote(t.spec.Spec.Table), quoteIdent(t.spec.Spec.Table),
-					// XXX: Items in `newSQLTableCols` should be _quoted column identifiers_, ref: influxdata/idpe#8689
-					strings.Join(newSQLTableCols, ","))
+					singleQuote(t.spec.Spec.Table),
+					quoteIdent(t.spec.Spec.Table),
+					// XXX: Items in `newSQLTableCols` should include _quoted column identifiers_, ref: influxdata/idpe#8689
+					strings.Join(newSQLTableCols, ","),
+				)
 			} else if t.spec.Spec.DriverName == "hdb" { // SAP HANA does not support IF NOT EXIST
 				// wrap CREATE TABLE statement with HDB-specific "if not exists" SQLScript check
-				q = fmt.Sprintf("CREATE TABLE %s (%s)", hdbEscapeName(t.spec.Spec.Table, true), strings.Join(newSQLTableCols, ","))
+				q = fmt.Sprintf(
+					"CREATE TABLE %s (%s)",
+					hdbEscapeName(t.spec.Spec.Table, true),
+					// XXX: Items in `newSQLTableCols` should include _quoted column identifiers_, ref: influxdata/idpe#8689
+					strings.Join(newSQLTableCols, ","),
+				)
 				// The table name we pass to `hdbAddIfNotExist` cannot be escaped
-				// using `hdbEscapeName` since it needs to appear as both a string
-				// literal and a quoted identifier in the SQL generated within.
+				// using `hdbEscapeName` here since it needs to appear as both a
+				// string literal and a quoted identifier in the SQL generated within.
 				q = hdbAddIfNotExist(t.spec.Spec.Table, q)
 				// SAP HANA does not support INSERT/UPDATE batching via a single SQL command
 				batchSize = 1
 			} else {
-				q = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", quoteIdent(t.spec.Spec.Table), strings.Join(newSQLTableCols, ","))
+				q = fmt.Sprintf(
+					"CREATE TABLE IF NOT EXISTS %s (%s)",
+					quoteIdent(t.spec.Spec.Table),
+					// XXX: Items in `newSQLTableCols` should include _quoted column identifiers_, ref: influxdata/idpe#8689
+					strings.Join(newSQLTableCols, ","),
+				)
 			}
 			_, err = t.tx.Exec(q)
 			if err != nil {
@@ -524,26 +536,22 @@ func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings 
 		}
 	}
 
+	// N.B. identifiers that will be string formatted into SQL statements must be
+	// quoted/escaped, ref: influxdata/idpe#8689
 	quotedTable := quoteIdent(s.Table)
 	quotedColNames := make([]string, len(colNames))
 	for idx, name := range colNames {
 		quotedColNames[idx] = quoteIdent(name)
 	}
-
 	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s", quotedTable, strings.Join(quotedColNames, ","), concatValueStrings)
 
 	if isMssqlDriver(s.DriverName) && mssqlCheckParameter(s.DataSourceName, mssqlIdentityInsertEnabled) {
-		prologue := fmt.Sprintf("SET QUOTED_IDENTIFIER ON; DECLARE @tableHasIdentity INT = OBJECTPROPERTY(OBJECT_ID('%s'), 'TableHasIdentity'); IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s ON END",
-			// The table name is being rendered as a string literal here.
-			// Since the table name is specified as a parameter to `sql.to`, we
-			// should be able to treat it as trusted input here without risk of
-			// SQL injection.
-			// This is in contrast to the column identifiers which are
-			// derived from incoming record field names and must be
-			// quoted/escaped.
-			// Refs: influxdata/idpe#8689
-			s.Table,
-			quotedTable)
+		// XXX: identifiers that will be string formatted into SQL statements must be quoted, ref: influxdata/idpe#8689
+		prologue := fmt.Sprintf(
+			"SET QUOTED_IDENTIFIER ON; DECLARE @tableHasIdentity INT = OBJECTPROPERTY(OBJECT_ID(%s), 'TableHasIdentity'); IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s ON END",
+			singleQuote(s.Table),
+			quotedTable,
+		)
 		epilogue := fmt.Sprintf("IF @tableHasIdentity = 1 BEGIN SET IDENTITY_INSERT %s OFF END", quotedTable)
 		query = strings.Join([]string{prologue, query, epilogue}, "; ")
 	}
