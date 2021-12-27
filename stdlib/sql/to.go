@@ -231,12 +231,24 @@ type quoteIdentFunc func(name string) string
 
 // doubleQuote wraps the input in double quotes and escapes any interior quotes.
 // If the input contains an interior nul byte, it will be truncated.
+// Useful for quoting _table or column identifiers_ for many database engines.
 func doubleQuote(s string) string {
 	end := strings.IndexRune(s, 0)
 	if end > -1 {
 		s = s[:end]
 	}
 	return fmt.Sprintf("\"%s\"", strings.ReplaceAll(s, `"`, `\"`))
+}
+
+// singleQuote wraps the input in single quotes and escapes any interior quotes.
+// If the input contains an interior nul byte, it will be truncated.
+// Useful for producing _string literals_ for many database engines.
+func singleQuote(s string) string {
+	end := strings.IndexRune(s, 0)
+	if end > -1 {
+		s = s[:end]
+	}
+	return fmt.Sprintf("'%s'", strings.ReplaceAll(s, `'`, `\'`))
 }
 
 func correctBatchSize(batchSize, numberCols int) int {
@@ -399,16 +411,10 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 		if t.spec.Spec.DriverName != "sqlmock" {
 			var q string
 			if isMssqlDriver(t.spec.Spec.DriverName) { // SQL Server does not support IF NOT EXIST
-				q = fmt.Sprintf("IF OBJECT_ID('%s', 'U') IS NULL BEGIN CREATE TABLE %s (%s) END",
-					// The table name is being rendered as a string literal here.
-					// Since the table name is specified as a parameter to `sql.to`, we
-					// should be able to treat it as trusted input here without risk of
-					// SQL injection.
-					// This is in contrast to the column identifiers which are
-					// derived from incoming record field names and must be
-					// quoted/escaped.
-					// Refs: influxdata/idpe#8689
-					t.spec.Spec.Table, quoteIdent(t.spec.Spec.Table), strings.Join(newSQLTableCols, ","))
+				q = fmt.Sprintf("IF OBJECT_ID(%s, 'U') IS NULL BEGIN CREATE TABLE %s (%s) END",
+					singleQuote(t.spec.Spec.Table), quoteIdent(t.spec.Spec.Table),
+					// XXX: Items in `newSQLTableCols` should be _quoted column identifiers_, ref: influxdata/idpe#8689
+					strings.Join(newSQLTableCols, ","))
 			} else if t.spec.Spec.DriverName == "hdb" { // SAP HANA does not support IF NOT EXIST
 				// wrap CREATE TABLE statement with HDB-specific "if not exists" SQLScript check
 				q = fmt.Sprintf("CREATE TABLE %s (%s)", hdbEscapeName(t.spec.Spec.Table, true), strings.Join(newSQLTableCols, ","))

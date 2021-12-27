@@ -196,8 +196,8 @@ func HdbColumnTranslateFunc() translationFunc {
 // Template for conditional query by table existence check
 var hdbDoIfTableNotExistsTemplate = `DO
 BEGIN
-    DECLARE SCHEMA_NAME NVARCHAR(%d) = '%s';
-    DECLARE TABLE_NAME NVARCHAR(%d) = '%s';
+    DECLARE SCHEMA_NAME NVARCHAR(%d) = %s;
+    DECLARE TABLE_NAME NVARCHAR(%d) = %s;
     DECLARE X_EXISTS INT = 0;
     SELECT COUNT(*) INTO X_EXISTS FROM TABLES %s;
     IF :X_EXISTS = 0
@@ -209,26 +209,32 @@ END;
 
 // hdbAddIfNotExist adds SAP HANA specific table existence check to CREATE TABLE statement.
 func hdbAddIfNotExist(table string, query string) string {
-	var where string
+	var where, schema, tbl string
 	var args []interface{}
-	// XXX: currently we are forcing identifiers to be UPPER CASE.
+	// Schema and table name assumed uppercase in HDB by default (see Notes)
+	// XXX: since we are currently forcing identifiers to be UPPER CASE.
 	//  Shadowing the table param ensures we use the UPPER CASE form regardless
 	//  of which branch we land in for the `if` below.
 	table = strings.ToUpper(table)
-	parts := strings.SplitN(table, ".", 2) // schema and table name assumed uppercase in HDB by default (see Notes)
-	if len(parts) == 2 {                   // fully-qualified table name
+	parts := strings.SplitN(table, ".", 2)
+
+	// XXX: maybe we should panic if len(parts) is greater than 2?
+	if len(parts) == 2 {
+		// When there are 2 parts, we assume a fully-qualified table name (ex: `schema.tbl`)
+		schema = parts[0]
+		tbl = parts[1]
 		where = "WHERE SCHEMA_NAME=ESCAPE_DOUBLE_QUOTES(:SCHEMA_NAME) AND TABLE_NAME=ESCAPE_DOUBLE_QUOTES(:TABLE_NAME)"
-		args = append(args, len(parts[0]))
-		args = append(args, parts[0])
-		args = append(args, len(parts[1]))
-		args = append(args, parts[1])
-	} else { // table in user default schema
+	} else {
+		// Otherwise we assume there's only one part (table, with an implicit default schema).
 		where = "WHERE TABLE_NAME=ESCAPE_DOUBLE_QUOTES(:TABLE_NAME)"
-		args = append(args, len("default"))
-		args = append(args, "default")
-		args = append(args, len(table))
-		args = append(args, table)
+		schema = "default"
+		tbl = table
 	}
+	args = append(args, len(schema))
+	args = append(args, singleQuote(schema))
+	args = append(args, len(tbl))
+	args = append(args, singleQuote(tbl))
+
 	args = append(args, where)
 	args = append(args, query)
 
