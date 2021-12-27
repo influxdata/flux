@@ -155,7 +155,12 @@ VALUES
 # Cleanup previous runs (just in case).
 echo "Cleaning up prior db data..."
 rm -f "$SQLITE_DB_PATH"
-docker rm -f "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}"
+# Favoring `docker stop` here instead of `docker rm` to get docker to cleanup the
+# volumes that would otherwise be left orphaned.
+# Each container we run _should be_ launched with the `--rm` flag to help cleanup
+# these spent containers as we go.
+docker stop "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}" \
+|| docker rm -f "${HDB_NAME}" "${PG_NAME}" "${MYSQL_NAME}" "${MARIADB_NAME}" "${MS_NAME}" "${VERTICA_NAME}"
 
 docker run --rm --detach \
   --name "${HDB_NAME}" \
