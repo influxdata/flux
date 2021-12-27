@@ -1,8 +1,6 @@
 package sql
 
 import (
-	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -117,6 +115,11 @@ func TestSqliteTranslation(t *testing.T) {
 		"DATETIME": flux.TTime,
 	}
 	columnLabel := "apples"
+	quote, err := getQuoteIdentFunc("sqlite3")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
 	sqlT, err := getTranslationFunc("sqlite3")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
@@ -129,8 +132,8 @@ func TestSqliteTranslation(t *testing.T) {
 			t.Log(cmp.Diff(nil, err))
 			t.Fail()
 		}
-		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
 			t.Fail()
 		}
 	}
@@ -159,6 +162,11 @@ func TestPostgresTranslation(t *testing.T) {
 
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for postgres
+	quote, err := getQuoteIdentFunc("postgres")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
 	sqlT, err := getTranslationFunc("postgres")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
@@ -171,8 +179,8 @@ func TestPostgresTranslation(t *testing.T) {
 			t.Log(cmp.Diff(nil, err))
 			t.Fail()
 		}
-		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
 			t.Fail()
 		}
 	}
@@ -200,6 +208,11 @@ func TestMysqlTranslation(t *testing.T) {
 
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for mysql
+	quote, err := getQuoteIdentFunc("mysql")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
 	sqlT, err := getTranslationFunc("mysql")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
@@ -212,8 +225,8 @@ func TestMysqlTranslation(t *testing.T) {
 			t.Log(cmp.Diff(nil, err))
 			t.Fail()
 		}
-		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
 			t.Fail()
 		}
 	}
@@ -241,6 +254,11 @@ func TestSnowflakeTranslation(t *testing.T) {
 
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for snowflake
+	quote, err := getQuoteIdentFunc("snowflake")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
 	sqlT, err := getTranslationFunc("snowflake")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
@@ -253,8 +271,8 @@ func TestSnowflakeTranslation(t *testing.T) {
 			t.Log(cmp.Diff(nil, err))
 			t.Fail()
 		}
-		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
 			t.Fail()
 		}
 	}
@@ -282,6 +300,11 @@ func TestMssqlTranslation(t *testing.T) {
 
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for mssql
+	quote, err := getQuoteIdentFunc("sqlserver")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
 	sqlT, err := getTranslationFunc("sqlserver")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
@@ -294,8 +317,8 @@ func TestMssqlTranslation(t *testing.T) {
 			t.Log(cmp.Diff(nil, err))
 			t.Fail()
 		}
-		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
 			t.Fail()
 		}
 	}
@@ -323,6 +346,11 @@ func TestBigQueryTranslation(t *testing.T) {
 
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for bigquery
+	quote, err := getQuoteIdentFunc("bigquery")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
 	sqlT, err := getTranslationFunc("bigquery")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
@@ -335,8 +363,8 @@ func TestBigQueryTranslation(t *testing.T) {
 			t.Log(cmp.Diff(nil, err))
 			t.Fail()
 		}
-		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
 			t.Fail()
 		}
 	}
@@ -364,6 +392,11 @@ func TestHdbTranslation(t *testing.T) {
 
 	columnLabel := "apples"
 	// verify that valid returns expected happiness for hdb
+	quote, err := getQuoteIdentFunc("hdb")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
 	sqlT, err := getTranslationFunc("hdb")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
@@ -376,8 +409,8 @@ func TestHdbTranslation(t *testing.T) {
 			t.Log(cmp.Diff(nil, err))
 			t.Fail()
 		}
-		if !cmp.Equal(strconv.Quote(strings.ToUpper(columnLabel))+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(strconv.Quote(strings.ToUpper(columnLabel))+" "+dbTypeString, v))
+		if !cmp.Equal(quote(columnLabel)+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(quote(columnLabel)+" "+dbTypeString, v))
 			t.Fail()
 		}
 	}
