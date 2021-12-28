@@ -237,7 +237,7 @@ func doubleQuote(s string) string {
 	if end > -1 {
 		s = s[:end]
 	}
-	return fmt.Sprintf("\"%s\"", strings.ReplaceAll(s, `"`, `\"`))
+	return fmt.Sprintf(`"%s"`, strings.ReplaceAll(s, `"`, `""`))
 }
 
 // singleQuote wraps the input in single quotes and escapes any interior quotes.
