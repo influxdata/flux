@@ -315,11 +315,11 @@ func getQuoteIdentFunc(driverName string) (quoteIdentFunc, error) {
 	case "sqlite3":
 		return doubleQuote, nil
 	case "postgres", "sqlmock":
-		return PostgresQuoteIdent, nil
+		return postgresQuoteIdent, nil
 	case "vertica", "vertigo":
 		return doubleQuote, nil
 	case "mysql":
-		return MysqlQuoteIdent, nil
+		return mysqlQuoteIdent, nil
 	case "snowflake":
 		// n.b. snowflake automatically UPPERCASES identifiers when they are
 		// specified as bare words in queries (and DDL). Case is preserved when
@@ -339,7 +339,7 @@ func getQuoteIdentFunc(driverName string) (quoteIdentFunc, error) {
 		// The "standard" dialect (which is the default) seems to use backticks
 		// in the style of MySQL (which makes sense for Google from a product
 		// standpoint since their "Cloud SQL" product also speaks this dialect).
-		return MysqlQuoteIdent, nil
+		return mysqlQuoteIdent, nil
 	case "hdb":
 		return func(name string) string { return hdbEscapeName(name, true) }, nil
 	default:

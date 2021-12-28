@@ -190,10 +190,10 @@ func MysqlColumnTranslateFunc() translationFunc {
 		if !found {
 			return "", errors.Newf(codes.Internal, "MySQL does not support column type %s", f.String())
 		}
-		return MysqlQuoteIdent(colName) + " " + s, nil
+		return mysqlQuoteIdent(colName) + " " + s, nil
 	}
 }
 
-func MysqlQuoteIdent(name string) string {
+func mysqlQuoteIdent(name string) string {
 	return fmt.Sprintf("`%s`", strings.ReplaceAll(name, "`", "\\`"))
 }
