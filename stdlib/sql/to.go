@@ -248,7 +248,7 @@ func singleQuote(s string) string {
 	if end > -1 {
 		s = s[:end]
 	}
-	return fmt.Sprintf("'%s'", strings.ReplaceAll(s, `'`, `\'`))
+	return fmt.Sprintf("'%s'", strings.ReplaceAll(s, "'", "''"))
 }
 
 func correctBatchSize(batchSize, numberCols int) int {
