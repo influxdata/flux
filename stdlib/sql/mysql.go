@@ -195,5 +195,5 @@ func MysqlColumnTranslateFunc() translationFunc {
 }
 
 func mysqlQuoteIdent(name string) string {
-	return fmt.Sprintf("`%s`", strings.ReplaceAll(name, "`", "\\`"))
+	return fmt.Sprintf("`%s`", strings.ReplaceAll(name, "`", "``"))
 }

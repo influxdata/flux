@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"math/big"
-	"strconv"
 	"strings"
 	"time"
 
@@ -262,7 +261,7 @@ func hdbEscapeName(name string, toUpper bool) string {
 		if toUpper {
 			parts[i] = strings.ToUpper(parts[i])
 		}
-		parts[i] = strconv.Quote(strings.Trim(parts[i], "\""))
+		parts[i] = doubleQuote(strings.Trim(parts[i], "\""))
 	}
 	return strings.Join(parts, ".")
 }
