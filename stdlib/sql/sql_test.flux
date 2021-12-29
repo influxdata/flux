@@ -337,18 +337,18 @@ testcase integration_vertica_read_from_nonseed {
 //        |> filter(fn: (r) => false)
 //        |> yield()
 //}
-
-testcase integration_vertica_write_to {
-    nonseed_want
-        |> sql.to(driverName: "vertica", dataSourceName: verticaDsn, table: "pet info", batchSize: 1)
-        // The array.from() will be returned and will cause the test to fail.
-        // Filtering will mean the test can pass. Hopefully `sql.to()` will
-        // error if there's a problem.
-        |> filter(fn: (r) => false)
-        // Without the yield, the flux script can "finish", closing the db
-        // connection before the insert commits!
-        |> yield()
-}
+testcase integration_vertica_write_to
+{
+        nonseed_want
+            |> sql.to(driverName: "vertica", dataSourceName: verticaDsn, table: "pet info", batchSize: 1)
+            // The array.from() will be returned and will cause the test to fail.
+            // Filtering will mean the test can pass. Hopefully `sql.to()` will
+            // error if there's a problem.
+            |> filter(fn: (r) => false)
+            // Without the yield, the flux script can "finish", closing the db
+            // connection before the insert commits!
+            |> yield()
+    }
 
 testcase integration_sqlite_read_from_seed {
     got =
