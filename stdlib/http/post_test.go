@@ -12,9 +12,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	fluxhttp "github.com/influxdata/flux/dependencies/http"
 	"github.com/influxdata/flux/dependencies/url"
 	_ "github.com/influxdata/flux/fluxinit/static"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/runtime"
 )
 
@@ -84,5 +86,9 @@ http.post(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data:
 	}
 	if !strings.Contains(err.Error(), "url is not valid") {
 		t.Errorf("unexpected cause of failure, got err: %v", err)
+	}
+	// At time of writing, the initial Error should be a 0 (inherit), with an inner 3 (invalid)
+	if code := err.(*errors.Error).Err.(*errors.Error).Code; code != codes.Invalid {
+		t.Errorf("unexpected error code. Wanted %q got %q", codes.Invalid, code)
 	}
 }

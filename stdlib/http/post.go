@@ -5,7 +5,9 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"net/url"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -73,6 +75,20 @@ func init() {
 				req = req.WithContext(cctx)
 				response, err := dc.Do(req)
 				if err != nil {
+					// If an error is returned during a request (from the control
+					// function where our IP validator runs), the original error
+					// is attached to a field of OpError which is wrapped in a
+					// url.Error. Attempt to unwrap these to get the original
+					// cause.
+					if urlErr, ok := err.(*url.Error); ok {
+						if urlErr.Err != nil {
+							if opErr, ok := urlErr.Err.(*net.OpError); ok {
+								if opErr.Err != nil {
+									return 0, opErr.Err
+								}
+							}
+						}
+					}
 					return 0, err
 				}
 
