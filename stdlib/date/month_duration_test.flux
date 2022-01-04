@@ -4,6 +4,7 @@ package date_test
 import "csv"
 import "testing"
 import "date"
+import "timezone"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -48,18 +49,12 @@ testcase month_duration {
     }
 
 testcase month_duration_location {
+        option location = timezone.location(name: "America/Los_Angeles")
+
         got =
             csv.from(csv: inData)
                 |> range(start: 2018-01-01T00:00:00Z)
-                |> map(
-                    fn: (r) =>
-                        ({r with _value:
-                                date.month(
-                                    t: duration(v: r._value),
-                                    location: {zone: "America/Los_Angeles", offset: -1mo},
-                                ),
-                        }),
-                )
+                |> map(fn: (r) => ({r with _value: date.month(t: duration(v: r._value))}))
 
         want =
             csv.from(
@@ -69,12 +64,12 @@ testcase month_duration_location {
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
 ,result,table,_start,_stop,_field,_measurement,_time,_value
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,11
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,11
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,11
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,11
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,11
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,11
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:01:00.254819212Z,12
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:02:00.748691723Z,12
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:03:00.947182316Z,12
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:04:00.538816341Z,12
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,12
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,12
 ",
             )
 

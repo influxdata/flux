@@ -26,7 +26,12 @@ use crate::{
 };
 
 // List of packages to include into the Flux prelude
-const PRELUDE: [&str; 3] = ["internal/boolean", "universe", "influxdata/influxdb"];
+const PRELUDE: [&str; 4] = [
+    "internal/boolean",
+    "internal/location",
+    "universe",
+    "influxdata/influxdb",
+];
 
 /// A mapping of package import paths to the corresponding AST package.
 pub type ASTPackageMap = SemanticMap<String, ast::Package>;

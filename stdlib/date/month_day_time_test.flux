@@ -4,6 +4,7 @@ package date_test
 import "csv"
 import "testing"
 import "date"
+import "timezone"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -98,14 +99,12 @@ testcase month_day_time {
     }
 
 testcase month_day_time_location {
+        option location = timezone.location(name: "America/Los_Angeles")
+
         got =
             csv.from(csv: inData)
                 |> range(start: 2018-01-01T00:00:00Z)
-                |> map(
-                    fn: (r) =>
-                        ({r with _value: date.monthDay(t: r._time, location: {zone: "America/Los_Angeles", offset: 0h}),
-                        }),
-                )
+                |> map(fn: (r) => ({r with _value: date.monthDay(t: r._time)}))
 
         want =
             csv.from(

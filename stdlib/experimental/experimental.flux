@@ -12,11 +12,6 @@
 package experimental
 
 
-import "timezone"
-
-// location is a function option whose default behaviour is to return linear clock and no offset
-option location = timezone.utc
-
 // builtin _addDuration used by addDuration
 builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: duration}) => time where T: Timeable
 
@@ -25,6 +20,7 @@ builtin _addDuration : (d: duration, to: T, location: {zone: string, offset: dur
 // ## Parameters
 // - d: Duration to add.
 // - to: Time to add the duration to.
+// - location: Location to use for the time value.
 //
 // ## Examples
 //
@@ -71,6 +67,7 @@ builtin _subDuration : (from: T, d: duration, location: {zone: string, offset: d
 // ## Parameters
 // - from: Time to subtract the duration from.
 // - d: Duration to subtract.
+// - location: Location to use for the time value.
 //
 // ## Examples
 //

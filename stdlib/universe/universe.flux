@@ -7,7 +7,6 @@ import "math"
 import "strings"
 import "regexp"
 import "experimental/table"
-import "timezone"
 
 // now is a function option whose default behaviour is to return the current system time
 option now = system.time
@@ -194,8 +193,6 @@ builtin _window : (
     where
     A: Record,
     B: Record
-
-option location = timezone.utc
 
 window = (
     tables=<-,

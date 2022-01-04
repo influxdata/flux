@@ -4,6 +4,7 @@ package date_test
 import "csv"
 import "testing"
 import "date"
+import "timezone"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -52,15 +53,12 @@ testcase week_day_time {
     }
 
 testcase week_day_time_location {
+        option location = timezone.location(name: "America/Los_Angeles")
+
         got =
             csv.from(csv: inData)
                 |> range(start: 2018-01-01T00:00:00Z)
-                |> map(
-                    fn: (r) =>
-                        ({r with _value:
-                                date.weekDay(t: r._time, location: {zone: "America/Los_Angeles", offset: -5mo}),
-                        }),
-                )
+                |> map(fn: (r) => ({r with _value: date.weekDay(t: r._time)}))
 
         want =
             csv.from(
@@ -70,14 +68,14 @@ testcase week_day_time_location {
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
 #default,_result,,,,,,,
 ,result,table,_start,_stop,_field,_measurement,_time,_value
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-20T19:53:00Z,3
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-21T19:53:10Z,4
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:53:20Z,5
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-23T19:53:30Z,6
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-24T19:53:40Z,0
-,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-25T19:53:50Z,1
-,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-26T19:53:00Z,2
-,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-27T19:53:10Z,3
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-20T19:53:00Z,0
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-21T19:53:10Z,1
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:53:20Z,2
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-23T19:53:30Z,3
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-24T19:53:40Z,4
+,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-25T19:53:50Z,5
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-26T19:53:00Z,6
+,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2018-05-27T19:53:10Z,0
 ",
             )
 

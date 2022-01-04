@@ -5,11 +5,6 @@
 package date
 
 
-import "timezone"
-
-// location is a function option whose default behaviour is to return linear clock and no offset
-option location = timezone.utc
-
 // second returns the second of a specified time. Results range from `[0 - 59]`.
 //
 // ## Parameters

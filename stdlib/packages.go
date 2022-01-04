@@ -58,6 +58,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/internal/debug"
 	_ "github.com/influxdata/flux/stdlib/internal/gen"
 	_ "github.com/influxdata/flux/stdlib/internal/influxql"
+	_ "github.com/influxdata/flux/stdlib/internal/location"
 	_ "github.com/influxdata/flux/stdlib/internal/promql"
 	_ "github.com/influxdata/flux/stdlib/internal/testutil"
 	_ "github.com/influxdata/flux/stdlib/interpolate"

@@ -4,6 +4,7 @@ package date_test
 import "csv"
 import "testing"
 import "date"
+import "timezone"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -48,15 +49,12 @@ testcase minute_duration {
     }
 
 testcase minute_duration_location {
+        option location = timezone.location(name: "Asia/Kolkata")
+
         got =
             csv.from(csv: inData)
                 |> range(start: 2018-01-01T00:00:00Z)
-                |> map(
-                    fn: (r) =>
-                        ({r with _value:
-                                date.minute(t: duration(v: r._value), location: {zone: "Asia/Kolkata", offset: 0h}),
-                        }),
-                )
+                |> map(fn: (r) => ({r with _value: date.minute(t: duration(v: r._value))}))
 
         want =
             csv.from(

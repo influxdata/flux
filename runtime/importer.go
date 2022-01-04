@@ -15,6 +15,7 @@ var (
 	// Packages must be listed in import order
 	PreludeList = []string{
 		"internal/boolean",
+		"internal/location",
 		"universe",
 		"influxdata/influxdb",
 	}

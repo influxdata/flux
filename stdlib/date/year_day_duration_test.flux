@@ -4,6 +4,7 @@ package date_test
 import "csv"
 import "testing"
 import "date"
+import "timezone"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -48,18 +49,12 @@ testcase year_day_duration {
     }
 
 testcase year_day_duration_location {
+        option location = timezone.location(name: "Australia/Sydney")
+
         got =
             csv.from(csv: inData)
                 |> range(start: 2018-01-01T00:00:00Z)
-                |> map(
-                    fn: (r) =>
-                        ({r with _value:
-                                date.yearDay(
-                                    t: duration(v: r._value),
-                                    location: {zone: "Australia/Sydney", offset: 0h},
-                                ),
-                        }),
-                )
+                |> map(fn: (r) => ({r with _value: date.yearDay(t: duration(v: r._value))}))
 
         want =
             csv.from(

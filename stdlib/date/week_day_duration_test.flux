@@ -4,6 +4,7 @@ package date_test
 import "csv"
 import "testing"
 import "date"
+import "timezone"
 
 option now = () => 2030-01-01T00:00:00Z
 
@@ -48,18 +49,12 @@ testcase week_day_duration {
     }
 
 testcase week_day_duration_location {
+        option location = timezone.location(name: "America/Los_Angeles")
+
         got =
             csv.from(csv: inData)
                 |> range(start: 2018-01-01T00:00:00Z)
-                |> map(
-                    fn: (r) =>
-                        ({r with _value:
-                                date.weekDay(
-                                    t: duration(v: r._value),
-                                    location: {zone: "America/Los_Angeles", offset: 0m},
-                                ),
-                        }),
-                )
+                |> map(fn: (r) => ({r with _value: date.weekDay(t: duration(v: r._value))}))
 
         want =
             csv.from(

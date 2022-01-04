@@ -1,5 +1,5 @@
 // Package timezone defines functions for setting timezones
-// on the location option in package universe.
+// on the location option in package location.
 package timezone
 
 
