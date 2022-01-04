@@ -1026,10 +1026,10 @@ impl<'a, 'b> SerializingVisitorState<'a, 'b> {
         Some(self.builder.create_string(string))
     }
 
-    fn create_opt_string(&mut self, str: &Option<String>) -> Option<WIPOffset<&'a str>> {
+    fn create_opt_string(&mut self, str: Option<&str>) -> Option<WIPOffset<&'a str>> {
         match str {
             None => None,
-            Some(str) => Some(self.builder.create_string(str.as_str())),
+            Some(str) => Some(self.builder.create_string(str)),
         }
     }
 
@@ -1090,7 +1090,7 @@ impl<'a, 'b> SerializingVisitorState<'a, 'b> {
         &mut self,
         loc: &ast::SourceLocation,
     ) -> Option<WIPOffset<fbsemantic::SourceLocation<'a>>> {
-        let file = self.create_opt_string(&loc.file);
+        let file = self.create_opt_string(loc.file.as_deref());
 
         Some(fbsemantic::SourceLocation::create(
             self.builder,

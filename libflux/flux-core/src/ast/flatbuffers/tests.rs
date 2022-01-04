@@ -796,7 +796,7 @@ fn compare_strings(msg: &str, ast_str: &str, fb_str: &Option<&str>) -> Result<()
     Ok(())
 }
 
-fn compare_opt_strings(msg: &str, ast_str: &Option<String>, fb_str: &Option<&str>) -> Result<()> {
+fn compare_opt_strings(msg: &str, ast_str: &Option<&str>, fb_str: &Option<&str>) -> Result<()> {
     match (ast_str, fb_str) {
         (None, None) => return Ok(()),
         (None, Some(s)) => Err(anyhow!(
@@ -836,7 +836,11 @@ fn compare_loc(
     fb_loc: &Option<fbast::SourceLocation>,
 ) -> Result<()> {
     let fb_loc = unwrap_or_fail("source location", fb_loc)?;
-    compare_opt_strings("source location file", &ast_loc.file, &fb_loc.file())?;
+    compare_opt_strings(
+        "source location file",
+        &ast_loc.file.as_deref(),
+        &fb_loc.file(),
+    )?;
     compare_pos(&ast_loc.start, &fb_loc.start())?;
     compare_pos(&ast_loc.end, &fb_loc.end())?;
     Ok(())

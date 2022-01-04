@@ -13,7 +13,7 @@ fn test_object_check() {
     let got = check(walk::Node::File(&file));
     let want = Err(Errors::from_iter(vec![located(
         SourceLocation {
-            file: Some(String::from("object_test")),
+            file: Some("object_test".into()),
             start: Position { line: 2, column: 5 },
             end: Position {
                 line: 2,
@@ -33,7 +33,7 @@ fn test_bad_stmt() {
     let got = check(walk::Node::File(&file));
     let want = Err(Errors::from_iter(vec![located(
         SourceLocation {
-            file: Some(String::from("bad_stmt_test")),
+            file: Some("bad_stmt_test".into()),
             start: Position { line: 3, column: 2 },
             end: Position { line: 3, column: 3 },
         },
@@ -50,7 +50,7 @@ fn test_bad_expr() {
     let got = check(walk::Node::File(&file));
     let want = Err(Errors::from_iter(vec![located(
         SourceLocation {
-            file: Some(String::from("bad_expr_test")),
+            file: Some("bad_expr_test".into()),
             start: Position { line: 1, column: 9 },
             end: Position {
                 line: 1,
@@ -75,7 +75,7 @@ fn test_check_collect_existing_error() {
     let file = File {
         base: BaseNode {
             location: SourceLocation {
-                file: Some(String::from("test_check_collect_existing_error")),
+                file: Some("test_check_collect_existing_error".into()),
                 start: Position { line: 1, column: 1 },
                 end: Position { line: 3, column: 6 },
             },
@@ -89,7 +89,7 @@ fn test_check_collect_existing_error() {
         body: vec![Variable(Box::new(VariableAssgn {
             base: BaseNode {
                 location: SourceLocation {
-                    file: Some(String::from("test_check_collect_existing_error")),
+                    file: Some("test_check_collect_existing_error".into()),
                     start: Position { line: 1, column: 1 },
                     end: Position { line: 1, column: 6 },
                 },
@@ -98,7 +98,7 @@ fn test_check_collect_existing_error() {
             id: Identifier {
                 base: BaseNode {
                     location: SourceLocation {
-                        file: Some(String::from("test_check_collect_existing_error")),
+                        file: Some("test_check_collect_existing_error".into()),
                         start: Position { line: 1, column: 1 },
                         end: Position { line: 1, column: 2 },
                     },
@@ -109,7 +109,7 @@ fn test_check_collect_existing_error() {
             init: Integer(IntegerLit {
                 base: BaseNode {
                     location: SourceLocation {
-                        file: Some(String::from("test_check_collect_existing_error")),
+                        file: Some("test_check_collect_existing_error".into()),
                         start: Position { line: 1, column: 5 },
                         end: Position { line: 1, column: 6 },
                     },

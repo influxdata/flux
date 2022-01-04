@@ -4,7 +4,7 @@ pub mod check;
 pub mod flatbuffers;
 pub mod walk;
 
-use std::{collections::HashMap, fmt, str::FromStr, vec::Vec};
+use std::{collections::HashMap, fmt, str::FromStr, sync::Arc, vec::Vec};
 
 use chrono::FixedOffset;
 use derive_more::Display;
@@ -81,7 +81,7 @@ impl From<Position> for lsp_types::Position {
 pub struct SourceLocation {
     /// File is the optional file name.
     #[serde(skip_serializing_if = "skip_string_option")]
-    pub file: Option<String>,
+    pub file: Option<Arc<str>>,
     /// Start is the location in the source the node starts.
     pub start: Position,
     /// End is the location in the source the node ends.
@@ -109,15 +109,15 @@ impl From<SourceLocation> for lsp_types::Range {
     }
 }
 
-fn skip_string_option(opt_str: &Option<String>) -> bool {
+fn skip_string_option(opt_str: &Option<Arc<str>>) -> bool {
     opt_str.is_none() || opt_str.as_ref().unwrap().is_empty()
 }
 
 impl fmt::Display for SourceLocation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let fname = match &self.file {
-            Some(s) => s.clone(),
-            None => "".to_string(),
+            Some(s) => &s[..],
+            None => "",
         };
         write!(
             f,

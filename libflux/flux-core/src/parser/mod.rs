@@ -1,6 +1,6 @@
 //! The Flux parser.
 
-use std::{collections::HashMap, mem, str};
+use std::{collections::HashMap, mem, str, sync::Arc};
 
 use super::DefaultHasher;
 use crate::{ast, ast::*, scanner::*};
@@ -29,7 +29,7 @@ pub struct Parser<'input> {
     // that we have entered.
     blocks: HashMap<TokenType, i32, DefaultHasher>,
 
-    fname: String,
+    fname: Arc<str>,
 
     #[cfg(test)]
     source: &'input str,
@@ -44,7 +44,7 @@ impl<'input> Parser<'input> {
             t: None,
             errs: Vec::new(),
             blocks: HashMap::default(),
-            fname: "".to_string(),
+            fname: "".into(),
             #[cfg(test)]
             source: src,
         }
@@ -304,7 +304,7 @@ impl<'input> Parser<'input> {
 
     /// Parses a file of Flux source code, returning a [`File`].
     pub fn parse_file(&mut self, fname: String) -> File {
-        self.fname = fname;
+        self.fname = fname.into();
         let start_pos = ast::Position::from(&self.peek().start_pos);
         let mut end = ast::Position::invalid();
         let pkg = self.parse_package_clause();
@@ -325,7 +325,7 @@ impl<'input> Parser<'input> {
                 location: self.source_location(&start_pos, &end),
                 ..BaseNode::default()
             },
-            name: self.fname.clone(),
+            name: self.fname.to_string(),
             metadata: String::from(Self::METADATA),
             package: pkg,
             imports,

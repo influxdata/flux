@@ -835,7 +835,11 @@ fn compare_loc(
     fb_loc: &Option<fbsemantic::SourceLocation>,
 ) -> Result<()> {
     let fb_loc = unwrap_or_fail("source location", fb_loc)?;
-    compare_opt_strings("source location file", &semantic_loc.file, &fb_loc.file())?;
+    compare_opt_strings(
+        "source location file",
+        &semantic_loc.file.as_deref(),
+        &fb_loc.file(),
+    )?;
     compare_pos(&semantic_loc.start, &fb_loc.start())?;
     compare_pos(&semantic_loc.end, &fb_loc.end())?;
     Ok(())
@@ -883,7 +887,7 @@ fn compare_strings(msg: &str, semantic_str: &str, fb_str: &Option<&str>) -> Resu
 
 fn compare_opt_strings(
     msg: &str,
-    semantic_str: &Option<String>,
+    semantic_str: &Option<&str>,
     fb_str: &Option<&str>,
 ) -> Result<()> {
     match (semantic_str, fb_str) {

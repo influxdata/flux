@@ -27,7 +27,7 @@ impl<'a> Locator<'a> {
     #[cfg(test)]
     pub fn get(&self, sl: u32, sc: u32, el: u32, ec: u32) -> SourceLocation {
         SourceLocation {
-            file: Some("".to_string()),
+            file: Some("".into()),
             start: Position {
                 line: sl,
                 column: sc,

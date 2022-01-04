@@ -2032,7 +2032,7 @@ fn test_object_expression_with_source_locations_and_errors() {
     let n = Expression::Object(Box::new(ObjectExpr {
         base: BaseNode {
             location: SourceLocation {
-                file: Some("foo.flux".to_string()),
+                file: Some("foo.flux".into()),
                 start: Position { line: 1, column: 1 },
                 end: Position {
                     line: 1,
@@ -2046,7 +2046,7 @@ fn test_object_expression_with_source_locations_and_errors() {
         properties: vec![Property {
             base: BaseNode {
                 location: SourceLocation {
-                    file: Some("foo.flux".to_string()),
+                    file: Some("foo.flux".into()),
                     start: Position { line: 1, column: 2 },
                     end: Position {
                         line: 1,
@@ -2059,7 +2059,7 @@ fn test_object_expression_with_source_locations_and_errors() {
             key: PropertyKey::Identifier(Identifier {
                 base: BaseNode {
                     location: SourceLocation {
-                        file: Some("foo.flux".to_string()),
+                        file: Some("foo.flux".into()),
                         start: Position { line: 1, column: 2 },
                         end: Position { line: 1, column: 3 },
                     },
@@ -2071,7 +2071,7 @@ fn test_object_expression_with_source_locations_and_errors() {
             value: Some(Expression::StringLit(StringLit {
                 base: BaseNode {
                     location: SourceLocation {
-                        file: Some("foo.flux".to_string()),
+                        file: Some("foo.flux".into()),
                         start: Position { line: 1, column: 5 },
                         end: Position {
                             line: 1,
