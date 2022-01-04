@@ -21,8 +21,8 @@ struct TokenError {
 }
 
 /// Represents a Flux parser and its state.
-pub struct Parser {
-    s: Scanner,
+pub struct Parser<'input> {
+    s: Scanner<'input>,
     t: Option<Token>,
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
@@ -30,12 +30,12 @@ pub struct Parser {
     blocks: HashMap<TokenType, i32, DefaultHasher>,
 
     fname: String,
-    source: String,
+    source: &'input str,
 }
 
-impl Parser {
+impl<'input> Parser<'input> {
     /// Instantiates a new parser with the given string as input.
-    pub fn new(src: &str) -> Parser {
+    pub fn new(src: &'input str) -> Parser {
         let s = Scanner::new(src);
         Parser {
             s,
@@ -43,7 +43,7 @@ impl Parser {
             errs: Vec::new(),
             blocks: HashMap::default(),
             fname: "".to_string(),
-            source: src.to_string(),
+            source: src,
         }
     }
 

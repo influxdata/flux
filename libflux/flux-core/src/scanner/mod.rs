@@ -20,8 +20,8 @@ use super::DefaultHasher;
 mod tests;
 
 /// Represents a Flux scanner and its state during compilation.
-pub struct Scanner {
-    data: Vec<u8>,
+pub struct Scanner<'a> {
+    data: &'a [u8],
     ps: i32,
     p: i32,
     pe: i32,
@@ -69,17 +69,12 @@ pub struct Token {
     pub comments: Vec<Comment>,
 }
 
-impl Scanner {
+impl<'a> Scanner<'a> {
     /// Create a new scanner with the provided input.
-    pub fn new(input: &str) -> Self {
-        let mut data = Vec::new();
-        data.extend_from_slice(input.as_bytes());
-        let end = data.len() as i32;
-        //let data = vec![input.as_bytes()];
-        //let bytes = data.as_bytes();
-        //let end = bytes.len() as i32;
+    pub fn new(input: &'a str) -> Self {
+        let end = input.len() as i32;
         Scanner {
-            data,
+            data: input.as_bytes(),
             ps: 0,
             p: 0,
             pe: end,
@@ -114,7 +109,7 @@ impl Scanner {
 
         let error = {
             scan(
-                &self.data,
+                self.data,
                 mode,
                 &mut self.p,
                 self.ps,
