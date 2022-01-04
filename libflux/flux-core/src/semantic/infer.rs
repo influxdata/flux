@@ -116,8 +116,8 @@ impl Substitutable for Error {
             err,
         })
     }
-    fn free_vars(&self) -> Vec<Tvar> {
-        self.err.free_vars()
+    fn free_vars(&self, vars: &mut Vec<Tvar>) {
+        self.err.free_vars(vars)
     }
 }
 
@@ -190,7 +190,7 @@ pub fn equal(
 // type environment.
 //
 pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType {
-    let vars = minus(&env.free_vars(), t.free_vars());
+    let vars = minus(&env.mk_free_vars(), t.mk_free_vars());
     let mut cons = TvarKinds::new();
     for tv in &vars {
         if let Some(kinds) = with.get(tv) {

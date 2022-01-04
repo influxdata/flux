@@ -274,7 +274,8 @@ fn add_record_to_map(
     match r {
         Record::Empty => Ok(()),
         Record::Extension { head, tail } => {
-            let new_vars = head.v.free_vars();
+            let mut new_vars = Vec::new();
+            head.v.free_vars(&mut new_vars);
             let mut new_cons = TvarKinds::new();
             for var in &new_vars {
                 if !free_vars.iter().any(|v| v == var) {
