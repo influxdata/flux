@@ -105,7 +105,7 @@ builtin quantile : (
 builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B] where A: Record, B: Record
 builtin range : (<-tables: [{A with _time: time}], start: B, ?stop: C) => [{A with _time: time, _start: time, _stop: time}]
 
-builtin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C] where A: Record, B: Record, C: Record
+builtin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B, ?cumulative: bool) => [C] where A: Record, B: Record, C: Record
 builtin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
 builtin rename : (<-tables: [A], ?fn: (column: string) => string, ?columns: B) => [C] where A: Record, B: Record, C: Record
 builtin sample : (<-tables: [A], n: int, ?pos: int, ?column: string) => [A] where A: Record

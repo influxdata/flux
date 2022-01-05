@@ -613,7 +613,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/union_heterogeneous_test.flux":                                               "8b5f3dc3937b7051f8a84635f984950d091f7b214e9c9f7e8d01ae367b12680e",
 	"stdlib/universe/union_test.flux":                                                             "c2a3059856caeace8cf8e69008e31fc06bd907450df3cdee14fc2146539fef73",
 	"stdlib/universe/unique_test.flux":                                                            "d8d84060b14ef61e64cb003c95648a1ce7c3a4e71cc7ed8a54869e1093ec625d",
-	"stdlib/universe/universe.flux":                                                               "3242d54b6a3f4ae6e8fbce717aa24def3ed24ba2d857690cddcf0e746562ccdf",
+	"stdlib/universe/universe.flux":                                                               "76d0914caa739e46783e3287f8f8e5ec6cb134ebf55b4544c16e5d2d5e875018",
 	"stdlib/universe/universe_truncateTimeColumn_test.flux":                                       "a1502106ef7c8d0cc138044fa81a1feeab266a3a247b7fe44aec6ec305e524e5",
 	"stdlib/universe/window_aggregate_test.flux":                                                  "d521c5708e6fc02c99774ed56b31aa9d38038d5c534bce59f0b051d14b7a8969",
 	"stdlib/universe/window_default_start_align_test.flux":                                        "58062a508284be8992df90b5a40d9356264358cef20e6fec23813a305aab6433",

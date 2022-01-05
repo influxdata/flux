@@ -19,8 +19,9 @@ import (
 const ReduceKind = "reduce"
 
 type ReduceOpSpec struct {
-	Fn       interpreter.ResolvedFunction `json:"fn"`
-	Identity values.Object                `json:"identity"`
+	Fn         interpreter.ResolvedFunction `json:"fn"`
+	Identity   values.Object                `json:"identity"`
+	Cumulative bool                         `json:"cumulative""`
 }
 
 func init() {
@@ -55,6 +56,12 @@ func createReduceOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		spec.Identity = o
 	}
 
+	if b, ok, err := args.GetBool("cumulative"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.Cumulative = b
+	}
+
 	return spec, nil
 }
 
@@ -68,8 +75,9 @@ func (s *ReduceOpSpec) Kind() flux.OperationKind {
 
 type ReduceProcedureSpec struct {
 	plan.DefaultCost
-	Fn       interpreter.ResolvedFunction
-	Identity values.Object
+	Fn         interpreter.ResolvedFunction
+	Identity   values.Object
+	Cumulative bool
 }
 
 func newReduceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -81,8 +89,9 @@ func newReduceProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pro
 	}
 
 	return &ReduceProcedureSpec{
-		Fn:       spec.Fn,
-		Identity: spec.Identity,
+		Fn:         spec.Fn,
+		Identity:   spec.Identity,
+		Cumulative: spec.Cumulative,
 	}, nil
 }
 
@@ -112,21 +121,23 @@ func createReduceTransformation(id execute.DatasetID, mode execute.AccumulationM
 
 type reduceTransformation struct {
 	execute.ExecutionNode
-	d        execute.Dataset
-	cache    execute.TableBuilderCache
-	ctx      context.Context
-	fn       *execute.RowReduceFn
-	identity values.Object
+	d          execute.Dataset
+	cache      execute.TableBuilderCache
+	ctx        context.Context
+	fn         *execute.RowReduceFn
+	identity   values.Object
+	cumulative bool
 }
 
 func NewReduceTransformation(ctx context.Context, spec *ReduceProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*reduceTransformation, error) {
 	fn := execute.NewRowReduceFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &reduceTransformation{
-		d:        d,
-		cache:    cache,
-		ctx:      ctx,
-		fn:       fn,
-		identity: spec.Identity,
+		d:          d,
+		cache:      cache,
+		ctx:        ctx,
+		fn:         fn,
+		identity:   spec.Identity,
+		cumulative: spec.Cumulative,
 	}, nil
 }
 
@@ -141,7 +152,6 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 	// Start the reduce operation with the neutral element as the accumulator.
 	const accumulatorParamName = "accumulator"
 	params := map[string]values.Value{accumulatorParamName: t.identity}
-
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
@@ -188,21 +198,74 @@ func (t *reduceTransformation) Process(id execute.DatasetID, tbl flux.Table) err
 					}
 				}
 			}
-			// Append a value for each column.
-			for j, c := range builder.Cols() {
-				v, ok := m.Get(c.Label)
-				if !ok {
-					v = key.LabelValue(c.Label)
-				}
+			if t.cumulative {
+				// Append a value for each column.
+				for j, c := range builder.Cols() {
+					v, ok := m.Get(c.Label)
+					if !ok {
+						v = key.LabelValue(c.Label)
+					}
 
-				if err := builder.AppendValue(j, v); err != nil {
-					return err
+					if err := builder.AppendValue(j, v); err != nil {
+						return err
+					}
 				}
 			}
 		}
 		return nil
 	}); err != nil {
 		return err
+	}
+
+	// probably could be clever with the loop above, but I think this pattern makes the 2 behaviors clearer
+	if !t.cumulative {
+		m := params[accumulatorParamName].Object()
+		key := t.computeGroupKey(tbl.Key(), m)
+
+		builder, created := t.cache.TableBuilder(key)
+		if created {
+			//	return errors.New(codes.FailedPrecondition, "two reducers writing result to the same table")
+			//}
+
+			// Add the key columns to the table.
+			if err := execute.AddTableKeyCols(key, builder); err != nil {
+				return err
+			}
+
+			// Add remaining columns from the object if they're not in the key.
+			columns := make([]string, 0, m.Len())
+			m.Range(func(name string, v values.Value) {
+				if key.HasCol(name) {
+					return
+				}
+				columns = append(columns, name)
+			})
+			sort.Strings(columns)
+
+			for _, label := range columns {
+				v, _ := m.Get(label)
+				if v.IsNull() {
+					return errors.Newf(codes.Invalid, `null values are not supported for "%s" in the reduce() function`, label)
+				}
+				if _, err := builder.AddCol(flux.ColMeta{
+					Label: label,
+					Type:  flux.ColumnType(v.Type()),
+				}); err != nil {
+					return err
+				}
+			}
+		}
+		// Append a value for each column.
+		for j, c := range builder.Cols() {
+			v, ok := m.Get(c.Label)
+			if !ok {
+				v = key.LabelValue(c.Label)
+			}
+
+			if err := builder.AppendValue(j, v); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
