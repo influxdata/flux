@@ -5,6 +5,7 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Write},
     hash::Hash,
+    str::FromStr,
 };
 
 use codespan_reporting::diagnostic;
@@ -368,6 +369,28 @@ pub enum Kind {
     Stringable,
     Subtractable,
     Timeable,
+}
+
+impl FromStr for Kind {
+    type Err = ();
+
+    fn from_str(name: &str) -> Result<Self, Self::Err> {
+        Ok(match name {
+            "Addable" => Kind::Addable,
+            "Subtractable" => Kind::Subtractable,
+            "Divisible" => Kind::Divisible,
+            "Numeric" => Kind::Numeric,
+            "Comparable" => Kind::Comparable,
+            "Equatable" => Kind::Equatable,
+            "Nullable" => Kind::Nullable,
+            "Negatable" => Kind::Negatable,
+            "Timeable" => Kind::Timeable,
+            "Record" => Kind::Record,
+            "Basic" => Kind::Basic,
+            "Stringable" => Kind::Stringable,
+            _ => return Err(()),
+        })
+    }
 }
 
 /// Pointer type used in `MonoType`

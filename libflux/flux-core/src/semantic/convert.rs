@@ -610,20 +610,9 @@ impl<'a> Converter<'a> {
             for con in &type_expression.constraints {
                 if con.tvar.name == name {
                     for k in &con.kinds {
-                        match k.name.as_str() {
-                            "Addable" => kinds.push(types::Kind::Addable),
-                            "Subtractable" => kinds.push(types::Kind::Subtractable),
-                            "Divisible" => kinds.push(types::Kind::Divisible),
-                            "Numeric" => kinds.push(types::Kind::Numeric),
-                            "Comparable" => kinds.push(types::Kind::Comparable),
-                            "Equatable" => kinds.push(types::Kind::Equatable),
-                            "Nullable" => kinds.push(types::Kind::Nullable),
-                            "Negatable" => kinds.push(types::Kind::Negatable),
-                            "Timeable" => kinds.push(types::Kind::Timeable),
-                            "Record" => kinds.push(types::Kind::Record),
-                            "Basic" => kinds.push(types::Kind::Basic),
-                            "Stringable" => kinds.push(types::Kind::Stringable),
-                            _ => {
+                        match k.name.parse() {
+                            Ok(kind) => kinds.push(kind),
+                            Err(()) => {
                                 self.errors.push(located(
                                     k.base.location.clone(),
                                     ErrorKind::InvalidConstraint(k.name.clone()),
